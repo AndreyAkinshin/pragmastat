@@ -1,0 +1,159 @@
+<!doctype html><html lang=en><head><meta charset=utf-8><meta http-equiv=X-UA-Compatible content="IE=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><meta name=author content='Andrey Akinshin'><meta name=description content><meta name=twitter:site content="@andrey_akinshin"><meta name=twitter:creator content="@andrey_akinshin"><link href=/img/favicon.ico rel=icon type=image/x-icon><title>Pragmastat / Kotlin</title><script>(()=>{localStorage.getItem("color-theme")==="dark"||!("color-theme"in localStorage)&&window.matchMedia("(prefers-color-scheme: dark)").matches?document.documentElement.classList.add("dark"):document.documentElement.classList.remove("dark")})()</script><link href=/css/styles.min.595865c63bc3c05764dbb68377fea857dee42e5bf44e88e6add95436ce1753c8.css rel=stylesheet type=text/css media=all></head><body class="flex flex-col min-h-screen px-1 xs:px-3 sm:px-5"><nav><div class="flex items-center justify-between mx-auto max-w-4xl h-12"><div class="flex items-center gap-5"><a href=/ title="Main page"><svg class="icon"><use xlink:href="/icons.min.c30ef453fa1156e8054570fc1d00898c44b8c348def3f6d8df9691299be87f5b.svg#home"/></svg></a>
+<a href=https://github.com/AndreyAkinshin/pragmastat title="Main page"><svg class="icon"><use xlink:href="/icons.min.c30ef453fa1156e8054570fc1d00898c44b8c348def3f6d8df9691299be87f5b.svg#github"/></svg></a>
+<a href=/pragmastat-v1.0.0.pdf title="Main page"><svg class="icon"><use xlink:href="/icons.min.c30ef453fa1156e8054570fc1d00898c44b8c348def3f6d8df9691299be87f5b.svg#pdf"/></svg></a></div><button id=theme-toggle type=button title="Toggle theme" class="w-12 h-12 content-center justify-self-end">
+<svg id="theme-toggle-system-icon" class="hidden fill-current text-link hover:text-highlight w-6 h-6 pr-0 mb-0.5" viewBox="0 0 20 20"><use xlink:href="/icons.min.c30ef453fa1156e8054570fc1d00898c44b8c348def3f6d8df9691299be87f5b.svg#system-theme"/></svg>
+<svg id="theme-toggle-dark-icon" class="hidden fill-current text-link hover:text-highlight w-6 h-6 pr-0 mb-0.5" viewBox="0 0 20 20"><use xlink:href="/icons.min.c30ef453fa1156e8054570fc1d00898c44b8c348def3f6d8df9691299be87f5b.svg#moon"/></svg>
+<svg id="theme-toggle-light-icon" class="hidden fill-current text-link hover:text-highlight w-6 h-6 pr-0 mb-0.5" viewBox="0 0 20 20"><use xlink:href="/icons.min.c30ef453fa1156e8054570fc1d00898c44b8c348def3f6d8df9691299be87f5b.svg#sun"/></svg></button></div></nav><div class="main container mx-auto max-w-4xl pt-3 pb-6 flex-grow"><h1>Pragmastat / Kotlin</h1><div><div class="my-2 text-center"></div><div class="my-2 text-center"></div></div><div><div class=markup><p>Copy-pastable implementation:</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-kotlin data-lang=kotlin><span class=line><span class=cl><span class=k>package</span> <span class=nn>com.pragmastat</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>import</span> <span class=nn>kotlin.math.abs</span>
+</span></span><span class=line><span class=cl><span class=k>import</span> <span class=nn>kotlin.math.sqrt</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=cm>/**
+</span></span></span><span class=line><span class=cl><span class=cm> * Calculates the median of a list of values
+</span></span></span><span class=line><span class=cl><span class=cm> */</span>
+</span></span><span class=line><span class=cl><span class=k>fun</span> <span class=nf>median</span><span class=p>(</span><span class=n>values</span><span class=p>:</span> <span class=n>List</span><span class=p>&lt;</span><span class=n>Double</span><span class=p>&gt;):</span> <span class=n>Double</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=n>require</span><span class=p>(</span><span class=n>values</span><span class=p>.</span><span class=n>isNotEmpty</span><span class=p>())</span> <span class=p>{</span> <span class=s2>&#34;Input list cannot be empty&#34;</span> <span class=p>}</span>
+</span></span><span class=line><span class=cl>    
+</span></span><span class=line><span class=cl>    <span class=k>val</span> <span class=py>sorted</span> <span class=p>=</span> <span class=n>values</span><span class=p>.</span><span class=n>sorted</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=k>val</span> <span class=py>n</span> <span class=p>=</span> <span class=n>sorted</span><span class=p>.</span><span class=n>size</span>
+</span></span><span class=line><span class=cl>    
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=k>if</span> <span class=p>(</span><span class=n>n</span> <span class=p>%</span> <span class=m>2</span> <span class=o>==</span> <span class=m>0</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=p>(</span><span class=n>sorted</span><span class=p>[</span><span class=n>n</span> <span class=p>/</span> <span class=m>2</span> <span class=p>-</span> <span class=m>1</span><span class=p>]</span> <span class=p>+</span> <span class=n>sorted</span><span class=p>[</span><span class=n>n</span> <span class=p>/</span> <span class=m>2</span><span class=p>])</span> <span class=p>/</span> <span class=m>2.0</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span> <span class=k>else</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=n>sorted</span><span class=p>[</span><span class=n>n</span> <span class=p>/</span> <span class=m>2</span><span class=p>]</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=cm>/**
+</span></span></span><span class=line><span class=cl><span class=cm> * Estimates the central value of the data (Center)
+</span></span></span><span class=line><span class=cl><span class=cm> * 
+</span></span></span><span class=line><span class=cl><span class=cm> * Calculates the median of all pairwise averages (x[i] + x[j])/2.
+</span></span></span><span class=line><span class=cl><span class=cm> * More robust than the mean and more efficient than the median.
+</span></span></span><span class=line><span class=cl><span class=cm> */</span>
+</span></span><span class=line><span class=cl><span class=k>fun</span> <span class=nf>center</span><span class=p>(</span><span class=n>x</span><span class=p>:</span> <span class=n>List</span><span class=p>&lt;</span><span class=n>Double</span><span class=p>&gt;):</span> <span class=n>Double</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=n>require</span><span class=p>(</span><span class=n>x</span><span class=p>.</span><span class=n>isNotEmpty</span><span class=p>())</span> <span class=p>{</span> <span class=s2>&#34;Input list cannot be empty&#34;</span> <span class=p>}</span>
+</span></span><span class=line><span class=cl>    
+</span></span><span class=line><span class=cl>    <span class=k>val</span> <span class=py>pairwiseAverages</span> <span class=p>=</span> <span class=n>mutableListOf</span><span class=p>&lt;</span><span class=n>Double</span><span class=p>&gt;()</span>
+</span></span><span class=line><span class=cl>    <span class=k>for</span> <span class=p>(</span><span class=n>i</span> <span class=k>in</span> <span class=n>x</span><span class=p>.</span><span class=n>indices</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>for</span> <span class=p>(</span><span class=n>j</span> <span class=k>in</span> <span class=n>i</span> <span class=n>until</span> <span class=n>x</span><span class=p>.</span><span class=n>size</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=n>pairwiseAverages</span><span class=p>.</span><span class=n>add</span><span class=p>((</span><span class=n>x</span><span class=p>[</span><span class=n>i</span><span class=p>]</span> <span class=p>+</span> <span class=n>x</span><span class=p>[</span><span class=n>j</span><span class=p>])</span> <span class=p>/</span> <span class=m>2.0</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>    
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=n>median</span><span class=p>(</span><span class=n>pairwiseAverages</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=cm>/**
+</span></span></span><span class=line><span class=cl><span class=cm> * Estimates data dispersion (Spread)
+</span></span></span><span class=line><span class=cl><span class=cm> * 
+</span></span></span><span class=line><span class=cl><span class=cm> * Calculates the median of all pairwise absolute differences |x[i] - x[j]|.
+</span></span></span><span class=line><span class=cl><span class=cm> * More robust than standard deviation and more efficient than MAD.
+</span></span></span><span class=line><span class=cl><span class=cm> */</span>
+</span></span><span class=line><span class=cl><span class=k>fun</span> <span class=nf>spread</span><span class=p>(</span><span class=n>x</span><span class=p>:</span> <span class=n>List</span><span class=p>&lt;</span><span class=n>Double</span><span class=p>&gt;):</span> <span class=n>Double</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=n>require</span><span class=p>(</span><span class=n>x</span><span class=p>.</span><span class=n>isNotEmpty</span><span class=p>())</span> <span class=p>{</span> <span class=s2>&#34;Input list cannot be empty&#34;</span> <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=n>x</span><span class=p>.</span><span class=n>size</span> <span class=o>==</span> <span class=m>1</span><span class=p>)</span> <span class=k>return</span> <span class=m>0.0</span>
+</span></span><span class=line><span class=cl>    
+</span></span><span class=line><span class=cl>    <span class=k>val</span> <span class=py>pairwiseDiffs</span> <span class=p>=</span> <span class=n>mutableListOf</span><span class=p>&lt;</span><span class=n>Double</span><span class=p>&gt;()</span>
+</span></span><span class=line><span class=cl>    <span class=k>for</span> <span class=p>(</span><span class=n>i</span> <span class=k>in</span> <span class=n>x</span><span class=p>.</span><span class=n>indices</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>for</span> <span class=p>(</span><span class=n>j</span> <span class=k>in</span> <span class=n>i</span> <span class=p>+</span> <span class=m>1</span> <span class=n>until</span> <span class=n>x</span><span class=p>.</span><span class=n>size</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=n>pairwiseDiffs</span><span class=p>.</span><span class=n>add</span><span class=p>(</span><span class=n>abs</span><span class=p>(</span><span class=n>x</span><span class=p>[</span><span class=n>i</span><span class=p>]</span> <span class=p>-</span> <span class=n>x</span><span class=p>[</span><span class=n>j</span><span class=p>]))</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>    
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=n>median</span><span class=p>(</span><span class=n>pairwiseDiffs</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=cm>/**
+</span></span></span><span class=line><span class=cl><span class=cm> * Measures the relative dispersion of a sample (Volatility)
+</span></span></span><span class=line><span class=cl><span class=cm> * 
+</span></span></span><span class=line><span class=cl><span class=cm> * Calculates the ratio of Spread to absolute Center.
+</span></span></span><span class=line><span class=cl><span class=cm> * Robust alternative to the coefficient of variation.
+</span></span></span><span class=line><span class=cl><span class=cm> */</span>
+</span></span><span class=line><span class=cl><span class=k>fun</span> <span class=nf>volatility</span><span class=p>(</span><span class=n>x</span><span class=p>:</span> <span class=n>List</span><span class=p>&lt;</span><span class=n>Double</span><span class=p>&gt;):</span> <span class=n>Double</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>val</span> <span class=py>centerVal</span> <span class=p>=</span> <span class=n>center</span><span class=p>(</span><span class=n>x</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=n>require</span><span class=p>(</span><span class=n>centerVal</span> <span class=o>!=</span> <span class=m>0.0</span><span class=p>)</span> <span class=p>{</span> <span class=s2>&#34;Volatility is undefined when Center equals zero&#34;</span> <span class=p>}</span>
+</span></span><span class=line><span class=cl>    
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=n>spread</span><span class=p>(</span><span class=n>x</span><span class=p>)</span> <span class=p>/</span> <span class=n>abs</span><span class=p>(</span><span class=n>centerVal</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=cm>/**
+</span></span></span><span class=line><span class=cl><span class=cm> * Measures precision: the distance between two estimations of independent random samples (Precision)
+</span></span></span><span class=line><span class=cl><span class=cm> * 
+</span></span></span><span class=line><span class=cl><span class=cm> * Calculated as 2 * Spread / sqrt(n). The interval center ± precision forms a range
+</span></span></span><span class=line><span class=cl><span class=cm> * that probably contains the true center value.
+</span></span></span><span class=line><span class=cl><span class=cm> */</span>
+</span></span><span class=line><span class=cl><span class=k>fun</span> <span class=nf>precision</span><span class=p>(</span><span class=n>x</span><span class=p>:</span> <span class=n>List</span><span class=p>&lt;</span><span class=n>Double</span><span class=p>&gt;):</span> <span class=n>Double</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=n>require</span><span class=p>(</span><span class=n>x</span><span class=p>.</span><span class=n>isNotEmpty</span><span class=p>())</span> <span class=p>{</span> <span class=s2>&#34;Input list cannot be empty&#34;</span> <span class=p>}</span>
+</span></span><span class=line><span class=cl>    
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=m>2.0</span> <span class=p>*</span> <span class=n>spread</span><span class=p>(</span><span class=n>x</span><span class=p>)</span> <span class=p>/</span> <span class=n>sqrt</span><span class=p>(</span><span class=n>x</span><span class=p>.</span><span class=n>size</span><span class=p>.</span><span class=n>toDouble</span><span class=p>())</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=cm>/**
+</span></span></span><span class=line><span class=cl><span class=cm> * Measures the typical difference between elements of x and y (MedShift)
+</span></span></span><span class=line><span class=cl><span class=cm> * 
+</span></span></span><span class=line><span class=cl><span class=cm> * Calculates the median of all pairwise differences (x[i] - y[j]).
+</span></span></span><span class=line><span class=cl><span class=cm> * Positive values mean x is typically larger, negative means y is typically larger.
+</span></span></span><span class=line><span class=cl><span class=cm> */</span>
+</span></span><span class=line><span class=cl><span class=k>fun</span> <span class=nf>medShift</span><span class=p>(</span><span class=n>x</span><span class=p>:</span> <span class=n>List</span><span class=p>&lt;</span><span class=n>Double</span><span class=p>&gt;,</span> <span class=n>y</span><span class=p>:</span> <span class=n>List</span><span class=p>&lt;</span><span class=n>Double</span><span class=p>&gt;):</span> <span class=n>Double</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=n>require</span><span class=p>(</span><span class=n>x</span><span class=p>.</span><span class=n>isNotEmpty</span><span class=p>()</span> <span class=o>&amp;&amp;</span> <span class=n>y</span><span class=p>.</span><span class=n>isNotEmpty</span><span class=p>())</span> <span class=p>{</span> <span class=s2>&#34;Input lists cannot be empty&#34;</span> <span class=p>}</span>
+</span></span><span class=line><span class=cl>    
+</span></span><span class=line><span class=cl>    <span class=k>val</span> <span class=py>pairwiseShifts</span> <span class=p>=</span> <span class=n>mutableListOf</span><span class=p>&lt;</span><span class=n>Double</span><span class=p>&gt;()</span>
+</span></span><span class=line><span class=cl>    <span class=k>for</span> <span class=p>(</span><span class=n>xi</span> <span class=k>in</span> <span class=n>x</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>for</span> <span class=p>(</span><span class=n>yj</span> <span class=k>in</span> <span class=n>y</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=n>pairwiseShifts</span><span class=p>.</span><span class=n>add</span><span class=p>(</span><span class=n>xi</span> <span class=p>-</span> <span class=n>yj</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>    
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=n>median</span><span class=p>(</span><span class=n>pairwiseShifts</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=cm>/**
+</span></span></span><span class=line><span class=cl><span class=cm> * Measures how many times larger x is compared to y (MedRatio)
+</span></span></span><span class=line><span class=cl><span class=cm> * 
+</span></span></span><span class=line><span class=cl><span class=cm> * Calculates the median of all pairwise ratios (x[i] / y[j]).
+</span></span></span><span class=line><span class=cl><span class=cm> * For example, medRatio = 1.2 means x is typically 20% larger than y.
+</span></span></span><span class=line><span class=cl><span class=cm> */</span>
+</span></span><span class=line><span class=cl><span class=k>fun</span> <span class=nf>medRatio</span><span class=p>(</span><span class=n>x</span><span class=p>:</span> <span class=n>List</span><span class=p>&lt;</span><span class=n>Double</span><span class=p>&gt;,</span> <span class=n>y</span><span class=p>:</span> <span class=n>List</span><span class=p>&lt;</span><span class=n>Double</span><span class=p>&gt;):</span> <span class=n>Double</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=n>require</span><span class=p>(</span><span class=n>x</span><span class=p>.</span><span class=n>isNotEmpty</span><span class=p>()</span> <span class=o>&amp;&amp;</span> <span class=n>y</span><span class=p>.</span><span class=n>isNotEmpty</span><span class=p>())</span> <span class=p>{</span> <span class=s2>&#34;Input lists cannot be empty&#34;</span> <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=n>require</span><span class=p>(</span><span class=n>y</span><span class=p>.</span><span class=n>all</span> <span class=p>{</span> <span class=k>it</span> <span class=p>&gt;</span> <span class=m>0</span> <span class=p>})</span> <span class=p>{</span> <span class=s2>&#34;All values in y must be strictly positive&#34;</span> <span class=p>}</span>
+</span></span><span class=line><span class=cl>    
+</span></span><span class=line><span class=cl>    <span class=k>val</span> <span class=py>pairwiseRatios</span> <span class=p>=</span> <span class=n>mutableListOf</span><span class=p>&lt;</span><span class=n>Double</span><span class=p>&gt;()</span>
+</span></span><span class=line><span class=cl>    <span class=k>for</span> <span class=p>(</span><span class=n>xi</span> <span class=k>in</span> <span class=n>x</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>for</span> <span class=p>(</span><span class=n>yj</span> <span class=k>in</span> <span class=n>y</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=n>pairwiseRatios</span><span class=p>.</span><span class=n>add</span><span class=p>(</span><span class=n>xi</span> <span class=p>/</span> <span class=n>yj</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>    
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=n>median</span><span class=p>(</span><span class=n>pairwiseRatios</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=cm>/**
+</span></span></span><span class=line><span class=cl><span class=cm> * Measures the typical variability when considering both samples together (MedSpread)
+</span></span></span><span class=line><span class=cl><span class=cm> * 
+</span></span></span><span class=line><span class=cl><span class=cm> * Computes the weighted average of individual spreads: (n*Spread(x) + m*Spread(y))/(n+m).
+</span></span></span><span class=line><span class=cl><span class=cm> */</span>
+</span></span><span class=line><span class=cl><span class=k>fun</span> <span class=nf>medSpread</span><span class=p>(</span><span class=n>x</span><span class=p>:</span> <span class=n>List</span><span class=p>&lt;</span><span class=n>Double</span><span class=p>&gt;,</span> <span class=n>y</span><span class=p>:</span> <span class=n>List</span><span class=p>&lt;</span><span class=n>Double</span><span class=p>&gt;):</span> <span class=n>Double</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=n>require</span><span class=p>(</span><span class=n>x</span><span class=p>.</span><span class=n>isNotEmpty</span><span class=p>()</span> <span class=o>&amp;&amp;</span> <span class=n>y</span><span class=p>.</span><span class=n>isNotEmpty</span><span class=p>())</span> <span class=p>{</span> <span class=s2>&#34;Input lists cannot be empty&#34;</span> <span class=p>}</span>
+</span></span><span class=line><span class=cl>    
+</span></span><span class=line><span class=cl>    <span class=k>val</span> <span class=py>n</span> <span class=p>=</span> <span class=n>x</span><span class=p>.</span><span class=n>size</span>
+</span></span><span class=line><span class=cl>    <span class=k>val</span> <span class=py>m</span> <span class=p>=</span> <span class=n>y</span><span class=p>.</span><span class=n>size</span>
+</span></span><span class=line><span class=cl>    <span class=k>val</span> <span class=py>spreadX</span> <span class=p>=</span> <span class=n>spread</span><span class=p>(</span><span class=n>x</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=k>val</span> <span class=py>spreadY</span> <span class=p>=</span> <span class=n>spread</span><span class=p>(</span><span class=n>y</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=p>(</span><span class=n>n</span> <span class=p>*</span> <span class=n>spreadX</span> <span class=p>+</span> <span class=n>m</span> <span class=p>*</span> <span class=n>spreadY</span><span class=p>)</span> <span class=p>/</span> <span class=p>(</span><span class=n>n</span> <span class=p>+</span> <span class=n>m</span><span class=p>).</span><span class=n>toDouble</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=cm>/**
+</span></span></span><span class=line><span class=cl><span class=cm> * Measures effect size: a normalized absolute difference between x and y (MedDisparity)
+</span></span></span><span class=line><span class=cl><span class=cm> * 
+</span></span></span><span class=line><span class=cl><span class=cm> * Calculated as MedShift / MedSpread. Robust alternative to Cohen&#39;s d.
+</span></span></span><span class=line><span class=cl><span class=cm> * Returns infinity if medSpread is zero.
+</span></span></span><span class=line><span class=cl><span class=cm> */</span>
+</span></span><span class=line><span class=cl><span class=k>fun</span> <span class=nf>medDisparity</span><span class=p>(</span><span class=n>x</span><span class=p>:</span> <span class=n>List</span><span class=p>&lt;</span><span class=n>Double</span><span class=p>&gt;,</span> <span class=n>y</span><span class=p>:</span> <span class=n>List</span><span class=p>&lt;</span><span class=n>Double</span><span class=p>&gt;):</span> <span class=n>Double</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>val</span> <span class=py>medSpreadVal</span> <span class=p>=</span> <span class=n>medSpread</span><span class=p>(</span><span class=n>x</span><span class=p>,</span> <span class=n>y</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=n>medSpreadVal</span> <span class=o>==</span> <span class=m>0.0</span><span class=p>)</span> <span class=k>return</span> <span class=nc>Double</span><span class=p>.</span><span class=n>POSITIVE_INFINITY</span>
+</span></span><span class=line><span class=cl>    
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=n>medShift</span><span class=p>(</span><span class=n>x</span><span class=p>,</span> <span class=n>y</span><span class=p>)</span> <span class=p>/</span> <span class=n>medSpreadVal</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div></div></div></div><script>(()=>{var t=document.getElementById("theme-toggle-system-icon"),n=document.getElementById("theme-toggle-dark-icon"),s=document.getElementById("theme-toggle-light-icon"),o=document.querySelectorAll(".img-dark"),i=document.querySelectorAll(".img-light");function a(){return localStorage.getItem("color-theme")?localStorage.getItem("color-theme"):window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}function e(e){let r=(e||a())==="dark",c=localStorage.getItem("color-theme")===null;document.documentElement.classList.toggle("dark",r),document.documentElement.setAttribute("data-theme",r?"dark":"light"),t.classList.toggle("hidden",!c),n.classList.toggle("hidden",c||r),s.classList.toggle("hidden",c||!r),o.forEach(e=>e.classList.toggle("hidden",!r)),i.forEach(e=>e.classList.toggle("hidden",r))}e(),document.getElementById("theme-toggle").addEventListener("click",t=>{let s=localStorage.getItem("color-theme"),n=window.matchMedia("(prefers-color-scheme: dark)").matches;s===null?localStorage.setItem("color-theme",n?"light":"dark"):s===(n?"light":"dark")?localStorage.setItem("color-theme",n?"dark":"light"):localStorage.removeItem("color-theme"),e()}),window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change",t=>{localStorage.getItem("color-theme")||e(t.matches?"dark":"light")})})()</script><script>(()=>{window.MathJax={loader:{load:["[tex]/tagformat","[tex]/textmacros"]},tex:{tags:"ams",tagformat:{number:e=>e.toString(),tag:e=>"("+e+")",id:e=>e.replace(/\s/g,"_"),url:(e,t)=>t+"#"+encodeURIComponent(e)},packages:{"[+]":["tagformat","textmacros"]},inlineMath:[["$","$"],["\\(","\\)"]],displayMath:[["$$","$$"],["\\[","\\]"]],processEscapes:!0,processEnvironments:!0},options:{skipHtmlTags:["script","noscript","style","textarea","pre"],ignoreHtmlClass:"tex2jax_ignore",processHtmlClass:"tex2jax_process"},svg:{fontCache:"global"}},window.addEventListener("load",e=>{document.querySelectorAll("mjx-container").forEach(function(e){e.parentElement.classList+=" has-jax"})})})()</script><script id=MathJax-script async src=https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js></script><script>(()=>{document.addEventListener("DOMContentLoaded",function(){function e(e){document.querySelectorAll(`span.autoanchor_${e}`).forEach((e,t)=>{e.textContent=t+1}),document.querySelectorAll(`a[href^="#${e}_"]`).forEach(t=>{let s=t.getAttribute("href").substring(1),n=document.querySelector(`span.autoanchor_${e}[data-ref="${s}"]`);n&&(t.textContent=n.textContent)})}["fig","exm","tbl"].forEach(e)})})()</script><footer class="z-20 py-2 mt-6 w-full flex items-center justify-center"><span class="text-front-dim-l dark:text-front-dim-d text-center mr-3">© 2025 <span class=whitespace-nowrap>Andrey Akinshin</span></span>
+<a href=https://creativecommons.org/licenses/by-nc-sa/4.0/>CC BY-NC-SA 4.0</a></footer></body></html>

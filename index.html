@@ -1,0 +1,405 @@
+<!doctype html><html lang=en><head><meta name=generator content="Hugo 0.147.8"><meta charset=utf-8><meta http-equiv=X-UA-Compatible content="IE=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><meta name=author content='Andrey Akinshin'><meta name=description content><meta name=twitter:site content="@andrey_akinshin"><meta name=twitter:creator content="@andrey_akinshin"><link href=/img/favicon.ico rel=icon type=image/x-icon><title>Pragmastat: Pragmatic Statistical Toolkit</title><script>(()=>{localStorage.getItem("color-theme")==="dark"||!("color-theme"in localStorage)&&window.matchMedia("(prefers-color-scheme: dark)").matches?document.documentElement.classList.add("dark"):document.documentElement.classList.remove("dark")})()</script><link href=/css/styles.min.595865c63bc3c05764dbb68377fea857dee42e5bf44e88e6add95436ce1753c8.css rel=stylesheet type=text/css media=all></head><body class="flex flex-col min-h-screen px-1 xs:px-3 sm:px-5"><nav><div class="flex items-center justify-between mx-auto max-w-4xl h-12"><div class="flex items-center gap-5"><a href=/ title="Main page"><svg class="icon"><use xlink:href="/icons.min.c30ef453fa1156e8054570fc1d00898c44b8c348def3f6d8df9691299be87f5b.svg#home"/></svg></a>
+<a href=https://github.com/AndreyAkinshin/pragmastat title="Main page"><svg class="icon"><use xlink:href="/icons.min.c30ef453fa1156e8054570fc1d00898c44b8c348def3f6d8df9691299be87f5b.svg#github"/></svg></a>
+<a href=/pragmastat-v1.0.0.pdf title="Main page"><svg class="icon"><use xlink:href="/icons.min.c30ef453fa1156e8054570fc1d00898c44b8c348def3f6d8df9691299be87f5b.svg#pdf"/></svg></a></div><button id=theme-toggle type=button title="Toggle theme" class="w-12 h-12 content-center justify-self-end">
+<svg id="theme-toggle-system-icon" class="hidden fill-current text-link hover:text-highlight w-6 h-6 pr-0 mb-0.5" viewBox="0 0 20 20"><use xlink:href="/icons.min.c30ef453fa1156e8054570fc1d00898c44b8c348def3f6d8df9691299be87f5b.svg#system-theme"/></svg>
+<svg id="theme-toggle-dark-icon" class="hidden fill-current text-link hover:text-highlight w-6 h-6 pr-0 mb-0.5" viewBox="0 0 20 20"><use xlink:href="/icons.min.c30ef453fa1156e8054570fc1d00898c44b8c348def3f6d8df9691299be87f5b.svg#moon"/></svg>
+<svg id="theme-toggle-light-icon" class="hidden fill-current text-link hover:text-highlight w-6 h-6 pr-0 mb-0.5" viewBox="0 0 20 20"><use xlink:href="/icons.min.c30ef453fa1156e8054570fc1d00898c44b8c348def3f6d8df9691299be87f5b.svg#sun"/></svg></button></div></nav><div class="main container mx-auto max-w-4xl pt-3 pb-6 flex-grow"><h1 class=text-3xl><span class="hidden md:inline">Pragmastat: Pragmatic Statistical Toolkit</span>
+<span class="inline md:hidden">Pragmastat:<br>Pragmatic Statistical Toolkit</span></h1><div class="my-2 text-center text-xl"><a href=https://aakinshin.net>Andrey Akinshin</a></div><div class="mt-4 mb-4 text-center text-xl">Version 1.0.0</div><div class="mt-2 mb-6 text-center text-lg"><a href=/python>Python</a> ·
+<a href=/ts>TypeScript</a> ·
+<a href=/r>R</a> ·
+<a href=/dotnet>.NET</a> ·
+<a href=/kotlin>Kotlin</a> ·
+<a href=/rust>Rust</a> ·
+<a href=/go>Go</a></div><div class=markup><div style=display:none>$$
+% Samples
+\newcommand{\x}{\mathbf{x}}
+\newcommand{\y}{\mathbf{y}}
+% One-sample estimators
+\newcommand{\Center}{\operatorname{Center}}
+\newcommand{\Spread}{\operatorname{Spread}}
+\newcommand{\Volatility}{\operatorname{Volatility}}
+\newcommand{\Precision}{\operatorname{Precision}}
+% Two-sample estimators
+\newcommand{\MedShift}{\operatorname{MedShift}}
+\newcommand{\MedRatio}{\operatorname{MedRatio}}
+\newcommand{\MedSpread}{\operatorname{MedSpread}}
+\newcommand{\MedDisparity}{\operatorname{MedDisparity}}
+% Misc
+\renewcommand{\Pr}{\mathbb{P}} % Probability
+\newcommand{\Var}{\mathbb{V}} % Variance
+\newcommand{\E}{\mathbb{E}} % Expected value
+\newcommand{\eff}{\operatorname{eff}} % Efficiency
+% Not-recommended traditional estimators
+\newcommand{\Median}{\operatorname{Median}}
+\newcommand{\Mean}{\operatorname{Mean}}
+\newcommand{\StdDev}{\operatorname{StdDev}}
+\newcommand{\MAD}{\operatorname{MAD}}
+\newcommand{\RC}{\operatorname{RC}}
+$$</div><p>This manual presents a unified statistical toolkit for reliable analysis of real-world data.
+The toolkit
+nearly matches the efficiency of traditional statistical estimators under normality,
+has practically reasonable robustness,
+enables simple software implementations without advanced statistical libraries,
+and provides clear explanations accessible to practitioners without deep statistical training.
+The toolkit consists of renamed, recombined, and refined versions of existing methods.</p><p><h1>Table of Content</h1><nav id=TableOfContents><ul><li><a href=#toolkit>Toolkit</a><ul><li><a href=#one-sample-summary>One-Sample Summary</a></li><li><a href=#two-sample-summary>Two-Sample Summary</a></li></ul></li><li><a href=#estimators>Estimators</a><ul><li><a href=#center>Center</a></li><li><a href=#spread>Spread</a></li><li><a href=#volatility>Volatility</a></li><li><a href=#precision>Precision</a></li><li><a href=#medshift>MedShift</a></li><li><a href=#medratio>MedRatio</a></li><li><a href=#medspread>MedSpread</a></li><li><a href=#meddisparity>MedDisparity</a></li></ul></li><li><a href=#studies>Studies</a><ul><li><a href=#asymptotic-gaussian-expected-value-of-the-spread>Asymptotic Gaussian Expected Value of the Spread</a></li><li><a href=#asymptotic-gaussian-efficiency-of-the-center>Asymptotic Gaussian Efficiency of the Center</a></li><li><a href=#asymptotic-gaussian-efficiency-of-the-median>Asymptotic Gaussian Efficiency of the Median</a></li><li><a href=#asymptotic-gaussian-efficiency-of-the-spread>Asymptotic Gaussian Efficiency of the Spread</a></li><li><a href=#asymptotic-gaussian-efficiency-of-the-median-absolute-deviation>Asymptotic Gaussian Efficiency of the Median Absolute Deviation</a></li><li><a href=#finite-sample-efficiency-of-central-tendency-estimators>Finite-Sample Efficiency of Central Tendency Estimators</a></li><li><a href=#finite-sample-efficiency-of-dispersion-estimators>Finite-Sample Efficiency of Dispersion Estimators</a></li></ul></li></ul></nav></p><h1 id=toolkit>Toolkit</h1><p>This section provides statistical estimators for summarizing a single sample and comparing two samples.</p><h2 id=one-sample-summary>One-Sample Summary</h2><p>Consider a sample $\x$ of $n$ real numbers: $\x = (x_1, x_2, \ldots, x_n)$.
+The toolkit provides four estimators to summarize key properties of the data and provide insights into the data&rsquo;s primary characteristics:</p>$$
+\Center(\x) = \underset{1 \leq i \leq j \leq n}{\Median} \left(\frac{x_i + x_j}{2} \right)
+$$$$
+\Spread(\x) = \underset{1 \leq i < j \leq n}{\Median} |x_i - x_j|
+$$$$
+\Volatility(\x) = \frac{\Spread(\x)}{\left| \Center(\x) \right|}
+$$$$
+\Precision(\x) = \frac{2 \cdot \Spread(\x)}{\sqrt{n}}
+$$<p>One-sample summary statistics work best for unimodal distributions and distributions with low dispersion.</p><p>$\Center(\x)$<sup id=fnref:1><a href=#fn:1 class=footnote-ref role=doc-noteref>1</a></sup> estimates the central (average) value of the distribution.
+For normal distributions, it matches both the mean and the median.
+It outperforms traditional estimators in practical use.
+Compared to $\Mean$, $\Center$ is much more robust (tolerates almost one-third of outliers).
+Compared to $\Median$, $\Center$ is much more efficient and requires $1.5$ times fewer observations to achieve the
+same precision.</p><p>$\Spread(\x)$<sup id=fnref:2><a href=#fn:2 class=footnote-ref role=doc-noteref>2</a></sup> estimates distribution dispersion (variability or scatter).
+It measures the median absolute difference between two random sample elements.
+This measure offers a practical alternative to standard deviation ($\StdDev$) and median absolute deviation ($\MAD$).
+Compared to $\StdDev$, $\Spread$ is more robust (standard deviation breaks with a single extreme value)
+and has comparable efficiency under normality.
+Compared to $\MAD$, $\Spread$ is much more efficient under normality and requires $2.35$ times fewer observations
+to achieve the same precision.</p><p>$\Volatility(\x)$ estimates the relative dispersion of the distribution.
+Convenient to express in percentage: e.g., a value of $0.2$ means $20\%$ relative to $\Center(\x)$.
+$\Volatility$ is scale-invariant, which makes an experiment design more portable.</p><p>$\Precision(\x)$ estimates the distance between two $\Center$ estimations of independent random samples.
+The interval $\Center(\x) \pm \Precision(\x)$ forms a range that contains the true center value with high confidence.
+For even higher confidence, use
+$\Center(\x) \pm 2 \cdot \Precision(\x)$ or
+$\Center(\x) \pm 3 \cdot \Precision(\x)$.</p><p>These estimators build on $\Median(\x)$<sup id=fnref:3><a href=#fn:3 class=footnote-ref role=doc-noteref>3</a></sup>.
+To find the median, $\x$ must first be arranged into a sorted sample<sup id=fnref:4><a href=#fn:4 class=footnote-ref role=doc-noteref>4</a></sup>:
+$(x_{(1)}, \ldots, x_{(n)})$.
+In this ordered sequence, $x_{(1)}$ represents the smallest value and $x_{(n)}$ the largest.
+The median then becomes the middle value of this sorted sample.
+When the sample size is even, the median equals the average of the two middle values:</p>$$
+\Median(\x) = \begin{cases}
+x_{\left((n+1)/2\right)} & \text{if } n \text{ is odd} \\
+\frac{x_{(n/2)} + x_{(n/2+1)}}{2} & \text{if } n \text{ is even}
+\end{cases}
+$$<h2 id=two-sample-summary>Two-Sample Summary</h2><p>Consider a second sample $\y$ of $m$ real numbers: $\y = (y_1, \ldots, y_m)$.
+Estimators to compare $\x$ and $\y$:</p>$$
+\MedShift(\x, \y) = \underset{1 \leq i \leq n,\,\, 1 \leq j \leq m}{\Median} \left(x_i - y_j \right)
+$$$$
+\MedRatio(\x, \y) = \underset{1 \leq i \leq n,\,\, 1 \leq j \leq m}{\Median} \left( \dfrac{x_i}{y_j} \right)
+$$$$
+\MedSpread(\x, \y) = \dfrac{n\Spread(\x) + m\Spread(\y)}{n + m}
+$$$$
+\MedDisparity(\x, \y) = \dfrac{\MedShift(\x, \y)}{\MedSpread(\x, \y)}
+$$<p>These estimators work best for unimodal or narrow distributions, capturing the typical differences between
+$\x$ and $\y$.</p><p>$\MedShift(\x, \y)$<sup id=fnref:5><a href=#fn:5 class=footnote-ref role=doc-noteref>5</a></sup> estimates the median absolute difference between elements of $\x$ and $\y$.
+It answers &ldquo;by how much does $\x$ typically exceed $\y$?&rdquo; in the original units.
+The sign matters: positive means $\x$ is typically larger, negative means $\y$ is typically larger.
+E.g., $\MedShift$ of $-5$ means that in $50\%$ of $(x_i, y_j)$ pairs, $y_j - x_i > 5$.</p><p>$\MedRatio(\x, \y)$<sup id=fnref:6><a href=#fn:6 class=footnote-ref role=doc-noteref>6</a></sup> estimates the median ratio of $\x$ elements to $\y$ elements.
+It answers &ldquo;what&rsquo;s the typical ratio between $\x$ and $\y$?&rdquo; as a multiplier.
+For example, $\MedRatio = 1.2$ means that in $50\%$ of $(x_i, y_j)$ pairs, $x_i$ is larger than $y_j$ by at least $20\%$.
+Express as percentage change: $(\MedRatio - 1) \times 100\%$.
+$\MedRatio$ is scale-invariant, which makes an experiment design more portable.</p><p>$\MedSpread(\x, \y)$ estimates the averaged variability when considering both samples together.
+The measure computes the weighted average of individual spreads, where larger samples contribute more.
+This value primarily serves as a scaling factor for $\MedDisparity$.
+It represents the typical variability in the combined data and works best for distributions with similar dispersion values.</p><p>$\MedDisparity(\x, \y)$<sup id=fnref:7><a href=#fn:7 class=footnote-ref role=doc-noteref>7</a></sup> estimates a normalized absolute difference between $\x$ and $\y$
+expressed in standardized spread units.
+Negative values are treated similarly to $\MedShift(\x, \y)$.
+$\MedDisparity$ is scale-invariant, which makes an experiment design more portable.</p><h1 id=estimators>Estimators</h1><p>This section explains each estimator&rsquo;s key properties, selection rationale, and advantages over traditional methods.</p><h2 id=center>Center</h2>$$
+\Center(\x) = \underset{1 \leq i \leq j \leq n}{\Median} \left(\frac{x_i + x_j}{2} \right)
+$$<p><strong>Practical Recommendations</strong></p><p>$\Center$ provides an initial insight into the magnitude of sample values.
+When $\Volatility$ is small, the whole sample can be approximated by the $\Center$ value.</p><p><strong>Key Facts</strong></p><ul><li>Measures central tendency (the average value)</li><li>Domain: any real numbers</li><li>Equals the <em>Hodges-Lehmann estimator</em> (<a href=https://pragmastat.dev/references/hodges1963/>hodges1963</a>, <a href=https://pragmastat.dev/references/sen1963/>sen1963</a>), renamed to &ldquo;Center&rdquo; for clarity</li><li>Called <em>pseudomedian</em> in some texts because it is consistent with the median for symmetric distributions</li><li>Asymptotic Gaussian efficiency: $\approx 96\%$; finite-sample Gaussian efficiency $> 91\%$</li><li>Asymptotic breakdown point: $\approx 29\%$</li></ul><p><strong>Comparison</strong></p><ul><li>Compared to the <em>mean</em>: more robust (tolerates almost one-third of outliers)
+and has comparable efficiency under normality</li><li>Compared to the <em>median</em>: more efficient under normality and requires $1.5$ times fewer observations for the same precision</li></ul><p><strong>Properties</strong></p>$$
+\Center(\x + k) = \Center(\x) + k
+$$$$
+\Center(k \cdot \x) = k \cdot \Center(\x)
+$$<h2 id=spread>Spread</h2>$$
+\Spread(\x) = \underset{i < j}{\Median} |x_i - x_j|
+$$<p><strong>Practical Recommendations</strong></p><p>$\Spread$ provides an initial insight into the dispersion of the sample values.
+Interpretation: half of $|x_i-x_j|$ is smaller than $\Spread(\x)$, the other half is larger.</p><p><strong>Key Facts</strong></p><ul><li>Measures dispersion (also known as variability or scatter)</li><li>Domain: any real numbers (for $n=1$, it is convenient to use $\Spread(\x) = 0$)</li><li>Equals the <em>Shamos estimator</em> (<a href=https://pragmastat.dev/references/shamos1976/>shamos1976</a>), renamed to &ldquo;Spread&rdquo; for clarity</li><li>Asymptotic Gaussian efficiency: $\approx 86\%$</li><li>Asymptotic breakdown point: $\approx 29\%$ (matches $\Center$ in robustness)</li><li>Asymptotic expected value for the standard normal distribution: $\approx 0.954$</li><li>Not consistent for the standard deviation under normality</li></ul><p><strong>Comparison</strong></p><ul><li>Compared to the <em>standard deviation</em>: more robust (tolerates almost one-third of outliers)
+and has comparable efficiency under normality; more intuitive without requiring knowledge of normal distributions</li><li>Compared to the <em>median absolute deviation</em>: more efficient under normality and requires $\approx 2.35$ times fewer observations for the same precision</li></ul><p><strong>Empirical Rule</strong></p><p>For the standard normal distribution, the asymptotic 68–95–99.7 rule becomes the 66-94-99.6 rule:</p><ul><li>$[\Center(\x) \pm 1 \cdot \Spread(\x)]$ covers $\approx 65.98518\%$ of the distribution</li><li>$[\Center(\x) \pm 2 \cdot \Spread(\x)]$ covers $\approx 94.35758\%$ of the distribution</li><li>$[\Center(\x) \pm 3 \cdot \Spread(\x)]$ covers $\approx 99.57851\%$ of the distribution</li><li>$[\Center(\x) \pm 4 \cdot \Spread(\x)]$ covers $\approx 99.98641\%$ of the distribution</li><li>$[\Center(\x) \pm 5 \cdot \Spread(\x)]$ covers $\approx 99.99982\%$ of the distribution</li></ul><p><strong>Properties</strong></p>$$
+\Spread(\x + k) = \Spread(\x)
+$$$$
+\Spread(k \cdot \x) = |k| \cdot \Spread(\x)
+$$$$
+\Spread(x) \geq 0
+$$<h2 id=volatility>Volatility</h2>$$
+\Volatility(\x) = \frac{\Spread(\x)}{\left| \Center(\x) \right|}
+$$<p><strong>Practical Recommendations</strong></p><p>$\Volatility$ provides a scale-invariant insight into the distribution dispersion normalized by the center value.</p><p>Interpretation examples:</p><ul><li>$\Volatility(\x) = 1\%$: data clusters tightly around $\Center(\x)$ with minimal variation</li><li>$\Volatility(\x) = 10\%$: moderate variation, typical values range from 90% to 110% of center</li><li>$\Volatility(\x) = 100\%$: high variation, values span from near zero to twice the center</li></ul><p><strong>Key Facts</strong></p><ul><li>Measures the relative dispersion of a sample to $\Center(\x)$</li><li>Domain:<ul><li>Mathematical Domain: $Center(\x) \neq 0$</li><li>Logical Domain: all sample elements have the same sign, sample doesn&rsquo;t contain zeros</li><li>Pragmatic Domain: non-negative values allowing up to $29\%$ zeros</li></ul></li><li>Robust alternative to the <em>coefficient of variation</em></li><li>Scale-invariant, which makes an experiment design more portable</li></ul><p><strong>Properties</strong></p>$$
+\Volatility(k \cdot \x) = \Volatility(\x)
+$$$$
+\Volatility(x) \geq 0
+$$<h2 id=precision>Precision</h2>$$
+\Precision(\x) = \frac{2 \cdot \Spread(\x)}{\sqrt{n}}
+$$<p><strong>Practical Recommendations</strong></p><p>The interval $\Center(\x) \pm k \cdot \Precision(\x)$ contains the true center value with probability depending on $k$.
+Select $k \in \{1, 2, 3\}$ based on required confidence.</p><p>Low error costs: $\Center(\x) \pm \Precision(\x)$ provides a reasonable interval.<br>High error costs: repeat the experiment 3–5 times and use $\Center(\x) \pm 2 \cdot \Precision(\x)$.<br>Critical applications: repeat the experiment 7–10 times and use $\Center(\x) \pm 3 \cdot \Precision(\x)$.</p><p><strong>Key Facts</strong></p><ul><li>Measures how much $\Center(\x)$ would fluctuate from sample to sample if samples of the same size
+were repeatedly drawn under the same conditions</li><li>Domain: any real numbers</li><li>Can be perceived as half of a confidence interval with high confidence level</li></ul><p><strong>Properties</strong></p>$$
+\Precision(\x + k) = \Precision(\x)
+$$$$
+\Precision(k \cdot \x) = |k| \cdot \Precision(\x)
+$$$$
+\Precision(\x) \geq 0
+$$<p><strong>Comments on default factor of 2</strong></p><p>Practitioners tend to perceive estimations $a \pm b$ as &ldquo;the value is inside $[a-b; a+b]$&rdquo; ignoring uncertainty.
+The unscaled interval $\Center(x) \pm \Spread(\x)/\sqrt{n}$ covers the true distribution center value only in $\approx 65\%$ of cases.
+To reduce risks of misinterpretation of $\Center(\x) \pm \Precision(\x)$, it is reasonable to use the default factor for $\Precision(\x)$
+to ensure high coverage of such intervals for the true distribution center value.
+For simpler calculations, it&rsquo;s convenient to use natural numbers as scale factors for $\Precision(\x)$.
+The factor of $2$ is chosen since it&rsquo;s the smallest natural number that ensures decent coverage.
+Natural coefficients $k$ produce a standardized discrete precision scale with values of
+$k \cdot \Precision(\x)$ or $2k \cdot \Spread(\x) / \sqrt{n}$.</p><p><strong>Relation between Precision and Confidence Intervals</strong></p><p>In the strict normal model, it&rsquo;s convenient to express precision via the <em>standard error</em> (the standard deviation divided by the square root of sample size).
+The standard error can be scaled to the margin of error (half of a confidence interval) for the given confidence level.
+Choosing between confidence levels — $95\%$, $99\%$, $99.9\%$, or even $89\%$<sup id=fnref:8><a href=#fn:8 class=footnote-ref role=doc-noteref>8</a></sup> — remains arbitrary.
+Practitioners struggle to extract insights from confidence intervals and levels without calculation tools.
+This difficulty leads to frequent misinterpretation because no standard exists for choosing levels.
+Knowing one confidence interval determines all others through constant relationships,
+yet practitioners report two numbers (interval size and confidence level) that are hard to comprehend together.
+A single standardized value would serve practitioners better.</p><p>A standardized value simplifies reporting and improves consistency.
+A memorable definition enables mental calculation without advanced tools.
+Practitioners develop intuition through repeated use.</p><p>$\Precision$ has no direct mapping into traditional confidence intervals.
+Confidence intervals ensure the declared coverage rate only under perfect normality.
+Real data provides no guarantees that a $99\%$ confidence interval actually covers the true value in
+$99\%$ of experiments.
+The table below shows the translation from $\Center(\x) \pm k \cdot \Precision(\x)$ to confidence levels under
+normality:</p><table><thead><tr><th style=text-align:right>n</th><th style=text-align:right>k=1</th><th style=text-align:right>k=2</th><th style=text-align:right>k=3</th></tr></thead><tbody><tr><td style=text-align:right>2</td><td style=text-align:right>0.78364</td><td style=text-align:right>0.88862</td><td style=text-align:right>0.92534</td></tr><tr><td style=text-align:right>3</td><td style=text-align:right>0.88660</td><td style=text-align:right>0.96741</td><td style=text-align:right>0.98507</td></tr><tr><td style=text-align:right>4</td><td style=text-align:right>0.89523</td><td style=text-align:right>0.98145</td><td style=text-align:right>0.99413</td></tr><tr><td style=text-align:right>5</td><td style=text-align:right>0.88560</td><td style=text-align:right>0.97826</td><td style=text-align:right>0.99282</td></tr><tr><td style=text-align:right>6</td><td style=text-align:right>0.90069</td><td style=text-align:right>0.98674</td><td style=text-align:right>0.99675</td></tr><tr><td style=text-align:right>7</td><td style=text-align:right>0.90220</td><td style=text-align:right>0.98965</td><td style=text-align:right>0.99803</td></tr><tr><td style=text-align:right>8</td><td style=text-align:right>0.90802</td><td style=text-align:right>0.99175</td><td style=text-align:right>0.99861</td></tr><tr><td style=text-align:right>9</td><td style=text-align:right>0.91230</td><td style=text-align:right>0.99368</td><td style=text-align:right>0.99917</td></tr><tr><td style=text-align:right>10</td><td style=text-align:right>0.91461</td><td style=text-align:right>0.99483</td><td style=text-align:right>0.99946</td></tr><tr><td style=text-align:right>11</td><td style=text-align:right>0.91687</td><td style=text-align:right>0.99556</td><td style=text-align:right>0.99960</td></tr><tr><td style=text-align:right>12</td><td style=text-align:right>0.91886</td><td style=text-align:right>0.99626</td><td style=text-align:right>0.99973</td></tr><tr><td style=text-align:right>13</td><td style=text-align:right>0.92022</td><td style=text-align:right>0.99678</td><td style=text-align:right>0.99980</td></tr><tr><td style=text-align:right>14</td><td style=text-align:right>0.92156</td><td style=text-align:right>0.99714</td><td style=text-align:right>0.99984</td></tr><tr><td style=text-align:right>15</td><td style=text-align:right>0.92291</td><td style=text-align:right>0.99748</td><td style=text-align:right>0.99988</td></tr><tr><td style=text-align:right>16</td><td style=text-align:right>0.92384</td><td style=text-align:right>0.99770</td><td style=text-align:right>0.99991</td></tr><tr><td style=text-align:right>17</td><td style=text-align:right>0.92447</td><td style=text-align:right>0.99796</td><td style=text-align:right>0.99993</td></tr><tr><td style=text-align:right>18</td><td style=text-align:right>0.92534</td><td style=text-align:right>0.99813</td><td style=text-align:right>0.99994</td></tr><tr><td style=text-align:right>19</td><td style=text-align:right>0.92629</td><td style=text-align:right>0.99828</td><td style=text-align:right>0.99995</td></tr><tr><td style=text-align:right>20</td><td style=text-align:right>0.92691</td><td style=text-align:right>0.99841</td><td style=text-align:right>0.99996</td></tr><tr><td style=text-align:right>21</td><td style=text-align:right>0.92720</td><td style=text-align:right>0.99853</td><td style=text-align:right>0.99997</td></tr><tr><td style=text-align:right>22</td><td style=text-align:right>0.92780</td><td style=text-align:right>0.99864</td><td style=text-align:right>0.99998</td></tr><tr><td style=text-align:right>23</td><td style=text-align:right>0.92817</td><td style=text-align:right>0.99871</td><td style=text-align:right>0.99998</td></tr><tr><td style=text-align:right>24</td><td style=text-align:right>0.92889</td><td style=text-align:right>0.99879</td><td style=text-align:right>0.99998</td></tr><tr><td style=text-align:right>25</td><td style=text-align:right>0.92916</td><td style=text-align:right>0.99883</td><td style=text-align:right>0.99998</td></tr><tr><td style=text-align:right>26</td><td style=text-align:right>0.92945</td><td style=text-align:right>0.99892</td><td style=text-align:right>0.99999</td></tr><tr><td style=text-align:right>27</td><td style=text-align:right>0.92979</td><td style=text-align:right>0.99897</td><td style=text-align:right>0.99999</td></tr><tr><td style=text-align:right>28</td><td style=text-align:right>0.93006</td><td style=text-align:right>0.99902</td><td style=text-align:right>0.99999</td></tr><tr><td style=text-align:right>29</td><td style=text-align:right>0.93029</td><td style=text-align:right>0.99907</td><td style=text-align:right>0.99999</td></tr><tr><td style=text-align:right>30</td><td style=text-align:right>0.93051</td><td style=text-align:right>0.99909</td><td style=text-align:right>0.99999</td></tr></tbody></table><h2 id=medshift>MedShift</h2>$$
+\MedShift(\x, \y) = \underset{1 \leq i \leq n,\,\, 1 \leq j \leq m}{\Median} \left(x_i - y_j \right)
+$$<p><strong>Practical Recommendations</strong></p><p>$\MedShift$ provides an initial insight into the absolute difference between elements of two samples.
+Interpretation: half of $x_i-y_j$ is smaller than $\MedShift(\x, \y)$, the other half is larger.
+For samples with small $\Volatility$, $\MedShift(\x, \y)$ approximates pairwise differences $x_i - y_j$.</p><p><strong>Key Facts</strong></p><ul><li>Measures the median absolute difference between elements of two samples</li><li>Domain: any real numbers</li><li>Equals the <em>Hodges-Lehmann estimator</em> for two samples (<a href=https://pragmastat.dev/references/hodges1963/>hodges1963</a>)</li></ul><p><strong>Properties</strong></p>$$
+\MedShift(\x + k_x, \y + k_y) = \MedShift(\x, \y) + k_x\!-\!k_y
+$$$$
+\MedShift(k \cdot \x, k \cdot \y) = k \cdot \MedShift(\x, \y)
+$$$$
+\MedShift(\x, \y) = - \MedShift(\y, \x)
+$$<h2 id=medratio>MedRatio</h2>$$
+\MedRatio(\x, \y) = \underset{1 \leq i \leq n,\,\, 1 \leq j \leq m}{\Median} \left( \dfrac{x_i}{y_j} \right)
+$$<p><strong>Practical Recommendations</strong></p><p>$\MedRatio$ provides an initial insight into the ratio between elements of two samples expressed as a multiplicative factor.
+It answers &ldquo;how many times larger is $\x$ compared to $\y$?&rdquo;
+E.g., $\MedRatio = 2.0$ means that for $50\%$ of pairs $(x_i, y_j)$, $x_i$ is at least twice as large as $y_j$.</p><p>$\MedRatio$ functions as a division operator: $\MedRatio(\x, \y)$ computes the typical ratio $\x / \y$.
+Results convert to percentage differences as $(\MedRatio - 1) \times 100\%$.</p><p><strong>Key Facts</strong></p><ul><li>Measures the median ratio between elements of two samples</li><li>Domain: $y_j > 0$</li><li>Second sample $y$ is always the baseline</li><li>In general, $\MedRatio(\x, \y) \neq 1 / \MedRatio(\y, \x)$ (e.g., $x=(1, 100)$, $y=(1, 10)$)</li></ul><p><strong>Properties</strong></p>$$
+\MedRatio(k_x \cdot \x, k_y \cdot \y) = \frac{k_x}{k_y} \cdot \MedRatio(\x, \y)
+$$<h2 id=medspread>MedSpread</h2>$$
+\MedSpread(\x, \y) = \dfrac{n\Spread(\x) + m\Spread(\y)}{n + m}
+$$<p><strong>Practical Recommendations</strong></p><p>$\MedSpread$ primarily serves as a scaling factor for $\MedDisparity$.
+It represents the combined dispersion of both samples, weighted by sample size.
+Works best for distributions with similar dispersion values.</p><p><strong>Key Facts</strong></p><ul><li>Measures average dispersion across two samples</li><li>Domain: any real numbers</li><li>Provides a robust alternative to the pooled standard deviation</li></ul><p><strong>Properties</strong></p>$$
+\MedSpread(\x, \x) = \Spread(\x)
+$$$$
+\MedSpread(k_1 \cdot \x, k_2 \cdot \x) = \frac{ |k_1| + |k_2| }{2} \cdot \Spread(\x)
+$$$$
+\MedSpread(\x, \y) = \MedSpread(\y, \x)
+$$$$
+\MedSpread(k \cdot \x, k \cdot \y) = |k| \cdot \MedSpread(\x, \y)
+$$<h2 id=meddisparity>MedDisparity</h2>$$
+\MedDisparity(\x, \y) = \dfrac{\MedShift(\x, \y)}{\MedSpread(\x, \y)}
+$$<p><strong>Practical Recommendations</strong></p><p>$\MedDisparity$ provides a scale-invariant insight into the absolute difference between elements of two samples,
+expressed in standardized spread units.</p><p><strong>Key Facts</strong></p><ul><li>Measures a normalized absolute difference between $\x$ and $\y$ expressed in standardized spread units</li><li>Domain: $\MedSpread(\x, \y) > 0$ (at least $50\%$ of $|x_i-x_j|$ and $50\%$ of $|y_i-y_j|$ are non-zeros)</li><li>Expresses the <em>effect size</em>, renamed to &ldquo;Disparity&rdquo; for clarity</li><li>Scale-invariant, which makes an experiment design more portable</li></ul><p><strong>Comparison</strong></p><ul><li>Compared to <em>Cohen&rsquo;s d</em>: more robust while maintaining efficiency under normality</li></ul><p><strong>Properties</strong></p>$$
+\MedDisparity(\x + k, \y + k) = \MedDisparity(\x, \y)
+$$$$
+\MedDisparity(k\!\cdot\!\x, k\!\cdot\!\y) = \operatorname{sign}(k)\!\cdot\!\MedDisparity(\x, \y)
+$$$$
+\MedDisparity(\x, \y) = -\MedDisparity(\y, \x)
+$$<h1 id=studies>Studies</h1><p>This section analyzes the estimators&rsquo; properties using mathematical proofs and Monte Carlo simulations.
+Most proofs are adopted from various textbooks and papers, but only the most essential references are provided.</p><p>Unlike the main part of the manual, studies require knowledge of classic statistical methods.
+Well-known facts and commonly accepted notation are used without special introduction.
+The studies provide a deep dive into properties of considered estimators for practitioners interested in rigorous proofs and results of numerical simulations.</p><h2 id=asymptotic-gaussian-expected-value-of-the-spread>Asymptotic Gaussian Expected Value of the Spread</h2><p>This study establishes that $\Spread$ has expected value $\sqrt{2}\,\Phi^{-1}(0.75) \approx 0.954$ under standard normal data as sample size increases.</p><p>The key insight is that pairwise absolute differences $|X_i - X_j|$ from normal data converge to a known distribution.
+Since $\Spread$ takes the median of these differences, its asymptotic expectation equals the population median of $|X_1 - X_2|$ where $X_1, X_2 \stackrel{\mathrm{iid}}{\sim} \mathcal{N}(0, 1)$.</p><p>Consider $X_1, \ldots, X_n \stackrel{\mathrm{iid}}{\sim} \mathcal{N}(0, 1)$.
+For any fixed $i \neq j$, the difference $X_i - X_j$ has mean 0 and variance</p>$$
+\Var[X_i - X_j] = \Var[X_i] + \Var[X_j] = 1 + 1 = 2
+$$<p>because $X_i$ and $X_j$ are independent. Therefore</p>$$
+X_i - X_j \sim \mathcal{N}(0, 2)
+$$<p>Define $W = (X_i - X_j)/\sqrt{2} \sim \mathcal{N}(0, 1)$ and $D = |X_i - X_j| = \sqrt{2}\,|W|$.
+The cumulative distribution function of $D$ for $t \geq 0$ is</p>$$
+\Pr[D \leq t]
+= \Pr\bigl[|W| \leq t/\sqrt{2}\bigr]
+= 2\Phi\bigl(t/\sqrt{2}\bigr) - 1
+$$<p>where $\Phi$ denotes the standard normal cumulative distribution function.
+The population median $m$ of $D$ satisfies</p>$$
+2\Phi\bigl(m/\sqrt{2}\bigr) - 1 = \tfrac{1}{2}
+$$<p>Solving for $m$ yields</p>$$
+m = \sqrt{2}\,\Phi^{-1}(0.75)
+$$<p>The multiset of gaps $\{|X_i - X_j| : i < j\}$ forms a bounded-kernel U-statistic of degree 2.
+U-statistic consistency results imply that its empirical distribution converges almost surely to the law of $D$.
+The sample median of pairwise differences thus converges in probability to $m$.
+Convergence in probability plus uniform integrability yields convergence of expectations:</p>$$
+\lim_{n \to \infty} \E\bigl[\Spread(X_1, \ldots, X_n)\bigr]
+= \sqrt{2}\,\Phi^{-1}(0.75)
+$$<p>or</p>$$
+\lim_{n \to \infty} \E\bigl[\Spread(X_1, \ldots, X_n)\bigr]
+\approx 0.953\,873
+$$<h2 id=asymptotic-gaussian-efficiency-of-the-center>Asymptotic Gaussian Efficiency of the Center</h2><p>This study shows that $\Center$ achieves $3/\pi \approx 95.5\%$ efficiency relative to the sample mean under normality.
+This high efficiency allows $\Center$ to handle outliers while maintaining near-optimal performance on normal data.</p><p>The analysis uses U-statistic theory to derive the asymptotic distribution of $\Center$ under Gaussian data.
+Let</p>$$
+X_1, \ldots, X_n \stackrel{\mathrm{iid}}{\sim} \mathcal{N}(\mu, \sigma^2), \qquad n \geq 2,\; \sigma > 0
+$$<p>$\Center(\x)$ has translation invariance, so setting $\mu = 0$ preserves generality.
+The Walsh averages are</p>$$
+W_{ij} = \frac{X_i + X_j}{2}, \qquad 1 \leq i \leq j \leq n
+$$<p>Since $X_i + X_j \sim \mathcal{N}(0, 2\sigma^2)$, it follows that</p>$$
+W_{ij} \sim \mathcal{N}\bigl(0, \sigma^2/2\bigr), \qquad
+f_W(0) = \frac{1}{\sigma\sqrt{\pi}}
+$$<p>The estimator $\Center(\x)$ equals the sample median of the $\binom{n+1}{2}$ Walsh averages.
+As a U-quantile of degree two, it satisfies</p>$$
+0 = \frac{2}{n(n+1)}\sum_{1 \leq i \leq j \leq n}
+\Bigl\{\mathbf{1}\{W_{ij} \leq \Center(\x)\} - \tfrac{1}{2}\Bigr\}
+$$<p>U-quantile theory <a href=https://pragmastat.dev/references/sen1963/>sen1963</a> provides the linear expansion</p>$$
+\sqrt{n}\,\Center(\x) = \frac{2}{f_W(0)}
+\frac{1}{\sqrt{n}}\sum_{i=1}^{n}\psi(X_i) + o_{\Pr}(1)
+$$<p>where</p>$$
+\psi(x) = \Pr\Bigl\{\tfrac{x+X_2}{2} \leq 0\Bigr\} - \tfrac{1}{2}
+= \tfrac{1}{2} - \Phi\Bigl(\tfrac{x}{\sigma}\Bigr)
+$$<p>and $\Phi$ is the standard normal cumulative distribution function.
+Since $X_1/\sigma \sim \mathcal{N}(0, 1)$,</p>$$
+\Var\bigl[\psi(X_1)\bigr] = \int_{-\infty}^{\infty} \Bigl(\tfrac{1}{2} - \Phi(u)\Bigr)^2\varphi(u)\,du
+= \frac{1}{12}
+$$<p>with $\varphi$ the standard normal probability density function.
+Substituting $\Var[\psi(X_1)]$ and $f_W(0)$ yields</p>$$
+\Var\bigl[\sqrt{n}\,\Center(\x)\bigr]
+= \frac{4 \cdot \frac{1}{12}}{\bigl(1/(\sigma\sqrt{\pi})\bigr)^2}
+= \frac{\pi\sigma^2}{3}
+$$<p>so</p>$$
+\sqrt{n}\,\Center(\x) \xrightarrow{d}
+\mathcal{N}\Bigl(0, \tfrac{\pi\sigma^2}{3}\Bigr),
+\qquad n \to \infty
+$$<p>The sample mean has asymptotic variance $\sigma^2/n$, hence the <em>asymptotic Gaussian efficiency</em> of $\Center$ is</p>$$
+\eff_{\mathcal{N},\infty}(\Center)
+= \frac{\sigma^2/n}{\pi\sigma^2/(3n)}
+= \frac{3}{\pi}
+\approx 0.954\,930
+$$<p>Thus matching the mean’s precision under normality requires only $1/0.955\approx1.05$ times as many observations, a negligible price for the Center’s $29\%$ breakdown point and much stronger resistance to outliers.</p><h2 id=asymptotic-gaussian-efficiency-of-the-median>Asymptotic Gaussian Efficiency of the Median</h2><p>This study shows that the sample median achieves only $2/\pi \approx 63.7\%$ efficiency relative to the sample mean under normality.</p><p>The analysis applies classical asymptotic theory for sample quantiles to derive the limiting distribution of the median under Gaussian data.
+Consider</p>$$
+X_1, \ldots, X_n \stackrel{\mathrm{iid}}{\sim} \mathcal{N}(\mu, \sigma^2), \qquad n \geq 2,\; \sigma > 0
+$$<p>Since the sample median is translation invariant, set $\mu = 0$ without loss of generality.
+Write</p>$$
+M_n = \Median(X_1, \ldots, X_n)
+$$<p>For any continuous distribution with density $f$ positive at its median $\theta$, classical theory (<a href=https://pragmastat.dev/references/sidak1999/>sidak1999</a>, <a href=https://pragmastat.dev/references/serfling2009/>serfling2009</a>) gives</p>$$
+\sqrt{n}\,(M_n - \theta) \xrightarrow{d}
+\mathcal{N}\Bigl(0, \frac{1}{4f(\theta)^2}\Bigr)
+$$<p>In the normal case $\theta = 0$ and</p>$$
+f(0) = \frac{1}{\sigma\sqrt{2\pi}}
+$$<p>so the asymptotic variance becomes</p>$$
+\frac{1}{4f(0)^2}
+= \frac{1}{4}\,\bigl(\sigma\sqrt{2\pi}\bigr)^2
+= \frac{\pi\sigma^2}{2}
+$$<p>Hence</p>$$
+\sqrt{n}\,M_n \xrightarrow{d}
+\mathcal{N}\Bigl(0, \frac{\pi\sigma^2}{2}\Bigr),
+\qquad n \to \infty
+$$<p>The sample mean has asymptotic variance $\sigma^2/n$, so the <em>asymptotic Gaussian efficiency</em> of the median is</p>$$
+\eff_{\mathcal{N},\infty}(\Median)
+= \frac{\sigma^2/n}{\pi\sigma^2/(2n)}
+= \frac{2}{\pi}
+\approx 0.637
+$$<p>Thus achieving the same precision as the mean under normality requires roughly $1/0.637 \approx 1.57$ times as many observations when using the median.
+This large efficiency loss shows why we prefer the Hodges–Lehmann $\Center$ estimator — which attains about $95.5\%$ efficiency — whenever data are roughly Gaussian but may include outliers.</p><h2 id=asymptotic-gaussian-efficiency-of-the-spread>Asymptotic Gaussian Efficiency of the Spread</h2><p>This study shows that $\Spread$ achieves approximately $86\%$ efficiency relative to the sample standard deviation under normality.</p><p>The analysis uses U-statistic theory to derive the asymptotic distribution of $\Spread$ as a scale estimator under Gaussian data.
+Consider</p>$$
+X_1, \ldots, X_n \stackrel{\mathrm{iid}}{\sim} \mathcal{N}(\mu, \sigma^2), \qquad n \geq 2,\; \sigma > 0
+$$<p>Since $\Spread(\x) = \Median |X_i - X_j|$ is translation invariant, set $\mu = 0$ without loss of generality and write</p>$$
+R_n = \Spread(\x)
+$$$$
+m_0 = \sqrt{2}\,\Phi^{-1}(0.75)\,\sigma \approx 0.954\,\sigma
+$$<p>Here $m_0$ denotes the population median of $|X_i - X_j|$ when $X_i \sim \mathcal{N}(0, \sigma^2)$.
+Letting $D = |X_1 - X_2|$, its density is</p>$$
+f_D(t) = \frac{1}{\sigma\sqrt{\pi}}\,
+\exp\Bigl(-\frac{t^2}{4\sigma^2}\Bigr), \qquad t \geq 0
+$$<p>with $f_D(m_0) = \sigma^{-1}\pi^{-1/2}\exp(-\Phi^{-1}(0.75)^2/2)$.
+Treating $R_n$ as a degree-two U-quantile and applying asymptotic theory <a href=https://pragmastat.dev/references/sen1963/>sen1963</a> yields</p>$$
+\sqrt{n}\,\bigl(R_n - m_0\bigr)
+\xrightarrow{d}
+\mathcal{N}\Bigl(0, \frac{4\,\Var[\psi(X_1)]}{f_D(m_0)^2}\Bigr)
+$$<p>where</p>$$
+\begin{aligned}
+\psi(x) &= \Pr\bigl\{|x - X_2| \leq m_0\bigr\} - \tfrac{1}{2}\\
+&= \Phi\Bigl(\tfrac{x + m_0}{\sigma}\Bigr)
+- \Phi\Bigl(\tfrac{x - m_0}{\sigma}\Bigr)
+- \tfrac{1}{2}
+\end{aligned}
+$$<p>Numerical evaluation of the integral</p>$$
+\Var[\psi(X_1)]
+= \int_{-\infty}^{\infty}\psi(x)^2\,
+\frac{e^{-x^2/(2\sigma^2)}}{\sigma\sqrt{2\pi}}\;dx
+$$<p>yields $\Var[\psi(X_1)] \approx 0.0266$.
+Substituting this value and $f_D(m_0)$ into the variance formula gives</p>$$
+\Var\bigl[\sqrt{n}\,R_n\bigr]
+\approx 0.527\,\sigma^2
+$$<p>Because $R_n$ is <em>not</em> a consistent estimator of $\sigma$, comparisons with the sample standard deviation $\StdDev(\x)$ use the rescaled statistic</p>$$
+\widehat{\sigma}_{\Spread} = \frac{R_n}{m_0}
+$$<p>which <em>is</em> consistent.
+Dividing the variance above by the constant $m_0^2$ gives</p>$$
+\Var\bigl[\sqrt{n}\,\widehat{\sigma}_{\Spread}\bigr]
+\approx 0.579\,\sigma^2
+$$<p>The optimal Gaussian scale estimator $\StdDev(\x)$ has asymptotic variance $\sigma^2/(2n)$, so the <em>asymptotic Gaussian efficiency</em> of the (scaled) $\Spread$ is</p>$$
+\eff_{\mathcal{N},\infty}(\Spread)
+= \frac{\sigma^2/(2n)}{0.579\,\sigma^2/n}
+\approx 0.864
+$$<p>One needs roughly $1/0.864 \approx 1.16$ times as many observations to match the precision of the sample standard deviation when the data are exactly normal.
+In exchange, $\Spread$ inherits a $29\%$ breakdown point from its U-quantile construction, so moderate extra data provide a substantial increase in robustness.</p><h2 id=asymptotic-gaussian-efficiency-of-the-median-absolute-deviation>Asymptotic Gaussian Efficiency of the Median Absolute Deviation</h2><p>This study shows that the median absolute deviation (MAD) achieves only about $37\%$ efficiency relative to the sample standard deviation under normality.</p><p>The analysis derives the asymptotic distribution of the MAD under Gaussian data using classical theory for sample medians.
+Consider</p>$$
+X_1, \ldots, X_n \stackrel{\mathrm{iid}}{\sim} \mathcal{N}(\mu, \sigma^2), \qquad n \geq 2,\; \sigma > 0
+$$<p>Since both the sample median and the MAD are translation invariant, set $\mu = 0$ without loss of generality and write</p>$$
+\MAD_n = \Median\Bigl(|X_i - \Median(\x)| : i = 1, \ldots, n\Bigr)
+$$<p>For a standard normal distribution, the population MAD equals</p>$$
+m_0 = \Phi^{-1}(0.75)\,\sigma = c_0\,\sigma
+$$$$
+c_0 = \Phi^{-1}(0.75) \approx 0.674
+$$<p>Dividing the empirical MAD by this constant gives a consistent scale estimator:</p>$$
+\widehat{\sigma}_{\MAD} = \frac{\MAD_n}{c_0}
+$$<p>To find its large-sample variance, observe that $Y_i = |X_i|$ has density</p>$$
+g(y) = \frac{2}{\sigma\sqrt{2\pi}}
+\exp\Bigl(-\frac{y^2}{2\sigma^2}\Bigr), \qquad y \geq 0
+$$<p>whose median is $m_0$.
+A classical result for sample medians of independent draws with continuous positive density at the median (<a href=https://pragmastat.dev/references/sidak1999/>sidak1999</a>, <a href=https://pragmastat.dev/references/serfling2009/>serfling2009</a>) states</p>$$
+\sqrt{n}\bigl(\Median(Y_1, \ldots, Y_n) - m_0\bigr)
+\xrightarrow{d}
+\mathcal{N}\Bigl(0, \tfrac{1}{4g(m_0)^2}\Bigr)
+$$<p>Since</p>$$
+g(m_0) = \frac{2}{\sigma\sqrt{2\pi}}\,
+\exp\Bigl(-\frac{c_0^2}{2}\Bigr)
+$$<p>the asymptotic variance of $\sqrt{n}\,\MAD_n$ is</p>$$
+\Var\bigl[\sqrt{n}\,\MAD_n\bigr]
+= \frac{1}{4g(m_0)^2}
+= \frac{\pi\sigma^2\exp(c_0^2)}{8}
+$$<p>Scaling by $1/c_0$ gives the variance of the consistent estimator:</p>$$
+\Var\bigl[\sqrt{n}\,\widehat{\sigma}_{\MAD}\bigr]
+= \frac{\pi\sigma^2\exp(c_0^2)}{8\,c_0^2}
+$$<p>The optimal Gaussian scale estimator is the sample standard deviation.
+It has asymptotic variance of $\sigma^2/(2n)$.
+The <em>asymptotic Gaussian efficiency</em> of the (scaled) MAD is therefore</p>$$
+\eff_{\mathcal{N},\infty}(\MAD)
+= \frac{\sigma^2/(2n)}{\pi\sigma^2\exp(c_0^2)/(8c_0^2n)}
+= \frac{4c_0^2}{\pi\,\exp(c_0^2)}
+$$<p>This gives the result:</p>$$
+\eff_{\mathcal{N},\infty}(\MAD) \approx 0.367\,523
+$$<p>Achieving the same precision as the sample standard deviation under normality requires roughly $1/0.368 \approx 2.7$ times as many observations when using the MAD.</p><h2 id=finite-sample-efficiency-of-central-tendency-estimators>Finite-Sample Efficiency of Central Tendency Estimators</h2><p>This study presents finite-sample efficiency values for $\Center$ and shows how it performs better than $\Median$
+across small and medium sample sizes.</p><p>The previous studies established asymptotic efficiency values — the limiting behavior
+as sample size approaches infinity.
+For the Gaussian distribution, these asymptotic values are:</p><ul><li>$\Mean$: $100\%$ (the most efficient estimator under normality)</li><li>$\Center$: $3/\pi \approx 95.5\%$</li><li>$\Median$: $2/\pi \approx 63.7\%$</li></ul><p>Asymptotic theory provides excellent approximations for large samples but may be inaccurate for small $n$.
+Finite-sample efficiency captures the actual precision when working with limited data.</p><p><strong>Efficiency and Sample Size Requirements</strong></p><p>Efficiency quantifies the variance ratio between estimators.
+For two estimators $T_1$ and $T_2$ applied to the same distribution:</p>$$
+\eff(T_1 \text{ relative to } T_2) = \frac{\Var[T_2]}{\Var[T_1]}
+$$<p>This ratio directly translates to sample size requirements.
+An estimator with $80\%$ efficiency needs $100/80 = 1.25$ times as many observations
+to achieve the same precision as the reference estimator.
+The $\Median$ with its $63.7\%$ asymptotic efficiency requires roughly $1.57$ times more data
+than the $\Mean$ under normality.</p><p><strong>Monte Carlo Estimation of Finite-Sample Efficiency</strong></p><p>Numerical simulation provides exact efficiency values for any sample size.
+The procedure follows these steps:</p><ol><li><strong>Generate samples</strong>: Draw $m$ independent samples of size $n$ from the standard normal distribution</li><li><strong>Calculate estimators</strong>: Compute both estimators for each sample</li><li><strong>Measure dispersion</strong>: Calculate the sample variance of the $m$ estimator values</li><li><strong>Compute efficiency</strong>: Take the variance ratio</li></ol><p>The simulation must balance computational cost against precision.
+Larger $m$ reduces Monte Carlo error but increases computation time.
+For efficiency estimation, $m = 10^6$ iterations achieve enough precision.</p><p><strong>Finite-Sample Results</strong></p><p>The simulation reveals how efficiency evolves from small to moderate sample sizes.</p><p>The figure below shows the Gaussian efficiency curves for $n \in \{3, \ldots, 100\}$ based on $m = 10^6$ Monte Carlo iterations
+(dotted lines show asymptotic values):</p><div class="flex my-7 justify-center"><a class="img-light hidden" href=/img/efficiency-central-tendency_light.png target=_blank alt=efficiency-central-tendency><img class=rounded-lg src=/img/efficiency-central-tendency_light.png width=800>
+</a><a class="img-dark hidden" href=/img/efficiency-central-tendency_dark.png target=_blank alt=efficiency-central-tendency><img class=rounded-lg src=/img/efficiency-central-tendency_dark.png width=800></a></div><p><strong>Key Observations</strong></p><ol><li><p><strong>Small sample behavior</strong>: For $n = 3$, $\Center$ achieves $97.9\%$ efficiency while $\Median$ drops to $74.3\%$.
+Even at extreme small samples, $\Center$ maintains above $91\%$ efficiency throughout.</p></li><li><p><strong>Convergence patterns</strong>: The $\Center$ estimator reaches $94\%$ efficiency by $n = 15$
+and stabilizes above $95\%$ for $n \geq 50$.
+The $\Median$ oscillates between $63.5\%$ and $68\%$ across all sample sizes,
+never approaching the efficiency of $\Center$.</p></li><li><p><strong>Practical advantage</strong>: For typical applications ($n = 20$ to $50$), $\Center$ maintains $94-95\%$ efficiency.
+This represents only a $5-6\%$ penalty compared to $\Mean$, while $\Median$ suffers a $35-37\%$ penalty.</p></li></ol><p>The toolkit&rsquo;s $\Center$ estimator performs much better than $\Median$
+while sacrificing minimal efficiency compared to the non-robust $\Mean$.</p><h2 id=finite-sample-efficiency-of-dispersion-estimators>Finite-Sample Efficiency of Dispersion Estimators</h2><p>This study presents finite-sample efficiency values for $\Spread$ and demonstrates its consistent superiority over
+the <em>standard deviation</em> $\StdDev$ and the <em>median absolute deviation</em> $\MAD$ across small and medium sample sizes.</p><p>The previous studies established asymptotic efficiency values for dispersion estimators under the Gaussian distribution.
+These asymptotic values are:</p><ul><li>$\StdDev$: $100\%$ (the most efficient estimator under normality)</li><li>$\Spread$: $\approx 86.4\%$</li><li>$\MAD$: $\approx 36.8\%$</li></ul><p>The asymptotic values provide excellent approximations for large samples but may not accurately reflect performance
+with limited data.
+Understanding actual efficiency at practical sample sizes guides estimator selection from the toolkit.</p><p><strong>Efficiency Measurement for Dispersion Estimators</strong></p><p>Dispersion estimators face a variance-bias trade-off: different estimators have different expected values
+under the same distribution.
+To compare their variability fairly, the simulation normalizes each estimator by its expected value.
+This normalization eliminates bias differences and focuses purely on variance comparison.</p><p>The procedure follows these steps:</p><ol><li><strong>Generate samples</strong>: Draw $m$ independent samples of size $n$ from the standard normal distribution</li><li><strong>Calculate estimators</strong>: Compute $\StdDev$, $\Spread$, and $\MAD$ for each sample</li><li><strong>Calculate normalized variance</strong>: for each set of estimations, calculate the variance and divide by the mean value to align estimator biases</li><li><strong>Compute efficiency</strong>: Take the variance ratio relative to $\StdDev$</li></ol><p>This approach ensures fair comparison by measuring how much each estimator varies around its own expected value.
+The simulation uses $m = 10^6$ iterations to achieve sufficient precision.</p><p><strong>Results and Analysis</strong></p><p>The simulation covers sample sizes $n \in \{3, \ldots, 100\}$ with efficiency computed relative to standard deviation.</p><p>The below figure shows the Gaussian efficiency curves based on $10^6$ Monte Carlo iterations
+(dotted lines show asymptotic values):</p><div class="flex my-7 justify-center"><a class="img-light hidden" href=/img/efficiency-dispersion_light.png target=_blank alt=efficiency-dispersion><img class=rounded-lg src=/img/efficiency-dispersion_light.png width=800>
+</a><a class="img-dark hidden" href=/img/efficiency-dispersion_dark.png target=_blank alt=efficiency-dispersion><img class=rounded-lg src=/img/efficiency-dispersion_dark.png width=800></a></div><p><strong>Key Observations</strong></p><ol><li><p><strong>Superior efficiency</strong>: $\Spread$ consistently outperforms $\MAD$ by a factor of two across all sample sizes.
+At $n = 20$, $\Spread$ achieves $81.4\%$ efficiency while $\MAD$ reaches only $39.0\%$.</p></li><li><p><strong>Practical implications</strong>: For typical sample sizes ($n = 20$ to $50$), $\Spread$ maintains $81-84\%$ efficiency.
+This $16-19\%$ penalty compared to $\StdDev$ represents a reasonable trade-off for robustness.</p></li><li><p><strong>Small sample behavior</strong>: $\Spread$ shows a characteristic dip for $n = 5-8$ (dropping to $74\%$) before recovering.
+Even at its worst, $\Spread$ remains twice as efficient as $\MAD$.</p></li></ol><p>$\Spread$ from the toolkit provides a substantial efficiency advantage
+over $\MAD$ while maintaining reasonable performance compared to the non-robust standard deviation.
+This efficiency advantage, combined with its robustness properties, makes $\Spread$ the preferred choice
+for dispersion estimation in practical applications.</p><div class=footnotes role=doc-endnotes><hr><ol><li id=fn:1><p>Also known as the <em>Hodges&ndash;Lehmann</em> location estimator, see <a href=https://pragmastat.dev/references/hodges1963/>hodges1963</a>, <a href=https://pragmastat.dev/references/sen1963/>sen1963</a>&#160;<a href=#fnref:1 class=footnote-backref role=doc-backlink>&#8617;&#xfe0e;</a></p></li><li id=fn:2><p>Also known as the <em>Shamos</em> scale estimator, see <a href=https://pragmastat.dev/references/shamos1976/>shamos1976</a>&#160;<a href=#fnref:2 class=footnote-backref role=doc-backlink>&#8617;&#xfe0e;</a></p></li><li id=fn:3><p>Also known as <em>sample median</em>&#160;<a href=#fnref:3 class=footnote-backref role=doc-backlink>&#8617;&#xfe0e;</a></p></li><li id=fn:4><p>Also known as <em>order statistics</em>&#160;<a href=#fnref:4 class=footnote-backref role=doc-backlink>&#8617;&#xfe0e;</a></p></li><li id=fn:5><p>Also known as the <em>Hodges&ndash;Lehmann shift estimator</em>&#160;<a href=#fnref:5 class=footnote-backref role=doc-backlink>&#8617;&#xfe0e;</a></p></li><li id=fn:6><p>Inspired by the <em>Hodges&ndash;Lehmann estimator</em>&#160;<a href=#fnref:6 class=footnote-backref role=doc-backlink>&#8617;&#xfe0e;</a></p></li><li id=fn:7><p>A robust alternative to traditional effect size measures like Cohen&rsquo;s $d$&#160;<a href=#fnref:7 class=footnote-backref role=doc-backlink>&#8617;&#xfe0e;</a></p></li><li id=fn:8><p>See <a href=https://github.com/easystats/bayestestR/discussions/250>https://github.com/easystats/bayestestR/discussions/250</a>&#160;<a href=#fnref:8 class=footnote-backref role=doc-backlink>&#8617;&#xfe0e;</a></p></li></ol></div></div></div><script>(()=>{var t=document.getElementById("theme-toggle-system-icon"),n=document.getElementById("theme-toggle-dark-icon"),s=document.getElementById("theme-toggle-light-icon"),o=document.querySelectorAll(".img-dark"),i=document.querySelectorAll(".img-light");function a(){return localStorage.getItem("color-theme")?localStorage.getItem("color-theme"):window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}function e(e){let r=(e||a())==="dark",c=localStorage.getItem("color-theme")===null;document.documentElement.classList.toggle("dark",r),document.documentElement.setAttribute("data-theme",r?"dark":"light"),t.classList.toggle("hidden",!c),n.classList.toggle("hidden",c||r),s.classList.toggle("hidden",c||!r),o.forEach(e=>e.classList.toggle("hidden",!r)),i.forEach(e=>e.classList.toggle("hidden",r))}e(),document.getElementById("theme-toggle").addEventListener("click",t=>{let s=localStorage.getItem("color-theme"),n=window.matchMedia("(prefers-color-scheme: dark)").matches;s===null?localStorage.setItem("color-theme",n?"light":"dark"):s===(n?"light":"dark")?localStorage.setItem("color-theme",n?"dark":"light"):localStorage.removeItem("color-theme"),e()}),window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change",t=>{localStorage.getItem("color-theme")||e(t.matches?"dark":"light")})})()</script><script>(()=>{window.MathJax={loader:{load:["[tex]/tagformat","[tex]/textmacros"]},tex:{tags:"ams",tagformat:{number:e=>e.toString(),tag:e=>"("+e+")",id:e=>e.replace(/\s/g,"_"),url:(e,t)=>t+"#"+encodeURIComponent(e)},packages:{"[+]":["tagformat","textmacros"]},inlineMath:[["$","$"],["\\(","\\)"]],displayMath:[["$$","$$"],["\\[","\\]"]],processEscapes:!0,processEnvironments:!0},options:{skipHtmlTags:["script","noscript","style","textarea","pre"],ignoreHtmlClass:"tex2jax_ignore",processHtmlClass:"tex2jax_process"},svg:{fontCache:"global"}},window.addEventListener("load",e=>{document.querySelectorAll("mjx-container").forEach(function(e){e.parentElement.classList+=" has-jax"})})})()</script><script id=MathJax-script async src=https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js></script><script>(()=>{document.addEventListener("DOMContentLoaded",function(){function e(e){document.querySelectorAll(`span.autoanchor_${e}`).forEach((e,t)=>{e.textContent=t+1}),document.querySelectorAll(`a[href^="#${e}_"]`).forEach(t=>{let s=t.getAttribute("href").substring(1),n=document.querySelector(`span.autoanchor_${e}[data-ref="${s}"]`);n&&(t.textContent=n.textContent)})}["fig","exm","tbl"].forEach(e)})})()</script><footer class="z-20 py-2 mt-6 w-full flex items-center justify-center"><span class="text-front-dim-l dark:text-front-dim-d text-center mr-3">© 2025 <span class=whitespace-nowrap>Andrey Akinshin</span></span>
+<a href=https://creativecommons.org/licenses/by-nc-sa/4.0/>CC BY-NC-SA 4.0</a></footer></body></html>
