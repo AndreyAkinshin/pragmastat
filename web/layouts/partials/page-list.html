@@ -1,0 +1,21 @@
+{{ $pages := .pages }}
+{{ $site := .site }}
+{{ $reverse := .reverse }}
+
+{{ $sortedPages := slice }}
+{{ range $pages }}
+    {{ $sortKey := "?" }}
+    {{ if .Date }}
+      {{ $sortKey = .Date.Format "2006-01-02" }}
+    {{ else if .Params.Year }}
+      {{ $sortKey = printf "%v-00-00" .Params.Year }}
+    {{ end }}
+    {{ $sortedPages = $sortedPages | append (dict "Page" . "SortKey" $sortKey) }}
+{{ end }}
+{{ $sortedPages = sort $sortedPages "SortKey" "desc" }}
+
+<ul class="!ml-0">
+  {{ range $sortedPages }}
+    <li class="list-none !ml-0">{{ partial "render-item" (dict "Site" $site "Page" .Page) }}</li>
+  {{ end }}
+</ul>

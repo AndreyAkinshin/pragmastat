@@ -1,0 +1,21 @@
+{{- $id := "" -}}
+
+{{- if .IsHome -}}
+
+  {{- $id = "home" -}}
+
+{{- else if and (not .IsHome) (.File) -}}
+
+  {{- if or (eq .File.BaseFileName "index") (eq .File.BaseFileName "_index") -}}
+    {{- $id = .File.Dir | path.Base -}}
+  {{- else -}}
+    {{- $id = .File.BaseFileName -}}
+  {{- end -}}
+
+{{- else if .Params.IsTerm -}}
+
+  {{- $id = .Slug -}}
+
+{{- end -}}
+
+{{- $id -}}

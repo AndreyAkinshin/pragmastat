@@ -1,0 +1,30 @@
+{{ define "main" }}
+
+<h1 class="text-3xl">
+    <span class="hidden md:inline">Pragmastat: Pragmatic Statistical Toolkit</span>
+    <span class="inline md:hidden">Pragmastat:<br>Pragmatic Statistical Toolkit</span>
+</h1>
+
+<div class="my-2 text-center text-xl">
+    <a href="https://aakinshin.net">Andrey Akinshin</a>
+</div>
+
+<div class="mt-4 mb-4 text-center text-xl">
+    {{ if not .Site.Data.config.isRelease }} Draft of {{ end }}
+    Version {{ .Site.Data.config.version }}
+    {{ if not .Site.Data.config.isRelease }} ({{ .Site.Data.config.date }}) {{ end }}
+</div>
+
+<div class="mt-2 mb-6 text-center text-lg">
+    <a href="/python">Python</a> ·
+    <a href="/ts">TypeScript</a> ·
+    <a href="/r">R</a> ·
+    <a href="/dotnet">.NET</a> ·
+    <a href="/kotlin">Kotlin</a> ·
+    <a href="/rust">Rust</a> ·
+    <a href="/go">Go</a>
+</div>
+
+{{ partial "markup" . }}
+
+{{ end }}

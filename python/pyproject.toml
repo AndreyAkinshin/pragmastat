@@ -1,0 +1,17 @@
+[project]
+name = "pragmastat"
+version = "1.0.0"
+description = "Pragmatic statistical toolkit"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "MIT" }
+authors = [{ name = "Andrey Akinshin" }]
+dependencies = ["numpy>=1.20"]
+
+[project.urls]
+Homepage = "https://github.com/AndreyAkinshin/pragmastat"
+Manual = "https://pragmastat.dev"
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"

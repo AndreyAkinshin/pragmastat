@@ -1,0 +1,10 @@
+{{ define "main" }}
+
+<h1>{{ .Title }}</h1>
+
+{{ partial "meta" . }}
+{{ partial "markup" . }}
+<h2>Author of</h2>
+{{ partial "page-list" (dict "site" $.Site "pages" .Pages) }}
+
+{{ end }}

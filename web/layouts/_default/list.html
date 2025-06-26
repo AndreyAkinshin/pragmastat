@@ -1,0 +1,6 @@
+{{ define "main" }}
+<h1>
+  {{- .Title -}}
+</h1>
+{{ partial "page-list" (dict "site" $.Site "pages" .Pages) }}
+{{ end }}

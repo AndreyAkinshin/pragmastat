@@ -1,0 +1,9 @@
+{{- $slug := partial "get-id" . }}
+{{- $title := .Title -}}
+{{- if in $title ":" -}}
+  {{- $title = index (split $title ":") 0 -}}
+{{- end -}}
+
+{{- $year := .Params.year -}}
+
+<a href='{{ .Permalink | safeURL }}'>{{ $slug }}</a>

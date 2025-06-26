@@ -1,0 +1,5 @@
+{{ $baseName := . }}
+{{ $name := printf "js/%s.js" $baseName }}
+{{ $js := resources.Get $name }}
+{{ $js = $js | js.Build (dict "minify" true) }}
+<script>{{ $js.Content | safeJS }}</script>

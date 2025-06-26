@@ -1,0 +1,21 @@
+[package]
+name = "pragmastat"
+version = "1.0.0"
+edition = "2021"
+authors = ["Andrey Akinshin"]
+description = "Pragmatic Statistical Toolkit"
+license = "MIT"
+repository = "https://github.com/AndreyAkinshin/pragmastat"
+keywords = ["statistics"]
+categories = ["mathematics"]
+
+[dependencies]
+
+[dev-dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+float-cmp = "0.10"
+
+[lib]
+name = "pragmastat"
+path = "src/lib.rs"

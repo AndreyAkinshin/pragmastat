@@ -1,0 +1,457 @@
+name: build
+run-name: "[build] ${{ github.event.head_commit.message }}"
+
+on:
+  pull_request:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build-img:
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: r-lib/actions/setup-r@v2
+      with:
+        r-version: '4.5.0'
+
+    - uses: r-lib/actions/setup-r-dependencies@v2
+      with:
+        working-directory: img
+        extra-packages: |
+          any::ggplot2
+          any::ggdark
+          any::jsonlite
+          any::dplyr
+          any::tidyr
+          any::latex2exp
+
+    - name: Generate images
+      run: ./img/build.sh
+
+    - name: Upload image artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: img
+        path: img/
+
+  build-pdf:
+    runs-on: ubuntu-24.04
+    needs: build-img
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: r-lib/actions/setup-r@v2
+      with:
+        r-version: '4.5.0'
+
+    - uses: r-lib/actions/setup-r-dependencies@v2
+      with:
+        install-pandoc: true
+        working-directory: pdf
+        extra-packages: |
+          any::rmarkdown
+
+    - uses: r-lib/actions/setup-tinytex@v2
+      env:
+        TINYTEX_INSTALLER: TinyTeX-1
+        TINYTEX_VERSION: 2025.06
+
+    - name: Install additional LaTeX packages
+      run: |
+        tlmgr --version
+        tlmgr update --self
+        tlmgr install pgf caption textpos mdframed zref needspace csquotes multirow wrapfig colortbl pdflscape tabu varwidth threeparttable threeparttablex environ trimspaces ulem makecell biblatex logreq biber
+        tlmgr list --only-installed
+
+    - name: Download image artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: img
+        path: img/
+
+    - name: Compose 'pdf'
+      run: ./build.cmd pdf --only-compose
+
+    - name: Build 'pdf'
+      run: ./pdf/build.sh
+
+    - name: Upload pdf artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: pdf
+        path: pdf/*.pdf
+
+  build-web:
+    runs-on: ubuntu-24.04
+    needs: [build-img, build-pdf]
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Download image artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: img
+        path: img/
+
+    - name: Download pdf artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: pdf
+        path: pdf/
+
+    - name: Build 'web'
+      run: ./build.cmd web
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: web
+        path: web/public
+
+  build-r:
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: r-lib/actions/setup-r@v2
+      with:
+        r-version: '4.5.0'
+
+    - uses: r-lib/actions/setup-r-dependencies@v2
+      with:
+        working-directory: r/pragmastat
+        extra-packages: |
+          any::devtools
+
+    - name: Copy reference test data
+      run: cp -r ./tests ./r/pragmastat/tests/tests
+
+    - name: Check
+      run: R -e "devtools::check()"
+      working-directory: r/pragmastat
+
+    - name: Test
+      run: R -e "devtools::test()"
+      working-directory: r/pragmastat
+
+    - name: Build
+      run: R -e "devtools::build()"
+      working-directory: r/pragmastat
+
+    - name: Upload r artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: r
+        path: 'r/*.tar.gz'
+
+  build-dotnet:
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install .NET
+      run: ./build/scripts/dotnet-install.sh
+
+    - name: Build
+      run: ./.dotnet/dotnet build ./dotnet/Pragmastat.sln --configuration Release
+
+    - name: Run UnitTests
+      run: ./.dotnet/dotnet run --project ./dotnet/Pragmastat.UnitTests/Pragmastat.UnitTests.csproj --configuration Release
+
+    - name: Run ReferenceTests
+      run: ./.dotnet/dotnet run --project ./dotnet/Pragmastat.ReferenceTests/Pragmastat.ReferenceTests.csproj --configuration Release
+
+    - name: Pack
+      run: ./.dotnet/dotnet pack ./dotnet/Pragmastat/Pragmastat.csproj --configuration Release --include-symbols --include-source -p:SymbolPackageFormat=snupkg --output ./dotnet/artifacts
+
+    - name: Upload dotnet artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: dotnet
+        path: dotnet/artifacts
+
+  build-python:
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pytest build twine
+      working-directory: python
+
+    - name: Install package in development mode
+      run: pip install -e .
+      working-directory: python
+
+    - name: Run tests
+      run: python -m pytest tests/ -v
+      working-directory: python
+
+    - name: Build package
+      run: python -m build
+      working-directory: python
+
+    - name: Check package
+      run: twine check dist/*
+      working-directory: python
+
+    - name: Upload python artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: python
+        path: python/dist/
+
+  build-rust:
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        components: rustfmt, clippy
+
+    - name: Cache cargo registry
+      uses: actions/cache@v4
+      with:
+        path: ~/.cargo/registry
+        key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+
+    - name: Cache cargo index
+      uses: actions/cache@v4
+      with:
+        path: ~/.cargo/git
+        key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
+
+    - name: Cache cargo build
+      uses: actions/cache@v4
+      with:
+        path: rust/pragmastat/target
+        key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
+
+    - name: Check formatting
+      run: cargo fmt -- --check
+      working-directory: rust/pragmastat
+
+    - name: Run clippy
+      run: cargo clippy -- -D warnings
+      working-directory: rust/pragmastat
+
+    - name: Run tests
+      run: cargo test --verbose
+      working-directory: rust/pragmastat
+
+    - name: Build release
+      run: cargo build --release --verbose
+      working-directory: rust/pragmastat
+
+    - name: Package crate
+      run: cargo package --verbose
+      working-directory: rust/pragmastat
+
+    - name: Upload rust artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: rust
+        path: rust/pragmastat/target/package/*.crate
+
+  build-ts:
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: ts/package-lock.json
+
+    - name: Install dependencies
+      run: npm ci
+      working-directory: ts
+
+    - name: Check formatting
+      run: npm run format:check
+      working-directory: ts
+
+    - name: Run ESLint
+      run: npm run lint
+      working-directory: ts
+
+    - name: Run tests
+      run: npm test
+      working-directory: ts
+
+    - name: Build TypeScript
+      run: npm run build
+      working-directory: ts
+
+    - name: Create tarball
+      run: npm pack
+      working-directory: ts
+
+    - name: Upload ts artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: ts
+        path: ts/*.tgz
+
+  build-go:
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.21'
+        cache-dependency-path: go/go.mod
+
+    - name: Download dependencies
+      run: go mod download
+      working-directory: go
+
+    - name: Check formatting
+      run: |
+        if [ -n "$(go fmt ./...)" ]; then
+          echo "Code is not formatted. Please run 'go fmt ./...'"
+          exit 1
+        fi
+      working-directory: go
+
+    - name: Run tests
+      run: go test -v ./...
+      working-directory: go
+
+    - name: Run tests with coverage
+      run: go test -race -coverprofile=coverage.out -covermode=atomic ./...
+      working-directory: go
+
+    - name: Build
+      run: go build -v ./...
+      working-directory: go
+
+    - name: Upload go artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: go
+        path: go/
+
+  build-kotlin:
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up JDK
+      uses: actions/setup-java@v4
+      with:
+        java-version: '11'
+        distribution: 'temurin'
+
+    - name: Cache Gradle packages
+      uses: actions/cache@v4
+      continue-on-error: true
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+      working-directory: kotlin
+
+    - name: Build with Gradle
+      run: ./gradlew build
+      working-directory: kotlin
+
+    - name: Run tests
+      run: ./gradlew test
+      working-directory: kotlin
+
+    - name: Generate JAR
+      run: ./gradlew jar
+      working-directory: kotlin
+
+    - name: Upload kotlin artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: kotlin
+        path: kotlin/build/libs/
+
+  assemble-artifacts:
+    runs-on: ubuntu-24.04
+    needs: [build-web, build-r, build-pdf, build-dotnet, build-python, build-rust, build-ts, build-go, build-kotlin]
+    steps:
+    - name: Download web artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: web
+        path: artifacts/web
+
+    - name: Download r artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: r
+        path: artifacts/r
+
+    - name: Download pdf artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: pdf
+        path: artifacts/pdf
+
+    - name: Download dotnet artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: dotnet
+        path: artifacts/dotnet
+
+    - name: Download python artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: python
+        path: artifacts/python
+
+    - name: Download rust artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: rust
+        path: artifacts/rust
+
+    - name: Download ts artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: ts
+        path: artifacts/ts
+
+    - name: Download go artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: go
+        path: artifacts/go
+
+    - name: Download kotlin artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: kotlin
+        path: artifacts/kotlin
+
+    - name: Upload combined artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: pragmastat
+        path: artifacts/
+

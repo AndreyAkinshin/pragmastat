@@ -1,0 +1,61 @@
+# Gradle
+.gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+# Eclipse
+.project
+.classpath
+.settings/
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+# VS Code
+.vscode/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+
+# Kotlin
+*.class
+*.log
+*.ctxt
+.mtj.tmp/
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Gradle wrapper exception (must be after *.jar)
+!gradle/wrapper/gradle-wrapper.jar
+
+# virtual machine crash logs
+hs_err_pid*
+
+# Kotlin/Native
+*.klib
+*.bc
+*.kt.bc
+*.def
+*.konan/
+
+# Local configuration
+local.properties

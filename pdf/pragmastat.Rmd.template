@@ -1,0 +1,32 @@
+---
+title: "Pragmastat: Pragmatic Statistical Toolkit"
+author: |
+  Andrey Akinshin  
+  andrey.akinshin@gmail.com
+abstract: |
+<!-- PLACEHOLDER Abstract -->
+date: "<!-- PLACEHOLDER Version -->"
+author-meta: Andrey Akinshin
+lang: en-US
+bibliography: references.bib
+biblio-style: alphabetic
+biblatexoptions: [sorting=anyt]
+link-citations: true
+colorlinks: true
+linkcolor: linkcolor
+citecolor: citecolor
+urlcolor: urlcolor
+output:
+  bookdown::pdf_document2:
+    extra_dependencies: ["amsmath", "float", "csquotes"]
+    citation_package: biblatex
+    number_sections: true
+    keep_tex: true
+    toc: true
+    includes:
+      in_header: ["tex/preamble.tex", "tex/definitions.tex" ]
+---
+
+```{r setup, include=FALSE}
+source("main.R", local = knitr::knit_global())
+```

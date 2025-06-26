@@ -1,0 +1,10 @@
+# use glob syntax
+syntax: glob
+
+.vs
+.idea
+
+[Bb]in
+[Oo]bj
+
+*.user

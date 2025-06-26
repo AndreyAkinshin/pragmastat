@@ -1,0 +1,31 @@
+<nav>
+  <div class="flex items-center justify-between mx-auto max-w-4xl h-12">
+    <!-- Left side navigation items -->
+    <div class="flex items-center gap-5">
+      <a href='/' title="Main page">{{ partial "icon" "home" }}</a>
+      <a href='https://github.com/AndreyAkinshin/pragmastat' title="Main page">{{ partial "icon" "github" }}</a>
+      <a href='/pragmastat-v{{ .Site.Data.config.version }}{{ if not .Site.Data.config.isRelease }}-draft{{ end }}.pdf' title="Main page">{{ partial "icon" "pdf" }}</a>
+    </div>
+
+    <!-- Right side theme toggle -->
+    {{- $icons := resources.Get "icons.svg" | resources.Minify | resources.Fingerprint -}}
+    <button
+      id="theme-toggle"
+      type="button"
+      title="Toggle theme"
+      class="w-12 h-12 content-center justify-self-end">
+      <svg id="theme-toggle-system-icon" class="hidden fill-current text-link hover:text-highlight w-6 h-6 pr-0 mb-0.5" viewBox="0 0 20 20"
+        xmlns="http://www.w3.org/2000/svg">
+        <use xlink:href="{{ $icons.RelPermalink }}#system-theme"></use>
+      </svg>
+      <svg id="theme-toggle-dark-icon" class="hidden fill-current text-link hover:text-highlight w-6 h-6 pr-0 mb-0.5" viewBox="0 0 20 20"
+        xmlns="http://www.w3.org/2000/svg">
+        <use xlink:href="{{ $icons.RelPermalink }}#moon"></use>
+      </svg>
+      <svg id="theme-toggle-light-icon" class="hidden fill-current text-link hover:text-highlight w-6 h-6 pr-0 mb-0.5" viewBox="0 0 20 20"
+        xmlns="http://www.w3.org/2000/svg">
+        <use xlink:href="{{ $icons.RelPermalink }}#sun"></use>
+      </svg>
+    </button>
+  </div>
+</nav>

@@ -1,0 +1,26 @@
+Package: pragmastat
+Type: Package
+Title: Pragmatic Statistical Toolkit
+Version: 1.0.0
+Author: Andrey Akinshin <andrey.akinshin@gmail.com>
+Maintainer: Andrey Akinshin <andrey.akinshin@gmail.com>
+Authors@R: c(
+    person(
+      "Andrey", "Akinshin",
+      email = "andrey.akinshin@gmail.com",
+      role = c("aut", "cre")
+    )
+  )
+Description: Provides robust statistical estimators for reliable data analysis. 
+    Implements one-sample and two-sample estimators that offer a practical middle 
+    ground between classical methods and robust alternatives. Includes estimators 
+    for center, spread, volatility, precision, shift, ratio, and disparity.
+License: MIT + file LICENSE
+URL: https://github.com/AndreyAkinshin/pragmastat
+BugReports: https://github.com/AndreyAkinshin/pragmastat/issues
+Encoding: UTF-8
+LazyData: true
+Suggests: 
+    testthat (>= 3.0.0),
+    jsonlite
+Config/testthat/edition: 3
