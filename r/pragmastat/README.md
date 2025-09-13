@@ -24,17 +24,16 @@ data <- c(1.2, 3.4, 2.5, 4.1, 2.8)
 
 center(data)     # Hodges-Lehmann location estimator
 spread(data)     # Shamos scale estimator
-volatility(data) # Relative dispersion measure
-precision(data)  # Precision measure
+rel_spread(data) # Relative dispersion measure
 
 # Two-sample estimators
 x <- c(5, 6, 7, 8)
 y <- c(3, 4, 5, 6)
 
-med_shift(x, y)    # Median shift between samples
-med_ratio(x, y)    # Median ratio between samples
-med_spread(x, y)   # Pooled spread measure
-med_disparity(x, y) # Effect size measure
+shift(x, y)    # Median shift between samples
+ratio(x, y)    # Median ratio between samples
+avg_spread(x, y)   # Pooled spread measure
+disparity(x, y) # Effect size measure
 ```
 
 ## Estimators
@@ -42,16 +41,15 @@ med_disparity(x, y) # Effect size measure
 ### One-Sample Estimators
 
 - **center**: Hodges-Lehmann location estimator - robust measure of central tendency
-- **spread**: Shamos scale estimator - robust measure of dispersion  
-- **volatility**: Relative dispersion measure - spread normalized by center
-- **precision**: Precision measure - estimated standard error of the center
+- **spread**: Shamos scale estimator - robust measure of dispersion
+- **rel_spread**: Relative dispersion measure - spread normalized by center
 
 ### Two-Sample Estimators
 
-- **med_shift**: Hodges-Lehmann shift estimator - robust measure of location difference
-- **med_ratio**: Robust ratio estimator - median of all pairwise ratios
-- **med_spread**: Pooled spread estimator - combined measure of dispersion
-- **med_disparity**: Effect size measure - normalized difference between samples
+- **shift**: Hodges-Lehmann shift estimator - robust measure of location difference
+- **ratio**: Robust ratio estimator - median of all pairwise ratios
+- **avg_spread**: Pooled spread estimator - combined measure of dispersion
+- **disparity**: Effect size measure - normalized difference between samples
 
 ## License
 

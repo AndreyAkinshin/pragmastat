@@ -50,11 +50,11 @@ export function spread(x: number[]): number {
 }
 
 /**
- * Calculate the Volatility - ratio of Spread to absolute Center
+ * Calculate the RelSpread - ratio of Spread to absolute Center
  * @param x Array of sample values
- * @returns The volatility estimate
+ * @returns The relative spread estimate
  */
-export function volatility(x: number[]): number {
+export function relSpread(x: number[]): number {
   if (x.length === 0) {
     throw new Error('Input array cannot be empty');
   }
@@ -63,33 +63,19 @@ export function volatility(x: number[]): number {
   const c = center(x);
 
   if (c === 0) {
-    throw new Error('Volatility is undefined when Center equals zero');
+    throw new Error('RelSpread is undefined when Center equals zero');
   }
 
   return s / Math.abs(c);
 }
 
 /**
- * Calculate the Precision - 2 * Spread / sqrt(n)
- * @param x Array of sample values
- * @returns The precision estimate
- */
-export function precision(x: number[]): number {
-  const n = x.length;
-  if (n === 0) {
-    throw new Error('Input array cannot be empty');
-  }
-
-  return (2 * spread(x)) / Math.sqrt(n);
-}
-
-/**
- * Calculate the MedShift - median of all pairwise differences (x[i] - y[j])
+ * Calculate the Shift - median of all pairwise differences (x[i] - y[j])
  * @param x First sample
  * @param y Second sample
  * @returns The shift estimate
  */
-export function medShift(x: number[], y: number[]): number {
+export function shift(x: number[], y: number[]): number {
   const nx = x.length;
   const ny = y.length;
 
@@ -108,12 +94,12 @@ export function medShift(x: number[], y: number[]): number {
 }
 
 /**
- * Calculate the MedRatio - median of all pairwise ratios (x[i] / y[j])
+ * Calculate the Ratio - median of all pairwise ratios (x[i] / y[j])
  * @param x First sample
  * @param y Second sample
  * @returns The ratio estimate
  */
-export function medRatio(x: number[], y: number[]): number {
+export function ratio(x: number[], y: number[]): number {
   const nx = x.length;
   const ny = y.length;
 
@@ -137,12 +123,12 @@ export function medRatio(x: number[], y: number[]): number {
 }
 
 /**
- * Calculate the MedSpread - weighted average of spreads: (n*Spread(x) + m*Spread(y))/(n+m)
+ * Calculate the AvgSpread - weighted average of spreads: (n*Spread(x) + m*Spread(y))/(n+m)
  * @param x First sample
  * @param y Second sample
  * @returns The combined spread estimate
  */
-export function medSpread(x: number[], y: number[]): number {
+export function avgSpread(x: number[], y: number[]): number {
   const nx = x.length;
   const ny = y.length;
 
@@ -158,22 +144,22 @@ export function medSpread(x: number[], y: number[]): number {
 }
 
 /**
- * Calculate the MedDisparity - MedShift / MedSpread
+ * Calculate the Disparity - Shift / AvgSpread
  * @param x First sample
  * @param y Second sample
  * @returns The disparity estimate
  */
-export function medDisparity(x: number[], y: number[]): number {
+export function disparity(x: number[], y: number[]): number {
   if (x.length === 0 || y.length === 0) {
     throw new Error('Input arrays cannot be empty');
   }
 
-  const shift = medShift(x, y);
-  const combinedSpread = medSpread(x, y);
+  const shiftVal = shift(x, y);
+  const combinedSpread = avgSpread(x, y);
 
   if (combinedSpread === 0) {
     return Infinity;
   }
 
-  return shift / combinedSpread;
+  return shiftVal / combinedSpread;
 }

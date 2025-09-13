@@ -1,13 +1,4 @@
-import {
-  center,
-  spread,
-  volatility,
-  precision,
-  medShift,
-  medRatio,
-  medSpread,
-  medDisparity,
-} from '../src/estimators';
+import { center, spread, relSpread, shift, ratio, avgSpread, disparity } from '../src/estimators';
 
 /**
  * Invariance tests for mathematical properties of estimators
@@ -111,132 +102,108 @@ describe('Invariance Tests', () => {
     });
   });
 
-  // Volatility invariance tests
-  describe('volatility', () => {
+  // RelSpread invariance tests
+  describe('relSpread', () => {
     it('should be scale invariant', () => {
       performTestOne(
-        (x) => volatility(mulScalar(x, 2)),
-        (x) => volatility(x),
+        (x) => relSpread(mulScalar(x, 2)),
+        (x) => relSpread(x),
       );
     });
   });
 
-  // Precision invariance tests
-  describe('precision', () => {
-    it('should be shift invariant', () => {
-      performTestOne(
-        (x) => precision(addScalar(x, 2)),
-        (x) => precision(x),
-      );
-    });
-
-    it('should be scale equivariant', () => {
-      performTestOne(
-        (x) => precision(mulScalar(x, 2)),
-        (x) => 2 * precision(x),
-      );
-    });
-
-    it('should be scale equivariant with negative scale', () => {
-      performTestOne(
-        (x) => precision(mulScalar(x, -2)),
-        (x) => 2 * precision(x),
-      );
-    });
-  });
-
-  // MedShift invariance tests
-  describe('medShift', () => {
+  // Shift invariance tests
+  describe('shift', () => {
     it('should be shift equivariant', () => {
       performTestTwo(
-        (x, y) => medShift(addScalar(x, 3), addScalar(y, 2)),
-        (x, y) => medShift(x, y) + 1,
+        (x, y) => shift(addScalar(x, 3), addScalar(y, 2)),
+        (x, y) => shift(x, y) + 1,
       );
     });
 
     it('should be scale equivariant', () => {
       performTestTwo(
-        (x, y) => medShift(mulScalar(x, 2), mulScalar(y, 2)),
-        (x, y) => 2 * medShift(x, y),
+        (x, y) => shift(mulScalar(x, 2), mulScalar(y, 2)),
+        (x, y) => 2 * shift(x, y),
       );
     });
 
     it('should be antisymmetric', () => {
       performTestTwo(
-        (x, y) => medShift(x, y),
-        (x, y) => -1 * medShift(y, x),
+        (x, y) => shift(x, y),
+        (x, y) => -1 * shift(y, x),
       );
     });
   });
 
-  // MedRatio invariance tests
-  describe('medRatio', () => {
+  // Ratio invariance tests
+  describe('ratio', () => {
     it('should be scale equivariant', () => {
       performTestTwo(
-        (x, y) => medRatio(mulScalar(x, 2), mulScalar(y, 3)),
-        (x, y) => (2.0 / 3) * medRatio(x, y),
+        (x, y) => ratio(mulScalar(x, 2), mulScalar(y, 3)),
+        (x, y) => (2.0 / 3) * ratio(x, y),
       );
     });
   });
 
-  // MedSpread invariance tests
-  describe('medSpread', () => {
+  // AvgSpread invariance tests
+  describe('avgSpread', () => {
     it('should equal spread for identical samples', () => {
       performTestOne(
-        (x) => medSpread(x, x),
+        (x) => avgSpread(x, x),
         (x) => spread(x),
       );
     });
 
     it('should be symmetric', () => {
       performTestTwo(
-        (x, y) => medSpread(x, y),
-        (x, y) => medSpread(y, x),
+        (x, y) => avgSpread(x, y),
+        (x, y) => avgSpread(y, x),
       );
     });
 
     it('should calculate average correctly', () => {
       performTestOne(
-        (x) => medSpread(x, mulScalar(x, 5)),
+        (x) => avgSpread(x, mulScalar(x, 5)),
         (x) => 3 * spread(x),
       );
     });
 
     it('should be scale equivariant', () => {
       performTestTwo(
-        (x, y) => medSpread(mulScalar(x, -2), mulScalar(y, -2)),
-        (x, y) => 2 * medSpread(x, y),
+        (x, y) => avgSpread(mulScalar(x, -2), mulScalar(y, -2)),
+        (x, y) => 2 * avgSpread(x, y),
       );
     });
   });
 
-  // MedDisparity invariance tests
-  describe('medDisparity', () => {
+  // Disparity invariance tests
+  describe('disparity', () => {
     it('should be shift invariant', () => {
       performTestTwo(
-        (x, y) => medDisparity(addScalar(x, 2), addScalar(y, 2)),
-        (x, y) => medDisparity(x, y),
+        (x, y) => disparity(addScalar(x, 2), addScalar(y, 2)),
+        (x, y) => disparity(x, y),
       );
     });
 
     it('should be scale invariant', () => {
       performTestTwo(
-        (x, y) => medDisparity(mulScalar(x, 2), mulScalar(y, 2)),
-        (x, y) => medDisparity(x, y),
+        (x, y) => disparity(mulScalar(x, 2), mulScalar(y, 2)),
+        (x, y) => disparity(x, y),
       );
     });
 
     it('should be scale antisymmetric with negative scale', () => {
       performTestTwo(
-        (x, y) => medDisparity(mulScalar(x, -2), mulScalar(y, -2)),
-        (x, y) => -1 * medDisparity(x, y),
+        (x, y) => disparity(mulScalar(x, -2), mulScalar(y, -2)),
+        (x, y) => -1 * disparity(x, y),
       );
     });
 
     it('should be antisymmetric', () => {
       performTestTwo(
-        (x, y) => medDisparity(x, y),
-        (x, y) => -1 * medDisparity(y, x),
+        (x, y) => disparity(x, y),
+        (x, y) => -1 * disparity(y, x),
       );
     });
   });

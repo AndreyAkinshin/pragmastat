@@ -25,17 +25,11 @@ func main() {
 	}
 	fmt.Printf("Spread: %.4f\n", spread)
 
-	volatility, err := pragmastat.Volatility(x)
+	relSpread, err := pragmastat.RelSpread(x)
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("Volatility: %.2f%%\n", volatility*100)
-
-	precision, err := pragmastat.Precision(x)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("Precision: %.4f\n", precision)
+	fmt.Printf("RelSpread: %.2f%%\n", relSpread*100)
 
 	// Two-sample comparison
 	fmt.Println("\n=== Two-Sample Comparison ===")
@@ -44,29 +38,29 @@ func main() {
 	fmt.Printf("Sample X: %v\n", x)
 	fmt.Printf("Sample Y: %v\n", y)
 
-	medShift, err := pragmastat.MedShift(x, y)
+	shift, err := pragmastat.Shift(x, y)
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("MedShift: %.4f (X is typically %.4f units larger than Y)\n", medShift, medShift)
+	fmt.Printf("Shift: %.4f (X is typically %.4f units larger than Y)\n", shift, shift)
 
-	medRatio, err := pragmastat.MedRatio(x, y)
+	ratio, err := pragmastat.Ratio(x, y)
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("MedRatio: %.4f (X is typically %.1f%% of Y)\n", medRatio, medRatio*100)
+	fmt.Printf("Ratio: %.4f (X is typically %.1f%% of Y)\n", ratio, ratio*100)
 
-	medSpread, err := pragmastat.MedSpread(x, y)
+	avgSpread, err := pragmastat.AvgSpread(x, y)
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("MedSpread: %.4f\n", medSpread)
+	fmt.Printf("AvgSpread: %.4f\n", avgSpread)
 
-	medDisparity, err := pragmastat.MedDisparity(x, y)
+	disparity, err := pragmastat.Disparity(x, y)
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("MedDisparity: %.4f\n", medDisparity)
+	fmt.Printf("Disparity: %.4f\n", disparity)
 
 	// Demonstrating robustness with outliers
 	fmt.Println("\n=== Robustness Demonstration ===")

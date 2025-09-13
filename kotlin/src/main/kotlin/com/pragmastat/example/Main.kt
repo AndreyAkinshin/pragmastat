@@ -10,8 +10,7 @@ fun main() {
     println("Sample: $x")
     println("Center: %.4f".format(center(x)))
     println("Spread: %.4f".format(spread(x)))
-    println("Volatility: %.2f%%".format(volatility(x) * 100))
-    println("Precision: %.4f".format(precision(x)))
+    println("RelSpread: %.2f%%".format(relSpread(x) * 100))
     
     // Two-sample comparison
     println("\n=== Two-Sample Comparison ===")
@@ -19,12 +18,12 @@ fun main() {
     
     println("Sample X: $x")
     println("Sample Y: $y")
-    val shift = medShift(x, y)
-    println("MedShift: %.4f (X is typically %.4f units larger than Y)".format(shift, shift))
-    val ratio = medRatio(x, y)
-    println("MedRatio: %.4f (X is typically %.1f%% of Y)".format(ratio, ratio * 100))
-    println("MedSpread: %.4f".format(medSpread(x, y)))
-    println("MedDisparity: %.4f".format(medDisparity(x, y)))
+    val shiftVal = shift(x, y)
+    println("Shift: %.4f (X is typically %.4f units larger than Y)".format(shiftVal, shiftVal))
+    val ratioVal = ratio(x, y)
+    println("Ratio: %.4f (X is typically %.1f%% of Y)".format(ratioVal, ratioVal * 100))
+    println("AvgSpread: %.4f".format(avgSpread(x, y)))
+    println("Disparity: %.4f".format(disparity(x, y)))
     
     // Demonstrating robustness with outliers
     println("\n=== Robustness Demonstration ===")

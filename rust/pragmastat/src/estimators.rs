@@ -66,37 +66,24 @@ pub fn spread(x: &[f64]) -> Result<f64, &'static str> {
     median(&pairwise_diffs)
 }
 
-/// Measures the relative dispersion of a sample (Volatility)
+/// Measures the relative dispersion of a sample (RelSpread)
 ///
 /// Calculates the ratio of Spread to absolute Center.
 /// Robust alternative to the coefficient of variation.
-pub fn volatility(x: &[f64]) -> Result<f64, &'static str> {
+pub fn rel_spread(x: &[f64]) -> Result<f64, &'static str> {
     let center_val = center(x)?;
     if center_val == 0.0 {
-        return Err("Volatility is undefined when Center equals zero");
+        return Err("RelSpread is undefined when Center equals zero");
     }
     let spread_val = spread(x)?;
     Ok(spread_val / center_val.abs())
 }
 
-/// Measures precision: the distance between two estimations of independent random samples (Precision)
-///
-/// Calculated as 2 * Spread / sqrt(n). The interval center ± precision forms a range
-/// that probably contains the true center value.
-pub fn precision(x: &[f64]) -> Result<f64, &'static str> {
-    let n = x.len();
-    if n == 0 {
-        return Err("Input slice cannot be empty");
-    }
-    let spread_val = spread(x)?;
-    Ok(2.0 * spread_val / (n as f64).sqrt())
-}
-
-/// Measures the typical difference between elements of x and y (MedShift)
+/// Measures the typical difference between elements of x and y (Shift)
 ///
 /// Calculates the median of all pairwise differences (x[i] - y[j]).
 /// Positive values mean x is typically larger, negative means y is typically larger.
-pub fn med_shift(x: &[f64], y: &[f64]) -> Result<f64, &'static str> {
+pub fn shift(x: &[f64], y: &[f64]) -> Result<f64, &'static str> {
     if x.is_empty() || y.is_empty() {
         return Err("Input slices cannot be empty");
     }
@@ -111,11 +98,11 @@ pub fn med_shift(x: &[f64], y: &[f64]) -> Result<f64, &'static str> {
     median(&pairwise_shifts)
 }
 
-/// Measures how many times larger x is compared to y (MedRatio)
+/// Measures how many times larger x is compared to y (Ratio)
 ///
 /// Calculates the median of all pairwise ratios (x[i] / y[j]).
-/// For example, med_ratio = 1.2 means x is typically 20% larger than y.
-pub fn med_ratio(x: &[f64], y: &[f64]) -> Result<f64, &'static str> {
+/// For example, ratio = 1.2 means x is typically 20% larger than y.
+pub fn ratio(x: &[f64], y: &[f64]) -> Result<f64, &'static str> {
     if x.is_empty() || y.is_empty() {
         return Err("Input slices cannot be empty");
     }
@@ -135,10 +122,10 @@ pub fn med_ratio(x: &[f64], y: &[f64]) -> Result<f64, &'static str> {
     median(&pairwise_ratios)
 }
 
-/// Measures the typical variability when considering both samples together (MedSpread)
+/// Measures the typical variability when considering both samples together (AvgSpread)
 ///
 /// Computes the weighted average of individual spreads: (n*Spread(x) + m*Spread(y))/(n+m).
-pub fn med_spread(x: &[f64], y: &[f64]) -> Result<f64, &'static str> {
+pub fn avg_spread(x: &[f64], y: &[f64]) -> Result<f64, &'static str> {
     if x.is_empty() || y.is_empty() {
         return Err("Input slices cannot be empty");
     }
@@ -151,15 +138,15 @@ pub fn med_spread(x: &[f64], y: &[f64]) -> Result<f64, &'static str> {
     Ok((n as f64 * spread_x + m as f64 * spread_y) / (n + m) as f64)
 }
 
-/// Measures effect size: a normalized absolute difference between x and y (MedDisparity)
+/// Measures effect size: a normalized absolute difference between x and y (Disparity)
 ///
-/// Calculated as MedShift / MedSpread. Robust alternative to Cohen's d.
-/// Returns infinity if med_spread is zero.
-pub fn med_disparity(x: &[f64], y: &[f64]) -> Result<f64, &'static str> {
-    let med_shift_val = med_shift(x, y)?;
-    let med_spread_val = med_spread(x, y)?;
-    if med_spread_val == 0.0 {
+/// Calculated as Shift / AvgSpread. Robust alternative to Cohen's d.
+/// Returns infinity if avg_spread is zero.
+pub fn disparity(x: &[f64], y: &[f64]) -> Result<f64, &'static str> {
+    let shift_val = shift(x, y)?;
+    let avg_spread_val = avg_spread(x, y)?;
+    if avg_spread_val == 0.0 {
         return Ok(f64::INFINITY);
     }
-    Ok(med_shift_val / med_spread_val)
+    Ok(shift_val / avg_spread_val)
 }

@@ -1,9 +1,11 @@
 ## Asymptotic Gaussian Expected Value of the Spread
 
-This study establishes that $\Spread$ has expected value $\sqrt{2}\,\Phi^{-1}(0.75) \approx 0.954$ under standard normal data as sample size increases.
+This study establishes that $\Spread$ has expected value $\sqrt{2}\,\Phi^{-1}(0.75) \approx 0.954$
+  under standard normal data as sample size increases.
 
-The key insight is that pairwise absolute differences $|X_i - X_j|$ from normal data converge to a known distribution.
-Since $\Spread$ takes the median of these differences, its asymptotic expectation equals the population median of $|X_1 - X_2|$ where $X_1, X_2 \stackrel{\mathrm{iid}}{\sim} \mathcal{N}(0, 1)$.
+The key insight: pairwise absolute differences $|X_i - X_j|$ from normal data converge to a known distribution.
+Since $\Spread$ takes the median of these differences, its asymptotic expectation equals
+  the population median of $|X_1 - X_2|$ where $X_1, X_2 \stackrel{\mathrm{iid}}{\sim} \mathcal{N}(0, 1)$.
 
 Consider $X_1, \ldots, X_n \stackrel{\mathrm{iid}}{\sim} \mathcal{N}(0, 1)$.
 For any fixed $i \neq j$, the difference $X_i - X_j$ has mean 0 and variance
@@ -12,7 +14,8 @@ $$
 \Var[X_i - X_j] = \Var[X_i] + \Var[X_j] = 1 + 1 = 2
 $$
 
-because $X_i$ and $X_j$ are independent. Therefore
+because $X_i$ and $X_j$ are independent.
+Therefore
 
 $$
 X_i - X_j \sim \mathcal{N}(0, 2)
@@ -50,7 +53,7 @@ $$
   = \sqrt{2}\,\Phi^{-1}(0.75)
 $$
 
-or
+Numerically, this equals
 
 $$
 \lim_{n \to \infty} \E\bigl[\Spread(X_1, \ldots, X_n)\bigr]

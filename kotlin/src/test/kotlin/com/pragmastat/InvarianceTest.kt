@@ -51,142 +51,124 @@ class InvarianceTest {
     }
     
     @Test
-    fun testVolatilityLocationInvariance() {
+    fun testRelSpreadLocationInvariance() {
         val x = listOf(1.0, 2.0, 3.0, 4.0, 5.0)
         val shift = 10.0
         val xShifted = x.map { it + shift }
-        
-        // Volatility is NOT location invariant in general
+
+        // RelSpread is NOT location invariant in general
         // because it's the ratio of spread to |center|
         // Only test when shift doesn't change sign of center
         val centerX = center(x)
         val centerXShifted = center(xShifted)
-        
+
         // Test only if both centers have the same sign
         if (centerX * centerXShifted > 0) {
-            // Calculate expected volatility after shift
+            // Calculate expected relSpread after shift
             val spreadX = spread(x)
-            val expectedVolatility = spreadX / abs(centerXShifted)
-            assertClose(expectedVolatility, volatility(xShifted), tolerance = 1e-9)
+            val expectedRelSpread = spreadX / abs(centerXShifted)
+            assertClose(expectedRelSpread, relSpread(xShifted), tolerance = 1e-9)
         }
     }
-    
+
     @Test
-    fun testVolatilityScaleInvariance() {
+    fun testRelSpreadScaleInvariance() {
         val x = listOf(1.0, 2.0, 3.0, 4.0, 5.0)
         val scale = 2.5
         val xScaled = x.map { it * scale }
-        
-        assertClose(volatility(x), volatility(xScaled))
+
+        assertClose(relSpread(x), relSpread(xScaled))
     }
-    
+
     @Test
-    fun testPrecisionLocationInvariance() {
-        val x = listOf(1.0, 2.0, 3.0, 4.0, 5.0)
-        val shift = 10.0
-        val xShifted = x.map { it + shift }
-        
-        assertClose(precision(x), precision(xShifted))
-    }
-    
-    @Test
-    fun testPrecisionScaleInvariance() {
-        val x = listOf(1.0, 2.0, 3.0, 4.0, 5.0)
-        val scale = 2.5
-        val xScaled = x.map { it * scale }
-        
-        assertClose(precision(x) * scale, precision(xScaled))
-    }
-    
-    @Test
-    fun testMedShiftLocationInvariance() {
+    fun testShiftLocationInvariance() {
         val x = listOf(1.0, 2.0, 3.0)
         val y = listOf(4.0, 5.0, 6.0)
         val shift = 10.0
         val xShifted = x.map { it + shift }
         val yShifted = y.map { it + shift }
-        
-        assertClose(medShift(x, y), medShift(xShifted, yShifted))
+
+        assertClose(shift(x, y), shift(xShifted, yShifted))
     }
-    
+
     @Test
-    fun testMedShiftScaleInvariance() {
+    fun testShiftScaleInvariance() {
         val x = listOf(1.0, 2.0, 3.0)
         val y = listOf(4.0, 5.0, 6.0)
         val scale = 2.5
         val xScaled = x.map { it * scale }
         val yScaled = y.map { it * scale }
-        
-        assertClose(medShift(x, y) * scale, medShift(xScaled, yScaled))
+
+        assertClose(shift(x, y) * scale, shift(xScaled, yScaled))
     }
-    
+
     @Test
-    fun testMedRatioLocationInvariance() {
+    fun testRatioLocationInvariance() {
         val x = listOf(11.0, 12.0, 13.0)
         val y = listOf(4.0, 5.0, 6.0)
-        val shift = 10.0
-        val xShifted = x.map { it + shift }
-        val yShifted = y.map { it + shift }
-        
-        // MedRatio is NOT location invariant in general
+        val shiftVal = 10.0
+        val xShifted = x.map { it + shiftVal }
+        val yShifted = y.map { it + shiftVal }
+
+        // Ratio is NOT location invariant in general
         // We test that it changes with location shift
-        val ratio1 = medRatio(x, y)
-        val ratio2 = medRatio(xShifted, yShifted)
+        val ratio1 = ratio(x, y)
+        val ratio2 = ratio(xShifted, yShifted)
         assertTrue(abs(ratio1 - ratio2) > epsilon)
     }
-    
+
     @Test
-    fun testMedRatioScaleInvariance() {
+    fun testRatioScaleInvariance() {
         val x = listOf(1.0, 2.0, 3.0)
         val y = listOf(4.0, 5.0, 6.0)
         val scale = 2.5
         val xScaled = x.map { it * scale }
         val yScaled = y.map { it * scale }
-        
-        assertClose(medRatio(x, y), medRatio(xScaled, yScaled))
+
+        assertClose(ratio(x, y), ratio(xScaled, yScaled))
     }
-    
+
     @Test
-    fun testMedSpreadLocationInvariance() {
+    fun testAvgSpreadLocationInvariance() {
         val x = listOf(1.0, 2.0, 3.0)
         val y = listOf(4.0, 5.0, 6.0)
-        val shift = 10.0
-        val xShifted = x.map { it + shift }
-        val yShifted = y.map { it + shift }
-        
-        assertClose(medSpread(x, y), medSpread(xShifted, yShifted))
+        val shiftVal = 10.0
+        val xShifted = x.map { it + shiftVal }
+        val yShifted = y.map { it + shiftVal }
+
+        assertClose(avgSpread(x, y), avgSpread(xShifted, yShifted))
     }
-    
+
     @Test
-    fun testMedSpreadScaleInvariance() {
-        val x = listOf(1.0, 2.0, 3.0)
-        val y = listOf(4.0, 5.0, 6.0)
-        val scale = 2.5
-        val xScaled = x.map { it * scale }
-        val yScaled = y.map { it * scale }
-        
-        assertClose(medSpread(x, y) * scale, medSpread(xScaled, yScaled))
-    }
-    
-    @Test
-    fun testMedDisparityLocationInvariance() {
-        val x = listOf(1.0, 2.0, 3.0)
-        val y = listOf(4.0, 5.0, 6.0)
-        val shift = 10.0
-        val xShifted = x.map { it + shift }
-        val yShifted = y.map { it + shift }
-        
-        assertClose(medDisparity(x, y), medDisparity(xShifted, yShifted))
-    }
-    
-    @Test
-    fun testMedDisparityScaleInvariance() {
+    fun testAvgSpreadScaleInvariance() {
         val x = listOf(1.0, 2.0, 3.0)
         val y = listOf(4.0, 5.0, 6.0)
         val scale = 2.5
         val xScaled = x.map { it * scale }
         val yScaled = y.map { it * scale }
-        
-        assertClose(medDisparity(x, y), medDisparity(xScaled, yScaled))
+
+        assertClose(avgSpread(x, y) * scale, avgSpread(xScaled, yScaled))
+    }
+
+    @Test
+    fun testDisparityLocationInvariance() {
+        val x = listOf(1.0, 2.0, 3.0)
+        val y = listOf(4.0, 5.0, 6.0)
+        val shiftVal = 10.0
+        val xShifted = x.map { it + shiftVal }
+        val yShifted = y.map { it + shiftVal }
+
+        assertClose(disparity(x, y), disparity(xShifted, yShifted))
+    }
+
+    @Test
+    fun testDisparityScaleInvariance() {
+        val x = listOf(1.0, 2.0, 3.0)
+        val y = listOf(4.0, 5.0, 6.0)
+        val scale = 2.5
+        val xScaled = x.map { it * scale }
+        val yScaled = y.map { it * scale }
+
+        assertClose(disparity(x, y), disparity(xScaled, yScaled))
     }
 }

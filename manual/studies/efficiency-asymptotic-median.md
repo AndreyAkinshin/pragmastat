@@ -1,8 +1,10 @@
 ## Asymptotic Gaussian Efficiency of the Median
 
-This study shows that the sample median achieves only $2/\pi \approx 63.7\%$ efficiency relative to the sample mean under normality.
+This study shows that the sample median achieves only $2/\pi \approx 63.7\%$ efficiency relative
+  to the sample mean under normality.
 
-The analysis applies classical asymptotic theory for sample quantiles to derive the limiting distribution of the median under Gaussian data.
+The analysis applies classical asymptotic theory for sample quantiles to derive the limiting
+  distribution of the median under Gaussian data.
 Consider
 
 $$
@@ -16,7 +18,8 @@ $$
 M_n = \Median(X_1, \ldots, X_n)
 $$
 
-For any continuous distribution with density $f$ positive at its median $\theta$, classical theory ([@sidak1999], [@serfling2009]) gives
+For any continuous distribution with density $f$ positive at its median $\theta$, classical theory
+  ([@sidak1999], [@serfling2009]) gives
 
 $$
 \sqrt{n}\,(M_n - \theta) \xrightarrow{d}
@@ -54,6 +57,8 @@ $$
   \approx 0.637
 $$
 
-Thus achieving the same precision as the mean under normality requires roughly $1/0.637 \approx 1.57$ times as many observations when using the median.
-This large efficiency loss shows why we prefer the Hodges–Lehmann $\Center$ estimator — which attains about $95.5\%$ efficiency — whenever data are roughly Gaussian but may include outliers.
-
+Thus achieving the same precision as the mean under normality requires
+  $1/0.637 \approx 1.57$ times as many observations when using the median.
+This large efficiency loss shows why the analysis prefers the Hodges–Lehmann $\Center$ estimator,
+  which attains about $95.5\%$ efficiency, whenever data are roughly Gaussian but may include
+  outliers.

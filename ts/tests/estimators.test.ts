@@ -1,13 +1,4 @@
-import {
-  center,
-  spread,
-  volatility,
-  precision,
-  medShift,
-  medRatio,
-  medSpread,
-  medDisparity,
-} from '../src/estimators';
+import { center, spread, relSpread, shift, ratio, avgSpread, disparity } from '../src/estimators';
 
 describe('Estimators', () => {
   describe('center', () => {
@@ -40,70 +31,56 @@ describe('Estimators', () => {
     });
   });
 
-  describe('volatility', () => {
+  describe('relSpread', () => {
     it('should throw error for empty array', () => {
-      expect(() => volatility([])).toThrow('Input array cannot be empty');
+      expect(() => relSpread([])).toThrow('Input array cannot be empty');
     });
 
-    it('should calculate volatility correctly', () => {
-      const result = volatility([1, 2, 3, 4, 5]);
+    it('should calculate relSpread correctly', () => {
+      const result = relSpread([1, 2, 3, 4, 5]);
       expect(result).toBeCloseTo(2 / 3, 5);
     });
   });
 
-  describe('precision', () => {
-    it('should throw error for empty array', () => {
-      expect(() => precision([])).toThrow('Input array cannot be empty');
-    });
-
-    it('should calculate precision correctly', () => {
-      const result = precision([1, 2, 3, 4, 5]);
-      // precision = 2 * spread / sqrt(n)
-      // spread([1,2,3,4,5]) = 2
-      // precision = 2 * 2 / sqrt(5) ≈ 1.789
-      expect(result).toBeCloseTo(1.7888543819998317, 10);
-    });
-  });
-
-  describe('medShift', () => {
+  describe('shift', () => {
     it('should throw error for empty arrays', () => {
-      expect(() => medShift([], [])).toThrow('Input arrays cannot be empty');
-      expect(() => medShift([1], [])).toThrow('Input arrays cannot be empty');
-      expect(() => medShift([], [1])).toThrow('Input arrays cannot be empty');
+      expect(() => shift([], [])).toThrow('Input arrays cannot be empty');
+      expect(() => shift([1], [])).toThrow('Input arrays cannot be empty');
+      expect(() => shift([], [1])).toThrow('Input arrays cannot be empty');
     });
 
     it('should calculate shift correctly', () => {
-      const result = medShift([1, 2, 3], [4, 5, 6]);
+      const result = shift([1, 2, 3], [4, 5, 6]);
       expect(result).toBe(-3);
     });
   });
 
-  describe('medRatio', () => {
+  describe('ratio', () => {
     it('should throw error for empty arrays', () => {
-      expect(() => medRatio([], [])).toThrow('Input arrays cannot be empty');
-      expect(() => medRatio([1], [])).toThrow('Input arrays cannot be empty');
-      expect(() => medRatio([], [1])).toThrow('Input arrays cannot be empty');
+      expect(() => ratio([], [])).toThrow('Input arrays cannot be empty');
+      expect(() => ratio([1], [])).toThrow('Input arrays cannot be empty');
+      expect(() => ratio([], [1])).toThrow('Input arrays cannot be empty');
     });
 
     it('should calculate ratio correctly', () => {
-      const result = medRatio([1, 2, 3], [2, 4, 6]);
+      const result = ratio([1, 2, 3], [2, 4, 6]);
       expect(result).toBe(0.5);
     });
   });
 
-  describe('medSpread', () => {
+  describe('avgSpread', () => {
     it('should throw error for empty arrays', () => {
-      expect(() => medSpread([], [])).toThrow('Input arrays cannot be empty');
+      expect(() => avgSpread([], [])).toThrow('Input arrays cannot be empty');
     });
 
     it('should calculate combined spread correctly', () => {
-      const result = medSpread([1, 2], [3, 4]);
+      const result = avgSpread([1, 2], [3, 4]);
       expect(result).toBeCloseTo(1, 5);
     });
 
     it('should equal spread when both arrays are identical', () => {
       const x = [1, 2, 3, 4, 5];
-      expect(medSpread(x, x)).toBeCloseTo(spread(x), 10);
+      expect(avgSpread(x, x)).toBeCloseTo(spread(x), 10);
     });
 
     it('should calculate weighted average of spreads', () => {
@@ -111,18 +88,18 @@ describe('Estimators', () => {
       const x = [1, 2, 3]; // spread = 1
       const y = [10, 14]; // spread = 4
       // Expected: (3 * 1 + 2 * 4) / (3 + 2) = (3 + 8) / 5 = 11 / 5 = 2.2
-      expect(medSpread(x, y)).toBeCloseTo(2.2, 5);
+      expect(avgSpread(x, y)).toBeCloseTo(2.2, 5);
     });
   });
 
-  describe('medDisparity', () => {
+  describe('disparity', () => {
     it('should throw error for empty arrays', () => {
-      expect(() => medDisparity([], [])).toThrow('Input arrays cannot be empty');
+      expect(() => disparity([], [])).toThrow('Input arrays cannot be empty');
     });
 
     it('should calculate disparity correctly', () => {
-      const result = medDisparity([1, 2, 3], [4, 5, 6]);
-      // medShift = -3, medSpread = 1, disparity = -3 / 1 = -3
+      const result = disparity([1, 2, 3], [4, 5, 6]);
+      // shift = -3, avgSpread = 1, disparity = -3 / 1 = -3
       expect(result).toBeCloseTo(-3, 5);
     });
   });

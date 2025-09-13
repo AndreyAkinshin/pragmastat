@@ -1,23 +1,21 @@
 from .estimators import (
     center,
     spread,
-    volatility,
-    precision,
-    med_shift,
-    med_ratio,
-    med_spread,
-    med_disparity
+    rel_spread,
+    shift,
+    ratio,
+    avg_spread,
+    disparity
 )
 
 __all__ = [
     'center',
     'spread',
-    'volatility',
-    'precision',
-    'med_shift',
-    'med_ratio',
-    'med_spread',
-    'med_disparity'
+    'rel_spread',
+    'shift',
+    'ratio',
+    'avg_spread',
+    'disparity'
 ]
 
-__version__ = '1.0.0'
+__version__ = '2.0.0'

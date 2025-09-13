@@ -8,6 +8,4 @@
 
 pub mod estimators;
 
-pub use estimators::{
-    center, med_disparity, med_ratio, med_shift, med_spread, precision, spread, volatility,
-};
+pub use estimators::{avg_spread, center, disparity, ratio, rel_spread, shift, spread};

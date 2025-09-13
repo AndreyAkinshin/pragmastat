@@ -1,6 +1,6 @@
-# Toolkit
+# Toolkit Overview
 
-This section provides statistical estimators for summarizing a single sample and comparing two samples.
+<!-- INCLUDE manual/toolkit/intro.md -->
 
 <!-- INCLUDE manual/toolkit/one-sample-summary.md -->
 

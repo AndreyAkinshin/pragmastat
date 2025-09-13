@@ -1,17 +1,17 @@
 ## Finite-Sample Efficiency of Central Tendency Estimators
 
-This study presents finite-sample efficiency values for $\Center$ and shows how it performs better than $\Median$
-  across small and medium sample sizes.
+This study presents finite-sample efficiency values for $\Center$ and shows how it performs
+  better than $\Median$ across small and medium sample sizes.
 
-The previous studies established asymptotic efficiency values — the limiting behavior
-  as sample size approaches infinity.
+The previous studies established asymptotic efficiency values
+  (the limiting behavior as sample size approaches infinity).
 For the Gaussian distribution, these asymptotic values are:
 
 - $\Mean$: $100\%$ (the most efficient estimator under normality)
 - $\Center$: $3/\pi \approx 95.5\%$
 - $\Median$: $2/\pi \approx 63.7\%$
 
-Asymptotic theory provides excellent approximations for large samples but may be inaccurate for small $n$.
+Asymptotic theory provides excellent approximations for large samples but can be inaccurate for small $n$.
 Finite-sample efficiency captures the actual precision when working with limited data.
 
 **Efficiency and Sample Size Requirements**
@@ -41,21 +41,21 @@ The procedure follows these steps:
 
 The simulation must balance computational cost against precision.
 Larger $m$ reduces Monte Carlo error but increases computation time.
-For efficiency estimation, $m = 10^6$ iterations achieve enough precision.
+For efficiency estimation, $m = 10^6$ iterations achieve sufficient precision.
 
 **Finite-Sample Results**
 
 The simulation reveals how efficiency evolves from small to moderate sample sizes.
 
-The figure below shows the Gaussian efficiency curves for $n \in \{3, \ldots, 100\}$ based on $m = 10^6$ Monte Carlo iterations
-  (dotted lines show asymptotic values):
+The figure below shows the Gaussian efficiency curves for $n \in \{3, \ldots, 100\}$
+  based on $m = 10^6$ Monte Carlo iterations (dotted lines show asymptotic values):
 
 <!-- IMG efficiency-central-tendency -->
 
 **Key Observations**
 
 1. **Small sample behavior**: For $n = 3$, $\Center$ achieves $97.9\%$ efficiency while $\Median$ drops to $74.3\%$.
-   Even at extreme small samples, $\Center$ maintains above $91\%$ efficiency throughout.
+   Even at extremely small samples, $\Center$ maintains above $91\%$ efficiency throughout.
 
 2. **Convergence patterns**: The $\Center$ estimator reaches $94\%$ efficiency by $n = 15$
    and stabilizes above $95\%$ for $n \geq 50$.

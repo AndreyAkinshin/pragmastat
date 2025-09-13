@@ -6,8 +6,8 @@ $$
 
 **Practical Recommendations**
 
-$\Center$ provides an initial insight into the magnitude of sample values.
-When $\Volatility$ is small, the whole sample can be approximated by the $\Center$ value.
+The $\Center$ provides initial insight into the magnitude of sample values.
+When $\RelSpread$ is small, the entire sample can be approximated by the $\Center$ value.
 
 **Key Facts**
 

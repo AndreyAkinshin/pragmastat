@@ -21,7 +21,6 @@ jobs:
         working-directory: img
         extra-packages: |
           any::ggplot2
-          any::ggdark
           any::jsonlite
           any::dplyr
           any::tidyr

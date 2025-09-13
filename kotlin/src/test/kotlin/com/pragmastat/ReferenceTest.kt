@@ -39,8 +39,7 @@ class ReferenceTest {
         val estimators = mapOf(
             "center" to ::center,
             "spread" to ::spread,
-            "volatility" to ::volatility,
-            "precision" to ::precision
+            "rel-spread" to ::relSpread
         )
         
         val tests = mutableListOf<DynamicTest>()
@@ -86,10 +85,10 @@ class ReferenceTest {
     @TestFactory
     fun testTwoSampleEstimators(): List<DynamicTest> {
         val estimators = mapOf(
-            "med-shift" to ::medShift,
-            "med-ratio" to ::medRatio,
-            "med-spread" to ::medSpread,
-            "med-disparity" to ::medDisparity
+            "shift" to ::shift,
+            "ratio" to ::ratio,
+            "avg-spread" to ::avgSpread,
+            "disparity" to ::disparity
         )
         
         val tests = mutableListOf<DynamicTest>()

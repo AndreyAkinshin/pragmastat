@@ -57,89 +57,73 @@ test_that("invariance tests work correctly", {
     function(x) spread(x)
   )
 
-  # Volatility tests
+  # RelSpread tests
   perform_test_one(
-    function(x) volatility(2 * x),
-    function(x) volatility(x)
-  )
-
-  # Precision tests
-  perform_test_one(
-    function(x) precision(x + 2),
-    function(x) precision(x)
-  )
-
-  perform_test_one(
-    function(x) precision(2 * x),
-    function(x) 2 * precision(x)
-  )
-
-  perform_test_one(
-    function(x) precision(-2 * x),
-    function(x) 2 * precision(x)
+    function(x) rel_spread(2 * x),
+    function(x) rel_spread(x)
   )
 
   # Shift tests
   perform_test_two(
-    function(x, y) med_shift(x + 3, y + 2),
-    function(x, y) med_shift(x, y) + 1
+    function(x, y) shift(x + 3, y + 2),
+    function(x, y) shift(x, y) + 1
   )
 
   perform_test_two(
-    function(x, y) med_shift(2 * x, 2 * y),
-    function(x, y) 2 * med_shift(x, y)
+    function(x, y) shift(2 * x, 2 * y),
+    function(x, y) 2 * shift(x, y)
   )
 
   perform_test_two(
-    function(x, y) med_shift(x, y),
-    function(x, y) -1 * med_shift(y, x)
+    function(x, y) shift(x, y),
+    function(x, y) -1 * shift(y, x)
   )
 
   # Ratio tests
   perform_test_two(
-    function(x, y) med_ratio(2 * x, 3 * y),
-    function(x, y) (2.0 / 3) * med_ratio(x, y)
+    function(x, y) ratio(2 * x, 3 * y),
+    function(x, y) (2.0 / 3) * ratio(x, y)
   )
 
   # AvgSpread tests
   perform_test_one(
-    function(x) med_spread(x, x),
+    function(x) avg_spread(x, x),
     function(x) spread(x)
   )
 
   perform_test_two(
-    function(x, y) med_spread(x, y),
-    function(x, y) med_spread(y, x)
+    function(x, y) avg_spread(x, y),
+    function(x, y) avg_spread(y, x)
   )
 
   perform_test_one(
-    function(x) med_spread(x, 5 * x),
+    function(x) avg_spread(x, 5 * x),
     function(x) 3 * spread(x)
   )
 
   perform_test_two(
-    function(x, y) med_spread(-2 * x, -2 * y),
-    function(x, y) 2 * med_spread(x, y)
+    function(x, y) avg_spread(-2 * x, -2 * y),
+    function(x, y) 2 * avg_spread(x, y)
   )
 
   # Disparity tests
   perform_test_two(
-    function(x, y) med_disparity(x + 2, y + 2),
-    function(x, y) med_disparity(x, y)
+    function(x, y) disparity(x + 2, y + 2),
+    function(x, y) disparity(x, y)
   )
 
   perform_test_two(
-    function(x, y) med_disparity(2 * x, 2 * y),
-    function(x, y) med_disparity(x, y)
+    function(x, y) disparity(2 * x, 2 * y),
+    function(x, y) disparity(x, y)
   )
 
   perform_test_two(
-    function(x, y) med_disparity(-2 * x, -2 * y),
-    function(x, y) -1 * med_disparity(x, y)
+    function(x, y) disparity(-2 * x, -2 * y),
+    function(x, y) -1 * disparity(x, y)
   )
 
   perform_test_two(
-    function(x, y) med_disparity(x, y),
-    function(x, y) -1 * med_disparity(y, x)
+    function(x, y) disparity(x, y),
+    function(x, y) -1 * disparity(y, x)
   )
 })

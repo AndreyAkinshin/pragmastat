@@ -65,63 +65,52 @@ public class InvarianceTests
     [Fact]
     public void SpreadNegate() => PerformTest(x => Spread(-1 * x), x => Spread(x));
 
-    // Volatility
+    // RelSpread
 
     [Fact]
-    public void VolatilityScale() => PerformTest(x => Volatility(2 * x), x => Volatility(x));
+    public void RelSpreadScale() => PerformTest(x => RelSpread(2 * x), x => RelSpread(x));
 
-    // Precision
-
-    [Fact]
-    public void PrecisionShift() => PerformTest(x => Precision(x + 2), x => Precision(x));
+    // Shift
 
     [Fact]
-    public void PrecisionScale() => PerformTest(x => Precision(2 * x), x => 2 * Precision(x));
+    public void ShiftShift() => PerformTest((x, y) => Shift(x + 3, y + 2), (x, y) => Shift(x, y) + 1);
 
     [Fact]
-    public void PrecisionScaleNegate() => PerformTest(x => Precision(-2 * x), x => 2 * Precision(x));
-
-    // MedShift
+    public void ShiftScale() => PerformTest((x, y) => Shift(2 * x, 2 * y), (x, y) => 2 * Shift(x, y));
 
     [Fact]
-    public void MedShiftShift() => PerformTest((x, y) => MedShift(x + 3, y + 2), (x, y) => MedShift(x, y) + 1);
+    public void ShiftAntisymmetry() => PerformTest((x, y) => Shift(x, y), (x, y) => -1 * Shift(y, x));
+
+    // Ratio
 
     [Fact]
-    public void MedShiftScale() => PerformTest((x, y) => MedShift(2 * x, 2 * y), (x, y) => 2 * MedShift(x, y));
+    public void RatioScale() => PerformTest((x, y) => Ratio(2 * x, 3 * y), (x, y) => 2.0 / 3 * Ratio(x, y));
+
+    // AvgSpread
 
     [Fact]
-    public void MedShiftAntisymmetry() => PerformTest((x, y) => MedShift(x, y), (x, y) => -1 * MedShift(y, x));
-
-    // MedRatio
+    public void AvgSpreadEqual() => PerformTest(x => AvgSpread(x, x), x => Spread(x));
 
     [Fact]
-    public void MedRatioScale() => PerformTest((x, y) => MedRatio(2 * x, 3 * y), (x, y) => 2.0 / 3 * MedRatio(x, y));
-
-    // MedSpread
+    public void AvgSpreadSymmetry() => PerformTest((x, y) => AvgSpread(x, y), (x, y) => AvgSpread(y, x));
 
     [Fact]
-    public void MedSpreadEqual() => PerformTest(x => MedSpread(x, x), x => Spread(x));
+    public void AvgSpreadAverage() => PerformTest(x => AvgSpread(x, 5 * x), x => 3 * Spread(x));
 
     [Fact]
-    public void MedSpreadSymmetry() => PerformTest((x, y) => MedSpread(x, y), (x, y) => MedSpread(y, x));
+    public void AvgSpreadScale() => PerformTest((x, y) => AvgSpread(-2 * x, -2 * y), (x, y) => 2 * AvgSpread(x, y));
+
+    // Disparity
 
     [Fact]
-    public void MedSpreadAverage() => PerformTest(x => MedSpread(x, 5 * x), x => 3 * Spread(x));
+    public void DisparityShift() => PerformTest((x, y) => Disparity(x + 2, y + 2), (x, y) => Disparity(x, y));
 
     [Fact]
-    public void MedSpreadScale() => PerformTest((x, y) => MedSpread(-2 * x, -2 * y), (x, y) => 2 * MedSpread(x, y));
-
-    // MedDisparity
+    public void DisparityScale() => PerformTest((x, y) => Disparity(2 * x, 2 * y), (x, y) => Disparity(x, y));
 
     [Fact]
-    public void MedDisparityShift() => PerformTest((x, y) => MedDisparity(x + 2, y + 2), (x, y) => MedDisparity(x, y));
+    public void DisparityScaleNeg() => PerformTest((x, y) => Disparity(-2 * x, -2 * y), (x, y) => -1 * Disparity(x, y));
 
     [Fact]
-    public void MedDisparityScale() => PerformTest((x, y) => MedDisparity(2 * x, 2 * y), (x, y) => MedDisparity(x, y));
-
-    [Fact]
-    public void MedDisparityScaleNeg() => PerformTest((x, y) => MedDisparity(-2 * x, -2 * y), (x, y) => -1 * MedDisparity(x, y));
-
-    [Fact]
-    public void MedDisparityAntisymmetry() => PerformTest((x, y) => MedDisparity(x, y), (x, y) => -1 * MedDisparity(y, x));
+    public void DisparityAntisymmetry() => PerformTest((x, y) => Disparity(x, y), (x, y) => -1 * Disparity(y, x));
 }

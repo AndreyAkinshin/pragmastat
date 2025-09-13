@@ -1,50 +1,81 @@
 ## Two-Sample Summary
 
-Consider a second sample $\y$ of $m$ real numbers: $\y = (y_1, \ldots, y_m)$.
-Estimators to compare $\x$ and $\y$:
+The $\Shift$ expresses the median difference between two random variables:
 
 $$
-\MedShift(\x, \y) = \underset{1 \leq i \leq n,\,\, 1 \leq j \leq m}{\Median} \left(x_i - y_j \right)
+\Shift(X, Y) = \Median(X - Y)
 $$
 
-$$
-\MedRatio(\x, \y) = \underset{1 \leq i \leq n,\,\, 1 \leq j \leq m}{\Median} \left( \dfrac{x_i}{y_j} \right)
-$$
+When taking measurements from $X$ and $Y$,
+  the difference falls below $\Shift(X, Y)$ with $50\%$ probability and above it with $50\%$ probability.
+Identical distributions produce zero shift: $\Shift(X, X) = 0$.
+
+The estimator for the shift[^shift] is defined as follows:
+
+[^shift]: Also known as the *Hodges--Lehmann shift estimator*
 
 $$
-\MedSpread(\x, \y) = \dfrac{n\Spread(\x) + m\Spread(\y)}{n + m}
+\boxed{
+  \Shift(\x, \y) = \underset{1 \leq i \leq n,\,\, 1 \leq j \leq m}{\Median} \left(x_i - y_j \right)
+}
 $$
 
+This estimator calculates the median difference between elements of $\x$ and $\y$.
+Sign interpretation proves critical: positive shifts indicate larger $\x$ values, negative shifts indicate larger $\y$ values.
+Small values of $\Spread(X)$ and $\Spread(Y)$ make $\Shift(\x, \y)$ closely approximate the difference between any $x_i$ and $y_j$.
+
+---
+
+Absolute units for expressing differences between $X$ and $Y$ create problems and reduce experimental portability.
+Relative measures often provide better solutions:
+
 $$
-\MedDisparity(\x, \y) = \dfrac{\MedShift(\x, \y)}{\MedSpread(\x, \y)}
+\Ratio(X, Y) = \Median\left( \frac{X}{Y} \right)
 $$
 
-These estimators work best for unimodal or narrow distributions, capturing the typical differences between
-  $\x$ and $\y$.
+The $\Ratio(X, Y)$ captures the median ratio between random measurements from $X$ and $Y$:
 
-$\MedShift(\x, \y)$[^medshift] estimates the median absolute difference between elements of $\x$ and $\y$.
-It answers "by how much does $\x$ typically exceed $\y$?" in the original units.
-The sign matters: positive means $\x$ is typically larger, negative means $\y$ is typically larger.
-E.g., $\MedShift$ of $-5$ means that in $50\%$ of $(x_i, y_j)$ pairs, $y_j - x_i > 5$.
+$$
+\boxed{
+  \Ratio(\x, \y) = \underset{1 \leq i \leq n,\,\, 1 \leq j \leq m}{\Median} \left( \dfrac{x_i}{y_j} \right)
+}
+$$
 
-[^medshift]: Also known as the *Hodges--Lehmann shift estimator*
+This estimator $\Ratio(\x, \y)$[^ratio] calculates the median ratio of $\x$ elements to $\y$ elements.
+For example, $\Ratio = 1.2$ indicates that the median ratio is $1.2$,
+  meaning $50\%$ of $(x_i, y_j)$ pairs have ratios below $1.2$ and $50\%$ above $1.2$.
+Percentage expression follows $(\Ratio - 1) \times 100\%$.
+Scale invariance makes ratio estimation useful for portable experimental designs.
 
-$\MedRatio(\x, \y)$[^medratio] estimates the median ratio of $\x$ elements to $\y$ elements.
-It answers "what's the typical ratio between $\x$ and $\y$?" as a multiplier.
-For example, $\MedRatio = 1.2$ means that in $50\%$ of $(x_i, y_j)$ pairs, $x_i$ is larger than $y_j$ by at least $20\%$.
-Express as percentage change: $(\MedRatio - 1) \times 100\%$.
-$\MedRatio$ is scale-invariant, which makes an experiment design more portable.
+[^ratio]: Inspired by the *Hodges--Lehmann estimator*
 
-[^medratio]: Inspired by the *Hodges--Lehmann estimator*
+---
 
-$\MedSpread(\x, \y)$ estimates the averaged variability when considering both samples together.
-The measure computes the weighted average of individual spreads, where larger samples contribute more.
-This value primarily serves as a scaling factor for $\MedDisparity$.
-It represents the typical variability in the combined data and works best for distributions with similar dispersion values.
+Neither shift nor ratio works universally well.
+Portable experimental design benefits from expressing absolute differences in scale-invariant units.
+This requirement introduces *disparity*:
 
-$\MedDisparity(\x, \y)$[^meddisparity] estimates a normalized absolute difference between $\x$ and $\y$
-  expressed in standardized spread units.
-Negative values are treated similarly to $\MedShift(\x, \y)$.
-$\MedDisparity$ is scale-invariant, which makes an experiment design more portable.
+$$
+\Disparity(X, Y) = \frac{\Median(X - Y)}{\AvgSpread(X, Y)}
+$$
 
-[^meddisparity]: A robust alternative to traditional effect size measures like Cohen's $d$
+where
+
+$$
+\AvgSpread(X, Y) = \frac{\Spread(X) + \Spread(Y)}{2}
+$$
+
+The $\Disparity(X, Y)$ normalizes the shift by spread, expressing differences in scale-invariant spread units.
+
+
+$$
+\boxed{
+  \Disparity(\x, \y) = \dfrac{\Shift(\x, \y)}{\AvgSpread(\x, \y)}
+}
+$$
+
+where
+
+$$
+\AvgSpread(\x, \y) = \dfrac{n \cdot \Spread(\x) + m \cdot \Spread(\y)}{n + m}
+$$

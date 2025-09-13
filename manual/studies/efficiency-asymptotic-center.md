@@ -80,5 +80,5 @@ $$
   \approx 0.954\,930
 $$  
 
-Thus matching the mean’s precision under normality requires only $1/0.955\approx1.05$ times as many observations, a negligible price for the Center’s $29\%$ breakdown point and much stronger resistance to outliers.
-
+Thus matching the mean's precision under normality requires only $1/0.955 \approx 1.05$ times as many observations,
+  a negligible price for $\Center$'s $29\%$ breakdown point and much stronger resistance to outliers.

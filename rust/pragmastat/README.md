@@ -14,26 +14,25 @@ pragmastat = "0.1.0"
 ## Usage
 
 ```rust
-use pragmastat::{center, spread, volatility, precision};
-use pragmastat::{med_shift, med_ratio, med_spread, med_disparity};
+use pragmastat::{center, spread, rel_spread};
+use pragmastat::{shift, ratio, avg_spread, disparity};
 
 fn main() {
     // One-sample estimators
     let data = vec![1.2, 3.4, 2.5, 4.1, 2.8];
-    
-    println!("Center: {}", center(&data));
-    println!("Spread: {}", spread(&data));
-    println!("Volatility: {}", volatility(&data));
-    println!("Precision: {}", precision(&data));
-    
+
+    println!("Center: {:.4}", center(&data).unwrap());
+    println!("Spread: {:.4}", spread(&data).unwrap());
+    println!("RelSpread: {:.2}%", rel_spread(&data).unwrap() * 100.0);
+
     // Two-sample estimators
     let data_x = vec![5.0, 6.0, 7.0, 8.0];
     let data_y = vec![3.0, 4.0, 5.0, 6.0];
-    
-    println!("Med Shift: {}", med_shift(&data_x, &data_y));
-    println!("Med Ratio: {}", med_ratio(&data_x, &data_y));
-    println!("Med Spread: {}", med_spread(&data_x, &data_y));
-    println!("Med Disparity: {}", med_disparity(&data_x, &data_y));
+
+    println!("Shift: {:.4}", shift(&data_x, &data_y).unwrap());
+    println!("Ratio: {:.4}", ratio(&data_x, &data_y).unwrap());
+    println!("AvgSpread: {:.4}", avg_spread(&data_x, &data_y).unwrap());
+    println!("Disparity: {:.4}", disparity(&data_x, &data_y).unwrap());
 }
 ```
 
@@ -41,15 +40,14 @@ fn main() {
 
 - **center**: Estimates the central value of the data (Hodges-Lehmann location estimator)
 - **spread**: Estimates data dispersion (Shamos scale estimator)
-- **volatility**: Measures the relative dispersion of a sample
-- **precision**: Measures precision as the distance between two estimations
+- **rel_spread**: Measures the relative dispersion of a sample
 
 ## Two-Sample Estimators
 
-- **med_shift**: Measures the typical difference between elements of two samples
-- **med_ratio**: Measures how many times larger one sample is compared to another
-- **med_spread**: Measures the typical variability when considering both samples together
-- **med_disparity**: Measures effect size as a normalized absolute difference
+- **shift**: Measures the typical difference between elements of two samples
+- **ratio**: Measures how many times larger one sample is compared to another
+- **avg_spread**: Measures the typical variability when considering both samples together
+- **disparity**: Measures effect size as a normalized absolute difference
 
 ## License
 

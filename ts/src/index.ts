@@ -4,15 +4,6 @@
  * A collection of robust statistical estimators for real-world data analysis.
  */
 
-export {
-  center,
-  spread,
-  volatility,
-  precision,
-  medShift,
-  medRatio,
-  medSpread,
-  medDisparity,
-} from './estimators';
+export { center, spread, relSpread, shift, ratio, avgSpread, disparity } from './estimators';
 
 export { median } from './utils';

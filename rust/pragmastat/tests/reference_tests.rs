@@ -145,31 +145,26 @@ fn test_spread() {
 }
 
 #[test]
-fn test_volatility() {
-    run_one_sample_tests("volatility", volatility);
+fn test_rel_spread() {
+    run_one_sample_tests("rel-spread", rel_spread);
 }
 
 #[test]
-fn test_precision() {
-    run_one_sample_tests("precision", precision);
+fn test_shift() {
+    run_two_sample_tests("shift", shift);
 }
 
 #[test]
-fn test_med_shift() {
-    run_two_sample_tests("med-shift", med_shift);
+fn test_ratio() {
+    run_two_sample_tests("ratio", ratio);
 }
 
 #[test]
-fn test_med_ratio() {
-    run_two_sample_tests("med-ratio", med_ratio);
+fn test_avg_spread() {
+    run_two_sample_tests("avg-spread", avg_spread);
 }
 
 #[test]
-fn test_med_spread() {
-    run_two_sample_tests("med-spread", med_spread);
-}
-
-#[test]
-fn test_med_disparity() {
-    run_two_sample_tests("med-disparity", med_disparity);
+fn test_disparity() {
+    run_two_sample_tests("disparity", disparity);
 }

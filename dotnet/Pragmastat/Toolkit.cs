@@ -8,11 +8,10 @@ public static class Toolkit
 {
     public static Measurement Center(Sample x) => CenterEstimator.Instance.Estimate(x);
     public static Measurement Spread(Sample x) => SpreadEstimator.Instance.Estimate(x);
-    public static Measurement Volatility(Sample x) => VolatilityEstimator.Instance.Estimate(x);
-    public static Measurement Precision(Sample x) => PrecisionEstimator.Instance.Estimate(x);
+    public static Measurement RelSpread(Sample x) => RelSpreadEstimator.Instance.Estimate(x);
 
-    public static Measurement MedShift(Sample x, Sample y) => MedShiftEstimator.Instance.Estimate(x, y);
-    public static Measurement MedRatio(Sample x, Sample y) => MedRatioEstimator.Instance.Estimate(x, y);
-    public static Measurement MedSpread(Sample x, Sample y) => MedSpreadEstimator.Instance.Estimate(x, y);
-    public static Measurement MedDisparity(Sample x, Sample y) => MedDisparityEstimator.Instance.Estimate(x, y);
+    public static Measurement Shift(Sample x, Sample y) => ShiftEstimator.Instance.Estimate(x, y);
+    public static Measurement Ratio(Sample x, Sample y) => RatioEstimator.Instance.Estimate(x, y);
+    public static Measurement AvgSpread(Sample x, Sample y) => AvgSpreadEstimator.Instance.Estimate(x, y);
+    public static Measurement Disparity(Sample x, Sample y) => DisparityEstimator.Instance.Estimate(x, y);
 }

@@ -8,11 +8,10 @@ public static class SampleExtensions
 {
     public static Measurement Center(this Sample x) => CenterEstimator.Instance.Estimate(x);
     public static Measurement Spread(this Sample x) => SpreadEstimator.Instance.Estimate(x);
-    public static Measurement Volatility(this Sample x) => VolatilityEstimator.Instance.Estimate(x);
-    public static Measurement Precision(this Sample x) => PrecisionEstimator.Instance.Estimate(x);
+    public static Measurement RelSpread(this Sample x) => RelSpreadEstimator.Instance.Estimate(x);
 
-    public static Measurement MedShift(this Sample x, Sample y) => MedShiftEstimator.Instance.Estimate(x, y);
-    public static Measurement MedRatio(this Sample x, Sample y) => MedRatioEstimator.Instance.Estimate(x, y);
-    public static Measurement MedSpread(this Sample x, Sample y) => MedSpreadEstimator.Instance.Estimate(x, y);
-    public static Measurement MedDisparity(this Sample x, Sample y) => MedDisparityEstimator.Instance.Estimate(x, y);
+    public static Measurement Shift(this Sample x, Sample y) => ShiftEstimator.Instance.Estimate(x, y);
+    public static Measurement Ratio(this Sample x, Sample y) => RatioEstimator.Instance.Estimate(x, y);
+    public static Measurement AvgSpread(this Sample x, Sample y) => AvgSpreadEstimator.Instance.Estimate(x, y);
+    public static Measurement Disparity(this Sample x, Sample y) => DisparityEstimator.Instance.Estimate(x, y);
 }

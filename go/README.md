@@ -31,21 +31,19 @@ func main() {
     
     center := pragmastat.Center(x)
     spread := pragmastat.Spread(x)
-    volatility := pragmastat.Volatility(x)
-    precision := pragmastat.Precision(x)
-    
+    relSpread := pragmastat.RelSpread(x)
+
     fmt.Printf("Center: %.2f\n", center)
     fmt.Printf("Spread: %.2f\n", spread)
-    fmt.Printf("Volatility: %.2f%%\n", volatility*100)
-    fmt.Printf("Precision: %.2f\n", precision)
-    
+    fmt.Printf("RelSpread: %.2f%%\n", relSpread*100)
+
     // Two-sample comparison
     y := []float64{2.1, 4.3, 3.2, 5.0, 3.7}
-    
-    shift := pragmastat.MedShift(x, y)
-    ratio := pragmastat.MedRatio(x, y)
-    disparity := pragmastat.MedDisparity(x, y)
-    
+
+    shift := pragmastat.Shift(x, y)
+    ratio := pragmastat.Ratio(x, y)
+    disparity := pragmastat.Disparity(x, y)
+
     fmt.Printf("\nX vs Y comparison:\n")
     fmt.Printf("Shift: %.2f\n", shift)
     fmt.Printf("Ratio: %.2f\n", ratio)
@@ -59,15 +57,14 @@ func main() {
 
 - **Center(x)**: Robust measure of central tendency (Hodges-Lehmann estimator)
 - **Spread(x)**: Robust measure of dispersion (Shamos estimator)
-- **Volatility(x)**: Relative dispersion (robust coefficient of variation)
-- **Precision(x)**: Estimation precision for the center
+- **RelSpread(x)**: Relative dispersion (robust coefficient of variation)
 
 ### Two-Sample Estimators
 
-- **MedShift(x, y)**: Typical difference between samples (Hodges-Lehmann shift)
-- **MedRatio(x, y)**: Typical ratio between samples
-- **MedSpread(x, y)**: Combined spread of both samples
-- **MedDisparity(x, y)**: Effect size (robust alternative to Cohen's d)
+- **Shift(x, y)**: Typical difference between samples (Hodges-Lehmann shift)
+- **Ratio(x, y)**: Typical ratio between samples
+- **AvgSpread(x, y)**: Combined spread of both samples
+- **Disparity(x, y)**: Effect size (robust alternative to Cohen's d)
 
 ## Mathematical Properties
 

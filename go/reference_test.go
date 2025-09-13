@@ -31,15 +31,14 @@ func TestReferenceData(t *testing.T) {
 	oneSampleEstimators := map[string]func([]float64) (float64, error){
 		"center":     Center,
 		"spread":     Spread,
-		"volatility": Volatility,
-		"precision":  Precision,
+		"rel-spread": RelSpread,
 	}
 
 	twoSampleEstimators := map[string]func([]float64, []float64) (float64, error){
-		"med-shift":     MedShift,
-		"med-ratio":     MedRatio,
-		"med-spread":    MedSpread,
-		"med-disparity": MedDisparity,
+		"shift":      Shift,
+		"ratio":      Ratio,
+		"avg-spread": AvgSpread,
+		"disparity":  Disparity,
 	}
 
 	testDataPath := "../tests"

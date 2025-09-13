@@ -1,15 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import {
-  center,
-  spread,
-  volatility,
-  precision,
-  medShift,
-  medRatio,
-  medSpread,
-  medDisparity,
-} from '../src/estimators';
+import { center, spread, relSpread, shift, ratio, avgSpread, disparity } from '../src/estimators';
 
 /**
  * Reference tests comparing against expected values from JSON files
@@ -23,12 +14,11 @@ describe('Reference Tests', () => {
   const estimators: Record<string, EstimatorFunction> = {
     center,
     spread,
-    volatility,
-    precision,
-    'med-shift': (x: number[], y?: number[]) => medShift(x, y!),
-    'med-ratio': (x: number[], y?: number[]) => medRatio(x, y!),
-    'med-spread': (x: number[], y?: number[]) => medSpread(x, y!),
-    'med-disparity': (x: number[], y?: number[]) => medDisparity(x, y!),
+    'rel-spread': relSpread,
+    shift: (x: number[], y?: number[]) => shift(x, y!),
+    ratio: (x: number[], y?: number[]) => ratio(x, y!),
+    'avg-spread': (x: number[], y?: number[]) => avgSpread(x, y!),
+    disparity: (x: number[], y?: number[]) => disparity(x, y!),
   };
 
   // Get all test directories

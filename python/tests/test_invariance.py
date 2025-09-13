@@ -1,8 +1,8 @@
 import numpy as np
 import pytest
 from pragmastat import (
-    center, spread, volatility, precision,
-    med_shift, med_ratio, med_spread, med_disparity
+    center, spread, rel_spread,
+    shift, ratio, avg_spread, disparity
 )
 
 
@@ -68,104 +68,85 @@ class TestInvariance:
             lambda x: spread(x)
         )
     
-    # Volatility tests
-    def test_volatility_scale(self):
+    # RelSpread tests
+    def test_rel_spread_scale(self):
         self.perform_test_one(
-            lambda x: volatility(2 * x),
-            lambda x: volatility(x)
+            lambda x: rel_spread(2 * x),
+            lambda x: rel_spread(x)
         )
-    
-    # Precision tests
-    def test_precision_shift(self):
-        self.perform_test_one(
-            lambda x: precision(x + 2),
-            lambda x: precision(x)
-        )
-    
-    def test_precision_scale(self):
-        self.perform_test_one(
-            lambda x: precision(2 * x),
-            lambda x: 2 * precision(x)
-        )
-    
-    def test_precision_scale_negate(self):
-        self.perform_test_one(
-            lambda x: precision(-2 * x),
-            lambda x: 2 * precision(x)
-        )
-    
-    # MedShift tests
-    def test_med_shift_shift(self):
+
+    # Shift tests
+    def test_shift_shift(self):
         self.perform_test_two(
-            lambda x, y: med_shift(x + 3, y + 2),
-            lambda x, y: med_shift(x, y) + 1
+            lambda x, y: shift(x + 3, y + 2),
+            lambda x, y: shift(x, y) + 1
         )
-    
-    def test_med_shift_scale(self):
+
+    def test_shift_scale(self):
         self.perform_test_two(
-            lambda x, y: med_shift(2 * x, 2 * y),
-            lambda x, y: 2 * med_shift(x, y)
+            lambda x, y: shift(2 * x, 2 * y),
+            lambda x, y: 2 * shift(x, y)
         )
-    
-    def test_med_shift_antisymmetry(self):
+
+    def test_shift_antisymmetry(self):
         self.perform_test_two(
-            lambda x, y: med_shift(x, y),
-            lambda x, y: -1 * med_shift(y, x)
+            lambda x, y: shift(x, y),
+            lambda x, y: -1 * shift(y, x)
         )
-    
-    # MedRatio tests
-    def test_med_ratio_scale(self):
+
+    # Ratio tests
+    def test_ratio_scale(self):
         self.perform_test_two(
-            lambda x, y: med_ratio(2 * x, 3 * y),
-            lambda x, y: (2.0 / 3) * med_ratio(x, y)
+            lambda x, y: ratio(2 * x, 3 * y),
+            lambda x, y: (2.0 / 3) * ratio(x, y)
         )
-    
-    # MedSpread tests
-    def test_med_spread_equal(self):
+
+    # AvgSpread tests
+    def test_avg_spread_equal(self):
         self.perform_test_one(
-            lambda x: med_spread(x, x),
+            lambda x: avg_spread(x, x),
             lambda x: spread(x)
         )
-    
-    def test_med_spread_symmetry(self):
+
+    def test_avg_spread_symmetry(self):
         self.perform_test_two(
-            lambda x, y: med_spread(x, y),
-            lambda x, y: med_spread(y, x)
+            lambda x, y: avg_spread(x, y),
+            lambda x, y: avg_spread(y, x)
         )
-    
-    def test_med_spread_average(self):
+
+    def test_avg_spread_average(self):
         self.perform_test_one(
-            lambda x: med_spread(x, 5 * x),
+            lambda x: avg_spread(x, 5 * x),
             lambda x: 3 * spread(x)
         )
-    
-    def test_med_spread_scale(self):
+
+    def test_avg_spread_scale(self):
         self.perform_test_two(
-            lambda x, y: med_spread(-2 * x, -2 * y),
-            lambda x, y: 2 * med_spread(x, y)
+            lambda x, y: avg_spread(-2 * x, -2 * y),
+            lambda x, y: 2 * avg_spread(x, y)
         )
-    
-    # MedDisparity tests
-    def test_med_disparity_shift(self):
+
+    # Disparity tests
+    def test_disparity_shift(self):
         self.perform_test_two(
-            lambda x, y: med_disparity(x + 2, y + 2),
-            lambda x, y: med_disparity(x, y)
+            lambda x, y: disparity(x + 2, y + 2),
+            lambda x, y: disparity(x, y)
         )
-    
-    def test_med_disparity_scale(self):
+
+    def test_disparity_scale(self):
         self.perform_test_two(
-            lambda x, y: med_disparity(2 * x, 2 * y),
-            lambda x, y: med_disparity(x, y)
+            lambda x, y: disparity(2 * x, 2 * y),
+            lambda x, y: disparity(x, y)
         )
-    
-    def test_med_disparity_scale_neg(self):
+
+    def test_disparity_scale_neg(self):
         self.perform_test_two(
-            lambda x, y: med_disparity(-2 * x, -2 * y),
-            lambda x, y: -1 * med_disparity(x, y)
+            lambda x, y: disparity(-2 * x, -2 * y),
+            lambda x, y: -1 * disparity(x, y)
         )
-    
-    def test_med_disparity_antisymmetry(self):
+
+    def test_disparity_antisymmetry(self):
         self.perform_test_two(
-            lambda x, y: med_disparity(x, y),
-            lambda x, y: -1 * med_disparity(y, x)
+            lambda x, y: disparity(x, y),
+            lambda x, y: -1 * disparity(y, x)
         )

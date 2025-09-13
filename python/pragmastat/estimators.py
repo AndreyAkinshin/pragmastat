@@ -26,22 +26,14 @@ def spread(x: Union[Sequence[float], NDArray]) -> float:
     return float(np.median(pairwise_abs_diffs[indices]))
 
 
-def volatility(x: Union[Sequence[float], NDArray]) -> float:
+def rel_spread(x: Union[Sequence[float], NDArray]) -> float:
     center_val = center(x)
     if center_val == 0:
-        raise ValueError("Volatility is undefined when Center equals zero")
+        raise ValueError("RelSpread is undefined when Center equals zero")
     return spread(x) / abs(center_val)
 
 
-def precision(x: Union[Sequence[float], NDArray]) -> float:
-    x = np.asarray(x)
-    n = len(x)
-    if n == 0:
-        raise ValueError("Input array cannot be empty")
-    return 2 * spread(x) / np.sqrt(n)
-
-
-def med_shift(x: Union[Sequence[float], NDArray], y: Union[Sequence[float], NDArray]) -> float:
+def shift(x: Union[Sequence[float], NDArray], y: Union[Sequence[float], NDArray]) -> float:
     x = np.asarray(x)
     y = np.asarray(y)
     if len(x) == 0 or len(y) == 0:
@@ -50,7 +42,7 @@ def med_shift(x: Union[Sequence[float], NDArray], y: Union[Sequence[float], NDAr
     return float(np.median(pairwise_shifts))
 
 
-def med_ratio(x: Union[Sequence[float], NDArray], y: Union[Sequence[float], NDArray]) -> float:
+def ratio(x: Union[Sequence[float], NDArray], y: Union[Sequence[float], NDArray]) -> float:
     x = np.asarray(x)
     y = np.asarray(y)
     if len(x) == 0 or len(y) == 0:
@@ -61,7 +53,7 @@ def med_ratio(x: Union[Sequence[float], NDArray], y: Union[Sequence[float], NDAr
     return float(np.median(pairwise_ratios))
 
 
-def med_spread(x: Union[Sequence[float], NDArray], y: Union[Sequence[float], NDArray]) -> float:
+def avg_spread(x: Union[Sequence[float], NDArray], y: Union[Sequence[float], NDArray]) -> float:
     x = np.asarray(x)
     y = np.asarray(y)
     n = len(x)
@@ -73,8 +65,8 @@ def med_spread(x: Union[Sequence[float], NDArray], y: Union[Sequence[float], NDA
     return (n * spread_x + m * spread_y) / (n + m)
 
 
-def med_disparity(x: Union[Sequence[float], NDArray], y: Union[Sequence[float], NDArray]) -> float:
-    med_spread_val = med_spread(x, y)
-    if med_spread_val == 0:
+def disparity(x: Union[Sequence[float], NDArray], y: Union[Sequence[float], NDArray]) -> float:
+    avg_spread_val = avg_spread(x, y)
+    if avg_spread_val == 0:
         return float('inf')
-    return med_shift(x, y) / med_spread_val
+    return shift(x, y) / avg_spread_val

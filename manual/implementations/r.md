@@ -33,17 +33,15 @@ Each function is self-contained and requires only base R:
 
 <!-- INCLUDE r/pragmastat/R/spread.R -->
 
-<!-- INCLUDE r/pragmastat/R/volatility.R -->
+<!-- INCLUDE r/pragmastat/R/rel_spread.R -->
 
-<!-- INCLUDE r/pragmastat/R/precision.R -->
+<!-- INCLUDE r/pragmastat/R/shift.R -->
 
-<!-- INCLUDE r/pragmastat/R/med_shift.R -->
+<!-- INCLUDE r/pragmastat/R/ratio.R -->
 
-<!-- INCLUDE r/pragmastat/R/med_ratio.R -->
+<!-- INCLUDE r/pragmastat/R/avg_spread.R -->
 
-<!-- INCLUDE r/pragmastat/R/med_spread.R -->
-
-<!-- INCLUDE r/pragmastat/R/med_disparity.R -->
+<!-- INCLUDE r/pragmastat/R/disparity.R -->
 ```
 
 For regular use, install the complete package from GitHub.

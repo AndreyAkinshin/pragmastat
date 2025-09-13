@@ -1,15 +1,18 @@
 ## Asymptotic Gaussian Efficiency of the Spread
 
-This study shows that $\Spread$ achieves approximately $86\%$ efficiency relative to the sample standard deviation under normality.
+This study shows that $\Spread$ achieves approximately $86\%$ efficiency relative to the sample
+  standard deviation under normality.
 
-The analysis uses U-statistic theory to derive the asymptotic distribution of $\Spread$ as a scale estimator under Gaussian data.
+The analysis uses U-statistic theory to derive the asymptotic distribution of $\Spread$ as a scale
+  estimator under Gaussian data.
 Consider
 
 $$
 X_1, \ldots, X_n \stackrel{\mathrm{iid}}{\sim} \mathcal{N}(\mu, \sigma^2), \qquad n \geq 2,\; \sigma > 0
 $$
 
-Since $\Spread(\x) = \Median |X_i - X_j|$ is translation invariant, set $\mu = 0$ without loss of generality and write
+Since $\Spread(\x) = \Median |X_i - X_j|$ is translation invariant,
+  set $\mu = 0$ without loss of generality and write
 
 $$
 R_n = \Spread(\x)
@@ -63,21 +66,23 @@ $$
   \approx 0.527\,\sigma^2
 $$  
 
-Because $R_n$ is *not* a consistent estimator of $\sigma$, comparisons with the sample standard deviation $\StdDev(\x)$ use the rescaled statistic
+Because $R_n$ is *not* a consistent estimator of $\sigma$,
+  comparisons with the sample standard deviation $\StdDev(\x)$ use the rescaled statistic
 
 $$
 \widehat{\sigma}_{\Spread} = \frac{R_n}{m_0}
 $$
 
 which *is* consistent.
-Dividing the variance above by the constant $m_0^2$ gives  
+Dividing the variance above by the constant $m_0^2$ gives
 
 $$
 \Var\bigl[\sqrt{n}\,\widehat{\sigma}_{\Spread}\bigr]
   \approx 0.579\,\sigma^2
 $$  
 
-The optimal Gaussian scale estimator $\StdDev(\x)$ has asymptotic variance $\sigma^2/(2n)$, so the *asymptotic Gaussian efficiency* of the (scaled) $\Spread$ is  
+The optimal Gaussian scale estimator $\StdDev(\x)$ has asymptotic variance $\sigma^2/(2n)$,
+  so the *asymptotic Gaussian efficiency* of the (scaled) $\Spread$ is
 
 $$
 \eff_{\mathcal{N},\infty}(\Spread)
@@ -85,6 +90,7 @@ $$
   \approx 0.864
 $$  
 
-One needs roughly $1/0.864 \approx 1.16$ times as many observations to match the precision of the sample standard deviation when the data are exactly normal.
-In exchange, $\Spread$ inherits a $29\%$ breakdown point from its U-quantile construction, so moderate extra data provide a substantial increase in robustness.
-
+One needs roughly $1/0.864 \approx 1.16$ times as many observations
+  to match the precision of the sample standard deviation when the data are exactly normal.
+In exchange, $\Spread$ inherits a $29\%$ breakdown point from its U-quantile construction,
+  so moderately extra data provide a substantial increase in robustness.

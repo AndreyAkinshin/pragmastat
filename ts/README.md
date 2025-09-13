@@ -11,31 +11,29 @@ npm install pragmastat
 ## Usage
 
 ```typescript
-import { 
-  center, 
-  spread, 
-  volatility, 
-  precision,
-  medShift,
-  medRatio,
-  medSpread,
-  medDisparity
+import {
+  center,
+  spread,
+  relSpread,
+  shift,
+  ratio,
+  avgSpread,
+  disparity
 } from 'pragmastat';
 
 // One-sample estimators
 const data = [1, 2, 3, 4, 5];
 console.log('Center:', center(data));
 console.log('Spread:', spread(data));
-console.log('Volatility:', volatility(data));
-console.log('Precision:', precision(data));
+console.log('RelSpread:', relSpread(data));
 
 // Two-sample estimators
 const x = [1, 2, 3];
 const y = [4, 5, 6];
-console.log('Median Shift:', medShift(x, y));
-console.log('Median Ratio:', medRatio(x, y));
-console.log('Median Spread:', medSpread(x, y));
-console.log('Median Disparity:', medDisparity(x, y));
+console.log('Shift:', shift(x, y));
+console.log('Ratio:', ratio(x, y));
+console.log('AvgSpread:', avgSpread(x, y));
+console.log('Disparity:', disparity(x, y));
 ```
 
 ## Estimators
@@ -44,15 +42,14 @@ console.log('Median Disparity:', medDisparity(x, y));
 
 - **center**: Hodges-Lehmann location estimator - robust measure of central tendency
 - **spread**: Shamos scale estimator - robust measure of dispersion
-- **volatility**: Relative dispersion measure - spread normalized by center
-- **precision**: Precision measure - estimated standard error of the center
+- **relSpread**: Relative dispersion measure - spread normalized by center
 
 ### Two-Sample Estimators
 
-- **medShift**: Hodges-Lehmann shift estimator - robust measure of location difference
-- **medRatio**: Robust ratio estimator - median of all pairwise ratios
-- **medSpread**: Pooled spread estimator - combined measure of dispersion
-- **medDisparity**: Effect size measure - normalized difference between samples
+- **shift**: Hodges-Lehmann shift estimator - robust measure of location difference
+- **ratio**: Robust ratio estimator - median of all pairwise ratios
+- **avgSpread**: Pooled spread estimator - combined measure of dispersion
+- **disparity**: Effect size measure - normalized difference between samples
 
 ## Development
 

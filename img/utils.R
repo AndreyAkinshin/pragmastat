@@ -25,20 +25,13 @@ ggsave_ <- function(name, plot = last_plot(), basic_theme = theme_bw(), multithe
 
   get_plot <- function() if (is.function(plot)) plot() else plot
 
-  light_transparent_theme <- theme(
-    panel.background = element_rect(fill = NA, colour = NA),
-    plot.background = element_rect(fill = NA, colour = NA),
-    legend.background = element_rect(fill = NA, colour = NA),
-    legend.box.background = element_rect(fill = NA, colour = NA),
+  light_transparent_theme <- theme_bw(
+    paper = "transparent",
+    ink = "black"
   )
-  dark_transparent_theme <- theme(
-    panel.background = element_rect(fill = NA, colour = NA),
-    plot.background = element_rect(fill = NA, colour = NA),
-    legend.background = element_rect(fill = NA, colour = NA),
-    legend.box.background = element_rect(fill = NA, colour = NA),
-
-    panel.grid.major = element_line(color = "#b8cfe620"),
-    panel.grid.minor = element_line(color = "#b8cfe610")
+  dark_transparent_theme <- theme_bw(
+    paper = "transparent",
+    ink = "white"
   )
 
   width <- width_px / dpi
@@ -47,13 +40,12 @@ ggsave_ <- function(name, plot = last_plot(), basic_theme = theme_bw(), multithe
     old_theme <- theme_set(basic_theme + light_transparent_theme)
     ggsave(paste0(name, "_light.", ext), get_plot(), width = width, height = height, dpi = dpi)
     message("SAVED  : ./", paste0(name, "_light.", ext))
-    theme_set(dark_mode(basic_theme, verbose = FALSE) + dark_transparent_theme)
+    theme_set(basic_theme + dark_transparent_theme)
     p <- get_plot()
     show(p)
     ggsave(paste0(name, "_dark.", ext), p, width = width, height = height, dpi = dpi)
     message("SAVED  : ./", paste0(name, "_dark.", ext))
     theme_set(old_theme)
-    invert_geom_defaults()
   } else {
     old_theme <- theme_set(basic_theme)
     p <- get_plot()

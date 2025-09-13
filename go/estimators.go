@@ -66,16 +66,16 @@ func Spread(x []float64) (float64, error) {
 	return median(pairwiseDiffs)
 }
 
-// Volatility measures the relative dispersion of a sample.
+// RelSpread measures the relative dispersion of a sample.
 // Calculates the ratio of Spread to absolute Center.
 // Robust alternative to the coefficient of variation.
-func Volatility(x []float64) (float64, error) {
+func RelSpread(x []float64) (float64, error) {
 	centerVal, err := Center(x)
 	if err != nil {
 		return 0, err
 	}
 	if centerVal == 0.0 {
-		return 0, errors.New("volatility is undefined when Center equals zero")
+		return 0, errors.New("RelSpread is undefined when Center equals zero")
 	}
 	spreadVal, err := Spread(x)
 	if err != nil {
@@ -84,25 +84,10 @@ func Volatility(x []float64) (float64, error) {
 	return spreadVal / math.Abs(centerVal), nil
 }
 
-// Precision measures the distance between two estimations of independent random samples.
-// Calculated as 2 * Spread / sqrt(n). The interval center ± precision forms a range
-// that probably contains the true center value.
-func Precision(x []float64) (float64, error) {
-	n := len(x)
-	if n == 0 {
-		return 0, errors.New("input slice cannot be empty")
-	}
-	spreadVal, err := Spread(x)
-	if err != nil {
-		return 0, err
-	}
-	return 2.0 * spreadVal / math.Sqrt(float64(n)), nil
-}
-
-// MedShift measures the typical difference between elements of x and y.
+// Shift measures the typical difference between elements of x and y.
 // Calculates the median of all pairwise differences (x[i] - y[j]).
 // Positive values mean x is typically larger, negative means y is typically larger.
-func MedShift(x, y []float64) (float64, error) {
+func Shift(x, y []float64) (float64, error) {
 	if len(x) == 0 || len(y) == 0 {
 		return 0, errors.New("input slices cannot be empty")
 	}
@@ -117,10 +102,10 @@ func MedShift(x, y []float64) (float64, error) {
 	return median(pairwiseShifts)
 }
 
-// MedRatio measures how many times larger x is compared to y.
+// Ratio measures how many times larger x is compared to y.
 // Calculates the median of all pairwise ratios (x[i] / y[j]).
-// For example, MedRatio = 1.2 means x is typically 20% larger than y.
-func MedRatio(x, y []float64) (float64, error) {
+// For example, Ratio = 1.2 means x is typically 20% larger than y.
+func Ratio(x, y []float64) (float64, error) {
 	if len(x) == 0 || len(y) == 0 {
 		return 0, errors.New("input slices cannot be empty")
 	}
@@ -142,9 +127,9 @@ func MedRatio(x, y []float64) (float64, error) {
 	return median(pairwiseRatios)
 }
 
-// MedSpread measures the typical variability when considering both samples together.
+// AvgSpread measures the typical variability when considering both samples together.
 // Computes the weighted average of individual spreads: (n*Spread(x) + m*Spread(y))/(n+m).
-func MedSpread(x, y []float64) (float64, error) {
+func AvgSpread(x, y []float64) (float64, error) {
 	if len(x) == 0 || len(y) == 0 {
 		return 0, errors.New("input slices cannot be empty")
 	}
@@ -164,20 +149,20 @@ func MedSpread(x, y []float64) (float64, error) {
 	return (n*spreadX + m*spreadY) / (n + m), nil
 }
 
-// MedDisparity measures effect size: a normalized absolute difference between x and y.
-// Calculated as MedShift / MedSpread. Robust alternative to Cohen's d.
-// Returns infinity if MedSpread is zero.
-func MedDisparity(x, y []float64) (float64, error) {
-	medShiftVal, err := MedShift(x, y)
+// Disparity measures effect size: a normalized difference between x and y.
+// Calculated as Shift / AvgSpread. Robust alternative to Cohen's d.
+// Returns infinity if AvgSpread is zero.
+func Disparity(x, y []float64) (float64, error) {
+	shiftVal, err := Shift(x, y)
 	if err != nil {
 		return 0, err
 	}
-	medSpreadVal, err := MedSpread(x, y)
+	avgSpreadVal, err := AvgSpread(x, y)
 	if err != nil {
 		return 0, err
 	}
-	if medSpreadVal == 0.0 {
+	if avgSpreadVal == 0.0 {
 		return math.Inf(1), nil
 	}
-	return medShiftVal / medSpreadVal, nil
+	return shiftVal / avgSpreadVal, nil
 }

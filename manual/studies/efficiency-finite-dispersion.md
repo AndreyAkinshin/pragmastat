@@ -1,7 +1,8 @@
 ## Finite-Sample Efficiency of Dispersion Estimators
 
-This study presents finite-sample efficiency values for $\Spread$ and demonstrates its consistent superiority over
-  the *standard deviation* $\StdDev$ and the *median absolute deviation* $\MAD$ across small and medium sample sizes.
+This study presents finite-sample efficiency values for $\Spread$ and demonstrates its
+  consistent superiority over the standard deviation $\StdDev$ and
+  the median absolute deviation $\MAD$ across small and medium sample sizes.
 
 The previous studies established asymptotic efficiency values for dispersion estimators under the Gaussian distribution.
 These asymptotic values are:
@@ -10,9 +11,10 @@ These asymptotic values are:
 - $\Spread$: $\approx 86.4\%$
 - $\MAD$: $\approx 36.8\%$
 
-The asymptotic values provide excellent approximations for large samples but may not accurately reflect performance
-  with limited data.
-Understanding actual efficiency at practical sample sizes guides estimator selection from the toolkit.
+The asymptotic values provide excellent approximations for large samples but may not accurately
+  reflect performance with limited data.
+Understanding actual efficiency at practical sample sizes guides estimator selection from
+  the toolkit.
 
 **Efficiency Measurement for Dispersion Estimators**
 
@@ -25,7 +27,7 @@ The procedure follows these steps:
 
 1. **Generate samples**: Draw $m$ independent samples of size $n$ from the standard normal distribution
 2. **Calculate estimators**: Compute $\StdDev$, $\Spread$, and $\MAD$ for each sample
-3. **Calculate normalized variance**: for each set of estimations, calculate the variance and divide by the mean value to align estimator biases
+3. **Calculate normalized variance**: For each set of estimations, calculate the variance and divide by the mean value to align estimator biases
 4. **Compute efficiency**: Take the variance ratio relative to $\StdDev$
 
 This approach ensures fair comparison by measuring how much each estimator varies around its own expected value.
@@ -33,7 +35,7 @@ The simulation uses $m = 10^6$ iterations to achieve sufficient precision.
 
 **Results and Analysis**
 
-The simulation covers sample sizes $n \in \{3, \ldots, 100\}$ with efficiency computed relative to standard deviation.
+The simulation covers sample sizes $n \in \{3, \ldots, 100\}$ with efficiency computed relative to the standard deviation.
 
 The below figure shows the Gaussian efficiency curves based on $10^6$ Monte Carlo iterations
   (dotted lines show asymptotic values):

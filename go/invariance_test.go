@@ -125,10 +125,10 @@ func TestSpreadInvariance(t *testing.T) {
 	})
 }
 
-func TestVolatilityInvariance(t *testing.T) {
+func TestRelSpreadInvariance(t *testing.T) {
 	x := []float64{1.0, 2.0, 3.0, 4.0, 5.0}
 
-	// Location invariance: Volatility(x + c) depends on c
+	// Location invariance: RelSpread(x + c) depends on c
 	t.Run("location effect", func(t *testing.T) {
 		c := 10.0
 		shifted := make([]float64, len(x))
@@ -136,22 +136,22 @@ func TestVolatilityInvariance(t *testing.T) {
 			shifted[i] = v + c
 		}
 
-		original, err := Volatility(x)
+		original, err := RelSpread(x)
 		if err != nil {
 			t.Fatal(err)
 		}
-		shiftedResult, err := Volatility(shifted)
+		shiftedResult, err := RelSpread(shifted)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		// Volatility should decrease when shifting positive values further from zero
+		// RelSpread should decrease when shifting positive values further from zero
 		if shiftedResult >= original {
-			t.Errorf("Volatility should decrease with positive shift: original=%v, shifted=%v", original, shiftedResult)
+			t.Errorf("RelSpread should decrease with positive shift: original=%v, shifted=%v", original, shiftedResult)
 		}
 	})
 
-	// Scale invariance: Volatility(c * x) = Volatility(x) for c > 0
+	// Scale invariance: RelSpread(c * x) = RelSpread(x) for c > 0
 	t.Run("scale invariance", func(t *testing.T) {
 		c := 2.5
 		scaled := make([]float64, len(x))
@@ -159,53 +159,26 @@ func TestVolatilityInvariance(t *testing.T) {
 			scaled[i] = v * c
 		}
 
-		original, err := Volatility(x)
+		original, err := RelSpread(x)
 		if err != nil {
 			t.Fatal(err)
 		}
-		scaledResult, err := Volatility(scaled)
+		scaledResult, err := RelSpread(scaled)
 		if err != nil {
 			t.Fatal(err)
 		}
 
 		if !floatEquals(scaledResult, original, 1e-10) {
-			t.Errorf("Scale invariance failed: Volatility(%v*x) = %v, expected %v", c, scaledResult, original)
+			t.Errorf("Scale invariance failed: RelSpread(%v*x) = %v, expected %v", c, scaledResult, original)
 		}
 	})
 }
 
-func TestPrecisionInvariance(t *testing.T) {
-	x := []float64{1.0, 2.0, 3.0, 4.0, 5.0}
-
-	// Scale invariance: Precision(c * x) = |c| * Precision(x)
-	t.Run("scale invariance", func(t *testing.T) {
-		c := 2.5
-		scaled := make([]float64, len(x))
-		for i, v := range x {
-			scaled[i] = v * c
-		}
-
-		original, err := Precision(x)
-		if err != nil {
-			t.Fatal(err)
-		}
-		scaledResult, err := Precision(scaled)
-		if err != nil {
-			t.Fatal(err)
-		}
-		expected := c * original
-
-		if !floatEquals(scaledResult, expected, 1e-10) {
-			t.Errorf("Scale invariance failed: Precision(%v*x) = %v, expected %v", c, scaledResult, expected)
-		}
-	})
-}
-
-func TestMedShiftInvariance(t *testing.T) {
+func TestShiftInvariance(t *testing.T) {
 	x := []float64{1.0, 2.0, 3.0}
 	y := []float64{4.0, 5.0, 6.0}
 
-	// Location invariance: MedShift(x + c, y) = MedShift(x, y) + c
+	// Location invariance: Shift(x + c, y) = Shift(x, y) + c
 	t.Run("x location invariance", func(t *testing.T) {
 		c := 10.0
 		shifted := make([]float64, len(x))
@@ -213,22 +186,22 @@ func TestMedShiftInvariance(t *testing.T) {
 			shifted[i] = v + c
 		}
 
-		original, err := MedShift(x, y)
+		original, err := Shift(x, y)
 		if err != nil {
 			t.Fatal(err)
 		}
-		shiftedResult, err := MedShift(shifted, y)
+		shiftedResult, err := Shift(shifted, y)
 		if err != nil {
 			t.Fatal(err)
 		}
 		expected := original + c
 
 		if !floatEquals(shiftedResult, expected, 1e-10) {
-			t.Errorf("X location invariance failed: MedShift(x+%v, y) = %v, expected %v", c, shiftedResult, expected)
+			t.Errorf("X location invariance failed: Shift(x+%v, y) = %v, expected %v", c, shiftedResult, expected)
 		}
 	})
 
-	// Location invariance: MedShift(x, y + c) = MedShift(x, y) - c
+	// Location invariance: Shift(x, y + c) = Shift(x, y) - c
 	t.Run("y location invariance", func(t *testing.T) {
 		c := 10.0
 		shifted := make([]float64, len(y))
@@ -236,22 +209,22 @@ func TestMedShiftInvariance(t *testing.T) {
 			shifted[i] = v + c
 		}
 
-		original, err := MedShift(x, y)
+		original, err := Shift(x, y)
 		if err != nil {
 			t.Fatal(err)
 		}
-		shiftedResult, err := MedShift(x, shifted)
+		shiftedResult, err := Shift(x, shifted)
 		if err != nil {
 			t.Fatal(err)
 		}
 		expected := original - c
 
 		if !floatEquals(shiftedResult, expected, 1e-10) {
-			t.Errorf("Y location invariance failed: MedShift(x, y+%v) = %v, expected %v", c, shiftedResult, expected)
+			t.Errorf("Y location invariance failed: Shift(x, y+%v) = %v, expected %v", c, shiftedResult, expected)
 		}
 	})
 
-	// Scale invariance: MedShift(c * x, c * y) = c * MedShift(x, y)
+	// Scale invariance: Shift(c * x, c * y) = c * Shift(x, y)
 	t.Run("scale invariance", func(t *testing.T) {
 		c := 2.5
 		scaledX := make([]float64, len(x))
@@ -263,27 +236,27 @@ func TestMedShiftInvariance(t *testing.T) {
 			scaledY[i] = v * c
 		}
 
-		original, err := MedShift(x, y)
+		original, err := Shift(x, y)
 		if err != nil {
 			t.Fatal(err)
 		}
-		scaledResult, err := MedShift(scaledX, scaledY)
+		scaledResult, err := Shift(scaledX, scaledY)
 		if err != nil {
 			t.Fatal(err)
 		}
 		expected := c * original
 
 		if !floatEquals(scaledResult, expected, 1e-10) {
-			t.Errorf("Scale invariance failed: MedShift(%v*x, %v*y) = %v, expected %v", c, c, scaledResult, expected)
+			t.Errorf("Scale invariance failed: Shift(%v*x, %v*y) = %v, expected %v", c, c, scaledResult, expected)
 		}
 	})
 }
 
-func TestMedRatioInvariance(t *testing.T) {
+func TestRatioInvariance(t *testing.T) {
 	x := []float64{2.0, 4.0, 6.0}
 	y := []float64{1.0, 2.0, 3.0}
 
-	// Scale invariance: MedRatio(c * x, y) = c * MedRatio(x, y)
+	// Scale invariance: Ratio(c * x, y) = c * Ratio(x, y)
 	t.Run("x scale invariance", func(t *testing.T) {
 		c := 2.5
 		scaled := make([]float64, len(x))
@@ -291,22 +264,22 @@ func TestMedRatioInvariance(t *testing.T) {
 			scaled[i] = v * c
 		}
 
-		original, err := MedRatio(x, y)
+		original, err := Ratio(x, y)
 		if err != nil {
 			t.Fatal(err)
 		}
-		scaledResult, err := MedRatio(scaled, y)
+		scaledResult, err := Ratio(scaled, y)
 		if err != nil {
 			t.Fatal(err)
 		}
 		expected := c * original
 
 		if !floatEquals(scaledResult, expected, 1e-10) {
-			t.Errorf("X scale invariance failed: MedRatio(%v*x, y) = %v, expected %v", c, scaledResult, expected)
+			t.Errorf("X scale invariance failed: Ratio(%v*x, y) = %v, expected %v", c, scaledResult, expected)
 		}
 	})
 
-	// Scale invariance: MedRatio(x, c * y) = MedRatio(x, y) / c
+	// Scale invariance: Ratio(x, c * y) = Ratio(x, y) / c
 	t.Run("y scale invariance", func(t *testing.T) {
 		c := 2.5
 		scaled := make([]float64, len(y))
@@ -314,18 +287,18 @@ func TestMedRatioInvariance(t *testing.T) {
 			scaled[i] = v * c
 		}
 
-		original, err := MedRatio(x, y)
+		original, err := Ratio(x, y)
 		if err != nil {
 			t.Fatal(err)
 		}
-		scaledResult, err := MedRatio(x, scaled)
+		scaledResult, err := Ratio(x, scaled)
 		if err != nil {
 			t.Fatal(err)
 		}
 		expected := original / c
 
 		if !floatEquals(scaledResult, expected, 1e-10) {
-			t.Errorf("Y scale invariance failed: MedRatio(x, %v*y) = %v, expected %v", c, scaledResult, expected)
+			t.Errorf("Y scale invariance failed: Ratio(x, %v*y) = %v, expected %v", c, scaledResult, expected)
 		}
 	})
 }

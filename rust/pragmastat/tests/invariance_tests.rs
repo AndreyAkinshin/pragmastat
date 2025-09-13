@@ -133,140 +133,114 @@ mod invariance_tests {
         );
     }
 
-    // Volatility invariance tests
+    // RelSpread invariance tests
 
     #[test]
-    fn volatility_scale() {
+    fn rel_spread_scale() {
         perform_test_one(
-            |x| volatility(&vec_mul_scalar(x, 2.0)).unwrap(),
-            |x| volatility(x).unwrap(),
+            |x| rel_spread(&vec_mul_scalar(x, 2.0)).unwrap(),
+            |x| rel_spread(x).unwrap(),
         );
     }
 
-    // Precision invariance tests
+    // Shift invariance tests
 
     #[test]
-    fn precision_shift() {
+    fn shift_shift() {
+        perform_test_two(
+            |x, y| shift(&vec_add_scalar(x, 3.0), &vec_add_scalar(y, 2.0)).unwrap(),
+            |x, y| shift(x, y).unwrap() + 1.0,
+        );
+    }
+
+    #[test]
+    fn shift_scale() {
+        perform_test_two(
+            |x, y| shift(&vec_mul_scalar(x, 2.0), &vec_mul_scalar(y, 2.0)).unwrap(),
+            |x, y| 2.0 * shift(x, y).unwrap(),
+        );
+    }
+
+    #[test]
+    fn shift_antisymmetry() {
+        perform_test_two(
+            |x, y| shift(x, y).unwrap(),
+            |x, y| -1.0 * shift(y, x).unwrap(),
+        );
+    }
+
+    // Ratio invariance tests
+
+    #[test]
+    fn ratio_scale() {
+        perform_test_two(
+            |x, y| ratio(&vec_mul_scalar(x, 2.0), &vec_mul_scalar(y, 3.0)).unwrap(),
+            |x, y| (2.0 / 3.0) * ratio(x, y).unwrap(),
+        );
+    }
+
+    // AvgSpread invariance tests
+
+    #[test]
+    fn avg_spread_equal() {
+        perform_test_one(|x| avg_spread(x, x).unwrap(), |x| spread(x).unwrap());
+    }
+
+    #[test]
+    fn avg_spread_symmetry() {
+        perform_test_two(
+            |x, y| avg_spread(x, y).unwrap(),
+            |x, y| avg_spread(y, x).unwrap(),
+        );
+    }
+
+    #[test]
+    fn avg_spread_average() {
         perform_test_one(
-            |x| precision(&vec_add_scalar(x, 2.0)).unwrap(),
-            |x| precision(x).unwrap(),
-        );
-    }
-
-    #[test]
-    fn precision_scale() {
-        perform_test_one(
-            |x| precision(&vec_mul_scalar(x, 2.0)).unwrap(),
-            |x| 2.0 * precision(x).unwrap(),
-        );
-    }
-
-    #[test]
-    fn precision_scale_negate() {
-        perform_test_one(
-            |x| precision(&vec_mul_scalar(x, -2.0)).unwrap(),
-            |x| 2.0 * precision(x).unwrap(),
-        );
-    }
-
-    // MedShift invariance tests
-
-    #[test]
-    fn med_shift_shift() {
-        perform_test_two(
-            |x, y| med_shift(&vec_add_scalar(x, 3.0), &vec_add_scalar(y, 2.0)).unwrap(),
-            |x, y| med_shift(x, y).unwrap() + 1.0,
-        );
-    }
-
-    #[test]
-    fn med_shift_scale() {
-        perform_test_two(
-            |x, y| med_shift(&vec_mul_scalar(x, 2.0), &vec_mul_scalar(y, 2.0)).unwrap(),
-            |x, y| 2.0 * med_shift(x, y).unwrap(),
-        );
-    }
-
-    #[test]
-    fn med_shift_antisymmetry() {
-        perform_test_two(
-            |x, y| med_shift(x, y).unwrap(),
-            |x, y| -1.0 * med_shift(y, x).unwrap(),
-        );
-    }
-
-    // MedRatio invariance tests
-
-    #[test]
-    fn med_ratio_scale() {
-        perform_test_two(
-            |x, y| med_ratio(&vec_mul_scalar(x, 2.0), &vec_mul_scalar(y, 3.0)).unwrap(),
-            |x, y| (2.0 / 3.0) * med_ratio(x, y).unwrap(),
-        );
-    }
-
-    // MedSpread invariance tests
-
-    #[test]
-    fn med_spread_equal() {
-        perform_test_one(|x| med_spread(x, x).unwrap(), |x| spread(x).unwrap());
-    }
-
-    #[test]
-    fn med_spread_symmetry() {
-        perform_test_two(
-            |x, y| med_spread(x, y).unwrap(),
-            |x, y| med_spread(y, x).unwrap(),
-        );
-    }
-
-    #[test]
-    fn med_spread_average() {
-        perform_test_one(
-            |x| med_spread(x, &vec_mul_scalar(x, 5.0)).unwrap(),
+            |x| avg_spread(x, &vec_mul_scalar(x, 5.0)).unwrap(),
             |x| 3.0 * spread(x).unwrap(),
         );
     }
 
     #[test]
-    fn med_spread_scale() {
+    fn avg_spread_scale() {
         perform_test_two(
-            |x, y| med_spread(&vec_mul_scalar(x, -2.0), &vec_mul_scalar(y, -2.0)).unwrap(),
-            |x, y| 2.0 * med_spread(x, y).unwrap(),
+            |x, y| avg_spread(&vec_mul_scalar(x, -2.0), &vec_mul_scalar(y, -2.0)).unwrap(),
+            |x, y| 2.0 * avg_spread(x, y).unwrap(),
         );
     }
 
-    // MedDisparity invariance tests
+    // Disparity invariance tests
 
     #[test]
-    fn med_disparity_shift() {
+    fn disparity_shift() {
         perform_test_two(
-            |x, y| med_disparity(&vec_add_scalar(x, 2.0), &vec_add_scalar(y, 2.0)).unwrap(),
-            |x, y| med_disparity(x, y).unwrap(),
-        );
-    }
-
-    #[test]
-    fn med_disparity_scale() {
-        perform_test_two(
-            |x, y| med_disparity(&vec_mul_scalar(x, 2.0), &vec_mul_scalar(y, 2.0)).unwrap(),
-            |x, y| med_disparity(x, y).unwrap(),
+            |x, y| disparity(&vec_add_scalar(x, 2.0), &vec_add_scalar(y, 2.0)).unwrap(),
+            |x, y| disparity(x, y).unwrap(),
         );
     }
 
     #[test]
-    fn med_disparity_scale_neg() {
+    fn disparity_scale() {
         perform_test_two(
-            |x, y| med_disparity(&vec_mul_scalar(x, -2.0), &vec_mul_scalar(y, -2.0)).unwrap(),
-            |x, y| -1.0 * med_disparity(x, y).unwrap(),
+            |x, y| disparity(&vec_mul_scalar(x, 2.0), &vec_mul_scalar(y, 2.0)).unwrap(),
+            |x, y| disparity(x, y).unwrap(),
         );
     }
 
     #[test]
-    fn med_disparity_antisymmetry() {
+    fn disparity_scale_neg() {
         perform_test_two(
-            |x, y| med_disparity(x, y).unwrap(),
-            |x, y| -1.0 * med_disparity(y, x).unwrap(),
+            |x, y| disparity(&vec_mul_scalar(x, -2.0), &vec_mul_scalar(y, -2.0)).unwrap(),
+            |x, y| -1.0 * disparity(x, y).unwrap(),
+        );
+    }
+
+    #[test]
+    fn disparity_antisymmetry() {
+        perform_test_two(
+            |x, y| disparity(x, y).unwrap(),
+            |x, y| -1.0 * disparity(y, x).unwrap(),
         );
     }
 }

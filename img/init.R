@@ -1,6 +1,5 @@
 libs <- c(
   "ggplot2",
-  "ggdark",
   "jsonlite",
   "dplyr",
   "tidyr",
@@ -14,7 +13,6 @@ install_if_missing(libs)
 invisible(lapply(libs, require, character.only = TRUE))
 
 library(ggplot2)
-library(ggdark)
 library(jsonlite)
 library(dplyr)
 library(tidyr)

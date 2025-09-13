@@ -16,21 +16,20 @@ pip install pragmastat
 ## Usage
 
 ```python
-from pragmastat import center, spread, volatility, precision, med_shift, med_ratio, med_spread, med_disparity
+from pragmastat import center, spread, rel_spread, shift, ratio, avg_spread, disparity
 
 # Basic estimators
 x = [1, 2, 3, 4, 5]
 print(f"Center: {center(x)}")
 print(f"Spread: {spread(x)}")
-print(f"Volatility: {volatility(x)}")
-print(f"Precision: {precision(x)}")
+print(f"RelSpread: {rel_spread(x)}")
 
 # Comparison estimators
 y = [3, 4, 5, 6, 7]
-print(f"Shift: {med_shift(x, y)}")
-print(f"Ratio: {med_ratio(x, y)}")
-print(f"Spread: {med_spread(x, y)}")
-print(f"Disparity: {med_disparity(x, y)}")
+print(f"Shift: {shift(x, y)}")
+print(f"Ratio: {ratio(x, y)}")
+print(f"AvgSpread: {avg_spread(x, y)}")
+print(f"Disparity: {disparity(x, y)}")
 ```
 
 ## Estimators
@@ -39,15 +38,14 @@ print(f"Disparity: {med_disparity(x, y)}")
 
 - `center(x)`: Hodges-Lehmann estimator - median of all pairwise averages
 - `spread(x)`: Shamos estimator - median of all pairwise absolute differences
-- `volatility(x)`: Relative spread - spread divided by absolute center
-- `precision(x)`: Standard error estimate - 2 * spread / sqrt(n)
+- `rel_spread(x)`: Relative spread - spread divided by absolute center
 
 ### Two-sample estimators
 
-- `med_shift(x, y)`: Hodges-Lehmann shift estimator - median of all pairwise differences
-- `med_ratio(x, y)`: Median of all pairwise ratios
-- `med_spread(x, y)`: Weighted average of spreads
-- `med_disparity(x, y)`: Normalized shift - shift divided by average spread
+- `shift(x, y)`: Hodges-Lehmann shift estimator - median of all pairwise differences
+- `ratio(x, y)`: Median of all pairwise ratios
+- `avg_spread(x, y)`: Weighted average of spreads
+- `disparity(x, y)`: Normalized shift - shift divided by average spread
 
 ## Features
 

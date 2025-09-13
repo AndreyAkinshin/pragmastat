@@ -3,8 +3,8 @@ import os
 import pytest
 from pathlib import Path
 from pragmastat import (
-    center, spread, volatility, precision,
-    med_shift, med_ratio, med_spread, med_disparity
+    center, spread, rel_spread,
+    shift, ratio, avg_spread, disparity
 )
 
 
@@ -47,27 +47,24 @@ def run_reference_tests(estimator_name, estimator_func, is_two_sample=False):
 
 
 class TestReference:
-    
+
     def test_center_reference(self):
         run_reference_tests("center", center)
-    
+
     def test_spread_reference(self):
         run_reference_tests("spread", spread)
-    
-    def test_volatility_reference(self):
-        run_reference_tests("volatility", volatility)
-    
-    def test_precision_reference(self):
-        run_reference_tests("precision", precision)
-    
-    def test_med_shift_reference(self):
-        run_reference_tests("med-shift", med_shift, is_two_sample=True)
-    
-    def test_med_ratio_reference(self):
-        run_reference_tests("med-ratio", med_ratio, is_two_sample=True)
-    
-    def test_med_spread_reference(self):
-        run_reference_tests("med-spread", med_spread, is_two_sample=True)
-    
-    def test_med_disparity_reference(self):
-        run_reference_tests("med-disparity", med_disparity, is_two_sample=True)
+
+    def test_rel_spread_reference(self):
+        run_reference_tests("rel-spread", rel_spread)
+
+    def test_shift_reference(self):
+        run_reference_tests("shift", shift, is_two_sample=True)
+
+    def test_ratio_reference(self):
+        run_reference_tests("ratio", ratio, is_two_sample=True)
+
+    def test_avg_spread_reference(self):
+        run_reference_tests("avg-spread", avg_spread, is_two_sample=True)
+
+    def test_disparity_reference(self):
+        run_reference_tests("disparity", disparity, is_two_sample=True)

@@ -48,90 +48,79 @@ class EstimatorsTest {
     }
     
     @Test
-    fun testVolatility() {
-        assertEquals(0.0, volatility(listOf(2.0)))
-        assertFailsWith<IllegalArgumentException> { volatility(listOf(0.0, 0.0)) }
-        
+    fun testRelSpread() {
+        assertEquals(0.0, relSpread(listOf(2.0)))
+        assertFailsWith<IllegalArgumentException> { relSpread(listOf(0.0, 0.0)) }
+
         // Test with known values
         val x = listOf(10.0, 20.0)
-        assertClose(10.0 / 15.0, volatility(x))
+        assertClose(10.0 / 15.0, relSpread(x))
     }
-    
+
     @Test
-    fun testPrecision() {
-        assertFailsWith<IllegalArgumentException> { precision(emptyList()) }
-        
-        // Test with specific examples
-        val x = listOf(1.0, 2.0, 3.0, 4.0, 5.0)
-        val spreadVal = spread(x)
-        val expected = 2.0 * spreadVal / kotlin.math.sqrt(5.0)
-        assertClose(expected, precision(x))
-    }
-    
-    @Test
-    fun testMedShift() {
-        assertFailsWith<IllegalArgumentException> { medShift(emptyList(), listOf(1.0)) }
-        assertFailsWith<IllegalArgumentException> { medShift(listOf(1.0), emptyList()) }
-        
-        assertEquals(2.0, medShift(listOf(3.0), listOf(1.0)))
-        assertEquals(-2.0, medShift(listOf(1.0), listOf(3.0)))
-        
+    fun testShift() {
+        assertFailsWith<IllegalArgumentException> { shift(emptyList(), listOf(1.0)) }
+        assertFailsWith<IllegalArgumentException> { shift(listOf(1.0), emptyList()) }
+
+        assertEquals(2.0, shift(listOf(3.0), listOf(1.0)))
+        assertEquals(-2.0, shift(listOf(1.0), listOf(3.0)))
+
         // Test with multiple values
         val x = listOf(4.0, 5.0, 6.0)
         val y = listOf(1.0, 2.0, 3.0)
-        assertClose(3.0, medShift(x, y))
+        assertClose(3.0, shift(x, y))
     }
-    
+
     @Test
-    fun testMedRatio() {
-        assertFailsWith<IllegalArgumentException> { medRatio(emptyList(), listOf(1.0)) }
-        assertFailsWith<IllegalArgumentException> { medRatio(listOf(1.0), emptyList()) }
-        
-        assertEquals(2.0, medRatio(listOf(4.0), listOf(2.0)))
-        assertEquals(0.5, medRatio(listOf(2.0), listOf(4.0)))
-        
+    fun testRatio() {
+        assertFailsWith<IllegalArgumentException> { ratio(emptyList(), listOf(1.0)) }
+        assertFailsWith<IllegalArgumentException> { ratio(listOf(1.0), emptyList()) }
+
+        assertEquals(2.0, ratio(listOf(4.0), listOf(2.0)))
+        assertEquals(0.5, ratio(listOf(2.0), listOf(4.0)))
+
         // Test with zero in denominator
-        assertFailsWith<IllegalArgumentException> { medRatio(listOf(1.0, 2.0), listOf(0.0)) }
-        
+        assertFailsWith<IllegalArgumentException> { ratio(listOf(1.0, 2.0), listOf(0.0)) }
+
         // Test with multiple values
         val x = listOf(4.0, 6.0, 8.0)
         val y = listOf(2.0, 3.0, 4.0)
-        assertClose(2.0, medRatio(x, y))
+        assertClose(2.0, ratio(x, y))
     }
-    
+
     @Test
-    fun testMedSpread() {
-        assertFailsWith<IllegalArgumentException> { medSpread(emptyList(), emptyList()) }
-        
+    fun testAvgSpread() {
+        assertFailsWith<IllegalArgumentException> { avgSpread(emptyList(), emptyList()) }
+
         // Test with identical samples
         val x = listOf(1.0, 2.0, 3.0)
         val y = listOf(1.0, 2.0, 3.0)
         val spreadX = spread(x)
-        assertClose(spreadX, medSpread(x, y))
-        
+        assertClose(spreadX, avgSpread(x, y))
+
         // Test with different samples
         val a = listOf(1.0, 3.0)
         val b = listOf(2.0, 6.0)
         val spreadA = spread(a)
         val spreadB = spread(b)
         val expected = (2.0 * spreadA + 2.0 * spreadB) / 4.0
-        assertClose(expected, medSpread(a, b))
+        assertClose(expected, avgSpread(a, b))
     }
-    
+
     @Test
-    fun testMedDisparity() {
-        assertFailsWith<IllegalArgumentException> { medDisparity(emptyList(), emptyList()) }
-        
+    fun testDisparity() {
+        assertFailsWith<IllegalArgumentException> { disparity(emptyList(), emptyList()) }
+
         // Test with zero spread
         val x = listOf(1.0)
         val y = listOf(2.0)
-        assertEquals(Double.POSITIVE_INFINITY, medDisparity(x, y))
-        
+        assertEquals(Double.POSITIVE_INFINITY, disparity(x, y))
+
         // Test normal case
         val a = listOf(1.0, 2.0, 3.0)
         val b = listOf(4.0, 5.0, 6.0)
-        val shift = medShift(a, b)
-        val spread = medSpread(a, b)
-        assertClose(shift / spread, medDisparity(a, b))
+        val shiftVal = shift(a, b)
+        val spreadVal = avgSpread(a, b)
+        assertClose(shiftVal / spreadVal, disparity(a, b))
     }
 }
