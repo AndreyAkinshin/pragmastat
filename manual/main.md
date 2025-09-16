@@ -6,7 +6,9 @@ title: "Pragmastat: Pragmatic Statistical Toolkit"
 
 {{< toc >}} <!-- [pdf] DELETE -->
 
-<!-- INCLUDE manual/toolkit.md -->
+<!-- INCLUDE manual/introduction.md -->
+
+<!-- INCLUDE manual/preliminaries.md -->
 
 <!-- INCLUDE manual/estimators.md -->
 

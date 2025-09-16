@@ -4,19 +4,19 @@ $$
 \AvgSpread(\x, \y) = \dfrac{n\Spread(\x) + m\Spread(\y)}{n + m}
 $$
 
-**Practical Recommendations**
-
-The $\AvgSpread$ primarily serves as a scaling factor for $\Disparity$.
-It represents the combined dispersion of both samples, weighted by sample size.
-Performs best for distributions with similar dispersion values.
-
-**Key Facts**
-
 - Measures average dispersion across two samples
-- Domain: any real numbers
-- Provides robust alternative to the pooled standard deviation
+- Serves as a normalization factor for $\Disparity$
+- Performs best for distributions with close dispersion values
+
+**Comparison**
+
+- Robust alternative to the *pooled standard deviation*
 
 **Properties**
+
+- Domain: any real numbers
+- Unit: the same as measurements
+- Location-invariant, scale-invariant
 
 $$
 \AvgSpread(\x, \x) = \Spread(\x)

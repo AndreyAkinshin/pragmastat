@@ -4,23 +4,23 @@ $$
 \Disparity(\x, \y) = \dfrac{\Shift(\x, \y)}{\AvgSpread(\x, \y)}
 $$
 
-**Practical Recommendations**
-
-The $\Disparity$ provides scale-invariant insight into the difference between elements of two samples,
-  expressed in standardized spread units.
-
-**Key Facts**
-
 - Measures a normalized difference between $\x$ and $\y$ expressed in standardized spread units
-- Domain: $\AvgSpread(\x, \y) > 0$ (at least $50\%$ of $|x_i - x_j|$ and $50\%$ of $|y_i - y_j|$ are non-zero)
+- Provides insight into the difference between elements of two samples, expressed in standardized spread units
 - Expresses the *effect size*, renamed to "Disparity" for clarity
-- Scale-invariant, which makes experimental design more portable
 
 **Comparison**
 
-- Compared to *Cohen's d*: more robust while maintaining efficiency under normality
+- Compared to *Cohen's d*:
+  - Gaussian efficiency: good
+  - Robustness: tolerates a decent portion of outliers unlike Cohen's d which can be corrupted by a single outlier
+- Compared to $\Shift$: scale-invariant
+- Compared to $\Ratio$: shift-invariant
 
 **Properties**
+
+- Domain: $\AvgSpread(\x, \y) > 0$ (in each sample, the portion of tied values does not exceed $50\%$)
+- Unit: abstract spread unit
+- Location-invariant, scale-invariant
 
 $$
 \Disparity(\x + k, \y + k) = \Disparity(\x, \y)
@@ -33,3 +33,4 @@ $$
 $$
 \Disparity(\x, \y) = -\Disparity(\y, \x)
 $$
+

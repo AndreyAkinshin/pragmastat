@@ -29,6 +29,8 @@ For quick use without installation, copy individual functions directly into scri
 Each function is self-contained and requires only base R:
 
 ```r
+# <!-- COPYRIGHT -->
+
 <!-- INCLUDE r/pragmastat/R/center.R -->
 
 <!-- INCLUDE r/pragmastat/R/spread.R -->

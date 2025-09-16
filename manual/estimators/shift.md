@@ -4,19 +4,21 @@ $$
 \Shift(\x, \y) = \underset{1 \leq i \leq n,\,\, 1 \leq j \leq m}{\Median} \left(x_i - y_j \right)
 $$
 
-**Practical Recommendations**
-
-The $\Shift$ provides initial insight into the difference between elements of two samples.
-Interpretation: half of $x_i-y_j$ values are smaller than $\Shift(\x, \y)$, the other half are larger.
-For samples with small $\RelSpread$, $\Shift(\x, \y)$ approximates pairwise differences $x_i - y_j$.
-
-**Key Facts**
-
 - Measures the median difference between elements of two samples
-- Domain: any real numbers
+- Value interpretation: half of $x_i-y_j$ values are smaller than $\Shift(\x, \y)$, the other half are larger
+- Sign interpretation: positive shifts indicate larger $\x$ values, negative shifts indicate larger $\y$ values
+- For samples with small $\RelSpread$, $\Shift(\x, \y)$ approximates pairwise differences $x_i - y_j$
 - Equals the *Hodges-Lehmann estimator* for two samples ([@hodges1963])
 
 **Properties**
+
+- Domain: any real numbers
+- Unit: the same as measurements
+- Location-invariant, scale-dependent
+
+$$
+\Shift(\x, \x) = 0
+$$
 
 $$
 \Shift(\x + k_x, \y + k_y) = \Shift(\x, \y) + k_x\!-\!k_y

@@ -69,6 +69,7 @@ public abstract class ConvertorBase
         var content = await ProcessIncludeDirectives(src);
         content = ProcessImageDirectives(content);
         content = ProcessBeginEndDirectives(content);
+        content = ProcessCopyrightDirectives(content);
         var lines = content.Split('\n').ToList();
         var removeMarker = $"<!-- [{Alias}] DELETE -->";
         lines.RemoveAll(line => line.Contains(removeMarker));
@@ -169,6 +170,17 @@ public abstract class ConvertorBase
         }
 
         return result;
+    }
+
+    private string ProcessCopyrightDirectives(string content)
+    {
+        const string copyrightPattern = @"<!--\s*COPYRIGHT\s*-->";
+        var regex = new Regex(copyrightPattern, RegexOptions.IgnoreCase);
+
+        return regex.Replace(content, match =>
+        {
+            return $"Pragmastat v{ManualVersion} (c) 2025 Andrey Akinshin, MIT License";
+        });
     }
 
     protected virtual string ComposeReference(string src)

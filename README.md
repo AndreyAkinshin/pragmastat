@@ -9,6 +9,7 @@ The toolkit
   enables simple software implementations without advanced statistical libraries,
   and provides clear explanations accessible to practitioners without deep statistical training.
 The toolkit consists of renamed, recombined, and refined versions of existing methods.
+Written for mathematicians, software developers, and LLMs.
 
 The manual is available in both PDF and web versions, along with implementations in Python, TypeScript, R, .NET, Kotlin, Rust, and Go.
 
@@ -37,29 +38,3 @@ Note: Windows support remains partial for some commands.
 ./build.cmd r check
 ./build.cmd r build
 ```
-
-## Versioning
-
-An edition is a set of statistical tools that work together.
-Each edition includes a manual (explaining concepts) and code implementations in different languages.
-All parts of an edition use the same notation and rules.
-
-New editions appear only when major changes break compatibility — like changed notation or different statistical methods.
-Editions use natural numbers (1, 2, 3) with corresponding branches (`edition1`, `edition2`, `edition3`).
-Within each edition, components version independently: `v{edition}.{major}.{minor}` referenced by tags.
-The manual might update to v1.0.1 (fixing typos) while the R package stays at v1.0.0.
-The .NET package might jump to v1.1.0 (a bug fix that changes behavior) while others remain unchanged.
-
-Examples:
-- `manual/v1.0.0` — first manual for edition 1
-- `manual/v1.0.1` — minor fixes: typos, clarity
-- `manual/v1.1.0` — major changes: equation fixes, changes in recommendations
-- `dotnet/v1.0.0` — first NuGet package for edition 1
-- `dotnet/v1.0.1` — minor updates: documentation, performance
-- `dotnet/v1.1.0` — major updates: API changes
-
-Components can have different versions within an edition (`manual/v1.2.3` with `dotnet/v1.5.7`).
-Version numbers between `manual/v1.x.y` and `dotnet/v1.x.y` need not match.
-While individual components evolve at their own pace, the latest versions work together seamlessly.
-Since the manual contains description of the packages,
-  `manual/v1.3.4` may describe explicitly versions like `dotnet/v1.2.1` and `r/v1.7.9`.
