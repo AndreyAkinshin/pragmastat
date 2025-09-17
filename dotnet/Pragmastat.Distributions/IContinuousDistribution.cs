@@ -20,10 +20,11 @@ public interface IContinuousDistribution
     /// </summary>
     double Quantile(Probability p);
 
-    RandomGenerator Random(Random? random = null);
-
-    double Mean { get; }
-    double Median { get; }
-    double Variance { get; }
-    double Sd { get; }
+    AbstractRandomGenerator Random(Random? random = null);
+    
+    /// <summary>
+    /// Asymptotic value of spread for the given distribution.
+    /// Returns null in case of unknown or infinite spread.
+    /// </summary>
+    double? AsymptoticSpread { get; }
 }

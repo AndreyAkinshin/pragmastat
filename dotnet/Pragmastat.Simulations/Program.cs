@@ -1,4 +1,5 @@
-﻿using Pragmastat.Simulations.Simulations;
+﻿using Pragmastat.Simulations.Misc;
+using Pragmastat.Simulations.Simulations;
 using Spectre.Console.Cli;
 
 namespace Pragmastat.Simulations;
@@ -12,7 +13,8 @@ public static class Program
             var app = new CommandApp();
             app.Configure(config =>
             {
-                config.AddCommand<CentralTendencyGaussianEfficiency>(CentralTendencyGaussianEfficiency.Name);
+                config.AddCommand<AvgDriftSimulation>(AvgDriftSimulation.Name);
+                config.AddCommand<DispDriftSimulation>(DispDriftSimulation.Name);
             });
             return await app.RunAsync(args);
         }

@@ -2,16 +2,6 @@
 
 Kotlin implementation of the Pragmastat statistical toolkit.
 
-## Installation
-
-Add the dependency to your `build.gradle.kts`:
-
-```kotlin
-dependencies {
-    implementation("com.pragmastat:pragmastat:2.0.0")
-}
-```
-
 ## Usage
 
 ```kotlin

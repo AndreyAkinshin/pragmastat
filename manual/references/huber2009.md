@@ -12,12 +12,12 @@ authors:
 > Peter J. Huber, Elvezio Ronchetti <i>"Robust Statistics"</i> (2009)
 
 ```bib
-@incollection{huber2011,
+@incollection{huber2009,
   title={Robust statistics},
   author={Huber, Peter J},
   booktitle={International encyclopedia of statistical science},
   pages={1248--1251},
-  year={2011},
+  year={2009},
   publisher={Springer}
 }
 ```

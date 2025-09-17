@@ -59,7 +59,7 @@ var shift = Toolkit.Shift(sample1, sample2);
 ### Available Estimators
 
 **One-Sample Estimators:**
-- `Center()` - Robust central tendency
+- `Center()` - Robust average
 - `Spread()` - Robust dispersion
 - `RelSpread()` - Relative dispersion
 

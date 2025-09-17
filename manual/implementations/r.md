@@ -13,8 +13,7 @@ Demo usage of R functions:
 x <- c(1, 2, 3, 4, 5, 6, 273)
 center(x) # 4
 spread(x) # 3
-volatility(x) # 0.75
-precision(x) # 2.2677868380553634
+rel_spread(x) # 0.75
 
 shift(x, x - 10) # 10
 ratio(x, x / 10) # 10

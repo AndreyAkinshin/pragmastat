@@ -1,5 +1,5 @@
 ---
-title: Theory of rank tests
+title: Approximation theorems of mathematical statistics
 year: 2009
 authors:
 - Robert J Serfling

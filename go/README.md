@@ -55,7 +55,7 @@ func main() {
 
 ### One-Sample Estimators
 
-- **Center(x)**: Robust measure of central tendency (Hodges-Lehmann estimator)
+- **Center(x)**: Robust measure of average (Hodges-Lehmann estimator)
 - **Spread(x)**: Robust measure of dispersion (Shamos estimator)
 - **RelSpread(x)**: Relative dispersion (robust coefficient of variation)
 

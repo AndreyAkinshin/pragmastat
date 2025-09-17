@@ -2,6 +2,7 @@ using System.Text.RegularExpressions;
 using Common;
 using Common.Extensions;
 using Common.Io;
+using Spectre.Console.Rendering;
 
 namespace Entry.Core;
 
@@ -30,6 +31,7 @@ public abstract class ConvertorBase
     protected abstract string InsertImg(string name, string title);
     protected abstract string InsertBegin(string name);
     protected abstract string InsertEnd(string name);
+    protected virtual bool ShouldNumberHeaders => false;
 
     public async Task ConvertAll()
     {
@@ -61,15 +63,17 @@ public abstract class ConvertorBase
 
     protected virtual async Task<string> ConvertMain(string src)
     {
-        return await ConvertText(src);
+        return await ConvertText(src, true);
     }
 
-    public async Task<string> ConvertText(string src)
+    public async Task<string> ConvertText(string src, bool isMain)
     {
         var content = await ProcessIncludeDirectives(src);
         content = ProcessImageDirectives(content);
         content = ProcessBeginEndDirectives(content);
         content = ProcessCopyrightDirectives(content);
+        if (ShouldNumberHeaders && isMain)
+            content = ProcessHeaderNumbering(content);
         var lines = content.Split('\n').ToList();
         var removeMarker = $"<!-- [{Alias}] DELETE -->";
         lines.RemoveAll(line => line.Contains(removeMarker));
@@ -181,6 +185,60 @@ public abstract class ConvertorBase
         {
             return $"Pragmastat v{ManualVersion} (c) 2025 Andrey Akinshin, MIT License";
         });
+    }
+
+    private string ProcessHeaderNumbering(string content)
+    {
+        var lines = content.Split('\n');
+        var headerCounters = new int[6]; // H1 through H6
+
+        for (int i = 0; i < lines.Length; i++)
+        {
+            var line = lines[i].Trim();
+            if (line.StartsWith("#"))
+            {
+                var level = 0;
+                while (level < line.Length && line[level] == '#')
+                    level++;
+
+                if (level > 0 && level <= 6 && level < line.Length && char.IsWhiteSpace(line[level]))
+                {
+                    // Extract header text (skip # symbols and whitespace)
+                    var headerText = line.Substring(level).TrimStart();
+
+                    // Skip if already numbered
+                    if (headerText.StartsWith("§"))
+                        continue;
+
+                    // Increment counter for current level
+                    headerCounters[level - 1]++;
+
+                    // Reset counters for deeper levels
+                    for (int j = level; j < headerCounters.Length; j++)
+                    {
+                        headerCounters[j] = 0;
+                    }
+
+                    // Build section number
+                    var sectionNumber = "";
+                    for (int j = 0; j < level; j++)
+                    {
+                        if (headerCounters[j] > 0)
+                        {
+                            if (sectionNumber.Length > 0)
+                                sectionNumber += ".";
+                            sectionNumber += headerCounters[j].ToString();
+                        }
+                    }
+
+                    // Rebuild the line with section number
+                    var hashSymbols = new string('#', level);
+                    lines[i] = $"{hashSymbols} §{sectionNumber}. {headerText}";
+                }
+            }
+        }
+
+        return string.Join('\n', lines);
     }
 
     protected virtual string ComposeReference(string src)

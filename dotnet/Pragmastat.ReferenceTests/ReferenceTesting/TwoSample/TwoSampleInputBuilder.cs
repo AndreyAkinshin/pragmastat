@@ -1,7 +1,6 @@
 using JetBrains.Annotations;
 using Pragmastat.Core;
 using Pragmastat.Distributions;
-using Pragmastat.Distributions.Helpers;
 using Pragmastat.Distributions.Randomization;
 
 namespace Pragmastat.ReferenceTests.ReferenceTesting.TwoSample;
@@ -15,8 +14,8 @@ public class TwoSampleInputBuilder : ReferenceTestCaseInputBuilder<TwoSampleInpu
 
     private TwoSampleInputBuilder AddRandomSamples(
         string name,
-        RandomGenerator xGenerator,
-        RandomGenerator yGenerator,
+        AbstractRandomGenerator xGenerator,
+        AbstractRandomGenerator yGenerator,
         int[] xSizes,
         int[] ySizes,
         int count)
@@ -90,7 +89,7 @@ public class TwoSampleInputBuilder : ReferenceTestCaseInputBuilder<TwoSampleInpu
 
     public TwoSampleInputBuilder AddNormal(int[] xSizes, int[] ySizes, int count = DefaultCount)
     {
-        return AddDistributionSamples("normal", new NormalDistribution(10), new NormalDistribution(10), xSizes, ySizes, count);
+        return AddDistributionSamples("normal", new AdditiveDistribution(10), new AdditiveDistribution(10), xSizes, ySizes, count);
     }
 
     public TwoSampleInputBuilder AddUniform(int[] xSizes, int[] ySizes, int count = DefaultCount)

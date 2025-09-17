@@ -13,7 +13,7 @@ public class ApproximationTests : SingleDoubleValueTestBase
     public ApproximationTests()
     {
         double[] milliles = Uniform(0, 1, 1001, 1);
-        double[] normalMilliles = milliles.Select(p => NormalDistribution.Standard.Quantile(p)).ToArray();
+        double[] normalMilliles = milliles.Select(p => AdditiveDistribution.Standard.Quantile(p)).ToArray();
         RegisterFunction("acm209", AcmAlgorithm209.Gauss, normalMilliles);
         RegisterFunction("erf", AbramowitzStegunErf.Value, normalMilliles);
         RegisterFunction("erf_inverse", ErfInverse.Value, Uniform(-1, 1, 1001, 1));

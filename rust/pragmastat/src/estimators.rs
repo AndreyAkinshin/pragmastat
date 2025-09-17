@@ -6,7 +6,7 @@ fn median_sorted(sorted: &[f64]) -> Result<f64, &'static str> {
     if n == 0 {
         return Err("Input slice cannot be empty");
     }
-    if n % 2 == 0 {
+    if n.is_multiple_of(2) {
         Ok((sorted[n / 2 - 1] + sorted[n / 2]) / 2.0)
     } else {
         Ok(sorted[n / 2])

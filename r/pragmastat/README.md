@@ -40,7 +40,7 @@ disparity(x, y) # Effect size measure
 
 ### One-Sample Estimators
 
-- **center**: Hodges-Lehmann location estimator - robust measure of central tendency
+- **center**: Hodges-Lehmann location estimator - robust measure of average
 - **spread**: Shamos scale estimator - robust measure of dispersion
 - **rel_spread**: Relative dispersion measure - spread normalized by center
 

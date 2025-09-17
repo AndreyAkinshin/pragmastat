@@ -36,7 +36,8 @@ internal static class Program
                 dotnet.AddBranch<CommandSettings>("sim",
                     sim =>
                     {
-                        sim.AddCommand<CentralTendencyGaussianEfficiency>(CentralTendencyGaussianEfficiency.Name);
+                        sim.AddCommand<AvgDriftSimulation>(AvgDriftSimulation.Name);
+                        sim.AddCommand<DispDriftSimulation>(DispDriftSimulation.Name);
                     });
             });
 

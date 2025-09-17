@@ -2,14 +2,12 @@
 
 Online version: https://pragmastat.dev/
 
-This manual presents a unified statistical toolkit for reliable analysis of real-world data.
-The toolkit
-  nearly matches the efficiency of traditional statistical estimators under normality,
-  maintains reasonable robustness against outliers,
-  enables simple software implementations without advanced statistical libraries,
-  and provides clear explanations accessible to practitioners without deep statistical training.
+This manual presents a toolkit of statistical procedures that
+  provide reliable results across diverse real-world distributions,
+  enable simple software implementations without advanced statistical libraries,
+  and are accompanied by clear explanations accessible to practitioners.
 The toolkit consists of renamed, recombined, and refined versions of existing methods.
-Written for mathematicians, software developers, and LLMs.
+Written for software developers, mathematicians, and LLMs.
 
 The manual is available in both PDF and web versions, along with implementations in Python, TypeScript, R, .NET, Kotlin, Rust, and Go.
 

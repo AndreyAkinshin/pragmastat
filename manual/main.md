@@ -8,8 +8,14 @@ title: "Pragmastat: Pragmatic Statistical Toolkit"
 
 <!-- INCLUDE manual/introduction.md -->
 
-<!-- INCLUDE manual/preliminaries.md -->
-
 <!-- INCLUDE manual/estimators.md -->
+
+<!-- INCLUDE manual/distributions.md -->
+
+<!-- INCLUDE manual/properties.md -->
+
+<!-- INCLUDE manual/methodology.md -->
+
+<!-- INCLUDE manual/algorithms.md -->
 
 <!-- INCLUDE manual/studies.md -->

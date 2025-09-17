@@ -1,7 +1,6 @@
 using JetBrains.Annotations;
 using Pragmastat.Core;
 using Pragmastat.Distributions;
-using Pragmastat.Distributions.Helpers;
 using Pragmastat.Distributions.Randomization;
 
 namespace Pragmastat.ReferenceTests.ReferenceTesting.OneSample;
@@ -16,7 +15,7 @@ public class OneSampleInputBuilder : ReferenceTestCaseInputBuilder<OneSampleInpu
 
     private OneSampleInputBuilder AddRandomSamples(
         string name,
-        RandomGenerator valueGenerator,
+        AbstractRandomGenerator valueGenerator,
         int[] sizes,
         int count,
         bool weighted = true)
@@ -85,7 +84,7 @@ public class OneSampleInputBuilder : ReferenceTestCaseInputBuilder<OneSampleInpu
 
     public OneSampleInputBuilder AddNormal(int[] sizes, int count = DefaultCount, bool weighted = DefaultWeighted)
     {
-        return AddDistributionSamples("normal", new NormalDistribution(10), sizes, count, weighted);
+        return AddDistributionSamples("normal", new AdditiveDistribution(10), sizes, count, weighted);
     }
 
     public OneSampleInputBuilder AddUniform(int[] sizes, int count = DefaultCount, bool weighted = DefaultWeighted)

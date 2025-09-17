@@ -30,6 +30,11 @@ public class WebCommand : AsyncCommand<WebCommand.Settings>
         [CommandOption("--release")]
         public bool Release { get; set; }
 
+        [CommandOption("--convert")]
+        [Description("Convert source only without calling hugo")]
+        [DefaultValue(false)]
+        public bool ConvertOnly { get; set; }
+
         [CommandOption("--output-script-path")]
         public string OutputScriptPath { get; set; } = "";
     }
@@ -47,7 +52,8 @@ public class WebCommand : AsyncCommand<WebCommand.Settings>
                 return code;
         }
 
-        await RunTailwind();
+        if (!settings.ConvertOnly)
+            await RunTailwind();
 
         await Convertor.ConvertAll();
 
@@ -64,15 +70,18 @@ public class WebCommand : AsyncCommand<WebCommand.Settings>
         foreach (var implFile in Nav.ManualDir.SubDirectory("implementations").EnumerateFiles())
         {
             var implContent = await implFile.ReadAllTextAsync();
-            implContent = await Convertor.ConvertText(implContent);
+            implContent = await Convertor.ConvertText(implContent, false);
             var destImplFile = Nav.WebContentDir.SubDirectory("implementations").File(implFile.Name);
             await destImplFile.WriteAllTextAsync(implContent);
         }
 
-        if (settings.Serve)
-            await RunHugoServe(context, settings);
-        else
-            await BuildHugo(context, settings);
+        if (!settings.ConvertOnly)
+        {
+            if (settings.Serve)
+                await RunHugoServe(context, settings);
+            else
+                await BuildHugo(context, settings);
+        }
 
         return 0;
     }

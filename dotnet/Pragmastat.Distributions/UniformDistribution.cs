@@ -1,3 +1,4 @@
+using JetBrains.Annotations;
 using Pragmastat.Core;
 using Pragmastat.Core.Internal;
 using Pragmastat.Distributions.Randomization;
@@ -11,11 +12,13 @@ public class UniformDistribution : IContinuousDistribution
     /// <summary>
     /// The minimum value of the uniform distribution
     /// </summary>
+    [PublicAPI]
     public double Min { get; }
 
     /// <summary>
     /// The maximum value of the uniform distribution
     /// </summary>
+    [PublicAPI]
     public double Max { get; }
 
     public UniformDistribution(double min, double max)
@@ -40,13 +43,12 @@ public class UniformDistribution : IContinuousDistribution
 
     public double Quantile(Probability p) => Min + p * (Max - Min);
 
-    public RandomGenerator Random(Random? random = null) => new DistributionRandomGenerator(this, random);
+    public AbstractRandomGenerator Random(Random? random = null) =>
+        new DistributionRandomGenerator(this, random);
 
-    public double Mean => (Min + Max) / 2;
-    public double Median => (Min + Max) / 2;
-    public double Variance => (Max - Min).Sqr() / 12;
-    public double Sd => Sqrt(Variance);
-    public double Skewness => 0;
+    public double Width => Max - Min;
+
+    public double? AsymptoticSpread => (1 - 1.0 / Sqrt(2.0)) * Width;
 
     public override string ToString() => $"Uniform({Min.ToStringInvariant()},{Max.ToStringInvariant()})";
 }

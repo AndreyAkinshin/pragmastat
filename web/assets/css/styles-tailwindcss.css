@@ -31,7 +31,7 @@ body {
 }
 
 h1, h2, h3, h4, h5, h6 {
-  @apply my-0 leading-tight pb-2 text-center;
+  @apply my-0 leading-tight pb-2;
 }
 h1 {
   @apply text-3xl pt-6;
@@ -75,6 +75,12 @@ a:hover {
 }
 .main ol {
   @apply list-decimal ml-5;
+}
+.main .toc ul {
+  @apply ml-0 list-none!;
+}
+.main .toc ul ul > li {
+  @apply ml-5;
 }
 .main p {
   @apply my-2;

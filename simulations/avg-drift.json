@@ -1,0 +1,4457 @@
+[
+  {
+    "distribution": "Additive",
+    "sampleSize": 10,
+    "drifts": {
+      "Mean": 0.9999,
+      "Median": 1.175,
+      "Center": 1.0359
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 100,
+    "drifts": {
+      "Mean": 1.0009,
+      "Median": 1.2453,
+      "Center": 1.0245
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 11,
+    "drifts": {
+      "Mean": 1.0001,
+      "Median": 1.2267,
+      "Center": 1.0339
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 12,
+    "drifts": {
+      "Mean": 1,
+      "Median": 1.1867,
+      "Center": 1.0333
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 13,
+    "drifts": {
+      "Mean": 1,
+      "Median": 1.2311,
+      "Center": 1.0334
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 14,
+    "drifts": {
+      "Mean": 0.9997,
+      "Median": 1.1948,
+      "Center": 1.0322
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 15,
+    "drifts": {
+      "Mean": 0.9996,
+      "Median": 1.2337,
+      "Center": 1.0314
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 16,
+    "drifts": {
+      "Mean": 1.0004,
+      "Median": 1.202,
+      "Center": 1.0317
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 17,
+    "drifts": {
+      "Mean": 1.0006,
+      "Median": 1.2371,
+      "Center": 1.0319
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 18,
+    "drifts": {
+      "Mean": 0.9998,
+      "Median": 1.2068,
+      "Center": 1.0306
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 19,
+    "drifts": {
+      "Mean": 0.9997,
+      "Median": 1.2377,
+      "Center": 1.0299
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 2,
+    "drifts": {
+      "Mean": 1.0002,
+      "Median": 1.0002,
+      "Center": 1.0002
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 20,
+    "drifts": {
+      "Mean": 1.0001,
+      "Median": 1.2112,
+      "Center": 1.0301
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 21,
+    "drifts": {
+      "Mean": 0.9998,
+      "Median": 1.2392,
+      "Center": 1.0294
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 22,
+    "drifts": {
+      "Mean": 1,
+      "Median": 1.2144,
+      "Center": 1.0294
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 23,
+    "drifts": {
+      "Mean": 1.0001,
+      "Median": 1.2409,
+      "Center": 1.0292
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 24,
+    "drifts": {
+      "Mean": 0.9996,
+      "Median": 1.2175,
+      "Center": 1.0286
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 25,
+    "drifts": {
+      "Mean": 0.9999,
+      "Median": 1.2417,
+      "Center": 1.0287
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 26,
+    "drifts": {
+      "Mean": 1,
+      "Median": 1.2199,
+      "Center": 1.0286
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 27,
+    "drifts": {
+      "Mean": 1.0002,
+      "Median": 1.2431,
+      "Center": 1.0286
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 28,
+    "drifts": {
+      "Mean": 1.0003,
+      "Median": 1.2229,
+      "Center": 1.0285
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 29,
+    "drifts": {
+      "Mean": 0.9999,
+      "Median": 1.243,
+      "Center": 1.0277
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 3,
+    "drifts": {
+      "Mean": 1,
+      "Median": 1.1578,
+      "Center": 1.0106
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 30,
+    "drifts": {
+      "Mean": 1.0006,
+      "Median": 1.2249,
+      "Center": 1.028
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 31,
+    "drifts": {
+      "Mean": 1,
+      "Median": 1.2444,
+      "Center": 1.0273
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 32,
+    "drifts": {
+      "Mean": 1.0005,
+      "Median": 1.227,
+      "Center": 1.0276
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 33,
+    "drifts": {
+      "Mean": 1.0006,
+      "Median": 1.2448,
+      "Center": 1.0275
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 34,
+    "drifts": {
+      "Mean": 1.0003,
+      "Median": 1.2279,
+      "Center": 1.027
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 35,
+    "drifts": {
+      "Mean": 1.0007,
+      "Median": 1.2456,
+      "Center": 1.0272
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 36,
+    "drifts": {
+      "Mean": 1.001,
+      "Median": 1.2298,
+      "Center": 1.0273
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 37,
+    "drifts": {
+      "Mean": 1.001,
+      "Median": 1.2462,
+      "Center": 1.0273
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 38,
+    "drifts": {
+      "Mean": 1.0011,
+      "Median": 1.2316,
+      "Center": 1.0273
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 39,
+    "drifts": {
+      "Mean": 1.001,
+      "Median": 1.2468,
+      "Center": 1.0271
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 4,
+    "drifts": {
+      "Mean": 0.9999,
+      "Median": 1.0906,
+      "Center": 1.0444
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 40,
+    "drifts": {
+      "Mean": 1.0008,
+      "Median": 1.2323,
+      "Center": 1.0267
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 41,
+    "drifts": {
+      "Mean": 1.0008,
+      "Median": 1.247,
+      "Center": 1.0267
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 42,
+    "drifts": {
+      "Mean": 1.0009,
+      "Median": 1.2334,
+      "Center": 1.0267
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 43,
+    "drifts": {
+      "Mean": 1.0008,
+      "Median": 1.2479,
+      "Center": 1.0264
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 44,
+    "drifts": {
+      "Mean": 1.0006,
+      "Median": 1.2341,
+      "Center": 1.0262
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 45,
+    "drifts": {
+      "Mean": 1.0007,
+      "Median": 1.2482,
+      "Center": 1.0263
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 46,
+    "drifts": {
+      "Mean": 1.0009,
+      "Median": 1.2351,
+      "Center": 1.0262
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 47,
+    "drifts": {
+      "Mean": 1.0011,
+      "Median": 1.2479,
+      "Center": 1.0262
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 48,
+    "drifts": {
+      "Mean": 1.0013,
+      "Median": 1.2361,
+      "Center": 1.0264
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 49,
+    "drifts": {
+      "Mean": 1.0007,
+      "Median": 1.2485,
+      "Center": 1.0259
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 5,
+    "drifts": {
+      "Mean": 0.9997,
+      "Median": 1.1955,
+      "Center": 1.0364
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 50,
+    "drifts": {
+      "Mean": 1.0011,
+      "Median": 1.2368,
+      "Center": 1.0263
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 51,
+    "drifts": {
+      "Mean": 1.0011,
+      "Median": 1.2487,
+      "Center": 1.026
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 52,
+    "drifts": {
+      "Mean": 1.0014,
+      "Median": 1.2375,
+      "Center": 1.0261
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 53,
+    "drifts": {
+      "Mean": 1.0007,
+      "Median": 1.2484,
+      "Center": 1.0254
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 54,
+    "drifts": {
+      "Mean": 1.0007,
+      "Median": 1.2378,
+      "Center": 1.0255
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 55,
+    "drifts": {
+      "Mean": 1.0013,
+      "Median": 1.2495,
+      "Center": 1.0262
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 56,
+    "drifts": {
+      "Mean": 1.001,
+      "Median": 1.2385,
+      "Center": 1.0257
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 57,
+    "drifts": {
+      "Mean": 1.001,
+      "Median": 1.2498,
+      "Center": 1.0257
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 58,
+    "drifts": {
+      "Mean": 1.0012,
+      "Median": 1.2396,
+      "Center": 1.0258
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 59,
+    "drifts": {
+      "Mean": 1.0005,
+      "Median": 1.2492,
+      "Center": 1.0251
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 6,
+    "drifts": {
+      "Mean": 1.0002,
+      "Median": 1.1339,
+      "Center": 1.0366
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 60,
+    "drifts": {
+      "Mean": 1.0012,
+      "Median": 1.2398,
+      "Center": 1.0257
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 61,
+    "drifts": {
+      "Mean": 1.001,
+      "Median": 1.2496,
+      "Center": 1.0254
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 62,
+    "drifts": {
+      "Mean": 1.0008,
+      "Median": 1.2397,
+      "Center": 1.0253
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 63,
+    "drifts": {
+      "Mean": 1.0011,
+      "Median": 1.2499,
+      "Center": 1.0256
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 64,
+    "drifts": {
+      "Mean": 1.0007,
+      "Median": 1.2401,
+      "Center": 1.0252
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 65,
+    "drifts": {
+      "Mean": 1.001,
+      "Median": 1.2502,
+      "Center": 1.0253
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 66,
+    "drifts": {
+      "Mean": 1.001,
+      "Median": 1.2411,
+      "Center": 1.0252
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 67,
+    "drifts": {
+      "Mean": 1.001,
+      "Median": 1.2501,
+      "Center": 1.0253
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 68,
+    "drifts": {
+      "Mean": 1.0014,
+      "Median": 1.2417,
+      "Center": 1.0256
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 69,
+    "drifts": {
+      "Mean": 1.0008,
+      "Median": 1.2497,
+      "Center": 1.025
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 7,
+    "drifts": {
+      "Mean": 0.9996,
+      "Median": 1.2112,
+      "Center": 1.0386
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 70,
+    "drifts": {
+      "Mean": 1.0009,
+      "Median": 1.2415,
+      "Center": 1.0252
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 71,
+    "drifts": {
+      "Mean": 1.0013,
+      "Median": 1.2507,
+      "Center": 1.0256
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 72,
+    "drifts": {
+      "Mean": 1.0009,
+      "Median": 1.2418,
+      "Center": 1.025
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 73,
+    "drifts": {
+      "Mean": 1.0012,
+      "Median": 1.2511,
+      "Center": 1.0255
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 74,
+    "drifts": {
+      "Mean": 1.0009,
+      "Median": 1.2419,
+      "Center": 1.0249
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 75,
+    "drifts": {
+      "Mean": 1.0011,
+      "Median": 1.2506,
+      "Center": 1.0252
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 76,
+    "drifts": {
+      "Mean": 1.0008,
+      "Median": 1.2429,
+      "Center": 1.0249
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 77,
+    "drifts": {
+      "Mean": 1.001,
+      "Median": 1.2505,
+      "Center": 1.025
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 78,
+    "drifts": {
+      "Mean": 1.0009,
+      "Median": 1.2431,
+      "Center": 1.0251
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 79,
+    "drifts": {
+      "Mean": 1.0006,
+      "Median": 1.2508,
+      "Center": 1.0248
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 8,
+    "drifts": {
+      "Mean": 0.9997,
+      "Median": 1.1583,
+      "Center": 1.0349
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 80,
+    "drifts": {
+      "Mean": 1.0008,
+      "Median": 1.2431,
+      "Center": 1.0249
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 81,
+    "drifts": {
+      "Mean": 1.0007,
+      "Median": 1.2508,
+      "Center": 1.0247
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 82,
+    "drifts": {
+      "Mean": 1.0013,
+      "Median": 1.2435,
+      "Center": 1.0252
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 83,
+    "drifts": {
+      "Mean": 1.0012,
+      "Median": 1.251,
+      "Center": 1.0252
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 84,
+    "drifts": {
+      "Mean": 1.0009,
+      "Median": 1.2435,
+      "Center": 1.0248
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 85,
+    "drifts": {
+      "Mean": 1.0008,
+      "Median": 1.2511,
+      "Center": 1.0247
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 86,
+    "drifts": {
+      "Mean": 1.0008,
+      "Median": 1.244,
+      "Center": 1.0248
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 87,
+    "drifts": {
+      "Mean": 1.0012,
+      "Median": 1.2513,
+      "Center": 1.0251
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 88,
+    "drifts": {
+      "Mean": 1.0007,
+      "Median": 1.2442,
+      "Center": 1.0247
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 89,
+    "drifts": {
+      "Mean": 1.0008,
+      "Median": 1.2513,
+      "Center": 1.0247
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 9,
+    "drifts": {
+      "Mean": 1,
+      "Median": 1.2206,
+      "Center": 1.0363
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 90,
+    "drifts": {
+      "Mean": 1.0007,
+      "Median": 1.2441,
+      "Center": 1.0244
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 91,
+    "drifts": {
+      "Mean": 1.0005,
+      "Median": 1.2513,
+      "Center": 1.0244
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 92,
+    "drifts": {
+      "Mean": 1.0009,
+      "Median": 1.2452,
+      "Center": 1.0248
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 93,
+    "drifts": {
+      "Mean": 1.0007,
+      "Median": 1.2509,
+      "Center": 1.0245
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 94,
+    "drifts": {
+      "Mean": 1.0008,
+      "Median": 1.2449,
+      "Center": 1.0246
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 95,
+    "drifts": {
+      "Mean": 1.0014,
+      "Median": 1.2519,
+      "Center": 1.0251
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 96,
+    "drifts": {
+      "Mean": 1.0007,
+      "Median": 1.2451,
+      "Center": 1.0245
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 97,
+    "drifts": {
+      "Mean": 1.0007,
+      "Median": 1.2509,
+      "Center": 1.0242
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 98,
+    "drifts": {
+      "Mean": 1.001,
+      "Median": 1.2458,
+      "Center": 1.0247
+    }
+  },
+  {
+    "distribution": "Additive",
+    "sampleSize": 99,
+    "drifts": {
+      "Mean": 1.001,
+      "Median": 1.2517,
+      "Center": 1.0247
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 10,
+    "drifts": {
+      "Mean": 1.3324,
+      "Median": 1.2701,
+      "Center": 1.2865
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 100,
+    "drifts": {
+      "Mean": 1.3684,
+      "Median": 1.3657,
+      "Center": 1.3026
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 11,
+    "drifts": {
+      "Mean": 1.3366,
+      "Median": 1.3181,
+      "Center": 1.2853
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 12,
+    "drifts": {
+      "Mean": 1.3397,
+      "Median": 1.2836,
+      "Center": 1.2881
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 13,
+    "drifts": {
+      "Mean": 1.3419,
+      "Median": 1.3259,
+      "Center": 1.2902
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 14,
+    "drifts": {
+      "Mean": 1.345,
+      "Median": 1.2942,
+      "Center": 1.2918
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 15,
+    "drifts": {
+      "Mean": 1.3461,
+      "Median": 1.332,
+      "Center": 1.2911
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 16,
+    "drifts": {
+      "Mean": 1.3488,
+      "Median": 1.3029,
+      "Center": 1.2929
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 17,
+    "drifts": {
+      "Mean": 1.3502,
+      "Median": 1.3375,
+      "Center": 1.2942
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 18,
+    "drifts": {
+      "Mean": 1.3517,
+      "Median": 1.3099,
+      "Center": 1.2949
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 19,
+    "drifts": {
+      "Mean": 1.3532,
+      "Median": 1.3418,
+      "Center": 1.2958
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 2,
+    "drifts": {
+      "Mean": 1.1684,
+      "Median": 1.1686,
+      "Center": 1.1686
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 20,
+    "drifts": {
+      "Mean": 1.3542,
+      "Median": 1.3155,
+      "Center": 1.2957
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 21,
+    "drifts": {
+      "Mean": 1.3551,
+      "Median": 1.3444,
+      "Center": 1.2969
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 22,
+    "drifts": {
+      "Mean": 1.3565,
+      "Median": 1.3209,
+      "Center": 1.2977
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 23,
+    "drifts": {
+      "Mean": 1.3564,
+      "Median": 1.3469,
+      "Center": 1.2968
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 24,
+    "drifts": {
+      "Mean": 1.3578,
+      "Median": 1.3246,
+      "Center": 1.2979
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 25,
+    "drifts": {
+      "Mean": 1.3581,
+      "Median": 1.3492,
+      "Center": 1.2982
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 26,
+    "drifts": {
+      "Mean": 1.3592,
+      "Median": 1.3285,
+      "Center": 1.2988
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 27,
+    "drifts": {
+      "Mean": 1.3596,
+      "Median": 1.3513,
+      "Center": 1.2988
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 28,
+    "drifts": {
+      "Mean": 1.3604,
+      "Median": 1.3313,
+      "Center": 1.2995
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 29,
+    "drifts": {
+      "Mean": 1.3607,
+      "Median": 1.353,
+      "Center": 1.2994
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 3,
+    "drifts": {
+      "Mean": 1.2343,
+      "Median": 1.1983,
+      "Center": 1.1893
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 30,
+    "drifts": {
+      "Mean": 1.3611,
+      "Median": 1.3341,
+      "Center": 1.2997
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 31,
+    "drifts": {
+      "Mean": 1.362,
+      "Median": 1.3548,
+      "Center": 1.3001
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 32,
+    "drifts": {
+      "Mean": 1.3626,
+      "Median": 1.3368,
+      "Center": 1.3006
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 33,
+    "drifts": {
+      "Mean": 1.3628,
+      "Median": 1.3559,
+      "Center": 1.3006
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 34,
+    "drifts": {
+      "Mean": 1.3623,
+      "Median": 1.3377,
+      "Center": 1.2996
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 35,
+    "drifts": {
+      "Mean": 1.363,
+      "Median": 1.357,
+      "Center": 1.3006
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 36,
+    "drifts": {
+      "Mean": 1.3633,
+      "Median": 1.3408,
+      "Center": 1.3007
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 37,
+    "drifts": {
+      "Mean": 1.3644,
+      "Median": 1.3582,
+      "Center": 1.3012
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 38,
+    "drifts": {
+      "Mean": 1.3642,
+      "Median": 1.3422,
+      "Center": 1.301
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 39,
+    "drifts": {
+      "Mean": 1.3642,
+      "Median": 1.3584,
+      "Center": 1.3009
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 4,
+    "drifts": {
+      "Mean": 1.2684,
+      "Median": 1.1923,
+      "Center": 1.2305
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 40,
+    "drifts": {
+      "Mean": 1.3646,
+      "Median": 1.343,
+      "Center": 1.301
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 41,
+    "drifts": {
+      "Mean": 1.3657,
+      "Median": 1.3602,
+      "Center": 1.302
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 42,
+    "drifts": {
+      "Mean": 1.3652,
+      "Median": 1.3451,
+      "Center": 1.3016
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 43,
+    "drifts": {
+      "Mean": 1.3659,
+      "Median": 1.3606,
+      "Center": 1.3023
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 44,
+    "drifts": {
+      "Mean": 1.3663,
+      "Median": 1.3471,
+      "Center": 1.3023
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 45,
+    "drifts": {
+      "Mean": 1.3669,
+      "Median": 1.3613,
+      "Center": 1.3026
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 46,
+    "drifts": {
+      "Mean": 1.3658,
+      "Median": 1.3478,
+      "Center": 1.3016
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 47,
+    "drifts": {
+      "Mean": 1.3669,
+      "Median": 1.3619,
+      "Center": 1.3024
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 48,
+    "drifts": {
+      "Mean": 1.3667,
+      "Median": 1.3488,
+      "Center": 1.3022
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 49,
+    "drifts": {
+      "Mean": 1.3667,
+      "Median": 1.3624,
+      "Center": 1.3023
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 5,
+    "drifts": {
+      "Mean": 1.2895,
+      "Median": 1.2584,
+      "Center": 1.2592
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 50,
+    "drifts": {
+      "Mean": 1.3672,
+      "Median": 1.3498,
+      "Center": 1.3025
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 51,
+    "drifts": {
+      "Mean": 1.3675,
+      "Median": 1.3628,
+      "Center": 1.3024
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 52,
+    "drifts": {
+      "Mean": 1.3676,
+      "Median": 1.3501,
+      "Center": 1.3026
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 53,
+    "drifts": {
+      "Mean": 1.3677,
+      "Median": 1.3635,
+      "Center": 1.3026
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 54,
+    "drifts": {
+      "Mean": 1.3677,
+      "Median": 1.3513,
+      "Center": 1.3029
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 55,
+    "drifts": {
+      "Mean": 1.3678,
+      "Median": 1.3641,
+      "Center": 1.3029
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 56,
+    "drifts": {
+      "Mean": 1.3675,
+      "Median": 1.3527,
+      "Center": 1.3025
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 57,
+    "drifts": {
+      "Mean": 1.3675,
+      "Median": 1.3643,
+      "Center": 1.3023
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 58,
+    "drifts": {
+      "Mean": 1.3675,
+      "Median": 1.3539,
+      "Center": 1.3024
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 59,
+    "drifts": {
+      "Mean": 1.3674,
+      "Median": 1.3652,
+      "Center": 1.3026
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 6,
+    "drifts": {
+      "Mean": 1.3031,
+      "Median": 1.2253,
+      "Center": 1.28
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 60,
+    "drifts": {
+      "Mean": 1.368,
+      "Median": 1.3548,
+      "Center": 1.303
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 61,
+    "drifts": {
+      "Mean": 1.3678,
+      "Median": 1.3656,
+      "Center": 1.3025
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 62,
+    "drifts": {
+      "Mean": 1.3672,
+      "Median": 1.3554,
+      "Center": 1.3021
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 63,
+    "drifts": {
+      "Mean": 1.3678,
+      "Median": 1.3663,
+      "Center": 1.3027
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 64,
+    "drifts": {
+      "Mean": 1.368,
+      "Median": 1.3568,
+      "Center": 1.3031
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 65,
+    "drifts": {
+      "Mean": 1.3676,
+      "Median": 1.367,
+      "Center": 1.3022
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 66,
+    "drifts": {
+      "Mean": 1.3673,
+      "Median": 1.3571,
+      "Center": 1.3022
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 67,
+    "drifts": {
+      "Mean": 1.3679,
+      "Median": 1.3677,
+      "Center": 1.3027
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 68,
+    "drifts": {
+      "Mean": 1.3675,
+      "Median": 1.3579,
+      "Center": 1.3023
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 69,
+    "drifts": {
+      "Mean": 1.3675,
+      "Median": 1.3672,
+      "Center": 1.3024
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 7,
+    "drifts": {
+      "Mean": 1.3138,
+      "Median": 1.2889,
+      "Center": 1.268
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 70,
+    "drifts": {
+      "Mean": 1.3675,
+      "Median": 1.3588,
+      "Center": 1.3024
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 71,
+    "drifts": {
+      "Mean": 1.3678,
+      "Median": 1.3678,
+      "Center": 1.3021
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 72,
+    "drifts": {
+      "Mean": 1.3672,
+      "Median": 1.3596,
+      "Center": 1.3022
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 73,
+    "drifts": {
+      "Mean": 1.3682,
+      "Median": 1.3695,
+      "Center": 1.303
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 74,
+    "drifts": {
+      "Mean": 1.3682,
+      "Median": 1.3602,
+      "Center": 1.3026
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 75,
+    "drifts": {
+      "Mean": 1.3679,
+      "Median": 1.3691,
+      "Center": 1.3024
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 76,
+    "drifts": {
+      "Mean": 1.3675,
+      "Median": 1.3602,
+      "Center": 1.3021
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 77,
+    "drifts": {
+      "Mean": 1.3676,
+      "Median": 1.3691,
+      "Center": 1.3023
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 78,
+    "drifts": {
+      "Mean": 1.368,
+      "Median": 1.3619,
+      "Center": 1.3028
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 79,
+    "drifts": {
+      "Mean": 1.3682,
+      "Median": 1.3701,
+      "Center": 1.3026
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 8,
+    "drifts": {
+      "Mean": 1.3212,
+      "Median": 1.2507,
+      "Center": 1.2742
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 80,
+    "drifts": {
+      "Mean": 1.368,
+      "Median": 1.3618,
+      "Center": 1.3024
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 81,
+    "drifts": {
+      "Mean": 1.3677,
+      "Median": 1.3711,
+      "Center": 1.3027
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 82,
+    "drifts": {
+      "Mean": 1.3676,
+      "Median": 1.3626,
+      "Center": 1.3024
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 83,
+    "drifts": {
+      "Mean": 1.3684,
+      "Median": 1.371,
+      "Center": 1.3029
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 84,
+    "drifts": {
+      "Mean": 1.368,
+      "Median": 1.3632,
+      "Center": 1.3026
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 85,
+    "drifts": {
+      "Mean": 1.3683,
+      "Median": 1.3711,
+      "Center": 1.3024
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 86,
+    "drifts": {
+      "Mean": 1.3684,
+      "Median": 1.3643,
+      "Center": 1.3029
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 87,
+    "drifts": {
+      "Mean": 1.3681,
+      "Median": 1.3719,
+      "Center": 1.3034
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 88,
+    "drifts": {
+      "Mean": 1.3677,
+      "Median": 1.364,
+      "Center": 1.3025
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 89,
+    "drifts": {
+      "Mean": 1.3681,
+      "Median": 1.372,
+      "Center": 1.3027
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 9,
+    "drifts": {
+      "Mean": 1.3275,
+      "Median": 1.3063,
+      "Center": 1.2834
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 90,
+    "drifts": {
+      "Mean": 1.3683,
+      "Median": 1.3649,
+      "Center": 1.3028
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 91,
+    "drifts": {
+      "Mean": 1.3685,
+      "Median": 1.3722,
+      "Center": 1.3029
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 92,
+    "drifts": {
+      "Mean": 1.3685,
+      "Median": 1.3654,
+      "Center": 1.3029
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 93,
+    "drifts": {
+      "Mean": 1.3688,
+      "Median": 1.3721,
+      "Center": 1.3029
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 94,
+    "drifts": {
+      "Mean": 1.3686,
+      "Median": 1.3652,
+      "Center": 1.3031
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 95,
+    "drifts": {
+      "Mean": 1.3683,
+      "Median": 1.3722,
+      "Center": 1.3023
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 96,
+    "drifts": {
+      "Mean": 1.3688,
+      "Median": 1.3656,
+      "Center": 1.303
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 97,
+    "drifts": {
+      "Mean": 1.3688,
+      "Median": 1.3729,
+      "Center": 1.3033
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 98,
+    "drifts": {
+      "Mean": 1.3683,
+      "Median": 1.3663,
+      "Center": 1.3027
+    }
+  },
+  {
+    "distribution": "Exp",
+    "sampleSize": 99,
+    "drifts": {
+      "Mean": 1.3681,
+      "Median": 1.3719,
+      "Center": 1.3021
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 10,
+    "drifts": {
+      "Mean": 1.6921,
+      "Median": 1.1242,
+      "Center": 1.2738
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 100,
+    "drifts": {
+      "Mean": 1.9855,
+      "Median": 1.1847,
+      "Center": 1.3025
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 11,
+    "drifts": {
+      "Mean": 1.7129,
+      "Median": 1.1552,
+      "Center": 1.2712
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 12,
+    "drifts": {
+      "Mean": 1.73,
+      "Median": 1.1318,
+      "Center": 1.28
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 13,
+    "drifts": {
+      "Mean": 1.7458,
+      "Median": 1.1612,
+      "Center": 1.2922
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 14,
+    "drifts": {
+      "Mean": 1.7605,
+      "Median": 1.1374,
+      "Center": 1.2823
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 15,
+    "drifts": {
+      "Mean": 1.7726,
+      "Median": 1.1647,
+      "Center": 1.2831
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 16,
+    "drifts": {
+      "Mean": 1.7846,
+      "Median": 1.143,
+      "Center": 1.2891
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 17,
+    "drifts": {
+      "Mean": 1.7952,
+      "Median": 1.1691,
+      "Center": 1.2883
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 18,
+    "drifts": {
+      "Mean": 1.8041,
+      "Median": 1.1468,
+      "Center": 1.2876
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 19,
+    "drifts": {
+      "Mean": 1.8131,
+      "Median": 1.1705,
+      "Center": 1.2895
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 2,
+    "drifts": {
+      "Mean": 1.2064,
+      "Median": 1.2064,
+      "Center": 1.2064
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 20,
+    "drifts": {
+      "Mean": 1.8213,
+      "Median": 1.1508,
+      "Center": 1.2913
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 21,
+    "drifts": {
+      "Mean": 1.8293,
+      "Median": 1.1727,
+      "Center": 1.291
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 22,
+    "drifts": {
+      "Mean": 1.8363,
+      "Median": 1.1538,
+      "Center": 1.2918
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 23,
+    "drifts": {
+      "Mean": 1.8432,
+      "Median": 1.1749,
+      "Center": 1.2936
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 24,
+    "drifts": {
+      "Mean": 1.8488,
+      "Median": 1.1566,
+      "Center": 1.2932
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 25,
+    "drifts": {
+      "Mean": 1.8541,
+      "Median": 1.1761,
+      "Center": 1.2938
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 26,
+    "drifts": {
+      "Mean": 1.8592,
+      "Median": 1.1586,
+      "Center": 1.2944
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 27,
+    "drifts": {
+      "Mean": 1.8646,
+      "Median": 1.1779,
+      "Center": 1.2948
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 28,
+    "drifts": {
+      "Mean": 1.871,
+      "Median": 1.1613,
+      "Center": 1.2954
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 29,
+    "drifts": {
+      "Mean": 1.8744,
+      "Median": 1.1781,
+      "Center": 1.2947
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 3,
+    "drifts": {
+      "Mean": 1.3526,
+      "Median": 1.0757,
+      "Center": 1.2635
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 30,
+    "drifts": {
+      "Mean": 1.8798,
+      "Median": 1.1633,
+      "Center": 1.296
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 31,
+    "drifts": {
+      "Mean": 1.8825,
+      "Median": 1.1798,
+      "Center": 1.2956
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 32,
+    "drifts": {
+      "Mean": 1.887,
+      "Median": 1.1655,
+      "Center": 1.2963
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 33,
+    "drifts": {
+      "Mean": 1.8916,
+      "Median": 1.1805,
+      "Center": 1.2969
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 34,
+    "drifts": {
+      "Mean": 1.8942,
+      "Median": 1.1664,
+      "Center": 1.2961
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 35,
+    "drifts": {
+      "Mean": 1.8976,
+      "Median": 1.1815,
+      "Center": 1.2966
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 36,
+    "drifts": {
+      "Mean": 1.9012,
+      "Median": 1.1683,
+      "Center": 1.2974
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 37,
+    "drifts": {
+      "Mean": 1.9044,
+      "Median": 1.1824,
+      "Center": 1.2977
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 38,
+    "drifts": {
+      "Mean": 1.908,
+      "Median": 1.17,
+      "Center": 1.2981
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 39,
+    "drifts": {
+      "Mean": 1.9097,
+      "Median": 1.1832,
+      "Center": 1.2978
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 4,
+    "drifts": {
+      "Mean": 1.4469,
+      "Median": 1.1106,
+      "Center": 1.1874
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 40,
+    "drifts": {
+      "Mean": 1.9122,
+      "Median": 1.171,
+      "Center": 1.298
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 41,
+    "drifts": {
+      "Mean": 1.915,
+      "Median": 1.1835,
+      "Center": 1.2982
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 42,
+    "drifts": {
+      "Mean": 1.9172,
+      "Median": 1.1719,
+      "Center": 1.2985
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 43,
+    "drifts": {
+      "Mean": 1.9207,
+      "Median": 1.1847,
+      "Center": 1.2988
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 44,
+    "drifts": {
+      "Mean": 1.9223,
+      "Median": 1.1727,
+      "Center": 1.2985
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 45,
+    "drifts": {
+      "Mean": 1.9243,
+      "Median": 1.1851,
+      "Center": 1.2991
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 46,
+    "drifts": {
+      "Mean": 1.9272,
+      "Median": 1.1736,
+      "Center": 1.2989
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 47,
+    "drifts": {
+      "Mean": 1.9284,
+      "Median": 1.1851,
+      "Center": 1.2997
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 48,
+    "drifts": {
+      "Mean": 1.9316,
+      "Median": 1.1749,
+      "Center": 1.2996
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 49,
+    "drifts": {
+      "Mean": 1.9324,
+      "Median": 1.1857,
+      "Center": 1.2993
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 5,
+    "drifts": {
+      "Mean": 1.5149,
+      "Median": 1.1167,
+      "Center": 1.2475
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 50,
+    "drifts": {
+      "Mean": 1.9341,
+      "Median": 1.1755,
+      "Center": 1.3002
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 51,
+    "drifts": {
+      "Mean": 1.9365,
+      "Median": 1.186,
+      "Center": 1.3
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 52,
+    "drifts": {
+      "Mean": 1.9392,
+      "Median": 1.1763,
+      "Center": 1.3002
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 53,
+    "drifts": {
+      "Mean": 1.9398,
+      "Median": 1.1859,
+      "Center": 1.2995
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 54,
+    "drifts": {
+      "Mean": 1.9408,
+      "Median": 1.1765,
+      "Center": 1.2997
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 55,
+    "drifts": {
+      "Mean": 1.9433,
+      "Median": 1.1871,
+      "Center": 1.3009
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 56,
+    "drifts": {
+      "Mean": 1.9448,
+      "Median": 1.1773,
+      "Center": 1.3002
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 57,
+    "drifts": {
+      "Mean": 1.946,
+      "Median": 1.1874,
+      "Center": 1.3003
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 58,
+    "drifts": {
+      "Mean": 1.9486,
+      "Median": 1.1784,
+      "Center": 1.3007
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 59,
+    "drifts": {
+      "Mean": 1.9479,
+      "Median": 1.187,
+      "Center": 1.2999
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 6,
+    "drifts": {
+      "Mean": 1.5663,
+      "Median": 1.1085,
+      "Center": 1.313
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 60,
+    "drifts": {
+      "Mean": 1.9506,
+      "Median": 1.1786,
+      "Center": 1.3009
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 61,
+    "drifts": {
+      "Mean": 1.9515,
+      "Median": 1.1874,
+      "Center": 1.301
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 62,
+    "drifts": {
+      "Mean": 1.952,
+      "Median": 1.1786,
+      "Center": 1.3008
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 63,
+    "drifts": {
+      "Mean": 1.9546,
+      "Median": 1.1878,
+      "Center": 1.3012
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 64,
+    "drifts": {
+      "Mean": 1.9556,
+      "Median": 1.179,
+      "Center": 1.3007
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 65,
+    "drifts": {
+      "Mean": 1.9569,
+      "Median": 1.1882,
+      "Center": 1.3013
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 66,
+    "drifts": {
+      "Mean": 1.9575,
+      "Median": 1.18,
+      "Center": 1.3009
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 67,
+    "drifts": {
+      "Mean": 1.9588,
+      "Median": 1.188,
+      "Center": 1.302
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 68,
+    "drifts": {
+      "Mean": 1.9601,
+      "Median": 1.1807,
+      "Center": 1.3017
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 69,
+    "drifts": {
+      "Mean": 1.9615,
+      "Median": 1.1879,
+      "Center": 1.3013
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 7,
+    "drifts": {
+      "Mean": 1.6063,
+      "Median": 1.1354,
+      "Center": 1.2415
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 70,
+    "drifts": {
+      "Mean": 1.9624,
+      "Median": 1.1805,
+      "Center": 1.3017
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 71,
+    "drifts": {
+      "Mean": 1.9631,
+      "Median": 1.1889,
+      "Center": 1.3025
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 72,
+    "drifts": {
+      "Mean": 1.9649,
+      "Median": 1.1809,
+      "Center": 1.3014
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 73,
+    "drifts": {
+      "Mean": 1.9654,
+      "Median": 1.1893,
+      "Center": 1.3022
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 74,
+    "drifts": {
+      "Mean": 1.9664,
+      "Median": 1.181,
+      "Center": 1.3014
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 75,
+    "drifts": {
+      "Mean": 1.967,
+      "Median": 1.1889,
+      "Center": 1.3019
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 76,
+    "drifts": {
+      "Mean": 1.9678,
+      "Median": 1.1819,
+      "Center": 1.3017
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 77,
+    "drifts": {
+      "Mean": 1.9686,
+      "Median": 1.1889,
+      "Center": 1.302
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 78,
+    "drifts": {
+      "Mean": 1.9703,
+      "Median": 1.1821,
+      "Center": 1.3019
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 79,
+    "drifts": {
+      "Mean": 1.9705,
+      "Median": 1.1893,
+      "Center": 1.302
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 8,
+    "drifts": {
+      "Mean": 1.6396,
+      "Median": 1.1158,
+      "Center": 1.2563
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 80,
+    "drifts": {
+      "Mean": 1.9716,
+      "Median": 1.1822,
+      "Center": 1.302
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 81,
+    "drifts": {
+      "Mean": 1.9721,
+      "Median": 1.1891,
+      "Center": 1.3019
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 82,
+    "drifts": {
+      "Mean": 1.974,
+      "Median": 1.1826,
+      "Center": 1.3025
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 83,
+    "drifts": {
+      "Mean": 1.9748,
+      "Median": 1.1895,
+      "Center": 1.3025
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 84,
+    "drifts": {
+      "Mean": 1.9747,
+      "Median": 1.1828,
+      "Center": 1.3022
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 85,
+    "drifts": {
+      "Mean": 1.9757,
+      "Median": 1.1896,
+      "Center": 1.3021
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 86,
+    "drifts": {
+      "Mean": 1.976,
+      "Median": 1.1831,
+      "Center": 1.3028
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 87,
+    "drifts": {
+      "Mean": 1.9774,
+      "Median": 1.1899,
+      "Center": 1.3026
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 88,
+    "drifts": {
+      "Mean": 1.9772,
+      "Median": 1.1833,
+      "Center": 1.3024
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 89,
+    "drifts": {
+      "Mean": 1.9786,
+      "Median": 1.1899,
+      "Center": 1.3026
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 9,
+    "drifts": {
+      "Mean": 1.6684,
+      "Median": 1.1474,
+      "Center": 1.283
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 90,
+    "drifts": {
+      "Mean": 1.9793,
+      "Median": 1.1834,
+      "Center": 1.3022
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 91,
+    "drifts": {
+      "Mean": 1.9793,
+      "Median": 1.1901,
+      "Center": 1.3024
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 92,
+    "drifts": {
+      "Mean": 1.9793,
+      "Median": 1.1844,
+      "Center": 1.3025
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 93,
+    "drifts": {
+      "Mean": 1.9814,
+      "Median": 1.1897,
+      "Center": 1.3028
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 94,
+    "drifts": {
+      "Mean": 1.9811,
+      "Median": 1.1842,
+      "Center": 1.3025
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 95,
+    "drifts": {
+      "Mean": 1.9829,
+      "Median": 1.1906,
+      "Center": 1.303
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 96,
+    "drifts": {
+      "Mean": 1.9824,
+      "Median": 1.1844,
+      "Center": 1.3024
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 97,
+    "drifts": {
+      "Mean": 1.9834,
+      "Median": 1.1897,
+      "Center": 1.3022
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 98,
+    "drifts": {
+      "Mean": 1.9847,
+      "Median": 1.1852,
+      "Center": 1.3033
+    }
+  },
+  {
+    "distribution": "Multiplic",
+    "sampleSize": 99,
+    "drifts": {
+      "Mean": 1.9855,
+      "Median": 1.1905,
+      "Center": 1.3029
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 10,
+    "drifts": {
+      "Mean": 4.1765,
+      "Median": 0.9212,
+      "Center": 1.3576
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 100,
+    "drifts": {
+      "Mean": 15.1024,
+      "Median": 0.9472,
+      "Center": 1.4419
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 11,
+    "drifts": {
+      "Mean": 4.4227,
+      "Median": 0.9212,
+      "Center": 1.3424
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 12,
+    "drifts": {
+      "Mean": 4.66,
+      "Median": 0.9192,
+      "Center": 1.3855
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 13,
+    "drifts": {
+      "Mean": 4.8854,
+      "Median": 0.9247,
+      "Center": 1.4614
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 14,
+    "drifts": {
+      "Mean": 5.1082,
+      "Median": 0.9193,
+      "Center": 1.3751
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 15,
+    "drifts": {
+      "Mean": 5.3136,
+      "Median": 0.9276,
+      "Center": 1.3815
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 16,
+    "drifts": {
+      "Mean": 5.5262,
+      "Median": 0.9207,
+      "Center": 1.4207
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 17,
+    "drifts": {
+      "Mean": 5.7182,
+      "Median": 0.9305,
+      "Center": 1.3963
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 18,
+    "drifts": {
+      "Mean": 5.9151,
+      "Median": 0.9219,
+      "Center": 1.392
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 19,
+    "drifts": {
+      "Mean": 6.0987,
+      "Median": 0.9331,
+      "Center": 1.4084
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 2,
+    "drifts": {
+      "Mean": 1.418,
+      "Median": 1.418,
+      "Center": 1.418
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 20,
+    "drifts": {
+      "Mean": 6.2757,
+      "Median": 0.9232,
+      "Center": 1.4263
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 21,
+    "drifts": {
+      "Mean": 6.4588,
+      "Median": 0.9342,
+      "Center": 1.4047
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 22,
+    "drifts": {
+      "Mean": 6.631,
+      "Median": 0.9251,
+      "Center": 1.4084
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 23,
+    "drifts": {
+      "Mean": 6.7884,
+      "Median": 0.9356,
+      "Center": 1.4234
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 24,
+    "drifts": {
+      "Mean": 6.9687,
+      "Median": 0.9263,
+      "Center": 1.4158
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 25,
+    "drifts": {
+      "Mean": 7.1279,
+      "Median": 0.9369,
+      "Center": 1.4127
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 26,
+    "drifts": {
+      "Mean": 7.2848,
+      "Median": 0.9278,
+      "Center": 1.4194
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 27,
+    "drifts": {
+      "Mean": 7.4418,
+      "Median": 0.938,
+      "Center": 1.4232
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 28,
+    "drifts": {
+      "Mean": 7.5928,
+      "Median": 0.9289,
+      "Center": 1.4193
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 29,
+    "drifts": {
+      "Mean": 7.7435,
+      "Median": 0.9391,
+      "Center": 1.4203
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 3,
+    "drifts": {
+      "Mean": 1.9074,
+      "Median": 0.8791,
+      "Center": 1.6896
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 30,
+    "drifts": {
+      "Mean": 7.8915,
+      "Median": 0.9301,
+      "Center": 1.428
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 31,
+    "drifts": {
+      "Mean": 8.0426,
+      "Median": 0.9402,
+      "Center": 1.4245
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 32,
+    "drifts": {
+      "Mean": 8.1804,
+      "Median": 0.9313,
+      "Center": 1.4236
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 33,
+    "drifts": {
+      "Mean": 8.3287,
+      "Median": 0.9409,
+      "Center": 1.4267
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 34,
+    "drifts": {
+      "Mean": 8.4499,
+      "Median": 0.9313,
+      "Center": 1.4272
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 35,
+    "drifts": {
+      "Mean": 8.6003,
+      "Median": 0.9416,
+      "Center": 1.4266
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 36,
+    "drifts": {
+      "Mean": 8.7327,
+      "Median": 0.9332,
+      "Center": 1.4274
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 37,
+    "drifts": {
+      "Mean": 8.8623,
+      "Median": 0.9423,
+      "Center": 1.4314
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 38,
+    "drifts": {
+      "Mean": 8.9957,
+      "Median": 0.9337,
+      "Center": 1.4295
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 39,
+    "drifts": {
+      "Mean": 9.117,
+      "Median": 0.9424,
+      "Center": 1.4289
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 4,
+    "drifts": {
+      "Mean": 2.3265,
+      "Median": 1.0186,
+      "Center": 1.1679
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 40,
+    "drifts": {
+      "Mean": 9.2496,
+      "Median": 0.9339,
+      "Center": 1.4304
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 41,
+    "drifts": {
+      "Mean": 9.3816,
+      "Median": 0.9436,
+      "Center": 1.4325
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 42,
+    "drifts": {
+      "Mean": 9.4992,
+      "Median": 0.9352,
+      "Center": 1.4314
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 43,
+    "drifts": {
+      "Mean": 9.6299,
+      "Median": 0.9437,
+      "Center": 1.4326
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 44,
+    "drifts": {
+      "Mean": 9.7486,
+      "Median": 0.9363,
+      "Center": 1.4343
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 45,
+    "drifts": {
+      "Mean": 9.8716,
+      "Median": 0.9442,
+      "Center": 1.4342
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 46,
+    "drifts": {
+      "Mean": 9.9796,
+      "Median": 0.9365,
+      "Center": 1.4329
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 47,
+    "drifts": {
+      "Mean": 10.0995,
+      "Median": 0.9445,
+      "Center": 1.4344
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 48,
+    "drifts": {
+      "Mean": 10.2149,
+      "Median": 0.9371,
+      "Center": 1.4347
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 49,
+    "drifts": {
+      "Mean": 10.3283,
+      "Median": 0.9449,
+      "Center": 1.4347
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 5,
+    "drifts": {
+      "Mean": 2.6991,
+      "Median": 0.8978,
+      "Center": 1.325
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 50,
+    "drifts": {
+      "Mean": 10.4487,
+      "Median": 0.9376,
+      "Center": 1.4352
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 51,
+    "drifts": {
+      "Mean": 10.567,
+      "Median": 0.9451,
+      "Center": 1.4358
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 52,
+    "drifts": {
+      "Mean": 10.6792,
+      "Median": 0.9377,
+      "Center": 1.4366
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 53,
+    "drifts": {
+      "Mean": 10.7829,
+      "Median": 0.9456,
+      "Center": 1.436
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 54,
+    "drifts": {
+      "Mean": 10.8849,
+      "Median": 0.9384,
+      "Center": 1.4372
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 55,
+    "drifts": {
+      "Mean": 10.9998,
+      "Median": 0.946,
+      "Center": 1.4372
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 56,
+    "drifts": {
+      "Mean": 11.0948,
+      "Median": 0.9391,
+      "Center": 1.4369
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 57,
+    "drifts": {
+      "Mean": 11.2066,
+      "Median": 0.946,
+      "Center": 1.4369
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 58,
+    "drifts": {
+      "Mean": 11.3165,
+      "Median": 0.94,
+      "Center": 1.437
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 59,
+    "drifts": {
+      "Mean": 11.4147,
+      "Median": 0.9467,
+      "Center": 1.4377
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 6,
+    "drifts": {
+      "Mean": 3.0356,
+      "Median": 0.9476,
+      "Center": 1.5621
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 60,
+    "drifts": {
+      "Mean": 11.517,
+      "Median": 0.9404,
+      "Center": 1.438
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 61,
+    "drifts": {
+      "Mean": 11.6183,
+      "Median": 0.9469,
+      "Center": 1.4376
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 62,
+    "drifts": {
+      "Mean": 11.7181,
+      "Median": 0.9408,
+      "Center": 1.4374
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 63,
+    "drifts": {
+      "Mean": 11.8188,
+      "Median": 0.9473,
+      "Center": 1.4379
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 64,
+    "drifts": {
+      "Mean": 11.9095,
+      "Median": 0.9416,
+      "Center": 1.4387
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 65,
+    "drifts": {
+      "Mean": 12.0233,
+      "Median": 0.9477,
+      "Center": 1.4377
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 66,
+    "drifts": {
+      "Mean": 12.1184,
+      "Median": 0.9418,
+      "Center": 1.4382
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 67,
+    "drifts": {
+      "Mean": 12.2234,
+      "Median": 0.9482,
+      "Center": 1.4386
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 68,
+    "drifts": {
+      "Mean": 12.2957,
+      "Median": 0.9423,
+      "Center": 1.4384
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 69,
+    "drifts": {
+      "Mean": 12.411,
+      "Median": 0.9479,
+      "Center": 1.4387
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 7,
+    "drifts": {
+      "Mean": 3.3526,
+      "Median": 0.9093,
+      "Center": 1.2747
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 70,
+    "drifts": {
+      "Mean": 12.5057,
+      "Median": 0.9428,
+      "Center": 1.4389
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 71,
+    "drifts": {
+      "Mean": 12.5864,
+      "Median": 0.9483,
+      "Center": 1.4385
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 72,
+    "drifts": {
+      "Mean": 12.6842,
+      "Median": 0.9433,
+      "Center": 1.4386
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 73,
+    "drifts": {
+      "Mean": 12.7857,
+      "Median": 0.9495,
+      "Center": 1.4398
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 74,
+    "drifts": {
+      "Mean": 12.8747,
+      "Median": 0.9437,
+      "Center": 1.4396
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 75,
+    "drifts": {
+      "Mean": 12.9646,
+      "Median": 0.9491,
+      "Center": 1.4393
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 76,
+    "drifts": {
+      "Mean": 13.0549,
+      "Median": 0.9437,
+      "Center": 1.4392
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 77,
+    "drifts": {
+      "Mean": 13.1396,
+      "Median": 0.9492,
+      "Center": 1.4396
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 78,
+    "drifts": {
+      "Mean": 13.2443,
+      "Median": 0.9448,
+      "Center": 1.4401
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 79,
+    "drifts": {
+      "Mean": 13.3276,
+      "Median": 0.9499,
+      "Center": 1.4401
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 8,
+    "drifts": {
+      "Mean": 3.6431,
+      "Median": 0.9273,
+      "Center": 1.3176
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 80,
+    "drifts": {
+      "Mean": 13.4351,
+      "Median": 0.9447,
+      "Center": 1.44
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 81,
+    "drifts": {
+      "Mean": 13.5048,
+      "Median": 0.9506,
+      "Center": 1.4404
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 82,
+    "drifts": {
+      "Mean": 13.5856,
+      "Median": 0.9452,
+      "Center": 1.4402
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 83,
+    "drifts": {
+      "Mean": 13.677,
+      "Median": 0.9505,
+      "Center": 1.4407
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 84,
+    "drifts": {
+      "Mean": 13.7728,
+      "Median": 0.9456,
+      "Center": 1.4404
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 85,
+    "drifts": {
+      "Mean": 13.8661,
+      "Median": 0.9505,
+      "Center": 1.4405
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 86,
+    "drifts": {
+      "Mean": 13.9383,
+      "Median": 0.9464,
+      "Center": 1.4411
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 87,
+    "drifts": {
+      "Mean": 14.0257,
+      "Median": 0.9511,
+      "Center": 1.4415
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 88,
+    "drifts": {
+      "Mean": 14.1088,
+      "Median": 0.9461,
+      "Center": 1.4407
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 89,
+    "drifts": {
+      "Mean": 14.2017,
+      "Median": 0.9511,
+      "Center": 1.4412
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 9,
+    "drifts": {
+      "Mean": 3.9165,
+      "Median": 0.9161,
+      "Center": 1.4224
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 90,
+    "drifts": {
+      "Mean": 14.281,
+      "Median": 0.9467,
+      "Center": 1.4412
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 91,
+    "drifts": {
+      "Mean": 14.3704,
+      "Median": 0.9512,
+      "Center": 1.4416
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 92,
+    "drifts": {
+      "Mean": 14.4455,
+      "Median": 0.947,
+      "Center": 1.4417
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 93,
+    "drifts": {
+      "Mean": 14.5425,
+      "Median": 0.9511,
+      "Center": 1.4418
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 94,
+    "drifts": {
+      "Mean": 14.6169,
+      "Median": 0.9468,
+      "Center": 1.4418
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 95,
+    "drifts": {
+      "Mean": 14.6976,
+      "Median": 0.9513,
+      "Center": 1.441
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 96,
+    "drifts": {
+      "Mean": 14.7799,
+      "Median": 0.9472,
+      "Center": 1.4422
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 97,
+    "drifts": {
+      "Mean": 14.8529,
+      "Median": 0.9518,
+      "Center": 1.442
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 98,
+    "drifts": {
+      "Mean": 14.9378,
+      "Median": 0.9475,
+      "Center": 1.4415
+    }
+  },
+  {
+    "distribution": "Power",
+    "sampleSize": 99,
+    "drifts": {
+      "Mean": 15.0058,
+      "Median": 0.951,
+      "Center": 1.441
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 10,
+    "drifts": {
+      "Mean": 0.9466,
+      "Median": 1.4496,
+      "Center": 1.0476
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 100,
+    "drifts": {
+      "Mean": 0.9397,
+      "Median": 1.6129,
+      "Center": 0.9719
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 11,
+    "drifts": {
+      "Mean": 0.9458,
+      "Median": 1.5322,
+      "Center": 1.0425
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 12,
+    "drifts": {
+      "Mean": 0.9453,
+      "Median": 1.4771,
+      "Center": 1.0376
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 13,
+    "drifts": {
+      "Mean": 0.9444,
+      "Median": 1.5458,
+      "Center": 1.0331
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 14,
+    "drifts": {
+      "Mean": 0.9443,
+      "Median": 1.4973,
+      "Center": 1.0314
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 15,
+    "drifts": {
+      "Mean": 0.9434,
+      "Median": 1.5563,
+      "Center": 1.0276
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 16,
+    "drifts": {
+      "Mean": 0.9436,
+      "Median": 1.5128,
+      "Center": 1.0253
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 17,
+    "drifts": {
+      "Mean": 0.9436,
+      "Median": 1.565,
+      "Center": 1.0237
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 18,
+    "drifts": {
+      "Mean": 0.9434,
+      "Median": 1.5254,
+      "Center": 1.0214
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 19,
+    "drifts": {
+      "Mean": 0.9436,
+      "Median": 1.5715,
+      "Center": 1.0195
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 2,
+    "drifts": {
+      "Mean": 0.9722,
+      "Median": 0.9722,
+      "Center": 0.9722
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 20,
+    "drifts": {
+      "Mean": 0.9431,
+      "Median": 1.5352,
+      "Center": 1.0172
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 21,
+    "drifts": {
+      "Mean": 0.9432,
+      "Median": 1.5765,
+      "Center": 1.0159
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 22,
+    "drifts": {
+      "Mean": 0.9432,
+      "Median": 1.544,
+      "Center": 1.0143
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 23,
+    "drifts": {
+      "Mean": 0.9424,
+      "Median": 1.5807,
+      "Center": 1.0118
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 24,
+    "drifts": {
+      "Mean": 0.9424,
+      "Median": 1.5502,
+      "Center": 1.0106
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 25,
+    "drifts": {
+      "Mean": 0.9422,
+      "Median": 1.5844,
+      "Center": 1.0092
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 26,
+    "drifts": {
+      "Mean": 0.9427,
+      "Median": 1.5566,
+      "Center": 1.0084
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 27,
+    "drifts": {
+      "Mean": 0.9423,
+      "Median": 1.5881,
+      "Center": 1.0067
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 28,
+    "drifts": {
+      "Mean": 0.9423,
+      "Median": 1.561,
+      "Center": 1.0056
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 29,
+    "drifts": {
+      "Mean": 0.9421,
+      "Median": 1.5907,
+      "Center": 1.0044
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 3,
+    "drifts": {
+      "Mean": 0.9609,
+      "Median": 1.3242,
+      "Center": 1.0326
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 30,
+    "drifts": {
+      "Mean": 0.9419,
+      "Median": 1.5655,
+      "Center": 1.0032
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 31,
+    "drifts": {
+      "Mean": 0.9423,
+      "Median": 1.5936,
+      "Center": 1.0027
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 32,
+    "drifts": {
+      "Mean": 0.9424,
+      "Median": 1.5697,
+      "Center": 1.0018
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 33,
+    "drifts": {
+      "Mean": 0.9421,
+      "Median": 1.5953,
+      "Center": 1.0007
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 34,
+    "drifts": {
+      "Mean": 0.9412,
+      "Median": 1.572,
+      "Center": 0.9988
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 35,
+    "drifts": {
+      "Mean": 0.9418,
+      "Median": 1.5971,
+      "Center": 0.9987
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 36,
+    "drifts": {
+      "Mean": 0.9416,
+      "Median": 1.576,
+      "Center": 0.9977
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 37,
+    "drifts": {
+      "Mean": 0.942,
+      "Median": 1.599,
+      "Center": 0.9974
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 38,
+    "drifts": {
+      "Mean": 0.9416,
+      "Median": 1.5786,
+      "Center": 0.9962
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 39,
+    "drifts": {
+      "Mean": 0.9415,
+      "Median": 1.5998,
+      "Center": 0.9954
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 4,
+    "drifts": {
+      "Mean": 0.9555,
+      "Median": 1.2299,
+      "Center": 1.1103
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 40,
+    "drifts": {
+      "Mean": 0.9413,
+      "Median": 1.5803,
+      "Center": 0.9945
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 41,
+    "drifts": {
+      "Mean": 0.9418,
+      "Median": 1.602,
+      "Center": 0.9945
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 42,
+    "drifts": {
+      "Mean": 0.9416,
+      "Median": 1.583,
+      "Center": 0.9936
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 43,
+    "drifts": {
+      "Mean": 0.9416,
+      "Median": 1.6031,
+      "Center": 0.993
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 44,
+    "drifts": {
+      "Mean": 0.9418,
+      "Median": 1.5857,
+      "Center": 0.9926
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 45,
+    "drifts": {
+      "Mean": 0.9417,
+      "Median": 1.604,
+      "Center": 0.9919
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 46,
+    "drifts": {
+      "Mean": 0.9412,
+      "Median": 1.5872,
+      "Center": 0.9909
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 47,
+    "drifts": {
+      "Mean": 0.9416,
+      "Median": 1.6052,
+      "Center": 0.9909
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 48,
+    "drifts": {
+      "Mean": 0.9413,
+      "Median": 1.5887,
+      "Center": 0.99
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 49,
+    "drifts": {
+      "Mean": 0.9413,
+      "Median": 1.606,
+      "Center": 0.9896
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 5,
+    "drifts": {
+      "Mean": 0.9523,
+      "Median": 1.43,
+      "Center": 1.0536
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 50,
+    "drifts": {
+      "Mean": 0.9411,
+      "Median": 1.5902,
+      "Center": 0.9889
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 51,
+    "drifts": {
+      "Mean": 0.9413,
+      "Median": 1.6067,
+      "Center": 0.9885
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 52,
+    "drifts": {
+      "Mean": 0.941,
+      "Median": 1.5909,
+      "Center": 0.9878
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 53,
+    "drifts": {
+      "Mean": 0.9413,
+      "Median": 1.6079,
+      "Center": 0.9875
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 54,
+    "drifts": {
+      "Mean": 0.9413,
+      "Median": 1.5925,
+      "Center": 0.9872
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 55,
+    "drifts": {
+      "Mean": 0.9411,
+      "Median": 1.6088,
+      "Center": 0.9867
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 56,
+    "drifts": {
+      "Mean": 0.941,
+      "Median": 1.5947,
+      "Center": 0.986
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 57,
+    "drifts": {
+      "Mean": 0.9407,
+      "Median": 1.6092,
+      "Center": 0.9853
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 58,
+    "drifts": {
+      "Mean": 0.9409,
+      "Median": 1.5962,
+      "Center": 0.985
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 59,
+    "drifts": {
+      "Mean": 0.9408,
+      "Median": 1.6104,
+      "Center": 0.9845
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 6,
+    "drifts": {
+      "Mean": 0.9498,
+      "Median": 1.3439,
+      "Center": 1.0313
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 60,
+    "drifts": {
+      "Mean": 0.9412,
+      "Median": 1.5975,
+      "Center": 0.9844
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 61,
+    "drifts": {
+      "Mean": 0.9407,
+      "Median": 1.6112,
+      "Center": 0.9836
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 62,
+    "drifts": {
+      "Mean": 0.9404,
+      "Median": 1.5985,
+      "Center": 0.9828
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 63,
+    "drifts": {
+      "Mean": 0.9407,
+      "Median": 1.6122,
+      "Center": 0.9828
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 64,
+    "drifts": {
+      "Mean": 0.941,
+      "Median": 1.6002,
+      "Center": 0.9826
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 65,
+    "drifts": {
+      "Mean": 0.9405,
+      "Median": 1.6131,
+      "Center": 0.9818
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 66,
+    "drifts": {
+      "Mean": 0.9401,
+      "Median": 1.6008,
+      "Center": 0.9811
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 67,
+    "drifts": {
+      "Mean": 0.9405,
+      "Median": 1.6141,
+      "Center": 0.981
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 68,
+    "drifts": {
+      "Mean": 0.9404,
+      "Median": 1.602,
+      "Center": 0.9807
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 69,
+    "drifts": {
+      "Mean": 0.9403,
+      "Median": 1.6137,
+      "Center": 0.9801
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 7,
+    "drifts": {
+      "Mean": 0.9487,
+      "Median": 1.482,
+      "Center": 1.0741
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 70,
+    "drifts": {
+      "Mean": 0.9402,
+      "Median": 1.6031,
+      "Center": 0.9797
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 71,
+    "drifts": {
+      "Mean": 0.9401,
+      "Median": 1.6145,
+      "Center": 0.9793
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 72,
+    "drifts": {
+      "Mean": 0.9401,
+      "Median": 1.6043,
+      "Center": 0.979
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 73,
+    "drifts": {
+      "Mean": 0.9407,
+      "Median": 1.6165,
+      "Center": 0.9794
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 74,
+    "drifts": {
+      "Mean": 0.9403,
+      "Median": 1.6051,
+      "Center": 0.9786
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 75,
+    "drifts": {
+      "Mean": 0.9401,
+      "Median": 1.6163,
+      "Center": 0.9781
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 76,
+    "drifts": {
+      "Mean": 0.9396,
+      "Median": 1.6053,
+      "Center": 0.9773
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 77,
+    "drifts": {
+      "Mean": 0.9399,
+      "Median": 1.6162,
+      "Center": 0.9773
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 78,
+    "drifts": {
+      "Mean": 0.9404,
+      "Median": 1.6074,
+      "Center": 0.9776
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 79,
+    "drifts": {
+      "Mean": 0.9403,
+      "Median": 1.6176,
+      "Center": 0.9771
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 8,
+    "drifts": {
+      "Mean": 0.9474,
+      "Median": 1.4078,
+      "Center": 1.0555
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 80,
+    "drifts": {
+      "Mean": 0.94,
+      "Median": 1.6073,
+      "Center": 0.9765
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 81,
+    "drifts": {
+      "Mean": 0.9401,
+      "Median": 1.6187,
+      "Center": 0.9765
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 82,
+    "drifts": {
+      "Mean": 0.94,
+      "Median": 1.6083,
+      "Center": 0.9761
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 83,
+    "drifts": {
+      "Mean": 0.9402,
+      "Median": 1.6188,
+      "Center": 0.9761
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 84,
+    "drifts": {
+      "Mean": 0.9401,
+      "Median": 1.6093,
+      "Center": 0.9756
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 85,
+    "drifts": {
+      "Mean": 0.9399,
+      "Median": 1.6192,
+      "Center": 0.9752
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 86,
+    "drifts": {
+      "Mean": 0.9403,
+      "Median": 1.6106,
+      "Center": 0.9754
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 87,
+    "drifts": {
+      "Mean": 0.9405,
+      "Median": 1.6201,
+      "Center": 0.9754
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 88,
+    "drifts": {
+      "Mean": 0.94,
+      "Median": 1.6104,
+      "Center": 0.9746
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 89,
+    "drifts": {
+      "Mean": 0.94,
+      "Median": 1.6203,
+      "Center": 0.9745
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 9,
+    "drifts": {
+      "Mean": 0.9467,
+      "Median": 1.5123,
+      "Center": 1.0453
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 90,
+    "drifts": {
+      "Mean": 0.9401,
+      "Median": 1.6117,
+      "Center": 0.9743
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 91,
+    "drifts": {
+      "Mean": 0.9401,
+      "Median": 1.6206,
+      "Center": 0.9741
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 92,
+    "drifts": {
+      "Mean": 0.9402,
+      "Median": 1.6122,
+      "Center": 0.974
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 93,
+    "drifts": {
+      "Mean": 0.94,
+      "Median": 1.6206,
+      "Center": 0.9736
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 94,
+    "drifts": {
+      "Mean": 0.94,
+      "Median": 1.6121,
+      "Center": 0.9734
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 95,
+    "drifts": {
+      "Mean": 0.9398,
+      "Median": 1.6207,
+      "Center": 0.9729
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 96,
+    "drifts": {
+      "Mean": 0.9401,
+      "Median": 1.6125,
+      "Center": 0.9732
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 97,
+    "drifts": {
+      "Mean": 0.9404,
+      "Median": 1.6216,
+      "Center": 0.9732
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 98,
+    "drifts": {
+      "Mean": 0.94,
+      "Median": 1.6136,
+      "Center": 0.9726
+    }
+  },
+  {
+    "distribution": "Uniform",
+    "sampleSize": 99,
+    "drifts": {
+      "Mean": 0.9397,
+      "Median": 1.6205,
+      "Center": 0.9722
+    }
+  }
+]

@@ -9,4 +9,5 @@ using Pragmastat.Core.Properties;
 [assembly: InternalsVisibleTo("Pragmastat.Extended,PublicKey=" + PragmastatInfo.PublicKey)]
 
 [assembly: InternalsVisibleTo("Pragmastat.ReferenceTests,PublicKey=" + PragmastatInfo.PublicKey)]
+[assembly: InternalsVisibleTo("Pragmastat.UnitTests,PublicKey=" + PragmastatInfo.PublicKey)]
 [assembly: InternalsVisibleTo("Pragmastat.Simulations,PublicKey=" + PragmastatInfo.PublicKey)]

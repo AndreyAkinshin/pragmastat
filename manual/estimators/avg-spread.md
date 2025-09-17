@@ -5,18 +5,10 @@ $$
 $$
 
 - Measures average dispersion across two samples
-- Serves as a normalization factor for $\Disparity$
-- Performs best for distributions with close dispersion values
-
-**Comparison**
-
-- Robust alternative to the *pooled standard deviation*
-
-**Properties**
-
+- Pragmatic alternative to the 'pooled standard deviation'
+- Note: $\AvgSpread(\x, \y) \neq \Spread(\x \cup \y)$ in general (defined pooled scale, not spread of concatenated sample)
 - Domain: any real numbers
 - Unit: the same as measurements
-- Location-invariant, scale-invariant
 
 $$
 \AvgSpread(\x, \x) = \Spread(\x)

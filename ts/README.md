@@ -40,7 +40,7 @@ console.log('Disparity:', disparity(x, y));
 
 ### One-Sample Estimators
 
-- **center**: Hodges-Lehmann location estimator - robust measure of central tendency
+- **center**: Hodges-Lehmann location estimator - robust measure of average
 - **spread**: Shamos scale estimator - robust measure of dispersion
 - **relSpread**: Relative dispersion measure - spread normalized by center
 

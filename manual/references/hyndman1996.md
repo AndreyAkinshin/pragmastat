@@ -3,9 +3,9 @@ title: Sample Quantiles in Statistical Packages
 year: 1996
 doi: 10.2307/2684934
 urls:
-- "https://www.jstor.org/stable/2684934?origin=crossref"
+- "https://www.jstor.org/stable/2684934"
 authors:
-- Rob J Hyndman
+- Rob J. Hyndman
 - Yanan Fan
 ---
 

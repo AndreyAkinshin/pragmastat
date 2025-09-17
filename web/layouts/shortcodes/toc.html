@@ -1,2 +1,24 @@
-<h1>Table of Content</h1>
-{{ .Page.TableOfContents }}
+<div id="toc-container">
+  <h1 class="cursor-pointer select-none flex items-center gap-2" onclick="toggleToc()">
+    <span id="toc-arrow" class="transform transition-transform duration-200">▼</span>
+    Table of Content
+  </h1>
+  <div id="toc-content" class="hidden toc">
+    {{ .Page.TableOfContents }}
+  </div>
+</div>
+
+<script>
+function toggleToc() {
+  const content = document.getElementById('toc-content');
+  const arrow = document.getElementById('toc-arrow');
+
+  if (content.classList.contains('hidden')) {
+    content.classList.remove('hidden');
+    arrow.classList.add('rotate-180');
+  } else {
+    content.classList.add('hidden');
+    arrow.classList.remove('rotate-180');
+  }
+}
+</script>

@@ -12,6 +12,7 @@ public class WebConvertor : ConvertorBase
     protected override FilePath DestMainFile => Nav.WebIndexMd;
     protected override DirectoryPath DestImgDir => Nav.WebImgDir;
     protected override bool SupportDarkImages => true;
+    protected override bool ShouldNumberHeaders => true;
 
     protected override async Task<string> ConvertMain(string src)
     {

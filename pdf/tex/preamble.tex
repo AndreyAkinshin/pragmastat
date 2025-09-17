@@ -29,6 +29,11 @@
 \captionsetup{width=14cm}
 \usepackage[absolute]{textpos}
 
+% Code listing wrapping
+% Based on https://github.com/rstudio/rmarkdown/issues/646#issuecomment-926583252
+\usepackage{fvextra}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,commandchars=\\\{\}}
+
 % Info block
 \usepackage[framemethod=TikZ]{mdframed}
 \definecolor{infocolor}{HTML}{6cbf43}
