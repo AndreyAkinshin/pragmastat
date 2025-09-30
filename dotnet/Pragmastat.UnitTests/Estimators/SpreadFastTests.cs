@@ -34,6 +34,7 @@ public class SpreadFastTests
         var stopwatch = Stopwatch.StartNew();
         Trace.WriteLine(SpreadEstimator.Instance.Estimate(x));
         Trace.WriteLine($"Elapsed: {stopwatch.ElapsedMilliseconds}ms");
+        Assert.True(stopwatch.Elapsed.TotalSeconds < 5);
     }
 
     private Measurement SpreadSimple(Sample x)

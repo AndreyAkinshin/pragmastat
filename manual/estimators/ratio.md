@@ -1,7 +1,7 @@
 ## Ratio
 
 $$
-\Ratio(\x, \y) = \underset{1 \leq i \leq n,\,\, 1 \leq j \leq m}{\Median} \left( \dfrac{x_i}{y_j} \right)
+\Ratio(\x, \y) = \underset{1 \leq i \leq n, 1 \leq j \leq m}{\Median} \left( \dfrac{x_i}{y_j} \right)
 $$
 
 - Measures the median of pairwise ratios between elements of two samples

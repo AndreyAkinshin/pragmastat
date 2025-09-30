@@ -1,12 +1,18 @@
----
-title: Pragmastat / Rust
-url: rust
----
+<span id="rust"></span> <!-- [pdf] DELETE -->
 
-Copy-pastable implementation:
+## Rust
+
+Source code of the latest version: https://github.com/AndreyAkinshin/pragmastat/tree/main/rust
+
+To install the package from GitHub, add this to your `Cargo.toml`:
+
+```toml
+[dependencies]
+pragmastat = { git = "https://github.com/AndreyAkinshin/pragmastat" }
+```
+
+Demo:
 
 ```rust
-// <!-- COPYRIGHT -->
-
-<!-- INCLUDE rust/pragmastat/src/estimators.rs -->
+<!-- INCLUDE rust/pragmastat/examples/demo.rs -->
 ```

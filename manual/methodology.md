@@ -2,6 +2,28 @@
 
 This chapter examines the methodological principles that guide the toolkit's design and application.
 
+## Desiderata
+
+The toolkit consists of statistical *procedures* — practical methods that transform raw measurements into actionable insights and decisions.
+When practitioners face real-world problems involving data analysis,
+  their success depends on selecting the right procedure for each specific situation.
+Convenient and efficient procedures have the following *desired properties*:
+
+- **Usability.**
+  Procedures should feel natural to practitioners and minimize opportunities for misuse.
+  They should be mathematically elegant yet accessible to readers with standard mathematical backgrounds.
+  Implementation should be straightforward across programming languages.
+  Like well-designed APIs, these procedures should follow intuitive design principles that reduce cognitive load.
+- **Reliability.**
+  Procedures should deliver consistent, trustworthy results,
+    even in the presence of noise, data corruption, and extreme outliers.
+- **Applicability.**
+  Procedures should perform well across diverse contexts and sample sizes.
+  They should handle the full spectrum of distributions commonly encountered in practice,
+    from ideal theoretical models to data that deviates significantly from any assumed distribution.
+
+This manual introduces a unified toolkit that aims to satisfy these properties and provide reliable rule-of-thumb procedures for everyday analytical tasks.
+
 ## From Assumptions to Conditions
 
 Traditional statistical practice starts with model assumptions,
@@ -36,13 +58,13 @@ For an estimator $T$ applied to samples from distribution $X$,
   absolute efficiency is defined relative to the optimal estimator $T^*$:
 
 $$
-\text{Efficiency}(T, X) = \frac{\text{Var}[T^*(X_{1..n})]}{\text{Var}[T(X_{1..n})]}
+\text{Efficiency}(T, X) = \frac{\text{Var}[T^*(X_1, \ldots, X_n)]}{\text{Var}[T(X_1, \ldots, X_n)]}
 $$
 
 Relative efficiency compares two estimators by taking the ratio of their variances:
 
 $$
-\text{RelativeEfficiency}(T_1, T_2, X) = \frac{\text{Var}[T_2(X_{1..n})]}{\text{Var}[T_1(X_{1..n})]}
+\text{RelativeEfficiency}(T_1, T_2, X) = \frac{\text{Var}[T_2(X_1, \ldots, X_n)]}{\text{Var}[T_1(X_1, \ldots, X_n)]}
 $$
 
 Under $\Additive$ ('Normal') distributions, this approach works well.
@@ -50,7 +72,7 @@ The sample mean achieves optimal efficiency, while the median operates at roughl
 
 However, this variance-based definition creates four critical limitations:
 
-- Absolute efficiency requires knowing the optimal estimator, which is often hard to find.
+- Absolute efficiency requires knowing the optimal estimator, which is often difficult to determine.
   For many distributions, deriving the minimum variance unbiased estimator requires complex mathematical analysis.
   Without this reference point, absolute efficiency cannot be computed.
 - Relative efficiency only compares estimator pairs, preventing systematic evaluation.
@@ -71,11 +93,11 @@ Drift measures estimator precision using $\Spread$ instead of variance,
 For an average estimator $T$, random variable $X$, and sample size $n$:
 
 $$
-\AvgDrift(T, X, n) = \frac{\sqrt{n}\,\Spread\big[T(X_{1..n})\big]}{\Spread[X]}
+\AvgDrift(T, X, n) = \frac{\sqrt{n}\,\Spread\big[T(X_1, \ldots, X_n)\big]}{\Spread[X]}
 $$
 
 This formula measures estimator variability compared to data variability.
-$\Spread\big[T(X_{1..n})\big]$ captures the median absolute difference between estimates across repeated samples.
+$\Spread\big[T(X_1, \ldots, X_n)\big]$ captures the median absolute difference between estimates across repeated samples.
 Multiplying by $\sqrt{n}$ removes sample size dependency, making drift values comparable across different study sizes.
 Dividing by $\Spread[X]$ creates a scale-free measure that provides consistent drift values
   across different distribution parameters and measurement units.
@@ -83,7 +105,7 @@ Dividing by $\Spread[X]$ creates a scale-free measure that provides consistent d
 Dispersion estimators use a parallel formulation:
 
 $$
-\DispDrift(T, X, n) = \sqrt{n}\,\RelSpread\big[T(X_{1..n})\big]
+\DispDrift(T, X, n) = \sqrt{n}\,\RelSpread\big[T(X_1, \ldots, X_n)\big]
 $$
 
 Here $\RelSpread$ normalizes by the estimator's typical value for fair comparison.
@@ -126,11 +148,11 @@ The standard drift definition assumes $\sqrt{n}$ convergence rates typical under
 For broader applicability, drift generalizes to:
 
 $$
-\AvgDrift(T, X, n) = \frac{n^{\textrm{instability}}\,\Spread\big[T(X_{1..n})\big]}{\Spread[X]}
+\AvgDrift(T, X, n) = \frac{n^{\textrm{instability}}\,\Spread\big[T(X_1, \ldots, X_n)\big]}{\Spread[X]}
 $$
 
 $$
-\DispDrift(T, X, n) = n^{\textrm{instability}}\,\RelSpread\big[T(X_{1..n})\big]
+\DispDrift(T, X, n) = n^{\textrm{instability}}\,\RelSpread\big[T(X_1, \ldots, X_n)\big]
 $$
 
 The instability parameter adapts to estimator convergence rates.

@@ -4,3 +4,5 @@
 .Rproj.user
 .cursorrules
 artifacts
+go/example/example
+go/demo_bin

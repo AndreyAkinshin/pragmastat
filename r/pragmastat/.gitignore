@@ -1,8 +1,31 @@
+# R session files
 .Rproj.user
 .Rhistory
 .Rdata
 .httr-oauth
+.RData
+.Ruserdata
+
+# System files
 .DS_Store
+
+# Quarto
 .quarto
+
+# R package check artifacts
 ..Rcheck
+*.Rcheck
+
+# Compiled C/C++ artifacts
+src/*.o
+src/*.so
+src/*.dll
+src/*.dylib
+src/*.a
+src/symbols.rds
+src-i386/
+src-x64/
+
+# Test artifacts
 tests/tests
+testthat/.Rcheck

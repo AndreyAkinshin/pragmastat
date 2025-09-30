@@ -7,102 +7,136 @@ import (
 	"github.com/AndreyAkinshin/pragmastat"
 )
 
+func add(x []float64, val float64) []float64 {
+	result := make([]float64, len(x))
+	for i, v := range x {
+		result[i] = v + val
+	}
+	return result
+}
+
+func subtract(x []float64, val float64) []float64 {
+	result := make([]float64, len(x))
+	for i, v := range x {
+		result[i] = v - val
+	}
+	return result
+}
+
+func divide(x []float64, val float64) []float64 {
+	result := make([]float64, len(x))
+	for i, v := range x {
+		result[i] = v / val
+	}
+	return result
+}
+
+func multiply(x []float64, val float64) []float64 {
+	result := make([]float64, len(x))
+	for i, v := range x {
+		result[i] = v * val
+	}
+	return result
+}
+
 func main() {
-	// One-sample analysis
-	fmt.Println("=== One-Sample Analysis ===")
-	x := []float64{1.2, 3.4, 2.5, 4.1, 2.8}
+	x := []float64{0, 2, 4, 6, 8}
+	fmt.Println(mustCenter(x))              // 4
+	fmt.Println(mustCenter(add(x, 10)))     // 14
+	fmt.Println(mustCenter(multiply(x, 3))) // 12
 
-	fmt.Printf("Sample: %v\n", x)
-	center, err := pragmastat.Center(x)
+	fmt.Println(mustSpread(x))              // 4
+	fmt.Println(mustSpread(add(x, 10)))     // 4
+	fmt.Println(mustSpread(multiply(x, 2))) // 8
+
+	fmt.Println(mustRelSpread(x))              // 1
+	fmt.Println(mustRelSpread(multiply(x, 5))) // 1
+
+	y := []float64{10, 12, 14, 16, 18}
+	fmt.Println(mustShift(x, y))                           // -10
+	fmt.Println(mustShift(x, x))                           // 0
+	fmt.Println(mustShift(add(x, 7), add(y, 3)))           // -6
+	fmt.Println(mustShift(multiply(x, 2), multiply(y, 2))) // -20
+	fmt.Println(mustShift(y, x))                           // 10
+
+	x = []float64{1, 2, 4, 8, 16}
+	y = []float64{2, 4, 8, 16, 32}
+	fmt.Println(mustRatio(x, y))                           // 0.5
+	fmt.Println(mustRatio(x, x))                           // 1
+	fmt.Println(mustRatio(multiply(x, 2), multiply(y, 5))) // 0.2
+
+	x = []float64{0, 3, 6, 9, 12}
+	y = []float64{0, 2, 4, 6, 8}
+	fmt.Println(mustSpread(x)) // 6
+	fmt.Println(mustSpread(y)) // 4
+
+	fmt.Println(mustAvgSpread(x, y))                           // 5
+	fmt.Println(mustAvgSpread(x, x))                           // 6
+	fmt.Println(mustAvgSpread(multiply(x, 2), multiply(x, 3))) // 15
+	fmt.Println(mustAvgSpread(y, x))                           // 5
+	fmt.Println(mustAvgSpread(multiply(x, 2), multiply(y, 2))) // 10
+
+	fmt.Println(mustShift(x, y))     // 2
+	fmt.Println(mustAvgSpread(x, y)) // 5
+
+	fmt.Println(mustDisparity(x, y))                           // 0.4
+	fmt.Println(mustDisparity(add(x, 5), add(y, 5)))           // 0.4
+	fmt.Println(mustDisparity(multiply(x, 2), multiply(y, 2))) // 0.4
+	fmt.Println(mustDisparity(y, x))                           // -0.4
+}
+
+func mustCenter(x []float64) float64 {
+	result, err := pragmastat.Center(x)
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("Center: %.4f\n", center)
+	return result
+}
 
-	spread, err := pragmastat.Spread(x)
+func mustSpread(x []float64) float64 {
+	result, err := pragmastat.Spread(x)
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("Spread: %.4f\n", spread)
+	return result
+}
 
-	relSpread, err := pragmastat.RelSpread(x)
+func mustRelSpread(x []float64) float64 {
+	result, err := pragmastat.RelSpread(x)
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("RelSpread: %.2f%%\n", relSpread*100)
+	return result
+}
 
-	// Two-sample comparison
-	fmt.Println("\n=== Two-Sample Comparison ===")
-	y := []float64{2.1, 4.3, 3.2, 5.0, 3.7}
-
-	fmt.Printf("Sample X: %v\n", x)
-	fmt.Printf("Sample Y: %v\n", y)
-
-	shift, err := pragmastat.Shift(x, y)
+func mustShift(x, y []float64) float64 {
+	result, err := pragmastat.Shift(x, y)
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("Shift: %.4f (X is typically %.4f units larger than Y)\n", shift, shift)
+	return result
+}
 
-	ratio, err := pragmastat.Ratio(x, y)
+func mustRatio(x, y []float64) float64 {
+	result, err := pragmastat.Ratio(x, y)
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("Ratio: %.4f (X is typically %.1f%% of Y)\n", ratio, ratio*100)
+	return result
+}
 
-	avgSpread, err := pragmastat.AvgSpread(x, y)
+func mustAvgSpread(x, y []float64) float64 {
+	result, err := pragmastat.AvgSpread(x, y)
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("AvgSpread: %.4f\n", avgSpread)
+	return result
+}
 
-	disparity, err := pragmastat.Disparity(x, y)
+func mustDisparity(x, y []float64) float64 {
+	result, err := pragmastat.Disparity(x, y)
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("Disparity: %.4f\n", disparity)
-
-	// Demonstrating robustness with outliers
-	fmt.Println("\n=== Robustness Demonstration ===")
-	normal := []float64{1, 2, 3, 4, 5}
-	withOutlier := []float64{1, 2, 3, 4, 100}
-
-	fmt.Printf("Normal sample: %v\n", normal)
-	centerNormal, err := pragmastat.Center(normal)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("  Center: %.2f\n", centerNormal)
-
-	spreadNormal, err := pragmastat.Spread(normal)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("  Spread: %.2f\n", spreadNormal)
-
-	fmt.Printf("Sample with outlier: %v\n", withOutlier)
-	centerOutlier, err := pragmastat.Center(withOutlier)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("  Center: %.2f (robust)\n", centerOutlier)
-
-	spreadOutlier, err := pragmastat.Spread(withOutlier)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("  Spread: %.2f (robust)\n", spreadOutlier)
-
-	// Traditional mean for comparison
-	mean := func(x []float64) float64 {
-		sum := 0.0
-		for _, v := range x {
-			sum += v
-		}
-		return sum / float64(len(x))
-	}
-
-	fmt.Printf("\nComparison with traditional mean:\n")
-	fmt.Printf("  Mean of normal: %.2f\n", mean(normal))
-	fmt.Printf("  Mean with outlier: %.2f (affected by outlier)\n", mean(withOutlier))
+	return result
 }

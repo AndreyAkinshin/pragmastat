@@ -13,7 +13,7 @@ The theoretical maximum is 50% — no estimator can guarantee reliable results
   when more than half the measurements are extreme or corrupted.
 Beyond this threshold, the contaminated values dominate and the original signal becomes unrecoverable.
 
-Pursuing maximum robustness unnecessarily sacrifices precision.
+However, pursuing maximum robustness unnecessarily sacrifices precision.
 When nearly half the data consists of extreme values,
   the distribution likely exhibits multiple modes rather than a single distribution with outliers.
 Such cases require different analysis techniques, not just robust estimators.
@@ -24,8 +24,7 @@ The practical goal balances adequate protection against precision loss.
 The $\Center$ and $\Spread$ estimators achieve 29% breakdown points,
   providing substantial protection against realistic contamination levels
   while maintaining good statistical efficiency.
-This represents an effective engineering choice —
-  sufficient robustness for typical outlier scenarios without excessive precision sacrifice.
+This represents an effective engineering choice — sufficient robustness for typical outlier scenarios without excessive precision sacrifice.
 
 **Asymptotic breakdown points** for average estimators:
 

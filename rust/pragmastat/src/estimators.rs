@@ -27,43 +27,18 @@ fn median(values: &[f64]) -> Result<f64, &'static str> {
 ///
 /// Calculates the median of all pairwise averages (x[i] + x[j])/2.
 /// More robust than the mean and more efficient than the median.
+/// Uses fast O(n log n) algorithm.
 pub fn center(x: &[f64]) -> Result<f64, &'static str> {
-    let n = x.len();
-    if n == 0 {
-        return Err("Input slice cannot be empty");
-    }
-
-    let mut pairwise_averages = Vec::new();
-    for i in 0..n {
-        for j in i..n {
-            pairwise_averages.push((x[i] + x[j]) / 2.0);
-        }
-    }
-
-    median(&pairwise_averages)
+    crate::fast_center::fast_center(x)
 }
 
 /// Estimates data dispersion (Spread)
 ///
 /// Calculates the median of all pairwise absolute differences |x[i] - x[j]|.
 /// More robust than standard deviation and more efficient than MAD.
+/// Uses fast O(n log n) algorithm.
 pub fn spread(x: &[f64]) -> Result<f64, &'static str> {
-    let n = x.len();
-    if n == 0 {
-        return Err("Input slice cannot be empty");
-    }
-    if n == 1 {
-        return Ok(0.0);
-    }
-
-    let mut pairwise_diffs = Vec::new();
-    for i in 0..n {
-        for j in (i + 1)..n {
-            pairwise_diffs.push((x[i] - x[j]).abs());
-        }
-    }
-
-    median(&pairwise_diffs)
+    crate::fast_spread::fast_spread(x)
 }
 
 /// Measures the relative dispersion of a sample (RelSpread)
@@ -138,7 +113,7 @@ pub fn avg_spread(x: &[f64], y: &[f64]) -> Result<f64, &'static str> {
     Ok((n as f64 * spread_x + m as f64 * spread_y) / (n + m) as f64)
 }
 
-/// Measures effect size: a normalized absolute difference between x and y (Disparity)
+/// Measures effect size: a normalized difference between x and y (Disparity)
 ///
 /// Calculated as Shift / AvgSpread. Robust alternative to Cohen's d.
 /// Returns infinity if avg_spread is zero.

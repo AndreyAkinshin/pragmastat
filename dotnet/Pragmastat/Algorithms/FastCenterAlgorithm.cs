@@ -14,7 +14,7 @@ internal static class FastCenterAlgorithm
     /// <param name="random">Random number generator</param>
     /// <param name="isSorted">If values are sorted</param>
     /// <returns>Exact center value (Hodges-Lehmann estimator)</returns>
-    public static double Estimate(IReadOnlyList<double> values, Random? random = null, bool isSorted = true)
+    public static double Estimate(IReadOnlyList<double> values, Random? random = null, bool isSorted = false)
     {
         int n = values.Count;
         if (n == 1) return values[0];

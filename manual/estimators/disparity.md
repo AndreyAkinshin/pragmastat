@@ -6,7 +6,7 @@ $$
 
 - Measures a normalized $\Shift$ between $\x$ and $\y$ expressed in spread units
 - Expresses the 'effect size', renamed to $\Disparity$ for clarity
-- Pragmatic alternative to Cohen's d (exact estimations do not match)
+- Pragmatic alternative to Cohen's d (note: exact estimates differ due to robust construction)
 - Domain: $\AvgSpread(\x, \y) > 0$
 - Unit: spread unit
 

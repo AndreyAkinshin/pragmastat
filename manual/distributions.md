@@ -13,14 +13,14 @@ $$
 
 <!-- IMG distribution-additive -->
 
-- **Formation:** the sum of many variables $X_1 + X_2 + \ldots + X_n$ under mild CLT conditions (e.g., Lindeberg-Feller).
+- **Formation:** the sum of many variables $X_1 + X_2 + \ldots + X_n$ under mild CLT (Central Limit Theorem) conditions (e.g., Lindeberg-Feller).
 - **Origin:** historically called 'Normal' or 'Gaussian' distribution after Carl Friedrich Gauss and others.
 - **Rename Motivation:** renamed to $\Additive$ to reflect its fundamental formation mechanism
   through addition rather than arbitrary historical attribution.
 - **Properties:** symmetric, bell-shaped, characterized by central limit theorem convergence.
 - **Applications:** measurement errors, heights and weights in populations, test scores, temperature variations.
 - **Characteristics:** symmetric around the mean, light tails, finite variance.
-- **Caution:** no perfect additive distributions exist;
+- **Caution:** no perfectly additive distributions exist;
     all real data contain some deviations.
   Traditional estimators like $\Mean$ and $\StdDev$ lack robustness to outliers;
   use them only when strong evidence supports small deviations from additivity with no extreme measurements.
@@ -42,7 +42,7 @@ $$
   through multiplication rather than arbitrary historical attribution.
 - **Properties:** logarithm of a $\Multiplic$ ('LogNormal') variable follows an $\Additive$ ('Normal') distribution.
 - **Applications:** stock prices, file sizes, reaction times, income distributions, biological growth rates.
-- **Caution:** no perfect multiplic distributions exist;
+- **Caution:** no perfectly multiplic distributions exist;
     all real data contain some deviations.
   Traditional estimators may struggle with the inherent skewness and heavy right tail.
 

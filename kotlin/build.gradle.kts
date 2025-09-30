@@ -9,7 +9,7 @@ application {
 }
 
 group = "com.pragmastat"
-version = "3.0.0"
+version = "3.1.0"
 
 repositories {
     mavenCentral()
@@ -37,16 +37,16 @@ publishing {
             
             pom {
                 name.set("Pragmastat")
-                description.set("Pragmastat: Unified Statistical Toolkit for Reliable Analysis of Real-World Data")
-                url.set("https://github.com/AndreyAkinshin/pragmastat")
-                
+                description.set("Pragmastat: Pragmatic Statistical Toolkit")
+                url.set("https://pragmastat.dev")
+
                 licenses {
                     license {
                         name.set("MIT License")
                         url.set("https://opensource.org/licenses/MIT")
                     }
                 }
-                
+
                 developers {
                     developer {
                         id.set("AndreyAkinshin")
@@ -54,12 +54,16 @@ publishing {
                         email.set("andrey.akinshin@gmail.com")
                     }
                 }
-                
+
                 scm {
                     connection.set("scm:git:git://github.com/AndreyAkinshin/pragmastat.git")
                     developerConnection.set("scm:git:ssh://github.com/AndreyAkinshin/pragmastat.git")
                     url.set("https://github.com/AndreyAkinshin/pragmastat")
                 }
+
+                properties.set(mapOf(
+                    "doi" to "10.5281/zenodo.17236778"
+                ))
             }
         }
     }

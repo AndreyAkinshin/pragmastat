@@ -9,20 +9,22 @@
     <a href="https://aakinshin.net">Andrey Akinshin</a>
 </div>
 
-<div class="mt-4 mb-4 text-center text-xl">
+<div class="mt-2 mb-2 text-center text-lg">
+    <a href="#python">Python</a> ·
+    <a href="#ts">TypeScript</a> ·
+    <a href="#r">R</a> ·
+    <a href="#dotnet">.NET</a> ·
+    <a href="#kotlin">Kotlin</a> ·
+    <a href="#rust">Rust</a> ·
+    <a href="#go">Go</a>
+</div>
+
+<div class="mt-2 mb-6 text-center text-l">
     {{ if not .Site.Data.config.isRelease }} Draft of {{ end }}
     Version {{ .Site.Data.config.version }}
     {{ if not .Site.Data.config.isRelease }} ({{ .Site.Data.config.date }}) {{ end }}
-</div>
-
-<div class="mt-2 mb-6 text-center text-lg">
-    <a href="/python">Python</a> ·
-    <a href="/ts">TypeScript</a> ·
-    <a href="/r">R</a> ·
-    <a href="/dotnet">.NET</a> ·
-    <a href="/kotlin">Kotlin</a> ·
-    <a href="/rust">Rust</a> ·
-    <a href="/go">Go</a>
+    <br />
+    DOI: <a href="https://doi.org/10.5281/zenodo.17236778">10.5281/zenodo.17236778</a>
 </div>
 
 {{ partial "markup" . }}

@@ -1,5 +1,7 @@
 # Pragmastat for Kotlin
 
+[![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.17236778.svg)](https://doi.org/10.5281/zenodo.17236778)
+
 Kotlin implementation of the Pragmastat statistical toolkit.
 
 ## Usage

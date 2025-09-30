@@ -1,5 +1,7 @@
 # Pragmastat TypeScript Implementation
 
+[![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.17236778.svg)](https://doi.org/10.5281/zenodo.17236778)
+
 This is the TypeScript implementation of Pragmastat, a pragmatic statistical toolkit designed for analyzing real-world data.
 
 ## Installation

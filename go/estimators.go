@@ -7,6 +7,8 @@ import (
 	"sort"
 )
 
+var errEmptyInput = errors.New("input slice cannot be empty")
+
 // median calculates the median of a slice of float64 values.
 func median(values []float64) (float64, error) {
 	n := len(values)
@@ -28,42 +30,17 @@ func median(values []float64) (float64, error) {
 // Center estimates the central value of the data.
 // Calculates the median of all pairwise averages (x[i] + x[j])/2.
 // More robust than the mean and more efficient than the median.
+// Uses fast O(n log n) algorithm.
 func Center(x []float64) (float64, error) {
-	n := len(x)
-	if n == 0 {
-		return 0, errors.New("input slice cannot be empty")
-	}
-
-	var pairwiseAverages []float64
-	for i := 0; i < n; i++ {
-		for j := i; j < n; j++ {
-			pairwiseAverages = append(pairwiseAverages, (x[i]+x[j])/2.0)
-		}
-	}
-
-	return median(pairwiseAverages)
+	return fastCenter(x)
 }
 
 // Spread estimates data dispersion (variability or scatter).
 // Calculates the median of all pairwise absolute differences |x[i] - x[j]|.
 // More robust than standard deviation and more efficient than MAD.
+// Uses fast O(n log n) algorithm.
 func Spread(x []float64) (float64, error) {
-	n := len(x)
-	if n == 0 {
-		return 0, errors.New("input slice cannot be empty")
-	}
-	if n == 1 {
-		return 0.0, nil
-	}
-
-	var pairwiseDiffs []float64
-	for i := 0; i < n; i++ {
-		for j := i + 1; j < n; j++ {
-			pairwiseDiffs = append(pairwiseDiffs, math.Abs(x[i]-x[j]))
-		}
-	}
-
-	return median(pairwiseDiffs)
+	return fastSpread(x)
 }
 
 // RelSpread measures the relative dispersion of a sample.

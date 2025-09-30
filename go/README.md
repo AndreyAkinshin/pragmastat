@@ -1,5 +1,7 @@
 # Pragmastat Go
 
+[![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.17236778.svg)](https://doi.org/10.5281/zenodo.17236778)
+
 A Go implementation of the Pragmastat statistical toolkit for reliable analysis of real-world data.
 
 ## Features

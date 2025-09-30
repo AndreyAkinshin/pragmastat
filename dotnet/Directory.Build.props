@@ -25,7 +25,7 @@
         <NoWarn>$(NoWarn);NETSDK1188</NoWarn>
 
         <Major>3</Major>
-        <Minor>0</Minor>
+        <Minor>1</Minor>
         <Revision>0</Revision>
         <BuildNumber>0</BuildNumber>
 

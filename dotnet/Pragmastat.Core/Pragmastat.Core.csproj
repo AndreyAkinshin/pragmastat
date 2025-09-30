@@ -2,7 +2,10 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
-    <Description>Pragmatic statistics toolkit / Core</Description>
+    <Description>Pragmatic Statistical Toolkit</Description>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageProjectUrl>https://pragmastat.dev</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/AndreyAkinshin/pragmastat</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>

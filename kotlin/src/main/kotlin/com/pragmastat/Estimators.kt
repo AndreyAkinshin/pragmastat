@@ -21,41 +21,24 @@ fun median(values: List<Double>): Double {
 
 /**
  * Estimates the central value of the data (Center)
- * 
+ *
  * Calculates the median of all pairwise averages (x[i] + x[j])/2.
  * More robust than the mean and more efficient than the median.
+ * Uses fast O(n log n) algorithm.
  */
 fun center(x: List<Double>): Double {
-    require(x.isNotEmpty()) { "Input list cannot be empty" }
-    
-    val pairwiseAverages = mutableListOf<Double>()
-    for (i in x.indices) {
-        for (j in i until x.size) {
-            pairwiseAverages.add((x[i] + x[j]) / 2.0)
-        }
-    }
-    
-    return median(pairwiseAverages)
+    return fastCenter(x)
 }
 
 /**
  * Estimates data dispersion (Spread)
- * 
+ *
  * Calculates the median of all pairwise absolute differences |x[i] - x[j]|.
  * More robust than standard deviation and more efficient than MAD.
+ * Uses fast O(n log n) algorithm.
  */
 fun spread(x: List<Double>): Double {
-    require(x.isNotEmpty()) { "Input list cannot be empty" }
-    if (x.size == 1) return 0.0
-    
-    val pairwiseDiffs = mutableListOf<Double>()
-    for (i in x.indices) {
-        for (j in i + 1 until x.size) {
-            pairwiseDiffs.add(abs(x[i] - x[j]))
-        }
-    }
-    
-    return median(pairwiseDiffs)
+    return fastSpread(x)
 }
 
 /**

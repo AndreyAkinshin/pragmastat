@@ -3,50 +3,27 @@
  */
 
 import { median } from './utils';
+import { fastCenter } from './fastCenter';
+import { fastSpread } from './fastSpread';
 
 /**
  * Calculate the Center - median of all pairwise averages (x[i] + x[j])/2
+ * Uses fast O(n log n) algorithm.
  * @param x Array of sample values
  * @returns The center estimate
  */
 export function center(x: number[]): number {
-  const n = x.length;
-  if (n === 0) {
-    throw new Error('Input array cannot be empty');
-  }
-
-  const pairwiseAverages: number[] = [];
-  for (let i = 0; i < n; i++) {
-    for (let j = i; j < n; j++) {
-      pairwiseAverages.push((x[i] + x[j]) / 2);
-    }
-  }
-
-  return median(pairwiseAverages);
+  return fastCenter(x);
 }
 
 /**
  * Calculate the Spread - median of all pairwise absolute differences |x[i] - x[j]|
+ * Uses fast O(n log n) algorithm.
  * @param x Array of sample values
  * @returns The spread estimate
  */
 export function spread(x: number[]): number {
-  const n = x.length;
-  if (n === 0) {
-    throw new Error('Input array cannot be empty');
-  }
-  if (n === 1) {
-    return 0;
-  }
-
-  const pairwiseDifferences: number[] = [];
-  for (let i = 0; i < n; i++) {
-    for (let j = i + 1; j < n; j++) {
-      pairwiseDifferences.push(Math.abs(x[j] - x[i]));
-    }
-  }
-
-  return median(pairwiseDifferences);
+  return fastSpread(x);
 }
 
 /**

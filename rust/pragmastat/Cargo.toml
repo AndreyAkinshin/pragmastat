@@ -1,15 +1,21 @@
 [package]
 name = "pragmastat"
-version = "3.0.0"
+version = "3.1.0"
 edition = "2021"
 authors = ["Andrey Akinshin"]
-description = "Pragmatic Statistical Toolkit"
+description = "Pragmastat: Pragmatic Statistical Toolkit"
 license = "MIT"
 repository = "https://github.com/AndreyAkinshin/pragmastat"
+documentation = "https://pragmastat.dev"
+homepage = "https://pragmastat.dev"
 keywords = ["statistics"]
 categories = ["mathematics"]
 
+[package.metadata]
+doi = "10.5281/zenodo.17236778"
+
 [dependencies]
+rand = "0.8"
 
 [dev-dependencies]
 serde = { version = "1.0", features = ["derive"] }

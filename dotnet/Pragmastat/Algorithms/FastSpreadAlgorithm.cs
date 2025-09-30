@@ -5,7 +5,7 @@ internal static class FastSpreadAlgorithm
     /// <summary>
     /// Shamos "Spread".  Expected O(n log n) time, O(n) extra space. Exact.
     /// </summary>
-    public static double Estimate(IReadOnlyList<double> values, Random? random = null, bool isSorted = true)
+    public static double Estimate(IReadOnlyList<double> values, Random? random = null, bool isSorted = false)
     {
         int n = values.Count;
         if (n <= 1) return 0;

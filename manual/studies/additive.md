@@ -40,8 +40,6 @@ $$
 \Median(|X-Y|) = \sqrt{2} \cdot z_{0.75} \cdot \mathrm{stdDev}.
 $$
 
-Hence $\Median(|X-Y|) = \sqrt{2} \cdot z_{0.75} \cdot \mathrm{stdDev}$.
-
 Define $z_{0.75} := \Phi^{-1}(0.75) \approx 0.6744897502$. Numerically,
   the median absolute difference is approximately $\sqrt{2} \cdot z_{0.75} \cdot \mathrm{stdDev} \approx 0.9538725524 \cdot \mathrm{stdDev}$.
 This expression depends only on the scale parameter $\mathrm{stdDev}$, not on the mean,
@@ -53,7 +51,7 @@ For average estimators $T_n$ with asymptotic standard deviation $a \cdot \mathrm
   define $\RelSpread[T_n] := \Spread[T_n] / \Spread[X]$.
 In the $\Additive$ ('Normal') case, $\Spread[X] = \sqrt{2} \cdot z_{0.75} \cdot \mathrm{stdDev}$.
 
-For any average estimator $T_n$ with asymptotic distribution $T_n \sim \text{approx } N(\mu, (a \cdot \mathrm{stdDev})^2 / n)$, the drift calculation follows:
+For any average estimator $T_n$ with asymptotic distribution $T_n \sim \text{approx } \Additive(\mu, (a \cdot \mathrm{stdDev})^2 / n)$, the drift calculation follows:
 
 - The spread of two independent estimates: $\Spread[T_n] = \sqrt{2} \cdot z_{0.75} \cdot a \cdot \mathrm{stdDev} / \sqrt{n}$
 - The relative spread: $\RelSpread[T_n] = a / \sqrt{n}$
@@ -134,7 +132,7 @@ For dispersion estimators $T_n$ with asymptotic center $b \cdot \mathrm{stdDev}$
   and standard deviation $a \cdot \mathrm{stdDev} / \sqrt{n}$,
   define $\RelSpread[T_n] := \Spread[T_n] / (b \cdot \mathrm{stdDev})$.
 
-For any dispersion estimator $T_n$ with asymptotic distribution $T_n \sim \text{approx } N(b \cdot \mathrm{stdDev}, (a \cdot \mathrm{stdDev})^2 / n)$, the drift calculation follows:
+For any dispersion estimator $T_n$ with asymptotic distribution $T_n \sim \text{approx } \Additive(b \cdot \mathrm{stdDev}, (a \cdot \mathrm{stdDev})^2 / n)$, the drift calculation follows:
 
 - The spread of two independent estimates: $\Spread[T_n] = \sqrt{2} \cdot z_{0.75} \cdot a \cdot \mathrm{stdDev} / \sqrt{n}$
 - The relative spread: $\RelSpread[T_n] = \sqrt{2} \cdot z_{0.75} \cdot a / (b\sqrt{n})$

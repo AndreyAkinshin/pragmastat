@@ -1,13 +1,19 @@
----
-title: Pragmastat / Go
-url: go
----
+<span id="go"></span> <!-- [pdf] DELETE -->
 
-Copy-pastable implementation:
+## Go
+
+Source code of the latest version: https://github.com/AndreyAkinshin/pragmastat/tree/main/go
+
+To install the package from GitHub:
+
+```bash
+go get github.com/AndreyAkinshin/pragmastat/go
+```
+
+Demo:
 
 ```go
-// <!-- COPYRIGHT -->
 
-<!-- INCLUDE go/estimators.go -->
+<!-- INCLUDE go/example/main.go -->
 
 ```

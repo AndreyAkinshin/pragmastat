@@ -1,5 +1,7 @@
 # Pragmastat .NET
 
+[![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.17236778.svg)](https://doi.org/10.5281/zenodo.17236778)
+
 A .NET implementation of the Pragmastat statistical toolkit - robust estimators designed for real-world data analysis.
 
 ## Installation

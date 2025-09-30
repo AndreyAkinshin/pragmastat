@@ -1,6 +1,8 @@
 from typing import Sequence, Union
 import numpy as np
 from numpy.typing import NDArray
+from .fast_center import _fast_center
+from .fast_spread import _fast_spread
 
 
 def center(x: Union[Sequence[float], NDArray]) -> float:
@@ -8,9 +10,8 @@ def center(x: Union[Sequence[float], NDArray]) -> float:
     n = len(x)
     if n == 0:
         raise ValueError("Input array cannot be empty")
-    pairwise_averages = np.add.outer(x, x) / 2
-    indices = np.triu_indices(n, k=0)
-    return float(np.median(pairwise_averages[indices]))
+    # Use fast O(n log n) algorithm
+    return _fast_center(x.tolist())
 
 
 def spread(x: Union[Sequence[float], NDArray]) -> float:
@@ -20,10 +21,8 @@ def spread(x: Union[Sequence[float], NDArray]) -> float:
         raise ValueError("Input array cannot be empty")
     if n == 1:
         return 0.0
-    pairwise_diffs = np.subtract.outer(x, x)
-    pairwise_abs_diffs = np.abs(pairwise_diffs)
-    indices = np.triu_indices(n, k=1)
-    return float(np.median(pairwise_abs_diffs[indices]))
+    # Use fast O(n log n) algorithm
+    return _fast_spread(x.tolist())
 
 
 def rel_spread(x: Union[Sequence[float], NDArray]) -> float:

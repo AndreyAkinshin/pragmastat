@@ -67,14 +67,6 @@ public class WebCommand : AsyncCommand<WebCommand.Settings>
              """);
         Nav.ImgDir.File("logo.ico").CopyTo(Nav.WebImgDir.File("favicon.ico"));
 
-        foreach (var implFile in Nav.ManualDir.SubDirectory("implementations").EnumerateFiles())
-        {
-            var implContent = await implFile.ReadAllTextAsync();
-            implContent = await Convertor.ConvertText(implContent, false);
-            var destImplFile = Nav.WebContentDir.SubDirectory("implementations").File(implFile.Name);
-            await destImplFile.WriteAllTextAsync(implContent);
-        }
-
         if (!settings.ConvertOnly)
         {
             if (settings.Serve)

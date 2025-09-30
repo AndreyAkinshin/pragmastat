@@ -1,5 +1,7 @@
 # Pragmastat Rust Implementation
 
+[![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.17236778.svg)](https://doi.org/10.5281/zenodo.17236778)
+
 A Rust implementation of the Pragmastat statistical toolkit, providing robust statistical estimators for reliable analysis of real-world data.
 
 ## Installation

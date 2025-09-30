@@ -34,6 +34,7 @@ public class CenterFastTests
         var stopwatch = Stopwatch.StartNew();
         Trace.WriteLine(CenterEstimator.Instance.Estimate(x));
         Trace.WriteLine($"Elapsed: {stopwatch.ElapsedMilliseconds}ms");
+        Assert.True(stopwatch.Elapsed.TotalSeconds < 5);
     }
 
     private Measurement CenterSimple(Sample x)

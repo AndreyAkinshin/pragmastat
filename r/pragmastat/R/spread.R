@@ -6,7 +6,6 @@ spread <- function(x) {
   if (n == 1) {
     return(0)
   }
-  pairwise_diffs <- outer(x, x, "-")
-  pairwise_abs_diffs <- abs(pairwise_diffs)
-  median(pairwise_abs_diffs[upper.tri(pairwise_abs_diffs, diag = FALSE)])
+  # Use fast O(n log n) algorithm
+  fast_spread(x)
 }
