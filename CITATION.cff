@@ -8,12 +8,11 @@ abstract: 'This manual presents a toolkit of statistical procedures that provide
 authors:
 - family-names: Akinshin
   given-names: Andrey
-  orcid: 0000-0003-3553-9367
-type: manual
+  orcid: https://orcid.org/0000-0003-3553-9367
 doi: 10.5281/zenodo.17236778
 repository-code: https://github.com/AndreyAkinshin/pragmastat
-version: v3.1.0
+version: v3.1.1
 date-released: '2025-09-30'
 license:
-- cc-by-nc-sa-4.0
+- CC-BY-NC-SA-4.0
 cff-version: 1.2.0
