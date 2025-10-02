@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/AndreyAkinshin/pragmastat"
+	"github.com/AndreyAkinshin/pragmastat/go"
 )
 
 func add(x []float64, val float64) []float64 {

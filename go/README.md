@@ -1,23 +1,15 @@
 # Pragmastat Go
 
-[![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.17236778.svg)](https://doi.org/10.5281/zenodo.17236778)
-
-A Go implementation of the Pragmastat statistical toolkit for reliable analysis of real-world data.
-
-## Features
-
-- **Robust estimators** that handle outliers gracefully
-- **High efficiency** comparable to traditional methods under normality
-- **Simple implementation** without complex dependencies
-- **Well-tested** with comprehensive test coverage
+A Go implementation of 'Pragmastat: Pragmatic Statistical Toolkit' - robust summary estimators designed for real-world data analysis.
+Online manual: https://pragmastat.dev
 
 ## Installation
 
 ```bash
-go get github.com/AndreyAkinshin/pragmastat
+go get github.com/AndreyAkinshin/pragmastat/go
 ```
 
-## Usage
+## Demo
 
 ```go
 package main
@@ -53,56 +45,25 @@ func main() {
 }
 ```
 
-## Estimators
+## The MIT License
 
-### One-Sample Estimators
+Copyright (c) 2025 Andrey Akinshin
 
-- **Center(x)**: Robust measure of average (Hodges-Lehmann estimator)
-- **Spread(x)**: Robust measure of dispersion (Shamos estimator)
-- **RelSpread(x)**: Relative dispersion (robust coefficient of variation)
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
 
-### Two-Sample Estimators
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
 
-- **Shift(x, y)**: Typical difference between samples (Hodges-Lehmann shift)
-- **Ratio(x, y)**: Typical ratio between samples
-- **AvgSpread(x, y)**: Combined spread of both samples
-- **Disparity(x, y)**: Effect size (robust alternative to Cohen's d)
-
-## Mathematical Properties
-
-The estimators maintain important mathematical invariances:
-
-- **Location invariance**: Spread is unaffected by shifting all values
-- **Scale equivariance**: Estimators scale appropriately with the data
-- **Robustness**: Resistant to outliers and extreme values
-
-## Testing
-
-Run the test suite:
-
-```bash
-go test ./...
-```
-
-Run tests with coverage:
-
-```bash
-go test -cover ./...
-```
-
-Run specific test suites:
-
-```bash
-# Unit tests only
-go test -run "^Test[^R]" ./...
-
-# Reference tests only
-go test -run "TestReference" ./...
-
-# Invariance tests only
-go test -run "TestInvariance" ./...
-```
-
-## License
-
-MIT
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
