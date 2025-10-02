@@ -11,6 +11,7 @@
 <div align="center">
 
   [![NuGet](https://img.shields.io/nuget/v/Pragmastat?color=009E73)](https://www.nuget.org/packages/Pragmastat/)
+  [![PyPI](https://img.shields.io/pypi/v/pragmastat?color=009E73)](https://pypi.org/project/pragmastat/)
 
 </div>
 

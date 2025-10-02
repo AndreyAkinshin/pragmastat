@@ -1,8 +1,7 @@
-# Pragmastat Python Implementation
+# Pragmastat
 
-[![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.17236778.svg)](https://doi.org/10.5281/zenodo.17236778)
-
-A Python implementation of the Pragmastat statistical toolkit, providing robust statistical estimators for reliable analysis of real-world data.
+A Python implementation of 'Pragmastat: Pragmatic Statistical Toolkit' - robust summary estimators designed for real-world data analysis.
+Online manual: https://pragmastat.dev
 
 ## Installation
 
@@ -10,52 +9,75 @@ A Python implementation of the Pragmastat statistical toolkit, providing robust 
 pip install pragmastat
 ```
 
-## Requirements
-
-- Python >= 3.8
-- NumPy >= 1.20
-
-## Usage
+## Demo
 
 ```python
 from pragmastat import center, spread, rel_spread, shift, ratio, avg_spread, disparity
 
-# Basic estimators
-x = [1, 2, 3, 4, 5]
-print(f"Center: {center(x)}")
-print(f"Spread: {spread(x)}")
-print(f"RelSpread: {rel_spread(x)}")
+x = [0, 2, 4, 6, 8]
+print(center(x))  # 4
+print(center([v + 10 for v in x]))  # 14
+print(center([v * 3 for v in x]))  # 12
 
-# Comparison estimators
-y = [3, 4, 5, 6, 7]
-print(f"Shift: {shift(x, y)}")
-print(f"Ratio: {ratio(x, y)}")
-print(f"AvgSpread: {avg_spread(x, y)}")
-print(f"Disparity: {disparity(x, y)}")
+print(spread(x))  # 4
+print(spread([v + 10 for v in x]))  # 4
+print(spread([v * 2 for v in x]))  # 8
+
+print(rel_spread(x))  # 1
+print(rel_spread([v * 5 for v in x]))  # 1
+
+y = [10, 12, 14, 16, 18]
+print(shift(x, y))  # -10
+print(shift(x, x))  # 0
+print(shift([v + 7 for v in x], [v + 3 for v in y]))  # -6
+print(shift([v * 2 for v in x], [v * 2 for v in y]))  # -20
+print(shift(y, x))  # 10
+
+x = [1, 2, 4, 8, 16]
+y = [2, 4, 8, 16, 32]
+print(ratio(x, y))  # 0.5
+print(ratio(x, x))  # 1
+print(ratio([v * 2 for v in x], [v * 5 for v in y]))  # 0.2
+
+x = [0, 3, 6, 9, 12]
+y = [0, 2, 4, 6, 8]
+print(spread(x))  # 6
+print(spread(y))  # 4
+
+print(avg_spread(x, y))  # 5
+print(avg_spread(x, x))  # 6
+print(avg_spread([v * 2 for v in x], [v * 3 for v in x]))  # 15
+print(avg_spread(y, x))  # 5
+print(avg_spread([v * 2 for v in x], [v * 2 for v in y]))  # 10
+
+print(shift(x, y))  # 2
+print(avg_spread(x, y))  # 5
+
+print(disparity(x, y))  # 0.4
+print(disparity([v + 5 for v in x], [v + 5 for v in y]))  # 0.4
+print(disparity([v * 2 for v in x], [v * 2 for v in y]))  # 0.4
+print(disparity(y, x))  # -0.4
 ```
 
-## Estimators
+## The MIT License
 
-### Single-sample estimators
+Copyright (c) 2025 Andrey Akinshin
 
-- `center(x)`: Hodges-Lehmann estimator - median of all pairwise averages
-- `spread(x)`: Shamos estimator - median of all pairwise absolute differences
-- `rel_spread(x)`: Relative spread - spread divided by absolute center
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
 
-### Two-sample estimators
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
 
-- `shift(x, y)`: Hodges-Lehmann shift estimator - median of all pairwise differences
-- `ratio(x, y)`: Median of all pairwise ratios
-- `avg_spread(x, y)`: Weighted average of spreads
-- `disparity(x, y)`: Normalized shift - shift divided by average spread
-
-## Features
-
-- Robust to outliers
-- Supports both Python lists and NumPy arrays
-- Type hints with numpy.typing
-- Efficient vectorized NumPy operations
-
-## License
-
-MIT
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
