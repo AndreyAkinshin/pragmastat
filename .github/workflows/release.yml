@@ -53,5 +53,8 @@ jobs:
         name: python
         path: dist/
 
-    - name: Publish to PyPI
+    - name: Remove platform-specific wheels
+      run: rm -f dist/*.whl
+
+    - name: Publish to PyPI (source distribution only)
       uses: pypa/gh-action-pypi-publish@release/v1
