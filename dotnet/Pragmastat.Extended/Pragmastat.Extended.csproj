@@ -6,7 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Pragmastat.Core\Pragmastat.Core.csproj" />
     <ProjectReference Include="..\Pragmastat\Pragmastat.csproj" />
   </ItemGroup>
 

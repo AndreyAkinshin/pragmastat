@@ -1,5 +1,5 @@
-using Pragmastat.Core.Functions;
 using Pragmastat.Distributions;
+using Pragmastat.Functions;
 using Pragmastat.ReferenceTests.ReferenceTesting;
 using Pragmastat.ReferenceTests.ReferenceTesting.SingleDoubleValue;
 

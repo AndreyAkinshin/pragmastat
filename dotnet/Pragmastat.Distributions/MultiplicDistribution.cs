@@ -1,8 +1,7 @@
 using JetBrains.Annotations;
-using Pragmastat.Core;
-using Pragmastat.Core.Functions;
-using Pragmastat.Core.Internal;
 using Pragmastat.Distributions.Randomization;
+using Pragmastat.Functions;
+using Pragmastat.Internal;
 
 namespace Pragmastat.Distributions;
 

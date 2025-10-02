@@ -1,5 +1,5 @@
 using System.Text.Json;
-using Pragmastat.Core.Internal;
+using Pragmastat.Internal;
 
 namespace Pragmastat.Simulations.Misc;
 

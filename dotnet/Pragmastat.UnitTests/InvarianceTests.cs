@@ -1,8 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
-using Pragmastat.Core;
-using Pragmastat.Core.Metrology;
 using Pragmastat.Distributions;
 using Pragmastat.Distributions.Randomization;
+using Pragmastat.Metrology;
 using static Pragmastat.Toolkit;
 
 namespace Pragmastat.UnitTests;

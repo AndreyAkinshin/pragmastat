@@ -1,8 +1,6 @@
 using Pragmastat.Algorithms;
-using Pragmastat.Core;
-using Pragmastat.Core.Estimators;
-using Pragmastat.Core.Internal;
-using Pragmastat.Core.Metrology;
+using Pragmastat.Internal;
+using Pragmastat.Metrology;
 
 namespace Pragmastat.Estimators;
 

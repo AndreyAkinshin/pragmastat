@@ -1,5 +1,4 @@
 using JetBrains.Annotations;
-using Pragmastat.Core;
 
 namespace Pragmastat.ReferenceTests.ReferenceTesting.TwoSample;
 

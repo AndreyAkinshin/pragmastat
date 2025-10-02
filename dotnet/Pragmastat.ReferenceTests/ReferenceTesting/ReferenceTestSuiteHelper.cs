@@ -1,4 +1,4 @@
-using Pragmastat.Core.Internal;
+using Pragmastat.Internal;
 
 namespace Pragmastat.ReferenceTests.ReferenceTesting;
 

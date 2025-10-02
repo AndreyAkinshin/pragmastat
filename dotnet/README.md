@@ -1,8 +1,7 @@
-# Pragmastat .NET
+# Pragmastat
 
-[![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.17236778.svg)](https://doi.org/10.5281/zenodo.17236778)
-
-A .NET implementation of the Pragmastat statistical toolkit - robust estimators designed for real-world data analysis.
+A .NET implementation of 'Pragmastat: Pragmatic Statistical Toolkit' - robust summary estimators designed for real-world data analysis.
+Online manual: https://pragmastat.dev
 
 ## Installation
 
@@ -16,70 +15,80 @@ Or via Package Manager Console:
 Install-Package Pragmastat
 ```
 
-## Quick Start
+## Demo
 
 ```csharp
-using Pragmastat.Core;
+using Pragmastat;
 
-var x = new Sample(1, 2, 3, 4, 5, 6, 273);
+var x = new Sample(0, 2, 4, 6, 8);
 WriteLine(x.Center()); // 4
-WriteLine(x.Spread()); // 3
-WriteLine(x.RelSpread()); // 0.75
+WriteLine((x + 10).Center()); // 14
+WriteLine((x * 3).Center()); // 12
 
-WriteLine(Toolkit.Shift(x, x - 10)); // 10
-WriteLine(Toolkit.Ratio(x, x / 10)); // 10
+WriteLine(x.Spread()); // 4
+WriteLine((x + 10).Spread()); // 4
+WriteLine((x * 2).Spread()); // 8
 
-x = new Sample(-3, -2, -1, 0, 1, 2, 3);
-WriteLine(Toolkit.Disparity(x, x * 10)); // 0
-WriteLine(Toolkit.Disparity(x, x - 10)); // 5
-WriteLine(Toolkit.Disparity(x * 10, x * 10 - 100)); // 5
+WriteLine(x.RelSpread()); // 1
+WriteLine((x * 5).RelSpread()); // 1
+
+var y = new Sample(10, 12, 14, 16, 18);
+WriteLine(Toolkit.Shift(x, y)); // -10
+WriteLine(Toolkit.Shift(x, x)); // 0
+WriteLine(Toolkit.Shift(x + 7, y + 3)); // -6
+WriteLine(Toolkit.Shift(x * 2, y * 2)); // -20
+WriteLine(Toolkit.Shift(y, x)); // 10
+
+x = new Sample(1, 2, 4, 8, 16);
+y = new Sample(2, 4, 8, 16, 32);
+WriteLine(Toolkit.Ratio(x, y)); // 0.5
+WriteLine(Toolkit.Ratio(x, x)); // 1
+WriteLine(Toolkit.Ratio(x * 2, y * 5)); // 0.2
+
+x = new Sample(0, 3, 6, 9, 12);
+y = new Sample(0, 2, 4, 6, 8);
+WriteLine(x.Spread()); // 6
+WriteLine(y.Spread()); // 4
+
+WriteLine(Toolkit.AvgSpread(x, y)); // 5
+WriteLine(Toolkit.AvgSpread(x, x)); // 6
+WriteLine(Toolkit.AvgSpread(x * 2, x * 3)); // 15
+WriteLine(Toolkit.AvgSpread(y, x)); // 5
+WriteLine(Toolkit.AvgSpread(x * 2, y * 2)); // 10
+
+WriteLine(Toolkit.Shift(x, y)); // 2
+WriteLine(Toolkit.AvgSpread(x, y)); // 5
+
+WriteLine(Toolkit.Disparity(x, y)); // 0.4
+WriteLine(Toolkit.Disparity(x + 5, y + 5)); // 0.4
+WriteLine(Toolkit.Disparity(x * 2, y * 2)); // 0.4
+WriteLine(Toolkit.Disparity(y, x)); // -0.4
 ```
-
-## Package Structure
-
-The Pragmastat .NET package consists of two main components:
-
-- **Pragmastat**: Main package with high-level API
-- **Pragmastat.Core**: Core types and interfaces
-
-## API Overview
-
-### Two Ways to Use the API
-
-**Option 1: Extension Methods**
-```csharp
-var center = data.Center();
-var shift = sample1.Shift(sample2);
-```
-
-**Option 2: Static Toolkit Methods**
-```csharp
-var center = Toolkit.Center(data);
-var shift = Toolkit.Shift(sample1, sample2);
-```
-
-### Available Estimators
-
-**One-Sample Estimators:**
-- `Center()` - Robust average
-- `Spread()` - Robust dispersion
-- `RelSpread()` - Relative dispersion
-
-**Two-Sample Estimators:**
-- `Shift()` - Robust difference
-- `Ratio()` - Robust ratio
-- `AvgSpread()` - Pooled dispersion
-- `Disparity()` - Robust effect size
 
 ## Platform Support
 
 - **.NET Standard 2.0** - Compatible with .NET Framework 4.6.1+, .NET Core 2.0+
 - **.NET 6.0+** - Modern .NET support with enhanced performance
 
-## Documentation
+## The MIT License
 
-For detailed information about the statistical properties, mathematical formulations, and theoretical background of the estimators, see the **[Pragmastat Manual](https://github.com/AndreyAkinshin/pragmastat)**.
+Copyright (c) 2025 Andrey Akinshin
 
-## License
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
 
-MIT License - see LICENSE file for details.
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

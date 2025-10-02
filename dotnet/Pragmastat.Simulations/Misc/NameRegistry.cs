@@ -1,8 +1,7 @@
-using Pragmastat.Core.Estimators;
-using Pragmastat.Core.Internal;
 using Pragmastat.Distributions;
 using Pragmastat.Estimators;
 using Pragmastat.Extended.Estimators;
+using Pragmastat.Internal;
 
 namespace Pragmastat.Simulations.Misc;
 

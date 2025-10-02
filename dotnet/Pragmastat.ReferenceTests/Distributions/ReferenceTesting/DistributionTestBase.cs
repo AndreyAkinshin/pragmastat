@@ -1,5 +1,5 @@
-using Pragmastat.Core.Internal;
 using Pragmastat.Distributions;
+using Pragmastat.Internal;
 using Pragmastat.ReferenceTests.ReferenceTesting;
 
 namespace Pragmastat.ReferenceTests.Distributions.ReferenceTesting;

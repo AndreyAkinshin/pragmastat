@@ -1,11 +1,10 @@
 using System.Diagnostics;
-using Pragmastat.Core;
-using Pragmastat.Core.Functions;
-using Pragmastat.Core.Internal;
-using Pragmastat.Core.Metrology;
 using Pragmastat.Distributions;
 using Pragmastat.Distributions.Randomization;
 using Pragmastat.Estimators;
+using Pragmastat.Functions;
+using Pragmastat.Internal;
+using Pragmastat.Metrology;
 
 namespace Pragmastat.UnitTests.Estimators;
 

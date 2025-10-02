@@ -1,6 +1,5 @@
-using Pragmastat.Core;
-using Pragmastat.Core.Internal;
 using Pragmastat.Distributions.Randomization;
+using Pragmastat.Internal;
 
 namespace Pragmastat.Distributions;
 

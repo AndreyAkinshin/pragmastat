@@ -1,6 +1,5 @@
 using JetBrains.Annotations;
-using Pragmastat.Core;
-using Pragmastat.Core.Estimators;
+using Pragmastat.Estimators;
 using Pragmastat.Simulations.Misc;
 
 namespace Pragmastat.Simulations.Simulations;

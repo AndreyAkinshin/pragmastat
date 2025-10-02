@@ -24,17 +24,12 @@
 
         <NoWarn>$(NoWarn);NETSDK1188</NoWarn>
 
-        <Major>3</Major>
-        <Minor>1</Minor>
-        <Revision>2</Revision>
-        <BuildNumber>0</BuildNumber>
+        <Version>3.1.2</Version>
 
-        <PrereleaseLabel>-develop</PrereleaseLabel>
-
-        <AssemblyVersion>$(Major).$(Minor).$(Revision).$(BuildNumber)</AssemblyVersion>
-        <AssemblyFileVersion>$(Major).$(Minor).$(Revision).$(BuildNumber)</AssemblyFileVersion>
-        <InformationalVersion>$(Major).$(Minor).$(Revision).$(BuildNumber)$(PrereleaseLabel)</InformationalVersion>
-        <PackageVersion>$(Major).$(Minor).$(Revision).$(BuildNumber)$(PrereleaseLabel)</PackageVersion>
+        <AssemblyVersion>$(Version).0</AssemblyVersion>
+        <AssemblyFileVersion>$(Version).0</AssemblyFileVersion>
+        <InformationalVersion>$(Version)</InformationalVersion>
+        <PackageVersion>$(Version)</PackageVersion>
     </PropertyGroup>
     <ItemGroup>
         <None Include="..\..\img\logo.png" Link="Properties\logo.png" Pack="true" PackagePath=""/>
