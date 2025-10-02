@@ -9,7 +9,7 @@ application {
 }
 
 group = "com.pragmastat"
-version = "3.1.5"
+version = "3.1.6"
 
 repositories {
     mavenCentral()

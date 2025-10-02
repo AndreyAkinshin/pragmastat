@@ -1,7 +1,7 @@
 Package: pragmastat
 Type: Package
 Title: Pragmatic Statistical Toolkit
-Version: 3.1.5
+Version: 3.1.6
 Author: Andrey Akinshin <andrey.akinshin@gmail.com>
 Maintainer: Andrey Akinshin <andrey.akinshin@gmail.com>
 Authors@R: c(
