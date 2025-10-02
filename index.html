@@ -10,7 +10,7 @@
 <a href=#dotnet>.NET</a> ·
 <a href=#kotlin>Kotlin</a> ·
 <a href=#rust>Rust</a> ·
-<a href=#go>Go</a></div><div class="mt-2 mb-6 text-center text-l">Version 3.1.3<br>DOI: <a href=https://doi.org/10.5281/zenodo.17236778>10.5281/zenodo.17236778</a></div><div class=markup><div style=display:none>$$
+<a href=#go>Go</a></div><div class="mt-2 mb-6 text-center text-l">Version 3.1.4<br>DOI: <a href=https://doi.org/10.5281/zenodo.17236778>10.5281/zenodo.17236778</a></div><div class=markup><div style=display:none>$$
 % Samples
 \newcommand{\x}{\mathbf{x}}
 \newcommand{\y}{\mathbf{y}}
@@ -1182,9 +1182,8 @@ for efficient computation.</p><p>Demo:</p><div class=highlight><pre tabindex=0 c
 </span></span><span class=line><span class=cl><span class=nf>print</span><span class=p>(</span><span class=nf>disparity</span><span class=p>(</span><span class=n>x</span> <span class=o>+</span> <span class=m>5</span><span class=p>,</span> <span class=n>y</span> <span class=o>+</span> <span class=m>5</span><span class=p>))</span> <span class=c1># 0.4</span>
 </span></span><span class=line><span class=cl><span class=nf>print</span><span class=p>(</span><span class=nf>disparity</span><span class=p>(</span><span class=n>x</span> <span class=o>*</span> <span class=m>2</span><span class=p>,</span> <span class=n>y</span> <span class=o>*</span> <span class=m>2</span><span class=p>))</span> <span class=c1># 0.4</span>
 </span></span><span class=line><span class=cl><span class=nf>print</span><span class=p>(</span><span class=nf>disparity</span><span class=p>(</span><span class=n>y</span><span class=p>,</span> <span class=n>x</span><span class=p>))</span> <span class=c1># -0.4</span>
-</span></span></code></pre></div><p><span id=dotnet></span></p><h2 id=84-net>§8.4. .NET</h2><p>Source code of the latest version: <a href=https://github.com/AndreyAkinshin/pragmastat/tree/main/dotnet>https://github.com/AndreyAkinshin/pragmastat/tree/main/dotnet</a></p><p>NuGet package is not available yet.</p><p>The .NET implementation provides the complete statistical toolkit as a modern C# library.</p><p>The library offers two usage patterns: instance methods on <code>Sample</code> objects for one-sample estimators and static
-methods on the <code>Toolkit</code> class for two-sample estimators.
-This design follows .NET conventions while maintaining mathematical clarity.</p><p>Demo in C#:</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-cs data-lang=cs><span class=line><span class=cl><span class=k>using</span> <span class=nn>static</span> <span class=n>System</span><span class=p>.</span><span class=n>Console</span><span class=p>;</span>
+</span></span></code></pre></div><p><span id=dotnet></span></p><h2 id=84-net>§8.4. .NET</h2><p>Install the NuGet package <a href=https://www.nuget.org/packages/Pragmastat>Pragmastat</a>:</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>dotnet add package Pragmastat
+</span></span></code></pre></div><p>Source code of the latest version: <a href=https://github.com/AndreyAkinshin/pragmastat/tree/main/dotnet>https://github.com/AndreyAkinshin/pragmastat/tree/main/dotnet</a></p><p>Demo in C#:</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-cs data-lang=cs><span class=line><span class=cl><span class=k>using</span> <span class=nn>static</span> <span class=n>System</span><span class=p>.</span><span class=n>Console</span><span class=p>;</span>
 </span></span><span class=line><span class=cl>
 </span></span><span class=line><span class=cl><span class=k>namespace</span> <span class=nn>Pragmastat.Demo</span><span class=p>;</span>
 </span></span><span class=line><span class=cl>
