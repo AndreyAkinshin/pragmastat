@@ -1,4 +1,4 @@
-message: If you use this manual, please cite it using the metadata from this file.
+message: If you use this software, please cite it using these metadata.
 title: 'Pragmastat: Pragmatic Statistical Toolkit'
 abstract: 'This manual presents a toolkit of statistical procedures that provide
   reliable results across diverse real-world distributions, with ready-to-use
@@ -9,7 +9,5 @@ authors:
 - given-names: Andrey
   family-names: Akinshin
   orcid: "https://orcid.org/0000-0003-3553-9367"
-license:
-- cc-by-nc-sa-4.0
+license: cc-by-nc-sa-4.0
 cff-version: 1.2.0
-
