@@ -25,25 +25,80 @@ jobs:
     with:
       release: true
 
-  deploy-web:
-    needs: build-web
+  build-python:
+    uses: ./.github/workflows/build-python.yml
+
+  build-dotnet:
+    uses: ./.github/workflows/build-dotnet.yml
+
+  publish-github:
+    runs-on: ubuntu-24.04
+    needs: [build-web, build-python, build-dotnet]
+    steps:
+    - name: Download web artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: web
+        path: artifacts/web
+
+    - name: Download pdf artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: pdf
+        path: artifacts/pdf
+
+    - name: Download dotnet artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: dotnet
+        path: artifacts/dotnet
+
+    - name: Download python artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: python
+        path: artifacts/python
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
+      with:
+        name: ${{ github.ref_name }}
+        discussion_category_name: Releases
+        generate_release_notes: true
+        files: |
+          artifacts/pdf/*.pdf
+          artifacts/dotnet/*.nupkg
+          artifacts/dotnet/*.snupkg
+          artifacts/python/*.tar.gz
+          artifacts/python/*.whl
+
+  publish-web:
+    needs: [build-web, build-python, build-dotnet]
     uses: ./.github/workflows/deploy-web.yml
     with:
       deploy_message: "Deploy: ${{ github.ref_name }}"
 
-  build-python:
-    uses: ./.github/workflows/build-python.yml
-
   publish-dotnet:
-    uses: ./.github/workflows/build-dotnet.yml
-    with:
-      publish: true
-    secrets:
-      NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+    runs-on: ubuntu-24.04
+    needs: [build-web, build-python, build-dotnet]
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install .NET
+      run: ./build/scripts/dotnet-install.sh
+
+    - name: Download dotnet artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: dotnet
+        path: dotnet/artifacts
+
+    - name: Publish to NuGet
+      run: ./.dotnet/dotnet nuget push ./dotnet/artifacts/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
 
   publish-python:
     runs-on: ubuntu-24.04
-    needs: build-python
+    needs: [build-web, build-python, build-dotnet]
     permissions:
       id-token: write  # Required for trusted publishing to PyPI
     steps:

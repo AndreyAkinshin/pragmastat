@@ -2,14 +2,6 @@ name: build-dotnet
 
 on:
   workflow_call:
-    inputs:
-      publish:
-        description: 'Publish to NuGet'
-        type: boolean
-        default: false
-    secrets:
-      NUGET_API_KEY:
-        required: false
 
 jobs:
   run:
@@ -37,7 +29,3 @@ jobs:
       with:
         name: dotnet
         path: dotnet/artifacts
-
-    - name: Publish to NuGet
-      if: ${{ inputs.publish }}
-      run: ./.dotnet/dotnet nuget push ./dotnet/artifacts/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
