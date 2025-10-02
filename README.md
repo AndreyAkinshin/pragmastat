@@ -8,6 +8,12 @@
 
 </div>
 
+<div align="center">
+
+  [![NuGet](https://img.shields.io/nuget/v/Pragmastat?color=009E73)](https://www.nuget.org/packages/Pragmastat/)
+
+</div>
+
 This manual presents a toolkit of statistical procedures that
   provide reliable results across diverse real-world distributions,
   with ready-to-use implementations and detailed explanations.
