@@ -1,0 +1,43 @@
+name: build-dotnet
+
+on:
+  workflow_call:
+    inputs:
+      publish:
+        description: 'Publish to NuGet'
+        type: boolean
+        default: false
+    secrets:
+      NUGET_API_KEY:
+        required: false
+
+jobs:
+  run:
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install .NET
+      run: ./build/scripts/dotnet-install.sh
+
+    - name: Build
+      run: ./.dotnet/dotnet build ./dotnet/Pragmastat.sln --configuration Release
+
+    - name: Run UnitTests
+      run: ./.dotnet/dotnet run --project ./dotnet/Pragmastat.UnitTests/Pragmastat.UnitTests.csproj --configuration Release
+
+    - name: Run ReferenceTests
+      run: ./.dotnet/dotnet run --project ./dotnet/Pragmastat.ReferenceTests/Pragmastat.ReferenceTests.csproj --configuration Release
+
+    - name: Pack
+      run: ./.dotnet/dotnet pack ./dotnet/Pragmastat/Pragmastat.csproj --configuration Release --include-symbols --include-source -p:SymbolPackageFormat=snupkg --output ./dotnet/artifacts
+
+    - name: Upload dotnet artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: dotnet
+        path: dotnet/artifacts
+
+    - name: Publish to NuGet
+      if: ${{ inputs.publish }}
+      run: ./.dotnet/dotnet nuget push ./dotnet/artifacts/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate

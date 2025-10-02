@@ -1,0 +1,39 @@
+name: release
+run-name: "[release] ${{ github.ref_name }}"
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-img:
+    uses: ./.github/workflows/build-img.yml
+
+  build-pdf:
+    needs: build-img
+    uses: ./.github/workflows/build-pdf.yml
+    with:
+      release: true
+
+  build-web:
+    needs: [build-img, build-pdf]
+    uses: ./.github/workflows/build-web.yml
+    with:
+      release: true
+
+  deploy-web:
+    needs: build-web
+    uses: ./.github/workflows/deploy-web.yml
+    with:
+      deploy_message: "Deploy: ${{ github.ref_name }}"
+
+  publish-dotnet:
+    uses: ./.github/workflows/build-dotnet.yml
+    with:
+      publish: true
+    secrets:
+      NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}

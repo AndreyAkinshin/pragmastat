@@ -1,119 +1,20 @@
 name: deploy-web
-run-name: "[deploy-web] ${{ github.event.head_commit.message }}"
 
 on:
-  push:
-    branches:
-      - web
+  workflow_call:
+    inputs:
+      deploy_message:
+        description: 'Deployment commit message'
+        type: string
+        required: false
+        default: 'Deploy web'
 
 permissions:
   contents: write
 
 jobs:
-  build-img:
+  run:
     runs-on: ubuntu-24.04
-    steps:
-    - uses: actions/checkout@v4
-
-    - uses: r-lib/actions/setup-r@v2
-      with:
-        r-version: '4.5.0'
-
-    - uses: r-lib/actions/setup-r-dependencies@v2
-      with:
-        working-directory: img
-        extra-packages: |
-          any::ggplot2
-          any::jsonlite
-          any::dplyr
-          any::tidyr
-
-    - name: Generate images
-      run: ./img/build.sh
-
-    - name: Upload image artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: img
-        path: img/
-
-  build-pdf:
-    runs-on: ubuntu-24.04
-    needs: build-img
-    steps:
-    - uses: actions/checkout@v4
-
-    - uses: r-lib/actions/setup-r@v2
-      with:
-        r-version: '4.5.0'
-
-    - uses: r-lib/actions/setup-r-dependencies@v2
-      with:
-        install-pandoc: true
-        working-directory: pdf
-        extra-packages: |
-          any::rmarkdown
-
-    - uses: r-lib/actions/setup-tinytex@v2
-      env:
-        TINYTEX_INSTALLER: TinyTeX-1
-        TINYTEX_VERSION: 2025.06
-
-    - name: Install additional LaTeX packages
-      run: |
-        tlmgr --version
-        tlmgr update --self
-        tlmgr install pgf caption textpos mdframed zref needspace csquotes multirow wrapfig colortbl pdflscape tabu varwidth threeparttable threeparttablex environ trimspaces ulem makecell biblatex logreq biber
-        tlmgr list --only-installed
-
-    - name: Download image artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: img
-        path: img/
-
-    - name: Compose 'pdf'
-      run: ./build.cmd pdf --only-compose --release
-
-    - name: Build 'pdf'
-      run: ./pdf/build.sh --release
-
-    - name: Upload pdf artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: pdf
-        path: pdf/*.pdf
-
-  build-web:
-    runs-on: ubuntu-24.04
-    needs: [build-img, build-pdf]
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Download image artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: img
-        path: img/
-
-    - name: Download pdf artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: pdf
-        path: pdf/
-
-    - name: Build 'web'
-      run: ./build.cmd web --release
-
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: web
-        path: web/public
-
-  deploy-web:
-    runs-on: ubuntu-24.04
-    needs: build-web
     steps:
     - uses: actions/checkout@v4
 
@@ -159,5 +60,5 @@ jobs:
 
         # Commit and push
         git add -A
-        git diff --staged --quiet || git commit -m "Deploy: ${{ github.event.head_commit.message }}"
+        git diff --staged --quiet || git commit -m "${{ inputs.deploy_message }}"
         git push origin pragmastat-dev
