@@ -2,6 +2,11 @@ name: build-python
 
 on:
   workflow_call:
+    inputs:
+      publish:
+        description: 'Publish to PyPI'
+        type: boolean
+        default: false
 
 jobs:
   run:
@@ -41,3 +46,9 @@ jobs:
       with:
         name: python
         path: python/dist/
+
+    - name: Publish to PyPI
+      if: ${{ inputs.publish }}
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        packages-dir: python/dist/

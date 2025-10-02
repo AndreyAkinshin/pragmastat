@@ -7,7 +7,8 @@ on:
       - 'v*'
 
 permissions:
-  contents: write
+  id-token: write # required for publish-python (Trusted Publishing)
+  contents: write # required for deploy-web
 
 jobs:
   build-img:
@@ -37,3 +38,8 @@ jobs:
       publish: true
     secrets:
       NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+
+  publish-python:
+    uses: ./.github/workflows/build-python.yml
+    with:
+      publish: true
