@@ -10,7 +10,7 @@
 <a href=#dotnet>.NET</a> ·
 <a href=#kotlin>Kotlin</a> ·
 <a href=#rust>Rust</a> ·
-<a href=#go>Go</a></div><div class="mt-2 mb-6 text-center text-l">Version 3.1.6<br>DOI: <a href=https://doi.org/10.5281/zenodo.17236778>10.5281/zenodo.17236778</a></div><div class=markup><div style=display:none>$$
+<a href=#go>Go</a></div><div class="mt-2 mb-6 text-center text-l">Version 3.1.7<br>DOI: <a href=https://doi.org/10.5281/zenodo.17236778>10.5281/zenodo.17236778</a></div><div class=markup><div style=display:none>$$
 % Samples
 \newcommand{\x}{\mathbf{x}}
 \newcommand{\y}{\mathbf{y}}
@@ -1031,8 +1031,8 @@ requires increasing the sample size by a factor of $1.22/0.45 \approx 2.71$ (mor
 Similarly, switching from $\StdDev$ to $\Spread$ requires a factor of $0.52/0.45 \approx 1.16$.</p><p>The $\StdDev$ achieves optimal performance for the $\Additive$ (&lsquo;Normal&rsquo;) distribution.
 The $\MAD$ requires about 2.7 times more data to match $\StdDev$ precision,
 while offering greater robustness to outliers.
-The $\Spread$ requires about 1.16 times more data to match $\StdDev$ precision under purely $\Additive$ (&lsquo;Normal&rsquo;) conditions while maintaining robustness.</p><h1 id=8-reference-implementations>§8. Reference Implementations</h1><p><span id=python></span></p><h2 id=81-python>§8.1. Python</h2><p>Source code of the latest version: <a href=https://github.com/AndreyAkinshin/pragmastat/tree/main/python>https://github.com/AndreyAkinshin/pragmastat/tree/main/python</a></p><p>To install the package from GitHub:</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>pip install git+https://github.com/AndreyAkinshin/pragmastat.git#subdirectory<span class=o>=</span>python
-</span></span></code></pre></div><p>Demo:</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-python data-lang=python><span class=line><span class=cl><span class=kn>from</span> <span class=nn>pragmastat</span> <span class=kn>import</span> <span class=n>center</span><span class=p>,</span> <span class=n>spread</span><span class=p>,</span> <span class=n>rel_spread</span><span class=p>,</span> <span class=n>shift</span><span class=p>,</span> <span class=n>ratio</span><span class=p>,</span> <span class=n>avg_spread</span><span class=p>,</span> <span class=n>disparity</span>
+The $\Spread$ requires about 1.16 times more data to match $\StdDev$ precision under purely $\Additive$ (&lsquo;Normal&rsquo;) conditions while maintaining robustness.</p><h1 id=8-reference-implementations>§8. Reference Implementations</h1><p><span id=python></span></p><h2 id=81-python>§8.1. Python</h2><p>Installation:</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>pip install pragmastat
+</span></span></code></pre></div><p>Source code of the latest version: <a href=https://github.com/AndreyAkinshin/pragmastat/tree/main/python>https://github.com/AndreyAkinshin/pragmastat/tree/main/python</a></p><p>Demo:</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-python data-lang=python><span class=line><span class=cl><span class=kn>from</span> <span class=nn>pragmastat</span> <span class=kn>import</span> <span class=n>center</span><span class=p>,</span> <span class=n>spread</span><span class=p>,</span> <span class=n>rel_spread</span><span class=p>,</span> <span class=n>shift</span><span class=p>,</span> <span class=n>ratio</span><span class=p>,</span> <span class=n>avg_spread</span><span class=p>,</span> <span class=n>disparity</span>
 </span></span><span class=line><span class=cl>
 </span></span><span class=line><span class=cl>
 </span></span><span class=line><span class=cl><span class=k>def</span> <span class=nf>main</span><span class=p>():</span>
