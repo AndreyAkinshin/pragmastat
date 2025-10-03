@@ -31,9 +31,12 @@ jobs:
   build-dotnet:
     uses: ./.github/workflows/build-dotnet.yml
 
+  build-ts:
+    uses: ./.github/workflows/build-ts.yml
+
   publish-github:
     runs-on: ubuntu-24.04
-    needs: [build-web, build-python, build-dotnet]
+    needs: [build-web, build-python, build-dotnet, build-ts]
     steps:
     - name: Download web artifacts
       uses: actions/download-artifact@v4
@@ -73,14 +76,14 @@ jobs:
           artifacts/python/*.whl
 
   publish-web:
-    needs: [build-web, build-python, build-dotnet]
+    needs: [build-web, build-python, build-dotnet, build-ts]
     uses: ./.github/workflows/deploy-web.yml
     with:
       deploy_message: "Deploy: ${{ github.ref_name }}"
 
   publish-dotnet:
     runs-on: ubuntu-24.04
-    needs: [build-web, build-python, build-dotnet]
+    needs: [build-web, build-python, build-dotnet, build-ts]
     steps:
     - uses: actions/checkout@v4
 
@@ -98,7 +101,7 @@ jobs:
 
   publish-python:
     runs-on: ubuntu-24.04
-    needs: [build-web, build-python, build-dotnet]
+    needs: [build-web, build-python, build-dotnet, build-ts]
     permissions:
       id-token: write  # Required for trusted publishing to PyPI
     steps:
@@ -113,3 +116,27 @@ jobs:
 
     - name: Publish to PyPI (source distribution only)
       uses: pypa/gh-action-pypi-publish@release/v1
+
+  publish-npm:
+    runs-on: ubuntu-24.04
+    needs: [build-web, build-python, build-dotnet, build-ts]
+    permissions:
+      id-token: write  # Required for npm provenance
+      contents: read
+    steps:
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        registry-url: 'https://registry.npmjs.org'
+
+    - name: Download ts artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: ts
+        path: ts/
+
+    - name: Publish to npm
+      run: npm publish ts/*.tgz --access public --provenance
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
