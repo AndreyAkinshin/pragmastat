@@ -64,6 +64,12 @@ publishing {
                 properties.set(mapOf(
                     "doi" to "10.5281/zenodo.17236778"
                 ))
+                
+                withXml {
+                    val root = asNode()
+                    val keywords = root.appendNode("keywords")
+                    keywords.appendNode("keyword", "statistics")
+                }
             }
         }
     }

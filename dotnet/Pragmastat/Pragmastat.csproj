@@ -6,6 +6,7 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageProjectUrl>https://pragmastat.dev</PackageProjectUrl>
     <RepositoryUrl>https://github.com/AndreyAkinshin/pragmastat</RepositoryUrl>
+    <PackageTags>statistics</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>

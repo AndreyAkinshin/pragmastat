@@ -7,6 +7,7 @@ requires-python = ">=3.8"
 license = "MIT"
 authors = [{ name = "Andrey Akinshin" }]
 dependencies = ["numpy>=1.20"]
+keywords = ["statistics"]
 
 [project.urls]
 Homepage = "https://pragmastat.dev"

@@ -16,11 +16,7 @@
     "prepublishOnly": "npm run clean && npm run build && npm run test"
   },
   "keywords": [
-    "statistics",
-    "robust",
-    "estimators",
-    "median",
-    "hodges-lehmann"
+    "statistics"
   ],
   "author": "Andrey Akinshin",
   "license": "MIT",
