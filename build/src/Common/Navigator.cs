@@ -25,6 +25,7 @@ public class Navigator(DirectoryPath root)
     public DirectoryPath BinDir => Root.SubDirectory(".bin");
 
     public DirectoryPath ManualDir => root.SubDirectory("manual");
+    public DirectoryPath ManualImplementationsDir => ManualDir.SubDirectory("implementations");
     public FilePath MainMd => ManualDir.File("main.md");
     public FilePath AbstractMd => ManualDir.File("abstract.md");
     public FilePath ManualVersionTxt => ManualDir.File("version.txt");

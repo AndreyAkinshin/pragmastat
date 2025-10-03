@@ -72,6 +72,8 @@ internal static class Program
             });
 
             config.AddCommand<KotlinBuildCommand>("kotlin");
+            
+            config.AddCommand<UnifyCommand>("unify");
         });
         return await app.RunAsync(args);
     }
