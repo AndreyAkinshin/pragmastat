@@ -137,6 +137,7 @@ jobs:
         path: ts/
 
     - name: Publish to npm
-      run: npm publish ts/*.tgz --access public --provenance
+      run: npm publish *.tgz --access public --provenance
+      working-directory: ts
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
