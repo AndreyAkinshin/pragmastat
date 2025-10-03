@@ -10,9 +10,10 @@
 
 <div align="center">
 
-  [![NuGet](https://img.shields.io/nuget/v/Pragmastat?color=009E73)](https://www.nuget.org/packages/Pragmastat/)
   [![PyPI](https://img.shields.io/pypi/v/pragmastat?color=009E73)](https://pypi.org/project/pragmastat/)
-  [![go](https://img.shields.io/github/v/release/AndreyAkinshin/pragmastat?display_name=tag&logo=go&label=go&color=009E73)](https://pkg.go.dev/github.com/AndreyAkinshin/pragmastat/go/v3)
+  [![npm](https://img.shields.io/npm/v/pragmastat?color=009E73)](https://www.npmjs.com/package/pragmastat)
+  [![NuGet](https://img.shields.io/nuget/v/Pragmastat?color=009E73)](https://www.nuget.org/packages/Pragmastat/)
+  [![go](https://img.shields.io/github/v/release/AndreyAkinshin/pragmastat?display_name=tag&label=go&color=009E73)](https://pkg.go.dev/github.com/AndreyAkinshin/pragmastat/go/v3)
 
 </div>
 

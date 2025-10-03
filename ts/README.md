@@ -1,134 +1,87 @@
-# Pragmastat TypeScript Implementation
+# Pragmastat
 
-[![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.17236778.svg)](https://doi.org/10.5281/zenodo.17236778)
-
-This is the TypeScript implementation of Pragmastat, a pragmatic statistical toolkit designed for analyzing real-world data.
+A TypeScript implementation of 'Pragmastat: Pragmatic Statistical Toolkit' - robust summary estimators designed for real-world data analysis.
+Online manual: https://pragmastat.dev
 
 ## Installation
 
 ```bash
-npm install pragmastat
+npm i pragmastat
 ```
 
-## Usage
+## Demo
 
 ```typescript
-import {
-  center,
-  spread,
-  relSpread,
-  shift,
-  ratio,
-  avgSpread,
-  disparity
-} from 'pragmastat';
+import { center, spread, relSpread, shift, ratio, avgSpread, disparity } from '../src';
 
-// One-sample estimators
-const data = [1, 2, 3, 4, 5];
-console.log('Center:', center(data));
-console.log('Spread:', spread(data));
-console.log('RelSpread:', relSpread(data));
+function main() {
+    let x = [0, 2, 4, 6, 8];
+    console.log(center(x)); // 4
+    console.log(center(x.map(v => v + 10))); // 14
+    console.log(center(x.map(v => v * 3))); // 12
 
-// Two-sample estimators
-const x = [1, 2, 3];
-const y = [4, 5, 6];
-console.log('Shift:', shift(x, y));
-console.log('Ratio:', ratio(x, y));
-console.log('AvgSpread:', avgSpread(x, y));
-console.log('Disparity:', disparity(x, y));
+    console.log(spread(x)); // 4
+    console.log(spread(x.map(v => v + 10))); // 4
+    console.log(spread(x.map(v => v * 2))); // 8
+
+    console.log(relSpread(x)); // 1
+    console.log(relSpread(x.map(v => v * 5))); // 1
+
+    let y = [10, 12, 14, 16, 18];
+    console.log(shift(x, y)); // -10
+    console.log(shift(x, x)); // 0
+    console.log(shift(x.map(v => v + 7), y.map(v => v + 3))); // -6
+    console.log(shift(x.map(v => v * 2), y.map(v => v * 2))); // -20
+    console.log(shift(y, x)); // 10
+
+    x = [1, 2, 4, 8, 16];
+    y = [2, 4, 8, 16, 32];
+    console.log(ratio(x, y)); // 0.5
+    console.log(ratio(x, x)); // 1
+    console.log(ratio(x.map(v => v * 2), y.map(v => v * 5))); // 0.2
+
+    x = [0, 3, 6, 9, 12];
+    y = [0, 2, 4, 6, 8];
+    console.log(spread(x)); // 6
+    console.log(spread(y)); // 4
+
+    console.log(avgSpread(x, y)); // 5
+    console.log(avgSpread(x, x)); // 6
+    console.log(avgSpread(x.map(v => v * 2), x.map(v => v * 3))); // 15
+    console.log(avgSpread(y, x)); // 5
+    console.log(avgSpread(x.map(v => v * 2), y.map(v => v * 2))); // 10
+
+    console.log(shift(x, y)); // 2
+    console.log(avgSpread(x, y)); // 5
+
+    console.log(disparity(x, y)); // 0.4
+    console.log(disparity(x.map(v => v + 5), y.map(v => v + 5))); // 0.4
+    console.log(disparity(x.map(v => v * 2), y.map(v => v * 2))); // 0.4
+    console.log(disparity(y, x)); // -0.4
+}
+
+main();
 ```
 
-## Estimators
+## The MIT License
 
-### One-Sample Estimators
+Copyright (c) 2025 Andrey Akinshin
 
-- **center**: Hodges-Lehmann location estimator - robust measure of average
-- **spread**: Shamos scale estimator - robust measure of dispersion
-- **relSpread**: Relative dispersion measure - spread normalized by center
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
 
-### Two-Sample Estimators
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
 
-- **shift**: Hodges-Lehmann shift estimator - robust measure of location difference
-- **ratio**: Robust ratio estimator - median of all pairwise ratios
-- **avgSpread**: Pooled spread estimator - combined measure of dispersion
-- **disparity**: Effect size measure - normalized difference between samples
-
-## Development
-
-### Building
-
-```bash
-# Build TypeScript to JavaScript
-npm run build
-
-# Or use the build script
-./build.sh build
-```
-
-### Testing
-
-```bash
-# Run all tests
-npm test
-
-# Run tests with coverage
-npm run test:coverage
-
-# Run tests in watch mode
-npm run test:watch
-```
-
-### Code Quality
-
-```bash
-# Run ESLint
-npm run lint
-
-# Format code with Prettier
-npm run format
-
-# Check formatting
-npm run format:check
-```
-
-### Build Script
-
-The `build.sh` script provides convenient commands:
-
-```bash
-./build.sh test      # Run all tests
-./build.sh build     # Build TypeScript to JavaScript
-./build.sh check     # Run linting and format checking
-./build.sh clean     # Clean build artifacts
-./build.sh format    # Format code with Prettier
-./build.sh install   # Install npm dependencies
-./build.sh coverage  # Run tests with coverage report
-./build.sh watch     # Run tests in watch mode
-./build.sh all       # Run all tasks
-```
-
-## Project Structure
-
-```
-ts/
-├── src/                 # Source code
-│   ├── index.ts        # Main entry point
-│   ├── estimators.ts   # Estimator implementations
-│   └── utils.ts        # Utility functions
-├── tests/              # Test files
-│   ├── estimators.test.ts    # Unit tests
-│   ├── invariance.test.ts    # Mathematical invariance tests
-│   └── reference.test.ts     # Reference tests against JSON data
-├── dist/               # Compiled JavaScript (generated)
-├── package.json        # NPM package configuration
-├── tsconfig.json       # TypeScript configuration
-├── jest.config.js      # Jest test configuration
-├── .eslintrc.js        # ESLint configuration
-├── .prettierrc         # Prettier configuration
-├── build.sh           # Build script
-└── README.md          # This file
-```
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
