@@ -1,4 +1,4 @@
-package com.pragmastat
+package dev.pragmastat
 
 import kotlin.math.abs
 import kotlin.math.sqrt

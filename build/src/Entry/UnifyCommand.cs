@@ -184,7 +184,7 @@ public class UnifyCommand : AsyncCommand<UnifyCommand.Settings>
         {
             "dotnet" => await Nav.DotnetDir.SubDirectory("Pragmastat.Demo").File("Program.cs").ReadAllTextAsync(),
             "go" => await Nav.GoDir.SubDirectory("example").File("main.go").ReadAllTextAsync(),
-            "kotlin" => await Nav.KotlinDir.SubDirectory("src").SubDirectory("main").SubDirectory("kotlin").SubDirectory("com").SubDirectory("pragmastat").SubDirectory("example").File("Main.kt").ReadAllTextAsync(),
+            "kotlin" => await Nav.KotlinDir.SubDirectory("src").SubDirectory("main").SubDirectory("kotlin").SubDirectory("dev").SubDirectory("pragmastat").SubDirectory("example").File("Main.kt").ReadAllTextAsync(),
             "python" => await Nav.PythonDir.SubDirectory("examples").File("demo.py").ReadAllTextAsync(),
             "r" => await Nav.RDir.SubDirectory("inst").SubDirectory("examples").File("demo.R").ReadAllTextAsync(),
             "rust" => await Nav.RustDir.SubDirectory("pragmastat").SubDirectory("examples").File("demo.rs").ReadAllTextAsync(),

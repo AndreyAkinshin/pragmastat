@@ -1,4 +1,4 @@
-package com.pragmastat
+package dev.pragmastat
 
 import kotlin.test.Test
 import kotlin.test.assertTrue

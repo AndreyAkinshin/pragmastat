@@ -1,6 +1,6 @@
-package com.pragmastat.example
+package dev.pragmastat.example
 
-import com.pragmastat.*
+import dev.pragmastat.*
 
 fun main() {
     var x = listOf(0.0, 2.0, 4.0, 6.0, 8.0)

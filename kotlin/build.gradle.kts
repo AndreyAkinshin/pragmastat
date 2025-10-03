@@ -1,14 +1,12 @@
 plugins {
     kotlin("jvm") version "1.9.22"
     `maven-publish`
-    application
+    signing
+    id("org.jetbrains.dokka") version "1.9.20"
+    id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
 }
 
-application {
-    mainClass.set("com.pragmastat.example.MainKt")
-}
-
-group = "com.pragmastat"
+group = "dev.pragmastat"
 version = "3.1.12"
 
 repositories {
@@ -20,21 +18,43 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.1")
     testImplementation("com.fasterxml.jackson.core:jackson-databind:2.16.1")
     testImplementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.16.1")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
-tasks.test {
-    useJUnitPlatform()
+testing {
+    suites {
+        val test by getting(JvmTestSuite::class) {
+            useJUnitJupiter("5.10.1")
+        }
+    }
 }
 
 kotlin {
     jvmToolchain(11)
+    sourceSets {
+        main {
+            kotlin.srcDir("src/main/kotlin")
+        }
+    }
+}
+
+val sourcesJar by tasks.registering(Jar::class) {
+    archiveClassifier.set("sources")
+    from(sourceSets["main"].allSource)
+}
+
+val javadocJar by tasks.registering(Jar::class) {
+    archiveClassifier.set("javadoc")
+    from(tasks.named("dokkaJavadoc"))
 }
 
 publishing {
     publications {
         create<MavenPublication>("maven") {
             from(components["java"])
-            
+            artifact(sourcesJar)
+            artifact(javadocJar)
+
             pom {
                 name.set("Pragmastat")
                 description.set("Pragmastat: Pragmatic Statistical Toolkit")
@@ -56,21 +76,30 @@ publishing {
                 }
 
                 scm {
-                    connection.set("scm:git:git://github.com/AndreyAkinshin/pragmastat.git")
-                    developerConnection.set("scm:git:ssh://github.com/AndreyAkinshin/pragmastat.git")
+                    connection.set("scm:git:https://github.com/AndreyAkinshin/pragmastat.git")
+                    developerConnection.set("scm:git:ssh://git@github.com/AndreyAkinshin/pragmastat.git")
                     url.set("https://github.com/AndreyAkinshin/pragmastat")
                 }
 
                 properties.set(mapOf(
-                    "doi" to "10.5281/zenodo.17236778"
+                    "doi" to "10.5281/zenodo.17236778",
+                    "keywords" to "statistics"
                 ))
-                
-                withXml {
-                    val root = asNode()
-                    val keywords = root.appendNode("keywords")
-                    keywords.appendNode("keyword", "statistics")
-                }
             }
+        }
+    }
+}
+
+signing {
+    useInMemoryPgpKeys(System.getenv("GRADLE_SIGNING_KEY"), System.getenv("GRADLE_SIGNING_PASSWORD"))
+    sign(publishing.publications)
+}
+
+nexusPublishing {
+    repositories {
+        sonatype {
+            nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
+            snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
         }
     }
 }

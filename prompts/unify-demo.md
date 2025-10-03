@@ -60,7 +60,7 @@ Apply the above Scheme to demo examples in files:
 
 - @dotnet/Pragmastat.Demo/Program.cs
 - @go/example/main.go
-- @kotlin/src/main/kotlin/com/pragmastat/example/Main.kt
+- @kotlin/src/main/kotlin/dev/pragmastat/example/Main.kt
 - @python/examples/demo.py
 - @r/pragmastat/inst/examples/demo.R
 - @rust/pragmastat/examples/demo.rs

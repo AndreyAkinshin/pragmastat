@@ -1,4 +1,4 @@
-package com.pragmastat
+package dev.pragmastat
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
@@ -26,7 +26,7 @@ data class TwoSampleInput(
 
 class ReferenceTest {
     
-    private val mapper = ObjectMapper().registerModule(KotlinModule())
+    private val mapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
     private val epsilon = 1e-9
     
     private fun assertClose(expected: Double, actual: Double, tolerance: Double = epsilon) {

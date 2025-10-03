@@ -1,4 +1,4 @@
-package com.pragmastat
+package dev.pragmastat
 
 import kotlin.math.floor
 import kotlin.random.Random

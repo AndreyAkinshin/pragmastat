@@ -1,4 +1,4 @@
-package com.pragmastat
+package dev.pragmastat
 
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
