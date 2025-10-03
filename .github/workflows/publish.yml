@@ -233,11 +233,19 @@ jobs:
         java-version: '11'
         distribution: 'temurin'
 
-    - name: Publish to Sonatype Central
-      run: ./gradlew --no-daemon publishToSonatype closeAndReleaseSonatypeStagingRepository
+    - name: Publish to staging directory
+      run: ./gradlew --no-daemon publish
       working-directory: kotlin
       env:
-        ORG_GRADLE_PROJECT_sonatypeUsername: ${{ secrets.SONATYPE_USERNAME }}
-        ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.SONATYPE_PASSWORD }}
         GRADLE_SIGNING_KEY: ${{ secrets.GRADLE_SIGNING_KEY }}
         GRADLE_SIGNING_PASSWORD: ${{ secrets.GRADLE_SIGNING_PASSWORD }}
+
+    - name: Deploy to Maven Central via JReleaser
+      run: ./gradlew --no-daemon jreleaserDeploy
+      working-directory: kotlin
+      env:
+        JRELEASER_MAVENCENTRAL_SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+        JRELEASER_MAVENCENTRAL_SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+        JRELEASER_GPG_PASSPHRASE: ${{ secrets.GRADLE_SIGNING_PASSWORD }}
+        JRELEASER_GPG_SECRET_KEY: ${{ secrets.GRADLE_SIGNING_KEY }}
+        JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

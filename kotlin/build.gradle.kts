@@ -3,7 +3,7 @@ plugins {
     `maven-publish`
     signing
     id("org.jetbrains.dokka") version "1.9.20"
-    id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
+    id("org.jreleaser") version "1.15.0"
 }
 
 group = "dev.pragmastat"
@@ -95,11 +95,32 @@ signing {
     sign(publishing.publications)
 }
 
-nexusPublishing {
-    repositories {
-        sonatype {
-            nexusUrl.set(uri("https://central.sonatype.com/"))
-            snapshotRepositoryUrl.set(uri("https://central.sonatype.com/"))
+jreleaser {
+    project {
+        authors.set(listOf("Andrey Akinshin"))
+        license.set("MIT")
+        description.set("Pragmastat: Pragmatic Statistical Toolkit")
+        inceptionYear.set("2024")
+        links {
+            homepage.set("https://pragmastat.dev")
+        }
+    }
+
+    signing {
+        active.set(org.jreleaser.model.Active.ALWAYS)
+        armored.set(true)
+    }
+
+    deploy {
+        maven {
+            mavenCentral {
+                create("sonatype") {
+                    active.set(org.jreleaser.model.Active.ALWAYS)
+                    url.set("https://central.sonatype.com/api/v1/publisher")
+                    stagingRepository("build/staging-deploy")
+                    applyMavenCentralRules.set(false)
+                }
+            }
         }
     }
 }
