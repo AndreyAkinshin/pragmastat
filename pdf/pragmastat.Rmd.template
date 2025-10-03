@@ -5,7 +5,9 @@ author: |
   andrey.akinshin@gmail.com
 abstract: |
 <!-- PLACEHOLDER Abstract -->
-date: "<!-- PLACEHOLDER Version -->"
+date: |
+  <!-- PLACEHOLDER Version -->  
+  [DOI: 10.5281/zenodo.17236778](https://doi.org/10.5281/zenodo.17236778)
 author-meta: Andrey Akinshin
 lang: en-US
 bibliography: references.bib
