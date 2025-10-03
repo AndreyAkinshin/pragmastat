@@ -7,42 +7,17 @@ on:
       - 'v*'
 
 permissions:
-  contents: write # required for deploy-web
+  contents: write
 
 jobs:
-  build-img:
-    uses: ./.github/workflows/build-img.yml
-
-  build-pdf:
-    needs: build-img
-    uses: ./.github/workflows/build-pdf.yml
+  build:
+    uses: ./.github/workflows/build.yml
     with:
       release: true
-
-  build-web:
-    needs: [build-img, build-pdf]
-    uses: ./.github/workflows/build-web.yml
-    with:
-      release: true
-
-  build-python:
-    uses: ./.github/workflows/build-python.yml
-
-  build-dotnet:
-    uses: ./.github/workflows/build-dotnet.yml
-
-  build-ts:
-    uses: ./.github/workflows/build-ts.yml
-
-  build-rust:
-    uses: ./.github/workflows/build-rust.yml
-
-  build-kotlin:
-    uses: ./.github/workflows/build-kotlin.yml
 
   publish-github:
     runs-on: ubuntu-24.04
-    needs: [build-web, build-python, build-dotnet, build-ts, build-rust, build-kotlin]
+    needs: build
     steps:
     - name: Download web artifacts
       uses: actions/download-artifact@v4
@@ -74,6 +49,24 @@ jobs:
         name: rust
         path: artifacts/rust
 
+    - name: Download ts artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: ts
+        path: artifacts/ts
+
+    - name: Download go artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: go
+        path: artifacts/go
+
+    - name: Download r artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: r
+        path: artifacts/r
+
     - name: Download kotlin artifacts
       uses: actions/download-artifact@v4
       with:
@@ -93,17 +86,64 @@ jobs:
           artifacts/python/*.tar.gz
           artifacts/python/*.whl
           artifacts/rust/*.crate
+          artifacts/ts/*.tgz
+          artifacts/r/*.tar.gz
           artifacts/kotlin/*.jar
 
   publish-web:
-    needs: [build-web, build-python, build-dotnet, build-ts, build-rust, build-kotlin]
-    uses: ./.github/workflows/deploy-web.yml
-    with:
-      deploy_message: "Deploy: ${{ github.ref_name }}"
+    runs-on: ubuntu-24.04
+    needs: build
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Download web artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: web
+        path: web/public
+
+    - name: Copy latest PDF to pragmastat.pdf
+      run: |
+        cd web/public
+        latest_pdf=$(ls -t pragmastat-v*.pdf 2>/dev/null | head -n 1)
+        if [ -n "$latest_pdf" ]; then
+          cp "$latest_pdf" pragmastat.pdf
+          echo "Copied $latest_pdf to pragmastat.pdf"
+        else
+          echo "No versioned PDF found"
+        fi
+
+    - name: Deploy to pragmastat-dev
+      run: |
+        # Save new web content to temp location
+        cp -r web/public /tmp/web-new
+
+        # Configure git
+        git config user.name "Andrey Akinshin"
+        git config user.email "andrey.akinshin@gmail.com"
+
+        # Fetch and checkout target branch
+        git fetch origin pragmastat-dev 2>/dev/null || true
+        git checkout pragmastat-dev 2>/dev/null || (git checkout --orphan pragmastat-dev && git rm -rf . 2>/dev/null || true)
+
+        # Delete all non-PDF files (excluding .git directory)
+        find . -type f ! -name '*.pdf' ! -path './.git/*' -delete
+
+        # Delete empty directories (excluding .git)
+        find . -type d -empty ! -path './.git/*' -delete
+
+        # Copy new web content (overwrites on name collision)
+        cp -r /tmp/web-new/* .
+        touch .nojekyll
+
+        # Commit and push
+        git add -A
+        git diff --staged --quiet || git commit -m "Deploy: ${{ github.ref_name }}"
+        git push origin pragmastat-dev
 
   publish-dotnet:
     runs-on: ubuntu-24.04
-    needs: [build-web, build-python, build-dotnet, build-ts, build-rust, build-kotlin]
+    needs: build
     steps:
     - uses: actions/checkout@v4
 
@@ -121,7 +161,7 @@ jobs:
 
   publish-python:
     runs-on: ubuntu-24.04
-    needs: [build-web, build-python, build-dotnet, build-ts, build-rust, build-kotlin]
+    needs: build
     permissions:
       id-token: write  # Required for trusted publishing to PyPI
     steps:
@@ -139,7 +179,7 @@ jobs:
 
   publish-npm:
     runs-on: ubuntu-24.04
-    needs: [build-web, build-python, build-dotnet, build-ts, build-rust, build-kotlin]
+    needs: build
     permissions:
       id-token: write  # Required for npm provenance
       contents: read
@@ -164,7 +204,7 @@ jobs:
 
   publish-rust:
     runs-on: ubuntu-24.04
-    needs: [build-web, build-python, build-dotnet, build-ts, build-rust, build-kotlin]
+    needs: build
     steps:
     - uses: actions/checkout@v4
 
@@ -183,7 +223,7 @@ jobs:
 
   publish-kotlin:
     runs-on: ubuntu-24.04
-    needs: [build-web, build-python, build-dotnet, build-ts, build-rust, build-kotlin]
+    needs: build
     steps:
     - uses: actions/checkout@v4
 
