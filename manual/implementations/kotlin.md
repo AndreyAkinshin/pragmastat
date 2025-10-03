@@ -4,7 +4,7 @@
 
 A package is not available yet.
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.13/kotlin
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.14/kotlin
 
 Demo:
 
