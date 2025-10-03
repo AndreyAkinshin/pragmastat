@@ -1,16 +1,17 @@
 ## Drift
 
 Drift measures estimator precision by quantifying how much estimates scatter across repeated samples.
-Unlike traditional statistical efficiency that fails for heavy-tailed distributions,
-  drift uses the robust $\Spread$ measure and works reliably across most distribution types.
+It is based on $\Spread$ of the estimates, and therefore has a breakdown point of $\approx 29\%$.
 
-Drift values directly indicate relative data requirements.
-When switching between estimators, the required sample size changes by the square of the drift ratio.
-If estimator A has drift 1.5 and estimator B has drift 1.0, then A requires $(1.5)^2 = 2.25$ times
-  more data to match B's precision.
-See the "From Statistical Efficiency to Drift" section in the methodology chapter for complete details.
+Drift is useful when comparing precisions of several estimators.
+To simplify the comparison, it is convenient to choose one of the estimators as a baseline.
+A table with drift squares normalized by the baseline shows the sample adjustment factor
+  for switching from the baseline to another estimator.
+For example, if $\Center$ is the baseline, and the rescaled drift square of $\Median$ is $1.5$,
+  this means that $\Median$ would require $1.5$ times more data than $\Center$ to match in precision.
+See the "From Statistical Efficiency to Drift" section for details.
 
-**Asymptotic Average estimator drift²** (values are approximated; should be double-checked):
+**Asymptotic Average estimator drift²** (values are approximated):
 
 
 |              | $\Mean$  | $\Median$ | $\Center$ |
@@ -21,7 +22,7 @@ See the "From Statistical Efficiency to Drift" section in the methodology chapte
 | $\Power$     | $\infty$ | 0.9       | 2.1       |
 | $\Uniform$   | 0.88     | 2.60      | 0.94      |
 
-Rescaled to $\Center$ (sample-size factors):
+Rescaled to $\Center$ (sample size adjustment factors):
 
 |              | $\Mean$  | $\Median$ | $\Center$ |
 |--------------|----------|-----------|-----------|
@@ -43,7 +44,7 @@ Rescaled to $\Center$ (sample-size factors):
 
 ---
 
-**Asymptotic Dispersion estimator drift²** (values are approximated; should be double-checked):
+**Asymptotic Dispersion estimator drift²** (values are approximated):
 
 |              | $\StdDev$ | $\MAD$ | $\Spread$ |
 |--------------|-----------|--------|-----------|
@@ -53,7 +54,7 @@ Rescaled to $\Center$ (sample-size factors):
 | $\Power$     | $\infty$  | 3.5    | 4.4       |
 | $\Uniform$   | 0.18      | 0.90   | 0.43      |
 
-Rescaled to $\Spread$ (sample-size factors):
+Rescaled to $\Spread$ (sample size adjustment factors):
 
 |              | $\StdDev$ | $\MAD$ | $\Spread$ |
 |--------------|-----------|--------|-----------|
