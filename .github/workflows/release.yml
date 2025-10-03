@@ -34,9 +34,12 @@ jobs:
   build-ts:
     uses: ./.github/workflows/build-ts.yml
 
+  build-rust:
+    uses: ./.github/workflows/build-rust.yml
+
   publish-github:
     runs-on: ubuntu-24.04
-    needs: [build-web, build-python, build-dotnet, build-ts]
+    needs: [build-web, build-python, build-dotnet, build-ts, build-rust]
     steps:
     - name: Download web artifacts
       uses: actions/download-artifact@v4
@@ -62,6 +65,12 @@ jobs:
         name: python
         path: artifacts/python
 
+    - name: Download rust artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: rust
+        path: artifacts/rust
+
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
       with:
@@ -74,16 +83,17 @@ jobs:
           artifacts/dotnet/*.snupkg
           artifacts/python/*.tar.gz
           artifacts/python/*.whl
+          artifacts/rust/*.crate
 
   publish-web:
-    needs: [build-web, build-python, build-dotnet, build-ts]
+    needs: [build-web, build-python, build-dotnet, build-ts, build-rust]
     uses: ./.github/workflows/deploy-web.yml
     with:
       deploy_message: "Deploy: ${{ github.ref_name }}"
 
   publish-dotnet:
     runs-on: ubuntu-24.04
-    needs: [build-web, build-python, build-dotnet, build-ts]
+    needs: [build-web, build-python, build-dotnet, build-ts, build-rust]
     steps:
     - uses: actions/checkout@v4
 
@@ -101,7 +111,7 @@ jobs:
 
   publish-python:
     runs-on: ubuntu-24.04
-    needs: [build-web, build-python, build-dotnet, build-ts]
+    needs: [build-web, build-python, build-dotnet, build-ts, build-rust]
     permissions:
       id-token: write  # Required for trusted publishing to PyPI
     steps:
@@ -119,7 +129,7 @@ jobs:
 
   publish-npm:
     runs-on: ubuntu-24.04
-    needs: [build-web, build-python, build-dotnet, build-ts]
+    needs: [build-web, build-python, build-dotnet, build-ts, build-rust]
     permissions:
       id-token: write  # Required for npm provenance
       contents: read
@@ -141,3 +151,22 @@ jobs:
       working-directory: ts
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  publish-rust:
+    runs-on: ubuntu-24.04
+    needs: [build-web, build-python, build-dotnet, build-ts, build-rust]
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Rust
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Download rust artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: rust
+        path: rust/pragmastat/target/package
+
+    - name: Publish to crates.io
+      run: cargo publish --token ${{ secrets.CARGO_REGISTRY_TOKEN }}
+      working-directory: rust/pragmastat
