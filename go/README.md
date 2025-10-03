@@ -6,7 +6,7 @@ Online manual: https://pragmastat.dev
 ## Installation
 
 ```bash
-go get github.com/AndreyAkinshin/pragmastat/go
+go get github.com/AndreyAkinshin/pragmastat/go/v3
 ```
 
 ## Demo
@@ -16,7 +16,7 @@ package main
 
 import (
     "fmt"
-    "github.com/AndreyAkinshin/pragmastat"
+    "github.com/AndreyAkinshin/pragmastat/go/v3"
 )
 
 func main() {

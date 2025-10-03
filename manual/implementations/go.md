@@ -7,7 +7,7 @@ Source code of the latest version: https://github.com/AndreyAkinshin/pragmastat/
 To install the package from GitHub:
 
 ```bash
-go get github.com/AndreyAkinshin/pragmastat/go
+go get github.com/AndreyAkinshin/pragmastat/go/v3
 ```
 
 Demo:
