@@ -7,7 +7,7 @@ $$
 - Measures the median of pairwise ratios between elements of two samples
 - Asymptotically, $\Ratio[X, Y]$ is the median of the ratio of random measurements from $X$ and $Y$
 - Note: $\Ratio(\x, \y) \neq 1 / \Ratio(\y, \x)$ in general (example: $x=(1, 100)$, $y=(1, 10)$)
-- Practical Domain: $x_i, y_j > 0$ or $x_i, y_j < 0$. In practice, exclude values with $|y_j|$ near zero (define a safe $\varepsilon$).
+- Practical Domain: $x_i, y_j > 0$ or $x_i, y_j < 0$. In practice, exclude values with $|y_j|$ near zero.
 - Unit: relative
 
 $$

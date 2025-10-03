@@ -15,8 +15,7 @@ $$
 
 - **Formation:** the sum of many variables $X_1 + X_2 + \ldots + X_n$ under mild CLT (Central Limit Theorem) conditions (e.g., Lindeberg-Feller).
 - **Origin:** historically called 'Normal' or 'Gaussian' distribution after Carl Friedrich Gauss and others.
-- **Rename Motivation:** renamed to $\Additive$ to reflect its fundamental formation mechanism
-  through addition rather than arbitrary historical attribution.
+- **Rename Motivation:** renamed to $\Additive$ to reflect its formation mechanism through addition.
 - **Properties:** symmetric, bell-shaped, characterized by central limit theorem convergence.
 - **Applications:** measurement errors, heights and weights in populations, test scores, temperature variations.
 - **Characteristics:** symmetric around the mean, light tails, finite variance.
@@ -38,8 +37,7 @@ $$
 
 - **Formation:** the product of many positive variables $X_1 \cdot X_2 \cdot \ldots \cdot X_n$ with mild conditions (e.g., finite variance of $\log X$).
 - **Origin:** historically called 'Log-Normal' or 'Galton' distribution after Francis Galton.
-- **Rename Motivation:** renamed to $\Multiplic$ to reflect its fundamental formation mechanism
-  through multiplication rather than arbitrary historical attribution.
+- **Rename Motivation:** renamed to $\Multiplic$ to reflect its formation mechanism through multiplication.
 - **Properties:** logarithm of a $\Multiplic$ ('LogNormal') variable follows an $\Additive$ ('Normal') distribution.
 - **Applications:** stock prices, file sizes, reaction times, income distributions, biological growth rates.
 - **Caution:** no perfectly multiplic distributions exist;
@@ -59,7 +57,7 @@ $$
 - **Formation:** the waiting time between events in a Poisson process.
 - **Origin:** naturally arises from memoryless processes where the probability
   of an event occurring is constant over time.
-- **Properties:** memoryless property - past events do not affect future probabilities.
+- **Properties:** memoryless (past events do not affect future probabilities).
 - **Applications:** time between failures, waiting times in queues, radioactive decay, customer service times.
 - **Characteristics:** always positive, right-skewed with light (exponential) tail.
 - **Caution:** extreme skewness makes traditional location estimators like $\Mean$ unreliable;
@@ -78,8 +76,7 @@ $$
 
 - **Formation:** follows a power-law relationship where large values are rare but possible.
 - **Origin:** historically called 'Pareto' distribution after Vilfredo Pareto's work on wealth distribution.
-- **Rename Motivation:** renamed to $\Power$ to emphasize the fundamental power-law behavior
-  rather than historical attribution.
+- **Rename Motivation:** renamed to $\Power$ to reflect connection with power-low.
 - **Properties:** exhibits scale invariance and extremely heavy tails.
 - **Applications:** wealth distribution, city population sizes, word frequencies, earthquake magnitudes, website traffic.
 - **Characteristics:** infinite variance for many parameter values, extreme outliers common.
@@ -102,6 +99,5 @@ $$
 - **Properties:** rectangular probability density, finite support with hard boundaries.
 - **Applications:** random number generation, round-off errors, arrival times within known intervals.
 - **Characteristics:** symmetric, bounded, no tail behavior.
-- **Note:** while simple in concept, estimating bounds from samples presents challenges;
-    traditional estimators work reasonably well due to symmetry and bounded nature.
+- **Note:** traditional estimators work reasonably well due to symmetry and bounded nature.
 
