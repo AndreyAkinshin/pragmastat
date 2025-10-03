@@ -9,7 +9,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-pragmastat = "3.1.10"
+pragmastat = "3.1.11"
 ```
 
 ## Demo
