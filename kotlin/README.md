@@ -1,59 +1,89 @@
-# Pragmastat for Kotlin
+# Pragmastat
 
-[![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.17236778.svg)](https://doi.org/10.5281/zenodo.17236778)
+This is a Kotlin implementation of 'Pragmastat: Pragmatic Statistical Toolkit', which presents a toolkit of statistical procedures that provide reliable results across diverse real-world distributions, with ready-to-use implementations and detailed explanations.
 
-Kotlin implementation of the Pragmastat statistical toolkit.
+- PDF manual for this version: https://pragmastat.dev/pragmastat-v3.1.11.pdf
+- Online manual for the latest version: https://pragmastat.dev
+- Manual DOI: [10.5281/zenodo.17236778](https://doi.org/10.5281/zenodo.17236778)
+- Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.11/kotlin
 
-## Usage
+## Installation
+
+A package is not available yet.
+
+## Demo
 
 ```kotlin
+package com.pragmastat.example
+
 import com.pragmastat.*
 
 fun main() {
-    // One-sample analysis
-    val x = listOf(1.2, 3.4, 2.5, 4.1, 2.8)
+    var x = listOf(0.0, 2.0, 4.0, 6.0, 8.0)
+    println(center(x)) // 4
+    println(center(x.map { it + 10 })) // 14
+    println(center(x.map { it * 3 })) // 12
 
-    println("Center: ${center(x)}")
-    println("Spread: ${spread(x)}")
-    println("RelSpread: ${relSpread(x) * 100}%")
+    println(spread(x)) // 4
+    println(spread(x.map { it + 10 })) // 4
+    println(spread(x.map { it * 2 })) // 8
 
-    // Two-sample comparison
-    val y = listOf(2.1, 4.3, 3.2, 5.0, 3.7)
+    println(relSpread(x)) // 1
+    println(relSpread(x.map { it * 5 })) // 1
 
-    println("Shift: ${shift(x, y)}")
-    println("Ratio: ${ratio(x, y)}")
-    println("AvgSpread: ${avgSpread(x, y)}")
-    println("Disparity: ${disparity(x, y)}")
+    var y = listOf(10.0, 12.0, 14.0, 16.0, 18.0)
+    println(shift(x, y)) // -10
+    println(shift(x, x)) // 0
+    println(shift(x.map { it + 7 }, y.map { it + 3 })) // -6
+    println(shift(x.map { it * 2 }, y.map { it * 2 })) // -20
+    println(shift(y, x)) // 10
+
+    x = listOf(1.0, 2.0, 4.0, 8.0, 16.0)
+    y = listOf(2.0, 4.0, 8.0, 16.0, 32.0)
+    println(ratio(x, y)) // 0.5
+    println(ratio(x, x)) // 1
+    println(ratio(x.map { it * 2 }, y.map { it * 5 })) // 0.2
+
+    x = listOf(0.0, 3.0, 6.0, 9.0, 12.0)
+    y = listOf(0.0, 2.0, 4.0, 6.0, 8.0)
+    println(spread(x)) // 6
+    println(spread(y)) // 4
+
+    println(avgSpread(x, y)) // 5
+    println(avgSpread(x, x)) // 6
+    println(avgSpread(x.map { it * 2 }, x.map { it * 3 })) // 15
+    println(avgSpread(y, x)) // 5
+    println(avgSpread(x.map { it * 2 }, y.map { it * 2 })) // 10
+
+    println(shift(x, y)) // 2
+    println(avgSpread(x, y)) // 5
+
+    println(disparity(x, y)) // 0.4
+    println(disparity(x.map { it + 5 }, y.map { it + 5 })) // 0.4
+    println(disparity(x.map { it * 2 }, y.map { it * 2 })) // 0.4
+    println(disparity(y, x)) // -0.4
 }
 ```
 
-## Estimators
+## The MIT License
 
-### One-Sample Estimators
+Copyright (c) 2025 Andrey Akinshin
 
-- **Center**: Hodges-Lehmann location estimator (median of pairwise averages)
-- **Spread**: Shamos scale estimator (median of pairwise absolute differences)
-- **RelSpread**: Relative dispersion (Spread/|Center|)
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
 
-### Two-Sample Estimators
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
 
-- **Shift**: Median of pairwise differences
-- **Ratio**: Median of pairwise ratios
-- **AvgSpread**: Weighted average of individual spreads
-- **Disparity**: Effect size (Shift/AvgSpread)
-
-## Development
-
-Build the project:
-```bash
-./gradlew build
-```
-
-Run tests:
-```bash
-./gradlew test
-```
-
-## License
-
-MIT
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

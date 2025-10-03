@@ -1,7 +1,11 @@
 # Pragmastat
 
-A Rust implementation of 'Pragmastat: Pragmatic Statistical Toolkit' - robust summary estimators designed for real-world data analysis.
-Online manual: https://pragmastat.dev
+This is a Rust implementation of 'Pragmastat: Pragmatic Statistical Toolkit', which presents a toolkit of statistical procedures that provide reliable results across diverse real-world distributions, with ready-to-use implementations and detailed explanations.
+
+- PDF manual for this version: https://pragmastat.dev/pragmastat-v3.1.11.pdf
+- Online manual for the latest version: https://pragmastat.dev
+- Manual DOI: [10.5281/zenodo.17236778](https://doi.org/10.5281/zenodo.17236778)
+- Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.11/rust
 
 ## Installation
 
@@ -77,7 +81,6 @@ fn main() {
     println!("{}", disparity(&y, &x).unwrap()); // -0.4
 }
 ```
-
 
 ## The MIT License
 

@@ -1,74 +1,77 @@
 # Pragmastat
 
-A .NET implementation of 'Pragmastat: Pragmatic Statistical Toolkit' - robust summary estimators designed for real-world data analysis.
-Online manual: https://pragmastat.dev
+This is a .NET implementation of 'Pragmastat: Pragmatic Statistical Toolkit', which presents a toolkit of statistical procedures that provide reliable results across diverse real-world distributions, with ready-to-use implementations and detailed explanations.
+
+- PDF manual for this version: https://pragmastat.dev/pragmastat-v3.1.11.pdf
+- Online manual for the latest version: https://pragmastat.dev
+- Manual DOI: [10.5281/zenodo.17236778](https://doi.org/10.5281/zenodo.17236778)
+- Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.11/dotnet
 
 ## Installation
+
+Install the NuGet package [Pragmastat](https://www.nuget.org/packages/Pragmastat):
 
 ```bash
 dotnet add package Pragmastat
 ```
 
-Or via Package Manager Console:
-
-```powershell
-Install-Package Pragmastat
-```
-
 ## Demo
 
-```csharp
-using Pragmastat;
+```cs
+using static System.Console;
 
-var x = new Sample(0, 2, 4, 6, 8);
-WriteLine(x.Center()); // 4
-WriteLine((x + 10).Center()); // 14
-WriteLine((x * 3).Center()); // 12
+namespace Pragmastat.Demo;
 
-WriteLine(x.Spread()); // 4
-WriteLine((x + 10).Spread()); // 4
-WriteLine((x * 2).Spread()); // 8
+class Program
+{
+    static void Main()
+    {
+        var x = new Sample(0, 2, 4, 6, 8);
+        WriteLine(x.Center()); // 4
+        WriteLine((x + 10).Center()); // 14
+        WriteLine((x * 3).Center()); // 12
 
-WriteLine(x.RelSpread()); // 1
-WriteLine((x * 5).RelSpread()); // 1
+        WriteLine(x.Spread()); // 4
+        WriteLine((x + 10).Spread()); // 4
+        WriteLine((x * 2).Spread()); // 8
 
-var y = new Sample(10, 12, 14, 16, 18);
-WriteLine(Toolkit.Shift(x, y)); // -10
-WriteLine(Toolkit.Shift(x, x)); // 0
-WriteLine(Toolkit.Shift(x + 7, y + 3)); // -6
-WriteLine(Toolkit.Shift(x * 2, y * 2)); // -20
-WriteLine(Toolkit.Shift(y, x)); // 10
+        WriteLine(x.RelSpread()); // 1
+        WriteLine((x * 5).RelSpread()); // 1
 
-x = new Sample(1, 2, 4, 8, 16);
-y = new Sample(2, 4, 8, 16, 32);
-WriteLine(Toolkit.Ratio(x, y)); // 0.5
-WriteLine(Toolkit.Ratio(x, x)); // 1
-WriteLine(Toolkit.Ratio(x * 2, y * 5)); // 0.2
+        var y = new Sample(10, 12, 14, 16, 18);
+        WriteLine(Toolkit.Shift(x, y)); // -10
+        WriteLine(Toolkit.Shift(x, x)); // 0
+        WriteLine(Toolkit.Shift(x + 7, y + 3)); // -6
+        WriteLine(Toolkit.Shift(x * 2, y * 2)); // -20
+        WriteLine(Toolkit.Shift(y, x)); // 10
 
-x = new Sample(0, 3, 6, 9, 12);
-y = new Sample(0, 2, 4, 6, 8);
-WriteLine(x.Spread()); // 6
-WriteLine(y.Spread()); // 4
+        x = new Sample(1, 2, 4, 8, 16);
+        y = new Sample(2, 4, 8, 16, 32);
+        WriteLine(Toolkit.Ratio(x, y)); // 0.5
+        WriteLine(Toolkit.Ratio(x, x)); // 1
+        WriteLine(Toolkit.Ratio(x * 2, y * 5)); // 0.2
 
-WriteLine(Toolkit.AvgSpread(x, y)); // 5
-WriteLine(Toolkit.AvgSpread(x, x)); // 6
-WriteLine(Toolkit.AvgSpread(x * 2, x * 3)); // 15
-WriteLine(Toolkit.AvgSpread(y, x)); // 5
-WriteLine(Toolkit.AvgSpread(x * 2, y * 2)); // 10
+        x = new Sample(0, 3, 6, 9, 12);
+        y = new Sample(0, 2, 4, 6, 8);
+        WriteLine(x.Spread()); // 6
+        WriteLine(y.Spread()); // 4
 
-WriteLine(Toolkit.Shift(x, y)); // 2
-WriteLine(Toolkit.AvgSpread(x, y)); // 5
+        WriteLine(Toolkit.AvgSpread(x, y)); // 5
+        WriteLine(Toolkit.AvgSpread(x, x)); // 6
+        WriteLine(Toolkit.AvgSpread(x * 2, x * 3)); // 15
+        WriteLine(Toolkit.AvgSpread(y, x)); // 5
+        WriteLine(Toolkit.AvgSpread(x * 2, y * 2)); // 10
 
-WriteLine(Toolkit.Disparity(x, y)); // 0.4
-WriteLine(Toolkit.Disparity(x + 5, y + 5)); // 0.4
-WriteLine(Toolkit.Disparity(x * 2, y * 2)); // 0.4
-WriteLine(Toolkit.Disparity(y, x)); // -0.4
+        WriteLine(Toolkit.Shift(x, y)); // 2
+        WriteLine(Toolkit.AvgSpread(x, y)); // 5
+
+        WriteLine(Toolkit.Disparity(x, y)); // 0.4
+        WriteLine(Toolkit.Disparity(x + 5, y + 5)); // 0.4
+        WriteLine(Toolkit.Disparity(x * 2, y * 2)); // 0.4
+        WriteLine(Toolkit.Disparity(y, x)); // -0.4
+    }
+}
 ```
-
-## Platform Support
-
-- **.NET Standard 2.0** - Compatible with .NET Framework 4.6.1+, .NET Core 2.0+
-- **.NET 6.0+** - Modern .NET support with enhanced performance
 
 ## The MIT License
 
