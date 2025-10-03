@@ -4,14 +4,14 @@
 
 A package is not available yet.
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.12/kotlin
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.13/kotlin
 
 Demo:
 
 ```kotlin
-package com.pragmastat.example
+package dev.pragmastat.example
 
-import com.pragmastat.*
+import dev.pragmastat.*
 
 fun main() {
     var x = listOf(0.0, 2.0, 4.0, 6.0, 8.0)

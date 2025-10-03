@@ -6,7 +6,7 @@
 npm i pragmastat
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.12/ts
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.13/ts
 
 Demo:
 
