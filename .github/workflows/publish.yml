@@ -243,15 +243,14 @@ jobs:
     # Deploy to Maven Central using JReleaser Portal Publisher API
     # Documentation: https://jreleaser.org/guide/latest/examples/maven/maven-central.html#_portal_publisher_api
     - name: Deploy to Maven Central via JReleaser
-      run: |
-        export JRELEASER_GPG_PUBLIC_KEY=$(cat pubkey.asc)
-        ./gradlew --no-daemon jreleaserDeploy
+      run: ./gradlew --no-daemon jreleaserDeploy
       working-directory: kotlin
       env:
         JRELEASER_MAVENCENTRAL_SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
         JRELEASER_MAVENCENTRAL_SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
         JRELEASER_GPG_PASSPHRASE: ${{ secrets.GRADLE_SIGNING_PASSWORD }}
         JRELEASER_GPG_SECRET_KEY: ${{ secrets.GRADLE_SIGNING_KEY }}
+        JRELEASER_GPG_PUBLIC_KEY: ${{ secrets.GRADLE_SIGNING_PUBLIC_KEY }}
         JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Upload build reports on failure
