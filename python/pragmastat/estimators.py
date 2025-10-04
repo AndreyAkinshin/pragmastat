@@ -32,7 +32,9 @@ def rel_spread(x: Union[Sequence[float], NDArray]) -> float:
     return spread(x) / abs(center_val)
 
 
-def shift(x: Union[Sequence[float], NDArray], y: Union[Sequence[float], NDArray]) -> float:
+def shift(
+    x: Union[Sequence[float], NDArray], y: Union[Sequence[float], NDArray]
+) -> float:
     x = np.asarray(x)
     y = np.asarray(y)
     if len(x) == 0 or len(y) == 0:
@@ -41,7 +43,9 @@ def shift(x: Union[Sequence[float], NDArray], y: Union[Sequence[float], NDArray]
     return float(np.median(pairwise_shifts))
 
 
-def ratio(x: Union[Sequence[float], NDArray], y: Union[Sequence[float], NDArray]) -> float:
+def ratio(
+    x: Union[Sequence[float], NDArray], y: Union[Sequence[float], NDArray]
+) -> float:
     x = np.asarray(x)
     y = np.asarray(y)
     if len(x) == 0 or len(y) == 0:
@@ -52,7 +56,9 @@ def ratio(x: Union[Sequence[float], NDArray], y: Union[Sequence[float], NDArray]
     return float(np.median(pairwise_ratios))
 
 
-def avg_spread(x: Union[Sequence[float], NDArray], y: Union[Sequence[float], NDArray]) -> float:
+def avg_spread(
+    x: Union[Sequence[float], NDArray], y: Union[Sequence[float], NDArray]
+) -> float:
     x = np.asarray(x)
     y = np.asarray(y)
     n = len(x)
@@ -64,8 +70,10 @@ def avg_spread(x: Union[Sequence[float], NDArray], y: Union[Sequence[float], NDA
     return (n * spread_x + m * spread_y) / (n + m)
 
 
-def disparity(x: Union[Sequence[float], NDArray], y: Union[Sequence[float], NDArray]) -> float:
+def disparity(
+    x: Union[Sequence[float], NDArray], y: Union[Sequence[float], NDArray]
+) -> float:
     avg_spread_val = avg_spread(x, y)
     if avg_spread_val == 0:
-        return float('inf')
+        return float("inf")
     return shift(x, y) / avg_spread_val

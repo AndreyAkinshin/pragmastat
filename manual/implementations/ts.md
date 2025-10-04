@@ -5,7 +5,7 @@
 Install from npm:
 
 ```bash
-npm i pragmastat
+npm i pragmastat@3.1.24
 ```
 
 Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.24/ts

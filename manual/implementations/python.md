@@ -5,7 +5,7 @@
 Install from PyPI:
 
 ```bash
-pip install pragmastat
+pip install pragmastat==3.1.24
 ```
 
 Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.24/python

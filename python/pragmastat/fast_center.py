@@ -10,6 +10,7 @@ import numpy as np
 # Try to import the C implementation, fall back to pure Python if unavailable
 try:
     from . import _fast_center_c
+
     _HAS_C_EXTENSION = True
 except ImportError:
     _HAS_C_EXTENSION = False
@@ -64,7 +65,10 @@ def _fast_center_python(values: List[float]) -> float:
 
         for row in range(1, n + 1):  # 1-based
             # Move left from current column until we find sums < pivot
-            while current_column >= row and sorted_values[row - 1] + sorted_values[current_column - 1] >= pivot:
+            while (
+                current_column >= row
+                and sorted_values[row - 1] + sorted_values[current_column - 1] >= pivot
+            ):
                 current_column -= 1
 
             # Count elements in this row that are < pivot
@@ -75,8 +79,8 @@ def _fast_center_python(values: List[float]) -> float:
         # === CONVERGENCE CHECK ===
         if count_below_pivot == previous_count:
             # No progress - use midrange strategy
-            min_active_sum = float('inf')
-            max_active_sum = float('-inf')
+            min_active_sum = float("inf")
+            max_active_sum = float("-inf")
 
             for i in range(n):
                 if left_bounds[i] > right_bounds[i]:
@@ -99,13 +103,15 @@ def _fast_center_python(values: List[float]) -> float:
             continue
 
         # === TARGET CHECK ===
-        at_target_rank = (count_below_pivot == median_rank_low or
-                         count_below_pivot == median_rank_high - 1)
+        at_target_rank = (
+            count_below_pivot == median_rank_low
+            or count_below_pivot == median_rank_high - 1
+        )
 
         if at_target_rank:
             # Find boundary values
-            largest_below_pivot = float('-inf')
-            smallest_at_or_above_pivot = float('inf')
+            largest_below_pivot = float("-inf")
+            smallest_at_or_above_pivot = float("inf")
 
             for i in range(n):
                 count_in_row = partition_counts[i]
@@ -121,8 +127,12 @@ def _fast_center_python(values: List[float]) -> float:
                 # Find smallest sum in this row that's >= pivot
                 if count_in_row < total_in_row:
                     first_at_or_above_index = i + count_in_row + 1
-                    first_at_or_above_value = row_value + sorted_values[first_at_or_above_index - 1]
-                    smallest_at_or_above_pivot = min(smallest_at_or_above_pivot, first_at_or_above_value)
+                    first_at_or_above_value = (
+                        row_value + sorted_values[first_at_or_above_index - 1]
+                    )
+                    smallest_at_or_above_pivot = min(
+                        smallest_at_or_above_pivot, first_at_or_above_value
+                    )
 
             # Calculate final result
             if median_rank_low < median_rank_high:
@@ -130,8 +140,10 @@ def _fast_center_python(values: List[float]) -> float:
                 return (smallest_at_or_above_pivot + largest_below_pivot) / 4
             else:
                 # Odd total: return the single middle value
-                need_largest = (count_below_pivot == median_rank_low)
-                return (largest_below_pivot if need_largest else smallest_at_or_above_pivot) / 2
+                need_largest = count_below_pivot == median_rank_low
+                return (
+                    largest_below_pivot if need_largest else smallest_at_or_above_pivot
+                ) / 2
 
         # === UPDATE BOUNDS ===
         if count_below_pivot < median_rank_low:
@@ -147,7 +159,9 @@ def _fast_center_python(values: List[float]) -> float:
         previous_count = count_below_pivot
 
         # Recalculate active set size
-        active_set_size = sum(max(0, right_bounds[i] - left_bounds[i] + 1) for i in range(n))
+        active_set_size = sum(
+            max(0, right_bounds[i] - left_bounds[i] + 1) for i in range(n)
+        )
 
         # Choose next pivot
         if active_set_size > 2:
@@ -164,12 +178,16 @@ def _fast_center_python(values: List[float]) -> float:
                 cumulative_size += row_size
 
             # Use median element of the selected row as pivot
-            median_column_in_row = (left_bounds[selected_row] + right_bounds[selected_row]) // 2
-            pivot = sorted_values[selected_row] + sorted_values[median_column_in_row - 1]
+            median_column_in_row = (
+                left_bounds[selected_row] + right_bounds[selected_row]
+            ) // 2
+            pivot = (
+                sorted_values[selected_row] + sorted_values[median_column_in_row - 1]
+            )
         else:
             # Few elements remain - use midrange strategy
-            min_remaining_sum = float('inf')
-            max_remaining_sum = float('-inf')
+            min_remaining_sum = float("inf")
+            max_remaining_sum = float("-inf")
 
             for i in range(n):
                 if left_bounds[i] > right_bounds[i]:

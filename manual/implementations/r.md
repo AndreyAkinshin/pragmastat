@@ -6,7 +6,8 @@ Install from GitHub:
 
 ```r
 install.packages("remotes") # If 'remotes' is not installed
-remotes::install_github("AndreyAkinshin/pragmastat", subdir = "r/pragmastat")
+remotes::install_github("AndreyAkinshin/pragmastat",
+                        subdir = "r/pragmastat", ref = "v3.1.24")
 library(pragmastat)
 ```
 

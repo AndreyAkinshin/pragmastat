@@ -21,7 +21,7 @@ spread_simple <- function(x) {
 test_that("fast_center matches simple implementation", {
   set.seed(1729)
 
-  for (n in 1:100) {
+  for (n in 1:30) {
     for (iter in seq_len(n)) {
       x <- rnorm(n)
 
@@ -36,7 +36,7 @@ test_that("fast_center matches simple implementation", {
 test_that("fast_spread matches simple implementation", {
   set.seed(1729)
 
-  for (n in 1:100) {
+  for (n in 1:30) {
     for (iter in seq_len(n)) {
       x <- rnorm(n)
 

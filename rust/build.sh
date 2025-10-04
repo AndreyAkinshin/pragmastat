@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Build script for Pragmastat Rust implementation
+
 set -e
 
 # Colors for output
@@ -9,16 +11,30 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 # Function to print colored output
-print_info() {
-    echo -e "${GREEN}[INFO]${NC} $1"
+print_status() {
+    echo -e "${GREEN}[$(date +'%H:%M:%S')]${NC} $1"
 }
 
 print_error() {
-    echo -e "${RED}[ERROR]${NC} $1"
+    echo -e "${RED}[$(date +'%H:%M:%S')] ERROR:${NC} $1"
 }
 
 print_warning() {
-    echo -e "${YELLOW}[WARNING]${NC} $1"
+    echo -e "${YELLOW}[$(date +'%H:%M:%S')] WARNING:${NC} $1"
+}
+
+# Function to run a command and check its status
+run_command() {
+    local cmd="$1"
+    local description="$2"
+
+    print_status "Running: $description"
+    if eval "$cmd"; then
+        print_status "✓ $description completed successfully"
+    else
+        print_error "✗ $description failed"
+        exit 1
+    fi
 }
 
 # Change to the pragmastat directory
@@ -26,62 +42,60 @@ cd "$(dirname "$0")/pragmastat"
 
 # Function to run tests
 run_tests() {
-    print_info "Running tests..."
-    cargo test --verbose
+    run_command "cargo test --verbose" "Running tests"
 }
 
 # Function to build package
 build_package() {
-    print_info "Building package..."
-    
-    # Build in release mode
-    cargo build --release
-    
-    print_info "Build complete."
-    
-    # Show the built artifacts
-    print_info "Built artifacts:"
-    ls -la target/release/
+    local release_flag="$1"
+
+    if [ "$release_flag" == "--release" ]; then
+        run_command "cargo build --release" "Building package in release mode"
+        print_status "Built artifacts:"
+        ls -la target/release/
+    else
+        run_command "cargo build" "Building package in debug mode"
+        print_status "Built artifacts:"
+        ls -la target/debug/
+    fi
 }
 
 # Function to check package
 check_package() {
-    print_info "Checking package..."
-    
+    print_status "Checking package..."
+
     # Run clippy for linting
     if command -v cargo-clippy &> /dev/null; then
-        cargo clippy -- -D warnings
+        run_command "cargo clippy -- -D warnings" "Running clippy"
     else
         print_warning "cargo-clippy not installed. Install with: rustup component add clippy"
     fi
-    
+
     # Check formatting
     if command -v rustfmt &> /dev/null; then
-        cargo fmt -- --check
+        run_command "cargo fmt -- --check" "Checking code formatting"
     else
         print_warning "rustfmt not installed. Install with: rustup component add rustfmt"
     fi
-    
+
     # Run cargo check
-    cargo check
-    
-    print_info "Package check complete"
+    run_command "cargo check" "Running cargo check"
+
+    print_status "✓ Package check complete"
 }
 
 # Function to clean build artifacts
 clean() {
-    print_info "Cleaning build artifacts..."
+    print_status "Cleaning build artifacts..."
     cargo clean
     rm -rf Cargo.lock
-    print_info "Clean complete"
+    print_status "✓ Clean complete"
 }
 
 # Function to format code
 format() {
-    print_info "Formatting code..."
     if command -v rustfmt &> /dev/null; then
-        cargo fmt
-        print_info "Code formatted"
+        run_command "cargo fmt" "Formatting code"
     else
         print_error "rustfmt not installed. Install with: rustup component add rustfmt"
         exit 1
@@ -90,22 +104,18 @@ format() {
 
 # Function to build documentation
 doc() {
-    print_info "Building documentation..."
-    cargo doc --no-deps --open
-    print_info "Documentation built and opened in browser"
+    run_command "cargo doc --no-deps --open" "Building and opening documentation"
 }
 
 # Function to run benchmarks
 bench() {
-    print_info "Running benchmarks..."
-    cargo bench
+    run_command "cargo bench" "Running benchmarks"
 }
 
 # Function to publish package (dry run by default)
 publish() {
-    print_info "Publishing package (dry run)..."
-    cargo publish --dry-run
-    
+    run_command "cargo publish --dry-run" "Publishing package (dry run)"
+
     echo ""
     print_warning "This was a dry run. To actually publish, run:"
     print_warning "cd pragmastat && cargo publish"
@@ -113,36 +123,38 @@ publish() {
 
 # Function to show help
 show_help() {
-    echo "Usage: ./build.sh [command]"
+    echo "Usage: ./build.sh [command] [--release]"
     echo ""
     echo "Commands:"
-    echo "  help       Show this help message"
-    echo "  test       Run tests"
-    echo "  build      Build release version"
-    echo "  check      Check package (clippy, fmt check, cargo check)"
-    echo "  clean      Clean build artifacts"
-    echo "  format     Format code with rustfmt"
-    echo "  doc        Build and open documentation"
-    echo "  bench      Run benchmarks"
-    echo "  publish    Dry run of publishing to crates.io"
-    echo "  all        Run test, build, and check"
+    echo "  test              Run tests"
+    echo "  build [--release] Build package (debug by default, release with --release flag)"
+    echo "  check             Check package (clippy, fmt check, cargo check)"
+    echo "  clean             Clean build artifacts"
+    echo "  format            Format code with rustfmt"
+    echo "  doc               Build and open documentation"
+    echo "  bench             Run benchmarks"
+    echo "  publish           Dry run of publishing to crates.io"
+    echo "  all               Run test, build (debug), and check"
     echo ""
     echo "Examples:"
     echo "  ./build.sh test"
     echo "  ./build.sh build"
+    echo "  ./build.sh build --release"
     echo "  ./build.sh all"
 }
 
 # Main script logic
-case "${1:-help}" in
-    help)
-        show_help
-        ;;
+if [ -z "$1" ]; then
+    show_help
+    exit 1
+fi
+
+case "$1" in
     test)
         run_tests
         ;;
     build)
-        build_package
+        build_package "$2"
         ;;
     check)
         check_package
@@ -163,10 +175,11 @@ case "${1:-help}" in
         publish
         ;;
     all)
+        print_status "Running all tasks..."
         run_tests
-        build_package
+        build_package ""
         check_package
-        print_info "All tasks completed successfully!"
+        print_status "✓ All tasks completed successfully!"
         ;;
     *)
         print_error "Unknown command: $1"

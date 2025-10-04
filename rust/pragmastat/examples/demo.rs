@@ -1,61 +1,59 @@
 use pragmastat::*;
 
+fn print(result: Result<f64, &str>) {
+    println!("{}", result.unwrap());
+}
+
+fn add(x: &[f64], val: f64) -> Vec<f64> {
+    x.iter().map(|v| v + val).collect()
+}
+
+fn multiply(x: &[f64], val: f64) -> Vec<f64> {
+    x.iter().map(|v| v * val).collect()
+}
+
 fn main() {
     let x = vec![0.0, 2.0, 4.0, 6.0, 8.0];
-    println!("{}", center(&x).unwrap()); // 4
-    let x_plus_10: Vec<f64> = x.iter().map(|v| v + 10.0).collect();
-    println!("{}", center(&x_plus_10).unwrap()); // 14
-    let x_times_3: Vec<f64> = x.iter().map(|v| v * 3.0).collect();
-    println!("{}", center(&x_times_3).unwrap()); // 12
+    print(center(&x)); // 4
+    print(center(&add(&x, 10.0))); // 14
+    print(center(&multiply(&x, 3.0))); // 12
 
-    println!("{}", spread(&x).unwrap()); // 4
-    println!("{}", spread(&x_plus_10).unwrap()); // 4
-    let x_times_2: Vec<f64> = x.iter().map(|v| v * 2.0).collect();
-    println!("{}", spread(&x_times_2).unwrap()); // 8
+    print(spread(&x)); // 4
+    print(spread(&add(&x, 10.0))); // 4
+    print(spread(&multiply(&x, 2.0))); // 8
 
-    println!("{}", rel_spread(&x).unwrap()); // 1
-    let x_times_5: Vec<f64> = x.iter().map(|v| v * 5.0).collect();
-    println!("{}", rel_spread(&x_times_5).unwrap()); // 1
+    print(rel_spread(&x)); // 1
+    print(rel_spread(&multiply(&x, 5.0))); // 1
 
     let y = vec![10.0, 12.0, 14.0, 16.0, 18.0];
-    println!("{}", shift(&x, &y).unwrap()); // -10
-    println!("{}", shift(&x, &x).unwrap()); // 0
-    let x_plus_7: Vec<f64> = x.iter().map(|v| v + 7.0).collect();
-    let y_plus_3: Vec<f64> = y.iter().map(|v| v + 3.0).collect();
-    println!("{}", shift(&x_plus_7, &y_plus_3).unwrap()); // -6
-    let y_times_2: Vec<f64> = y.iter().map(|v| v * 2.0).collect();
-    println!("{}", shift(&x_times_2, &y_times_2).unwrap()); // -20
-    println!("{}", shift(&y, &x).unwrap()); // 10
+    print(shift(&x, &y)); // -10
+    print(shift(&x, &x)); // 0
+    print(shift(&add(&x, 7.0), &add(&y, 3.0))); // -6
+    print(shift(&multiply(&x, 2.0), &multiply(&y, 2.0))); // -20
+    print(shift(&y, &x)); // 10
 
     let x = vec![1.0, 2.0, 4.0, 8.0, 16.0];
     let y = vec![2.0, 4.0, 8.0, 16.0, 32.0];
-    println!("{}", ratio(&x, &y).unwrap()); // 0.5
-    println!("{}", ratio(&x, &x).unwrap()); // 1
-    let x_times_2: Vec<f64> = x.iter().map(|v| v * 2.0).collect();
-    let y_times_5: Vec<f64> = y.iter().map(|v| v * 5.0).collect();
-    println!("{}", ratio(&x_times_2, &y_times_5).unwrap()); // 0.2
+    print(ratio(&x, &y)); // 0.5
+    print(ratio(&x, &x)); // 1
+    print(ratio(&multiply(&x, 2.0), &multiply(&y, 5.0))); // 0.2
 
     let x = vec![0.0, 3.0, 6.0, 9.0, 12.0];
     let y = vec![0.0, 2.0, 4.0, 6.0, 8.0];
-    println!("{}", spread(&x).unwrap()); // 6
-    println!("{}", spread(&y).unwrap()); // 4
+    print(spread(&x)); // 6
+    print(spread(&y)); // 4
 
-    println!("{}", avg_spread(&x, &y).unwrap()); // 5
-    println!("{}", avg_spread(&x, &x).unwrap()); // 6
-    let x_times_2: Vec<f64> = x.iter().map(|v| v * 2.0).collect();
-    let x_times_3: Vec<f64> = x.iter().map(|v| v * 3.0).collect();
-    println!("{}", avg_spread(&x_times_2, &x_times_3).unwrap()); // 15
-    println!("{}", avg_spread(&y, &x).unwrap()); // 5
-    let y_times_2: Vec<f64> = y.iter().map(|v| v * 2.0).collect();
-    println!("{}", avg_spread(&x_times_2, &y_times_2).unwrap()); // 10
+    print(avg_spread(&x, &y)); // 5
+    print(avg_spread(&x, &x)); // 6
+    print(avg_spread(&multiply(&x, 2.0), &multiply(&x, 3.0))); // 15
+    print(avg_spread(&y, &x)); // 5
+    print(avg_spread(&multiply(&x, 2.0), &multiply(&y, 2.0))); // 10
 
-    println!("{}", shift(&x, &y).unwrap()); // 2
-    println!("{}", avg_spread(&x, &y).unwrap()); // 5
+    print(shift(&x, &y)); // 2
+    print(avg_spread(&x, &y)); // 5
 
-    println!("{}", disparity(&x, &y).unwrap()); // 0.4
-    let x_plus_5: Vec<f64> = x.iter().map(|v| v + 5.0).collect();
-    let y_plus_5: Vec<f64> = y.iter().map(|v| v + 5.0).collect();
-    println!("{}", disparity(&x_plus_5, &y_plus_5).unwrap()); // 0.4
-    println!("{}", disparity(&x_times_2, &y_times_2).unwrap()); // 0.4
-    println!("{}", disparity(&y, &x).unwrap()); // -0.4
+    print(disparity(&x, &y)); // 0.4
+    print(disparity(&add(&x, 5.0), &add(&y, 5.0))); // 0.4
+    print(disparity(&multiply(&x, 2.0), &multiply(&y, 2.0))); // 0.4
+    print(disparity(&y, &x)); // -0.4
 }

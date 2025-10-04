@@ -21,7 +21,7 @@ Pragmastat on NuGet: https://www.nuget.org/packages/Pragmastat/
 Demo:
 
 ```cs
-using static System.Console;
+﻿using static System.Console;
 
 namespace Pragmastat.Demo;
 

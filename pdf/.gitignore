@@ -1,13 +1,9 @@
-.RData
-.Rhistory
-.Rproj.user
 *.aux
 *.bbl
 *.bcf
 *.blg
 *.fdb_latexmk
 *.fls
-*.knit.md
 *.log
 *.out
 *.pdf
@@ -16,9 +12,9 @@
 *.tex
 *.toc
 *.synctex(busy)
-pragmastat_cache/
 
 !tex/*.tex
 img
-pragmastat.Rmd
+pragmastat.md
 references.bib
+pragmastat_cache

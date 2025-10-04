@@ -14,11 +14,20 @@ jobs:
     uses: ./.github/workflows/build.yml
     with:
       release: true
+    secrets:
+      GRADLE_SIGNING_KEY: ${{ secrets.GRADLE_SIGNING_KEY }}
+      GRADLE_SIGNING_PASSWORD: ${{ secrets.GRADLE_SIGNING_PASSWORD }}
 
   publish-github:
     runs-on: ubuntu-24.04
     needs: build
     steps:
+    - uses: actions/checkout@v4
+
+    - name: Read version
+      id: version
+      run: echo "VERSION=$(cat manual/version.txt | tr -d '\n')" >> $GITHUB_OUTPUT
+
     - name: Download web artifacts
       uses: actions/download-artifact@v4
       with:
@@ -73,6 +82,22 @@ jobs:
         name: kotlin
         path: artifacts/kotlin
 
+    - name: Create zip archives
+      run: |
+        VERSION="${{ steps.version.outputs.VERSION }}"
+        cd artifacts
+        zip -r "../web-v${VERSION}.zip" web
+        zip -r "../dotnet-v${VERSION}.zip" dotnet
+        zip -r "../python-v${VERSION}.zip" python
+        zip -r "../rust-v${VERSION}.zip" rust
+        zip -r "../ts-v${VERSION}.zip" ts
+        zip -r "../go-v${VERSION}.zip" go
+        zip -r "../r-v${VERSION}.zip" r
+        zip -r "../kotlin-v${VERSION}.zip" kotlin
+        cd ..
+        zip -r "tests-v${VERSION}.zip" tests
+        zip -r "simulations-v${VERSION}.zip" simulations
+
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
       with:
@@ -80,15 +105,18 @@ jobs:
         discussion_category_name: Releases
         generate_release_notes: true
         files: |
-          artifacts/pdf/*.pdf
-          artifacts/dotnet/*.nupkg
-          artifacts/dotnet/*.snupkg
-          artifacts/python/*.tar.gz
-          artifacts/python/*.whl
-          artifacts/rust/*.crate
-          artifacts/ts/*.tgz
-          artifacts/r/*.tar.gz
-          artifacts/kotlin/*.jar
+          web-v*.zip
+          artifacts/web/pragmastat-v*.md
+          artifacts/pdf/pragmastat-v*.pdf
+          dotnet-v*.zip
+          python-v*.zip
+          rust-v*.zip
+          ts-v*.zip
+          go-v*.zip
+          r-v*.zip
+          kotlin-v*.zip
+          tests-v*.zip
+          simulations-v*.zip
 
   publish-web:
     runs-on: ubuntu-24.04
@@ -147,8 +175,10 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Install .NET
-      run: ./build/scripts/dotnet-install.sh
+    - name: Set up .NET
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: '9.0.305'
 
     - name: Download dotnet artifacts
       uses: actions/download-artifact@v4
@@ -157,7 +187,7 @@ jobs:
         path: dotnet/artifacts
 
     - name: Publish to NuGet
-      run: ./.dotnet/dotnet nuget push ./dotnet/artifacts/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+      run: dotnet nuget push ./dotnet/artifacts/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
 
   publish-python:
     runs-on: ubuntu-24.04
@@ -233,17 +263,27 @@ jobs:
         java-version: '11'
         distribution: 'temurin'
 
-    - name: Publish to staging directory
-      run: ./gradlew --no-daemon publish
-      working-directory: kotlin
-      env:
-        GRADLE_SIGNING_KEY: ${{ secrets.GRADLE_SIGNING_KEY }}
-        GRADLE_SIGNING_PASSWORD: ${{ secrets.GRADLE_SIGNING_PASSWORD }}
+    - name: Cache Gradle packages
+      uses: actions/cache@v4
+      continue-on-error: true
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+
+    - name: Download kotlin artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: kotlin
+        path: kotlin/build/
 
     # Deploy to Maven Central using JReleaser Portal Publisher API
     # Documentation: https://jreleaser.org/guide/latest/examples/maven/maven-central.html#_portal_publisher_api
     - name: Deploy to Maven Central via JReleaser
-      run: ./gradlew --no-daemon jreleaserDeploy
+      run: ./gradlew jreleaserDeploy
       working-directory: kotlin
       env:
         JRELEASER_MAVENCENTRAL_SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}

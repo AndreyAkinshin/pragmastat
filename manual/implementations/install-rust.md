@@ -1,7 +1,7 @@
 Install from crates.io via cargo:
 
 ```bash
-cargo add pragmastat
+cargo add pragmastat@$VERSION$
 ```
 
 Install from crates.io via `Cargo.toml`:

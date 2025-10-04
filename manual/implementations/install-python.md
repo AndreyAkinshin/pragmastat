@@ -1,5 +1,5 @@
 Install from PyPI:
 
 ```bash
-pip install pragmastat
+pip install pragmastat==$VERSION$
 ```

@@ -10,7 +10,7 @@ internal static class SourceRepositoryLocator
     private static readonly Lazy<string> LazyRepositoryRoot = new(() => GetRepositoryRoot());
     public static string RepositoryRoot => LazyRepositoryRoot.Value;
 
-    private static string GetRepositoryRoot(string rootMarkerName = "build.cmd")
+    private static string GetRepositoryRoot(string rootMarkerName = "CITATION.cff")
     {
         var dir = Path.GetDirectoryName(Assembly.GetCallingAssembly().Location);
         while (dir != null)

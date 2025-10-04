@@ -53,3 +53,5 @@ tools/**
 
 # Misc
 artifacts
+*.nupkg
+*.snupkg

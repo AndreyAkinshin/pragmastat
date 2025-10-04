@@ -4,7 +4,7 @@ title: "Pragmastat: Pragmatic Statistical Toolkit"
 
 <!-- PLACEHOLDER Start -->
 
-{{< toc >}} <!-- [pdf] DELETE -->
+{{< toc >}} <!-- [pdf] DELETE --> <!-- [md] DELETE -->
 
 <!-- INCLUDE manual/introduction.md -->
 

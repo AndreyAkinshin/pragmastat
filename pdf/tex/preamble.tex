@@ -49,3 +49,17 @@
 }{%
   \end{mdframed}
 }
+
+% Figure settings
+% Center figures and use [H] positioning (requires float package from YAML)
+\makeatletter
+\def\fps@figure{H}
+\makeatother
+\let\origfigure\figure
+\let\endorigfigure\endfigure
+\renewenvironment{figure}[1][H]{%
+  \origfigure[#1]
+  \centering
+}{%
+  \endorigfigure
+}

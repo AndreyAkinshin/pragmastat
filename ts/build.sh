@@ -4,6 +4,8 @@
 
 set -e
 
+cd "$(dirname "$0")" || exit 1
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -38,12 +40,32 @@ run_command() {
 }
 
 # Main script
+if [ -z "$1" ]; then
+    echo "Usage: $0 {test|build|lint|check|clean|format|install|coverage|watch|all}"
+    echo ""
+    echo "Commands:"
+    echo "  test      - Run all tests"
+    echo "  build     - Build TypeScript to JavaScript"
+    echo "  lint      - Run ESLint"
+    echo "  check     - Run linting and format checking"
+    echo "  clean     - Clean build artifacts"
+    echo "  format    - Format code with Prettier"
+    echo "  install   - Install npm dependencies"
+    echo "  coverage  - Run tests with coverage report"
+    echo "  watch     - Run tests in watch mode"
+    echo "  all       - Run all tasks (install, format, lint, test, build)"
+    exit 1
+fi
+
 case "$1" in
     test)
         run_command "npm test" "Running tests"
         ;;
     build)
         run_command "npm run build" "Building TypeScript"
+        ;;
+    lint)
+        run_command "npm run lint" "Running ESLint"
         ;;
     check)
         run_command "npm run lint" "Running ESLint"
@@ -74,11 +96,12 @@ case "$1" in
         print_status "✓ All tasks completed successfully!"
         ;;
     *)
-        echo "Usage: $0 {test|build|check|clean|format|install|coverage|watch|all}"
+        echo "Usage: $0 {test|build|lint|check|clean|format|install|coverage|watch|all}"
         echo ""
         echo "Commands:"
         echo "  test      - Run all tests"
         echo "  build     - Build TypeScript to JavaScript"
+        echo "  lint      - Run ESLint"
         echo "  check     - Run linting and format checking"
         echo "  clean     - Clean build artifacts"
         echo "  format    - Format code with Prettier"

@@ -1,4 +1,3 @@
-.bin
 .dotnet
 .DS_Store
 .Rproj.user
@@ -6,3 +5,4 @@
 artifacts
 go/example/example
 go/demo_bin
+web/.bin

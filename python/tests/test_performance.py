@@ -2,7 +2,6 @@
 
 import time
 import numpy as np
-from pragmastat.estimators import center, spread
 from pragmastat.fast_center import _fast_center
 from pragmastat.fast_spread import _fast_spread
 
@@ -37,7 +36,9 @@ def test_center_correctness():
             x = np.random.randn(n).tolist()
             expected = center_simple(x)
             actual = _fast_center(x)
-            assert abs(expected - actual) < 1e-9, f"Mismatch for n={n}: expected={expected}, actual={actual}"
+            assert (
+                abs(expected - actual) < 1e-9
+            ), f"Mismatch for n={n}: expected={expected}, actual={actual}"
 
 
 def test_spread_correctness():
@@ -48,7 +49,9 @@ def test_spread_correctness():
             x = np.random.randn(n).tolist()
             expected = spread_simple(x)
             actual = _fast_spread(x)
-            assert abs(expected - actual) < 1e-9, f"Mismatch for n={n}: expected={expected}, actual={actual}"
+            assert (
+                abs(expected - actual) < 1e-9
+            ), f"Mismatch for n={n}: expected={expected}, actual={actual}"
 
 
 def test_center_performance():

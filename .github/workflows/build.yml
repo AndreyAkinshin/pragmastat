@@ -13,6 +13,11 @@ on:
         description: 'Build in release mode'
         type: boolean
         default: false
+    secrets:
+      GRADLE_SIGNING_KEY:
+        required: false
+      GRADLE_SIGNING_PASSWORD:
+        required: false
 
 jobs:
   build-img:
@@ -20,22 +25,19 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - uses: r-lib/actions/setup-r@v2
+    - name: Set up Python
+      uses: actions/setup-python@v5
       with:
-        r-version: '4.5.0'
+        python-version: '3.10'
 
-    - uses: r-lib/actions/setup-r-dependencies@v2
-      with:
-        working-directory: img
-        extra-packages: |
-          any::ggplot2
-          any::jsonlite
-          any::dplyr
-          any::tidyr
-          any::latex2exp
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+      working-directory: img
 
     - name: Generate images
-      run: ./img/build.sh
+      run: ./img/build.sh build
 
     - name: Upload image artifacts
       uses: actions/upload-artifact@v4
@@ -49,40 +51,23 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - uses: r-lib/actions/setup-r@v2
-      with:
-        r-version: '4.5.0'
-
-    - uses: r-lib/actions/setup-r-dependencies@v2
-      with:
-        install-pandoc: true
-        working-directory: pdf
-        extra-packages: |
-          any::rmarkdown
-
-    - uses: r-lib/actions/setup-tinytex@v2
-      env:
-        TINYTEX_INSTALLER: TinyTeX-1
-        TINYTEX_VERSION: 2025.06
-
-    - name: Install additional LaTeX packages
-      run: |
-        tlmgr --version
-        tlmgr update --self
-        tlmgr install pgf caption textpos mdframed zref needspace csquotes multirow wrapfig colortbl pdflscape tabu varwidth threeparttable threeparttablex environ trimspaces ulem makecell biblatex logreq biber
-        tlmgr list --only-installed
-
     - name: Download image artifacts
       uses: actions/download-artifact@v4
       with:
         name: img
         path: img/
 
-    - name: Compose 'pdf'
-      run: ./build.cmd pdf --only-compose ${{ inputs.release && '--release' || '' }}
+    - name: Generate auxiliary files
+      run: ./build.sh gen ${{ inputs.release && '--release' || '' }}
 
-    - name: Build 'pdf'
-      run: ./pdf/build.sh ${{ inputs.release && '--release' || '' }}
+    - name: Install LaTeX packages and build PDF
+      uses: docker://pandoc/latex:3.7
+      env:
+        GITHUB_WORKSPACE: ${{ github.workspace }}
+        RELEASE_FLAG: ${{ inputs.release && '--release' || '' }}
+      with:
+        entrypoint: /bin/sh
+        args: -c "set -euo pipefail && tlmgr --version && tlmgr update --self && tlmgr install pgf caption textpos mdframed zref needspace csquotes multirow wrapfig colortbl pdflscape tabu varwidth threeparttable threeparttablex environ trimspaces ulem makecell biblatex logreq biber fvextra upquote lineno && cd \"$GITHUB_WORKSPACE/pdf\" && sh ./build.sh build $RELEASE_FLAG"
 
     - name: Upload pdf artifacts
       uses: actions/upload-artifact@v4
@@ -108,8 +93,14 @@ jobs:
         name: pdf
         path: pdf/
 
+    - name: Generate auxiliary files
+      run: ./build.sh gen ${{ inputs.release && '--release' || '' }}
+
+    - name: Initialize web tools
+      run: ./web/build.sh init
+
     - name: Build 'web'
-      run: ./build.cmd web ${{ inputs.release && '--release' || '' }}
+      run: ./web/build.sh build ${{ inputs.release && '--release' || '' }}
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
@@ -119,33 +110,25 @@ jobs:
 
   build-r:
     runs-on: ubuntu-24.04
+    container: rocker/verse:4.5.1
     steps:
     - uses: actions/checkout@v4
 
-    - uses: r-lib/actions/setup-r@v2
-      with:
-        r-version: '4.5.0'
+    - name: Install dependencies
+      shell: bash
+      run: |
+        set -euo pipefail
+        tlmgr update --self
+        tlmgr install amsfonts
 
-    - uses: r-lib/actions/setup-r-dependencies@v2
-      with:
-        working-directory: r/pragmastat
-        extra-packages: |
-          any::devtools
+    - name: Check package
+      run: ./r/build.sh check
 
-    - name: Copy reference test data
-      run: cp -r ./tests ./r/pragmastat/tests/tests
+    - name: Build package
+      run: ./r/build.sh build
 
-    - name: Check
-      run: R -e "devtools::check()"
-      working-directory: r/pragmastat
-
-    - name: Test
-      run: R -e "devtools::test()"
-      working-directory: r/pragmastat
-
-    - name: Build
-      run: R -e "devtools::build()"
-      working-directory: r/pragmastat
+    - name: Test package
+      run: ./r/build.sh test
 
     - name: Upload r artifacts
       uses: actions/upload-artifact@v4
@@ -158,20 +141,19 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Install .NET
-      run: ./build/scripts/dotnet-install.sh
+    - name: Set up .NET
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: '9.0.305'
 
     - name: Build
-      run: ./.dotnet/dotnet build ./dotnet/Pragmastat.sln --configuration Release
+      run: ./dotnet/build.sh build ${{ inputs.release && '--release' || '' }}
 
-    - name: Run UnitTests
-      run: ./.dotnet/dotnet run --project ./dotnet/Pragmastat.UnitTests/Pragmastat.UnitTests.csproj --configuration Release
-
-    - name: Run ReferenceTests
-      run: ./.dotnet/dotnet run --project ./dotnet/Pragmastat.ReferenceTests/Pragmastat.ReferenceTests.csproj --configuration Release
+    - name: Test
+      run: ./dotnet/build.sh test
 
     - name: Pack
-      run: ./.dotnet/dotnet pack ./dotnet/Pragmastat/Pragmastat.csproj --configuration Release --include-symbols --include-source -p:SymbolPackageFormat=snupkg --output ./dotnet/artifacts
+      run: ./dotnet/build.sh pack ${{ inputs.release && '--release' || '' }}
 
     - name: Upload dotnet artifacts
       uses: actions/upload-artifact@v4
@@ -196,20 +178,16 @@ jobs:
       working-directory: python
 
     - name: Install package in development mode
-      run: pip install -e .
-      working-directory: python
+      run: ./python/build.sh dev
 
     - name: Run tests
-      run: python -m pytest tests/ -v
-      working-directory: python
+      run: ./python/build.sh test
 
     - name: Build package
-      run: python -m build
-      working-directory: python
+      run: ./python/build.sh build
 
     - name: Check package
-      run: twine check dist/*
-      working-directory: python
+      run: ./python/build.sh check
 
     - name: Upload python artifacts
       uses: actions/upload-artifact@v4
@@ -245,21 +223,14 @@ jobs:
         path: rust/pragmastat/target
         key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
 
-    - name: Check formatting
-      run: cargo fmt -- --check
-      working-directory: rust/pragmastat
-
-    - name: Run clippy
-      run: cargo clippy -- -D warnings
-      working-directory: rust/pragmastat
+    - name: Check package
+      run: ./rust/build.sh check
 
     - name: Run tests
-      run: cargo test --verbose
-      working-directory: rust/pragmastat
+      run: ./rust/build.sh test
 
-    - name: Build release
-      run: cargo build --release --verbose
-      working-directory: rust/pragmastat
+    - name: Build
+      run: ./rust/build.sh build ${{ inputs.release && '--release' || '' }}
 
     - name: Package crate
       run: cargo package --verbose
@@ -287,21 +258,14 @@ jobs:
       run: npm ci
       working-directory: ts
 
-    - name: Check formatting
-      run: npm run format:check
-      working-directory: ts
-
-    - name: Run ESLint
-      run: npm run lint
-      working-directory: ts
+    - name: Check formatting and linting
+      run: ./ts/build.sh check
 
     - name: Run tests
-      run: npm test
-      working-directory: ts
+      run: ./ts/build.sh test
 
     - name: Build TypeScript
-      run: npm run build
-      working-directory: ts
+      run: ./ts/build.sh build
 
     - name: Create tarball
       run: npm pack
@@ -325,8 +289,7 @@ jobs:
         cache-dependency-path: go/go.mod
 
     - name: Download dependencies
-      run: go mod download
-      working-directory: go
+      run: ./go/build.sh deps
 
     - name: Check formatting
       run: |
@@ -337,16 +300,14 @@ jobs:
       working-directory: go
 
     - name: Run tests
-      run: go test -v ./...
-      working-directory: go
+      run: ./go/build.sh test-verbose
 
     - name: Run tests with coverage
       run: go test -race -coverprofile=coverage.out -covermode=atomic ./...
       working-directory: go
 
     - name: Build
-      run: go build -v ./...
-      working-directory: go
+      run: ./go/build.sh build
 
     - name: Upload go artifacts
       uses: actions/upload-artifact@v4
@@ -380,85 +341,23 @@ jobs:
       run: chmod +x gradlew
       working-directory: kotlin
 
-    - name: Build with Gradle
-      run: ./gradlew build
+    - name: Build, test, and publish to staging (release mode)
+      if: inputs.release
+      run: ./gradlew publish --info --stacktrace
       working-directory: kotlin
+      env:
+        GRADLE_SIGNING_KEY: ${{ secrets.GRADLE_SIGNING_KEY }}
+        GRADLE_SIGNING_PASSWORD: ${{ secrets.GRADLE_SIGNING_PASSWORD }}
 
-    - name: Run tests
-      run: ./gradlew test
-      working-directory: kotlin
-
-    - name: Generate JAR
-      run: ./gradlew jar
+    - name: Build and test (non-release mode)
+      if: ${{ !inputs.release }}
+      run: ./gradlew build --info --stacktrace
       working-directory: kotlin
 
     - name: Upload kotlin artifacts
       uses: actions/upload-artifact@v4
       with:
         name: kotlin
-        path: kotlin/build/libs/
-
-  assemble-artifacts:
-    runs-on: ubuntu-24.04
-    needs: [build-web, build-r, build-pdf, build-dotnet, build-python, build-rust, build-ts, build-go, build-kotlin]
-    steps:
-    - name: Download web artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: web
-        path: artifacts/web
-
-    - name: Download r artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: r
-        path: artifacts/r
-
-    - name: Download pdf artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: pdf
-        path: artifacts/pdf
-
-    - name: Download dotnet artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: dotnet
-        path: artifacts/dotnet
-
-    - name: Download python artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: python
-        path: artifacts/python
-
-    - name: Download rust artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: rust
-        path: artifacts/rust
-
-    - name: Download ts artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: ts
-        path: artifacts/ts
-
-    - name: Download go artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: go
-        path: artifacts/go
-
-    - name: Download kotlin artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: kotlin
-        path: artifacts/kotlin
-
-    - name: Upload combined artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: pragmastat
-        path: artifacts/
-
+        path: |
+          kotlin/build/libs/
+          kotlin/build/staging-deploy/

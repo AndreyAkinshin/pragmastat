@@ -10,6 +10,7 @@ import numpy as np
 # Try to import the C implementation, fall back to pure Python if unavailable
 try:
     from . import _fast_spread_c
+
     _HAS_C_EXTENSION = True
 except ImportError:
     _HAS_C_EXTENSION = False
@@ -63,8 +64,8 @@ def _fast_spread_python(values: List[float]) -> float:
     while True:
         # === PARTITION: count how many differences are < pivot ===
         count_below = 0
-        largest_below = float('-inf')
-        smallest_at_or_above = float('inf')
+        largest_below = float("-inf")
+        smallest_at_or_above = float("inf")
 
         j = 1  # global two-pointer (non-decreasing across rows)
         for i in range(n - 1):
@@ -95,14 +96,14 @@ def _fast_spread_python(values: List[float]) -> float:
                 return 0.5 * (largest_below + smallest_at_or_above)
             else:
                 # Odd N: pick the single middle
-                need_largest = (count_below == k_low)
+                need_largest = count_below == k_low
                 return largest_below if need_largest else smallest_at_or_above
 
         # === STALL HANDLING ===
         if count_below == prev_count_below:
             # Compute min/max remaining difference in the ACTIVE set
-            min_active = float('inf')
-            max_active = float('-inf')
+            min_active = float("inf")
+            max_active = float("-inf")
             active = 0
 
             for i in range(n - 1):
@@ -114,7 +115,7 @@ def _fast_spread_python(values: List[float]) -> float:
                 row_max = a[Ri] - a[i]
                 min_active = min(min_active, row_min)
                 max_active = max(max_active, row_max)
-                active += (Ri - Li + 1)
+                active += Ri - Li + 1
 
             if active <= 0:
                 if k_low < k_high:
@@ -156,8 +157,8 @@ def _fast_spread_python(values: List[float]) -> float:
 
         if active_size <= 2:
             # Few candidates left: return midrange of remaining
-            min_rem = float('inf')
-            max_rem = float('-inf')
+            min_rem = float("inf")
+            max_rem = float("-inf")
             for i in range(n - 1):
                 if L[i] > R[i]:
                     continue
@@ -173,7 +174,11 @@ def _fast_spread_python(values: List[float]) -> float:
 
             if k_low < k_high:
                 return 0.5 * (min_rem + max_rem)
-            return min_rem if abs((k_low - 1) - count_below) <= abs(count_below - k_low) else max_rem
+            return (
+                min_rem
+                if abs((k_low - 1) - count_below) <= abs(count_below - k_low)
+                else max_rem
+            )
         else:
             # Weighted random row selection
             t = random.randint(0, active_size - 1)

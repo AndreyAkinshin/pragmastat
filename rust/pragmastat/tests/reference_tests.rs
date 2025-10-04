@@ -30,11 +30,11 @@ struct TwoSampleTestCase {
 fn find_repo_root() -> PathBuf {
     let mut current_dir = std::env::current_dir().unwrap();
     loop {
-        if current_dir.join("build.cmd").exists() {
+        if current_dir.join("CITATION.cff").exists() {
             return current_dir;
         }
         if !current_dir.pop() {
-            panic!("Could not find repository root (build.cmd not found)");
+            panic!("Could not find repository root (CITATION.cff not found)");
         }
     }
 }

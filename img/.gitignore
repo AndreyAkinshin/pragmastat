@@ -2,3 +2,4 @@
 *.pdf
 .Rhistory
 !logo.png
+__pycache__

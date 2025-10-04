@@ -1,5 +1,5 @@
 Install from npm:
 
 ```bash
-npm i pragmastat
+npm i pragmastat@$VERSION$
 ```

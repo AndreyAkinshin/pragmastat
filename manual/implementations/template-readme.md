@@ -2,10 +2,10 @@
 
 This is a $LANG_TITLE$ implementation of 'Pragmastat: Pragmatic Statistical Toolkit', which presents a toolkit of statistical procedures that provide reliable results across diverse real-world distributions, with ready-to-use implementations and detailed explanations.
 
-- PDF manual for this version: https://pragmastat.dev/pragmastat-v$VERSION$.pdf
-- Online manual for the latest version: https://pragmastat.dev
+- PDF manual for this version: [pragmastat-v$VERSION$.pdf](https://github.com/AndreyAkinshin/pragmastat/releases/download/v$VERSION$/pragmastat-v$VERSION$.pdf)
+- Source code for this version: [pragmastat/$LANG_SLUG$/v$VERSION$](https://github.com/AndreyAkinshin/pragmastat/tree/v$VERSION$/$LANG_SLUG$)
+- Latest online manual: https://pragmastat.dev
 - Manual DOI: [10.5281/zenodo.17236778](https://doi.org/10.5281/zenodo.17236778)
-- Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v$VERSION$/$LANG_SLUG$
 
 ## Installation
 

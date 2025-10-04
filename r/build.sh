@@ -4,6 +4,8 @@
 
 set -e
 
+cd "$(dirname "$0")" || exit 1
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -62,12 +64,17 @@ copy_test_data() {
 # Function to run tests
 run_tests() {
     cd pragmastat
-    run_command "Rscript -e \"library(testthat); library(pragmastat); test_dir('tests')\"" "Running tests"
+    run_command "Rscript -e \"devtools::test()\"" "Running tests"
     cd ..
 }
 
 # Function to check package
 check_package() {
+    run_command "R CMD check --no-tests --no-check-dependencies pragmastat" "Checking package with R CMD check"
+}
+
+# Function to check package with full CRAN checks
+check_package_full() {
     run_command "R CMD check --as-cran pragmastat" "Checking package with R CMD check --as-cran"
 }
 
@@ -124,6 +131,23 @@ lint() {
 }
 
 # Main script
+if [ -z "$1" ]; then
+    echo "Usage: $0 {test|build|check|check-full|install|docs|clean|format|lint|all}"
+    echo ""
+    echo "Commands:"
+    echo "  test       - Run all tests (copies test data first)"
+    echo "  build      - Build source package (copies test data first)"
+    echo "  check      - Run R CMD check (fast, skips tests and dependencies)"
+    echo "  check-full - Run R CMD check --as-cran (full CRAN checks)"
+    echo "  install    - Install package locally (copies test data first)"
+    echo "  docs       - Build documentation with roxygen2"
+    echo "  clean      - Clean build artifacts and test data"
+    echo "  format     - Format R code with styler"
+    echo "  lint       - Lint R code with lintr"
+    echo "  all        - Run all tasks (copy data, format, docs, test, build, check)"
+    exit 1
+fi
+
 case "$1" in
     test)
         copy_test_data
@@ -136,6 +160,10 @@ case "$1" in
     check)
         copy_test_data
         check_package
+        ;;
+    check-full)
+        copy_test_data
+        check_package_full
         ;;
     install)
         copy_test_data
@@ -164,18 +192,19 @@ case "$1" in
         print_status "✓ All tasks completed successfully!"
         ;;
     *)
-        echo "Usage: $0 {test|build|check|install|docs|clean|format|lint|all}"
+        echo "Usage: $0 {test|build|check|check-full|install|docs|clean|format|lint|all}"
         echo ""
         echo "Commands:"
-        echo "  test      - Run all tests (copies test data first)"
-        echo "  build     - Build source package (copies test data first)"
-        echo "  check     - Run R CMD check --as-cran (copies test data first)"
-        echo "  install   - Install package locally (copies test data first)"
-        echo "  docs      - Build documentation with roxygen2"
-        echo "  clean     - Clean build artifacts and test data"
-        echo "  format    - Format R code with styler"
-        echo "  lint      - Lint R code with lintr"
-        echo "  all       - Run all tasks (copy data, format, docs, test, build, check)"
+        echo "  test       - Run all tests (copies test data first)"
+        echo "  build      - Build source package (copies test data first)"
+        echo "  check      - Run R CMD check (fast, skips tests and dependencies)"
+        echo "  check-full - Run R CMD check --as-cran (full CRAN checks)"
+        echo "  install    - Install package locally (copies test data first)"
+        echo "  docs       - Build documentation with roxygen2"
+        echo "  clean      - Clean build artifacts and test data"
+        echo "  format     - Format R code with styler"
+        echo "  lint       - Lint R code with lintr"
+        echo "  all        - Run all tasks (copy data, format, docs, test, build, check)"
         exit 1
         ;;
 esac

@@ -4,6 +4,8 @@
 
 set -e
 
+cd "$(dirname "$0")" || exit 1
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -38,6 +40,25 @@ run_command() {
 }
 
 # Main script
+if [ -z "$1" ]; then
+    echo "Usage: $0 {test|test-verbose|build|lint|format|coverage|coverage-detailed|bench|clean|deps|tidy|all}"
+    echo ""
+    echo "Commands:"
+    echo "  test              - Run all tests"
+    echo "  test-verbose      - Run all tests with verbose output"
+    echo "  build             - Build the Go package"
+    echo "  lint              - Run golangci-lint (if installed)"
+    echo "  format            - Format code with go fmt"
+    echo "  coverage          - Run tests with coverage summary"
+    echo "  coverage-detailed - Generate detailed coverage report"
+    echo "  bench             - Run benchmarks"
+    echo "  clean             - Clean build cache and coverage files"
+    echo "  deps              - Download and verify dependencies"
+    echo "  tidy              - Tidy module dependencies"
+    echo "  all               - Run all tasks (download, tidy, format, lint, test, build)"
+    exit 1
+fi
+
 case "$1" in
     test)
         run_command "go test ./..." "Running tests"
@@ -84,6 +105,7 @@ case "$1" in
     all)
         print_status "Running all tasks..."
         run_command "go mod download" "Downloading dependencies"
+        run_command "go mod tidy" "Tidying module dependencies"
         run_command "go fmt ./..." "Formatting code"
         if command -v golangci-lint &> /dev/null; then
             run_command "golangci-lint run" "Running linter"
@@ -107,7 +129,7 @@ case "$1" in
         echo "  clean             - Clean build cache and coverage files"
         echo "  deps              - Download and verify dependencies"
         echo "  tidy              - Tidy module dependencies"
-        echo "  all               - Run all tasks (download, format, lint, test, build)"
+        echo "  all               - Run all tasks (download, tidy, format, lint, test, build)"
         exit 1
         ;;
 esac
