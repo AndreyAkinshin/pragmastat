@@ -3,7 +3,7 @@ plugins {
     `maven-publish`
     signing
     id("org.jetbrains.dokka") version "1.9.20"
-    id("org.jreleaser") version "1.15.0"
+    id("org.jreleaser") version "1.20.0"
 }
 
 group = "dev.pragmastat"
@@ -117,7 +117,7 @@ jreleaser {
         maven {
             mavenCentral {
                 create("sonatype") {
-                    active.set(org.jreleaser.model.Active.RELEASE)
+                    active.set(org.jreleaser.model.Active.ALWAYS)
                     url.set("https://central.sonatype.com/api/v1/publisher")
                     stagingRepository("build/staging-deploy")
                 }
