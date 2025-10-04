@@ -8,7 +8,7 @@ Install the NuGet package [Pragmastat](https://www.nuget.org/packages/Pragmastat
 dotnet add package Pragmastat
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.22/dotnet
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.23/dotnet
 
 Demo:
 
