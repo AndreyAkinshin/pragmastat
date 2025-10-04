@@ -7,7 +7,7 @@ install.packages("remotes") # If 'remotes' is not installed
 remotes::install_github("AndreyAkinshin/pragmastat", subdir = "r/pragmastat")
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.17/r
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.18/r
 
 Demo:
 

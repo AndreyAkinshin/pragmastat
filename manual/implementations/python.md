@@ -6,7 +6,7 @@
 pip install pragmastat
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.17/python
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.18/python
 
 Demo:
 
