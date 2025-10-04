@@ -5,10 +5,10 @@ It is based on $\Spread$ of the estimates, and therefore has a breakdown point o
 
 Drift is useful when comparing precisions of several estimators.
 To simplify the comparison, it is convenient to choose one of the estimators as a baseline.
-A table with drift squares normalized by the baseline shows the sample adjustment factor
+A table with drift squares normalized by the baseline shows the sample size adjustment factor
   for switching from the baseline to another estimator.
 For example, if $\Center$ is the baseline, and the rescaled drift square of $\Median$ is $1.5$,
-  this means that $\Median$ would require $1.5$ times more data than $\Center$ to match in precision.
+  this means that $\Median$ would require $1.5$ times more data than $\Center$ to achieve the same precision.
 See the "From Statistical Efficiency to Drift" section for details.
 
 **Asymptotic Average estimator drift²** (values are approximated):

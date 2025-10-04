@@ -32,8 +32,7 @@ This approach works backward from mathematical convenience to practical applicat
 Practitioners don't know the distribution in advance,
   so they lack clear guidance on which procedure to choose by default.
 
-Most traditional statistics relies on Additivity ('Normality').
-Procedures optimal for $\Additive$ ('Normal') distributions fail on real data
+Most traditional statistical procedures rely heavily on the $\Additive$ ('Normal') distribution and fail on real data
   because actual measurements contain outliers, exhibit skewness, or follow unknown distributions.
 When assumptions fail, procedures designed for those assumptions also fail.
 
