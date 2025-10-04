@@ -117,10 +117,9 @@ jreleaser {
         maven {
             mavenCentral {
                 create("sonatype") {
-                    active.set(org.jreleaser.model.Active.ALWAYS)
+                    active.set(org.jreleaser.model.Active.RELEASE)
                     url.set("https://central.sonatype.com/api/v1/publisher")
                     stagingRepository("build/staging-deploy")
-                    applyMavenCentralRules.set(false)
                 }
             }
         }
