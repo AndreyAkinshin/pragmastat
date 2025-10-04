@@ -7,7 +7,7 @@ Maintainer: Andrey Akinshin <andrey.akinshin@gmail.com>
 Authors@R: person("Andrey", "Akinshin",
                   email = "andrey.akinshin@gmail.com",
                   role = c("aut", "cre"))
-Description: R implementation of 'Pragmastat: Pragmatic Statistical Toolkit'
+Description: Robust and efficient summary estimators from the Pragmastat manual
 License: MIT + file LICENSE
 URL: https://github.com/AndreyAkinshin/pragmastat
 BugReports: https://github.com/AndreyAkinshin/pragmastat/issues
