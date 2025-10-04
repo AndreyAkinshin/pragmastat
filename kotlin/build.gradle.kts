@@ -88,6 +88,11 @@ publishing {
             }
         }
     }
+    repositories {
+        maven {
+            url = uri("$buildDir/staging-deploy")
+        }
+    }
 }
 
 signing {
