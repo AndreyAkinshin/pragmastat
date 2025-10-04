@@ -8,7 +8,7 @@ remotes::install_github("AndreyAkinshin/pragmastat", subdir = "r/pragmastat")
 library(pragmastat)
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.21/r
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.22/r
 
 Demo:
 
