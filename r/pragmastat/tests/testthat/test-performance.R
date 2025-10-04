@@ -60,7 +60,7 @@ test_that("fast_center performance for n=100000", {
   cat(sprintf("\nCenter for n=%d: %.6f\n", n, result))
   cat(sprintf("Elapsed time: %.3f seconds\n", elapsed))
 
-  expect_lt(elapsed, 5)  # Should complete in less than 5 seconds
+  expect_lt(elapsed, 5) # Should complete in less than 5 seconds
 })
 
 test_that("fast_spread performance for n=100000", {
@@ -75,5 +75,5 @@ test_that("fast_spread performance for n=100000", {
   cat(sprintf("\nSpread for n=%d: %.6f\n", n, result))
   cat(sprintf("Elapsed time: %.3f seconds\n", elapsed))
 
-  expect_lt(elapsed, 5)  # Should complete in less than 5 seconds
+  expect_lt(elapsed, 5) # Should complete in less than 5 seconds
 })

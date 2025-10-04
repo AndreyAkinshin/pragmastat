@@ -34,7 +34,8 @@ run_reference_tests <- function(estimator_name, estimator_func, is_two_sample = 
     }
 
     expect_equal(actual_output, expected_output,
-                 tolerance = 1e-10,
-                 info = paste("Failed for test file:", basename(json_file)))
+      tolerance = 1e-10,
+      info = paste("Failed for test file:", basename(json_file))
+    )
   }
 }
