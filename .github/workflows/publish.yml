@@ -253,3 +253,10 @@ jobs:
         JRELEASER_GPG_PASSPHRASE: ${{ secrets.GRADLE_SIGNING_PASSWORD }}
         JRELEASER_GPG_SECRET_KEY: ${{ secrets.GRADLE_SIGNING_KEY }}
         JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload build reports on failure
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: kotlin-build-reports
+        path: kotlin/build/reports/
