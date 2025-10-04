@@ -4,6 +4,8 @@ run-name: "[build] ${{ github.event.head_commit.message }}"
 on:
   pull_request:
   push:
+    branches:
+      - '**'
   workflow_dispatch:
   workflow_call:
     inputs:
