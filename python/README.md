@@ -9,6 +9,8 @@ This is a Python implementation of 'Pragmastat: Pragmatic Statistical Toolkit', 
 
 ## Installation
 
+Install from PyPI:
+
 ```bash
 pip install pragmastat
 ```

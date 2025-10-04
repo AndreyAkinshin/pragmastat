@@ -9,7 +9,27 @@ This is a Kotlin implementation of 'Pragmastat: Pragmatic Statistical Toolkit', 
 
 ## Installation
 
-A package is not available yet.
+Install from Maven Central Repository via Apach Maven:
+
+```xml
+<dependency>
+    <groupId>dev.pragmastat</groupId>
+    <artifactId>pragmastat</artifactId>
+    <version>3.1.23</version>
+</dependency>
+```
+
+Install from Maven Central Repository via Gradle:
+
+```java
+implementation 'dev.pragmastat:pragmastat:3.1.23'
+```
+
+Install from Maven Central Repository via Gradle (Kotlin):
+
+```kotlin
+implementation("dev.pragmastat:pragmastat:3.1.23")
+```
 
 ## Demo
 

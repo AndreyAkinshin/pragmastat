@@ -2,9 +2,31 @@
 
 ## Kotlin
 
-A package is not available yet.
+Install from Maven Central Repository via Apache Maven:
+
+```xml
+<dependency>
+    <groupId>dev.pragmastat</groupId>
+    <artifactId>pragmastat</artifactId>
+    <version>3.1.23</version>
+</dependency>
+```
+
+Install from Maven Central Repository via Gradle:
+
+```java
+implementation 'dev.pragmastat:pragmastat:3.1.23'
+```
+
+Install from Maven Central Repository via Gradle (Kotlin):
+
+```kotlin
+implementation("dev.pragmastat:pragmastat:3.1.23")
+```
 
 Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.23/kotlin
+
+Pragmastat on Maven Central Repository: https://central.sonatype.com/artifact/dev.pragmastat/pragmastat/overview
 
 Demo:
 

@@ -2,13 +2,15 @@
 
 ## Go
 
-To install the package from GitHub:
+Install from GitHub:
 
 ```bash
 go get github.com/AndreyAkinshin/pragmastat/go/v3
 ```
 
 Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.23/go
+
+
 
 Demo:
 

@@ -2,11 +2,15 @@
 
 ## TypeScript
 
+Install from npm:
+
 ```bash
 npm i pragmastat
 ```
 
 Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.23/ts
+
+Pragmastat on npm: https://www.npmjs.com/package/pragmastat
 
 Demo:
 

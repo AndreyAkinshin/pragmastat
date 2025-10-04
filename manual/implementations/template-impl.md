@@ -6,6 +6,8 @@ $INSTALL$
 
 Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v$VERSION$/$LANG_SLUG$
 
+$PACKAGE$
+
 Demo:
 
 ```$LANG_CODE$

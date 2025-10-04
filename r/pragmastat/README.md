@@ -9,6 +9,8 @@ This is a R implementation of 'Pragmastat: Pragmatic Statistical Toolkit', which
 
 ## Installation
 
+Install from GitHub:
+
 ```r
 install.packages("remotes") # If 'remotes' is not installed
 remotes::install_github("AndreyAkinshin/pragmastat", subdir = "r/pragmastat")

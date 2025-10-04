@@ -136,6 +136,9 @@ public class UnifyCommand : AsyncCommand<UnifyCommand.Settings>
         // Read demo content
         var demoContent = await GetDemoContent(lang);
 
+        // Get package URL
+        var packageUrl = GetPackageUrl(lang.Slug);
+
         // Replace placeholders
         var content = template
             .Replace("$LANG_SLUG$", lang.Slug)
@@ -143,7 +146,8 @@ public class UnifyCommand : AsyncCommand<UnifyCommand.Settings>
             .Replace("$LANG_CODE$", lang.CodeLanguage)
             .Replace("$VERSION$", version)
             .Replace("$INSTALL$", installContent.Trim())
-            .Replace("$DEMO$", demoContent);
+            .Replace("$DEMO$", demoContent)
+            .Replace("$PACKAGE$", packageUrl);
 
         // Write to implementation file
         var outputFile = Nav.ManualImplementationsDir.File($"{lang.Slug}.md");
@@ -191,9 +195,22 @@ public class UnifyCommand : AsyncCommand<UnifyCommand.Settings>
             "ts" => await Nav.Root.SubDirectory("ts").SubDirectory("examples").File("demo.ts").ReadAllTextAsync(),
             _ => throw new ArgumentException($"Unknown language: {lang.Slug}")
         };
-        
+
         // Trim trailing whitespace and blank lines
         return content.TrimEnd();
+    }
+
+    private string GetPackageUrl(string langSlug)
+    {
+        return langSlug switch
+        {
+            "dotnet" => "Pragmastat on NuGet: https://www.nuget.org/packages/Pragmastat/",
+            "kotlin" => "Pragmastat on Maven Central Repository: https://central.sonatype.com/artifact/dev.pragmastat/pragmastat/overview",
+            "python" => "Pragmastat on PyPI: https://pypi.org/project/pragmastat/",
+            "rust" => "Pragmastat on crates.io: https://crates.io/crates/pragmastat",
+            "ts" => "Pragmastat on npm: https://www.npmjs.com/package/pragmastat",
+            _ => "" // For go, r, and any other languages
+        };
     }
 
     private record LanguageConfig(string Slug, string Title, string CodeLanguage, string ReadmeCodeLanguage);

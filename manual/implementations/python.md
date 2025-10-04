@@ -2,11 +2,15 @@
 
 ## Python
 
+Install from PyPI:
+
 ```bash
 pip install pragmastat
 ```
 
 Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.23/python
+
+Pragmastat on PyPI: https://pypi.org/project/pragmastat/
 
 Demo:
 

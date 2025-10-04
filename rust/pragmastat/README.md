@@ -9,7 +9,13 @@ This is a Rust implementation of 'Pragmastat: Pragmatic Statistical Toolkit', wh
 
 ## Installation
 
-Add this to your `Cargo.toml`:
+Install from crates.io via cargo:
+
+```bash
+cargo add pragmastat
+```
+
+Install from crates.io via `Cargo.toml`:
 
 ```toml
 [dependencies]

@@ -2,7 +2,13 @@
 
 ## Rust
 
-Add this to your `Cargo.toml`:
+Install from crates.io via cargo:
+
+```bash
+cargo add pragmastat
+```
+
+Install from crates.io via `Cargo.toml`:
 
 ```toml
 [dependencies]
@@ -10,6 +16,8 @@ pragmastat = "3.1.23"
 ```
 
 Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.23/rust
+
+Pragmastat on crates.io: https://crates.io/crates/pragmastat
 
 Demo:
 

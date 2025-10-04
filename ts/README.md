@@ -9,6 +9,8 @@ This is a TypeScript implementation of 'Pragmastat: Pragmatic Statistical Toolki
 
 ## Installation
 
+Install from npm:
+
 ```bash
 npm i pragmastat
 ```

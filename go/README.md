@@ -9,7 +9,7 @@ This is a Go implementation of 'Pragmastat: Pragmatic Statistical Toolkit', whic
 
 ## Installation
 
-To install the package from GitHub:
+Install from GitHub:
 
 ```bash
 go get github.com/AndreyAkinshin/pragmastat/go/v3
