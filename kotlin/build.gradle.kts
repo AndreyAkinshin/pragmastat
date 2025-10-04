@@ -48,6 +48,55 @@ val javadocJar by tasks.registering(Jar::class) {
     from(tasks.named("dokkaJavadoc"))
 }
 
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            from(components["java"])
+            artifact(sourcesJar)
+            artifact(javadocJar)
+
+            pom {
+                name.set("pragmastat")
+                description.set("Pragmastat: Pragmatic Statistical Toolkit")
+                url.set("https://pragmastat.dev")
+                inceptionYear.set("2025")
+                licenses {
+                    license {
+                        name.set("MIT License")
+                        url.set("https://opensource.org/licenses/MIT")
+                    }
+                }
+                developers {
+                    developer {
+                        id.set("akinshin")
+                        name.set("Andrey Akinshin")
+                    }
+                }
+                scm {
+                    connection.set("scm:git:git://github.com/AndreyAkinshin/pragmastat.git")
+                    developerConnection.set("scm:git:ssh://github.com/AndreyAkinshin/pragmastat.git")
+                    url.set("https://github.com/AndreyAkinshin/pragmastat")
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            name = "staging"
+            url = uri(layout.buildDirectory.dir("staging-deploy"))
+        }
+    }
+}
+
+signing {
+    val signingKey = System.getenv("GRADLE_SIGNING_KEY")
+    val signingPassword = System.getenv("GRADLE_SIGNING_PASSWORD")
+    if (signingKey != null && signingPassword != null) {
+        useInMemoryPgpKeys(signingKey, signingPassword)
+        sign(publishing.publications["maven"])
+    }
+}
+
 jreleaser {
     project {
         authors.set(listOf("Andrey Akinshin"))
