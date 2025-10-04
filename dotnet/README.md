@@ -2,23 +2,23 @@
 
 This is a .NET implementation of 'Pragmastat: Pragmatic Statistical Toolkit', which presents a toolkit of statistical procedures that provide reliable results across diverse real-world distributions, with ready-to-use implementations and detailed explanations.
 
-- PDF manual for this version: https://pragmastat.dev/pragmastat-v3.1.23.pdf
+- PDF manual for this version: https://pragmastat.dev/pragmastat-v3.1.24.pdf
 - Online manual for the latest version: https://pragmastat.dev
 - Manual DOI: [10.5281/zenodo.17236778](https://doi.org/10.5281/zenodo.17236778)
-- Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.23/dotnet
+- Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.24/dotnet
 
 ## Installation
 
 Install from NuGet via .NET CLI:
 
 ```bash
-dotnet add package Pragmastat --version 3.1.23
+dotnet add package Pragmastat --version 3.1.24
 ```
 
 Install from NuGet via Package Manager Console:
 
 ```ps1
-NuGet\Install-Package Pragmastat -Version 3.1.23
+NuGet\Install-Package Pragmastat -Version 3.1.24
 ```
 
 ## Demo

@@ -8,7 +8,7 @@ Install from GitHub:
 go get github.com/AndreyAkinshin/pragmastat/go/v3
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.23/go
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.24/go
 
 
 

@@ -8,7 +8,7 @@ Install from npm:
 npm i pragmastat
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.23/ts
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.24/ts
 
 Pragmastat on npm: https://www.npmjs.com/package/pragmastat
 

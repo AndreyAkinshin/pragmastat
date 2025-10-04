@@ -12,10 +12,10 @@ Install from crates.io via `Cargo.toml`:
 
 ```toml
 [dependencies]
-pragmastat = "3.1.23"
+pragmastat = "3.1.24"
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.23/rust
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.24/rust
 
 Pragmastat on crates.io: https://crates.io/crates/pragmastat
 

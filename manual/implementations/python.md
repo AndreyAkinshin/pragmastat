@@ -8,7 +8,7 @@ Install from PyPI:
 pip install pragmastat
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.23/python
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.24/python
 
 Pragmastat on PyPI: https://pypi.org/project/pragmastat/
 
