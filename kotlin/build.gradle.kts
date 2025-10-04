@@ -48,64 +48,12 @@ val javadocJar by tasks.registering(Jar::class) {
     from(tasks.named("dokkaJavadoc"))
 }
 
-publishing {
-    publications {
-        create<MavenPublication>("maven") {
-            from(components["java"])
-            artifact(sourcesJar)
-            artifact(javadocJar)
-
-            pom {
-                name.set("Pragmastat")
-                description.set("Pragmastat: Pragmatic Statistical Toolkit")
-                url.set("https://pragmastat.dev")
-
-                licenses {
-                    license {
-                        name.set("MIT License")
-                        url.set("https://opensource.org/licenses/MIT")
-                    }
-                }
-
-                developers {
-                    developer {
-                        id.set("AndreyAkinshin")
-                        name.set("Andrey Akinshin")
-                        email.set("andrey.akinshin@gmail.com")
-                    }
-                }
-
-                scm {
-                    connection.set("scm:git:https://github.com/AndreyAkinshin/pragmastat.git")
-                    developerConnection.set("scm:git:ssh://git@github.com/AndreyAkinshin/pragmastat.git")
-                    url.set("https://github.com/AndreyAkinshin/pragmastat")
-                }
-
-                properties.set(mapOf(
-                    "doi" to "10.5281/zenodo.17236778",
-                    "keywords" to "statistics"
-                ))
-            }
-        }
-    }
-    repositories {
-        maven {
-            url = uri("$buildDir/staging-deploy")
-        }
-    }
-}
-
-signing {
-    useInMemoryPgpKeys(System.getenv("GRADLE_SIGNING_KEY"), System.getenv("GRADLE_SIGNING_PASSWORD"))
-    sign(publishing.publications)
-}
-
 jreleaser {
     project {
         authors.set(listOf("Andrey Akinshin"))
         license.set("MIT")
         description.set("Pragmastat: Pragmatic Statistical Toolkit")
-        inceptionYear.set("2024")
+        inceptionYear.set("2025")
         links {
             homepage.set("https://pragmastat.dev")
         }
