@@ -6,10 +6,10 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-pragmastat = "3.1.16"
+pragmastat = "3.1.17"
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.16/rust
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.17/rust
 
 Demo:
 
