@@ -18,4 +18,4 @@ __all__ = [
     'disparity'
 ]
 
-__version__ = '3.1.18'
+__version__ = '3.1.19'
