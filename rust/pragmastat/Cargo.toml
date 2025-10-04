@@ -1,6 +1,6 @@
 [package]
 name = "pragmastat"
-version = "3.1.19"
+version = "3.1.20"
 edition = "2021"
 authors = ["Andrey Akinshin"]
 description = "Pragmastat: Pragmatic Statistical Toolkit"
