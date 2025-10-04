@@ -8,10 +8,10 @@
 
 [![PyPI](https://img.shields.io/pypi/v/pragmastat?color=009E73)](https://pypi.org/project/pragmastat/)
 [![npm](https://img.shields.io/npm/v/pragmastat?color=009E73)](https://www.npmjs.com/package/pragmastat)
+[![r](https://img.shields.io/github/v/release/AndreyAkinshin/pragmastat?display_name=tag&label=r&color=009E73)](https://pragmastat.dev/#r)
 [![NuGet](https://img.shields.io/nuget/v/Pragmastat?color=009E73)](https://www.nuget.org/packages/Pragmastat/)
 [![Crates.io](https://img.shields.io/crates/v/pragmastat.svg?color=009E73)](https://crates.io/crates/pragmastat)
 [![go](https://img.shields.io/github/v/release/AndreyAkinshin/pragmastat?display_name=tag&label=go&color=009E73)](https://pkg.go.dev/github.com/AndreyAkinshin/pragmastat/go/v3)
-[![r](https://img.shields.io/github/v/release/AndreyAkinshin/pragmastat?display_name=tag&label=r&color=009E73)](https://pragmastat.dev/#r)
 
 [![tests](https://img.shields.io/badge/tests-CC79A7)](./tests)
 [![tests](https://img.shields.io/badge/simulations-CC79A7)](./simulations)
