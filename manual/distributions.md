@@ -76,7 +76,7 @@ $$
 
 - **Formation:** follows a power-law relationship where large values are rare but possible.
 - **Origin:** historically called 'Pareto' distribution after Vilfredo Pareto's work on wealth distribution.
-- **Rename Motivation:** renamed to $\Power$ to reflect connection with power-low.
+- **Rename Motivation:** renamed to $\Power$ to reflect connection with power-law.
 - **Properties:** exhibits scale invariance and extremely heavy tails.
 - **Applications:** wealth distribution, city population sizes, word frequencies, earthquake magnitudes, website traffic.
 - **Characteristics:** infinite variance for many parameter values, extreme outliers common.

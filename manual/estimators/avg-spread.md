@@ -6,7 +6,7 @@ $$
 
 - Measures average dispersion across two samples
 - Pragmatic alternative to the 'pooled standard deviation'
-- Note: $\AvgSpread(\x, \y) \neq \Spread(\x \cup \y)$ in general (defined pooled scale, not spread of concatenated sample)
+- Note: $\AvgSpread(\x, \y) \neq \Spread(\x \cup \y)$ in general (defines a pooled scale, not the spread of the concatenated sample)
 - Domain: any real numbers
 - Unit: the same as measurements
 

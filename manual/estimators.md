@@ -1,6 +1,6 @@
 # Summary Estimators
 
-Following sections introduce definitions of one-sample and two-sample summary estimators.
+The following sections introduce definitions of one-sample and two-sample summary estimators.
 Later sections will evaluate properties of these estimators and applicability to different conditions.
 
 <!-- One-sample -->

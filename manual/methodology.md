@@ -112,7 +112,7 @@ Here $\RelSpread$ normalizes by the estimator's typical value for fair compariso
 
 Drift offers four key advantages:
 
-- For estimators with $\sqrt{n}$ convergence rate, drift remains finite and comparable across distributions; for heavier tails drift may diverge, flagging estimator instability.
+- For estimators with $\sqrt{n}$ convergence rate, drift remains finite and comparable across distributions; for heavier tails, drift may diverge, flagging estimator instability.
 - It provides absolute precision measures rather than only pairwise comparisons.
 - The robust $\Spread$ foundation resists outlier distortion that corrupts variance-based calculations.
 - The $\sqrt{n}$ normalization makes drift values comparable across different sample sizes,

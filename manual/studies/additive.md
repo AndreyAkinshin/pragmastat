@@ -263,7 +263,7 @@ For instance, switching from $\Mean$ to $\Median$ while maintaining the same pre
   requires increasing the sample size by a factor of $\pi/2 \approx 1.571$ (about 57% more observations).
 Similarly, switching from $\Mean$ to $\Center$ requires only about 5% more observations.
 
-The efficiency column shows the classical statistical efficiency relative to the $\Mean$.
+The inverse squared drift (rightmost column) equals the classical statistical efficiency relative to the $\Mean$.
 The $\Mean$ achieves optimal performance (unit efficiency) for the $\Additive$ ('Normal') distribution,
   as expected from classical theory.
 The $\Center$ maintains 95.5% efficiency while offering greater robustness to outliers,
