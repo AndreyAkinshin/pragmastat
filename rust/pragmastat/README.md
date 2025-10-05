@@ -2,9 +2,9 @@
 
 This is a Rust implementation of 'Pragmastat: Pragmatic Statistical Toolkit', which presents a toolkit of statistical procedures that provide reliable results across diverse real-world distributions, with ready-to-use implementations and detailed explanations.
 
-- PDF manual for this version: [pragmastat-v3.1.25.pdf](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.25/pragmastat-v3.1.25.pdf)
-- Markdown manual for this version: [pragmastat-v3.1.25.md](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.25/pragmastat-v3.1.25.md)
-- Source code for this version: [pragmastat/rust/v3.1.25](https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.25/rust)
+- PDF manual for this version: [pragmastat-v3.1.26.pdf](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.26/pragmastat-v3.1.26.pdf)
+- Markdown manual for this version: [pragmastat-v3.1.26.md](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.26/pragmastat-v3.1.26.md)
+- Source code for this version: [pragmastat/rust/v3.1.26](https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.26/rust)
 - Latest online manual: https://pragmastat.dev
 - Manual DOI: [10.5281/zenodo.17236778](https://doi.org/10.5281/zenodo.17236778)
 
@@ -13,14 +13,14 @@ This is a Rust implementation of 'Pragmastat: Pragmatic Statistical Toolkit', wh
 Install from crates.io via cargo:
 
 ```bash
-cargo add pragmastat@3.1.25
+cargo add pragmastat@3.1.26
 ```
 
 Install from crates.io via `Cargo.toml`:
 
 ```toml
 [dependencies]
-pragmastat = "3.1.25"
+pragmastat = "3.1.26"
 ```
 
 ## Demo

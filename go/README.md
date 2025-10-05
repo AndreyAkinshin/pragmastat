@@ -2,9 +2,9 @@
 
 This is a Go implementation of 'Pragmastat: Pragmatic Statistical Toolkit', which presents a toolkit of statistical procedures that provide reliable results across diverse real-world distributions, with ready-to-use implementations and detailed explanations.
 
-- PDF manual for this version: [pragmastat-v3.1.25.pdf](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.25/pragmastat-v3.1.25.pdf)
-- Markdown manual for this version: [pragmastat-v3.1.25.md](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.25/pragmastat-v3.1.25.md)
-- Source code for this version: [pragmastat/go/v3.1.25](https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.25/go)
+- PDF manual for this version: [pragmastat-v3.1.26.pdf](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.26/pragmastat-v3.1.26.pdf)
+- Markdown manual for this version: [pragmastat-v3.1.26.md](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.26/pragmastat-v3.1.26.md)
+- Source code for this version: [pragmastat/go/v3.1.26](https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.26/go)
 - Latest online manual: https://pragmastat.dev
 - Manual DOI: [10.5281/zenodo.17236778](https://doi.org/10.5281/zenodo.17236778)
 
@@ -13,7 +13,7 @@ This is a Go implementation of 'Pragmastat: Pragmatic Statistical Toolkit', whic
 Install from GitHub:
 
 ```bash
-go get github.com/AndreyAkinshin/pragmastat/go/v3@v3.1.25
+go get github.com/AndreyAkinshin/pragmastat/go/v3@v3.1.26
 ```
 
 ## Demo
