@@ -264,11 +264,14 @@ class ContentConverter:
         # 4. Process COPYRIGHT directive
         content = self._process_copyright(content)
 
-        # 5. Header numbering (web only)
+        # 5. Process PLACEHOLDER Version directive
+        content = self._process_version(content)
+
+        # 6. Header numbering (web only)
         if mode == 'web':
             content = self._number_headers(content)
 
-        # 6. Delete markers
+        # 7. Delete markers
         content = self._delete_markers(content, mode)
 
         return content
@@ -338,6 +341,10 @@ class ContentConverter:
         """Process COPYRIGHT directive."""
         replacement = f"Pragmastat v{self.version} (c) 2025 Andrey Akinshin, MIT License"
         return re.sub(r'<!--\s*COPYRIGHT\s*-->', replacement, content, flags=re.IGNORECASE)
+
+    def _process_version(self, content: str) -> str:
+        """Process PLACEHOLDER Version directive."""
+        return re.sub(r'<!--\s*PLACEHOLDER\s+Version\s*-->', self.version, content, flags=re.IGNORECASE)
 
     def _number_headers(self, content: str) -> str:
         """Number markdown headers (web mode only)."""

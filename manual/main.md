@@ -21,3 +21,5 @@ title: "Pragmastat: Pragmatic Statistical Toolkit"
 <!-- INCLUDE manual/studies.md -->
 
 <!-- INCLUDE manual/implementations.md -->
+
+<!-- INCLUDE manual/artifacts.md -->
