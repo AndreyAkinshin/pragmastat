@@ -1,6 +1,6 @@
 [project]
 name = "pragmastat"
-version = "3.1.24"
+version = "3.1.25"
 description = "Pragmastat: Pragmatic Statistical Toolkit"
 readme = "README.md"
 requires-python = ">=3.8"

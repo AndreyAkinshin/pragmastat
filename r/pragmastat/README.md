@@ -2,8 +2,8 @@
 
 This is a R implementation of 'Pragmastat: Pragmatic Statistical Toolkit', which presents a toolkit of statistical procedures that provide reliable results across diverse real-world distributions, with ready-to-use implementations and detailed explanations.
 
-- PDF manual for this version: [pragmastat-v3.1.24.pdf](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.24/pragmastat-v3.1.24.pdf)
-- Source code for this version: [pragmastat/r/v3.1.24](https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.24/r)
+- PDF manual for this version: [pragmastat-v3.1.25.pdf](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.25/pragmastat-v3.1.25.pdf)
+- Source code for this version: [pragmastat/r/v3.1.25](https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.25/r)
 - Latest online manual: https://pragmastat.dev
 - Manual DOI: [10.5281/zenodo.17236778](https://doi.org/10.5281/zenodo.17236778)
 
@@ -14,7 +14,7 @@ Install from GitHub:
 ```r
 install.packages("remotes") # If 'remotes' is not installed
 remotes::install_github("AndreyAkinshin/pragmastat",
-                        subdir = "r/pragmastat", ref = "v3.1.24")
+                        subdir = "r/pragmastat", ref = "v3.1.25")
 library(pragmastat)
 ```
 
