@@ -24,7 +24,7 @@ NuGet\Install-Package Pragmastat -Version 3.1.25
 ## Demo
 
 ```cs
-﻿using static System.Console;
+using static System.Console;
 
 namespace Pragmastat.Demo;
 
