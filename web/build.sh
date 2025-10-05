@@ -241,22 +241,21 @@ prepare_assets() {
 
     print_status "Preparing assets (version: $version, release: $is_release)..."
 
-    # Copy PDF files
-    print_status "Copying PDF files to static/..."
-    local pdf_count=0
-    for pdf in ../pdf/*.pdf; do
-        if [ -f "$pdf" ]; then
-            cp "$pdf" static/
-            print_status "  Copied: $(basename "$pdf")"
-            cp "$pdf" static/pragmastat.pdf
-            print_status "  Copied: pragmastat.pdf"
-            pdf_count=$((pdf_count + 1))
-        fi
-    done
-    if [ $pdf_count -eq 0 ]; then
-        print_warning "No PDF files found in ../pdf/"
+    # Copy PDF file
+    print_status "Copying PDF file to static/..."
+    local suffix=""
+    if [ "$is_release" == "false" ]; then
+        suffix="-draft"
+    fi
+    local pdf_file="../pdf/pragmastat-v${version}${suffix}.pdf"
+
+    if [ -f "$pdf_file" ]; then
+        cp "$pdf_file" static/pragmastat.pdf
+        print_status "  Copied: $(basename "$pdf_file") -> pragmastat.pdf"
+        print_status "✓ PDF file copied successfully"
     else
-        print_status "✓ Copied $pdf_count PDF file(s)"
+        print_error "PDF file not found: $pdf_file"
+        exit 1
     fi
 
     # Write config.toml

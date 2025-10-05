@@ -117,6 +117,7 @@ class Paths:
         self.web_references_index = root / 'web' / 'content' / 'references' / '_index.md'
         self.web_images_dir = root / 'web' / 'content' / 'img'
         self.web_static_dir = root / 'web' / 'static'
+        self.web_static_pragmastat_md = root / 'web' / 'static' / 'pragmastat.md'
 
         # PDF Output
         self.pdf_definitions = root / 'pdf' / 'tex' / 'definitions.tex'
@@ -533,17 +534,8 @@ def convert_md_content(paths: Paths, version: str, is_release: bool):
                 break
         content = '\n'.join(lines)
 
-    # Write to static directory without version
-    static_file_unversioned = paths.web_static_dir / 'pragmastat.md'
-    write_file_if_changed(static_file_unversioned, content, 'web/static/pragmastat.md')
-
-    # Copy to static directory with version
-    if is_release:
-        static_filename = f'pragmastat-v{version}.md'
-    else:
-        static_filename = f'pragmastat-v{version}-draft.md'
-    static_file = paths.web_static_dir / static_filename
-    copy_file_if_changed(static_file_unversioned, static_file, f'web/static/{static_filename}')
+    # Write to static directory
+    write_file_if_changed(paths.web_static_pragmastat_md, content, 'web/static/pragmastat.md')
 
 
 # ============================================================================
