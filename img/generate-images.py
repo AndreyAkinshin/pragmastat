@@ -13,6 +13,58 @@ from scipy import stats
 from utils import CBP, setup_plot_style, save_plot
 
 
+def adjust_label_positions(last_points, y_range, min_distance_ratio=0.04):
+    """
+    Adjust label positions to avoid overlaps.
+
+    Args:
+        last_points: List of dicts with 'x', 'y', 'label', 'color' keys
+        y_range: The range of the y-axis (ymax - ymin)
+        min_distance_ratio: Minimum distance between labels as a fraction of y_range
+
+    Returns:
+        List of dicts with adjusted positions (adds 'label_y' key)
+    """
+    if not last_points:
+        return []
+
+    min_distance = y_range * min_distance_ratio
+
+    # Sort by y-value to process from bottom to top
+    sorted_points = sorted(last_points, key=lambda p: p['y'])
+
+    # Track adjusted positions
+    result = []
+    for i, point in enumerate(sorted_points):
+        label_y = point['y']
+
+        # Check against all previously placed labels
+        needs_adjustment = True
+        max_iterations = 10
+        iteration = 0
+
+        while needs_adjustment and iteration < max_iterations:
+            needs_adjustment = False
+            iteration += 1
+
+            for prev in result:
+                if abs(label_y - prev['label_y']) < min_distance:
+                    # Move this label up to avoid overlap
+                    label_y = prev['label_y'] + min_distance
+                    needs_adjustment = True
+                    break
+
+        result.append({
+            'x': point['x'],
+            'y': point['y'],
+            'label_y': label_y,
+            'label': point['label'],
+            'color': point['color']
+        })
+
+    return result
+
+
 def load_json(filepath):
     """Load JSON data from file."""
     with open(filepath, 'r') as f:
@@ -58,6 +110,9 @@ def generate_avg_drift():
             colors = {'center': CBP['green'], 'mean': CBP['blue'], 'median': CBP['red']}
             labels = {'center': 'Center', 'mean': 'Mean', 'median': 'Median'}
 
+            # Collect last points for label positioning
+            last_points = []
+
             for est_name in ['center', 'mean', 'median']:
                 if estimators[est_name]:
                     est_data = sorted(estimators[est_name], key=lambda x: x['n'])
@@ -65,6 +120,14 @@ def generate_avg_drift():
                     drift2_values = [d['drift']**2 for d in est_data]
                     ax.scatter(n_values, drift2_values, color=colors[est_name],
                               label=labels[est_name], s=50, alpha=0.8, zorder=3)
+
+                    if n_values and drift2_values:
+                        last_points.append({
+                            'x': n_values[-1],
+                            'y': drift2_values[-1],
+                            'label': labels[est_name],
+                            'color': colors[est_name]
+                        })
 
             # Set labels and title
             ax.set_xlabel('n')
@@ -74,8 +137,20 @@ def generate_avg_drift():
             # Set y-axis limits starting from 0
             ax.set_ylim(bottom=0)
 
-            # Add legend
-            ax.legend(title='Estimator', loc='best')
+            # Adjust label positions and draw labels
+            y_range = ax.get_ylim()[1] - ax.get_ylim()[0]
+            adjusted_labels = adjust_label_positions(last_points, y_range)
+
+            for label_info in adjusted_labels:
+                ax.text(label_info['x'], label_info['label_y'], f'  {label_info["label"]}',
+                       color=label_info['color'], fontweight='bold',
+                       verticalalignment='center', fontsize=10)
+
+            # Extend axes to fit labels
+            xlim = ax.get_xlim()
+            ylim = ax.get_ylim()
+            ax.set_xlim(xlim[0], xlim[1] * 1.10)
+            ax.set_ylim(ylim[0] - y_range * 0.05, ylim[1] + y_range * 0.05)
 
             # Grid
             ax.grid(True, alpha=0.3, zorder=0)
@@ -126,6 +201,9 @@ def generate_disp_drift():
             colors = {'spread': CBP['green'], 'stddev': CBP['blue'], 'mad': CBP['red']}
             labels = {'spread': 'Spread', 'stddev': 'StdDev', 'mad': 'MAD'}
 
+            # Collect last points for label positioning
+            last_points = []
+
             for est_name in ['spread', 'stddev', 'mad']:
                 if estimators[est_name]:
                     est_data = sorted(estimators[est_name], key=lambda x: x['n'])
@@ -133,6 +211,14 @@ def generate_disp_drift():
                     drift2_values = [d['drift']**2 for d in est_data]
                     ax.scatter(n_values, drift2_values, color=colors[est_name],
                               label=labels[est_name], s=50, alpha=0.8, zorder=3)
+
+                    if n_values and drift2_values:
+                        last_points.append({
+                            'x': n_values[-1],
+                            'y': drift2_values[-1],
+                            'label': labels[est_name],
+                            'color': colors[est_name]
+                        })
 
             # Set labels and title
             ax.set_xlabel('n')
@@ -142,8 +228,20 @@ def generate_disp_drift():
             # Set y-axis limits starting from 0
             ax.set_ylim(bottom=0)
 
-            # Add legend
-            ax.legend(title='Estimator', loc='best')
+            # Adjust label positions and draw labels
+            y_range = ax.get_ylim()[1] - ax.get_ylim()[0]
+            adjusted_labels = adjust_label_positions(last_points, y_range)
+
+            for label_info in adjusted_labels:
+                ax.text(label_info['x'], label_info['label_y'], f'  {label_info["label"]}',
+                       color=label_info['color'], fontweight='bold',
+                       verticalalignment='center', fontsize=10)
+
+            # Extend axes to fit labels
+            xlim = ax.get_xlim()
+            ylim = ax.get_ylim()
+            ax.set_xlim(xlim[0], xlim[1] * 1.10)
+            ax.set_ylim(ylim[0] - y_range * 0.05, ylim[1] + y_range * 0.05)
 
             # Grid
             ax.grid(True, alpha=0.3, zorder=0)
