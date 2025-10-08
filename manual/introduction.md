@@ -111,16 +111,19 @@ The result is unnecessary friction for anyone learning or applying statistical m
 Beginners face an inconsistent landscape of confusing names, fragile defaults,
   and incompatible approaches with little guidance on selection or interpretation.
 Modern practitioners would benefit from a more consistent system, which requires some renaming and redefining.
-This manual breaks from the traditions, offering a coherent system designed for clarity and practical use.
+This manual breaks from tradition, offering a coherent system designed for clarity and practical use.
+The following concepts were adopted from traditional textbooks via renaming or reworking:
 
-- Renamed distributions:
+- Estimators
+  - Average: $\Center$ (former 'Hodges-Lehmann location estimator')
+  - Dispersion: $\Spread$ (former 'Shamos scale estimator')
+  - Effect Size: $\Disparity$ (reworked 'Cohen's $d$')
+- Estimator properties
+  - Precision: $\Drift$ (reworked statistical efficiency)
+- Distributions
   - $\Additive$ (former 'Normal' or 'Gaussian')
   - $\Multiplic$ (former 'Log-Normal' or 'Galton')
   - $\Power$ (former 'Pareto')
-- Primary measure of average: $\Center$ (instead of $\Mean$)
-- Primary measure of dispersion: $\Spread$ (instead of $\StdDev$)
-- Primary measure of effect size: $\Disparity$ (instead of Cohen's $d$)
-- Reworked statistical efficiency (see section "Drift")
 
 ## Definitions
 
