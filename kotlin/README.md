@@ -2,9 +2,9 @@
 
 This is a Kotlin implementation of 'Pragmastat: Pragmatic Statistical Toolkit', which presents a toolkit of statistical procedures that provide reliable results across diverse real-world distributions, with ready-to-use implementations and detailed explanations.
 
-- PDF manual for this version: [pragmastat-v3.1.26.pdf](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.26/pragmastat-v3.1.26.pdf)
-- Markdown manual for this version: [pragmastat-v3.1.26.md](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.26/pragmastat-v3.1.26.md)
-- Source code for this version: [pragmastat/kotlin/v3.1.26](https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.26/kotlin)
+- PDF manual for this version: [pragmastat-v3.1.27.pdf](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.27/pragmastat-v3.1.27.pdf)
+- Markdown manual for this version: [pragmastat-v3.1.27.md](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.27/pragmastat-v3.1.27.md)
+- Source code for this version: [pragmastat/kotlin/v3.1.27](https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.27/kotlin)
 - Latest online manual: https://pragmastat.dev
 - Manual DOI: [10.5281/zenodo.17236778](https://doi.org/10.5281/zenodo.17236778)
 
@@ -16,20 +16,20 @@ Install from Maven Central Repository via Apache Maven:
 <dependency>
     <groupId>dev.pragmastat</groupId>
     <artifactId>pragmastat</artifactId>
-    <version>3.1.26</version>
+    <version>3.1.27</version>
 </dependency>
 ```
 
 Install from Maven Central Repository via Gradle:
 
 ```java
-implementation 'dev.pragmastat:pragmastat:3.1.26'
+implementation 'dev.pragmastat:pragmastat:3.1.27'
 ```
 
 Install from Maven Central Repository via Gradle (Kotlin):
 
 ```kotlin
-implementation("dev.pragmastat:pragmastat:3.1.26")
+implementation("dev.pragmastat:pragmastat:3.1.27")
 ```
 
 ## Demo
