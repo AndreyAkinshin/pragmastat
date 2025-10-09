@@ -8,12 +8,12 @@ Review and fix all implementation files across multiple language ports to ensure
 
 Read all files from the following directories and apply necessary corrections:
 - @manual/ (primary reference - DO NOT MODIFY)
-- @dotnet/
-- @kotlin/
-- @rust/
+- @cs/
+- @kt/
+- @rs/
 - @go/
 - @ts/
-- @python/
+- @py/
 - @r/
 
 ### 1. Manual Compliance

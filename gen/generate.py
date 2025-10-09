@@ -161,13 +161,13 @@ class Language:
 
 LANGUAGES = [
     Language(
-        slug='dotnet',
-        title='.NET',
+        slug='cs',
+        title='C#',
         code_language='cs',
-        demo_path='dotnet/Pragmastat.Demo/Program.cs',
-        readme_path='dotnet/README.md',
+        demo_path='cs/Pragmastat.Demo/Program.cs',
+        readme_path='cs/README.md',
         package_url='Pragmastat on NuGet: https://www.nuget.org/packages/Pragmastat/',
-        version_file='dotnet/Directory.Build.props',
+        version_file='cs/Directory.Build.props',
         version_pattern=r'<Version>.*?</Version>',
         version_replace='<Version>{version}</Version>'
     ),
@@ -180,27 +180,27 @@ LANGUAGES = [
         package_url=''
     ),
     Language(
-        slug='kotlin',
+        slug='kt',
         title='Kotlin',
         code_language='kotlin',
-        demo_path='kotlin/src/main/kotlin/dev/pragmastat/example/Main.kt',
-        readme_path='kotlin/README.md',
+        demo_path='kt/src/main/kotlin/dev/pragmastat/example/Main.kt',
+        readme_path='kt/README.md',
         package_url='Pragmastat on Maven Central Repository: https://central.sonatype.com/artifact/dev.pragmastat/pragmastat/overview',
-        version_file='kotlin/build.gradle.kts',
+        version_file='kt/build.gradle.kts',
         version_pattern=r'version = ".*?"',
         version_replace='version = "{version}"'
     ),
     Language(
-        slug='python',
+        slug='py',
         title='Python',
         code_language='python',
-        demo_path='python/examples/demo.py',
-        readme_path='python/README.md',
+        demo_path='py/examples/demo.py',
+        readme_path='py/README.md',
         package_url='Pragmastat on PyPI: https://pypi.org/project/pragmastat/',
-        version_file='python/pyproject.toml',
+        version_file='py/pyproject.toml',
         version_pattern=r'version = ".*?"',
         version_replace='version = "{version}"',
-        version_file_2='python/pragmastat/__init__.py',
+        version_file_2='py/pragmastat/__init__.py',
         version_pattern_2=r"__version__ = '.*?'",
         version_replace_2="__version__ = '{version}'"
     ),
@@ -216,13 +216,13 @@ LANGUAGES = [
         version_replace='Version: {version}'
     ),
     Language(
-        slug='rust',
+        slug='rs',
         title='Rust',
         code_language='rust',
-        demo_path='rust/pragmastat/examples/demo.rs',
-        readme_path='rust/pragmastat/README.md',
+        demo_path='rs/pragmastat/examples/demo.rs',
+        readme_path='rs/pragmastat/README.md',
         package_url='Pragmastat on crates.io: https://crates.io/crates/pragmastat',
-        version_file='rust/pragmastat/Cargo.toml',
+        version_file='rs/pragmastat/Cargo.toml',
         version_pattern=r'(name = "pragmastat"[\s\S]*?)version = ".*?"',
         version_replace=r'\1version = "{version}"'
     ),

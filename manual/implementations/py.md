@@ -1,4 +1,4 @@
-<span id="python"></span> <!-- [pdf] DELETE -->
+<span id="py"></span> <!-- [pdf] DELETE -->
 
 ## Python
 
@@ -8,7 +8,7 @@ Install from PyPI:
 pip install pragmastat==3.1.27
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.27/python
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.27/py
 
 Pragmastat on PyPI: https://pypi.org/project/pragmastat/
 

@@ -1,6 +1,14 @@
-<span id="kotlin"></span> <!-- [pdf] DELETE -->
+# Pragmastat
 
-## Kotlin
+This is a Kotlin implementation of 'Pragmastat: Pragmatic Statistical Toolkit', which presents a toolkit of statistical procedures that provide reliable results across diverse real-world distributions, with ready-to-use implementations and detailed explanations.
+
+- PDF manual for this version: [pragmastat-v3.1.27.pdf](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.27/pragmastat-v3.1.27.pdf)
+- Markdown manual for this version: [pragmastat-v3.1.27.md](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.27/pragmastat-v3.1.27.md)
+- Source code for this version: [pragmastat/kt/v3.1.27](https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.27/kt)
+- Latest online manual: https://pragmastat.dev
+- Manual DOI: [10.5281/zenodo.17236778](https://doi.org/10.5281/zenodo.17236778)
+
+## Installation
 
 Install from Maven Central Repository via Apache Maven:
 
@@ -24,11 +32,7 @@ Install from Maven Central Repository via Gradle (Kotlin):
 implementation("dev.pragmastat:pragmastat:3.1.27")
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.27/kotlin
-
-Pragmastat on Maven Central Repository: https://central.sonatype.com/artifact/dev.pragmastat/pragmastat/overview
-
-Demo:
+## Demo
 
 ```kotlin
 package dev.pragmastat.example
@@ -81,3 +85,26 @@ fun main() {
     println(disparity(y, x)) // -0.4
 }
 ```
+
+## The MIT License
+
+Copyright (c) 2025 Andrey Akinshin
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

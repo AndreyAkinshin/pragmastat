@@ -8,7 +8,7 @@ public static class ReferenceTestSuiteHelper
     {
         return shared
             ? Path.Combine(SourceRepositoryLocator.RepositoryRoot, "tests", suiteName)
-            : Path.Combine(SourceRepositoryLocator.RepositoryRoot, "dotnet", "tests", suiteName);
+            : Path.Combine(SourceRepositoryLocator.RepositoryRoot, "cs", "tests", suiteName);
     }
 
     private static string[] LoadTestNames(string suiteName, bool shared = false)

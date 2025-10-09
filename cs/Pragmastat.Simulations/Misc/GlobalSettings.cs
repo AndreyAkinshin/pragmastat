@@ -7,10 +7,10 @@ public static class GlobalSettings
 {
     public static string GetSimulationRoot(bool publish)
     {
-        string publishRoot = Path.Combine(SourceRepositoryLocator.RepositoryRoot, "simulations");
+        string publishRoot = Path.Combine(SourceRepositoryLocator.RepositoryRoot, "sim");
         return publish
             ? publishRoot
-            : Path.Combine(publishRoot, "dotnet");
+            : Path.Combine(publishRoot, "cs");
     }
 
     public static readonly JsonSerializerOptions JsonOptions = new()

@@ -136,7 +136,7 @@ jobs:
         name: r
         path: 'r/*.tar.gz'
 
-  build-dotnet:
+  build-cs:
     runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v4
@@ -147,21 +147,21 @@ jobs:
         dotnet-version: '9.0.305'
 
     - name: Build
-      run: ./dotnet/build.sh build ${{ inputs.release && '--release' || '' }}
+      run: ./cs/build.sh build ${{ inputs.release && '--release' || '' }}
 
     - name: Test
-      run: ./dotnet/build.sh test
+      run: ./cs/build.sh test
 
     - name: Pack
-      run: ./dotnet/build.sh pack ${{ inputs.release && '--release' || '' }}
+      run: ./cs/build.sh pack ${{ inputs.release && '--release' || '' }}
 
-    - name: Upload dotnet artifacts
+    - name: Upload cs artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: dotnet
-        path: dotnet/artifacts
+        name: cs
+        path: cs/artifacts
 
-  build-python:
+  build-py:
     runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v4
@@ -175,27 +175,27 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install pytest build twine
-      working-directory: python
+      working-directory: py
 
     - name: Install package in development mode
-      run: ./python/build.sh dev
+      run: ./py/build.sh dev
 
     - name: Run tests
-      run: ./python/build.sh test
+      run: ./py/build.sh test
 
     - name: Build package
-      run: ./python/build.sh build
+      run: ./py/build.sh build
 
     - name: Check package
-      run: ./python/build.sh check
+      run: ./py/build.sh check
 
-    - name: Upload python artifacts
+    - name: Upload py artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: python
-        path: python/dist/
+        name: py
+        path: py/dist/
 
-  build-rust:
+  build-rs:
     runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v4
@@ -220,27 +220,27 @@ jobs:
     - name: Cache cargo build
       uses: actions/cache@v4
       with:
-        path: rust/pragmastat/target
+        path: rs/pragmastat/target
         key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
 
     - name: Check package
-      run: ./rust/build.sh check
+      run: ./rs/build.sh check
 
     - name: Run tests
-      run: ./rust/build.sh test
+      run: ./rs/build.sh test
 
     - name: Build
-      run: ./rust/build.sh build ${{ inputs.release && '--release' || '' }}
+      run: ./rs/build.sh build ${{ inputs.release && '--release' || '' }}
 
     - name: Package crate
       run: cargo package --verbose
-      working-directory: rust/pragmastat
+      working-directory: rs/pragmastat
 
-    - name: Upload rust artifacts
+    - name: Upload rs artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: rust
-        path: rust/pragmastat/target/package/*.crate
+        name: rs
+        path: rs/pragmastat/target/package/*.crate
 
   build-ts:
     runs-on: ubuntu-24.04
@@ -315,7 +315,7 @@ jobs:
         name: go
         path: go/
 
-  build-kotlin:
+  build-kt:
     runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v4
@@ -339,12 +339,12 @@ jobs:
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
-      working-directory: kotlin
+      working-directory: kt
 
     - name: Build, test, and publish to staging (release mode)
       if: inputs.release
       run: ./gradlew publish --info --stacktrace
-      working-directory: kotlin
+      working-directory: kt
       env:
         GRADLE_SIGNING_KEY: ${{ secrets.GRADLE_SIGNING_KEY }}
         GRADLE_SIGNING_PASSWORD: ${{ secrets.GRADLE_SIGNING_PASSWORD }}
@@ -352,12 +352,12 @@ jobs:
     - name: Build and test (non-release mode)
       if: ${{ !inputs.release }}
       run: ./gradlew build --info --stacktrace
-      working-directory: kotlin
+      working-directory: kt
 
-    - name: Upload kotlin artifacts
+    - name: Upload kt artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: kotlin
+        name: kt
         path: |
-          kotlin/build/libs/
-          kotlin/build/staging-deploy/
+          kt/build/libs/
+          kt/build/staging-deploy/

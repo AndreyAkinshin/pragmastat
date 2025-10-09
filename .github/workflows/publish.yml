@@ -40,23 +40,23 @@ jobs:
         name: pdf
         path: artifacts/pdf
 
-    - name: Download dotnet artifacts
+    - name: Download cs artifacts
       uses: actions/download-artifact@v4
       with:
-        name: dotnet
-        path: artifacts/dotnet
+        name: cs
+        path: artifacts/cs
 
-    - name: Download python artifacts
+    - name: Download py artifacts
       uses: actions/download-artifact@v4
       with:
-        name: python
-        path: artifacts/python
+        name: py
+        path: artifacts/py
 
-    - name: Download rust artifacts
+    - name: Download rs artifacts
       uses: actions/download-artifact@v4
       with:
-        name: rust
-        path: artifacts/rust
+        name: rs
+        path: artifacts/rs
 
     - name: Download ts artifacts
       uses: actions/download-artifact@v4
@@ -76,27 +76,27 @@ jobs:
         name: r
         path: artifacts/r
 
-    - name: Download kotlin artifacts
+    - name: Download kt artifacts
       uses: actions/download-artifact@v4
       with:
-        name: kotlin
-        path: artifacts/kotlin
+        name: kt
+        path: artifacts/kt
 
     - name: Create zip archives
       run: |
         VERSION="${{ steps.version.outputs.VERSION }}"
         cd artifacts
         zip -r "../web-v${VERSION}.zip" web
-        zip -r "../dotnet-v${VERSION}.zip" dotnet
-        zip -r "../python-v${VERSION}.zip" python
-        zip -r "../rust-v${VERSION}.zip" rust
+        zip -r "../cs-v${VERSION}.zip" cs
+        zip -r "../py-v${VERSION}.zip" py
+        zip -r "../rs-v${VERSION}.zip" rs
         zip -r "../ts-v${VERSION}.zip" ts
         zip -r "../go-v${VERSION}.zip" go
         zip -r "../r-v${VERSION}.zip" r
-        zip -r "../kotlin-v${VERSION}.zip" kotlin
+        zip -r "../kt-v${VERSION}.zip" kt
         cd ..
         zip -r "tests-v${VERSION}.zip" tests
-        zip -r "simulations-v${VERSION}.zip" simulations
+        zip -r "sim-v${VERSION}.zip" sim
 
     - name: Add version suffix to documentation files
       run: |
@@ -114,15 +114,15 @@ jobs:
           web-v*.zip
           artifacts/web/pragmastat-v*.md
           artifacts/web/pragmastat-v*.pdf
-          dotnet-v*.zip
-          python-v*.zip
-          rust-v*.zip
+          cs-v*.zip
+          py-v*.zip
+          rs-v*.zip
           ts-v*.zip
           go-v*.zip
           r-v*.zip
-          kotlin-v*.zip
+          kt-v*.zip
           tests-v*.zip
-          simulations-v*.zip
+          sim-v*.zip
 
   publish-web:
     runs-on: ubuntu-24.04
@@ -150,7 +150,7 @@ jobs:
         commit-message: 'Deploy ${{ github.ref_name }}'
         clean: true
 
-  publish-dotnet:
+  publish-cs:
     runs-on: ubuntu-24.04
     needs: build
     steps:
@@ -161,25 +161,25 @@ jobs:
       with:
         dotnet-version: '9.0.305'
 
-    - name: Download dotnet artifacts
+    - name: Download cs artifacts
       uses: actions/download-artifact@v4
       with:
-        name: dotnet
-        path: dotnet/artifacts
+        name: cs
+        path: cs/artifacts
 
     - name: Publish to NuGet
-      run: dotnet nuget push ./dotnet/artifacts/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+      run: dotnet nuget push ./cs/artifacts/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
 
-  publish-python:
+  publish-py:
     runs-on: ubuntu-24.04
     needs: build
     permissions:
       id-token: write  # Required for trusted publishing to PyPI
     steps:
-    - name: Download python artifacts
+    - name: Download py artifacts
       uses: actions/download-artifact@v4
       with:
-        name: python
+        name: py
         path: dist/
 
     - name: Remove platform-specific wheels
@@ -213,7 +213,7 @@ jobs:
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-  publish-rust:
+  publish-rs:
     runs-on: ubuntu-24.04
     needs: build
     steps:
@@ -222,17 +222,17 @@ jobs:
     - name: Set up Rust
       uses: dtolnay/rust-toolchain@stable
 
-    - name: Download rust artifacts
+    - name: Download rs artifacts
       uses: actions/download-artifact@v4
       with:
-        name: rust
-        path: rust/pragmastat/target/package
+        name: rs
+        path: rs/pragmastat/target/package
 
     - name: Publish to crates.io
       run: cargo publish --token ${{ secrets.CARGO_REGISTRY_TOKEN }}
-      working-directory: rust/pragmastat
+      working-directory: rs/pragmastat
 
-  publish-kotlin:
+  publish-kt:
     runs-on: ubuntu-24.04
     needs: build
     steps:
@@ -255,17 +255,17 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-gradle-
 
-    - name: Download kotlin artifacts
+    - name: Download kt artifacts
       uses: actions/download-artifact@v4
       with:
-        name: kotlin
-        path: kotlin/build/
+        name: kt
+        path: kt/build/
 
     # Deploy to Maven Central using JReleaser Portal Publisher API
     # Documentation: https://jreleaser.org/guide/latest/examples/maven/maven-central.html#_portal_publisher_api
     - name: Deploy to Maven Central via JReleaser
       run: ./gradlew jreleaserDeploy
-      working-directory: kotlin
+      working-directory: kt
       env:
         JRELEASER_MAVENCENTRAL_SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
         JRELEASER_MAVENCENTRAL_SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
@@ -278,5 +278,5 @@ jobs:
       if: failure()
       uses: actions/upload-artifact@v4
       with:
-        name: kotlin-build-reports
-        path: kotlin/build/reports/
+        name: kt-build-reports
+        path: kt/build/reports/

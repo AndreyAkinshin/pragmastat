@@ -4,7 +4,7 @@ This is a Python implementation of 'Pragmastat: Pragmatic Statistical Toolkit', 
 
 - PDF manual for this version: [pragmastat-v3.1.27.pdf](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.27/pragmastat-v3.1.27.pdf)
 - Markdown manual for this version: [pragmastat-v3.1.27.md](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.27/pragmastat-v3.1.27.md)
-- Source code for this version: [pragmastat/python/v3.1.27](https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.27/python)
+- Source code for this version: [pragmastat/py/v3.1.27](https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.27/py)
 - Latest online manual: https://pragmastat.dev
 - Manual DOI: [10.5281/zenodo.17236778](https://doi.org/10.5281/zenodo.17236778)
 

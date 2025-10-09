@@ -55,7 +55,7 @@ This matches the complexity of sorting a single array while avoiding the quadrat
   of materializing all pairwise combinations.
 
 ```cs
-<!-- INCLUDE dotnet/Pragmastat/Algorithms/FastCenterAlgorithm.cs -->
+<!-- INCLUDE cs/Pragmastat/Algorithms/FastCenterAlgorithm.cs -->
 ```
 
 ## Fast Spread Algorithm
@@ -114,5 +114,5 @@ Using only $O(n)$ additional space for row bounds and counters,
   making robust scale estimation practical for large datasets.
 
 ```cs
-<!-- INCLUDE dotnet/Pragmastat/Algorithms/FastSpreadAlgorithm.cs -->
+<!-- INCLUDE cs/Pragmastat/Algorithms/FastSpreadAlgorithm.cs -->
 ```

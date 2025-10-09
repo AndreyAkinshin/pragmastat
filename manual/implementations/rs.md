@@ -1,4 +1,4 @@
-<span id="rust"></span> <!-- [pdf] DELETE -->
+<span id="rs"></span> <!-- [pdf] DELETE -->
 
 ## Rust
 
@@ -15,7 +15,7 @@ Install from crates.io via `Cargo.toml`:
 pragmastat = "3.1.27"
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.27/rust
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.27/rs
 
 Pragmastat on crates.io: https://crates.io/crates/pragmastat
 

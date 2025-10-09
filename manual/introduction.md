@@ -97,7 +97,7 @@ $$
 $$
 
 These procedures are designed to serve as default choices for routine analysis and comparison tasks in engineering contexts.
-The toolkit has ready-to-use implementations for Python, TypeScript/JavaScript, R, .NET, Kotlin, Rust, and Go.
+The toolkit has ready-to-use implementations for Python, TypeScript/JavaScript, R, C#, Kotlin, Rust, and Go.
 
 ## Breaking changes
 

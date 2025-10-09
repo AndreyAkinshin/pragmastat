@@ -46,16 +46,16 @@ run_all_projects() {
         "pdf"
         "web"
         "r"
-        "dotnet"
-        "python"
-        "rust"
+        "cs"
+        "py"
+        "rs"
         "ts"
         "go"
-        "kotlin"
+        "kt"
     )
 
     # Projects that support --release flag
-    local projects_with_release=("pdf" "web" "dotnet" "rust")
+    local projects_with_release=("pdf" "web" "cs" "rs")
 
     local failed_projects=()
     local succeeded_projects=()
@@ -176,21 +176,21 @@ run_ci() {
     run_step "build-r" "./r/build.sh build" || exit 1
     run_step "test-r" "./r/build.sh test" || exit 1
 
-    # Build dotnet
-    run_step "build-dotnet" "./dotnet/build.sh build $release_flag" || exit 1
-    run_step "test-dotnet" "./dotnet/build.sh test" || exit 1
-    run_step "pack-dotnet" "./dotnet/build.sh pack $release_flag" || exit 1
+    # Build cs
+    run_step "build-cs" "./cs/build.sh build $release_flag" || exit 1
+    run_step "test-cs" "./cs/build.sh test" || exit 1
+    run_step "pack-cs" "./cs/build.sh pack $release_flag" || exit 1
 
-    # Build python
-    run_step "test-python" "./python/build.sh test" || exit 1
-    run_step "build-python" "./python/build.sh build" || exit 1
-    run_step "check-python" "./python/build.sh check" || exit 1
+    # Build py
+    run_step "test-py" "./py/build.sh test" || exit 1
+    run_step "build-py" "./py/build.sh build" || exit 1
+    run_step "check-py" "./py/build.sh check" || exit 1
 
-    # Build rust
-    run_step "check-rust" "./rust/build.sh check" || exit 1
-    run_step "test-rust" "./rust/build.sh test" || exit 1
-    run_step "build-rust" "./rust/build.sh build $release_flag" || exit 1
-    run_step "package-rust" "cd rust/pragmastat && cargo package --verbose" || exit 1
+    # Build rs
+    run_step "check-rs" "./rs/build.sh check" || exit 1
+    run_step "test-rs" "./rs/build.sh test" || exit 1
+    run_step "build-rs" "./rs/build.sh build $release_flag" || exit 1
+    run_step "package-rs" "cd rs/pragmastat && cargo package --verbose" || exit 1
 
     # Build ts
     run_step "install-ts" "cd ts && npm ci" || exit 1
@@ -204,8 +204,8 @@ run_ci() {
     run_step "test-go" "./go/build.sh test-verbose" || exit 1
     run_step "build-go" "./go/build.sh build" || exit 1
 
-    # Build kotlin
-    run_step "build-kotlin" "cd kotlin && ./gradlew build --info --stacktrace" || exit 1
+    # Build kt
+    run_step "build-kt" "cd kt && ./gradlew build --info --stacktrace" || exit 1
 
     local end_time=$(date +%s)
     local elapsed=$((end_time - start_time))
@@ -378,9 +378,9 @@ show_help() {
     echo "  $0 release 0.1.0            # Create release 0.1.0 locally"
     echo "  $0 release v0.2.0 --push    # Create and push release 0.2.0"
     echo "  $0 go test                  # Run tests in Go implementation"
-    echo "  $0 rust build --release     # Build Rust implementation in release mode"
+    echo "  $0 rs build --release       # Build Rust implementation in release mode"
     echo "  $0 web build --release      # Build website in release mode"
-    echo "  $0 python all               # Run all tasks for Python implementation"
+    echo "  $0 py all                   # Run all tasks for Python implementation"
     echo ""
     echo "For ecosystem-specific commands, run:"
     echo "  <dir>/build.sh          # Show help for specific ecosystem"

@@ -15,7 +15,7 @@
 [![go](https://img.shields.io/github/v/release/AndreyAkinshin/pragmastat?display_name=tag&label=go&color=009E73)](https://pkg.go.dev/github.com/AndreyAkinshin/pragmastat/go/v3)
 
 [![tests](https://img.shields.io/badge/tests-CC79A7)](./tests)
-[![tests](https://img.shields.io/badge/simulations-CC79A7)](./simulations)
+[![tests](https://img.shields.io/badge/simulations-CC79A7)](./sim)
 
 </div>
 

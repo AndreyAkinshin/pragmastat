@@ -73,7 +73,7 @@ def load_json(filepath):
 
 def generate_avg_drift():
     """Generate average drift plots from JSON data."""
-    raw = load_json("../simulations/avg-drift.json")
+    raw = load_json("../sim/avg-drift.json")
 
     # Process data into a list of dictionaries
     data = []
@@ -164,7 +164,7 @@ def generate_avg_drift():
 
 def generate_disp_drift():
     """Generate dispersion drift plots from JSON data."""
-    raw = load_json("../simulations/disp-drift.json")
+    raw = load_json("../sim/disp-drift.json")
 
     # Process data into a list of dictionaries
     data = []

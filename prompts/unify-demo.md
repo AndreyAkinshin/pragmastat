@@ -53,17 +53,17 @@ Disparity(y, x) = -0.4
 ## Task
 
 Read their implementations recursively from folders
-  @dotnet/ @go/ @kotlin/ @python/ @r/ @rust/ @ts/
+  @cs/ @go/ @kt/ @py/ @r/ @rs/ @ts/
   and learn the correct API for each language
 
 Apply the above Scheme to demo examples in files:
 
-- @dotnet/Pragmastat.Demo/Program.cs
+- @cs/Pragmastat.Demo/Program.cs
 - @go/example/main.go
-- @kotlin/src/main/kotlin/dev/pragmastat/example/Main.kt
-- @python/examples/demo.py
+- @kt/src/main/kotlin/dev/pragmastat/example/Main.kt
+- @py/examples/demo.py
 - @r/pragmastat/inst/examples/demo.R
-- @rust/pragmastat/examples/demo.rs
+- @rs/pragmastat/examples/demo.rs
 - @ts/examples/demo.ts
 
 Adapt the scheme idiomatically to each language syntax and conventions in naming and API usage.
@@ -81,7 +81,7 @@ Execute demos using the following commands from the project root:
 
 **C#:**
 ```bash
-cd dotnet/Pragmastat.Demo && dotnet run
+cd cs/Pragmastat.Demo && dotnet run
 ```
 
 **Go:**
@@ -91,12 +91,12 @@ cd go && go run ./example
 
 **Kotlin:**
 ```bash
-cd kotlin && ./gradlew run
+cd kt && ./gradlew run
 ```
 
 **Python:**
 ```bash
-PYTHONPATH=python python3 python/examples/demo.py
+PYTHONPATH=py python3 py/examples/demo.py
 ```
 
 **R:**
@@ -106,7 +106,7 @@ cd r/pragmastat && Rscript inst/examples/demo.R
 
 **Rust:**
 ```bash
-cd rust/pragmastat && cargo run --example demo
+cd rs/pragmastat && cargo run --example demo
 ```
 
 **TypeScript:**

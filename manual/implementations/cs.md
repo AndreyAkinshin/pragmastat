@@ -1,6 +1,6 @@
-<span id="dotnet"></span> <!-- [pdf] DELETE -->
+<span id="cs"></span> <!-- [pdf] DELETE -->
 
-## .NET
+## C#
 
 Install from NuGet via .NET CLI:
 
@@ -14,7 +14,7 @@ Install from NuGet via Package Manager Console:
 NuGet\Install-Package Pragmastat -Version 3.1.27
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.27/dotnet
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.27/cs
 
 Pragmastat on NuGet: https://www.nuget.org/packages/Pragmastat/
 
