@@ -1,6 +1,6 @@
 ---
 title: "Pragmastat: Pragmatic Statistical Toolkit"
-version: 3.1.27
+version: 3.1.28
 ---
 
 <div style="display: none;">
@@ -155,7 +155,7 @@ $$
 $$
 
 These procedures are designed to serve as default choices for routine analysis and comparison tasks in engineering contexts.
-The toolkit has ready-to-use implementations for Python, TypeScript/JavaScript, R, .NET, Kotlin, Rust, and Go.
+The toolkit has ready-to-use implementations for Python, TypeScript/JavaScript, R, C#, Kotlin, Rust, and Go.
 
 ## Breaking changes
 
@@ -946,230 +946,230 @@ namespace Pragmastat.Algorithms;
 
 internal static class FastCenterAlgorithm
 {
-    /// <summary>
-    /// ACM Algorithm 616: fast computation of the Hodges-Lehmann location estimator
-    /// </summary>
-    /// <remarks>
-    /// Computes the median of all pairwise averages (xi + xj)/2 efficiently.
-    /// See: John F Monahan, "Algorithm 616: fast computation of the Hodges-Lehmann location estimator"
-    /// (1984) DOI: 10.1145/1271.319414
-    /// </remarks>
-    /// <param name="values">A sorted sample of values</param>
-    /// <param name="random">Random number generator</param>
-    /// <param name="isSorted">If values are sorted</param>
-    /// <returns>Exact center value (Hodges-Lehmann estimator)</returns>
-    public static double Estimate(IReadOnlyList<double> values, Random? random = null, bool isSorted = false)
+  /// <summary>
+  /// ACM Algorithm 616: fast computation of the Hodges-Lehmann location estimator
+  /// </summary>
+  /// <remarks>
+  /// Computes the median of all pairwise averages (xi + xj)/2 efficiently.
+  /// See: John F Monahan, "Algorithm 616: fast computation of the Hodges-Lehmann location estimator"
+  /// (1984) DOI: 10.1145/1271.319414
+  /// </remarks>
+  /// <param name="values">A sorted sample of values</param>
+  /// <param name="random">Random number generator</param>
+  /// <param name="isSorted">If values are sorted</param>
+  /// <returns>Exact center value (Hodges-Lehmann estimator)</returns>
+  public static double Estimate(IReadOnlyList<double> values, Random? random = null, bool isSorted = false)
+  {
+    int n = values.Count;
+    if (n == 1) return values[0];
+    if (n == 2) return (values[0] + values[1]) / 2;
+    random ??= new Random();
+    if (!isSorted)
+      values = values.OrderBy(x => x).ToList();
+
+    // Calculate target median rank(s) among all pairwise sums
+    long totalPairs = (long)n * (n + 1) / 2;
+    long medianRankLow = (totalPairs + 1) / 2; // For odd totalPairs, this is the median
+    long medianRankHigh =
+      (totalPairs + 2) / 2; // For even totalPairs, average of ranks medianRankLow and medianRankHigh
+
+    // Initialize search bounds for each row in the implicit matrix
+    long[] leftBounds = new long[n];
+    long[] rightBounds = new long[n];
+    long[] partitionCounts = new long[n];
+
+    for (int i = 0; i < n; i++)
     {
-        int n = values.Count;
-        if (n == 1) return values[0];
-        if (n == 2) return (values[0] + values[1]) / 2;
-        random ??= new Random();
-        if (!isSorted)
-            values = values.OrderBy(x => x).ToList();
+      leftBounds[i] = i + 1; // Row i can pair with columns [i+1..n] (1-based indexing)
+      rightBounds[i] = n; // Initially, all columns are available
+    }
 
-        // Calculate target median rank(s) among all pairwise sums
-        long totalPairs = (long)n * (n + 1) / 2;
-        long medianRankLow = (totalPairs + 1) / 2; // For odd totalPairs, this is the median
-        long medianRankHigh =
-            (totalPairs + 2) / 2; // For even totalPairs, average of ranks medianRankLow and medianRankHigh
+    // Start with a good pivot: sum of middle elements (handles both odd and even n)
+    double pivot = values[(n - 1) / 2] + values[n / 2];
+    long activeSetSize = totalPairs;
+    long previousCount = 0;
 
-        // Initialize search bounds for each row in the implicit matrix
-        long[] leftBounds = new long[n];
-        long[] rightBounds = new long[n];
-        long[] partitionCounts = new long[n];
+    while (true)
+    {
+      // === PARTITION STEP ===
+      // Count pairwise sums less than current pivot
+      long countBelowPivot = 0;
+      long currentColumn = n;
+
+      for (int row = 1; row <= n; row++)
+      {
+        partitionCounts[row - 1] = 0;
+
+        // Move left from current column until we find sums < pivot
+        // This exploits the sorted nature of the matrix
+        while (currentColumn >= row && values[row - 1] + values[(int)currentColumn - 1] >= pivot)
+          currentColumn--;
+
+        // Count elements in this row that are < pivot
+        if (currentColumn >= row)
+        {
+          long elementsBelow = currentColumn - row + 1;
+          partitionCounts[row - 1] = elementsBelow;
+          countBelowPivot += elementsBelow;
+        }
+      }
+
+      // === CONVERGENCE CHECK ===
+      // If no progress, we have ties - break them using midrange strategy
+      if (countBelowPivot == previousCount)
+      {
+        double minActiveSum = double.MaxValue;
+        double maxActiveSum = double.MinValue;
+
+        // Find the range of sums still in the active search space
+        for (int i = 0; i < n; i++)
+        {
+          if (leftBounds[i] > rightBounds[i]) continue; // Skip empty rows
+
+          double rowValue = values[i];
+          double smallestInRow = values[(int)leftBounds[i] - 1] + rowValue;
+          double largestInRow = values[(int)rightBounds[i] - 1] + rowValue;
+
+          minActiveSum = Min(minActiveSum, smallestInRow);
+          maxActiveSum = Max(maxActiveSum, largestInRow);
+        }
+
+        pivot = (minActiveSum + maxActiveSum) / 2;
+        if (pivot <= minActiveSum || pivot > maxActiveSum) pivot = maxActiveSum;
+
+        // If all remaining values are identical, we're done
+        if (minActiveSum == maxActiveSum || activeSetSize <= 2)
+          return pivot / 2;
+
+        continue;
+      }
+
+      // === TARGET CHECK ===
+      // Check if we've found the median rank(s)
+      bool atTargetRank = countBelowPivot == medianRankLow || countBelowPivot == medianRankHigh - 1;
+      if (atTargetRank)
+      {
+        // Find the boundary values: largest < pivot and smallest >= pivot
+        double largestBelowPivot = double.MinValue;
+        double smallestAtOrAbovePivot = double.MaxValue;
+
+        for (int i = 1; i <= n; i++)
+        {
+          long countInRow = partitionCounts[i - 1];
+          double rowValue = values[i - 1];
+          long totalInRow = n - i + 1;
+
+          // Find largest sum in this row that's < pivot
+          if (countInRow > 0)
+          {
+            long lastBelowIndex = i + countInRow - 1;
+            double lastBelowValue = rowValue + values[(int)lastBelowIndex - 1];
+            largestBelowPivot = Max(largestBelowPivot, lastBelowValue);
+          }
+
+          // Find smallest sum in this row that's >= pivot
+          if (countInRow < totalInRow)
+          {
+            long firstAtOrAboveIndex = i + countInRow;
+            double firstAtOrAboveValue = rowValue + values[(int)firstAtOrAboveIndex - 1];
+            smallestAtOrAbovePivot = Min(smallestAtOrAbovePivot, firstAtOrAboveValue);
+          }
+        }
+
+        // Calculate final result based on whether we have odd or even number of pairs
+        if (medianRankLow < medianRankHigh)
+        {
+          // Even total: average the two middle values
+          return (smallestAtOrAbovePivot + largestBelowPivot) / 4;
+        }
+        else
+        {
+          // Odd total: return the single middle value
+          bool needLargest = countBelowPivot == medianRankLow;
+          return (needLargest ? largestBelowPivot : smallestAtOrAbovePivot) / 2;
+        }
+      }
+
+      // === UPDATE BOUNDS ===
+      // Narrow the search space based on partition result
+      if (countBelowPivot < medianRankLow)
+      {
+        // Too few values below pivot - eliminate smaller values, search higher
+        for (int i = 0; i < n; i++)
+          leftBounds[i] = i + partitionCounts[i] + 1;
+      }
+      else
+      {
+        // Too many values below pivot - eliminate larger values, search lower
+        for (int i = 0; i < n; i++)
+          rightBounds[i] = i + partitionCounts[i];
+      }
+
+      // === PREPARE NEXT ITERATION ===
+      previousCount = countBelowPivot;
+
+      // Recalculate how many elements remain in the active search space
+      activeSetSize = 0;
+      for (int i = 0; i < n; i++)
+      {
+        long rowSize = rightBounds[i] - leftBounds[i] + 1;
+        activeSetSize += Max(0, rowSize);
+      }
+
+      // Choose next pivot based on remaining active set size
+      if (activeSetSize > 2)
+      {
+        // Use randomized row median strategy for efficiency
+        // Handle large activeSetSize by using double precision for random selection
+        double randomFraction = random.NextDouble();
+        long targetIndex = (long)(randomFraction * activeSetSize);
+        int selectedRow = 0;
+
+        // Find which row contains the target index
+        long cumulativeSize = 0;
+        for (int i = 0; i < n; i++)
+        {
+          long rowSize = Max(0, rightBounds[i] - leftBounds[i] + 1);
+          if (targetIndex < cumulativeSize + rowSize)
+          {
+            selectedRow = i;
+            break;
+          }
+
+          cumulativeSize += rowSize;
+        }
+
+        // Use median element of the selected row as pivot
+        long medianColumnInRow = (leftBounds[selectedRow] + rightBounds[selectedRow]) / 2;
+        pivot = values[selectedRow] + values[(int)medianColumnInRow - 1];
+      }
+      else
+      {
+        // Few elements remain - use midrange strategy
+        double minRemainingSum = double.MaxValue;
+        double maxRemainingSum = double.MinValue;
 
         for (int i = 0; i < n; i++)
         {
-            leftBounds[i] = i + 1; // Row i can pair with columns [i+1..n] (1-based indexing)
-            rightBounds[i] = n; // Initially, all columns are available
+          if (leftBounds[i] > rightBounds[i]) continue; // Skip empty rows
+
+          double rowValue = values[i];
+          double minInRow = values[(int)leftBounds[i] - 1] + rowValue;
+          double maxInRow = values[(int)rightBounds[i] - 1] + rowValue;
+
+          minRemainingSum = Min(minRemainingSum, minInRow);
+          maxRemainingSum = Max(maxRemainingSum, maxInRow);
         }
 
-        // Start with a good pivot: sum of middle elements (handles both odd and even n)
-        double pivot = values[(n - 1) / 2] + values[n / 2];
-        long activeSetSize = totalPairs;
-        long previousCount = 0;
+        pivot = (minRemainingSum + maxRemainingSum) / 2;
+        if (pivot <= minRemainingSum || pivot > maxRemainingSum)
+          pivot = maxRemainingSum;
 
-        while (true)
-        {
-            // === PARTITION STEP ===
-            // Count pairwise sums less than current pivot
-            long countBelowPivot = 0;
-            long currentColumn = n;
-
-            for (int row = 1; row <= n; row++)
-            {
-                partitionCounts[row - 1] = 0;
-
-                // Move left from current column until we find sums < pivot
-                // This exploits the sorted nature of the matrix
-                while (currentColumn >= row && values[row - 1] + values[(int)currentColumn - 1] >= pivot)
-                    currentColumn--;
-
-                // Count elements in this row that are < pivot
-                if (currentColumn >= row)
-                {
-                    long elementsBelow = currentColumn - row + 1;
-                    partitionCounts[row - 1] = elementsBelow;
-                    countBelowPivot += elementsBelow;
-                }
-            }
-
-            // === CONVERGENCE CHECK ===
-            // If no progress, we have ties - break them using midrange strategy
-            if (countBelowPivot == previousCount)
-            {
-                double minActiveSum = double.MaxValue;
-                double maxActiveSum = double.MinValue;
-
-                // Find the range of sums still in the active search space
-                for (int i = 0; i < n; i++)
-                {
-                    if (leftBounds[i] > rightBounds[i]) continue; // Skip empty rows
-
-                    double rowValue = values[i];
-                    double smallestInRow = values[(int)leftBounds[i] - 1] + rowValue;
-                    double largestInRow = values[(int)rightBounds[i] - 1] + rowValue;
-
-                    minActiveSum = Min(minActiveSum, smallestInRow);
-                    maxActiveSum = Max(maxActiveSum, largestInRow);
-                }
-
-                pivot = (minActiveSum + maxActiveSum) / 2;
-                if (pivot <= minActiveSum || pivot > maxActiveSum) pivot = maxActiveSum;
-
-                // If all remaining values are identical, we're done
-                if (minActiveSum == maxActiveSum || activeSetSize <= 2)
-                    return pivot / 2;
-
-                continue;
-            }
-
-            // === TARGET CHECK ===
-            // Check if we've found the median rank(s)
-            bool atTargetRank = countBelowPivot == medianRankLow || countBelowPivot == medianRankHigh - 1;
-            if (atTargetRank)
-            {
-                // Find the boundary values: largest < pivot and smallest >= pivot
-                double largestBelowPivot = double.MinValue;
-                double smallestAtOrAbovePivot = double.MaxValue;
-
-                for (int i = 1; i <= n; i++)
-                {
-                    long countInRow = partitionCounts[i - 1];
-                    double rowValue = values[i - 1];
-                    long totalInRow = n - i + 1;
-
-                    // Find largest sum in this row that's < pivot
-                    if (countInRow > 0)
-                    {
-                        long lastBelowIndex = i + countInRow - 1;
-                        double lastBelowValue = rowValue + values[(int)lastBelowIndex - 1];
-                        largestBelowPivot = Max(largestBelowPivot, lastBelowValue);
-                    }
-
-                    // Find smallest sum in this row that's >= pivot
-                    if (countInRow < totalInRow)
-                    {
-                        long firstAtOrAboveIndex = i + countInRow;
-                        double firstAtOrAboveValue = rowValue + values[(int)firstAtOrAboveIndex - 1];
-                        smallestAtOrAbovePivot = Min(smallestAtOrAbovePivot, firstAtOrAboveValue);
-                    }
-                }
-
-                // Calculate final result based on whether we have odd or even number of pairs
-                if (medianRankLow < medianRankHigh)
-                {
-                    // Even total: average the two middle values
-                    return (smallestAtOrAbovePivot + largestBelowPivot) / 4;
-                }
-                else
-                {
-                    // Odd total: return the single middle value
-                    bool needLargest = countBelowPivot == medianRankLow;
-                    return (needLargest ? largestBelowPivot : smallestAtOrAbovePivot) / 2;
-                }
-            }
-
-            // === UPDATE BOUNDS ===
-            // Narrow the search space based on partition result
-            if (countBelowPivot < medianRankLow)
-            {
-                // Too few values below pivot - eliminate smaller values, search higher
-                for (int i = 0; i < n; i++)
-                    leftBounds[i] = i + partitionCounts[i] + 1;
-            }
-            else
-            {
-                // Too many values below pivot - eliminate larger values, search lower
-                for (int i = 0; i < n; i++)
-                    rightBounds[i] = i + partitionCounts[i];
-            }
-
-            // === PREPARE NEXT ITERATION ===
-            previousCount = countBelowPivot;
-
-            // Recalculate how many elements remain in the active search space
-            activeSetSize = 0;
-            for (int i = 0; i < n; i++)
-            {
-                long rowSize = rightBounds[i] - leftBounds[i] + 1;
-                activeSetSize += Max(0, rowSize);
-            }
-
-            // Choose next pivot based on remaining active set size
-            if (activeSetSize > 2)
-            {
-                // Use randomized row median strategy for efficiency
-                // Handle large activeSetSize by using double precision for random selection
-                double randomFraction = random.NextDouble();
-                long targetIndex = (long)(randomFraction * activeSetSize);
-                int selectedRow = 0;
-
-                // Find which row contains the target index
-                long cumulativeSize = 0;
-                for (int i = 0; i < n; i++)
-                {
-                    long rowSize = Max(0, rightBounds[i] - leftBounds[i] + 1);
-                    if (targetIndex < cumulativeSize + rowSize)
-                    {
-                        selectedRow = i;
-                        break;
-                    }
-
-                    cumulativeSize += rowSize;
-                }
-
-                // Use median element of the selected row as pivot
-                long medianColumnInRow = (leftBounds[selectedRow] + rightBounds[selectedRow]) / 2;
-                pivot = values[selectedRow] + values[(int)medianColumnInRow - 1];
-            }
-            else
-            {
-                // Few elements remain - use midrange strategy
-                double minRemainingSum = double.MaxValue;
-                double maxRemainingSum = double.MinValue;
-
-                for (int i = 0; i < n; i++)
-                {
-                    if (leftBounds[i] > rightBounds[i]) continue; // Skip empty rows
-
-                    double rowValue = values[i];
-                    double minInRow = values[(int)leftBounds[i] - 1] + rowValue;
-                    double maxInRow = values[(int)rightBounds[i] - 1] + rowValue;
-
-                    minRemainingSum = Min(minRemainingSum, minInRow);
-                    maxRemainingSum = Max(maxRemainingSum, maxInRow);
-                }
-
-                pivot = (minRemainingSum + maxRemainingSum) / 2;
-                if (pivot <= minRemainingSum || pivot > maxRemainingSum)
-                    pivot = maxRemainingSum;
-
-                if (minRemainingSum == maxRemainingSum)
-                    return pivot / 2;
-            }
-        }
+        if (minRemainingSum == maxRemainingSum)
+          return pivot / 2;
+      }
     }
+  }
 }
 ```
 
@@ -1233,266 +1233,266 @@ namespace Pragmastat.Algorithms;
 
 internal static class FastSpreadAlgorithm
 {
-    /// <summary>
-    /// Shamos "Spread".  Expected O(n log n) time, O(n) extra space. Exact.
-    /// </summary>
-    public static double Estimate(IReadOnlyList<double> values, Random? random = null, bool isSorted = false)
+  /// <summary>
+  /// Shamos "Spread".  Expected O(n log n) time, O(n) extra space. Exact.
+  /// </summary>
+  public static double Estimate(IReadOnlyList<double> values, Random? random = null, bool isSorted = false)
+  {
+    int n = values.Count;
+    if (n <= 1) return 0;
+    if (n == 2) return Abs(values[1] - values[0]);
+    random ??= new Random();
+
+    // Prepare a sorted working copy.
+    double[] a = isSorted ? CopySorted(values) : EnsureSorted(values);
+
+    // Total number of pairwise differences with i < j
+    long N = (long)n * (n - 1) / 2;
+    long kLow = (N + 1) / 2; // 1-based rank of lower middle
+    long kHigh = (N + 2) / 2; // 1-based rank of upper middle
+
+    // Per-row active bounds over columns j (0-based indices).
+    // Row i allows j in [i+1, n-1] initially.
+    int[] L = new int[n];
+    int[] R = new int[n];
+    long[] rowCounts = new long[n]; // # of elements in row i that are < pivot (for current partition)
+
+    for (int i = 0; i < n; i++)
     {
-        int n = values.Count;
-        if (n <= 1) return 0;
-        if (n == 2) return Abs(values[1] - values[0]);
-        random ??= new Random();
+      L[i] = Min(i + 1, n); // n means empty
+      R[i] = n - 1; // inclusive
+      if (L[i] > R[i])
+      {
+        L[i] = 1;
+        R[i] = 0;
+      } // mark empty
+    }
 
-        // Prepare a sorted working copy.
-        double[] a = isSorted ? CopySorted(values) : EnsureSorted(values);
+    // A reasonable initial pivot: a central gap
+    double pivot = a[n / 2] - a[(n - 1) / 2];
 
-        // Total number of pairwise differences with i < j
-        long N = (long)n * (n - 1) / 2;
-        long kLow = (N + 1) / 2; // 1-based rank of lower middle
-        long kHigh = (N + 2) / 2; // 1-based rank of upper middle
+    long prevCountBelow = -1;
 
-        // Per-row active bounds over columns j (0-based indices).
-        // Row i allows j in [i+1, n-1] initially.
-        int[] L = new int[n];
-        int[] R = new int[n];
-        long[] rowCounts = new long[n]; // # of elements in row i that are < pivot (for current partition)
+    while (true)
+    {
+      // === PARTITION: count how many differences are < pivot; also track boundary neighbors ===
+      long countBelow = 0;
+      double largestBelow = double.NegativeInfinity; // max difference < pivot
+      double smallestAtOrAbove = double.PositiveInfinity; // min difference >= pivot
 
-        for (int i = 0; i < n; i++)
+      int j = 1; // global two-pointer (non-decreasing across rows)
+      for (int i = 0; i < n - 1; i++)
+      {
+        if (j < i + 1) j = i + 1;
+        while (j < n && a[j] - a[i] < pivot) j++;
+
+        long cntRow = j - (i + 1);
+        if (cntRow < 0) cntRow = 0;
+        rowCounts[i] = cntRow;
+        countBelow += cntRow;
+
+        // boundary elements for this row
+        if (cntRow > 0)
         {
-            L[i] = Min(i + 1, n); // n means empty
-            R[i] = n - 1; // inclusive
-            if (L[i] > R[i])
-            {
-                L[i] = 1;
-                R[i] = 0;
-            } // mark empty
+          // last < pivot in this row is (j-1)
+          double candBelow = a[j - 1] - a[i];
+          if (candBelow > largestBelow) largestBelow = candBelow;
         }
 
-        // A reasonable initial pivot: a central gap
-        double pivot = a[n / 2] - a[(n - 1) / 2];
-
-        long prevCountBelow = -1;
-
-        while (true)
+        if (j < n)
         {
-            // === PARTITION: count how many differences are < pivot; also track boundary neighbors ===
-            long countBelow = 0;
-            double largestBelow = double.NegativeInfinity; // max difference < pivot
-            double smallestAtOrAbove = double.PositiveInfinity; // min difference >= pivot
+          double candAtOrAbove = a[j] - a[i];
+          if (candAtOrAbove < smallestAtOrAbove) smallestAtOrAbove = candAtOrAbove;
+        }
+      }
 
-            int j = 1; // global two-pointer (non-decreasing across rows)
-            for (int i = 0; i < n - 1; i++)
-            {
-                if (j < i + 1) j = i + 1;
-                while (j < n && a[j] - a[i] < pivot) j++;
+      // === TARGET CHECK ===
+      // If we've split exactly at the middle, we can return using the boundaries we just found.
+      bool atTarget =
+        (countBelow == kLow) || // lower middle is the largest < pivot
+        (countBelow == (kHigh - 1)); // upper middle is the smallest >= pivot
 
-                long cntRow = j - (i + 1);
-                if (cntRow < 0) cntRow = 0;
-                rowCounts[i] = cntRow;
-                countBelow += cntRow;
+      if (atTarget)
+      {
+        if (kLow < kHigh)
+        {
+          // Even N: average the two central order stats.
+          return 0.5 * (largestBelow + smallestAtOrAbove);
+        }
+        else
+        {
+          // Odd N: pick the single middle depending on which side we hit.
+          bool needLargest = (countBelow == kLow);
+          return needLargest ? largestBelow : smallestAtOrAbove;
+        }
+      }
 
-                // boundary elements for this row
-                if (cntRow > 0)
-                {
-                    // last < pivot in this row is (j-1)
-                    double candBelow = a[j - 1] - a[i];
-                    if (candBelow > largestBelow) largestBelow = candBelow;
-                }
+      // === STALL HANDLING (ties / no progress) ===
+      if (countBelow == prevCountBelow)
+      {
+        // Compute min/max remaining difference in the ACTIVE set and pivot to their midrange.
+        double minActive = double.PositiveInfinity;
+        double maxActive = double.NegativeInfinity;
+        long active = 0;
 
-                if (j < n)
-                {
-                    double candAtOrAbove = a[j] - a[i];
-                    if (candAtOrAbove < smallestAtOrAbove) smallestAtOrAbove = candAtOrAbove;
-                }
-            }
+        for (int i = 0; i < n - 1; i++)
+        {
+          int Li = L[i], Ri = R[i];
+          if (Li > Ri) continue;
 
-            // === TARGET CHECK ===
-            // If we've split exactly at the middle, we can return using the boundaries we just found.
-            bool atTarget =
-                (countBelow == kLow) || // lower middle is the largest < pivot
-                (countBelow == (kHigh - 1)); // upper middle is the smallest >= pivot
+          double rowMin = a[Li] - a[i];
+          double rowMax = a[Ri] - a[i];
+          if (rowMin < minActive) minActive = rowMin;
+          if (rowMax > maxActive) maxActive = rowMax;
+          active += (Ri - Li + 1);
+        }
 
-            if (atTarget)
-            {
-                if (kLow < kHigh)
-                {
-                    // Even N: average the two central order stats.
-                    return 0.5 * (largestBelow + smallestAtOrAbove);
-                }
-                else
-                {
-                    // Odd N: pick the single middle depending on which side we hit.
-                    bool needLargest = (countBelow == kLow);
-                    return needLargest ? largestBelow : smallestAtOrAbove;
-                }
-            }
+        if (active <= 0)
+        {
+          // No active candidates left: the only consistent answer is the boundary implied by counts.
+          // Fall back to neighbors from this partition.
+          if (kLow < kHigh) return 0.5 * (largestBelow + smallestAtOrAbove);
+          return (countBelow >= kLow) ? largestBelow : smallestAtOrAbove;
+        }
 
-            // === STALL HANDLING (ties / no progress) ===
-            if (countBelow == prevCountBelow)
-            {
-                // Compute min/max remaining difference in the ACTIVE set and pivot to their midrange.
-                double minActive = double.PositiveInfinity;
-                double maxActive = double.NegativeInfinity;
-                long active = 0;
+        if (maxActive <= minActive) return minActive; // all remaining equal
 
-                for (int i = 0; i < n - 1; i++)
-                {
-                    int Li = L[i], Ri = R[i];
-                    if (Li > Ri) continue;
+        double mid = 0.5 * (minActive + maxActive);
+        pivot = (mid > minActive && mid <= maxActive) ? mid : maxActive;
+        prevCountBelow = countBelow;
+        continue;
+      }
 
-                    double rowMin = a[Li] - a[i];
-                    double rowMax = a[Ri] - a[i];
-                    if (rowMin < minActive) minActive = rowMin;
-                    if (rowMax > maxActive) maxActive = rowMax;
-                    active += (Ri - Li + 1);
-                }
-
-                if (active <= 0)
-                {
-                    // No active candidates left: the only consistent answer is the boundary implied by counts.
-                    // Fall back to neighbors from this partition.
-                    if (kLow < kHigh) return 0.5 * (largestBelow + smallestAtOrAbove);
-                    return (countBelow >= kLow) ? largestBelow : smallestAtOrAbove;
-                }
-
-                if (maxActive <= minActive) return minActive; // all remaining equal
-
-                double mid = 0.5 * (minActive + maxActive);
-                pivot = (mid > minActive && mid <= maxActive) ? mid : maxActive;
-                prevCountBelow = countBelow;
-                continue;
-            }
-
-            // === SHRINK ACTIVE WINDOW ===
+      // === SHRINK ACTIVE WINDOW ===
 // --- SHRINK ACTIVE WINDOW (fixed) ---
-            if (countBelow < kLow)
-            {
-                // Need larger differences: discard all strictly below pivot.
-                for (int i = 0; i < n - 1; i++)
-                {
-                    // First j with a[j] - a[i] >= pivot is j = i + 1 + cntRow (may be n => empty row)
-                    int newL = i + 1 + (int)rowCounts[i];
-                    if (newL > L[i]) L[i] = newL; // do NOT clamp; allow L[i] == n to mean empty
-                    if (L[i] > R[i])
-                    {
-                        L[i] = 1;
-                        R[i] = 0;
-                    } // mark empty
-                }
-            }
-            else
-            {
-                // Too many below: keep only those strictly below pivot.
-                for (int i = 0; i < n - 1; i++)
-                {
-                    // Last j with a[j] - a[i] < pivot is j = i + cntRow  (not cntRow-1!)
-                    int newR = i + (int)rowCounts[i];
-                    if (newR < R[i]) R[i] = newR; // shrink downward to the true last-below
-                    if (R[i] < i + 1)
-                    {
-                        L[i] = 1;
-                        R[i] = 0;
-                    } // empty row if none remain
-                }
-            }
-
-            prevCountBelow = countBelow;
-
-            // === CHOOSE NEXT PIVOT FROM ACTIVE SET (weighted random row, then row median) ===
-            long activeSize = 0;
-            for (int i = 0; i < n - 1; i++)
-            {
-                if (L[i] <= R[i]) activeSize += (R[i] - L[i] + 1);
-            }
-
-            if (activeSize <= 2)
-            {
-                // Few candidates left: return midrange of remaining exactly.
-                double minRem = double.PositiveInfinity, maxRem = double.NegativeInfinity;
-                for (int i = 0; i < n - 1; i++)
-                {
-                    if (L[i] > R[i]) continue;
-                    double lo = a[L[i]] - a[i];
-                    double hi = a[R[i]] - a[i];
-                    if (lo < minRem) minRem = lo;
-                    if (hi > maxRem) maxRem = hi;
-                }
-
-                if (activeSize <= 0) // safety net; fall back to boundary from last partition
-                {
-                    if (kLow < kHigh) return 0.5 * (largestBelow + smallestAtOrAbove);
-                    return (countBelow >= kLow) ? largestBelow : smallestAtOrAbove;
-                }
-
-                if (kLow < kHigh) return 0.5 * (minRem + maxRem);
-                return (Abs((kLow - 1) - countBelow) <= Abs(countBelow - kLow)) ? minRem : maxRem;
-            }
-            else
-            {
-                long t = NextIndex(random, activeSize); // 0..activeSize-1
-                long acc = 0;
-                int row = 0;
-                for (; row < n - 1; row++)
-                {
-                    if (L[row] > R[row]) continue;
-                    long size = R[row] - L[row] + 1;
-                    if (t < acc + size) break;
-                    acc += size;
-                }
-
-                // Median column of the selected row
-                int col = (L[row] + R[row]) >> 1;
-                pivot = a[col] - a[row];
-            }
+      if (countBelow < kLow)
+      {
+        // Need larger differences: discard all strictly below pivot.
+        for (int i = 0; i < n - 1; i++)
+        {
+          // First j with a[j] - a[i] >= pivot is j = i + 1 + cntRow (may be n => empty row)
+          int newL = i + 1 + (int)rowCounts[i];
+          if (newL > L[i]) L[i] = newL; // do NOT clamp; allow L[i] == n to mean empty
+          if (L[i] > R[i])
+          {
+            L[i] = 1;
+            R[i] = 0;
+          } // mark empty
         }
-    }
-    // --- Helpers ---
+      }
+      else
+      {
+        // Too many below: keep only those strictly below pivot.
+        for (int i = 0; i < n - 1; i++)
+        {
+          // Last j with a[j] - a[i] < pivot is j = i + cntRow  (not cntRow-1!)
+          int newR = i + (int)rowCounts[i];
+          if (newR < R[i]) R[i] = newR; // shrink downward to the true last-below
+          if (R[i] < i + 1)
+          {
+            L[i] = 1;
+            R[i] = 0;
+          } // empty row if none remain
+        }
+      }
 
-    private static double[] CopySorted(IReadOnlyList<double> values)
+      prevCountBelow = countBelow;
+
+      // === CHOOSE NEXT PIVOT FROM ACTIVE SET (weighted random row, then row median) ===
+      long activeSize = 0;
+      for (int i = 0; i < n - 1; i++)
+      {
+        if (L[i] <= R[i]) activeSize += (R[i] - L[i] + 1);
+      }
+
+      if (activeSize <= 2)
+      {
+        // Few candidates left: return midrange of remaining exactly.
+        double minRem = double.PositiveInfinity, maxRem = double.NegativeInfinity;
+        for (int i = 0; i < n - 1; i++)
+        {
+          if (L[i] > R[i]) continue;
+          double lo = a[L[i]] - a[i];
+          double hi = a[R[i]] - a[i];
+          if (lo < minRem) minRem = lo;
+          if (hi > maxRem) maxRem = hi;
+        }
+
+        if (activeSize <= 0) // safety net; fall back to boundary from last partition
+        {
+          if (kLow < kHigh) return 0.5 * (largestBelow + smallestAtOrAbove);
+          return (countBelow >= kLow) ? largestBelow : smallestAtOrAbove;
+        }
+
+        if (kLow < kHigh) return 0.5 * (minRem + maxRem);
+        return (Abs((kLow - 1) - countBelow) <= Abs(countBelow - kLow)) ? minRem : maxRem;
+      }
+      else
+      {
+        long t = NextIndex(random, activeSize); // 0..activeSize-1
+        long acc = 0;
+        int row = 0;
+        for (; row < n - 1; row++)
+        {
+          if (L[row] > R[row]) continue;
+          long size = R[row] - L[row] + 1;
+          if (t < acc + size) break;
+          acc += size;
+        }
+
+        // Median column of the selected row
+        int col = (L[row] + R[row]) >> 1;
+        pivot = a[col] - a[row];
+      }
+    }
+  }
+  // --- Helpers ---
+
+  private static double[] CopySorted(IReadOnlyList<double> values)
+  {
+    var a = new double[values.Count];
+    for (int i = 0; i < a.Length; i++)
     {
-        var a = new double[values.Count];
-        for (int i = 0; i < a.Length; i++)
-        {
-            double v = values[i];
-            if (double.IsNaN(v)) throw new ArgumentException("NaN not allowed.", nameof(values));
-            a[i] = v;
-        }
-
-        Array.Sort(a);
-        return a;
+      double v = values[i];
+      if (double.IsNaN(v)) throw new ArgumentException("NaN not allowed.", nameof(values));
+      a[i] = v;
     }
 
-    private static double[] EnsureSorted(IReadOnlyList<double> values)
+    Array.Sort(a);
+    return a;
+  }
+
+  private static double[] EnsureSorted(IReadOnlyList<double> values)
+  {
+    // Trust caller; still copy to array for fast indexed access.
+    var a = new double[values.Count];
+    for (int i = 0; i < a.Length; i++)
     {
-        // Trust caller; still copy to array for fast indexed access.
-        var a = new double[values.Count];
-        for (int i = 0; i < a.Length; i++)
-        {
-            double v = values[i];
-            if (double.IsNaN(v)) throw new ArgumentException("NaN not allowed.", nameof(values));
-            a[i] = v;
-        }
-
-        return a;
+      double v = values[i];
+      if (double.IsNaN(v)) throw new ArgumentException("NaN not allowed.", nameof(values));
+      a[i] = v;
     }
 
-    private static long NextIndex(Random rng, long limitExclusive)
+    return a;
+  }
+
+  private static long NextIndex(Random rng, long limitExclusive)
+  {
+    // Uniform 0..limitExclusive-1 even for large ranges.
+    // Use rejection sampling for correctness.
+    ulong uLimit = (ulong)limitExclusive;
+    if (uLimit <= int.MaxValue)
     {
-        // Uniform 0..limitExclusive-1 even for large ranges.
-        // Use rejection sampling for correctness.
-        ulong uLimit = (ulong)limitExclusive;
-        if (uLimit <= int.MaxValue)
-        {
-            return rng.Next((int)uLimit);
-        }
-
-        while (true)
-        {
-            ulong u = ((ulong)(uint)rng.Next() << 32) | (uint)rng.Next();
-            ulong r = u % uLimit;
-            if (u - r <= ulong.MaxValue - (ulong.MaxValue % uLimit)) return (long)r;
-        }
+      return rng.Next((int)uLimit);
     }
+
+    while (true)
+    {
+      ulong u = ((ulong)(uint)rng.Next() << 32) | (uint)rng.Next();
+      ulong r = u % uLimit;
+      if (u - r <= ulong.MaxValue - (ulong.MaxValue % uLimit)) return (long)r;
+    }
+  }
 }
 ```
 
@@ -1801,17 +1801,17 @@ The $\Spread$ requires about 1.16 times more data to match $\StdDev$ precision u
 
 # Reference Implementations
 
-<span id="python"></span> <!-- [pdf] DELETE -->
+<span id="py"></span> <!-- [pdf] DELETE -->
 
 ## Python
 
 Install from PyPI:
 
 ```bash
-pip install pragmastat==3.1.27
+pip install pragmastat==3.1.28
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.27/python
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.28/py
 
 Pragmastat on PyPI: https://pypi.org/project/pragmastat/
 
@@ -1878,10 +1878,10 @@ if __name__ == "__main__":
 Install from npm:
 
 ```bash
-npm i pragmastat@3.1.27
+npm i pragmastat@3.1.28
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.27/ts
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.28/ts
 
 Pragmastat on npm: https://www.npmjs.com/package/pragmastat
 
@@ -1948,11 +1948,11 @@ Install from GitHub:
 ```r
 install.packages("remotes") # If 'remotes' is not installed
 remotes::install_github("AndreyAkinshin/pragmastat",
-                        subdir = "r/pragmastat", ref = "v3.1.27")
+                        subdir = "r/pragmastat", ref = "v3.1.28")
 library(pragmastat)
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.27/r
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.28/r
 
 
 
@@ -2006,23 +2006,23 @@ print(disparity(x * 2, y * 2)) # 0.4
 print(disparity(y, x)) # -0.4
 ```
 
-<span id="dotnet"></span> <!-- [pdf] DELETE -->
+<span id="cs"></span> <!-- [pdf] DELETE -->
 
-## .NET
+## C\#
 
 Install from NuGet via .NET CLI:
 
 ```bash
-dotnet add package Pragmastat --version 3.1.27
+dotnet add package Pragmastat --version 3.1.28
 ```
 
 Install from NuGet via Package Manager Console:
 
 ```ps1
-NuGet\Install-Package Pragmastat -Version 3.1.27
+NuGet\Install-Package Pragmastat -Version 3.1.28
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.27/dotnet
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.28/cs
 
 Pragmastat on NuGet: https://www.nuget.org/packages/Pragmastat/
 
@@ -2035,56 +2035,56 @@ namespace Pragmastat.Demo;
 
 class Program
 {
-    static void Main()
-    {
-        var x = new Sample(0, 2, 4, 6, 8);
-        WriteLine(x.Center()); // 4
-        WriteLine((x + 10).Center()); // 14
-        WriteLine((x * 3).Center()); // 12
+  static void Main()
+  {
+    var x = new Sample(0, 2, 4, 6, 8);
+    WriteLine(x.Center()); // 4
+    WriteLine((x + 10).Center()); // 14
+    WriteLine((x * 3).Center()); // 12
 
-        WriteLine(x.Spread()); // 4
-        WriteLine((x + 10).Spread()); // 4
-        WriteLine((x * 2).Spread()); // 8
+    WriteLine(x.Spread()); // 4
+    WriteLine((x + 10).Spread()); // 4
+    WriteLine((x * 2).Spread()); // 8
 
-        WriteLine(x.RelSpread()); // 1
-        WriteLine((x * 5).RelSpread()); // 1
+    WriteLine(x.RelSpread()); // 1
+    WriteLine((x * 5).RelSpread()); // 1
 
-        var y = new Sample(10, 12, 14, 16, 18);
-        WriteLine(Toolkit.Shift(x, y)); // -10
-        WriteLine(Toolkit.Shift(x, x)); // 0
-        WriteLine(Toolkit.Shift(x + 7, y + 3)); // -6
-        WriteLine(Toolkit.Shift(x * 2, y * 2)); // -20
-        WriteLine(Toolkit.Shift(y, x)); // 10
+    var y = new Sample(10, 12, 14, 16, 18);
+    WriteLine(Toolkit.Shift(x, y)); // -10
+    WriteLine(Toolkit.Shift(x, x)); // 0
+    WriteLine(Toolkit.Shift(x + 7, y + 3)); // -6
+    WriteLine(Toolkit.Shift(x * 2, y * 2)); // -20
+    WriteLine(Toolkit.Shift(y, x)); // 10
 
-        x = new Sample(1, 2, 4, 8, 16);
-        y = new Sample(2, 4, 8, 16, 32);
-        WriteLine(Toolkit.Ratio(x, y)); // 0.5
-        WriteLine(Toolkit.Ratio(x, x)); // 1
-        WriteLine(Toolkit.Ratio(x * 2, y * 5)); // 0.2
+    x = new Sample(1, 2, 4, 8, 16);
+    y = new Sample(2, 4, 8, 16, 32);
+    WriteLine(Toolkit.Ratio(x, y)); // 0.5
+    WriteLine(Toolkit.Ratio(x, x)); // 1
+    WriteLine(Toolkit.Ratio(x * 2, y * 5)); // 0.2
 
-        x = new Sample(0, 3, 6, 9, 12);
-        y = new Sample(0, 2, 4, 6, 8);
-        WriteLine(x.Spread()); // 6
-        WriteLine(y.Spread()); // 4
+    x = new Sample(0, 3, 6, 9, 12);
+    y = new Sample(0, 2, 4, 6, 8);
+    WriteLine(x.Spread()); // 6
+    WriteLine(y.Spread()); // 4
 
-        WriteLine(Toolkit.AvgSpread(x, y)); // 5
-        WriteLine(Toolkit.AvgSpread(x, x)); // 6
-        WriteLine(Toolkit.AvgSpread(x * 2, x * 3)); // 15
-        WriteLine(Toolkit.AvgSpread(y, x)); // 5
-        WriteLine(Toolkit.AvgSpread(x * 2, y * 2)); // 10
+    WriteLine(Toolkit.AvgSpread(x, y)); // 5
+    WriteLine(Toolkit.AvgSpread(x, x)); // 6
+    WriteLine(Toolkit.AvgSpread(x * 2, x * 3)); // 15
+    WriteLine(Toolkit.AvgSpread(y, x)); // 5
+    WriteLine(Toolkit.AvgSpread(x * 2, y * 2)); // 10
 
-        WriteLine(Toolkit.Shift(x, y)); // 2
-        WriteLine(Toolkit.AvgSpread(x, y)); // 5
+    WriteLine(Toolkit.Shift(x, y)); // 2
+    WriteLine(Toolkit.AvgSpread(x, y)); // 5
 
-        WriteLine(Toolkit.Disparity(x, y)); // 0.4
-        WriteLine(Toolkit.Disparity(x + 5, y + 5)); // 0.4
-        WriteLine(Toolkit.Disparity(x * 2, y * 2)); // 0.4
-        WriteLine(Toolkit.Disparity(y, x)); // -0.4
-    }
+    WriteLine(Toolkit.Disparity(x, y)); // 0.4
+    WriteLine(Toolkit.Disparity(x + 5, y + 5)); // 0.4
+    WriteLine(Toolkit.Disparity(x * 2, y * 2)); // 0.4
+    WriteLine(Toolkit.Disparity(y, x)); // -0.4
+  }
 }
 ```
 
-<span id="kotlin"></span> <!-- [pdf] DELETE -->
+<span id="kt"></span> <!-- [pdf] DELETE -->
 
 ## Kotlin
 
@@ -2094,23 +2094,23 @@ Install from Maven Central Repository via Apache Maven:
 <dependency>
     <groupId>dev.pragmastat</groupId>
     <artifactId>pragmastat</artifactId>
-    <version>3.1.27</version>
+    <version>3.1.28</version>
 </dependency>
 ```
 
 Install from Maven Central Repository via Gradle:
 
 ```java
-implementation 'dev.pragmastat:pragmastat:3.1.27'
+implementation 'dev.pragmastat:pragmastat:3.1.28'
 ```
 
 Install from Maven Central Repository via Gradle (Kotlin):
 
 ```kotlin
-implementation("dev.pragmastat:pragmastat:3.1.27")
+implementation("dev.pragmastat:pragmastat:3.1.28")
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.27/kotlin
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.28/kt
 
 Pragmastat on Maven Central Repository: https://central.sonatype.com/artifact/dev.pragmastat/pragmastat/overview
 
@@ -2168,24 +2168,24 @@ fun main() {
 }
 ```
 
-<span id="rust"></span> <!-- [pdf] DELETE -->
+<span id="rs"></span> <!-- [pdf] DELETE -->
 
 ## Rust
 
 Install from crates.io via cargo:
 
 ```bash
-cargo add pragmastat@3.1.27
+cargo add pragmastat@3.1.28
 ```
 
 Install from crates.io via `Cargo.toml`:
 
 ```toml
 [dependencies]
-pragmastat = "3.1.27"
+pragmastat = "3.1.28"
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.27/rust
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.28/rs
 
 Pragmastat on crates.io: https://crates.io/crates/pragmastat
 
@@ -2260,10 +2260,10 @@ fn main() {
 Install from GitHub:
 
 ```bash
-go get github.com/AndreyAkinshin/pragmastat/go/v3@v3.1.27
+go get github.com/AndreyAkinshin/pragmastat/go/v3@v3.1.28
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.27/go
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.28/go
 
 
 
@@ -2357,25 +2357,25 @@ func main() {
 
 Manual:
 
-- [pragmastat-v3.1.27.pdf](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.27/pragmastat-v3.1.27.pdf)
-- [pragmastat-v3.1.27.md](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.27/pragmastat-v3.1.27.md)
-- [web-v3.1.27.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.27/web-v3.1.27.zip)
+- PDF: [pragmastat-v3.1.28.pdf](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.28/pragmastat-v3.1.28.pdf)
+- Markdown: [pragmastat-v3.1.28.md](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.28/pragmastat-v3.1.28.md)
+- Website: [web-v3.1.28.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.28/web-v3.1.28.zip)
 
 Implementations:
 
-- [python-v3.1.27.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.27/python-v3.1.27.zip)
-- [ts-v3.1.27.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.27/ts-v3.1.27.zip)
-- [r-v3.1.27.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.27/r-v3.1.27.zip)
-- [dotnet-v3.1.27.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.27/dotnet-v3.1.27.zip)
-- [kotlin-v3.1.27.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.27/kotlin-v3.1.27.zip)
-- [rust-v3.1.27.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.27/rust-v3.1.27.zip)
-- [go-v3.1.27.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.27/go-v3.1.27.zip)
+- Python: [py-v3.1.28.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.28/py-v3.1.28.zip)
+- TypeScript: [ts-v3.1.28.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.28/ts-v3.1.28.zip)
+- R: [r-v3.1.28.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.28/r-v3.1.28.zip)
+- C#: [cs-v3.1.28.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.28/cs-v3.1.28.zip)
+- Kotlin: [kt-v3.1.28.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.28/kt-v3.1.28.zip)
+- Rust: [rs-v3.1.28.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.28/rs-v3.1.28.zip)
+- Go: [go-v3.1.28.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.28/go-v3.1.28.zip)
 
 Data:
 
-- [tests-v3.1.27.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.27/tests-v3.1.27.zip)
-- [simulations-v3.1.27.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.27/simulations-v3.1.27.zip)
+- Reference tests (json): [tests-v3.1.28.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.28/tests-v3.1.28.zip)
+- Reference simulations (json) [sim-v3.1.28.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.28/sim-v3.1.28.zip)
 
 Source code:
 
-- [pragmastat-3.1.27.zip](https://github.com/AndreyAkinshin/pragmastat/archive/refs/tags/v3.1.27.zip)
+- [pragmastat-3.1.28.zip](https://github.com/AndreyAkinshin/pragmastat/archive/refs/tags/v3.1.28.zip)
