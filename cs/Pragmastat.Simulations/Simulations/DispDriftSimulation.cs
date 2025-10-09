@@ -7,14 +7,14 @@ namespace Pragmastat.Simulations.Simulations;
 [UsedImplicitly]
 public class DispDriftSimulation : DriftSimulationBase
 {
-    public const string Name = "disp-drift";
+  public const string Name = "disp-drift";
 
-    protected override string GetResultFileName() => Name;
-    protected override NameRegistry<IOneSampleEstimator> EstimatorRegistry => Registries.DispersionEstimators;
+  protected override string GetResultFileName() => Name;
+  protected override NameRegistry<IOneSampleEstimator> EstimatorRegistry => Registries.DispersionEstimators;
 
-    protected override double Drift(Input input, Sample sampling)
-    {
-        int n = input.SampleSize;
-        return Math.Sqrt(n) * sampling.RelSpread();
-    }
+  protected override double Drift(Input input, Sample sampling)
+  {
+    int n = input.SampleSize;
+    return Math.Sqrt(n) * sampling.RelSpread();
+  }
 }

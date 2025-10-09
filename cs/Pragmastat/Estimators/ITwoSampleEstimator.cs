@@ -4,5 +4,5 @@ namespace Pragmastat.Estimators;
 
 public interface ITwoSampleEstimator
 {
-    Measurement Estimate(Sample x, Sample y);
+  Measurement Estimate(Sample x, Sample y);
 }

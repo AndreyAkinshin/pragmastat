@@ -6,21 +6,21 @@ namespace Pragmastat.ReferenceTests.Estimators;
 
 public class RatioTests : TwoSampleEstimatorTestBase
 {
-    private const string SuiteName = "ratio";
-    protected override string GetSuiteName() => SuiteName;
+  private const string SuiteName = "ratio";
+  protected override string GetSuiteName() => SuiteName;
 
-    protected override double Estimate(TwoSampleInput input) => input.GetSampleX().Ratio(input.GetSampleY());
+  protected override double Estimate(TwoSampleInput input) => input.GetSampleX().Ratio(input.GetSampleY());
 
-    protected override ReferenceTestCaseInputBuilder<TwoSampleInput> GetInputBuilder() =>
-        new TwoSampleInputBuilder()
-            .AddNatural([1, 2, 3], [1, 2, 3])
-            .AddNormal([5, 10, 30], [5, 10, 30], count: 1)
-            .AddUniform([5, 100], [5, 100], count: 1);
+  protected override ReferenceTestCaseInputBuilder<TwoSampleInput> GetInputBuilder() =>
+    new TwoSampleInputBuilder()
+      .AddNatural([1, 2, 3], [1, 2, 3])
+      .AddNormal([5, 10, 30], [5, 10, 30], count: 1)
+      .AddUniform([5, 100], [5, 100], count: 1);
 
-    [UsedImplicitly]
-    public static readonly TheoryData<string> TestDataNames = ReferenceTestSuiteHelper.GetTheoryData(SuiteName, true);
+  [UsedImplicitly]
+  public static readonly TheoryData<string> TestDataNames = ReferenceTestSuiteHelper.GetTheoryData(SuiteName, true);
 
-    [Theory]
-    [MemberData(nameof(TestDataNames))]
-    public void RatioTest(string testName) => PerformTest(testName);
+  [Theory]
+  [MemberData(nameof(TestDataNames))]
+  public void RatioTest(string testName) => PerformTest(testName);
 }

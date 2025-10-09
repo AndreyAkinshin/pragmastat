@@ -7,22 +7,22 @@ namespace Pragmastat.Internal;
 /// </summary>
 internal static class SourceRepositoryLocator
 {
-    private static readonly Lazy<string> LazyRepositoryRoot = new(() => GetRepositoryRoot());
-    public static string RepositoryRoot => LazyRepositoryRoot.Value;
+  private static readonly Lazy<string> LazyRepositoryRoot = new(() => GetRepositoryRoot());
+  public static string RepositoryRoot => LazyRepositoryRoot.Value;
 
-    private static string GetRepositoryRoot(string rootMarkerName = "CITATION.cff")
+  private static string GetRepositoryRoot(string rootMarkerName = "CITATION.cff")
+  {
+    var dir = Path.GetDirectoryName(Assembly.GetCallingAssembly().Location);
+    while (dir != null)
     {
-        var dir = Path.GetDirectoryName(Assembly.GetCallingAssembly().Location);
-        while (dir != null)
-        {
-            var rootMarkerPath = Path.Combine(dir, rootMarkerName);
-            if (File.Exists(rootMarkerPath))
-                return dir;
+      var rootMarkerPath = Path.Combine(dir, rootMarkerName);
+      if (File.Exists(rootMarkerPath))
+        return dir;
 
-            dir = Path.GetDirectoryName(dir);
-        }
-
-        throw new DirectoryNotFoundException(
-            $"Could not find '{rootMarkerName}' directory in parent path of {Assembly.GetCallingAssembly().Location}");
+      dir = Path.GetDirectoryName(dir);
     }
+
+    throw new DirectoryNotFoundException(
+      $"Could not find '{rootMarkerName}' directory in parent path of {Assembly.GetCallingAssembly().Location}");
+  }
 }

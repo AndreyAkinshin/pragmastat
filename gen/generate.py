@@ -54,6 +54,17 @@ def replace_with_warning(content: str, placeholder: str, replacement: str, conte
     return content.replace(placeholder, replacement)
 
 
+def escape_latex_for_markdown(text: str) -> str:
+    """
+    Escape characters for LaTeX output in markdown.
+    The escaping works correctly for both HTML and LaTeX/PDF outputs from markdown.
+    """
+    # In markdown, \# produces a literal # in both HTML and LaTeX output
+    # This ensures proper LaTeX escaping while keeping markdown readable
+    text = text.replace('#', r'\#')
+    return text
+
+
 def write_file_if_changed(file_path: Path, content: str, description: str = None) -> bool:
     """Write file only if content changed. Returns True if file was written."""
     file_path.parent.mkdir(parents=True, exist_ok=True)
@@ -686,7 +697,8 @@ def generate_documentation(paths: Paths, version: str):
 
         impl_content = template_impl
         impl_content = replace_with_warning(impl_content, '$LANG_SLUG$', lang.slug, f'{lang.slug} implementation doc')
-        impl_content = replace_with_warning(impl_content, '$LANG_TITLE$', lang.title, f'{lang.slug} implementation doc')
+        # Escape title for LaTeX processing (works correctly for both web and PDF outputs)
+        impl_content = replace_with_warning(impl_content, '$LANG_TITLE$', escape_latex_for_markdown(lang.title), f'{lang.slug} implementation doc')
         impl_content = replace_with_warning(impl_content, '$LANG_CODE$', lang.code_language, f'{lang.slug} implementation doc')
         impl_content = replace_with_warning(impl_content, '$VERSION$', version, f'{lang.slug} implementation doc')
         impl_content = replace_with_warning(impl_content, '$INSTALL$', install_content.rstrip(), f'{lang.slug} implementation doc')
@@ -701,7 +713,8 @@ def generate_documentation(paths: Paths, version: str):
         readme_install_content = replace_with_warning(readme_install_content, '$VERSION$', version, f'install-{lang.slug}.md for README')
 
         readme_content = template_readme
-        readme_content = replace_with_warning(readme_content, '$LANG_TITLE$', lang.title, f'{lang.slug} README')
+        # Escape title for consistency (renders correctly in markdown viewers)
+        readme_content = replace_with_warning(readme_content, '$LANG_TITLE$', escape_latex_for_markdown(lang.title), f'{lang.slug} README')
         readme_content = replace_with_warning(readme_content, '$LANG_CODE$', lang.code_language, f'{lang.slug} README')
         readme_content = replace_with_warning(readme_content, '$VERSION$', version, f'{lang.slug} README')
         readme_content = replace_with_warning(readme_content, '$LANG_SLUG$', lang.slug, f'{lang.slug} README')

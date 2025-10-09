@@ -9,13 +9,13 @@ namespace Pragmastat.Functions;
 /// </summary>
 internal static class ErrorFunction
 {
-    /// <summary>
-    /// The value of the error function
-    /// </summary>
-    public static double Value(double x) => AbramowitzStegunErf.Value(x);
+  /// <summary>
+  /// The value of the error function
+  /// </summary>
+  public static double Value(double x) => AbramowitzStegunErf.Value(x);
 
-    /// <summary>
-    /// The value of the inverse error function
-    /// </summary>
-    public static double InverseValue(double p) => ErfInverse.Value(p);
+  /// <summary>
+  /// The value of the inverse error function
+  /// </summary>
+  public static double InverseValue(double p) => ErfInverse.Value(p);
 }

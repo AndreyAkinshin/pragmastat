@@ -4,5 +4,5 @@ namespace Pragmastat.Exceptions;
 
 public class UnsupportedUnitException(MeasurementUnit unit) : Exception(GetMessage(unit))
 {
-    private static string GetMessage(MeasurementUnit unit) => $"Unsupported unit: {unit.FullName}";
+  private static string GetMessage(MeasurementUnit unit) => $"Unsupported unit: {unit.FullName}";
 }

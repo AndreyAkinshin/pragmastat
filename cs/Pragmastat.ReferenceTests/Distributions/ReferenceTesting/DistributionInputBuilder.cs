@@ -7,55 +7,55 @@ namespace Pragmastat.ReferenceTests.Distributions.ReferenceTesting;
 
 public class DistributionInputBuilder : ReferenceTestCaseInputBuilder<DistributionInput>
 {
-    [PublicAPI]
-    public DistributionInputBuilder Add(
-        string name,
-        Dictionary<string, double> parameters,
-        double[] x,
-        double[] p)
+  [PublicAPI]
+  public DistributionInputBuilder Add(
+    string name,
+    Dictionary<string, double> parameters,
+    double[] x,
+    double[] p)
+  {
+    Add(name, new DistributionInput { Parameters = parameters, X = x, P = p });
+    return this;
+  }
+
+  [PublicAPI]
+  public DistributionInputBuilder Add(IContinuousDistribution distribution)
+  {
+    var parameters = CtorArgumentSerializer.SerializeToList(distribution);
+    string name = parameters.Select(pair => $"{pair.Name}{pair.Value:R}").JoinToString("_");
+
+    var x = new List<double>();
+    var props = new List<double>();
+    for (int i = 0; i <= 100; i++)
     {
-        Add(name, new DistributionInput { Parameters = parameters, X = x, P = p });
-        return this;
+      double p = i / 100.0;
+      double q = distribution.Quantile(p);
+      if (double.IsFinite(q))
+      {
+        props.Add(p);
+        if (HasPdf(distribution, q))
+          x.Add(q);
+      }
     }
 
-    [PublicAPI]
-    public DistributionInputBuilder Add(IContinuousDistribution distribution)
+    Add(name, new DistributionInput
     {
-        var parameters = CtorArgumentSerializer.SerializeToList(distribution);
-        string name = parameters.Select(pair => $"{pair.Name}{pair.Value:R}").JoinToString("_");
+      Parameters = CtorArgumentSerializer.SerializeToDictionary(distribution),
+      X = x.ToArray(),
+      P = props.ToArray()
+    });
+    return this;
+  }
 
-        var x = new List<double>();
-        var props = new List<double>();
-        for (int i = 0; i <= 100; i++)
-        {
-            double p = i / 100.0;
-            double q = distribution.Quantile(p);
-            if (double.IsFinite(q))
-            {
-                props.Add(p);
-                if (HasPdf(distribution, q))
-                    x.Add(q);
-            }
-        }
-
-        Add(name, new DistributionInput
-        {
-            Parameters = CtorArgumentSerializer.SerializeToDictionary(distribution),
-            X = x.ToArray(),
-            P = props.ToArray()
-        });
-        return this;
-    }
-
-    private static bool HasPdf(IContinuousDistribution distribution, double x)
+  private static bool HasPdf(IContinuousDistribution distribution, double x)
+  {
+    try
     {
-        try
-        {
-            return double.IsFinite(distribution.Pdf(x));
-        }
-        catch
-        {
-            return false;
-        }
+      return double.IsFinite(distribution.Pdf(x));
     }
+    catch
+    {
+      return false;
+    }
+  }
 }
