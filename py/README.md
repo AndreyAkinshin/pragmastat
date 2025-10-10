@@ -2,9 +2,9 @@
 
 This is a Python implementation of 'Pragmastat: Pragmatic Statistical Toolkit', which presents a toolkit of statistical procedures that provide reliable results across diverse real-world distributions, with ready-to-use implementations and detailed explanations.
 
-- PDF manual for this version: [pragmastat-v3.1.28.pdf](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.28/pragmastat-v3.1.28.pdf)
-- Markdown manual for this version: [pragmastat-v3.1.28.md](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.28/pragmastat-v3.1.28.md)
-- Source code for this version: [pragmastat/py/v3.1.28](https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.28/py)
+- PDF manual for this version: [pragmastat-v3.1.29.pdf](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.29/pragmastat-v3.1.29.pdf)
+- Markdown manual for this version: [pragmastat-v3.1.29.md](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.29/pragmastat-v3.1.29.md)
+- Source code for this version: [pragmastat/py/v3.1.29](https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.29/py)
 - Latest online manual: https://pragmastat.dev
 - Manual DOI: [10.5281/zenodo.17236778](https://doi.org/10.5281/zenodo.17236778)
 
@@ -13,7 +13,7 @@ This is a Python implementation of 'Pragmastat: Pragmatic Statistical Toolkit', 
 Install from PyPI:
 
 ```bash
-pip install pragmastat==3.1.28
+pip install pragmastat==3.1.29
 ```
 
 ## Demo
