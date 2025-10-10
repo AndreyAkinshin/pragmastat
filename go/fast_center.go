@@ -9,22 +9,22 @@ import (
 // fastCenter computes the median of all pairwise averages efficiently.
 // Time complexity: O(n log n) expected
 // Space complexity: O(n)
-func fastCenter(values []float64) (float64, error) {
+func fastCenter[T Number](values []T) (float64, error) {
 	n := len(values)
 	if n == 0 {
 		return 0, errEmptyInput
 	}
 	if n == 1 {
-		return values[0], nil
+		return float64(values[0]), nil
 	}
 	if n == 2 {
-		return (values[0] + values[1]) / 2, nil
+		return (float64(values[0] + values[1])) / 2, nil
 	}
 
 	// Sort the values
-	sortedValues := make([]float64, n)
+	sortedValues := make([]T, n)
 	copy(sortedValues, values)
-	sort.Float64s(sortedValues)
+	sort.Slice(sortedValues, func(i, j int) bool { return sortedValues[i] < sortedValues[j] })
 
 	// Calculate target median rank(s) among all pairwise sums
 	totalPairs := int64(n) * int64(n+1) / 2
@@ -40,7 +40,7 @@ func fastCenter(values []float64) (float64, error) {
 	}
 
 	// Start with a good pivot: sum of middle elements
-	pivot := sortedValues[(n-1)/2] + sortedValues[n/2]
+	pivot := float64(sortedValues[(n-1)/2] + sortedValues[n/2])
 	activeSetSize := totalPairs
 	previousCount := int64(0)
 
@@ -52,7 +52,7 @@ func fastCenter(values []float64) (float64, error) {
 
 		for row := 1; row <= n; row++ {
 			// Move left from current column until we find sums < pivot
-			for currentColumn >= int64(row) && sortedValues[row-1]+sortedValues[currentColumn-1] >= pivot {
+			for currentColumn >= int64(row) && float64(sortedValues[row-1]+sortedValues[currentColumn-1]) >= pivot {
 				currentColumn--
 			}
 
@@ -75,9 +75,8 @@ func fastCenter(values []float64) (float64, error) {
 					continue
 				}
 
-				rowValue := sortedValues[i]
-				smallestInRow := sortedValues[leftBounds[i]-1] + rowValue
-				largestInRow := sortedValues[rightBounds[i]-1] + rowValue
+				smallestInRow := float64(sortedValues[leftBounds[i]-1] + sortedValues[i])
+				largestInRow := float64(sortedValues[rightBounds[i]-1] + sortedValues[i])
 
 				minActiveSum = math.Min(minActiveSum, smallestInRow)
 				maxActiveSum = math.Max(maxActiveSum, largestInRow)
@@ -110,14 +109,14 @@ func fastCenter(values []float64) (float64, error) {
 				// Find largest sum in this row that's < pivot
 				if countInRow > 0 {
 					lastBelowIndex := int64(i) + countInRow
-					lastBelowValue := rowValue + sortedValues[lastBelowIndex-1]
+					lastBelowValue := float64(rowValue + sortedValues[lastBelowIndex-1])
 					largestBelowPivot = math.Max(largestBelowPivot, lastBelowValue)
 				}
 
 				// Find smallest sum in this row that's >= pivot
 				if countInRow < totalInRow {
 					firstAtOrAboveIndex := int64(i) + countInRow + 1
-					firstAtOrAboveValue := rowValue + sortedValues[firstAtOrAboveIndex-1]
+					firstAtOrAboveValue := float64(rowValue + sortedValues[firstAtOrAboveIndex-1])
 					smallestAtOrAbovePivot = math.Min(smallestAtOrAbovePivot, firstAtOrAboveValue)
 				}
 			}
@@ -180,7 +179,7 @@ func fastCenter(values []float64) (float64, error) {
 
 			// Use median element of the selected row as pivot
 			medianColumnInRow := (leftBounds[selectedRow] + rightBounds[selectedRow]) / 2
-			pivot = sortedValues[selectedRow] + sortedValues[medianColumnInRow-1]
+			pivot = float64(sortedValues[selectedRow] + sortedValues[medianColumnInRow-1])
 		} else {
 			// Few elements remain - use midrange strategy
 			minRemainingSum := math.Inf(1)
@@ -191,9 +190,8 @@ func fastCenter(values []float64) (float64, error) {
 					continue
 				}
 
-				rowValue := sortedValues[i]
-				minInRow := sortedValues[leftBounds[i]-1] + rowValue
-				maxInRow := sortedValues[rightBounds[i]-1] + rowValue
+				minInRow := float64(sortedValues[leftBounds[i]-1] + sortedValues[i])
+				maxInRow := float64(sortedValues[rightBounds[i]-1] + sortedValues[i])
 
 				minRemainingSum = math.Min(minRemainingSum, minInRow)
 				maxRemainingSum = math.Max(maxRemainingSum, maxInRow)

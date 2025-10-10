@@ -277,3 +277,104 @@ func TestDisparity(t *testing.T) {
 		})
 	}
 }
+
+// Tests for generic integer inputs
+
+func TestCenterInt(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    []int
+		expected float64
+	}{
+		{"single", []int{1}, 1.0},
+		{"two elements", []int{1, 3}, 2.0},
+		{"three elements", []int{1, 2, 3}, 2.0},
+		{"larger range", []int{10, 20, 30}, 20.0},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := Center(tt.input)
+			if err != nil {
+				t.Errorf("Center(%v) unexpected error: %v", tt.input, err)
+			}
+			if !floatEquals(result, tt.expected, 1e-10) {
+				t.Errorf("Center(%v) = %v, want %v", tt.input, result, tt.expected)
+			}
+		})
+	}
+}
+
+func TestSpreadInt(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    []int
+		expected float64
+	}{
+		{"single", []int{1}, 0.0},
+		{"two elements", []int{1, 3}, 2.0},
+		{"three elements", []int{1, 2, 3}, 1.0},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := Spread(tt.input)
+			if err != nil {
+				t.Errorf("Spread(%v) unexpected error: %v", tt.input, err)
+			}
+			if !floatEquals(result, tt.expected, 1e-10) {
+				t.Errorf("Spread(%v) = %v, want %v", tt.input, result, tt.expected)
+			}
+		})
+	}
+}
+
+func TestShiftInt(t *testing.T) {
+	tests := []struct {
+		name     string
+		x        []int
+		y        []int
+		expected float64
+	}{
+		{"single elements", []int{3}, []int{1}, 2.0},
+		{"opposite", []int{1}, []int{3}, -2.0},
+		{"multiple elements", []int{10, 20}, []int{5, 15}, 5.0},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := Shift(tt.x, tt.y)
+			if err != nil {
+				t.Errorf("Shift(%v, %v) unexpected error: %v", tt.x, tt.y, err)
+			}
+			if !floatEquals(result, tt.expected, 1e-10) {
+				t.Errorf("Shift(%v, %v) = %v, want %v", tt.x, tt.y, result, tt.expected)
+			}
+		})
+	}
+}
+
+func TestRatioInt(t *testing.T) {
+	tests := []struct {
+		name     string
+		x        []int
+		y        []int
+		expected float64
+	}{
+		{"single elements", []int{4}, []int{2}, 2.0},
+		{"opposite", []int{2}, []int{4}, 0.5},
+		{"multiple elements", []int{10, 20}, []int{5, 10}, 2.0},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := Ratio(tt.x, tt.y)
+			if err != nil {
+				t.Errorf("Ratio(%v, %v) unexpected error: %v", tt.x, tt.y, err)
+			}
+			if !floatEquals(result, tt.expected, 1e-10) {
+				t.Errorf("Ratio(%v, %v) = %v, want %v", tt.x, tt.y, result, tt.expected)
+			}
+		})
+	}
+}

@@ -29,16 +29,16 @@ type TwoSampleInput struct {
 func TestReferenceData(t *testing.T) {
 	// Map estimator names to functions
 	oneSampleEstimators := map[string]func([]float64) (float64, error){
-		"center":     Center,
-		"spread":     Spread,
-		"rel-spread": RelSpread,
+		"center":     Center[float64],
+		"spread":     Spread[float64],
+		"rel-spread": RelSpread[float64],
 	}
 
 	twoSampleEstimators := map[string]func([]float64, []float64) (float64, error){
-		"shift":      Shift,
-		"ratio":      Ratio,
-		"avg-spread": AvgSpread,
-		"disparity":  Disparity,
+		"shift":      Shift[float64],
+		"ratio":      Ratio[float64],
+		"avg-spread": AvgSpread[float64],
+		"disparity":  Disparity[float64],
 	}
 
 	testDataPath := "../tests"

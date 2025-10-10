@@ -9,7 +9,7 @@ import (
 // fastSpread computes the median of all pairwise absolute differences efficiently.
 // Time complexity: O(n log n) expected
 // Space complexity: O(n)
-func fastSpread(values []float64) (float64, error) {
+func fastSpread[T Number](values []T) (float64, error) {
 	n := len(values)
 	if n == 0 {
 		return 0.0, errEmptyInput
@@ -18,13 +18,13 @@ func fastSpread(values []float64) (float64, error) {
 		return 0.0, nil
 	}
 	if n == 2 {
-		return math.Abs(values[1] - values[0]), nil
+		return math.Abs(float64(values[1] - values[0])), nil
 	}
 
 	// Sort the values
-	a := make([]float64, n)
+	a := make([]T, n)
 	copy(a, values)
-	sort.Float64s(a)
+	sort.Slice(a, func(i, j int) bool { return a[i] < a[j] })
 
 	// Total number of pairwise differences with i < j
 	N := int64(n) * int64(n-1) / 2
@@ -50,7 +50,7 @@ func fastSpread(values []float64) (float64, error) {
 	rowCounts := make([]int64, n)
 
 	// Initial pivot: a central gap
-	pivot := a[n/2] - a[(n-1)/2]
+	pivot := float64(a[n/2] - a[(n-1)/2])
 	prevCountBelow := int64(-1)
 
 	for {
@@ -64,7 +64,7 @@ func fastSpread(values []float64) (float64, error) {
 			if j < i+1 {
 				j = i + 1
 			}
-			for j < n && a[j]-a[i] < pivot {
+			for j < n && float64(a[j]-a[i]) < pivot {
 				j++
 			}
 
@@ -77,12 +77,12 @@ func fastSpread(values []float64) (float64, error) {
 
 			// boundary elements for this row
 			if cntRow > 0 {
-				candBelow := a[j-1] - a[i]
+				candBelow := float64(a[j-1] - a[i])
 				largestBelow = math.Max(largestBelow, candBelow)
 			}
 
 			if j < n {
-				candAtOrAbove := a[j] - a[i]
+				candAtOrAbove := float64(a[j] - a[i])
 				smallestAtOrAbove = math.Min(smallestAtOrAbove, candAtOrAbove)
 			}
 		}
@@ -115,8 +115,8 @@ func fastSpread(values []float64) (float64, error) {
 					continue
 				}
 
-				rowMin := a[Li] - a[i]
-				rowMax := a[Ri] - a[i]
+				rowMin := float64(a[Li] - a[i])
+				rowMax := float64(a[Ri] - a[i])
 				minActive = math.Min(minActive, rowMin)
 				maxActive = math.Max(maxActive, rowMax)
 				active += int64(Ri - Li + 1)
@@ -191,8 +191,8 @@ func fastSpread(values []float64) (float64, error) {
 				if L[i] > R[i] {
 					continue
 				}
-				lo := a[L[i]] - a[i]
-				hi := a[R[i]] - a[i]
+				lo := float64(a[L[i]] - a[i])
+				hi := float64(a[R[i]] - a[i])
 				minRem = math.Min(minRem, lo)
 				maxRem = math.Max(maxRem, hi)
 			}
@@ -233,6 +233,6 @@ func fastSpread(values []float64) (float64, error) {
 
 		// Median column of the selected row
 		col := (L[row] + R[row]) / 2
-		pivot = a[col] - a[row]
+		pivot = float64(a[col] - a[row])
 	}
 }
