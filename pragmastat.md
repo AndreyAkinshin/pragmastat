@@ -1,6 +1,6 @@
 ---
 title: "Pragmastat: Pragmatic Statistical Toolkit"
-version: 3.1.28
+version: 3.1.29
 ---
 
 <div style="display: none;">
@@ -1808,10 +1808,10 @@ The $\Spread$ requires about 1.16 times more data to match $\StdDev$ precision u
 Install from PyPI:
 
 ```bash
-pip install pragmastat==3.1.28
+pip install pragmastat==3.1.29
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.28/py
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.29/py
 
 Pragmastat on PyPI: https://pypi.org/project/pragmastat/
 
@@ -1878,10 +1878,10 @@ if __name__ == "__main__":
 Install from npm:
 
 ```bash
-npm i pragmastat@3.1.28
+npm i pragmastat@3.1.29
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.28/ts
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.29/ts
 
 Pragmastat on npm: https://www.npmjs.com/package/pragmastat
 
@@ -1948,11 +1948,11 @@ Install from GitHub:
 ```r
 install.packages("remotes") # If 'remotes' is not installed
 remotes::install_github("AndreyAkinshin/pragmastat",
-                        subdir = "r/pragmastat", ref = "v3.1.28")
+                        subdir = "r/pragmastat", ref = "v3.1.29")
 library(pragmastat)
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.28/r
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.29/r
 
 
 
@@ -2013,16 +2013,16 @@ print(disparity(y, x)) # -0.4
 Install from NuGet via .NET CLI:
 
 ```bash
-dotnet add package Pragmastat --version 3.1.28
+dotnet add package Pragmastat --version 3.1.29
 ```
 
 Install from NuGet via Package Manager Console:
 
 ```ps1
-NuGet\Install-Package Pragmastat -Version 3.1.28
+NuGet\Install-Package Pragmastat -Version 3.1.29
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.28/cs
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.29/cs
 
 Pragmastat on NuGet: https://www.nuget.org/packages/Pragmastat/
 
@@ -2094,23 +2094,23 @@ Install from Maven Central Repository via Apache Maven:
 <dependency>
     <groupId>dev.pragmastat</groupId>
     <artifactId>pragmastat</artifactId>
-    <version>3.1.28</version>
+    <version>3.1.29</version>
 </dependency>
 ```
 
 Install from Maven Central Repository via Gradle:
 
 ```java
-implementation 'dev.pragmastat:pragmastat:3.1.28'
+implementation 'dev.pragmastat:pragmastat:3.1.29'
 ```
 
 Install from Maven Central Repository via Gradle (Kotlin):
 
 ```kotlin
-implementation("dev.pragmastat:pragmastat:3.1.28")
+implementation("dev.pragmastat:pragmastat:3.1.29")
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.28/kt
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.29/kt
 
 Pragmastat on Maven Central Repository: https://central.sonatype.com/artifact/dev.pragmastat/pragmastat/overview
 
@@ -2175,17 +2175,17 @@ fun main() {
 Install from crates.io via cargo:
 
 ```bash
-cargo add pragmastat@3.1.28
+cargo add pragmastat@3.1.29
 ```
 
 Install from crates.io via `Cargo.toml`:
 
 ```toml
 [dependencies]
-pragmastat = "3.1.28"
+pragmastat = "3.1.29"
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.28/rs
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.29/rs
 
 Pragmastat on crates.io: https://crates.io/crates/pragmastat
 
@@ -2260,10 +2260,10 @@ fn main() {
 Install from GitHub:
 
 ```bash
-go get github.com/AndreyAkinshin/pragmastat/go/v3@v3.1.28
+go get github.com/AndreyAkinshin/pragmastat/go/v3@v3.1.29
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.28/go
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.29/go
 
 
 
@@ -2357,25 +2357,25 @@ func main() {
 
 Manual:
 
-- PDF: [pragmastat-v3.1.28.pdf](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.28/pragmastat-v3.1.28.pdf)
-- Markdown: [pragmastat-v3.1.28.md](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.28/pragmastat-v3.1.28.md)
-- Website: [web-v3.1.28.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.28/web-v3.1.28.zip)
+- PDF: [pragmastat-v3.1.29.pdf](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.29/pragmastat-v3.1.29.pdf)
+- Markdown: [pragmastat-v3.1.29.md](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.29/pragmastat-v3.1.29.md)
+- Website: [web-v3.1.29.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.29/web-v3.1.29.zip)
 
 Implementations:
 
-- Python: [py-v3.1.28.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.28/py-v3.1.28.zip)
-- TypeScript: [ts-v3.1.28.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.28/ts-v3.1.28.zip)
-- R: [r-v3.1.28.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.28/r-v3.1.28.zip)
-- C#: [cs-v3.1.28.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.28/cs-v3.1.28.zip)
-- Kotlin: [kt-v3.1.28.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.28/kt-v3.1.28.zip)
-- Rust: [rs-v3.1.28.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.28/rs-v3.1.28.zip)
-- Go: [go-v3.1.28.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.28/go-v3.1.28.zip)
+- Python: [py-v3.1.29.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.29/py-v3.1.29.zip)
+- TypeScript: [ts-v3.1.29.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.29/ts-v3.1.29.zip)
+- R: [r-v3.1.29.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.29/r-v3.1.29.zip)
+- C#: [cs-v3.1.29.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.29/cs-v3.1.29.zip)
+- Kotlin: [kt-v3.1.29.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.29/kt-v3.1.29.zip)
+- Rust: [rs-v3.1.29.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.29/rs-v3.1.29.zip)
+- Go: [go-v3.1.29.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.29/go-v3.1.29.zip)
 
 Data:
 
-- Reference tests (json): [tests-v3.1.28.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.28/tests-v3.1.28.zip)
-- Reference simulations (json) [sim-v3.1.28.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.28/sim-v3.1.28.zip)
+- Reference tests (json): [tests-v3.1.29.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.29/tests-v3.1.29.zip)
+- Reference simulations (json) [sim-v3.1.29.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.29/sim-v3.1.29.zip)
 
 Source code:
 
-- [pragmastat-3.1.28.zip](https://github.com/AndreyAkinshin/pragmastat/archive/refs/tags/v3.1.28.zip)
+- [pragmastat-3.1.29.zip](https://github.com/AndreyAkinshin/pragmastat/archive/refs/tags/v3.1.29.zip)
