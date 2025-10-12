@@ -85,10 +85,8 @@ describe('Fast Center Performance', () => {
     const result = fastCenter(x);
     const elapsed = Date.now() - start;
 
-    console.log(`\nCenter for n=${n}: ${result.toFixed(6)}`);
-    console.log(`Elapsed time: ${elapsed}ms`);
-
     expect(elapsed).toBeLessThan(5000); // Should complete in less than 5 seconds
+    expect(result).toBeDefined(); // Ensure result is computed
   });
 });
 
@@ -102,9 +100,7 @@ describe('Fast Spread Performance', () => {
     const result = fastSpread(x);
     const elapsed = Date.now() - start;
 
-    console.log(`\nSpread for n=${n}: ${result.toFixed(6)}`);
-    console.log(`Elapsed time: ${elapsed}ms`);
-
     expect(elapsed).toBeLessThan(5000); // Should complete in less than 5 seconds
+    expect(result).toBeDefined(); // Ensure result is computed
   });
 });

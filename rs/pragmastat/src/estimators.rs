@@ -58,19 +58,9 @@ pub fn rel_spread(x: &[f64]) -> Result<f64, &'static str> {
 ///
 /// Calculates the median of all pairwise differences (x[i] - y[j]).
 /// Positive values mean x is typically larger, negative means y is typically larger.
+/// Uses fast O((m+n) log precision) algorithm.
 pub fn shift(x: &[f64], y: &[f64]) -> Result<f64, &'static str> {
-    if x.is_empty() || y.is_empty() {
-        return Err("Input slices cannot be empty");
-    }
-
-    let mut pairwise_shifts = Vec::new();
-    for &xi in x {
-        for &yj in y {
-            pairwise_shifts.push(xi - yj);
-        }
-    }
-
-    median(&pairwise_shifts)
+    crate::fast_shift::fast_shift(x, y)
 }
 
 /// Measures how many times larger x is compared to y (Ratio)

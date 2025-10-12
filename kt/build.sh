@@ -41,17 +41,15 @@ run_command() {
 
 # Main script
 if [ -z "$1" ]; then
-    echo "Usage: $0 {test|build|jar|clean|lint|format|deps|all}"
+    echo "Usage: $0 {test|build|jar|clean|deps|all}"
     echo ""
     echo "Commands:"
     echo "  test    - Run all tests"
     echo "  build   - Build the Kotlin package"
     echo "  jar     - Package JAR file"
     echo "  clean   - Clean build artifacts"
-    echo "  lint    - Run ktlint checks"
-    echo "  format  - Format code with ktlint"
     echo "  deps    - Display project dependencies"
-    echo "  all     - Run all tasks (clean, format, test, build, jar)"
+    echo "  all     - Run all tasks (clean, test, build, jar)"
     exit 1
 fi
 
@@ -69,36 +67,27 @@ case "$1" in
     clean)
         run_command "./gradlew clean" "Cleaning build artifacts"
         ;;
-    lint)
-        run_command "./gradlew ktlintCheck" "Running ktlint"
-        ;;
-    format)
-        run_command "./gradlew ktlintFormat" "Formatting code with ktlint"
-        ;;
     deps)
         run_command "./gradlew dependencies" "Displaying dependencies"
         ;;
     all)
         print_status "Running all tasks..."
         run_command "./gradlew clean" "Cleaning build artifacts"
-        run_command "./gradlew ktlintFormat" "Formatting code with ktlint"
         run_command "./gradlew test" "Running tests"
         run_command "./gradlew build" "Building Kotlin package"
         run_command "./gradlew jar" "Packaging JAR"
         print_status "✓ All tasks completed successfully!"
         ;;
     *)
-        echo "Usage: $0 {test|build|jar|clean|lint|format|deps|all}"
+        echo "Usage: $0 {test|build|jar|clean|deps|all}"
         echo ""
         echo "Commands:"
         echo "  test    - Run all tests"
         echo "  build   - Build the Kotlin package"
         echo "  jar     - Package JAR file"
         echo "  clean   - Clean build artifacts"
-        echo "  lint    - Run ktlint checks"
-        echo "  format  - Format code with ktlint"
         echo "  deps    - Display project dependencies"
-        echo "  all     - Run all tasks (clean, format, test, build, jar)"
+        echo "  all     - Run all tasks (clean, test, build, jar)"
         exit 1
         ;;
 esac

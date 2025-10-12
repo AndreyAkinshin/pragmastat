@@ -8,7 +8,7 @@ using Pragmastat.Metrology;
 
 namespace Pragmastat.UnitTests.Estimators;
 
-public class CenterFastTests
+public class FastCenterTests
 {
   [Fact]
   public void CenterFastTest()

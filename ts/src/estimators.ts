@@ -5,6 +5,7 @@
 import { median } from './utils';
 import { fastCenter } from './fastCenter';
 import { fastSpread } from './fastSpread';
+import { fastShift } from './fastShift';
 
 /**
  * Calculate the Center - median of all pairwise averages (x[i] + x[j])/2
@@ -48,6 +49,7 @@ export function relSpread(x: number[]): number {
 
 /**
  * Calculate the Shift - median of all pairwise differences (x[i] - y[j])
+ * Uses fast O((m + n) * log(precision)) algorithm.
  * @param x First sample
  * @param y Second sample
  * @returns The shift estimate
@@ -60,14 +62,7 @@ export function shift(x: number[], y: number[]): number {
     throw new Error('Input arrays cannot be empty');
   }
 
-  const pairwiseDifferences: number[] = [];
-  for (let i = 0; i < nx; i++) {
-    for (let j = 0; j < ny; j++) {
-      pairwiseDifferences.push(x[i] - y[j]);
-    }
-  }
-
-  return median(pairwiseDifferences);
+  return fastShift(x, y, [0.5], false)[0];
 }
 
 /**

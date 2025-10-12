@@ -69,19 +69,9 @@ func RelSpread[T Number](x []T) (float64, error) {
 // Shift measures the typical difference between elements of x and y.
 // Calculates the median of all pairwise differences (x[i] - y[j]).
 // Positive values mean x is typically larger, negative means y is typically larger.
+// Uses fast O((m + n) * log(precision)) algorithm.
 func Shift[T Number](x, y []T) (float64, error) {
-	if len(x) == 0 || len(y) == 0 {
-		return 0, errors.New("input slices cannot be empty")
-	}
-
-	var pairwiseShifts []float64
-	for _, xi := range x {
-		for _, yj := range y {
-			pairwiseShifts = append(pairwiseShifts, float64(xi-yj))
-		}
-	}
-
-	return median(pairwiseShifts)
+	return fastShift(x, y)
 }
 
 // Ratio measures how many times larger x is compared to y.

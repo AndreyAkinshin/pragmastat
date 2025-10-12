@@ -59,18 +59,11 @@ fun relSpread(x: List<Double>): Double {
  *
  * Calculates the median of all pairwise differences (x[i] - y[j]).
  * Positive values mean x is typically larger, negative means y is typically larger.
+ * Uses fast O((m + n) * log(precision)) algorithm.
  */
 fun shift(x: List<Double>, y: List<Double>): Double {
     require(x.isNotEmpty() && y.isNotEmpty()) { "Input lists cannot be empty" }
-
-    val pairwiseShifts = mutableListOf<Double>()
-    for (xi in x) {
-        for (yj in y) {
-            pairwiseShifts.add(xi - yj)
-        }
-    }
-
-    return median(pairwiseShifts)
+    return fastShift(x, y)[0]
 }
 
 /**

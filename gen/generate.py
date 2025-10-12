@@ -246,7 +246,10 @@ LANGUAGES = [
         package_url='Pragmastat on npm: https://www.npmjs.com/package/pragmastat',
         version_file='ts/package.json',
         version_pattern=r'"version": ".*?"',
-        version_replace='"version": "{version}"'
+        version_replace='"version": "{version}"',
+        version_file_2='ts/package-lock.json',
+        version_pattern_2=r'("name":\s*"pragmastat",\s*)"version":\s*"[^"]*"',
+        version_replace_2=r'\1"version": "{version}"'
     )
 ]
 
@@ -485,7 +488,7 @@ def process_images(paths: Paths, mode: str):
 
 
 # ============================================================================
-# Operation 1: Web Content Conversion
+# Operation 3: Web Content Conversion
 # ============================================================================
 
 def convert_web_content(paths: Paths, version: str, is_release: bool):
@@ -557,7 +560,7 @@ def convert_md_content(paths: Paths, version: str, is_release: bool):
 
 
 # ============================================================================
-# Operation 2: PDF Content Conversion
+# Operation 4: PDF Content Conversion
 # ============================================================================
 
 def convert_pdf_content(paths: Paths, version: str, is_release: bool):
@@ -620,7 +623,7 @@ def convert_pdf_content(paths: Paths, version: str, is_release: bool):
 
 
 # ============================================================================
-# Operation 3: Version Unification
+# Operation 1: Version Unification
 # ============================================================================
 
 def unify_versions(paths: Paths, version: str):
@@ -675,7 +678,7 @@ def unify_versions(paths: Paths, version: str):
 
 
 # ============================================================================
-# Operation 4: Documentation Generation
+# Operation 2: Documentation Generation
 # ============================================================================
 
 def generate_documentation(paths: Paths, version: str):
@@ -767,6 +770,8 @@ def main():
     print()
 
     # Execute operations in order
+    unify_versions(paths, version)
+    print()
     generate_documentation(paths, version)
     print()
     convert_md_content(paths, version, args.release)
@@ -774,8 +779,6 @@ def main():
     convert_web_content(paths, version, args.release)
     print()
     convert_pdf_content(paths, version, args.release)
-    print()
-    unify_versions(paths, version)
     print()
 
     log("=" * 60)

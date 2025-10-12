@@ -15,6 +15,12 @@ extensions = [
         include_dirs=[numpy.get_include()],
         extra_compile_args=["-O3", "-Wall"],
     ),
+    Extension(
+        "pragmastat._fast_shift_c",
+        sources=["src/fast_shift_c.c"],
+        include_dirs=[numpy.get_include()],
+        extra_compile_args=["-O3", "-Wall"],
+    ),
 ]
 
 setup(

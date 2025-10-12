@@ -8,6 +8,7 @@
 
 pub mod estimators;
 pub mod fast_center;
+pub mod fast_shift;
 pub mod fast_spread;
 
 pub use estimators::{avg_spread, center, disparity, ratio, rel_spread, shift, spread};

@@ -8,7 +8,7 @@ using Pragmastat.Metrology;
 
 namespace Pragmastat.UnitTests.Estimators;
 
-public class SpreadFastTests
+public class FastSpreadTests
 {
   [Fact]
   public void SpreadFastTest()

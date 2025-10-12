@@ -12,6 +12,6 @@ public class SpreadEstimator : IOneSampleEstimator
   {
     if (x.Size == 1)
       return Measurement.Zero(x.Unit);
-    return FastSpreadAlgorithm.Estimate(x.SortedValues, isSorted: true).WithUnitOf(x);
+    return FastSpread.Estimate(x.SortedValues, isSorted: true).WithUnitOf(x);
   }
 }

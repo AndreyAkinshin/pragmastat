@@ -17,8 +17,8 @@ public abstract class ReferenceTestBase<TInput, TOutput>
   }
 
   // Remove 'Skip' to generate initial test data
-  //[Fact(Skip = "Run this tests explicitly for the initial test case generation")]
-  [Fact]
+  [Fact(Skip = "Run this tests explicitly for the initial test case generation")]
+  // [Fact]
   public void GenerateTests()
   {
     var inputs = GetInputBuilder().Build();

@@ -1,13 +1,11 @@
-"""Performance tests for fast Center and Spread implementations."""
-
 import time
 import numpy as np
 from pragmastat.fast_center import _fast_center
 from pragmastat.fast_spread import _fast_spread
+from pragmastat.fast_shift import _fast_shift
 
 
-def center_simple(x):
-    """Simple O(n^2) implementation for comparison."""
+def center_naive(x):
     n = len(x)
     pairwise_averages = []
     for i in range(n):
@@ -16,8 +14,7 @@ def center_simple(x):
     return np.median(pairwise_averages)
 
 
-def spread_simple(x):
-    """Simple O(n^2) implementation for comparison."""
+def spread_naive(x):
     n = len(x)
     if n == 1:
         return 0.0
@@ -28,13 +25,20 @@ def spread_simple(x):
     return np.median(pairwise_diffs)
 
 
+def shift_naive(x, y):
+    pairwise_shifts = []
+    for xi in x:
+        for yj in y:
+            pairwise_shifts.append(xi - yj)
+    return np.median(pairwise_shifts)
+
+
 def test_center_correctness():
-    """Test that _fast_center produces the same results as simple implementation."""
     np.random.seed(1729)
     for n in range(1, 101):
         for iteration in range(n):
             x = np.random.randn(n).tolist()
-            expected = center_simple(x)
+            expected = center_naive(x)
             actual = _fast_center(x)
             assert (
                 abs(expected - actual) < 1e-9
@@ -42,12 +46,11 @@ def test_center_correctness():
 
 
 def test_spread_correctness():
-    """Test that _fast_spread produces the same results as simple implementation."""
     np.random.seed(1729)
     for n in range(1, 101):
         for iteration in range(n):
             x = np.random.randn(n).tolist()
-            expected = spread_simple(x)
+            expected = spread_naive(x)
             actual = _fast_spread(x)
             assert (
                 abs(expected - actual) < 1e-9
@@ -55,7 +58,6 @@ def test_spread_correctness():
 
 
 def test_center_performance():
-    """Test performance of _fast_center on large dataset."""
     np.random.seed(1729)
     x = np.random.randn(100000).tolist()
 
@@ -69,7 +71,6 @@ def test_center_performance():
 
 
 def test_spread_performance():
-    """Test performance of _fast_spread on large dataset."""
     np.random.seed(1729)
     x = np.random.randn(100000).tolist()
 
@@ -82,6 +83,33 @@ def test_spread_performance():
     assert elapsed < 10.0, f"Performance too slow: {elapsed}s"
 
 
+def test_shift_correctness():
+    np.random.seed(1729)
+    for n in range(2, 51):
+        for m in range(2, 51):
+            x = np.random.randn(n).tolist()
+            y = np.random.randn(m).tolist()
+            expected = shift_naive(x, y)
+            actual = _fast_shift(x, y, p=0.5)
+            assert (
+                abs(expected - actual) < 1e-9
+            ), f"Mismatch for n={n}, m={m}: expected={expected}, actual={actual}"
+
+
+def test_shift_performance():
+    np.random.seed(1729)
+    x = np.random.randn(10000).tolist()
+    y = np.random.randn(10000).tolist()
+
+    start = time.time()
+    result = _fast_shift(x, y, p=0.5)
+    elapsed = time.time() - start
+
+    print(f"\nShift for n=m=10000: {result:.6f}")
+    print(f"Elapsed time: {elapsed:.3f}s")
+    assert elapsed < 10.0, f"Performance too slow: {elapsed}s"
+
+
 if __name__ == "__main__":
     test_center_correctness()
     print("✓ Center correctness tests passed")
@@ -89,8 +117,14 @@ if __name__ == "__main__":
     test_spread_correctness()
     print("✓ Spread correctness tests passed")
 
+    test_shift_correctness()
+    print("✓ Shift correctness tests passed")
+
     test_center_performance()
     print("✓ Center performance test passed")
 
     test_spread_performance()
     print("✓ Spread performance test passed")
+
+    test_shift_performance()
+    print("✓ Shift performance test passed")

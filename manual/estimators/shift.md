@@ -7,6 +7,7 @@ $$
 - Measures the median of pairwise differences between elements of two samples
 - Equals the *Hodges-Lehmann estimator* for two samples ([@hodges1963])
 - Asymptotically, $\Shift[X, Y]$ is the median of the difference of random measurements from $X$ and $Y$
+- Straightforward implementations have $O(mn \log(mn))$ complexity; a fast $O((m+n) \log L)$ version is provided in the Algorithms section.
 - Domain: any real numbers
 - Unit: the same as measurements
 

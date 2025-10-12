@@ -3,6 +3,7 @@ import numpy as np
 from numpy.typing import NDArray
 from .fast_center import _fast_center
 from .fast_spread import _fast_spread
+from .fast_shift import _fast_shift
 
 
 def center(x: Union[Sequence[float], NDArray]) -> float:
@@ -39,8 +40,8 @@ def shift(
     y = np.asarray(y)
     if len(x) == 0 or len(y) == 0:
         raise ValueError("Input arrays cannot be empty")
-    pairwise_shifts = np.subtract.outer(x, y)
-    return float(np.median(pairwise_shifts))
+    # Use fast O((m+n) log L) algorithm instead of materializing all m*n differences
+    return float(_fast_shift(x, y, p=0.5))
 
 
 def ratio(

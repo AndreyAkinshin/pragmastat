@@ -1,3 +1,4 @@
+using Pragmastat.Algorithms;
 using Pragmastat.Functions;
 using Pragmastat.Internal;
 using Pragmastat.Metrology;
@@ -11,7 +12,8 @@ public class ShiftEstimator : ITwoSampleEstimator
   public Measurement Estimate(Sample x, Sample y)
   {
     Assertion.MatchedUnit(x, y);
-    var pairwise = PairwiseSampleTransformer.Transform(x, y, (xi, yj) => xi - yj);
-    return MedianEstimator.Instance.Estimate(pairwise);
+    return FastShift
+      .Estimate(x.SortedValues, y.SortedValues, [0.5], true)
+      .Single().WithUnitOf(x);
   }
 }
