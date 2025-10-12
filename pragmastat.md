@@ -1,6 +1,6 @@
 ---
 title: "Pragmastat: Pragmatic Statistical Toolkit"
-version: 3.1.29
+version: 3.1.30
 ---
 
 <div style="display: none;">
@@ -291,6 +291,7 @@ $$
 - Measures the median of pairwise differences between elements of two samples
 - Equals the *Hodges-Lehmann estimator* for two samples ([@hodges1963])
 - Asymptotically, $\Shift[X, Y]$ is the median of the difference of random measurements from $X$ and $Y$
+- Straightforward implementations have $O(mn \log(mn))$ complexity; a fast $O((m+n) \log L)$ version is provided in the Algorithms section.
 - Domain: any real numbers
 - Unit: the same as measurements
 
@@ -891,7 +892,7 @@ This chapter describes the core algorithms that power the robust estimators in t
 Both algorithms solve a fundamental computational challenge: how to efficiently find medians within large collections
   of derived values without materializing the entire collection in memory.
 
-## Fast Center Algorithm
+## Fast Center
 
 The $\Center$ estimator computes the median of all pairwise averages from a sample.
 Given a dataset $x = (x_1, x_2, \ldots, x_n)$, this estimator is defined as:
@@ -944,7 +945,7 @@ This matches the complexity of sorting a single array while avoiding the quadrat
 ```cs
 namespace Pragmastat.Algorithms;
 
-internal static class FastCenterAlgorithm
+internal static class FastCenter
 {
   /// <summary>
   /// ACM Algorithm 616: fast computation of the Hodges-Lehmann location estimator
@@ -1173,7 +1174,7 @@ internal static class FastCenterAlgorithm
 }
 ```
 
-## Fast Spread Algorithm
+## Fast Spread
 
 The $\Spread$ estimator computes the median of all pairwise absolute differences.
 Given a sample $x = (x_1, x_2, \ldots, x_n)$, this estimator is defined as:
@@ -1231,7 +1232,7 @@ Using only $O(n)$ additional space for row bounds and counters,
 ```cs
 namespace Pragmastat.Algorithms;
 
-internal static class FastSpreadAlgorithm
+internal static class FastSpread
 {
   /// <summary>
   /// Shamos "Spread".  Expected O(n log n) time, O(n) extra space. Exact.
@@ -1493,6 +1494,250 @@ internal static class FastSpreadAlgorithm
       if (u - r <= ulong.MaxValue - (ulong.MaxValue % uLimit)) return (long)r;
     }
   }
+}
+```
+
+## Fast Shift
+
+The $\Shift$ estimator measures the median of all pairwise differences between elements of two samples.
+Given samples $\x = (x_1, x_2, \ldots, x_n)$ and $\y = (y_1, y_2, \ldots, y_m)$, this estimator is defined as:
+
+$$
+\Shift(\x, \y) = \underset{1 \leq i \leq n,\,\, 1 \leq j \leq m}{\Median} \left(x_i - y_j \right)
+$$
+
+This definition represents a special case of a more general problem:
+  computing arbitrary quantiles of all pairwise differences.
+For samples of size $n$ and $m$, the total number of pairwise differences is $n \times m$.
+A naive approach would materialize all differences, sort them, and extract the desired quantile.
+With $n = m = 10,000$, this creates 100 million values,
+  requiring quadratic memory and $O(nm \log(nm))$ time.
+
+The algorithm avoids materializing any pairwise differences by exploiting the sorted structure of the samples.
+After sorting both samples to obtain $x_1 \leq x_2 \leq \cdots \leq x_n$ and $y_1 \leq y_2 \leq \cdots \leq y_m$,
+  the key insight is that we can count how many pairwise differences fall below any threshold value
+  without computing them explicitly.
+This counting operation enables binary search over the continuous space of possible difference values,
+  iteratively narrowing the search range until convergence to the exact quantile.
+
+The algorithm operates through value-space search rather than index-space selection.
+It maintains a search interval $[\text{searchMin}, \text{searchMax}]$ initialized to the range
+  of all possible differences: $[x_1 - y_m, x_n - y_1]$.
+At each iteration, it selects a candidate value within this interval and counts
+  how many pairwise differences are less than or equal to this threshold.
+For the median (quantile $p = 0.5$), if fewer than half the differences lie below the threshold,
+  the median must be larger; if more than half lie below, the median must be smaller.
+Based on this comparison, the algorithm eliminates portions of the search space
+  that cannot contain the target quantile.
+
+The counting operation achieves linear complexity through a two-pointer sweep.
+For a given threshold $t$, the algorithm counts how many pairs $(i,j)$ satisfy $x_i - y_j \leq t$.
+This is equivalent to counting pairs where $y_j \geq x_i - t$.
+For each row $i$ in the implicit matrix, the algorithm advances a column pointer
+  through the sorted $y$ array while $x_i - y_j > t$, stopping at the first position
+  where $x_i - y_j \leq t$.
+All remaining positions in that row satisfy the condition,
+  contributing $(m - j)$ pairs to the count for row $i$.
+Because both samples are sorted, the column pointer advances monotonically and never backtracks across rows,
+  making each counting pass $O(n + m)$ regardless of the total number of differences.
+
+During each counting pass, the algorithm tracks boundary values:
+  the largest difference at or below the threshold and the smallest difference above it.
+When the count exactly matches the target rank (or the two middle ranks for even-length samples),
+  these boundary values provide the exact answer without additional searches.
+For Type-7 quantile computation, which interpolates between order statistics,
+  the algorithm collects the necessary boundary values in a single pass
+  and performs linear interpolation: $(1 - w) \cdot \text{lower} + w \cdot \text{upper}$.
+
+Real datasets often contain discrete or repeated values that can cause search stagnation.
+The algorithm detects when the search interval stops shrinking between iterations,
+  indicating that multiple pairwise differences share the same value.
+When the closest difference below the threshold equals the closest above,
+  all remaining candidates are identical and the algorithm terminates immediately.
+Otherwise, it uses the boundary values from the counting pass to snap the search interval
+  to actual difference values, ensuring reliable convergence even with highly discrete data.
+
+The binary search employs numerically stable midpoint calculations and terminates
+  when the search interval collapses to a single value or when boundary tracking confirms convergence.
+The algorithm includes iteration limits as a safety mechanism,
+  though convergence typically occurs much earlier due to the exponential narrowing of the search space.
+
+The algorithm generalizes naturally to multiple quantiles by computing each one independently.
+For $k$ quantiles with samples of size $n$ and $m$, the total complexity becomes $O(k(n + m) \log L)$,
+  where $L$ represents the convergence precision.
+This is dramatically more efficient than the naive $O(nm \log(nm))$ approach,
+  especially when $n$ and $m$ are large but $k$ is small.
+The algorithm requires only $O(1)$ additional space beyond the input arrays,
+  making it practical for large-scale statistical analysis
+  where memory constraints prohibit materializing quadratic structures.
+
+```cs
+namespace Pragmastat.Algorithms;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+public static class FastShift
+{
+  /// <summary>
+  /// Computes quantiles of all pairwise differences { x_i - y_j }.
+  /// Time: O((m + n) * log(precision)) per quantile. Space: O(1).
+  /// </summary>
+  /// <param name="p">Probabilities in [0, 1].</param>
+  /// <param name="assumeSorted">If false, collections will be sorted.</param>
+  public static double[] Estimate(IReadOnlyList<double> x, IReadOnlyList<double> y, double[] p, bool assumeSorted = false)
+  {
+    if (x == null || y == null || p == null)
+      throw new ArgumentNullException();
+    if (x.Count == 0 || y.Count == 0)
+      throw new ArgumentException("x and y must be non-empty.");
+
+    foreach (double pk in p)
+      if (double.IsNaN(pk) || pk < 0.0 || pk > 1.0)
+        throw new ArgumentOutOfRangeException(nameof(p), "Probabilities must be within [0, 1].");
+
+    double[] xs, ys;
+    if (assumeSorted)
+    {
+      xs = x as double[] ?? x.ToArray();
+      ys = y as double[] ?? y.ToArray();
+    }
+    else
+    {
+      xs = x.OrderBy(v => v).ToArray();
+      ys = y.OrderBy(v => v).ToArray();
+    }
+
+    int m = xs.Length;
+    int n = ys.Length;
+    long total = (long)m * n;
+
+    // Type-7 quantile: h = 1 + (n-1)*p, then interpolate between floor(h) and ceil(h)
+    var requiredRanks = new SortedSet<long>();
+    var interpolationParams = new (long lowerRank, long upperRank, double weight)[p.Length];
+
+    for (int i = 0; i < p.Length; i++)
+    {
+      double h = 1.0 + (total - 1) * p[i];
+      long lowerRank = (long)Math.Floor(h);
+      long upperRank = (long)Math.Ceiling(h);
+      double weight = h - lowerRank;
+      if (lowerRank < 1) lowerRank = 1;
+      if (upperRank > total) upperRank = total;
+      interpolationParams[i] = (lowerRank, upperRank, weight);
+      requiredRanks.Add(lowerRank);
+      requiredRanks.Add(upperRank);
+    }
+
+    var rankValues = new Dictionary<long, double>();
+    foreach (long rank in requiredRanks)
+      rankValues[rank] = SelectKthPairwiseDiff(xs, ys, rank);
+
+    var result = new double[p.Length];
+    for (int i = 0; i < p.Length; i++)
+    {
+      var (lowerRank, upperRank, weight) = interpolationParams[i];
+      double lower = rankValues[lowerRank];
+      double upper = rankValues[upperRank];
+      result[i] = weight == 0.0 ? lower : (1.0 - weight) * lower + weight * upper;
+    }
+
+    return result;
+  }
+
+  // Binary search in [min_diff, max_diff] that snaps to actual discrete values.
+  // Avoids materializing all m*n differences.
+  private static double SelectKthPairwiseDiff(double[] x, double[] y, long k)
+  {
+    int m = x.Length;
+    int n = y.Length;
+    long total = (long)m * n;
+
+    if (k < 1 || k > total)
+      throw new ArgumentOutOfRangeException(nameof(k));
+
+    double searchMin = x[0] - y[n - 1];
+    double searchMax = x[m - 1] - y[0];
+
+    if (double.IsNaN(searchMin) || double.IsNaN(searchMax))
+      throw new InvalidOperationException("NaN in input values.");
+
+    const int maxIterations = 128; // Sufficient for double precision convergence
+    double prevMin = double.NegativeInfinity;
+    double prevMax = double.PositiveInfinity;
+
+    for (int iter = 0; iter < maxIterations && searchMin != searchMax; iter++)
+    {
+      double mid = Midpoint(searchMin, searchMax);
+      CountAndNeighbors(x, y, mid, out long countLessOrEqual, out double closestBelow, out double closestAbove);
+
+      if (closestBelow == closestAbove)
+        return closestBelow;
+
+      // No progress means we're stuck between two discrete values
+      if (searchMin == prevMin && searchMax == prevMax)
+        return countLessOrEqual >= k ? closestBelow : closestAbove;
+
+      prevMin = searchMin;
+      prevMax = searchMax;
+
+      if (countLessOrEqual >= k)
+        searchMax = closestBelow;
+      else
+        searchMin = closestAbove;
+    }
+
+    if (searchMin != searchMax)
+      throw new InvalidOperationException("Convergence failure (pathological input).");
+
+    return searchMin;
+  }
+
+  // Two-pointer algorithm: counts pairs where x[i] - y[j] <= threshold, and tracks
+  // the closest actual differences on either side of threshold.
+  private static void CountAndNeighbors(
+    double[] x, double[] y, double threshold,
+    out long countLessOrEqual, out double closestBelow, out double closestAbove)
+  {
+    int m = x.Length, n = y.Length;
+    long count = 0;
+    double maxBelow = double.NegativeInfinity;
+    double minAbove = double.PositiveInfinity;
+
+    int j = 0;
+    for (int i = 0; i < m; i++)
+    {
+      while (j < n && x[i] - y[j] > threshold)
+        j++;
+
+      count += (n - j);
+
+      if (j < n)
+      {
+        double diff = x[i] - y[j];
+        if (diff > maxBelow) maxBelow = diff;
+      }
+
+      if (j > 0)
+      {
+        double diff = x[i] - y[j - 1];
+        if (diff < minAbove) minAbove = diff;
+      }
+    }
+
+    // Fallback to actual min/max if no boundaries found (shouldn't happen in normal operation)
+    if (double.IsNegativeInfinity(maxBelow))
+      maxBelow = x[0] - y[n - 1];
+    if (double.IsPositiveInfinity(minAbove))
+      minAbove = x[m - 1] - y[0];
+
+    countLessOrEqual = count;
+    closestBelow = maxBelow;
+    closestAbove = minAbove;
+  }
+
+  private static double Midpoint(double a, double b) => a + (b - a) * 0.5;
 }
 ```
 
@@ -1808,10 +2053,10 @@ The $\Spread$ requires about 1.16 times more data to match $\StdDev$ precision u
 Install from PyPI:
 
 ```bash
-pip install pragmastat==3.1.29
+pip install pragmastat==3.1.30
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.29/py
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.30/py
 
 Pragmastat on PyPI: https://pypi.org/project/pragmastat/
 
@@ -1878,10 +2123,10 @@ if __name__ == "__main__":
 Install from npm:
 
 ```bash
-npm i pragmastat@3.1.29
+npm i pragmastat@3.1.30
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.29/ts
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.30/ts
 
 Pragmastat on npm: https://www.npmjs.com/package/pragmastat
 
@@ -1948,11 +2193,11 @@ Install from GitHub:
 ```r
 install.packages("remotes") # If 'remotes' is not installed
 remotes::install_github("AndreyAkinshin/pragmastat",
-                        subdir = "r/pragmastat", ref = "v3.1.29")
+                        subdir = "r/pragmastat", ref = "v3.1.30")
 library(pragmastat)
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.29/r
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.30/r
 
 
 
@@ -2013,16 +2258,16 @@ print(disparity(y, x)) # -0.4
 Install from NuGet via .NET CLI:
 
 ```bash
-dotnet add package Pragmastat --version 3.1.29
+dotnet add package Pragmastat --version 3.1.30
 ```
 
 Install from NuGet via Package Manager Console:
 
 ```ps1
-NuGet\Install-Package Pragmastat -Version 3.1.29
+NuGet\Install-Package Pragmastat -Version 3.1.30
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.29/cs
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.30/cs
 
 Pragmastat on NuGet: https://www.nuget.org/packages/Pragmastat/
 
@@ -2094,23 +2339,23 @@ Install from Maven Central Repository via Apache Maven:
 <dependency>
     <groupId>dev.pragmastat</groupId>
     <artifactId>pragmastat</artifactId>
-    <version>3.1.29</version>
+    <version>3.1.30</version>
 </dependency>
 ```
 
 Install from Maven Central Repository via Gradle:
 
 ```java
-implementation 'dev.pragmastat:pragmastat:3.1.29'
+implementation 'dev.pragmastat:pragmastat:3.1.30'
 ```
 
 Install from Maven Central Repository via Gradle (Kotlin):
 
 ```kotlin
-implementation("dev.pragmastat:pragmastat:3.1.29")
+implementation("dev.pragmastat:pragmastat:3.1.30")
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.29/kt
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.30/kt
 
 Pragmastat on Maven Central Repository: https://central.sonatype.com/artifact/dev.pragmastat/pragmastat/overview
 
@@ -2175,17 +2420,17 @@ fun main() {
 Install from crates.io via cargo:
 
 ```bash
-cargo add pragmastat@3.1.29
+cargo add pragmastat@3.1.30
 ```
 
 Install from crates.io via `Cargo.toml`:
 
 ```toml
 [dependencies]
-pragmastat = "3.1.29"
+pragmastat = "3.1.30"
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.29/rs
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.30/rs
 
 Pragmastat on crates.io: https://crates.io/crates/pragmastat
 
@@ -2260,10 +2505,10 @@ fn main() {
 Install from GitHub:
 
 ```bash
-go get github.com/AndreyAkinshin/pragmastat/go/v3@v3.1.29
+go get github.com/AndreyAkinshin/pragmastat/go/v3@v3.1.30
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.29/go
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.30/go
 
 
 
@@ -2357,25 +2602,25 @@ func main() {
 
 Manual:
 
-- PDF: [pragmastat-v3.1.29.pdf](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.29/pragmastat-v3.1.29.pdf)
-- Markdown: [pragmastat-v3.1.29.md](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.29/pragmastat-v3.1.29.md)
-- Website: [web-v3.1.29.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.29/web-v3.1.29.zip)
+- PDF: [pragmastat-v3.1.30.pdf](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.30/pragmastat-v3.1.30.pdf)
+- Markdown: [pragmastat-v3.1.30.md](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.30/pragmastat-v3.1.30.md)
+- Website: [web-v3.1.30.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.30/web-v3.1.30.zip)
 
 Implementations:
 
-- Python: [py-v3.1.29.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.29/py-v3.1.29.zip)
-- TypeScript: [ts-v3.1.29.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.29/ts-v3.1.29.zip)
-- R: [r-v3.1.29.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.29/r-v3.1.29.zip)
-- C#: [cs-v3.1.29.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.29/cs-v3.1.29.zip)
-- Kotlin: [kt-v3.1.29.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.29/kt-v3.1.29.zip)
-- Rust: [rs-v3.1.29.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.29/rs-v3.1.29.zip)
-- Go: [go-v3.1.29.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.29/go-v3.1.29.zip)
+- Python: [py-v3.1.30.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.30/py-v3.1.30.zip)
+- TypeScript: [ts-v3.1.30.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.30/ts-v3.1.30.zip)
+- R: [r-v3.1.30.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.30/r-v3.1.30.zip)
+- C#: [cs-v3.1.30.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.30/cs-v3.1.30.zip)
+- Kotlin: [kt-v3.1.30.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.30/kt-v3.1.30.zip)
+- Rust: [rs-v3.1.30.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.30/rs-v3.1.30.zip)
+- Go: [go-v3.1.30.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.30/go-v3.1.30.zip)
 
 Data:
 
-- Reference tests (json): [tests-v3.1.29.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.29/tests-v3.1.29.zip)
-- Reference simulations (json) [sim-v3.1.29.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.29/sim-v3.1.29.zip)
+- Reference tests (json): [tests-v3.1.30.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.30/tests-v3.1.30.zip)
+- Reference simulations (json) [sim-v3.1.30.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.30/sim-v3.1.30.zip)
 
 Source code:
 
-- [pragmastat-3.1.29.zip](https://github.com/AndreyAkinshin/pragmastat/archive/refs/tags/v3.1.29.zip)
+- [pragmastat-3.1.30.zip](https://github.com/AndreyAkinshin/pragmastat/archive/refs/tags/v3.1.30.zip)
