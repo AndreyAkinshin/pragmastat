@@ -212,8 +212,8 @@ LANGUAGES = [
         version_pattern=r'version = ".*?"',
         version_replace='version = "{version}"',
         version_file_2='py/pragmastat/__init__.py',
-        version_pattern_2=r"__version__ = '.*?'",
-        version_replace_2="__version__ = '{version}'"
+        version_pattern_2=r'__version__ = ".*?"',
+        version_replace_2='__version__ = "{version}"'
     ),
     Language(
         slug='r',
