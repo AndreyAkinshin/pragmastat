@@ -13,7 +13,7 @@ The theoretical maximum is $50\%$ — no estimator can guarantee reliable result
 In such cases, summary estimators are not applicable; a more sophisticated approach is needed.
 
 Even $50\%$ is rarely needed in practice; more conservative breakdown points also cover practical needs.
-Also, when the breakdown point is high, the precision is low
+Additionally, when the breakdown point is high, the precision is low
   (we lose information by neglecting part of the data).
 The optimal practical breakdown point should be somewhere between
   $0\%$ (no robustness) and $50\%$ (low precision).

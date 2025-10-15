@@ -33,7 +33,7 @@ If fewer than $k$ sums lie below the pivot, the median must be larger;
 Based on this comparison, the algorithm eliminates portions of each row that cannot contain the median,
   shrinking the active search space while preserving the true median.
 
-Real data often contains repeated values, which can cause the selection process to stall.
+Real data often contain repeated values, which can cause the selection process to stall.
 When the algorithm detects no progress between iterations, it switches to a midrange strategy:
   find the smallest and largest pairwise sums still in the search space,
   then use their average as the next pivot.

@@ -7,7 +7,7 @@ The $\Additive$ ('Normal') distribution has two parameters: the mean and the sta
 
 Consider two independent draws $X$ and $Y$ from the $\Additive(\mathrm{mean}, \mathrm{stdDev})$ distribution.
 The goal is to find the median of their absolute difference $|X-Y|$.
-Define the difference $D=X-Y$.
+Define the difference $D = X - Y$.
 By linearity of expectation, $E[D] = 0$. By independence, $\mathrm{Var}[D] = 2 \cdot \mathrm{stdDev}^2$.
 Thus $D$ has distribution $\Additive(0, \sqrt{2} \cdot \mathrm{stdDev})$,
   and the problem reduces to finding the median of $|D|$.

@@ -3,7 +3,7 @@
 This section compares the toolkit's robust estimators against traditional statistical methods
   to demonstrate their advantages and universally good properties.
 While traditional estimators often work well under ideal conditions,
-  the toolkit estimators maintain reliable performance across diverse real-world scenarios.
+  the toolkit's estimators maintain reliable performance across diverse real-world scenarios.
 
 Average Estimators:
 
