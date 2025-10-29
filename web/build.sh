@@ -45,9 +45,9 @@ HUGO_BIN="$BIN_DIR/hugo"
 TAILWIND_BIN="$BIN_DIR/tailwind"
 VERSION_FILE="../manual/version.txt"
 
-# Versions (from RemoteDescriptors.cs)
-HUGO_VERSION="0.151.0"
-TAILWIND_VERSION="4.1.14"
+# Versions
+HUGO_VERSION="0.152.2"
+TAILWIND_VERSION="4.1.16"
 
 # Detect OS and architecture
 detect_os() {
