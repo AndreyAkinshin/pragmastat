@@ -8,27 +8,32 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$SCRIPT_DIR" || exit 1
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+# Colors for output (purpose-oriented names)
+ERROR='\033[0;31m'
+SUCCESS='\033[0;32m'
+HIGHLIGHT='\033[1;33m'
+HEADER='\033[0;36m'
+UNUSED='\033[0;34m'
+ARG='\033[0;35m'
+BOLD='\033[1m'
+DIM='\033[2m'
+RESET='\033[0m'
 
 # Function to print colored output
 print_error() {
-    echo -e "${RED}ERROR:${NC} $1" >&2
+    echo -e "${ERROR}ERROR:${RESET} $1" >&2
 }
 
 print_info() {
-    echo -e "${GREEN}INFO:${NC} $1"
+    echo -e "${SUCCESS}INFO:${RESET} $1"
 }
 
 print_warning() {
-    echo -e "${YELLOW}WARNING:${NC} $1"
+    echo -e "${HIGHLIGHT}WARNING:${RESET} $1"
 }
 
 print_status() {
-    echo -e "${GREEN}[$(date +'%H:%M:%S')]${NC} $1"
+    echo -e "${SUCCESS}[$(date +'%H:%M:%S')]${RESET} $1"
 }
 
 # Function to run a command on all projects
@@ -345,48 +350,33 @@ do_release() {
 
 # Function to show help
 show_help() {
-    echo "Usage: $0 <dir> <verb> [flags]"
-    echo "       $0 <meta-command> [--release]"
+    echo -e "${BOLD}Usage:${RESET} $0 ${HIGHLIGHT}<lang>${RESET} ${ARG}<command> [args]${RESET}"
+    echo -e "       $0 ${HIGHLIGHT}<aux>${RESET}  ${ARG}[command] [args]${RESET}"
+    echo -e "       $0 ${HIGHLIGHT}<meta>${RESET} ${ARG}[args]${RESET}"
     echo ""
-    echo "This script dispatches build commands to ecosystem-specific build scripts."
+    echo -e "Pragmastat Build Dispatcher"
     echo ""
-    echo "Meta-commands:"
-    echo "  all [--release]       - Build all projects"
-    echo "  ci [--release]        - Run full CI build (replicates GitHub Actions)"
-    echo "  test                  - Run tests for all projects"
-    echo "  clean                 - Clean all projects"
-    echo "  release <ver> [--push] - Create release version"
+    echo -e "${HEADER}${BOLD}Language commands:${RESET}"
+    echo -e "  ${HIGHLIGHT}cs${RESET}   ${DIM}# C# (.NET)${RESET}"
+    echo -e "  ${HIGHLIGHT}go${RESET}   ${DIM}# Go${RESET}"
+    echo -e "  ${HIGHLIGHT}kt${RESET}   ${DIM}# Kotlin (JVM)${RESET}"
+    echo -e "  ${HIGHLIGHT}py${RESET}   ${DIM}# Python${RESET}"
+    echo -e "  ${HIGHLIGHT}r${RESET}    ${DIM}# R${RESET}"
+    echo -e "  ${HIGHLIGHT}rs${RESET}   ${DIM}# Rust${RESET}"
+    echo -e "  ${HIGHLIGHT}ts${RESET}   ${DIM}# TypeScript (npm)${RESET}"
     echo ""
-    echo "Available directories with build scripts:"
-
-    # Find all directories with build.sh
-    for dir in */build.sh; do
-        if [ -f "$dir" ]; then
-            dirname=$(dirname "$dir")
-            echo "  - $dirname"
-        fi
-    done | sort
-
+    echo -e "${HEADER}${BOLD}Auxiliary commands:${RESET}"
+    echo -e "  ${HIGHLIGHT}gen${RESET}  ${DIM}# Content and auxiliary files generation${RESET}"
+    echo -e "  ${HIGHLIGHT}img${RESET}  ${DIM}# Image generation${RESET}"
+    echo -e "  ${HIGHLIGHT}pdf${RESET}  ${DIM}# PDF manual generation${RESET}"
+    echo -e "  ${HIGHLIGHT}web${RESET}  ${DIM}# Online manual/website (Hugo)${RESET}"
     echo ""
-    echo "Examples:"
-    echo "  $0 all                      # Build all projects"
-    echo "  $0 all --release            # Build all projects in release mode"
-    echo "  $0 ci                       # Run full CI build locally"
-    echo "  $0 ci --release             # Run full CI build in release mode"
-    echo "  $0 test                     # Run tests for all projects"
-    echo "  $0 clean                    # Clean all projects"
-    echo "  $0 release 0.1.0            # Create release 0.1.0 locally"
-    echo "  $0 release v0.2.0 --push    # Create and push release 0.2.0"
-    echo "  $0 go test                  # Run tests in Go implementation"
-    echo "  $0 rs build --release       # Build Rust implementation in release mode"
-    echo "  $0 web build --release      # Build website in release mode"
-    echo "  $0 py all                   # Run all tasks for Python implementation"
-    echo ""
-    echo "For ecosystem-specific commands, run:"
-    echo "  <dir>/build.sh          # Show help for specific ecosystem"
-    echo ""
-    echo "If the specified directory doesn't have a build.sh, the command will be"
-    echo "passed to the .NET build system."
+    echo -e "${HEADER}${BOLD}Meta commands:${RESET}"
+    echo -e "  ${HIGHLIGHT}all${RESET} ${ARG}[--release]${RESET}        ${DIM}# Build all projects${RESET}"
+    echo -e "  ${HIGHLIGHT}ci${RESET} ${ARG}[--release]${RESET}         ${DIM}# Run full CI build (replicates GitHub Actions)${RESET}"
+    echo -e "  ${HIGHLIGHT}test${RESET}                   ${DIM}# Run tests for all projects${RESET}"
+    echo -e "  ${HIGHLIGHT}clean${RESET}                  ${DIM}# Clean all projects${RESET}"
+    echo -e "  ${HIGHLIGHT}release${RESET} ${ARG}<ver> [--push]${RESET} ${DIM}# Create release version${RESET}"
 }
 
 # Check if no arguments provided
@@ -445,15 +435,10 @@ esac
 # Check if directory/build.sh exists
 if [ -f "$DIR/build.sh" ]; then
     # Dispatch to the ecosystem-specific build script
-    print_info "Dispatching to $DIR/build.sh"
     exec "./$DIR/build.sh" "$@"
 else
-    # Fall back to .NET build system
-    print_info "No build.sh found in '$DIR', using .NET build system"
-    TEMP_SCRIPT="$(mktemp).sh"
-    exec ./build/scripts/dotnet-bootstrap.cmd \
-        --sln-dir ./build/src \
-        ./build/src/Entry/Entry.csproj \
-        -- "$DIR" "$@" \
-        --output-script-path="$TEMP_SCRIPT"
+    print_error "Unknown command or directory: $DIR"
+    echo ""
+    show_help
+    exit 1
 fi

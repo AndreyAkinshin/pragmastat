@@ -6,23 +6,32 @@ set -e
 
 cd "$(dirname "$0")" || exit 1
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+# Colors for output (purpose-oriented names)
+ERROR='\033[0;31m'
+SUCCESS='\033[0;32m'
+HIGHLIGHT='\033[1;33m'
+HEADER='\033[0;36m'
+UNUSED='\033[0;34m'
+ARG='\033[0;35m'
+BOLD='\033[1m'
+DIM='\033[2m'
+RESET='\033[0m'
 
 # Function to print colored output
-print_status() {
-    echo -e "${GREEN}[$(date +'%H:%M:%S')]${NC} $1"
+print_error() {
+    echo -e "${ERROR}ERROR:${RESET} $1" >&2
 }
 
-print_error() {
-    echo -e "${RED}[$(date +'%H:%M:%S')] ERROR:${NC} $1"
+print_info() {
+    echo -e "${SUCCESS}INFO:${RESET} $1"
 }
 
 print_warning() {
-    echo -e "${YELLOW}[$(date +'%H:%M:%S')] WARNING:${NC} $1"
+    echo -e "${HIGHLIGHT}WARNING:${RESET} $1"
+}
+
+print_status() {
+    echo -e "${SUCCESS}[$(date +'%H:%M:%S')]${RESET} $1"
 }
 
 # Function to run a command and check its status
@@ -39,25 +48,39 @@ run_command() {
     fi
 }
 
+# Function to show help
+show_help() {
+    echo -e "${BOLD}Usage:${RESET} pragmastat/ts/build.sh ${HIGHLIGHT}<command>${RESET}"
+    echo ""
+    echo -e "${HEADER}${BOLD}Commands:${RESET}"
+    echo -e "  ${HIGHLIGHT}test${RESET}      ${DIM}# Run all tests${RESET}"
+    echo -e "  ${HIGHLIGHT}build${RESET}     ${DIM}# Build TypeScript to JavaScript${RESET}"
+    echo -e "  ${HIGHLIGHT}lint${RESET}      ${DIM}# Run ESLint${RESET}"
+    echo -e "  ${HIGHLIGHT}check${RESET}     ${DIM}# Run linting and format checking${RESET}"
+    echo -e "  ${HIGHLIGHT}clean${RESET}     ${DIM}# Clean build artifacts${RESET}"
+    echo -e "  ${HIGHLIGHT}format${RESET}    ${DIM}# Format code with Prettier${RESET}"
+    echo -e "  ${HIGHLIGHT}install${RESET}   ${DIM}# Install npm dependencies${RESET}"
+    echo -e "  ${HIGHLIGHT}coverage${RESET}  ${DIM}# Run tests with coverage report${RESET}"
+    echo -e "  ${HIGHLIGHT}watch${RESET}     ${DIM}# Run tests in watch mode${RESET}"
+    echo -e "  ${HIGHLIGHT}all${RESET}       ${DIM}# Run all tasks (install, format, lint, test, build)${RESET}"
+    echo ""
+    echo -e "${HEADER}${BOLD}Examples:${RESET}"
+    echo -e "  ${SUCCESS}build.sh test${RESET}  ${DIM}# Run all tests${RESET}"
+    echo -e "  ${SUCCESS}build.sh build${RESET} ${DIM}# Build TypeScript${RESET}"
+    echo -e "  ${SUCCESS}build.sh all${RESET}   ${DIM}# Run all tasks${RESET}"
+}
+
 # Main script
 if [ -z "$1" ]; then
-    echo "Usage: $0 {test|build|lint|check|clean|format|install|coverage|watch|all}"
-    echo ""
-    echo "Commands:"
-    echo "  test      - Run all tests"
-    echo "  build     - Build TypeScript to JavaScript"
-    echo "  lint      - Run ESLint"
-    echo "  check     - Run linting and format checking"
-    echo "  clean     - Clean build artifacts"
-    echo "  format    - Format code with Prettier"
-    echo "  install   - Install npm dependencies"
-    echo "  coverage  - Run tests with coverage report"
-    echo "  watch     - Run tests in watch mode"
-    echo "  all       - Run all tasks (install, format, lint, test, build)"
+    show_help
     exit 1
 fi
 
 case "$1" in
+    -h|--help)
+        show_help
+        exit 0
+        ;;
     test)
         run_command "npm test" "Running tests"
         ;;
@@ -96,19 +119,9 @@ case "$1" in
         print_status "✓ All tasks completed successfully!"
         ;;
     *)
-        echo "Usage: $0 {test|build|lint|check|clean|format|install|coverage|watch|all}"
+        print_error "Unknown command: $1"
         echo ""
-        echo "Commands:"
-        echo "  test      - Run all tests"
-        echo "  build     - Build TypeScript to JavaScript"
-        echo "  lint      - Run ESLint"
-        echo "  check     - Run linting and format checking"
-        echo "  clean     - Clean build artifacts"
-        echo "  format    - Format code with Prettier"
-        echo "  install   - Install npm dependencies"
-        echo "  coverage  - Run tests with coverage report"
-        echo "  watch     - Run tests in watch mode"
-        echo "  all       - Run all tasks (install, format, lint, test, build)"
+        show_help
         exit 1
         ;;
 esac

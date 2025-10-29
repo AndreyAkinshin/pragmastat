@@ -6,23 +6,32 @@ set -e
 
 cd "$(dirname "$0")" || exit 1
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+# Colors for output (purpose-oriented names)
+ERROR='\033[0;31m'
+SUCCESS='\033[0;32m'
+HIGHLIGHT='\033[1;33m'
+HEADER='\033[0;36m'
+UNUSED='\033[0;34m'
+ARG='\033[0;35m'
+BOLD='\033[1m'
+DIM='\033[2m'
+RESET='\033[0m'
 
 # Function to print colored output
-print_status() {
-    echo -e "${GREEN}[$(date +'%H:%M:%S')]${NC} $1"
+print_error() {
+    echo -e "${ERROR}ERROR:${RESET} $1" >&2
 }
 
-print_error() {
-    echo -e "${RED}[$(date +'%H:%M:%S')] ERROR:${NC} $1"
+print_info() {
+    echo -e "${SUCCESS}INFO:${RESET} $1"
 }
 
 print_warning() {
-    echo -e "${YELLOW}[$(date +'%H:%M:%S')] WARNING:${NC} $1"
+    echo -e "${HIGHLIGHT}WARNING:${RESET} $1"
+}
+
+print_status() {
+    echo -e "${SUCCESS}[$(date +'%H:%M:%S')]${RESET} $1"
 }
 
 # Function to run a command and check its status
@@ -132,22 +141,22 @@ lint_code() {
 
 # Function to show help
 show_help() {
-    echo "Usage: ./build.sh [command]"
+    echo -e "${BOLD}Usage:${RESET} pragmastat/py/build.sh ${HIGHLIGHT}<command>${RESET}"
     echo ""
-    echo "Commands:"
-    echo "  dev        Install package in development mode"
-    echo "  test       Run tests"
-    echo "  build      Build distribution packages"
-    echo "  check      Check package with twine"
-    echo "  clean      Clean build artifacts"
-    echo "  format     Format code with black"
-    echo "  lint       Lint code with flake8"
-    echo "  all        Run test, build, and check"
+    echo -e "${HEADER}${BOLD}Commands:${RESET}"
+    echo -e "  ${HIGHLIGHT}dev${RESET}        ${DIM}# Install package in development mode${RESET}"
+    echo -e "  ${HIGHLIGHT}test${RESET}       ${DIM}# Run tests${RESET}"
+    echo -e "  ${HIGHLIGHT}build${RESET}      ${DIM}# Build distribution packages${RESET}"
+    echo -e "  ${HIGHLIGHT}check${RESET}      ${DIM}# Check package with twine${RESET}"
+    echo -e "  ${HIGHLIGHT}clean${RESET}      ${DIM}# Clean build artifacts${RESET}"
+    echo -e "  ${HIGHLIGHT}format${RESET}     ${DIM}# Format code with black${RESET}"
+    echo -e "  ${HIGHLIGHT}lint${RESET}       ${DIM}# Lint code with flake8${RESET}"
+    echo -e "  ${HIGHLIGHT}all${RESET}        ${DIM}# Run test, build, and check${RESET}"
     echo ""
-    echo "Examples:"
-    echo "  ./build.sh test"
-    echo "  ./build.sh build"
-    echo "  ./build.sh all"
+    echo -e "${HEADER}${BOLD}Examples:${RESET}"
+    echo -e "  ${SUCCESS}build.sh test${RESET}  ${DIM}# Run tests${RESET}"
+    echo -e "  ${SUCCESS}build.sh build${RESET} ${DIM}# Build package${RESET}"
+    echo -e "  ${SUCCESS}build.sh all${RESET}   ${DIM}# Run all tasks${RESET}"
 }
 
 # Main script logic
@@ -157,6 +166,10 @@ if [ -z "$1" ]; then
 fi
 
 case "$1" in
+    -h|--help)
+        show_help
+        exit 0
+        ;;
     dev)
         dev_install
         ;;

@@ -6,23 +6,32 @@ set -e
 
 cd "$(dirname "$0")" || exit 1
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+# Colors for output (purpose-oriented names)
+ERROR='\033[0;31m'
+SUCCESS='\033[0;32m'
+HIGHLIGHT='\033[1;33m'
+HEADER='\033[0;36m'
+UNUSED='\033[0;34m'
+ARG='\033[0;35m'
+BOLD='\033[1m'
+DIM='\033[2m'
+RESET='\033[0m'
 
 # Function to print colored output
-print_status() {
-    echo -e "${GREEN}[$(date +'%H:%M:%S')]${NC} $1"
+print_error() {
+    echo -e "${ERROR}ERROR:${RESET} $1" >&2
 }
 
-print_error() {
-    echo -e "${RED}[$(date +'%H:%M:%S')] ERROR:${NC} $1"
+print_info() {
+    echo -e "${SUCCESS}INFO:${RESET} $1"
 }
 
 print_warning() {
-    echo -e "${YELLOW}[$(date +'%H:%M:%S')] WARNING:${NC} $1"
+    echo -e "${HIGHLIGHT}WARNING:${RESET} $1"
+}
+
+print_status() {
+    echo -e "${SUCCESS}[$(date +'%H:%M:%S')]${RESET} $1"
 }
 
 # Function to run a command and check its status
@@ -318,19 +327,38 @@ clean() {
     print_status "✓ Clean complete"
 }
 
-# Main script
-if [ -z "$1" ]; then
-    echo "Usage: $0 {init|build|serve|clean} [--release]"
+# Function to show help
+show_help() {
+    echo -e "${BOLD}Usage:${RESET} pragmastat/web/build.sh ${HIGHLIGHT}[command]${RESET} ${ARG}[--release]${RESET}"
     echo ""
-    echo "Commands:"
-    echo "  init               - Download Hugo and Tailwind for current platform"
-    echo "  build [--release]  - Build website (draft by default, release with --release flag)"
-    echo "  serve              - Start Hugo development server"
-    echo "  clean              - Clean build artifacts"
-    exit 1
+    echo -e "If no command is specified, defaults to ${HIGHLIGHT}build${RESET}"
+    echo ""
+    echo -e "${HEADER}${BOLD}Commands:${RESET}"
+    echo -e "  ${HIGHLIGHT}init${RESET}                     ${DIM}# Download Hugo and Tailwind for current platform${RESET}"
+    echo -e "  ${HIGHLIGHT}build${RESET} ${ARG}[--release]${RESET}        ${DIM}# Build website (draft by default, release with --release flag, default)${RESET}"
+    echo -e "  ${HIGHLIGHT}serve${RESET}                    ${DIM}# Start Hugo development server${RESET}"
+    echo -e "  ${HIGHLIGHT}clean${RESET}                    ${DIM}# Clean build artifacts${RESET}"
+    echo ""
+    echo -e "${HEADER}${BOLD}Examples:${RESET}"
+    echo -e "  ${SUCCESS}build.sh${RESET}                  ${DIM}# Build draft website (default)${RESET}"
+    echo -e "  ${SUCCESS}build.sh ${ARG}--release${RESET}          ${DIM}# Build release website${RESET}"
+    echo -e "  ${SUCCESS}build.sh init${RESET}             ${DIM}# Download tools${RESET}"
+    echo -e "  ${SUCCESS}build.sh build${RESET}            ${DIM}# Build draft website${RESET}"
+    echo -e "  ${SUCCESS}build.sh build ${ARG}--release${RESET}  ${DIM}# Build release website${RESET}"
+    echo -e "  ${SUCCESS}build.sh serve${RESET}            ${DIM}# Start dev server${RESET}"
+}
+
+# Main script
+# Default to 'build' if no arguments provided
+if [ -z "$1" ]; then
+    set -- "build"
 fi
 
 case "$1" in
+    -h|--help)
+        show_help
+        exit 0
+        ;;
     init)
         init_tools
         ;;
@@ -352,7 +380,7 @@ case "$1" in
     *)
         print_error "Unknown command: $1"
         echo ""
-        echo "Usage: $0 {init|build|serve|clean} [--release]"
+        show_help
         exit 1
         ;;
 esac

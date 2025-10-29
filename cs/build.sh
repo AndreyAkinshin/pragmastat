@@ -6,23 +6,32 @@ set -e
 
 cd "$(dirname "$0")" || exit 1
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+# Colors for output (purpose-oriented names)
+ERROR='\033[0;31m'
+SUCCESS='\033[0;32m'
+HIGHLIGHT='\033[1;33m'
+HEADER='\033[0;36m'
+UNUSED='\033[0;34m'
+ARG='\033[0;35m'
+BOLD='\033[1m'
+DIM='\033[2m'
+RESET='\033[0m'
 
 # Function to print colored output
-print_status() {
-    echo -e "${GREEN}[$(date +'%H:%M:%S')]${NC} $1"
+print_error() {
+    echo -e "${ERROR}ERROR:${RESET} $1" >&2
 }
 
-print_error() {
-    echo -e "${RED}[$(date +'%H:%M:%S')] ERROR:${NC} $1"
+print_info() {
+    echo -e "${SUCCESS}INFO:${RESET} $1"
 }
 
 print_warning() {
-    echo -e "${YELLOW}[$(date +'%H:%M:%S')] WARNING:${NC} $1"
+    echo -e "${HIGHLIGHT}WARNING:${RESET} $1"
+}
+
+print_status() {
+    echo -e "${SUCCESS}[$(date +'%H:%M:%S')]${RESET} $1"
 }
 
 # Function to run a command and check its status
@@ -98,23 +107,38 @@ lint_code() {
     run_command "dotnet format --verify-no-changes" "Verifying code formatting"
 }
 
+# Function to show help
+show_help() {
+    echo -e "${BOLD}Usage:${RESET} pragmastat/cs/build.sh ${HIGHLIGHT}<command>${RESET} ${ARG}[--release]${RESET}"
+    echo ""
+    echo -e "${HEADER}${BOLD}Commands:${RESET}"
+    echo -e "  ${HIGHLIGHT}test${RESET}                    ${DIM}# Run all tests${RESET}"
+    echo -e "  ${HIGHLIGHT}build${RESET} ${ARG}[--release]${RESET}       ${DIM}# Build package (debug by default, release with --release flag)${RESET}"
+    echo -e "  ${HIGHLIGHT}pack${RESET} ${ARG}[--release]${RESET}        ${DIM}# Pack NuGet package (debug by default, release with --release flag)${RESET}"
+    echo -e "  ${HIGHLIGHT}restore${RESET}                 ${DIM}# Restore dependencies${RESET}"
+    echo -e "  ${HIGHLIGHT}clean${RESET}                   ${DIM}# Clean build artifacts${RESET}"
+    echo -e "  ${HIGHLIGHT}format${RESET}                  ${DIM}# Format code with dotnet format${RESET}"
+    echo -e "  ${HIGHLIGHT}lint${RESET}                    ${DIM}# Verify code formatting${RESET}"
+    echo -e "  ${HIGHLIGHT}all${RESET}                     ${DIM}# Run all tasks (restore, format, test, build debug)${RESET}"
+    echo ""
+    echo -e "${HEADER}${BOLD}Examples:${RESET}"
+    echo -e "  ${SUCCESS}build.sh test${RESET}             ${DIM}# Run all tests${RESET}"
+    echo -e "  ${SUCCESS}build.sh build${RESET}            ${DIM}# Build debug package${RESET}"
+    echo -e "  ${SUCCESS}build.sh build ${ARG}--release${RESET}  ${DIM}# Build release package${RESET}"
+    echo -e "  ${SUCCESS}build.sh all${RESET}              ${DIM}# Run all tasks${RESET}"
+}
+
 # Main script
 if [ -z "$1" ]; then
-    echo "Usage: $0 {test|build|pack|restore|clean|format|lint|all} [--release]"
-    echo ""
-    echo "Commands:"
-    echo "  test              - Run all tests"
-    echo "  build [--release] - Build package (debug by default, release with --release flag)"
-    echo "  pack [--release]  - Pack NuGet package (debug by default, release with --release flag)"
-    echo "  restore           - Restore dependencies"
-    echo "  clean             - Clean build artifacts"
-    echo "  format            - Format code with dotnet format"
-    echo "  lint              - Verify code formatting"
-    echo "  all               - Run all tasks (restore, format, test, build debug)"
+    show_help
     exit 1
 fi
 
 case "$1" in
+    -h|--help)
+        show_help
+        exit 0
+        ;;
     test)
         run_tests
         ;;
@@ -145,17 +169,9 @@ case "$1" in
         print_status "✓ All tasks completed successfully!"
         ;;
     *)
-        echo "Usage: $0 {test|build|pack|restore|clean|format|lint|all} [--release]"
+        print_error "Unknown command: $1"
         echo ""
-        echo "Commands:"
-        echo "  test              - Run all tests"
-        echo "  build [--release] - Build package (debug by default, release with --release flag)"
-        echo "  pack [--release]  - Pack NuGet package (debug by default, release with --release flag)"
-        echo "  restore           - Restore dependencies"
-        echo "  clean             - Clean build artifacts"
-        echo "  format            - Format code with dotnet format"
-        echo "  lint              - Verify code formatting"
-        echo "  all               - Run all tasks (restore, format, test, build debug)"
+        show_help
         exit 1
         ;;
 esac

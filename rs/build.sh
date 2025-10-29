@@ -4,23 +4,32 @@
 
 set -e
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+# Colors for output (purpose-oriented names)
+ERROR='\033[0;31m'
+SUCCESS='\033[0;32m'
+HIGHLIGHT='\033[1;33m'
+HEADER='\033[0;36m'
+UNUSED='\033[0;34m'
+ARG='\033[0;35m'
+BOLD='\033[1m'
+DIM='\033[2m'
+RESET='\033[0m'
 
 # Function to print colored output
-print_status() {
-    echo -e "${GREEN}[$(date +'%H:%M:%S')]${NC} $1"
+print_error() {
+    echo -e "${ERROR}ERROR:${RESET} $1" >&2
 }
 
-print_error() {
-    echo -e "${RED}[$(date +'%H:%M:%S')] ERROR:${NC} $1"
+print_info() {
+    echo -e "${SUCCESS}INFO:${RESET} $1"
 }
 
 print_warning() {
-    echo -e "${YELLOW}[$(date +'%H:%M:%S')] WARNING:${NC} $1"
+    echo -e "${HIGHLIGHT}WARNING:${RESET} $1"
+}
+
+print_status() {
+    echo -e "${SUCCESS}[$(date +'%H:%M:%S')]${RESET} $1"
 }
 
 # Function to run a command and check its status
@@ -123,24 +132,24 @@ publish() {
 
 # Function to show help
 show_help() {
-    echo "Usage: ./build.sh [command] [--release]"
+    echo -e "${BOLD}Usage:${RESET} pragmastat/rs/build.sh ${HIGHLIGHT}<command>${RESET} ${ARG}[--release]${RESET}"
     echo ""
-    echo "Commands:"
-    echo "  test              Run tests"
-    echo "  build [--release] Build package (debug by default, release with --release flag)"
-    echo "  check             Check package (clippy, fmt check, cargo check)"
-    echo "  clean             Clean build artifacts"
-    echo "  format            Format code with rustfmt"
-    echo "  doc               Build and open documentation"
-    echo "  bench             Run benchmarks"
-    echo "  publish           Dry run of publishing to crates.io"
-    echo "  all               Run test, build (debug), and check"
+    echo -e "${HEADER}${BOLD}Commands:${RESET}"
+    echo -e "  ${HIGHLIGHT}test${RESET}                    ${DIM}# Run tests${RESET}"
+    echo -e "  ${HIGHLIGHT}build${RESET} ${ARG}[--release]${RESET}       ${DIM}# Build package (debug by default, release with --release flag)${RESET}"
+    echo -e "  ${HIGHLIGHT}check${RESET}                   ${DIM}# Check package (clippy, fmt check, cargo check)${RESET}"
+    echo -e "  ${HIGHLIGHT}clean${RESET}                   ${DIM}# Clean build artifacts${RESET}"
+    echo -e "  ${HIGHLIGHT}format${RESET}                  ${DIM}# Format code with rustfmt${RESET}"
+    echo -e "  ${HIGHLIGHT}doc${RESET}                     ${DIM}# Build and open documentation${RESET}"
+    echo -e "  ${HIGHLIGHT}bench${RESET}                   ${DIM}# Run benchmarks${RESET}"
+    echo -e "  ${HIGHLIGHT}publish${RESET}                 ${DIM}# Dry run of publishing to crates.io${RESET}"
+    echo -e "  ${HIGHLIGHT}all${RESET}                     ${DIM}# Run test, build (debug), and check${RESET}"
     echo ""
-    echo "Examples:"
-    echo "  ./build.sh test"
-    echo "  ./build.sh build"
-    echo "  ./build.sh build --release"
-    echo "  ./build.sh all"
+    echo -e "${HEADER}${BOLD}Examples:${RESET}"
+    echo -e "  ${SUCCESS}build.sh test${RESET}             ${DIM}# Run tests${RESET}"
+    echo -e "  ${SUCCESS}build.sh build${RESET}            ${DIM}# Build debug package${RESET}"
+    echo -e "  ${SUCCESS}build.sh build ${ARG}--release${RESET}  ${DIM}# Build release package${RESET}"
+    echo -e "  ${SUCCESS}build.sh all${RESET}              ${DIM}# Run all tasks${RESET}"
 }
 
 # Main script logic
@@ -150,6 +159,10 @@ if [ -z "$1" ]; then
 fi
 
 case "$1" in
+    -h|--help)
+        show_help
+        exit 0
+        ;;
     test)
         run_tests
         ;;

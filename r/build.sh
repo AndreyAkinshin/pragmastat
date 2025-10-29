@@ -6,23 +6,32 @@ set -e
 
 cd "$(dirname "$0")" || exit 1
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+# Colors for output (purpose-oriented names)
+ERROR='\033[0;31m'
+SUCCESS='\033[0;32m'
+HIGHLIGHT='\033[1;33m'
+HEADER='\033[0;36m'
+UNUSED='\033[0;34m'
+ARG='\033[0;35m'
+BOLD='\033[1m'
+DIM='\033[2m'
+RESET='\033[0m'
 
 # Function to print colored output
-print_status() {
-    echo -e "${GREEN}[$(date +'%H:%M:%S')]${NC} $1"
+print_error() {
+    echo -e "${ERROR}ERROR:${RESET} $1" >&2
 }
 
-print_error() {
-    echo -e "${RED}[$(date +'%H:%M:%S')] ERROR:${NC} $1"
+print_info() {
+    echo -e "${SUCCESS}INFO:${RESET} $1"
 }
 
 print_warning() {
-    echo -e "${YELLOW}[$(date +'%H:%M:%S')] WARNING:${NC} $1"
+    echo -e "${HIGHLIGHT}WARNING:${RESET} $1"
+}
+
+print_status() {
+    echo -e "${SUCCESS}[$(date +'%H:%M:%S')]${RESET} $1"
 }
 
 # Function to run a command and check its status
@@ -130,25 +139,39 @@ lint() {
     cd ..
 }
 
+# Function to show help
+show_help() {
+    echo -e "${BOLD}Usage:${RESET} pragmastat/r/build.sh ${HIGHLIGHT}<command>${RESET}"
+    echo ""
+    echo -e "${HEADER}${BOLD}Commands:${RESET}"
+    echo -e "  ${HIGHLIGHT}test${RESET}       ${DIM}# Run all tests (copies test data first)${RESET}"
+    echo -e "  ${HIGHLIGHT}build${RESET}      ${DIM}# Build source package (copies test data first)${RESET}"
+    echo -e "  ${HIGHLIGHT}check${RESET}      ${DIM}# Run R CMD check (fast, skips tests and dependencies)${RESET}"
+    echo -e "  ${HIGHLIGHT}check-full${RESET} ${DIM}# Run R CMD check --as-cran (full CRAN checks)${RESET}"
+    echo -e "  ${HIGHLIGHT}install${RESET}    ${DIM}# Install package locally (copies test data first)${RESET}"
+    echo -e "  ${HIGHLIGHT}docs${RESET}       ${DIM}# Build documentation with roxygen2${RESET}"
+    echo -e "  ${HIGHLIGHT}clean${RESET}      ${DIM}# Clean build artifacts and test data${RESET}"
+    echo -e "  ${HIGHLIGHT}format${RESET}     ${DIM}# Format R code with styler${RESET}"
+    echo -e "  ${HIGHLIGHT}lint${RESET}       ${DIM}# Lint R code with lintr${RESET}"
+    echo -e "  ${HIGHLIGHT}all${RESET}        ${DIM}# Run all tasks (copy data, format, docs, test, build, check)${RESET}"
+    echo ""
+    echo -e "${HEADER}${BOLD}Examples:${RESET}"
+    echo -e "  ${SUCCESS}build.sh test${RESET}  ${DIM}# Run all tests${RESET}"
+    echo -e "  ${SUCCESS}build.sh build${RESET} ${DIM}# Build source package${RESET}"
+    echo -e "  ${SUCCESS}build.sh all${RESET}   ${DIM}# Run all tasks${RESET}"
+}
+
 # Main script
 if [ -z "$1" ]; then
-    echo "Usage: $0 {test|build|check|check-full|install|docs|clean|format|lint|all}"
-    echo ""
-    echo "Commands:"
-    echo "  test       - Run all tests (copies test data first)"
-    echo "  build      - Build source package (copies test data first)"
-    echo "  check      - Run R CMD check (fast, skips tests and dependencies)"
-    echo "  check-full - Run R CMD check --as-cran (full CRAN checks)"
-    echo "  install    - Install package locally (copies test data first)"
-    echo "  docs       - Build documentation with roxygen2"
-    echo "  clean      - Clean build artifacts and test data"
-    echo "  format     - Format R code with styler"
-    echo "  lint       - Lint R code with lintr"
-    echo "  all        - Run all tasks (copy data, format, docs, test, build, check)"
+    show_help
     exit 1
 fi
 
 case "$1" in
+    -h|--help)
+        show_help
+        exit 0
+        ;;
     test)
         copy_test_data
         run_tests
@@ -192,19 +215,9 @@ case "$1" in
         print_status "✓ All tasks completed successfully!"
         ;;
     *)
-        echo "Usage: $0 {test|build|check|check-full|install|docs|clean|format|lint|all}"
+        print_error "Unknown command: $1"
         echo ""
-        echo "Commands:"
-        echo "  test       - Run all tests (copies test data first)"
-        echo "  build      - Build source package (copies test data first)"
-        echo "  check      - Run R CMD check (fast, skips tests and dependencies)"
-        echo "  check-full - Run R CMD check --as-cran (full CRAN checks)"
-        echo "  install    - Install package locally (copies test data first)"
-        echo "  docs       - Build documentation with roxygen2"
-        echo "  clean      - Clean build artifacts and test data"
-        echo "  format     - Format R code with styler"
-        echo "  lint       - Lint R code with lintr"
-        echo "  all        - Run all tasks (copy data, format, docs, test, build, check)"
+        show_help
         exit 1
         ;;
 esac
