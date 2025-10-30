@@ -1,6 +1,6 @@
 ---
 title: "Pragmastat: Pragmatic Statistical Toolkit"
-version: 3.1.30
+version: 3.1.32
 ---
 
 <div style="display: none;">
@@ -496,7 +496,7 @@ $$
 This section compares the toolkit's robust estimators against traditional statistical methods
   to demonstrate their advantages and universally good properties.
 While traditional estimators often work well under ideal conditions,
-  the toolkit estimators maintain reliable performance across diverse real-world scenarios.
+  the toolkit's estimators maintain reliable performance across diverse real-world scenarios.
 
 Average Estimators:
 
@@ -550,7 +550,7 @@ The theoretical maximum is $50\%$ — no estimator can guarantee reliable result
 In such cases, summary estimators are not applicable; a more sophisticated approach is needed.
 
 Even $50\%$ is rarely needed in practice; more conservative breakdown points also cover practical needs.
-Also, when the breakdown point is high, the precision is low
+Additionally, when the breakdown point is high, the precision is low
   (we lose information by neglecting part of the data).
 The optimal practical breakdown point should be somewhere between
   $0\%$ (no robustness) and $50\%$ (low precision).
@@ -577,7 +577,7 @@ Below is a comparison with traditional estimators.
 Drift measures estimator precision by quantifying how much estimates scatter across repeated samples.
 It is based on $\Spread$ of the estimates, and therefore has a breakdown point of $\approx 29\%$.
 
-Drift is useful when comparing precisions of several estimators.
+Drift is useful when comparing the precisions of several estimators.
 To simplify the comparison, it is convenient to choose one of the estimators as a baseline.
 A table with drift squares normalized by the baseline shows the sample size adjustment factor
   for switching from the baseline to another estimator.
@@ -927,7 +927,7 @@ If fewer than $k$ sums lie below the pivot, the median must be larger;
 Based on this comparison, the algorithm eliminates portions of each row that cannot contain the median,
   shrinking the active search space while preserving the true median.
 
-Real data often contains repeated values, which can cause the selection process to stall.
+Real data often contain repeated values, which can cause the selection process to stall.
 When the algorithm detects no progress between iterations, it switches to a midrange strategy:
   find the smallest and largest pairwise sums still in the search space,
   then use their average as the next pivot.
@@ -1760,7 +1760,7 @@ The $\Additive$ ('Normal') distribution has two parameters: the mean and the sta
 
 Consider two independent draws $X$ and $Y$ from the $\Additive(\mathrm{mean}, \mathrm{stdDev})$ distribution.
 The goal is to find the median of their absolute difference $|X-Y|$.
-Define the difference $D=X-Y$.
+Define the difference $D = X - Y$.
 By linearity of expectation, $E[D] = 0$. By independence, $\mathrm{Var}[D] = 2 \cdot \mathrm{stdDev}^2$.
 Thus $D$ has distribution $\Additive(0, \sqrt{2} \cdot \mathrm{stdDev})$,
   and the problem reduces to finding the median of $|D|$.
@@ -2053,10 +2053,10 @@ The $\Spread$ requires about 1.16 times more data to match $\StdDev$ precision u
 Install from PyPI:
 
 ```bash
-pip install pragmastat==3.1.30
+pip install pragmastat==3.1.32
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.30/py
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.32/py
 
 Pragmastat on PyPI: https://pypi.org/project/pragmastat/
 
@@ -2123,10 +2123,10 @@ if __name__ == "__main__":
 Install from npm:
 
 ```bash
-npm i pragmastat@3.1.30
+npm i pragmastat@3.1.32
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.30/ts
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.32/ts
 
 Pragmastat on npm: https://www.npmjs.com/package/pragmastat
 
@@ -2193,11 +2193,11 @@ Install from GitHub:
 ```r
 install.packages("remotes") # If 'remotes' is not installed
 remotes::install_github("AndreyAkinshin/pragmastat",
-                        subdir = "r/pragmastat", ref = "v3.1.30")
+                        subdir = "r/pragmastat", ref = "v3.1.32")
 library(pragmastat)
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.30/r
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.32/r
 
 
 
@@ -2258,16 +2258,16 @@ print(disparity(y, x)) # -0.4
 Install from NuGet via .NET CLI:
 
 ```bash
-dotnet add package Pragmastat --version 3.1.30
+dotnet add package Pragmastat --version 3.1.32
 ```
 
 Install from NuGet via Package Manager Console:
 
 ```ps1
-NuGet\Install-Package Pragmastat -Version 3.1.30
+NuGet\Install-Package Pragmastat -Version 3.1.32
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.30/cs
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.32/cs
 
 Pragmastat on NuGet: https://www.nuget.org/packages/Pragmastat/
 
@@ -2339,23 +2339,23 @@ Install from Maven Central Repository via Apache Maven:
 <dependency>
     <groupId>dev.pragmastat</groupId>
     <artifactId>pragmastat</artifactId>
-    <version>3.1.30</version>
+    <version>3.1.32</version>
 </dependency>
 ```
 
 Install from Maven Central Repository via Gradle:
 
 ```java
-implementation 'dev.pragmastat:pragmastat:3.1.30'
+implementation 'dev.pragmastat:pragmastat:3.1.32'
 ```
 
 Install from Maven Central Repository via Gradle (Kotlin):
 
 ```kotlin
-implementation("dev.pragmastat:pragmastat:3.1.30")
+implementation("dev.pragmastat:pragmastat:3.1.32")
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.30/kt
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.32/kt
 
 Pragmastat on Maven Central Repository: https://central.sonatype.com/artifact/dev.pragmastat/pragmastat/overview
 
@@ -2420,17 +2420,17 @@ fun main() {
 Install from crates.io via cargo:
 
 ```bash
-cargo add pragmastat@3.1.30
+cargo add pragmastat@3.1.32
 ```
 
 Install from crates.io via `Cargo.toml`:
 
 ```toml
 [dependencies]
-pragmastat = "3.1.30"
+pragmastat = "3.1.32"
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.30/rs
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.32/rs
 
 Pragmastat on crates.io: https://crates.io/crates/pragmastat
 
@@ -2505,10 +2505,10 @@ fn main() {
 Install from GitHub:
 
 ```bash
-go get github.com/AndreyAkinshin/pragmastat/go/v3@v3.1.30
+go get github.com/AndreyAkinshin/pragmastat/go/v3@v3.1.32
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.30/go
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.32/go
 
 
 
@@ -2602,25 +2602,25 @@ func main() {
 
 Manual:
 
-- PDF: [pragmastat-v3.1.30.pdf](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.30/pragmastat-v3.1.30.pdf)
-- Markdown: [pragmastat-v3.1.30.md](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.30/pragmastat-v3.1.30.md)
-- Website: [web-v3.1.30.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.30/web-v3.1.30.zip)
+- PDF: [pragmastat-v3.1.32.pdf](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.32/pragmastat-v3.1.32.pdf)
+- Markdown: [pragmastat-v3.1.32.md](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.32/pragmastat-v3.1.32.md)
+- Website: [web-v3.1.32.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.32/web-v3.1.32.zip)
 
 Implementations:
 
-- Python: [py-v3.1.30.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.30/py-v3.1.30.zip)
-- TypeScript: [ts-v3.1.30.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.30/ts-v3.1.30.zip)
-- R: [r-v3.1.30.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.30/r-v3.1.30.zip)
-- C#: [cs-v3.1.30.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.30/cs-v3.1.30.zip)
-- Kotlin: [kt-v3.1.30.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.30/kt-v3.1.30.zip)
-- Rust: [rs-v3.1.30.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.30/rs-v3.1.30.zip)
-- Go: [go-v3.1.30.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.30/go-v3.1.30.zip)
+- Python: [py-v3.1.32.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.32/py-v3.1.32.zip)
+- TypeScript: [ts-v3.1.32.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.32/ts-v3.1.32.zip)
+- R: [r-v3.1.32.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.32/r-v3.1.32.zip)
+- C#: [cs-v3.1.32.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.32/cs-v3.1.32.zip)
+- Kotlin: [kt-v3.1.32.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.32/kt-v3.1.32.zip)
+- Rust: [rs-v3.1.32.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.32/rs-v3.1.32.zip)
+- Go: [go-v3.1.32.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.32/go-v3.1.32.zip)
 
 Data:
 
-- Reference tests (json): [tests-v3.1.30.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.30/tests-v3.1.30.zip)
-- Reference simulations (json) [sim-v3.1.30.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.30/sim-v3.1.30.zip)
+- Reference tests (json): [tests-v3.1.32.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.32/tests-v3.1.32.zip)
+- Reference simulations (json) [sim-v3.1.32.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.32/sim-v3.1.32.zip)
 
 Source code:
 
-- [pragmastat-3.1.30.zip](https://github.com/AndreyAkinshin/pragmastat/archive/refs/tags/v3.1.30.zip)
+- [pragmastat-3.1.32.zip](https://github.com/AndreyAkinshin/pragmastat/archive/refs/tags/v3.1.32.zip)
