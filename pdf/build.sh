@@ -108,6 +108,10 @@ case "$1" in
         show_help
         exit 0
         ;;
+    --release)
+        # If --release is the first arg, default to build --release
+        build_pdf "--release"
+        ;;
     build)
         build_pdf "$2"
         ;;

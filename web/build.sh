@@ -359,6 +359,14 @@ case "$1" in
         show_help
         exit 0
         ;;
+    --release)
+        # If --release is the first arg, default to build --release
+        check_tools
+        run_tailwind
+        prepare_assets "--release"
+        build_hugo
+        print_status "✓ Website build completed successfully!"
+        ;;
     init)
         init_tools
         ;;

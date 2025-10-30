@@ -89,7 +89,11 @@ case "$1" in
         show_help
         exit 0
         ;;
-    generate|build)
+    --release)
+        # If --release is the first arg, default to build --release
+        generate_content "--release"
+        ;;
+    generate|build|gen)
         generate_content "$2"
         ;;
     all)
