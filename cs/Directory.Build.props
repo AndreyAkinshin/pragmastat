@@ -24,7 +24,7 @@
 
         <NoWarn>$(NoWarn);NETSDK1188</NoWarn>
 
-        <Version>3.1.31</Version>
+        <Version>3.1.32</Version>
 
         <AssemblyVersion>$(Version).0</AssemblyVersion>
         <AssemblyFileVersion>$(Version).0</AssemblyFileVersion>
