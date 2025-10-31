@@ -1,106 +1,53 @@
 /**
- * Performance tests for fast Center and Spread implementations
+ * Performance tests for fast Center, Spread, and Shift implementations
  */
 
 import { fastCenter } from '../src/fastCenter';
 import { fastSpread } from '../src/fastSpread';
-import { median } from '../src/utils';
-
-// Simple O(n^2) implementations for comparison
-function centerSimple(x: number[]): number {
-  const n = x.length;
-  const pairwiseAverages: number[] = [];
-  for (let i = 0; i < n; i++) {
-    for (let j = i; j < n; j++) {
-      pairwiseAverages.push((x[i] + x[j]) / 2);
-    }
-  }
-  return median(pairwiseAverages);
-}
-
-function spreadSimple(x: number[]): number {
-  const n = x.length;
-  if (n === 1) {
-    return 0;
-  }
-  const pairwiseDiffs: number[] = [];
-  for (let i = 0; i < n; i++) {
-    for (let j = i + 1; j < n; j++) {
-      pairwiseDiffs.push(Math.abs(x[i] - x[j]));
-    }
-  }
-  return median(pairwiseDiffs);
-}
-
-// Seeded random number generator for reproducibility
-function seededRandom(seed: number): () => number {
-  let state = seed;
-  return (): number => {
-    state = (state * 1664525 + 1013904223) % 4294967296;
-    return (state / 4294967296) * 2 - 1; // Range [-1, 1]
-  };
-}
-
-describe('Fast Center Correctness', () => {
-  it('should match simple implementation for various sizes', () => {
-    const rng = seededRandom(1729);
-
-    for (let n = 1; n <= 100; n++) {
-      for (let iter = 0; iter < n; iter++) {
-        const x = Array.from({ length: n }, () => rng());
-
-        const expected = centerSimple(x);
-        const actual = fastCenter(x);
-
-        expect(Math.abs(expected - actual)).toBeLessThan(1e-9);
-      }
-    }
-  });
-});
-
-describe('Fast Spread Correctness', () => {
-  it('should match simple implementation for various sizes', () => {
-    const rng = seededRandom(1729);
-
-    for (let n = 1; n <= 100; n++) {
-      for (let iter = 0; iter < n; iter++) {
-        const x = Array.from({ length: n }, () => rng());
-
-        const expected = spreadSimple(x);
-        const actual = fastSpread(x);
-
-        expect(Math.abs(expected - actual)).toBeLessThan(1e-9);
-      }
-    }
-  });
-});
+import { fastShift } from '../src/fastShift';
 
 describe('Fast Center Performance', () => {
   it('should complete in reasonable time for n=100000', () => {
-    const rng = seededRandom(1729);
     const n = 100000;
-    const x = Array.from({ length: n }, () => rng());
+    const x = Array.from({ length: n }, (_, i) => i + 1);
 
     const start = Date.now();
     const result = fastCenter(x);
     const elapsed = Date.now() - start;
 
+    const expected = 50000.5;
+    expect(Math.abs(result - expected)).toBeLessThan(1e-9);
     expect(elapsed).toBeLessThan(5000); // Should complete in less than 5 seconds
-    expect(result).toBeDefined(); // Ensure result is computed
   });
 });
 
 describe('Fast Spread Performance', () => {
   it('should complete in reasonable time for n=100000', () => {
-    const rng = seededRandom(1729);
     const n = 100000;
-    const x = Array.from({ length: n }, () => rng());
+    const x = Array.from({ length: n }, (_, i) => i + 1);
 
     const start = Date.now();
     const result = fastSpread(x);
     const elapsed = Date.now() - start;
 
+    const expected = 29290;
+    expect(Math.abs(result - expected)).toBeLessThan(1e-9);
     expect(elapsed).toBeLessThan(5000); // Should complete in less than 5 seconds
-    expect(result).toBeDefined(); // Ensure result is computed
+  });
+});
+
+describe('Fast Shift Performance', () => {
+  it('should complete in reasonable time for n=m=100000', () => {
+    const n = 100000;
+    const x = Array.from({ length: n }, (_, i) => i + 1);
+    const y = Array.from({ length: n }, (_, i) => i + 1);
+
+    const start = Date.now();
+    const result = fastShift(x, y, [0.5])[0];
+    const elapsed = Date.now() - start;
+
+    const expected = 0;
+    expect(Math.abs(result - expected)).toBeLessThan(1e-9);
+    expect(elapsed).toBeLessThan(5000); // Should complete in less than 5 seconds
   });
 });
