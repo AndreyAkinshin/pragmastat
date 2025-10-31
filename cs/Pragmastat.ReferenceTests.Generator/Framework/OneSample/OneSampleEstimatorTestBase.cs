@@ -1,4 +1,4 @@
-namespace Pragmastat.ReferenceTests.ReferenceTesting.OneSample;
+namespace Pragmastat.ReferenceTests.Generator.Framework.OneSample;
 
 public abstract class OneSampleEstimatorTestBase : ReferenceTestBase<OneSampleInput, double>
 {

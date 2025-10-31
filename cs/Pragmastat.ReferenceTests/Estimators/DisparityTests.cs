@@ -1,25 +1,23 @@
 using JetBrains.Annotations;
-using Pragmastat.ReferenceTests.ReferenceTesting;
-using Pragmastat.ReferenceTests.ReferenceTesting.TwoSample;
+using Pragmastat.ReferenceTests.Generator.Framework;
+using Pragmastat.ReferenceTests.Generator.Framework.TwoSample;
 
 namespace Pragmastat.ReferenceTests.Estimators;
 
-public class DisparityTests : TwoSampleEstimatorTestBase
+public class DisparityTests
 {
   private const string SuiteName = "disparity";
-  protected override string GetSuiteName() => SuiteName;
-
-  protected override double Estimate(TwoSampleInput input) => input.GetSampleX().Disparity(input.GetSampleY());
-
-  protected override ReferenceTestCaseInputBuilder<TwoSampleInput> GetInputBuilder() =>
-    new TwoSampleInputBuilder()
-      .AddNatural([2, 3], [2, 3])
-      .AddUniform([5, 100], [5, 100], count: 1);
+  private readonly TwoSampleEstimatorController controller = new(SuiteName, input => input.GetSampleX().Disparity(input.GetSampleY()));
 
   [UsedImplicitly]
   public static readonly TheoryData<string> TestDataNames = ReferenceTestSuiteHelper.GetTheoryData(SuiteName, true);
 
   [Theory]
   [MemberData(nameof(TestDataNames))]
-  public void DisparityTest(string testName) => PerformTest(testName);
+  public void DisparityTest(string testName)
+  {
+    var testCase = controller.LoadTestCase(testName);
+    var actual = controller.Run(testCase.Input);
+    Assert.True(controller.Assert(testCase.Output, actual));
+  }
 }

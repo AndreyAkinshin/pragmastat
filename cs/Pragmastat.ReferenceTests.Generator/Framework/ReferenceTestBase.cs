@@ -1,6 +1,7 @@
 using System.Diagnostics;
+using Xunit;
 
-namespace Pragmastat.ReferenceTests.ReferenceTesting;
+namespace Pragmastat.ReferenceTests.Generator.Framework;
 
 public abstract class ReferenceTestBase<TInput, TOutput>
 {
@@ -14,16 +15,6 @@ public abstract class ReferenceTestBase<TInput, TOutput>
   protected ReferenceTestBase()
   {
     lazyController = new Lazy<ReferenceTestController<TInput, TOutput>>(CreateController);
-  }
-
-  // Remove 'Skip' to generate initial test data
-  [Fact(Skip = "Run this tests explicitly for the initial test case generation")]
-  // [Fact]
-  public void GenerateTests()
-  {
-    var inputs = GetInputBuilder().Build();
-    var testData = Controller.GenerateData(inputs);
-    Controller.Save(testData);
   }
 
   protected void PerformTest(string testName)

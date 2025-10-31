@@ -1,25 +1,23 @@
 using JetBrains.Annotations;
-using Pragmastat.ReferenceTests.ReferenceTesting;
-using Pragmastat.ReferenceTests.ReferenceTesting.OneSample;
+using Pragmastat.ReferenceTests.Generator.Framework;
+using Pragmastat.ReferenceTests.Generator.Framework.OneSample;
 
 namespace Pragmastat.ReferenceTests.Estimators;
 
-public class RelSpreadTests : OneSampleEstimatorTestBase
+public class RelSpreadTests
 {
   private const string SuiteName = "rel-spread";
-  protected override string GetSuiteName() => SuiteName;
-
-  protected override double Estimate(OneSampleInput input) => input.ToSample().RelSpread();
-
-  protected override ReferenceTestCaseInputBuilder<OneSampleInput> GetInputBuilder() =>
-    new OneSampleInputBuilder()
-      .AddNatural([1, 2, 3])
-      .AddUniform([5, 10, 20, 30, 100], count: 1);
+  private readonly OneSampleEstimatorController controller = new(SuiteName, input => input.ToSample().RelSpread());
 
   [UsedImplicitly]
   public static readonly TheoryData<string> TestDataNames = ReferenceTestSuiteHelper.GetTheoryData(SuiteName, true);
 
   [Theory]
   [MemberData(nameof(TestDataNames))]
-  public void RelSpreadTest(string testName) => PerformTest(testName);
+  public void RelSpreadTest(string testName)
+  {
+    var testCase = controller.LoadTestCase(testName);
+    var actual = controller.Run(testCase.Input);
+    Assert.True(controller.Assert(testCase.Output, actual));
+  }
 }

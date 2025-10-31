@@ -48,6 +48,11 @@ run_command() {
     fi
 }
 
+# Function to generate reference tests
+generate_tests() {
+    run_command "dotnet run --project Pragmastat.ReferenceTests.Generator/Pragmastat.ReferenceTests.Generator.csproj" "Generating reference test files"
+}
+
 # Function to run tests
 run_tests() {
     run_command "(cd Pragmastat.UnitTests && dotnet run)" "Running unit tests"
@@ -112,6 +117,7 @@ show_help() {
     echo -e "${BOLD}Usage:${RESET} pragmastat/cs/build.sh ${HIGHLIGHT}<command>${RESET} ${ARG}[--release]${RESET}"
     echo ""
     echo -e "${HEADER}${BOLD}Commands:${RESET}"
+    echo -e "  ${HIGHLIGHT}generate${RESET}                ${DIM}# Generate reference test files${RESET}"
     echo -e "  ${HIGHLIGHT}test${RESET}                    ${DIM}# Run all tests${RESET}"
     echo -e "  ${HIGHLIGHT}build${RESET} ${ARG}[--release]${RESET}       ${DIM}# Build package (debug by default, release with --release flag)${RESET}"
     echo -e "  ${HIGHLIGHT}pack${RESET} ${ARG}[--release]${RESET}        ${DIM}# Pack NuGet package (debug by default, release with --release flag)${RESET}"
@@ -122,6 +128,7 @@ show_help() {
     echo -e "  ${HIGHLIGHT}all${RESET}                     ${DIM}# Run all tasks (restore, format, test, build debug)${RESET}"
     echo ""
     echo -e "${HEADER}${BOLD}Examples:${RESET}"
+    echo -e "  ${SUCCESS}build.sh generate${RESET}         ${DIM}# Generate reference test files${RESET}"
     echo -e "  ${SUCCESS}build.sh test${RESET}             ${DIM}# Run all tests${RESET}"
     echo -e "  ${SUCCESS}build.sh build${RESET}            ${DIM}# Build debug package${RESET}"
     echo -e "  ${SUCCESS}build.sh build ${ARG}--release${RESET}  ${DIM}# Build release package${RESET}"
@@ -138,6 +145,9 @@ case "$1" in
     -h|--help)
         show_help
         exit 0
+        ;;
+    generate|gen)
+        generate_tests
         ;;
     test)
         run_tests

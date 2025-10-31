@@ -1,6 +1,6 @@
 using JetBrains.Annotations;
 
-namespace Pragmastat.ReferenceTests.ReferenceTesting;
+namespace Pragmastat.ReferenceTests.Generator.Framework;
 
 public class ReferenceTestCase<TInput, TOutput>(TInput input, TOutput output)
 {

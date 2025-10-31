@@ -1,4 +1,4 @@
-namespace Pragmastat.ReferenceTests.ReferenceTesting.TwoSample;
+namespace Pragmastat.ReferenceTests.Generator.Framework.TwoSample;
 
 public class TwoSampleEstimatorController(string name, Func<TwoSampleInput, double> estimate, double eps = 1e-9)
   : ReferenceTestController<TwoSampleInput, double>(shared: true)

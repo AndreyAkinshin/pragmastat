@@ -3,7 +3,7 @@ using System.Runtime.Serialization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Pragmastat.ReferenceTests.ReferenceTesting;
+namespace Pragmastat.ReferenceTests.Generator.Framework;
 
 public abstract class ReferenceTestController<TInput, TOutput>
 {

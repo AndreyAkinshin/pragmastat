@@ -2,7 +2,7 @@ using JetBrains.Annotations;
 using Pragmastat.Distributions;
 using Pragmastat.Distributions.Randomization;
 
-namespace Pragmastat.ReferenceTests.ReferenceTesting.OneSample;
+namespace Pragmastat.ReferenceTests.Generator.Framework.OneSample;
 
 [PublicAPI]
 public class OneSampleInputBuilder : ReferenceTestCaseInputBuilder<OneSampleInput>

@@ -1,27 +1,23 @@
 using JetBrains.Annotations;
-using Pragmastat.ReferenceTests.ReferenceTesting;
-using Pragmastat.ReferenceTests.ReferenceTesting.TwoSample;
+using Pragmastat.ReferenceTests.Generator.Framework;
+using Pragmastat.ReferenceTests.Generator.Framework.TwoSample;
 
 namespace Pragmastat.ReferenceTests.Estimators;
 
-public class ShiftTests : TwoSampleEstimatorTestBase
+public class ShiftTests
 {
   private const string SuiteName = "shift";
-  protected override string GetSuiteName() => SuiteName;
-
-  protected override double Estimate(TwoSampleInput input) => input.GetSampleX().Shift(input.GetSampleY());
-
-  protected override ReferenceTestCaseInputBuilder<TwoSampleInput> GetInputBuilder() =>
-    new TwoSampleInputBuilder()
-      .AddNatural([1, 2, 3], [1, 2, 3])
-      .AddZero([1, 2], [1, 2])
-      .AddNormal([5, 10, 30], [5, 10, 30], count: 1)
-      .AddUniform([5, 100], [5, 100], count: 1);
+  private readonly TwoSampleEstimatorController controller = new(SuiteName, input => input.GetSampleX().Shift(input.GetSampleY()));
 
   [UsedImplicitly]
   public static readonly TheoryData<string> TestDataNames = ReferenceTestSuiteHelper.GetTheoryData(SuiteName, true);
 
   [Theory]
   [MemberData(nameof(TestDataNames))]
-  public void ShiftTest(string testName) => PerformTest(testName);
+  public void ShiftTest(string testName)
+  {
+    var testCase = controller.LoadTestCase(testName);
+    var actual = controller.Run(testCase.Input);
+    Assert.True(controller.Assert(testCase.Output, actual));
+  }
 }

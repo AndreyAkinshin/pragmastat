@@ -1,8 +1,7 @@
 using Pragmastat.Distributions;
 using Pragmastat.Internal;
-using Pragmastat.ReferenceTests.ReferenceTesting;
 
-namespace Pragmastat.ReferenceTests.Distributions.ReferenceTesting;
+namespace Pragmastat.ReferenceTests.Generator.Framework.Distributions;
 
 public abstract class DistributionTestBase<TDistribution> : ReferenceTestBase<DistributionInput, DistributionOutput>
   where TDistribution : IContinuousDistribution

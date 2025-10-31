@@ -1,4 +1,4 @@
-namespace Pragmastat.ReferenceTests.ReferenceTesting.SingleDoubleValue;
+namespace Pragmastat.ReferenceTests.Generator.Framework.SingleDoubleValue;
 
 public abstract class SingleDoubleValueTestBase : ReferenceTestBase<SingleDoubleValueInput, double[]>
 {

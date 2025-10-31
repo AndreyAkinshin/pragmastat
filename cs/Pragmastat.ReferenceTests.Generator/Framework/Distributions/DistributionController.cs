@@ -1,7 +1,6 @@
 using Pragmastat.Distributions;
-using Pragmastat.ReferenceTests.ReferenceTesting;
 
-namespace Pragmastat.ReferenceTests.Distributions.ReferenceTesting;
+namespace Pragmastat.ReferenceTests.Generator.Framework.Distributions;
 
 public class DistributionController(
   string name,

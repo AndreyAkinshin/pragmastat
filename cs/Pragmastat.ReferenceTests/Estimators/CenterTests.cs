@@ -1,27 +1,23 @@
 using JetBrains.Annotations;
-using Pragmastat.ReferenceTests.ReferenceTesting;
-using Pragmastat.ReferenceTests.ReferenceTesting.OneSample;
+using Pragmastat.ReferenceTests.Generator.Framework;
+using Pragmastat.ReferenceTests.Generator.Framework.OneSample;
 
 namespace Pragmastat.ReferenceTests.Estimators;
 
-public class CenterTests : OneSampleEstimatorTestBase
+public class CenterTests
 {
   private const string SuiteName = "center";
-  protected override string GetSuiteName() => SuiteName;
-
-  protected override double Estimate(OneSampleInput input) => input.ToSample().Center();
-
-  protected override ReferenceTestCaseInputBuilder<OneSampleInput> GetInputBuilder() =>
-    new OneSampleInputBuilder()
-      .AddNatural([1, 2, 3])
-      .AddZero([1, 2])
-      .AddNormal([5, 10, 30], count: 1)
-      .AddUniform([5, 100], count: 1);
+  private readonly OneSampleEstimatorController controller = new(SuiteName, input => input.ToSample().Center());
 
   [UsedImplicitly]
   public static readonly TheoryData<string> TestDataNames = ReferenceTestSuiteHelper.GetTheoryData(SuiteName, true);
 
   [Theory]
   [MemberData(nameof(TestDataNames))]
-  public void CenterTest(string testName) => PerformTest(testName);
+  public void CenterTest(string testName)
+  {
+    var testCase = controller.LoadTestCase(testName);
+    var actual = controller.Run(testCase.Input);
+    Assert.True(controller.Assert(testCase.Output, actual));
+  }
 }

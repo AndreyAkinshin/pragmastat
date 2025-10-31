@@ -1,6 +1,6 @@
 using JetBrains.Annotations;
 
-namespace Pragmastat.ReferenceTests.Distributions.ReferenceTesting;
+namespace Pragmastat.ReferenceTests.Generator.Framework.Distributions;
 
 [UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class DistributionInput

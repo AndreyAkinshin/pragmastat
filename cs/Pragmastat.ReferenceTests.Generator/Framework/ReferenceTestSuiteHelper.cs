@@ -1,6 +1,7 @@
 using Pragmastat.Internal;
+using Xunit;
 
-namespace Pragmastat.ReferenceTests.ReferenceTesting;
+namespace Pragmastat.ReferenceTests.Generator.Framework;
 
 public static class ReferenceTestSuiteHelper
 {

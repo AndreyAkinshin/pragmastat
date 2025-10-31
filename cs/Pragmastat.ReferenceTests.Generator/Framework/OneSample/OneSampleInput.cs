@@ -1,6 +1,6 @@
 using JetBrains.Annotations;
 
-namespace Pragmastat.ReferenceTests.ReferenceTesting.OneSample;
+namespace Pragmastat.ReferenceTests.Generator.Framework.OneSample;
 
 [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
 public class OneSampleInput

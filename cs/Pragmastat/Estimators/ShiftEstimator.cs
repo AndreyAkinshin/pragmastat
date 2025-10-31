@@ -1,5 +1,4 @@
 using Pragmastat.Algorithms;
-using Pragmastat.Functions;
 using Pragmastat.Internal;
 using Pragmastat.Metrology;
 

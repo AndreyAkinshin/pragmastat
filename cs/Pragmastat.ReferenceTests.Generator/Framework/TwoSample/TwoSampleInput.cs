@@ -1,6 +1,6 @@
 using JetBrains.Annotations;
 
-namespace Pragmastat.ReferenceTests.ReferenceTesting.TwoSample;
+namespace Pragmastat.ReferenceTests.Generator.Framework.TwoSample;
 
 [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
 public class TwoSampleInput
