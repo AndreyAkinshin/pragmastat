@@ -16,7 +16,7 @@ internal fun fastCenter(values: List<Double>): Double {
     if (n == 2) return (values[0] + values[1]) / 2.0
 
     val sortedValues = values.sorted()
-    val totalPairs = (n * (n + 1)) / 2
+    val totalPairs = (n.toLong() * (n + 1)) / 2
     val medianRankLow = (totalPairs + 1) / 2
     val medianRankHigh = (totalPairs + 2) / 2
 
@@ -25,10 +25,10 @@ internal fun fastCenter(values: List<Double>): Double {
 
     var pivot = sortedValues[(n - 1) / 2] + sortedValues[n / 2]
     var activeSetSize = totalPairs
-    var previousCount = 0
+    var previousCount = 0L
 
     while (true) {
-        var countBelowPivot = 0
+        var countBelowPivot = 0L
         var currentColumn = n
         val partitionCounts = IntArray(n)
 
@@ -96,11 +96,11 @@ internal fun fastCenter(values: List<Double>): Double {
         }
 
         previousCount = countBelowPivot
-        activeSetSize = (0 until n).sumOf { maxOf(0, rightBounds[it] - leftBounds[it] + 1) }
+        activeSetSize = (0 until n).sumOf { maxOf(0, rightBounds[it] - leftBounds[it] + 1).toLong() }
 
         if (activeSetSize > 2) {
-            val targetIndex = Random.nextInt(activeSetSize)
-            var cumulativeSize = 0
+            val targetIndex = Random.nextLong(activeSetSize)
+            var cumulativeSize = 0L
             var selectedRow = 0
 
             for (i in 0 until n) {

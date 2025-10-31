@@ -61,14 +61,14 @@ class ReferenceTest {
                         is Map<*, *> -> {
                             if (rawInput.containsKey("x")) {
                                 @Suppress("UNCHECKED_CAST")
-                                (rawInput["x"] as List<Double>)
+                                val rawList = rawInput["x"] as List<*>
+                                rawList.map { (it as Number).toDouble() }
                             } else {
                                 throw IllegalArgumentException("Invalid input format")
                             }
                         }
                         is List<*> -> {
-                            @Suppress("UNCHECKED_CAST")
-                            rawInput as List<Double>
+                            rawInput.map { (it as Number).toDouble() }
                         }
                         else -> throw IllegalArgumentException("Invalid input format")
                     }
@@ -109,9 +109,11 @@ class ReferenceTest {
                     val input = when (val rawInput = testData.input) {
                         is Map<*, *> -> {
                             @Suppress("UNCHECKED_CAST")
-                            val x = rawInput["x"] as List<Double>
+                            val rawX = rawInput["x"] as List<*>
+                            val x = rawX.map { (it as Number).toDouble() }
                             @Suppress("UNCHECKED_CAST")
-                            val y = rawInput["y"] as List<Double>
+                            val rawY = rawInput["y"] as List<*>
+                            val y = rawY.map { (it as Number).toDouble() }
                             Pair(x, y)
                         }
                         else -> throw IllegalArgumentException("Invalid input format for two-sample test")

@@ -16,7 +16,7 @@ internal fun fastSpread(values: List<Double>): Double {
     if (n == 2) return abs(values[1] - values[0])
 
     val a = values.sorted()
-    val N = (n * (n - 1)) / 2
+    val N = (n.toLong() * (n - 1)) / 2
     val kLow = (N + 1) / 2
     val kHigh = (N + 2) / 2
 
@@ -32,10 +32,10 @@ internal fun fastSpread(values: List<Double>): Double {
 
     val rowCounts = IntArray(n)
     var pivot = a[n / 2] - a[(n - 1) / 2]
-    var prevCountBelow = -1
+    var prevCountBelow = -1L
 
     while (true) {
-        var countBelow = 0
+        var countBelow = 0L
         var largestBelow = Double.NEGATIVE_INFINITY
         var smallestAtOrAbove = Double.POSITIVE_INFINITY
 
@@ -112,7 +112,7 @@ internal fun fastSpread(values: List<Double>): Double {
 
         prevCountBelow = countBelow
 
-        val activeSize = (0 until n - 1).filter { L[it] <= R[it] }.sumOf { R[it] - L[it] + 1 }
+        val activeSize = (0 until n - 1).filter { L[it] <= R[it] }.sumOf { (R[it] - L[it] + 1).toLong() }
 
         if (activeSize <= 2) {
             var minRem = Double.POSITIVE_INFINITY
@@ -137,8 +137,8 @@ internal fun fastSpread(values: List<Double>): Double {
                 if (abs((kLow - 1) - countBelow) <= abs(countBelow - kLow)) minRem else maxRem
             }
         } else {
-            val t = Random.nextInt(activeSize)
-            var acc = 0
+            val t = Random.nextLong(activeSize)
+            var acc = 0L
             var row = 0
             for (r in 0 until n - 1) {
                 if (L[r] > R[r]) continue
