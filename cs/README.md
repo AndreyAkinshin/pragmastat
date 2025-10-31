@@ -2,9 +2,9 @@
 
 This is a C\# implementation of 'Pragmastat: Pragmatic Statistical Toolkit', which presents a toolkit of statistical procedures that provide reliable results across diverse real-world distributions, with ready-to-use implementations and detailed explanations.
 
-- PDF manual for this version: [pragmastat-v3.1.32.pdf](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.32/pragmastat-v3.1.32.pdf)
-- Markdown manual for this version: [pragmastat-v3.1.32.md](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.32/pragmastat-v3.1.32.md)
-- Source code for this version: [pragmastat/cs/v3.1.32](https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.32/cs)
+- PDF manual for this version: [pragmastat-v3.1.33.pdf](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.33/pragmastat-v3.1.33.pdf)
+- Markdown manual for this version: [pragmastat-v3.1.33.md](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.1.33/pragmastat-v3.1.33.md)
+- Source code for this version: [pragmastat/cs/v3.1.33](https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.33/cs)
 - Latest online manual: https://pragmastat.dev
 - Manual DOI: [10.5281/zenodo.17236778](https://doi.org/10.5281/zenodo.17236778)
 
@@ -13,13 +13,13 @@ This is a C\# implementation of 'Pragmastat: Pragmatic Statistical Toolkit', whi
 Install from NuGet via .NET CLI:
 
 ```bash
-dotnet add package Pragmastat --version 3.1.32
+dotnet add package Pragmastat --version 3.1.33
 ```
 
 Install from NuGet via Package Manager Console:
 
 ```ps1
-NuGet\Install-Package Pragmastat -Version 3.1.32
+NuGet\Install-Package Pragmastat -Version 3.1.33
 ```
 
 ## Demo
