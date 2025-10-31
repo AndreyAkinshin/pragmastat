@@ -38,7 +38,7 @@ $$
 \Center(\x) = \underset{1 \leq i \leq j \leq n}{\Median} \left(\frac{x_i + x_j}{2} \right)
 $$
 
-The $\Center$ test suite contains 24 correctness test cases stored in the repository, plus 1 performance test that should be implemented manually (see §Test Framework).
+The $\Center$ test suite contains 39 correctness test cases stored in the repository (24 original + 15 unsorted), plus 1 performance test that should be implemented manually (see §Test Framework).
 
 **Demo examples** ($n = 5$) — from manual introduction, validating properties:
 
@@ -88,6 +88,22 @@ The progression from small ($n = 5$) to large ($n = 100$) samples helps identify
 - `extreme-small-5`: $\x = (1e{-}8, 2e{-}8, 3e{-}8, 4e{-}8, 5e{-}8)$ (very small positive values)
 - `extreme-wide-5`: $\x = (0.001, 1, 100, 1000, 1000000)$ (wide range, tests precision)
 
+**Unsorted tests** — verify sorting correctness (15 tests):
+
+- `unsorted-reverse-{n}` for $n \in \{2, 3, 4, 5, 7\}$: reverse sorted natural sequences (5 tests)
+- `unsorted-shuffle-3`: $\x = (2, 1, 3)$ (middle element first)
+- `unsorted-shuffle-4`: $\x = (3, 1, 4, 2)$ (interleaved)
+- `unsorted-shuffle-5`: $\x = (5, 2, 4, 1, 3)$ (complex shuffle)
+- `unsorted-last-first-5`: $\x = (5, 1, 2, 3, 4)$ (last moved to first)
+- `unsorted-first-last-5`: $\x = (2, 3, 4, 5, 1)$ (first moved to last)
+- `unsorted-duplicates-mixed-5`: $\x = (3, 3, 3, 3, 3)$ (all identical, any order)
+- `unsorted-duplicates-unsorted-10`: $\x = (3, 1, 2, 3, 1, 3, 2, 1, 3, 2)$ (duplicates mixed)
+- `unsorted-extreme-large-unsorted-5`: $\x = (5e8, 1e8, 4e8, 2e8, 3e8)$ (large values unsorted)
+- `unsorted-parity-odd-reverse-7`: $\x = (7, 6, 5, 4, 3, 2, 1)$ (odd size reverse)
+
+These tests ensure implementations correctly sort input data before computing pairwise averages.
+The variety of shuffle patterns (reverse, rotation, interleaving, single element displacement) catches common sorting bugs.
+
 **Performance test** — validates the fast $O(n \log n)$ algorithm:
 
 - **Input**: $\x = (1, 2, 3, \ldots, 100000)$
@@ -104,7 +120,7 @@ $$
 \Spread(\x) = \underset{1 \leq i < j \leq n}{\Median} |x_i - x_j|
 $$
 
-The $\Spread$ test suite contains 24 correctness test cases stored in the repository, plus 1 performance test that should be implemented manually (see §Test Framework).
+The $\Spread$ test suite contains 39 correctness test cases stored in the repository (24 original + 15 unsorted), plus 1 performance test that should be implemented manually (see §Test Framework).
 
 **Demo examples** ($n = 5$) — from manual introduction, validating properties:
 
@@ -154,6 +170,22 @@ The zero cases confirm that constant samples correctly produce zero spread.
 - `extreme-small-5`: $\x = (1e{-}8, 2e{-}8, 3e{-}8, 4e{-}8, 5e{-}8)$ (very small positive values)
 - `extreme-wide-5`: $\x = (0.001, 1, 100, 1000, 1000000)$ (wide range, tests precision)
 
+**Unsorted tests** — verify sorting correctness (15 tests):
+
+- `unsorted-reverse-{n}` for $n \in \{2, 3, 4, 5, 7\}$: reverse sorted natural sequences (5 tests)
+- `unsorted-shuffle-3`: $\x = (3, 1, 2)$ (rotated)
+- `unsorted-shuffle-4`: $\x = (4, 2, 1, 3)$ (mixed order)
+- `unsorted-shuffle-5`: $\x = (5, 1, 3, 2, 4)$ (partial shuffle)
+- `unsorted-last-first-5`: $\x = (5, 1, 2, 3, 4)$ (last moved to first)
+- `unsorted-first-last-5`: $\x = (2, 3, 4, 5, 1)$ (first moved to last)
+- `unsorted-duplicates-mixed-5`: $\x = (3, 3, 3, 3, 3)$ (all identical)
+- `unsorted-duplicates-unsorted-10`: $\x = (2, 3, 1, 3, 2, 1, 2, 3, 1, 3)$ (duplicates mixed)
+- `unsorted-extreme-wide-unsorted-5`: $\x = (1000, 0.001, 1000000, 100, 1)$ (wide range unsorted)
+- `unsorted-negative-unsorted-5`: $\x = (-1, -5, -2, -4, -3)$ (negative unsorted)
+
+These tests verify that implementations correctly sort input before computing pairwise differences.
+Since $\Spread$ uses absolute differences, order-dependent bugs would manifest differently than in $\Center$.
+
 **Performance test** — validates the fast $O(n \log n)$ algorithm:
 
 - **Input**: $\x = (1, 2, 3, \ldots, 100000)$
@@ -170,7 +202,7 @@ $$
 \RelSpread(\x) = \frac{\Spread(\x)}{\left| \Center(\x) \right|}
 $$
 
-The $\RelSpread$ test suite contains 15 test cases focusing on relative dispersion.
+The $\RelSpread$ test suite contains 25 test cases (15 original + 10 unsorted) focusing on relative dispersion.
 
 **Demo examples** ($n = 5$) — from manual introduction, validating properties:
 
@@ -201,13 +233,26 @@ The absence of zero-value tests reflects the domain constraint requiring $\Cente
 - `composite-large-spread`: $\x = (1, 100, 200, 300, 1000)$ (large spread relative to center)
 - `composite-extreme-ratio`: $\x = (1, 1.0001, 1.0002, 1.0003, 1.0004)$ (tiny spread, tests precision)
 
+**Unsorted tests** — verify sorting for composite estimator (10 tests):
+
+- `unsorted-reverse-{n}` for $n \in \{3, 4, 5\}$: reverse sorted natural sequences (3 tests)
+- `unsorted-shuffle-4`: $\x = (4, 1, 3, 2)$ (mixed order)
+- `unsorted-shuffle-5`: $\x = (5, 3, 1, 4, 2)$ (complex shuffle)
+- `unsorted-negative-unsorted-3`: $\x = (-1, -3, -2)$ (negative unsorted)
+- `unsorted-demo-unsorted-5`: $\x = (8, 0, 4, 2, 6)$ (demo case unsorted)
+- `unsorted-composite-small-unsorted`: $\x = (0.005, 0.001, 0.003, 0.002, 0.004)$ (small center unsorted)
+- `unsorted-composite-large-unsorted`: $\x = (1000, 1, 300, 100, 200)$ (large spread unsorted)
+- `unsorted-extreme-ratio-unsorted-4`: $\x = (1.0003, 1, 1.0002, 1.0001)$ (extreme ratio unsorted)
+
+Since $\RelSpread$ combines both $\Center$ and $\Spread$, these tests verify that sorting works correctly for composite estimators.
+
 ## Shift
 
 $$
 \Shift(\x, \y) = \underset{1 \leq i \leq n,\,\, 1 \leq j \leq m}{\Median} \left(x_i - y_j \right)
 $$
 
-The $\Shift$ test suite contains 42 correctness test cases stored in the repository, plus 1 performance test that should be implemented manually (see §Test Framework).
+The $\Shift$ test suite contains 60 correctness test cases stored in the repository (42 original + 18 unsorted), plus 1 performance test that should be implemented manually (see §Test Framework).
 
 **Demo examples** ($n = m = 5$) — from manual introduction, validating properties:
 
@@ -271,6 +316,24 @@ The asymmetric size combinations test the two-sample algorithm with unbalanced i
 - `asymmetry-2-50`: $\x = (10, 20)$, $\y = (1, 2, \ldots, 50)$ (tiny vs medium, 100 differences)
 - `asymmetry-constant-varied`: $\x = (5, 5, 5, 5, 5)$, $\y = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10)$ (constant vs varied)
 
+**Unsorted tests** — verify independent sorting of each sample (18 tests):
+
+- `unsorted-x-natural-{n}-{m}` for $(n,m) \in \{(3,3), (4,4), (5,5)\}$: X unsorted (reversed), Y sorted (3 tests)
+- `unsorted-y-natural-{n}-{m}` for $(n,m) \in \{(3,3), (4,4), (5,5)\}$: X sorted, Y unsorted (reversed) (3 tests)
+- `unsorted-both-natural-{n}-{m}` for $(n,m) \in \{(3,3), (4,4), (5,5)\}$: both unsorted (reversed) (3 tests)
+- `unsorted-reverse-3-3`: $\x = (3, 2, 1)$, $\y = (3, 2, 1)$ (both reversed)
+- `unsorted-x-shuffle-3-3`: $\x = (2, 1, 3)$, $\y = (1, 2, 3)$ (X shuffled, Y sorted)
+- `unsorted-y-shuffle-3-3`: $\x = (1, 2, 3)$, $\y = (3, 1, 2)$ (X sorted, Y shuffled)
+- `unsorted-both-shuffle-4-4`: $\x = (3, 1, 4, 2)$, $\y = (4, 2, 1, 3)$ (both shuffled)
+- `unsorted-duplicates-mixed-5-5`: $\x = (3, 3, 3, 3, 3)$, $\y = (3, 3, 3, 3, 3)$ (all identical)
+- `unsorted-x-unsorted-duplicates`: $\x = (2, 1, 3, 2, 1)$, $\y = (1, 1, 2, 2, 3)$ (X has unsorted duplicates)
+- `unsorted-y-unsorted-duplicates`: $\x = (1, 1, 2, 2, 3)$, $\y = (3, 2, 1, 3, 2)$ (Y has unsorted duplicates)
+- `unsorted-asymmetric-unsorted-2-5`: $\x = (2, 1)$, $\y = (5, 2, 4, 1, 3)$ (asymmetric sizes, both unsorted)
+- `unsorted-negative-unsorted-3-3`: $\x = (-1, -3, -2)$, $\y = (-2, -3, -1)$ (negative unsorted)
+
+These tests are critical for two-sample estimators because they verify that $\x$ and $\y$ are sorted **independently**.
+The variety includes cases where only one sample is unsorted, ensuring implementations don't incorrectly assume pre-sorted input or sort samples together.
+
 **Performance test** — validates the fast $O((m+n) \log L)$ binary search algorithm:
 
 - **Input**: $\x = (1, 2, 3, \ldots, 100000)$, $\y = (1, 2, 3, \ldots, 100000)$
@@ -287,7 +350,7 @@ $$
 \Ratio(\x, \y) = \underset{1 \leq i \leq n, 1 \leq j \leq m}{\Median} \left( \dfrac{x_i}{y_j} \right)
 $$
 
-The $\Ratio$ test suite contains 26 test cases, excluding zero values due to division constraints.
+The $\Ratio$ test suite contains 38 test cases (26 original + 12 unsorted), excluding zero values due to division constraints.
 
 **Demo examples** ($n = m = 5$) — from manual introduction, validating properties:
 
@@ -322,13 +385,26 @@ The $\Ratio$ test suite contains 26 test cases, excluding zero values due to div
 The natural sequences verify the identity property ($\Ratio(\x, \x) = 1$) and validate ratio calculations with simple integer inputs.
 Note that implementations should handle the practical constraint of avoiding division by values near zero.
 
+**Unsorted tests** — verify independent sorting for ratio calculation (12 tests):
+
+- `unsorted-x-natural-{n}-{m}` for $(n,m) \in \{(3,3), (4,4)\}$: X unsorted (reversed), Y sorted (2 tests)
+- `unsorted-y-natural-{n}-{m}` for $(n,m) \in \{(3,3), (4,4)\}$: X sorted, Y unsorted (reversed) (2 tests)
+- `unsorted-both-natural-{n}-{m}` for $(n,m) \in \{(3,3), (4,4)\}$: both unsorted (reversed) (2 tests)
+- `unsorted-demo-unsorted-x`: $\x = (16, 1, 8, 2, 4)$, $\y = (2, 4, 8, 16, 32)$ (demo-1 with X unsorted)
+- `unsorted-demo-unsorted-y`: $\x = (1, 2, 4, 8, 16)$, $\y = (32, 2, 16, 4, 8)$ (demo-1 with Y unsorted)
+- `unsorted-demo-both-unsorted`: $\x = (8, 1, 16, 4, 2)$, $\y = (16, 32, 2, 8, 4)$ (demo-1 both unsorted)
+- `unsorted-identity-unsorted`: $\x = (4, 1, 8, 2, 16)$, $\y = (16, 1, 8, 4, 2)$ (identity property, both unsorted)
+- `unsorted-asymmetric-unsorted-2-3`: $\x = (2, 1)$, $\y = (3, 1, 2)$ (asymmetric, both unsorted)
+- `unsorted-power-unsorted-5`: $\x = (16, 2, 8, 1, 4)$, $\y = (32, 4, 16, 2, 8)$ (powers of 2 unsorted)
+
 ## AvgSpread
 
 $$
 \AvgSpread(\x, \y) = \dfrac{n\Spread(\x) + m\Spread(\y)}{n + m}
 $$
 
-The $\AvgSpread$ test suite contains 35 test cases with identical structure to $\Shift$.
+The $\AvgSpread$ test suite contains 50 test cases (35 original + 15 unsorted).
+Since $\AvgSpread$ computes $\Spread(\x)$ and $\Spread(\y)$ independently, unsorted tests are critical to verify that both samples are sorted independently before computing their spreads.
 
 **Demo examples** ($n = m = 5$) — from manual introduction, validating properties:
 
@@ -368,13 +444,30 @@ The asymmetric size combinations are particularly important for $\AvgSpread$ bec
 - `composite-zero-spread-one`: $\x = (5, 5, 5)$, $\y = (1, 2, 3, 4, 5)$ (one zero spread, tests edge case)
 - `composite-extreme-sizes`: $\x = (10)$, $\y = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10)$ (1 vs 10, extreme weighting)
 
+**Unsorted tests** — critical for verifying independent sorting (15 tests):
+
+- `unsorted-x-natural-{n}-{m}` for $(n,m) \in \{(3,3), (4,4)\}$: X unsorted (reversed), Y sorted (2 tests)
+- `unsorted-y-natural-{n}-{m}` for $(n,m) \in \{(3,3), (4,4)\}$: X sorted, Y unsorted (reversed) (2 tests)
+- `unsorted-both-natural-{n}-{m}` for $(n,m) \in \{(3,3), (4,4)\}$: both unsorted (reversed) (2 tests)
+- `unsorted-demo-unsorted-x`: $\x = (12, 0, 6, 3, 9)$, $\y = (0, 2, 4, 6, 8)$ (demo-1 with X unsorted)
+- `unsorted-demo-unsorted-y`: $\x = (0, 3, 6, 9, 12)$, $\y = (8, 0, 4, 2, 6)$ (demo-1 with Y unsorted)
+- `unsorted-demo-both-unsorted`: $\x = (9, 0, 12, 3, 6)$, $\y = (6, 0, 8, 2, 4)$ (demo-1 both unsorted)
+- `unsorted-identity-unsorted`: $\x = (6, 0, 12, 3, 9)$, $\y = (9, 0, 12, 6, 3)$ (demo-2 unsorted)
+- `unsorted-negative-unsorted`: $\x = (-1, -2)$, $\y = (-1, -2)$ (negative unsorted)
+- `unsorted-zero-unsorted-2-2`: $\x = (0, 0)$, $\y = (0, 0)$ (zeros, any order)
+- `unsorted-asymmetric-weights-unsorted`: $\x = (2, 1)$, $\y = (8, 3, 6, 4, 10, 5, 9, 7)$ (asymmetric unsorted)
+- `unsorted-zero-spread-x-unsorted`: $\x = (5, 5, 5)$, $\y = (5, 1, 4, 2, 3)$ (zero spread X, Y unsorted)
+
+These tests verify that implementations compute $\Spread(\x)$ and $\Spread(\y)$ with properly sorted samples.
+
 ## Disparity
 
 $$
 \Disparity(\x, \y) = \dfrac{\Shift(\x, \y)}{\AvgSpread(\x, \y)}
 $$
 
-The $\Disparity$ test suite contains 16 test cases — a reduced set reflecting the estimator's composite nature.
+The $\Disparity$ test suite contains 28 test cases (16 original + 12 unsorted).
+Since $\Disparity$ combines $\Shift$ and $\AvgSpread$, unsorted tests verify both components handle sorting correctly.
 
 **Demo examples** ($n = m = 5$) — from manual introduction, validating properties:
 
@@ -406,6 +499,21 @@ The test cases validate the division operation and confirm scale-free properties
 - `composite-small-avgspread`: $\x = (10.001, 10.002, 10.003)$, $\y = (10.004, 10.005, 10.006)$ (tiny spread, large shift)
 - `composite-large-avgspread`: $\x = (1, 100, 200)$, $\y = (50, 150, 250)$ (large spread, small shift)
 - `composite-extreme-disparity`: $\x = (1, 1.001)$, $\y = (100, 100.001)$ (extreme ratio, tests precision)
+
+**Unsorted tests** — verify both Shift and AvgSpread handle sorting (12 tests):
+
+- `unsorted-x-natural-{n}-{m}` for $(n,m) \in \{(3,3), (4,4)\}$: X unsorted (reversed), Y sorted (2 tests)
+- `unsorted-y-natural-{n}-{m}` for $(n,m) \in \{(3,3), (4,4)\}$: X sorted, Y unsorted (reversed) (2 tests)
+- `unsorted-both-natural-{n}-{m}` for $(n,m) \in \{(3,3), (4,4)\}$: both unsorted (reversed) (2 tests)
+- `unsorted-demo-unsorted-x`: $\x = (12, 0, 6, 3, 9)$, $\y = (0, 2, 4, 6, 8)$ (demo-1 with X unsorted)
+- `unsorted-demo-unsorted-y`: $\x = (0, 3, 6, 9, 12)$, $\y = (8, 0, 4, 2, 6)$ (demo-1 with Y unsorted)
+- `unsorted-demo-both-unsorted`: $\x = (9, 0, 12, 3, 6)$, $\y = (6, 0, 8, 2, 4)$ (demo-1 both unsorted)
+- `unsorted-location-invariance-unsorted`: $\x = (17, 5, 11, 8, 14)$, $\y = (13, 5, 9, 7, 11)$ (demo-2 unsorted)
+- `unsorted-scale-invariance-unsorted`: $\x = (24, 0, 12, 6, 18)$, $\y = (16, 0, 8, 4, 12)$ (demo-3 unsorted)
+- `unsorted-anti-symmetry-unsorted`: $\x = (8, 0, 4, 2, 6)$, $\y = (12, 0, 6, 3, 9)$ (demo-4 reversed and unsorted)
+
+As a composite estimator, $\Disparity$ tests both the numerator ($\Shift$) and denominator ($\AvgSpread$).
+Unsorted variants verify end-to-end correctness including invariance properties.
 
 ## Test Framework
 

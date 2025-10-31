@@ -104,4 +104,32 @@ public class TwoSampleInputBuilder : ReferenceTestCaseInputBuilder<TwoSampleInpu
     return AddDistributionSamples("uniform", UniformDistribution.Standard, UniformDistribution.Standard, xSizes, ySizes,
       count);
   }
+
+  public TwoSampleInputBuilder AddUnsorted(string name, Sample sampleX, Sample sampleY)
+  {
+    Add($"unsorted-{name}", sampleX, sampleY);
+    return this;
+  }
+
+  public TwoSampleInputBuilder AddUnsortedVariants(string baseName, int n, int m)
+  {
+    // Create sorted natural sequences
+    double[] xSorted = Enumerable.Range(1, n).Select(x => x * 1.0).ToArray();
+    double[] ySorted = Enumerable.Range(1, m).Select(x => x * 1.0).ToArray();
+    
+    // Create unsorted (reversed) sequences
+    double[] xUnsorted = Enumerable.Range(1, n).Select(x => (double)(n - x + 1)).ToArray();
+    double[] yUnsorted = Enumerable.Range(1, m).Select(x => (double)(m - x + 1)).ToArray();
+
+    // X unsorted, Y sorted
+    Add($"unsorted-x-{baseName}-{n}-{m}", new Sample(xUnsorted), new Sample(ySorted));
+    
+    // X sorted, Y unsorted
+    Add($"unsorted-y-{baseName}-{n}-{m}", new Sample(xSorted), new Sample(yUnsorted));
+    
+    // Both unsorted
+    Add($"unsorted-both-{baseName}-{n}-{m}", new Sample(xUnsorted), new Sample(yUnsorted));
+
+    return this;
+  }
 }

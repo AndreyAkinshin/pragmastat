@@ -95,4 +95,27 @@ public class OneSampleInputBuilder : ReferenceTestCaseInputBuilder<OneSampleInpu
   {
     return AddDistributionSamples("uniform", UniformDistribution.Standard, sizes, count, weighted);
   }
+
+  public OneSampleInputBuilder AddUnsortedReverse(int[] sizes)
+  {
+    foreach (int n in sizes)
+    {
+      double[] values = Enumerable.Range(1, n).Select(x => (double)(n - x + 1)).ToArray();
+      Add($"unsorted-reverse-{n}", new Sample(values));
+    }
+
+    return this;
+  }
+
+  public OneSampleInputBuilder AddUnsortedShuffle(string name, params double[] values)
+  {
+    Add($"unsorted-{name}", new Sample(values));
+    return this;
+  }
+
+  public OneSampleInputBuilder AddUnsortedPattern(string name, Sample sample)
+  {
+    Add($"unsorted-{name}", sample);
+    return this;
+  }
 }
