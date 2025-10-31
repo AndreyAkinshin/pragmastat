@@ -6,6 +6,11 @@ set -e
 
 cd "$(dirname "$0")" || exit 1
 
+# Activate virtual environment if it exists and not already activated
+if [ -d "venv" ] && [ -z "$VIRTUAL_ENV" ]; then
+    source venv/bin/activate
+fi
+
 # Colors for output (purpose-oriented names)
 ERROR='\033[0;31m'
 SUCCESS='\033[0;32m'
