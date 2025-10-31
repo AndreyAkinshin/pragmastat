@@ -38,13 +38,24 @@ $$
 \Center(\x) = \underset{1 \leq i \leq j \leq n}{\Median} \left(\frac{x_i + x_j}{2} \right)
 $$
 
-The $\Center$ test suite contains 10 test cases validating the robust average estimator.
+The $\Center$ test suite contains 24 correctness test cases stored in the repository, plus 1 performance test that should be implemented manually (see §Test Framework).
 
-**Natural sequences** ($n = 1, 2, 3$) — canonical happy path examples:
+**Demo examples** ($n = 5$) — from manual introduction, validating properties:
+
+- `demo-1`: $\x = (0, 2, 4, 6, 8)$, expected output: $4$ (base case)
+- `demo-2`: $\x = (10, 12, 14, 16, 18)$ (= demo-1 + 10), expected output: $14$ (location equivariance)
+- `demo-3`: $\x = (0, 6, 12, 18, 24)$ (= 3 × demo-1), expected output: $12$ (scale equivariance)
+
+**Natural sequences** ($n = 1, 2, 3, 4$) — canonical happy path examples:
 
 - `natural-1`: $\x = (1)$, expected output: $1$
 - `natural-2`: $\x = (1, 2)$, expected output: $1.5$
 - `natural-3`: $\x = (1, 2, 3)$, expected output: $2$
+- `natural-4`: $\x = (1, 2, 3, 4)$, expected output: $2.5$ (smallest even size with rich structure)
+
+**Negative values** ($n = 3$) — sign handling validation:
+
+- `negative-3`: $\x = (-3, -2, -1)$, expected output: $-2$
 
 **Zero values** ($n = 1, 2$) — edge case testing with zeros:
 
@@ -53,7 +64,7 @@ The $\Center$ test suite contains 10 test cases validating the robust average es
 
 **Additive distribution** ($n = 5, 10, 30$) — fuzzy testing with $\Additive(10, 1)$:
 
-- `normal-5`, `normal-10`, `normal-30`: random samples generated with seed 0
+- `additive-5`, `additive-10`, `additive-30`: random samples generated with seed 0
 
 **Uniform distribution** ($n = 5, 100$) — fuzzy testing with $\Uniform(0, 1)$:
 
@@ -62,19 +73,55 @@ The $\Center$ test suite contains 10 test cases validating the robust average es
 The random samples validate that $\Center$ performs correctly on realistic distributions at various sample sizes.
 The progression from small ($n = 5$) to large ($n = 100$) samples helps identify issues that only manifest at specific scales.
 
+**Algorithm stress tests** — edge cases for fast algorithm implementation:
+
+- `duplicates-5`: $\x = (3, 3, 3, 3, 3)$ (all identical, stress stall handling)
+- `duplicates-10`: $\x = (1, 1, 1, 2, 2, 2, 3, 3, 3, 3)$ (many duplicates, stress tie-breaking)
+- `parity-odd-7`: $\x = (1, 2, 3, 4, 5, 6, 7)$ (odd sample size for odd total pairs)
+- `parity-even-6`: $\x = (1, 2, 3, 4, 5, 6)$ (even sample size for even total pairs)
+- `parity-odd-49`: 49-element sequence $(1, 2, \ldots, 49)$ (large odd, 1225 pairs)
+- `parity-even-50`: 50-element sequence $(1, 2, \ldots, 50)$ (large even, 1275 pairs)
+
+**Extreme values** — numerical stability and range tests:
+
+- `extreme-large-5`: $\x = (1e8, 2e8, 3e8, 4e8, 5e8)$ (very large values)
+- `extreme-small-5`: $\x = (1e{-}8, 2e{-}8, 3e{-}8, 4e{-}8, 5e{-}8)$ (very small positive values)
+- `extreme-wide-5`: $\x = (0.001, 1, 100, 1000, 1000000)$ (wide range, tests precision)
+
+**Performance test** — validates the fast $O(n \log n)$ algorithm:
+
+- **Input**: $\x = (1, 2, 3, \ldots, 100000)$
+- **Expected output**: $50000.5$
+- **Time constraint**: Must complete in under 5 seconds
+- **Purpose**: Ensures the implementation uses the efficient algorithm rather than materializing all $\binom{n+1}{2} \approx 5$ billion pairwise averages
+
+This test case is not stored in the repository because it generates a large JSON file (approximately 1.5 MB).
+Each language implementation should manually implement this test with the hardcoded expected result.
+
 ## Spread
 
 $$
 \Spread(\x) = \underset{1 \leq i < j \leq n}{\Median} |x_i - x_j|
 $$
 
-The $\Spread$ test suite contains 10 test cases with identical structure to $\Center$.
+The $\Spread$ test suite contains 24 correctness test cases stored in the repository, plus 1 performance test that should be implemented manually (see §Test Framework).
 
-**Natural sequences** ($n = 1, 2, 3$):
+**Demo examples** ($n = 5$) — from manual introduction, validating properties:
+
+- `demo-1`: $\x = (0, 2, 4, 6, 8)$, expected output: $4$ (base case)
+- `demo-2`: $\x = (10, 12, 14, 16, 18)$ (= demo-1 + 10), expected output: $4$ (location invariance)
+- `demo-3`: $\x = (0, 4, 8, 12, 16)$ (= 2 × demo-1), expected output: $8$ (scale equivariance)
+
+**Natural sequences** ($n = 1, 2, 3, 4$):
 
 - `natural-1`: $\x = (1)$, expected output: $0$ (single element has zero dispersion)
 - `natural-2`: $\x = (1, 2)$, expected output: $1$
 - `natural-3`: $\x = (1, 2, 3)$, expected output: $1$
+- `natural-4`: $\x = (1, 2, 3, 4)$, expected output: $1.5$ (smallest even size with rich structure)
+
+**Negative values** ($n = 3$) — sign handling validation:
+
+- `negative-3`: $\x = (-3, -2, -1)$, expected output: $1$
 
 **Zero values** ($n = 1, 2$):
 
@@ -83,7 +130,7 @@ The $\Spread$ test suite contains 10 test cases with identical structure to $\Ce
 
 **Additive distribution** ($n = 5, 10, 30$) — $\Additive(10, 1)$:
 
-- `normal-5`, `normal-10`, `normal-30`: random samples generated with seed 0
+- `additive-5`, `additive-10`, `additive-30`: random samples generated with seed 0
 
 **Uniform distribution** ($n = 5, 100$) — $\Uniform(0, 1)$:
 
@@ -92,19 +139,54 @@ The $\Spread$ test suite contains 10 test cases with identical structure to $\Ce
 The natural sequence cases validate the basic pairwise difference calculation.
 The zero cases confirm that constant samples correctly produce zero spread.
 
+**Algorithm stress tests** — edge cases for fast algorithm implementation:
+
+- `duplicates-5`: $\x = (3, 3, 3, 3, 3)$ (all identical, expected output: $0$)
+- `duplicates-10`: $\x = (1, 1, 1, 2, 2, 2, 3, 3, 3, 3)$ (many duplicates, stress tie-breaking)
+- `parity-odd-7`: $\x = (1, 2, 3, 4, 5, 6, 7)$ (odd sample size, 21 differences)
+- `parity-even-6`: $\x = (1, 2, 3, 4, 5, 6)$ (even sample size, 15 differences)
+- `parity-odd-49`: 49-element sequence $(1, 2, \ldots, 49)$ (large odd, 1176 differences)
+- `parity-even-50`: 50-element sequence $(1, 2, \ldots, 50)$ (large even, 1225 differences)
+
+**Extreme values** — numerical stability and range tests:
+
+- `extreme-large-5`: $\x = (1e8, 2e8, 3e8, 4e8, 5e8)$ (very large values)
+- `extreme-small-5`: $\x = (1e{-}8, 2e{-}8, 3e{-}8, 4e{-}8, 5e{-}8)$ (very small positive values)
+- `extreme-wide-5`: $\x = (0.001, 1, 100, 1000, 1000000)$ (wide range, tests precision)
+
+**Performance test** — validates the fast $O(n \log n)$ algorithm:
+
+- **Input**: $\x = (1, 2, 3, \ldots, 100000)$
+- **Expected output**: $29290$
+- **Time constraint**: Must complete in under 5 seconds
+- **Purpose**: Ensures the implementation uses the efficient algorithm rather than materializing all $\binom{n}{2} \approx 5$ billion pairwise differences
+
+This test case is not stored in the repository because it generates a large JSON file (approximately 1.5 MB).
+Each language implementation should manually implement this test with the hardcoded expected result.
+
 ## RelSpread
 
 $$
 \RelSpread(\x) = \frac{\Spread(\x)}{\left| \Center(\x) \right|}
 $$
 
-The $\RelSpread$ test suite contains 8 test cases focusing on relative dispersion.
+The $\RelSpread$ test suite contains 15 test cases focusing on relative dispersion.
 
-**Natural sequences** ($n = 1, 2, 3$):
+**Demo examples** ($n = 5$) — from manual introduction, validating properties:
+
+- `demo-1`: $\x = (0, 2, 4, 6, 8)$, expected output: $1$ (base case)
+- `demo-2`: $\x = (0, 10, 20, 30, 40)$ (= 5 × demo-1), expected output: $1$ (scale invariance)
+
+**Natural sequences** ($n = 1, 2, 3, 4$):
 
 - `natural-1`: $\x = (1)$, expected output: $0$
 - `natural-2`: $\x = (1, 2)$, expected output: $\approx 0.667$
 - `natural-3`: $\x = (1, 2, 3)$, expected output: $0.5$
+- `natural-4`: $\x = (1, 2, 3, 4)$, expected output: $0.6$ (validates composite with even size)
+
+**Negative values** ($n = 3$) — validates absolute value in denominator:
+
+- `negative-3`: $\x = (-3, -2, -1)$, expected output: $0.5$
 
 **Uniform distribution** ($n = 5, 10, 20, 30, 100$) — $\Uniform(0, 1)$:
 
@@ -113,13 +195,27 @@ The $\RelSpread$ test suite contains 8 test cases focusing on relative dispersio
 The uniform distribution tests span multiple sample sizes to verify that $\RelSpread$ correctly normalizes dispersion.
 The absence of zero-value tests reflects the domain constraint requiring $\Center(\x) \neq 0$.
 
+**Composite estimator stress tests** — edge cases specific to division operation:
+
+- `composite-small-center`: $\x = (0.001, 0.002, 0.003, 0.004, 0.005)$ (small center, tests division stability)
+- `composite-large-spread`: $\x = (1, 100, 200, 300, 1000)$ (large spread relative to center)
+- `composite-extreme-ratio`: $\x = (1, 1.0001, 1.0002, 1.0003, 1.0004)$ (tiny spread, tests precision)
+
 ## Shift
 
 $$
 \Shift(\x, \y) = \underset{1 \leq i \leq n,\,\, 1 \leq j \leq m}{\Median} \left(x_i - y_j \right)
 $$
 
-The $\Shift$ test suite contains 26 test cases covering two-sample comparisons.
+The $\Shift$ test suite contains 42 correctness test cases stored in the repository, plus 1 performance test that should be implemented manually (see §Test Framework).
+
+**Demo examples** ($n = m = 5$) — from manual introduction, validating properties:
+
+- `demo-1`: $\x = (0, 2, 4, 6, 8)$, $\y = (10, 12, 14, 16, 18)$, expected output: $-10$ (base case)
+- `demo-2`: $\x = (0, 2, 4, 6, 8)$, $\y = (0, 2, 4, 6, 8)$, expected output: $0$ (identity property)
+- `demo-3`: $\x = (7, 9, 11, 13, 15)$, $\y = (13, 15, 17, 19, 21)$ (= demo-1 + [7,3]), expected output: $-6$ (location equivariance)
+- `demo-4`: $\x = (0, 4, 8, 12, 16)$, $\y = (20, 24, 28, 32, 36)$ (= 2 × demo-1), expected output: $-20$ (scale equivariance)
+- `demo-5`: $\x = (10, 12, 14, 16, 18)$, $\y = (0, 2, 4, 6, 8)$ (= reversed demo-1), expected output: $10$ (anti-symmetry)
 
 **Natural sequences** ($[n, m] \in \{1, 2, 3\} \times \{1, 2, 3\}$) — 9 combinations:
 
@@ -133,15 +229,23 @@ The $\Shift$ test suite contains 26 test cases covering two-sample comparisons.
 - `natural-3-2`: $\x = (1, 2, 3)$, $\y = (1, 2)$, expected output: $0.5$
 - `natural-3-3`: $\x = (1, 2, 3)$, $\y = (1, 2, 3)$, expected output: $0$
 
+**Negative values** ($[n, m] = [2, 2]$) — sign handling validation:
+
+- `negative-2-2`: $\x = (-2, -1)$, $\y = (-2, -1)$, expected output: $0$
+
+**Mixed-sign values** ($[n, m] = [2, 2]$) — validates anti-symmetry across zero:
+
+- `mixed-2-2`: $\x = (-1, 1)$, $\y = (-1, 1)$, expected output: $0$
+
 **Zero values** ($[n, m] \in \{1, 2\} \times \{1, 2\}$) — 4 combinations:
 
 - `zeros-1-1`, `zeros-1-2`, `zeros-2-1`, `zeros-2-2`: all produce output $0$
 
 **Additive distribution** ($[n, m] \in \{5, 10, 30\} \times \{5, 10, 30\}$) — 9 combinations with $\Additive(10, 1)$:
 
-- `normal-5-5`, `normal-5-10`, `normal-5-30`
-- `normal-10-5`, `normal-10-10`, `normal-10-30`
-- `normal-30-5`, `normal-30-10`, `normal-30-30`
+- `additive-5-5`, `additive-5-10`, `additive-5-30`
+- `additive-10-5`, `additive-10-10`, `additive-10-30`
+- `additive-30-5`, `additive-30-10`, `additive-30-30`
 - Random generation: $\x$ uses seed 0, $\y$ uses seed 1
 
 **Uniform distribution** ($[n, m] \in \{5, 100\} \times \{5, 100\}$) — 4 combinations with $\Uniform(0, 1)$:
@@ -152,13 +256,44 @@ The $\Shift$ test suite contains 26 test cases covering two-sample comparisons.
 The natural sequences validate anti-symmetry ($\Shift(\x, \y) = -\Shift(\y, \x)$) and the identity property ($\Shift(\x, \x) = 0$).
 The asymmetric size combinations test the two-sample algorithm with unbalanced inputs.
 
+**Algorithm stress tests** — edge cases for fast binary search algorithm:
+
+- `duplicates-5-5`: $\x = (3, 3, 3, 3, 3)$, $\y = (3, 3, 3, 3, 3)$ (all identical, expected output: $0$)
+- `duplicates-10-10`: $\x = (1, 1, 2, 2, 3, 3, 4, 4, 5, 5)$, $\y = (1, 1, 2, 2, 3, 3, 4, 4, 5, 5)$ (many duplicates)
+- `parity-odd-7-7`: $\x = (1, 2, 3, 4, 5, 6, 7)$, $\y = (1, 2, 3, 4, 5, 6, 7)$ (odd sizes, 49 differences, expected output: $0$)
+- `parity-even-6-6`: $\x = (1, 2, 3, 4, 5, 6)$, $\y = (1, 2, 3, 4, 5, 6)$ (even sizes, 36 differences, expected output: $0$)
+- `parity-asymmetric-7-6`: $\x = (1, 2, 3, 4, 5, 6, 7)$, $\y = (1, 2, 3, 4, 5, 6)$ (mixed parity, 42 differences)
+- `parity-large-49-50`: $\x = (1, 2, \ldots, 49)$, $\y = (1, 2, \ldots, 50)$ (large asymmetric, 2450 differences)
+
+**Extreme asymmetry** — tests with very unbalanced sample sizes:
+
+- `asymmetry-1-100`: $\x = (50)$, $\y = (1, 2, \ldots, 100)$ (single vs many, 100 differences)
+- `asymmetry-2-50`: $\x = (10, 20)$, $\y = (1, 2, \ldots, 50)$ (tiny vs medium, 100 differences)
+- `asymmetry-constant-varied`: $\x = (5, 5, 5, 5, 5)$, $\y = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10)$ (constant vs varied)
+
+**Performance test** — validates the fast $O((m+n) \log L)$ binary search algorithm:
+
+- **Input**: $\x = (1, 2, 3, \ldots, 100000)$, $\y = (1, 2, 3, \ldots, 100000)$
+- **Expected output**: $0$
+- **Time constraint**: Must complete in under 5 seconds
+- **Purpose**: Ensures the implementation uses the efficient algorithm rather than materializing all $mn = 10$ billion pairwise differences
+
+This test case is not stored in the repository because it generates a large JSON file (approximately 1.5 MB).
+Each language implementation should manually implement this test with the hardcoded expected result.
+
 ## Ratio
 
 $$
 \Ratio(\x, \y) = \underset{1 \leq i \leq n, 1 \leq j \leq m}{\Median} \left( \dfrac{x_i}{y_j} \right)
 $$
 
-The $\Ratio$ test suite contains 22 test cases, excluding zero values due to division constraints.
+The $\Ratio$ test suite contains 26 test cases, excluding zero values due to division constraints.
+
+**Demo examples** ($n = m = 5$) — from manual introduction, validating properties:
+
+- `demo-1`: $\x = (1, 2, 4, 8, 16)$, $\y = (2, 4, 8, 16, 32)$, expected output: $0.5$ (base case)
+- `demo-2`: $\x = (1, 2, 4, 8, 16)$, $\y = (1, 2, 4, 8, 16)$, expected output: $1$ (identity property)
+- `demo-3`: $\x = (2, 4, 8, 16, 32)$, $\y = (10, 20, 40, 80, 160)$ (= [2×demo-1.x, 5×demo-1.y]), expected output: $0.2$ (scale property)
 
 **Natural sequences** ($[n, m] \in \{1, 2, 3\} \times \{1, 2, 3\}$) — 9 combinations:
 
@@ -174,9 +309,9 @@ The $\Ratio$ test suite contains 22 test cases, excluding zero values due to div
 
 **Additive distribution** ($[n, m] \in \{5, 10, 30\} \times \{5, 10, 30\}$) — 9 combinations with $\Additive(10, 1)$:
 
-- `normal-5-5`, `normal-5-10`, `normal-5-30`
-- `normal-10-5`, `normal-10-10`, `normal-10-30`
-- `normal-30-5`, `normal-30-10`, `normal-30-30`
+- `additive-5-5`, `additive-5-10`, `additive-5-30`
+- `additive-10-5`, `additive-10-10`, `additive-10-30`
+- `additive-30-5`, `additive-30-10`, `additive-30-30`
 - Random generation: $\x$ uses seed 0, $\y$ uses seed 1
 
 **Uniform distribution** ($[n, m] \in \{5, 100\} \times \{5, 100\}$) — 4 combinations with $\Uniform(0, 1)$:
@@ -193,11 +328,23 @@ $$
 \AvgSpread(\x, \y) = \dfrac{n\Spread(\x) + m\Spread(\y)}{n + m}
 $$
 
-The $\AvgSpread$ test suite contains 26 test cases with identical structure to $\Shift$.
+The $\AvgSpread$ test suite contains 35 test cases with identical structure to $\Shift$.
+
+**Demo examples** ($n = m = 5$) — from manual introduction, validating properties:
+
+- `demo-1`: $\x = (0, 3, 6, 9, 12)$, $\y = (0, 2, 4, 6, 8)$, expected output: $5$ (base case: $(5 \cdot 6 + 5 \cdot 4)/10$)
+- `demo-2`: $\x = (0, 3, 6, 9, 12)$, $\y = (0, 3, 6, 9, 12)$, expected output: $6$ (identity case)
+- `demo-3`: $\x = (0, 6, 12, 18, 24)$, $\y = (0, 9, 18, 27, 36)$ (= [2×demo-1.x, 3×demo-1.y]), expected output: $15$ (scale equivariance)
+- `demo-4`: $\x = (0, 2, 4, 6, 8)$, $\y = (0, 3, 6, 9, 12)$ (= reversed demo-1), expected output: $5$ (symmetry)
+- `demo-5`: $\x = (0, 6, 12, 18, 24)$, $\y = (0, 4, 8, 12, 16)$ (= 2 × demo-1), expected output: $10$ (uniform scaling)
 
 **Natural sequences** ($[n, m] \in \{1, 2, 3\} \times \{1, 2, 3\}$) — 9 combinations:
 
 - All combinations from single-element to three-element samples, validating the weighted average calculation
+
+**Negative values** ($[n, m] = [2, 2]$) — validates spread calculation with negative values:
+
+- `negative-2-2`: $\x = (-2, -1)$, $\y = (-2, -1)$, expected output: $1$
 
 **Zero values** ($[n, m] \in \{1, 2\} \times \{1, 2\}$) — 4 combinations:
 
@@ -215,18 +362,35 @@ The $\AvgSpread$ test suite contains 26 test cases with identical structure to $
 
 The asymmetric size combinations are particularly important for $\AvgSpread$ because the estimator must correctly weight each sample's contribution by its size.
 
+**Composite estimator stress tests** — edge cases for weighted averaging:
+
+- `composite-asymmetric-weights`: $\x = (1, 2)$, $\y = (3, 4, 5, 6, 7, 8, 9, 10)$ (2 vs 8, tests weighting formula)
+- `composite-zero-spread-one`: $\x = (5, 5, 5)$, $\y = (1, 2, 3, 4, 5)$ (one zero spread, tests edge case)
+- `composite-extreme-sizes`: $\x = (10)$, $\y = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10)$ (1 vs 10, extreme weighting)
+
 ## Disparity
 
 $$
 \Disparity(\x, \y) = \dfrac{\Shift(\x, \y)}{\AvgSpread(\x, \y)}
 $$
 
-The $\Disparity$ test suite contains 8 test cases — a reduced set reflecting the estimator's composite nature.
+The $\Disparity$ test suite contains 16 test cases — a reduced set reflecting the estimator's composite nature.
+
+**Demo examples** ($n = m = 5$) — from manual introduction, validating properties:
+
+- `demo-1`: $\x = (0, 3, 6, 9, 12)$, $\y = (0, 2, 4, 6, 8)$, expected output: $0.4$ (base case: $2/5$)
+- `demo-2`: $\x = (5, 8, 11, 14, 17)$, $\y = (5, 7, 9, 11, 13)$ (= demo-1 + 5), expected output: $0.4$ (location invariance)
+- `demo-3`: $\x = (0, 6, 12, 18, 24)$, $\y = (0, 4, 8, 12, 16)$ (= 2 × demo-1), expected output: $0.4$ (scale invariance)
+- `demo-4`: $\x = (0, 2, 4, 6, 8)$, $\y = (0, 3, 6, 9, 12)$ (= reversed demo-1), expected output: $-0.4$ (anti-symmetry)
 
 **Natural sequences** ($[n, m] \in \{2, 3\} \times \{2, 3\}$) — 4 combinations:
 
 - `natural-2-2`, `natural-2-3`, `natural-3-2`, `natural-3-3`
 - Minimum size $n, m \geq 2$ required for meaningful dispersion calculations
+
+**Negative values** ($[n, m] = [2, 2]$) — end-to-end validation with negative values:
+
+- `negative-2-2`: $\x = (-2, -1)$, $\y = (-2, -1)$, expected output: $0$
 
 **Uniform distribution** ($[n, m] \in \{5, 100\} \times \{5, 100\}$) — 4 combinations with $\Uniform(0, 1)$:
 
@@ -236,6 +400,12 @@ The $\Disparity$ test suite contains 8 test cases — a reduced set reflecting t
 The smaller test set for $\Disparity$ reflects implementation confidence.
 Since $\Disparity$ combines $\Shift$ and $\AvgSpread$, correct implementation of those components ensures $\Disparity$ correctness.
 The test cases validate the division operation and confirm scale-free properties.
+
+**Composite estimator stress tests** — edge cases for effect size calculation:
+
+- `composite-small-avgspread`: $\x = (10.001, 10.002, 10.003)$, $\y = (10.004, 10.005, 10.006)$ (tiny spread, large shift)
+- `composite-large-avgspread`: $\x = (1, 100, 200)$, $\y = (50, 150, 250)$ (large spread, small shift)
+- `composite-extreme-disparity`: $\x = (1, 1.001)$, $\y = (100, 100.001)$ (extreme ratio, tests precision)
 
 ## Test Framework
 
@@ -254,7 +424,7 @@ The random generation mechanism works as follows:
   one for the $\x$ sample generator and one for the $\y$ sample generator.
 - The seed counter increments with each random generator creation, ensuring deterministic test data generation.
 
-For $\Additive$ ('Normal') distributions, random values are generated using the Box-Müller transform,
+For $\Additive$ distributions, random values are generated using the Box-Müller transform,
   which converts pairs of uniform random values into normally distributed values.
 The transform applies the formula:
 
@@ -281,5 +451,17 @@ Assertions verify that outputs match expected values within numerical tolerance 
 For one-sample estimators, input contains array `x` and optional `parameters`.
 For two-sample estimators, input contains arrays `x` and `y`.
 Output is a single numeric value.
+
+**Performance testing** — The toolkit provides $O(n \log n)$ fast algorithms for $\Center$, $\Spread$, and $\Shift$ estimators,
+dramatically more efficient than naive implementations that materialize all pairwise combinations.
+Performance tests use sample size $n = 100{,}000$ (for one-sample) or $n = m = 100{,}000$ (for two-sample).
+This specific size creates a clear performance distinction:
+fast implementations ($O(n \log n)$ or $O((m+n) \log L)$) complete in under 5 seconds on modern hardware across all supported languages,
+while naive implementations ($O(n^2 \log n)$ or $O(mn \log(mn))$) would be unbearably slow (taking hours or failing due to memory exhaustion).
+With $n = 100{,}000$, naive approaches would need to materialize approximately 5 billion pairwise values for $\Center$/$\Spread$
+or 10 billion for $\Shift$, whereas fast algorithms require only $O(n)$ additional memory.
+Performance tests serve dual purposes: correctness validation at scale and performance regression detection,
+ensuring implementations use the efficient algorithms and remain practical for real-world datasets with hundreds of thousands of observations.
+Performance test specifications are provided in the respective estimator sections above.
 
 This framework ensures that all seven language implementations maintain strict numerical agreement across the full test suite.
