@@ -12,7 +12,7 @@ public class DisparityEstimator(ITwoSampleEstimator shift, ITwoSampleEstimator s
     var shiftValue = shift.Estimate(x, y);
     var spreadValue = spread.Estimate(x, y);
     return spreadValue.NominalValue == 0
-      ? double.PositiveInfinity.WithUnit(NumberUnit.Instance)
-      : (shiftValue / spreadValue).NominalValue.WithUnit(NumberUnit.Instance);
+      ? double.PositiveInfinity.WithUnit(DisparityUnit.Instance)
+      : (shiftValue / spreadValue).NominalValue.WithUnit(DisparityUnit.Instance);
   }
 }
