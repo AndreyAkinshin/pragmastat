@@ -9,4 +9,5 @@ public readonly struct NumberValue(double value)
   public static NumberValue Of(double value) => new(value);
 
   public override string ToString() => Value.ToStringInvariant();
+  public Measurement ToMeasurement() => new(Value, NumberUnit.Instance);
 }
