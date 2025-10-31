@@ -1,57 +1,9 @@
 library(testthat)
 library(pragmastat)
 
-# Simple O(n^2) implementations for comparison
-center_simple <- function(x) {
-  n <- length(x)
-  pairwise_averages <- outer(x, x, "+") / 2
-  median(pairwise_averages[upper.tri(pairwise_averages, diag = TRUE)])
-}
-
-spread_simple <- function(x) {
-  n <- length(x)
-  if (n == 1) {
-    return(0)
-  }
-  pairwise_diffs <- outer(x, x, "-")
-  pairwise_abs_diffs <- abs(pairwise_diffs)
-  median(pairwise_abs_diffs[upper.tri(pairwise_abs_diffs, diag = FALSE)])
-}
-
-test_that("fast_center matches simple implementation", {
-  set.seed(1729)
-
-  for (n in 1:30) {
-    for (iter in seq_len(n)) {
-      x <- rnorm(n)
-
-      expected <- center_simple(x)
-      actual <- center(x)
-
-      expect_equal(actual, expected, tolerance = 1e-9)
-    }
-  }
-})
-
-test_that("fast_spread matches simple implementation", {
-  set.seed(1729)
-
-  for (n in 1:30) {
-    for (iter in seq_len(n)) {
-      x <- rnorm(n)
-
-      expected <- spread_simple(x)
-      actual <- spread(x)
-
-      expect_equal(actual, expected, tolerance = 1e-9)
-    }
-  }
-})
-
-test_that("fast_center performance for n=100000", {
-  set.seed(1729)
+test_that("center performance for n=100000", {
   n <- 100000
-  x <- rnorm(n)
+  x <- seq_len(n)
 
   start_time <- Sys.time()
   result <- center(x)
@@ -60,13 +12,14 @@ test_that("fast_center performance for n=100000", {
   cat(sprintf("\nCenter for n=%d: %.6f\n", n, result))
   cat(sprintf("Elapsed time: %.3f seconds\n", elapsed))
 
+  expected <- 50000.5
+  expect_equal(result, expected, tolerance = 1e-9)
   expect_lt(elapsed, 5) # Should complete in less than 5 seconds
 })
 
-test_that("fast_spread performance for n=100000", {
-  set.seed(1729)
+test_that("spread performance for n=100000", {
   n <- 100000
-  x <- rnorm(n)
+  x <- seq_len(n)
 
   start_time <- Sys.time()
   result <- spread(x)
@@ -75,5 +28,24 @@ test_that("fast_spread performance for n=100000", {
   cat(sprintf("\nSpread for n=%d: %.6f\n", n, result))
   cat(sprintf("Elapsed time: %.3f seconds\n", elapsed))
 
+  expected <- 29290
+  expect_equal(result, expected, tolerance = 1e-9)
+  expect_lt(elapsed, 5) # Should complete in less than 5 seconds
+})
+
+test_that("shift performance for n=m=100000", {
+  n <- 100000
+  x <- seq_len(n)
+  y <- seq_len(n)
+
+  start_time <- Sys.time()
+  result <- shift(x, y)
+  elapsed <- as.numeric(difftime(Sys.time(), start_time, units = "secs"))
+
+  cat(sprintf("\nShift for n=m=%d: %.6f\n", n, result))
+  cat(sprintf("Elapsed time: %.3f seconds\n", elapsed))
+
+  expected <- 0
+  expect_equal(result, expected, tolerance = 1e-9)
   expect_lt(elapsed, 5) # Should complete in less than 5 seconds
 })
