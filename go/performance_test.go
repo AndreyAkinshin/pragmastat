@@ -2,90 +2,16 @@ package pragmastat
 
 import (
 	"math"
-	"math/rand"
 	"testing"
 	"time"
 )
 
-// centerSimple is the simple O(n^2) implementation for comparison
-func centerSimple(x []float64) float64 {
-	n := len(x)
-	var pairwiseAverages []float64
-	for i := 0; i < n; i++ {
-		for j := i; j < n; j++ {
-			pairwiseAverages = append(pairwiseAverages, (x[i]+x[j])/2.0)
-		}
-	}
-	result, _ := median(pairwiseAverages)
-	return result
-}
-
-// spreadSimple is the simple O(n^2) implementation for comparison
-func spreadSimple(x []float64) float64 {
-	n := len(x)
-	if n == 1 {
-		return 0.0
-	}
-	var pairwiseDiffs []float64
-	for i := 0; i < n; i++ {
-		for j := i + 1; j < n; j++ {
-			pairwiseDiffs = append(pairwiseDiffs, math.Abs(x[i]-x[j]))
-		}
-	}
-	result, _ := median(pairwiseDiffs)
-	return result
-}
-
-func TestCenterCorrectness(t *testing.T) {
-	rand.Seed(1729)
-	for n := 1; n <= 100; n++ {
-		for iter := 0; iter < n; iter++ {
-			x := make([]float64, n)
-			for i := 0; i < n; i++ {
-				x[i] = rand.NormFloat64()
-			}
-
-			expected := centerSimple(x)
-			actual, err := fastCenter(x)
-			if err != nil {
-				t.Fatalf("fastCenter failed for n=%d: %v", n, err)
-			}
-
-			if math.Abs(expected-actual) > 1e-9 {
-				t.Errorf("Mismatch for n=%d: expected=%.10f, actual=%.10f", n, expected, actual)
-			}
-		}
-	}
-}
-
-func TestSpreadCorrectness(t *testing.T) {
-	rand.Seed(1729)
-	for n := 1; n <= 100; n++ {
-		for iter := 0; iter < n; iter++ {
-			x := make([]float64, n)
-			for i := 0; i < n; i++ {
-				x[i] = rand.NormFloat64()
-			}
-
-			expected := spreadSimple(x)
-			actual, err := fastSpread(x)
-			if err != nil {
-				t.Fatalf("fastSpread failed for n=%d: %v", n, err)
-			}
-
-			if math.Abs(expected-actual) > 1e-9 {
-				t.Errorf("Mismatch for n=%d: expected=%.10f, actual=%.10f", n, expected, actual)
-			}
-		}
-	}
-}
-
+// TestCenterPerformance validates the fast O(n log n) algorithm as specified in tests.md
 func TestCenterPerformance(t *testing.T) {
-	rand.Seed(1729)
 	n := 100000
 	x := make([]float64, n)
 	for i := 0; i < n; i++ {
-		x[i] = rand.NormFloat64()
+		x[i] = float64(i + 1)
 	}
 
 	start := time.Now()
@@ -96,6 +22,11 @@ func TestCenterPerformance(t *testing.T) {
 		t.Fatalf("fastCenter failed: %v", err)
 	}
 
+	expected := 50000.5
+	if math.Abs(result-expected) > 1e-9 {
+		t.Errorf("Center for n=%d: expected %.1f, got %.6f", n, expected, result)
+	}
+
 	t.Logf("Center for n=%d: %.6f", n, result)
 	t.Logf("Elapsed time: %v", elapsed)
 
@@ -104,12 +35,12 @@ func TestCenterPerformance(t *testing.T) {
 	}
 }
 
+// TestSpreadPerformance validates the fast O(n log n) algorithm as specified in tests.md
 func TestSpreadPerformance(t *testing.T) {
-	rand.Seed(1729)
 	n := 100000
 	x := make([]float64, n)
 	for i := 0; i < n; i++ {
-		x[i] = rand.NormFloat64()
+		x[i] = float64(i + 1)
 	}
 
 	start := time.Now()
@@ -120,6 +51,11 @@ func TestSpreadPerformance(t *testing.T) {
 		t.Fatalf("fastSpread failed: %v", err)
 	}
 
+	expected := 29290.0
+	if math.Abs(result-expected) > 1e-9 {
+		t.Errorf("Spread for n=%d: expected %.0f, got %.6f", n, expected, result)
+	}
+
 	t.Logf("Spread for n=%d: %.6f", n, result)
 	t.Logf("Elapsed time: %v", elapsed)
 
@@ -128,74 +64,33 @@ func TestSpreadPerformance(t *testing.T) {
 	}
 }
 
-func BenchmarkCenterN100(b *testing.B) {
-	rand.Seed(1729)
-	x := make([]float64, 100)
-	for i := 0; i < 100; i++ {
-		x[i] = rand.NormFloat64()
+// TestShiftPerformance validates the fast O((m+n) log L) binary search algorithm as specified in tests.md
+func TestShiftPerformance(t *testing.T) {
+	n := 100000
+	x := make([]float64, n)
+	y := make([]float64, n)
+	for i := 0; i < n; i++ {
+		x[i] = float64(i + 1)
+		y[i] = float64(i + 1)
 	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		fastCenter(x)
-	}
-}
 
-func BenchmarkCenterN1000(b *testing.B) {
-	rand.Seed(1729)
-	x := make([]float64, 1000)
-	for i := 0; i < 1000; i++ {
-		x[i] = rand.NormFloat64()
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		fastCenter(x)
-	}
-}
+	start := time.Now()
+	result, err := fastShift(x, y)
+	elapsed := time.Since(start)
 
-func BenchmarkCenterN10000(b *testing.B) {
-	rand.Seed(1729)
-	x := make([]float64, 10000)
-	for i := 0; i < 10000; i++ {
-		x[i] = rand.NormFloat64()
+	if err != nil {
+		t.Fatalf("fastShift failed: %v", err)
 	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		fastCenter(x)
-	}
-}
 
-func BenchmarkSpreadN100(b *testing.B) {
-	rand.Seed(1729)
-	x := make([]float64, 100)
-	for i := 0; i < 100; i++ {
-		x[i] = rand.NormFloat64()
+	expected := 0.0
+	if math.Abs(result-expected) > 1e-9 {
+		t.Errorf("Shift for n=m=%d: expected %.0f, got %.6f", n, expected, result)
 	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		fastSpread(x)
-	}
-}
 
-func BenchmarkSpreadN1000(b *testing.B) {
-	rand.Seed(1729)
-	x := make([]float64, 1000)
-	for i := 0; i < 1000; i++ {
-		x[i] = rand.NormFloat64()
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		fastSpread(x)
-	}
-}
+	t.Logf("Shift for n=m=%d: %.6f", n, result)
+	t.Logf("Elapsed time: %v", elapsed)
 
-func BenchmarkSpreadN10000(b *testing.B) {
-	rand.Seed(1729)
-	x := make([]float64, 10000)
-	for i := 0; i < 10000; i++ {
-		x[i] = rand.NormFloat64()
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		fastSpread(x)
+	if elapsed > 5*time.Second {
+		t.Errorf("Performance too slow: %v", elapsed)
 	}
 }

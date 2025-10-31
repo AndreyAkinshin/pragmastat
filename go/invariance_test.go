@@ -1,8 +1,23 @@
 package pragmastat
 
 import (
+	"math"
 	"testing"
 )
+
+// floatEquals checks if two float64 values are approximately equal
+func floatEquals(a, b, epsilon float64) bool {
+	if math.IsInf(a, 1) && math.IsInf(b, 1) {
+		return true
+	}
+	if math.IsInf(a, -1) && math.IsInf(b, -1) {
+		return true
+	}
+	if math.IsNaN(a) && math.IsNaN(b) {
+		return true
+	}
+	return math.Abs(a-b) < epsilon
+}
 
 func TestCenterInvariance(t *testing.T) {
 	x := []float64{1.0, 2.0, 3.0, 4.0, 5.0}
