@@ -59,6 +59,17 @@ run_all_projects() {
         "kt"
     )
 
+    # Language projects (for test command)
+    local lang_projects=(
+        "r"
+        "cs"
+        "py"
+        "rs"
+        "ts"
+        "go"
+        "kt"
+    )
+
     # Projects that support --release flag
     local projects_with_release=("pdf" "web" "cs" "rs")
 
@@ -66,7 +77,13 @@ run_all_projects() {
     local succeeded_projects=()
     local skipped_projects=()
 
-    for project in "${all_projects[@]}"; do
+    # Select appropriate projects based on command
+    local projects_to_process=("${all_projects[@]}")
+    if [ "$command" == "test" ]; then
+        projects_to_process=("${lang_projects[@]}")
+    fi
+
+    for project in "${projects_to_process[@]}"; do
         echo ""
         print_status "════════════════════════════════════════"
         print_status "Running '$command' for: $project"
