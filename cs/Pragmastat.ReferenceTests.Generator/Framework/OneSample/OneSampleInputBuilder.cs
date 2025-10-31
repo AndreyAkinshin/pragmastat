@@ -86,6 +86,11 @@ public class OneSampleInputBuilder : ReferenceTestCaseInputBuilder<OneSampleInpu
     return AddDistributionSamples("normal", new AdditiveDistribution(10), sizes, count, weighted);
   }
 
+  public OneSampleInputBuilder AddAdditive(int[] sizes, int count = DefaultCount, bool weighted = DefaultWeighted)
+  {
+    return AddDistributionSamples("additive", new AdditiveDistribution(10, 1), sizes, count, weighted);
+  }
+
   public OneSampleInputBuilder AddUniform(int[] sizes, int count = DefaultCount, bool weighted = DefaultWeighted)
   {
     return AddDistributionSamples("uniform", UniformDistribution.Standard, sizes, count, weighted);

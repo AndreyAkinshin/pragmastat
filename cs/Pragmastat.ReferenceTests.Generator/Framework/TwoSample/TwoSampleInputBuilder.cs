@@ -93,6 +93,12 @@ public class TwoSampleInputBuilder : ReferenceTestCaseInputBuilder<TwoSampleInpu
       count);
   }
 
+  public TwoSampleInputBuilder AddAdditive(int[] xSizes, int[] ySizes, int count = DefaultCount)
+  {
+    return AddDistributionSamples("additive", new AdditiveDistribution(10, 1), new AdditiveDistribution(10, 1), xSizes, ySizes,
+      count);
+  }
+
   public TwoSampleInputBuilder AddUniform(int[] xSizes, int[] ySizes, int count = DefaultCount)
   {
     return AddDistributionSamples("uniform", UniformDistribution.Standard, UniformDistribution.Standard, xSizes, ySizes,

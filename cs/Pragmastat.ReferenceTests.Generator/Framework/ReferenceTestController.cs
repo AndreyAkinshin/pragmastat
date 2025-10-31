@@ -8,6 +8,11 @@ namespace Pragmastat.ReferenceTests.Generator.Framework;
 public abstract class ReferenceTestController<TInput, TOutput>
 {
   private readonly string testSuiteDirectory;
+  
+  /// <summary>
+  /// Timeout for each individual test execution (5 seconds as per documentation)
+  /// </summary>
+  protected virtual TimeSpan TestTimeout { get; } = TimeSpan.FromSeconds(5);
 
   [SuppressMessage("ReSharper", "VirtualMemberCallInConstructor")]
   protected ReferenceTestController(string? testDataDirectory = null, bool shared = false)
@@ -25,11 +30,27 @@ public abstract class ReferenceTestController<TInput, TOutput>
     var result = new Dictionary<string, ReferenceTestCase<TInput, TOutput>>();
     foreach ((string testName, var input) in inputs)
     {
-      var output = Run(input);
+      var output = RunWithTimeout(input, testName);
       result[testName] = new ReferenceTestCase<TInput, TOutput>(input, output);
     }
 
     return result;
+  }
+  
+  /// <summary>
+  /// Runs the test with a timeout. Throws TimeoutException if test exceeds the timeout.
+  /// </summary>
+  private TOutput RunWithTimeout(TInput input, string testName)
+  {
+    var task = Task.Run(() => Run(input));
+    if (task.Wait(TestTimeout))
+    {
+      return task.Result;
+    }
+    
+    throw new TimeoutException(
+      $"Test '{testName}' in suite '{SuiteName}' exceeded timeout of {TestTimeout.TotalSeconds} seconds. " +
+      $"Performance tests must complete in under 5 seconds as per documentation.");
   }
 
   public ReferenceTestCase<TInput, TOutput> LoadTestCase(string testName)
