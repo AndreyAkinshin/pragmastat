@@ -16,6 +16,7 @@ colorlinks: true
 linkcolor: linkcolor
 citecolor: citecolor
 urlcolor: urlcolor
+toccolor: linkcolor
 documentclass: article
 papersize: letter
 fontsize: 11pt
