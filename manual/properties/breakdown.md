@@ -10,7 +10,7 @@ The breakdown point is the fraction of the sample that can be replaced by arbitr
   without making the estimator arbitrarily large.
 The theoretical maximum is $50\%$ — no estimator can guarantee reliable results
   when more than half the measurements are extreme or corrupted.
-In such cases, summary estimators are not applicable; a more sophisticated approach is needed.
+In such cases, summary estimators are not applicable and a more sophisticated approach is needed.
 
 Even $50\%$ is rarely needed in practice; more conservative breakdown points also cover practical needs.
 Additionally, when the breakdown point is high, the precision is low

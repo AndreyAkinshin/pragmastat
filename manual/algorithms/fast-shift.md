@@ -37,7 +37,7 @@ This is equivalent to counting pairs where $y_j \geq x_i - t$.
 For each row $i$ in the implicit matrix, the algorithm advances a column pointer
   through the sorted $y$ array while $x_i - y_j > t$, stopping at the first position
   where $x_i - y_j \leq t$.
-All remaining positions in that row satisfy the condition,
+All subsequent positions in that row satisfy the condition,
   contributing $(m - j)$ pairs to the count for row $i$.
 Because both samples are sorted, the column pointer advances monotonically and never backtracks across rows,
   making each counting pass $O(n + m)$ regardless of the total number of differences.

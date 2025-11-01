@@ -72,7 +72,7 @@ The sample mean achieves optimal efficiency, while the median operates at roughl
 However, this variance-based definition creates four critical limitations:
 
 - Absolute efficiency requires knowing the optimal estimator, which is often difficult to determine.
-  For many distributions, deriving the minimum variance unbiased estimator requires complex mathematical analysis.
+  For many distributions, deriving the minimum-variance unbiased estimator requires complex mathematical analysis.
   Without this reference point, absolute efficiency cannot be computed.
 - Relative efficiency only compares estimator pairs, preventing systematic evaluation.
   This limits understanding of how multiple estimators perform relative to each other.
@@ -81,7 +81,7 @@ However, this variance-based definition creates four critical limitations:
   or when distributions have heavy tails.
   Many real-world distributions, such as those with power-law tails, exhibit infinite variance.
   When the variance is undefined, efficiency comparisons become impossible.
-- Variance lacks robustness to outliers, which can corrupt efficiency calculations.
+- Variance is not robust to outliers, which can corrupt efficiency calculations.
   A single extreme observation can greatly inflate variance estimates.
   This sensitivity can make efficient estimators look inefficient and vice versa.
 
@@ -97,7 +97,7 @@ $$
 
 This formula measures estimator variability compared to data variability.
 $\Spread\big[T(X_1, \ldots, X_n)\big]$ captures the median absolute difference between estimates across repeated samples.
-Multiplying by $\sqrt{n}$ removes sample size dependency, making drift values comparable across different study sizes.
+Multiplying by $\sqrt{n}$ removes sample size dependency, making drift values comparable across different sample sizes.
 Dividing by $\Spread[X]$ creates a scale-free measure that provides consistent drift values
   across different distribution parameters and measurement units.
 
@@ -115,7 +115,7 @@ Drift offers four key advantages:
 - It provides absolute precision measures rather than only pairwise comparisons.
 - The robust $\Spread$ foundation resists outlier distortion that corrupts variance-based calculations.
 - The $\sqrt{n}$ normalization makes drift values comparable across different sample sizes,
-  enabling direct comparison of estimator performance regardless of study size.
+  enabling direct comparison of estimator performance regardless of sample size.
 
 Under $\Additive$ ('Normal') conditions, drift matches traditional efficiency.
 The sample mean achieves drift near 1.0; the median achieves drift around 1.25.

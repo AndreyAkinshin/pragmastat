@@ -19,8 +19,8 @@ $$
 - **Properties:** symmetric, bell-shaped, characterized by central limit theorem convergence.
 - **Applications:** measurement errors, heights and weights in populations, test scores, temperature variations.
 - **Characteristics:** symmetric around the mean, light tails, finite variance.
-- **Caution:** no perfectly additive distributions exist;
-    all real data contain some deviations.
+- **Caution:** no perfectly additive distributions exist in real data;
+    all real-world measurements contain some deviations.
   Traditional estimators like $\Mean$ and $\StdDev$ lack robustness to outliers;
   use them only when strong evidence supports small deviations from additivity with no extreme measurements.
 
@@ -40,8 +40,8 @@ $$
 - **Rename Motivation:** renamed to $\Multiplic$ to reflect its formation mechanism through multiplication.
 - **Properties:** logarithm of a $\Multiplic$ ('LogNormal') variable follows an $\Additive$ ('Normal') distribution.
 - **Applications:** stock prices, file sizes, reaction times, income distributions, biological growth rates.
-- **Caution:** no perfectly multiplic distributions exist;
-    all real data contain some deviations.
+- **Caution:** no perfectly multiplic distributions exist in real data;
+    all real-world measurements contain some deviations.
   Traditional estimators may struggle with the inherent skewness and heavy right tail.
 
 ## Exponential

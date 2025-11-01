@@ -102,7 +102,7 @@ The toolkit has ready-to-use implementations for Python, TypeScript/JavaScript, 
 ## Breaking changes
 
 Statistical practice has evolved through decades of research and teaching,
-  creating a system where historical naming conventions became permanently embedded in textbooks and standard practice.
+  creating a system where historical naming conventions became embedded in textbooks and standard practice.
 Traditional statistics often names procedures after their discoverers or uses arbitrary symbols
   that reveal nothing about their actual purpose or application context.
 This approach forces practitioners to memorize meaningless mappings between historical figures and mathematical concepts.

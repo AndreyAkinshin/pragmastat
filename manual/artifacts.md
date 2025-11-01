@@ -19,7 +19,7 @@ Implementations:
 Data:
 
 - Reference tests (json): [tests-v<!-- PLACEHOLDER Version -->.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v<!-- PLACEHOLDER Version -->/tests-v<!-- PLACEHOLDER Version -->.zip)
-- Reference simulations (json) [sim-v<!-- PLACEHOLDER Version -->.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v<!-- PLACEHOLDER Version -->/sim-v<!-- PLACEHOLDER Version -->.zip)
+- Reference simulations (json): [sim-v<!-- PLACEHOLDER Version -->.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v<!-- PLACEHOLDER Version -->/sim-v<!-- PLACEHOLDER Version -->.zip)
 
 Source code:
 

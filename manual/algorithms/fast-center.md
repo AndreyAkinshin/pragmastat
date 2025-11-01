@@ -13,7 +13,7 @@ With $n = 10,000$, this creates approximately 50 million values, requiring quadr
 The breakthrough came in 1984 when John Monahan developed an algorithm that reduces expected complexity
   to $O(n \log n)$ while using only linear memory (see [@monahan1984]).
 The algorithm exploits the inherent structure in pairwise sums rather than computing them explicitly.
-After sorting the input values $x_1 \leq x_2 \leq \cdots \leq x_n$,
+After sorting the values $x_1 \leq x_2 \leq \cdots \leq x_n$,
   consider the implicit upper triangular matrix $M$ where $M_{i,j} = x_i + x_j$ for $i \leq j$.
 This matrix has crucial properties: each row and column are sorted in non-decreasing order,
   enabling efficient median selection without materializing the quadratic structure.

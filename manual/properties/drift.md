@@ -1,7 +1,7 @@
 ## Drift
 
 Drift measures estimator precision by quantifying how much estimates scatter across repeated samples.
-It is based on $\Spread$ of the estimates, and therefore has a breakdown point of $\approx 29\%$.
+It is based on $\Spread$ of the estimates and therefore has a breakdown point of approximately $29\%$.
 
 Drift is useful when comparing the precisions of several estimators.
 To simplify the comparison, it is convenient to choose one of the estimators as a baseline.

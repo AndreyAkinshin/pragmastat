@@ -109,7 +109,7 @@ The variety of shuffle patterns (reverse, rotation, interleaving, single element
 - **Input**: $\x = (1, 2, 3, \ldots, 100000)$
 - **Expected output**: $50000.5$
 - **Time constraint**: Must complete in under 5 seconds
-- **Purpose**: Ensures the implementation uses the efficient algorithm rather than materializing all $\binom{n+1}{2} \approx 5$ billion pairwise averages
+- **Purpose**: Ensures that the implementation uses the efficient algorithm rather than materializing all $\binom{n+1}{2} \approx 5$ billion pairwise averages
 
 This test case is not stored in the repository because it generates a large JSON file (approximately 1.5 MB).
 Each language implementation should manually implement this test with the hardcoded expected result.
@@ -191,7 +191,7 @@ Since $\Spread$ uses absolute differences, order-dependent bugs would manifest d
 - **Input**: $\x = (1, 2, 3, \ldots, 100000)$
 - **Expected output**: $29290$
 - **Time constraint**: Must complete in under 5 seconds
-- **Purpose**: Ensures the implementation uses the efficient algorithm rather than materializing all $\binom{n}{2} \approx 5$ billion pairwise differences
+- **Purpose**: Ensures that the implementation uses the efficient algorithm rather than materializing all $\binom{n}{2} \approx 5$ billion pairwise differences
 
 This test case is not stored in the repository because it generates a large JSON file (approximately 1.5 MB).
 Each language implementation should manually implement this test with the hardcoded expected result.
@@ -339,7 +339,7 @@ The variety includes cases where only one sample is unsorted, ensuring implement
 - **Input**: $\x = (1, 2, 3, \ldots, 100000)$, $\y = (1, 2, 3, \ldots, 100000)$
 - **Expected output**: $0$
 - **Time constraint**: Must complete in under 5 seconds
-- **Purpose**: Ensures the implementation uses the efficient algorithm rather than materializing all $mn = 10$ billion pairwise differences
+- **Purpose**: Ensures that the implementation uses the efficient algorithm rather than materializing all $mn = 10$ billion pairwise differences
 
 This test case is not stored in the repository because it generates a large JSON file (approximately 1.5 MB).
 Each language implementation should manually implement this test with the hardcoded expected result.
@@ -565,7 +565,7 @@ dramatically more efficient than naive implementations that materialize all pair
 Performance tests use sample size $n = 100{,}000$ (for one-sample) or $n = m = 100{,}000$ (for two-sample).
 This specific size creates a clear performance distinction:
 fast implementations ($O(n \log n)$ or $O((m+n) \log L)$) complete in under 5 seconds on modern hardware across all supported languages,
-while naive implementations ($O(n^2 \log n)$ or $O(mn \log(mn))$) would be unbearably slow (taking hours or failing due to memory exhaustion).
+while naive implementations ($O(n^2 \log n)$ or $O(mn \log(mn))$) would be prohibitively slow (taking hours or failing due to memory exhaustion).
 With $n = 100{,}000$, naive approaches would need to materialize approximately 5 billion pairwise values for $\Center$/$\Spread$
 or 10 billion for $\Shift$, whereas fast algorithms require only $O(n)$ additional memory.
 Performance tests serve dual purposes: correctness validation at scale and performance regression detection,
