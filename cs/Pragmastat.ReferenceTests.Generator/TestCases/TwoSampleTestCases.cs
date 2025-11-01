@@ -57,7 +57,7 @@ public static class TwoSampleTestCases
         .AddUnsorted("asymmetric-unsorted-2-5", new Sample(2, 1), new Sample(5, 2, 4, 1, 3))  // Asymmetric sizes, both unsorted
         .AddUnsorted("negative-unsorted-3-3", new Sample(-1, -3, -2), new Sample(-2, -3, -1)));
 
-    // Ratio: 38 test cases (26 original + 12 unsorted)
+    // Ratio: 37 test cases (25 original + 12 unsorted)
     GenerateTests("ratio", input => input.GetSampleX().Ratio(input.GetSampleY()),
       new TwoSampleInputBuilder()
         // Demo examples (n = m = 5) - 3 tests
@@ -80,7 +80,7 @@ public static class TwoSampleTestCases
         .AddUnsorted("asymmetric-unsorted-2-3", new Sample(2, 1), new Sample(3, 1, 2))  // Asymmetric, both unsorted
         .AddUnsorted("power-unsorted-5", new Sample(16, 2, 8, 1, 4), new Sample(32, 4, 16, 2, 8)));  // Powers of 2 unsorted
 
-    // AvgSpread: 50 test cases (35 original + 15 unsorted)
+    // AvgSpread: 49 test cases (35 original + 14 unsorted)
     // Important: AvgSpread computes Spread(x) and Spread(y) independently, so unsorted tests
     // verify that both samples are sorted independently before computing their spreads
     GenerateTests("avg-spread", input => input.GetSampleX().AvgSpread(input.GetSampleY()),

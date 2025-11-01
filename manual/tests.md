@@ -38,7 +38,7 @@ $$
 \Center(\x) = \underset{1 \leq i \leq j \leq n}{\Median} \left(\frac{x_i + x_j}{2} \right)
 $$
 
-The $\Center$ test suite contains 39 correctness test cases stored in the repository (24 original + 15 unsorted), plus 1 performance test that should be implemented manually (see §Test Framework).
+The $\Center$ test suite contains 38 correctness test cases stored in the repository (24 original + 14 unsorted), plus 1 performance test that should be implemented manually (see §Test Framework).
 
 **Demo examples** ($n = 5$) — from manual introduction, validating properties:
 
@@ -88,7 +88,7 @@ The progression from small ($n = 5$) to large ($n = 100$) samples helps identify
 - `extreme-small-5`: $\x = (1e{-}8, 2e{-}8, 3e{-}8, 4e{-}8, 5e{-}8)$ (very small positive values)
 - `extreme-wide-5`: $\x = (0.001, 1, 100, 1000, 1000000)$ (wide range, tests precision)
 
-**Unsorted tests** — verify sorting correctness (15 tests):
+**Unsorted tests** — verify sorting correctness (14 tests):
 
 - `unsorted-reverse-{n}` for $n \in \{2, 3, 4, 5, 7\}$: reverse sorted natural sequences (5 tests)
 - `unsorted-shuffle-3`: $\x = (2, 1, 3)$ (middle element first)
@@ -120,7 +120,7 @@ $$
 \Spread(\x) = \underset{1 \leq i < j \leq n}{\Median} |x_i - x_j|
 $$
 
-The $\Spread$ test suite contains 39 correctness test cases stored in the repository (24 original + 15 unsorted), plus 1 performance test that should be implemented manually (see §Test Framework).
+The $\Spread$ test suite contains 38 correctness test cases stored in the repository (24 original + 14 unsorted), plus 1 performance test that should be implemented manually (see §Test Framework).
 
 **Demo examples** ($n = 5$) — from manual introduction, validating properties:
 
@@ -170,7 +170,7 @@ The zero cases confirm that constant samples correctly produce zero spread.
 - `extreme-small-5`: $\x = (1e{-}8, 2e{-}8, 3e{-}8, 4e{-}8, 5e{-}8)$ (very small positive values)
 - `extreme-wide-5`: $\x = (0.001, 1, 100, 1000, 1000000)$ (wide range, tests precision)
 
-**Unsorted tests** — verify sorting correctness (15 tests):
+**Unsorted tests** — verify sorting correctness (14 tests):
 
 - `unsorted-reverse-{n}` for $n \in \{2, 3, 4, 5, 7\}$: reverse sorted natural sequences (5 tests)
 - `unsorted-shuffle-3`: $\x = (3, 1, 2)$ (rotated)
@@ -350,7 +350,7 @@ $$
 \Ratio(\x, \y) = \underset{1 \leq i \leq n, 1 \leq j \leq m}{\Median} \left( \dfrac{x_i}{y_j} \right)
 $$
 
-The $\Ratio$ test suite contains 38 test cases (26 original + 12 unsorted), excluding zero values due to division constraints.
+The $\Ratio$ test suite contains 37 test cases (25 original + 12 unsorted), excluding zero values due to division constraints.
 
 **Demo examples** ($n = m = 5$) — from manual introduction, validating properties:
 
@@ -403,7 +403,7 @@ $$
 \AvgSpread(\x, \y) = \dfrac{n\Spread(\x) + m\Spread(\y)}{n + m}
 $$
 
-The $\AvgSpread$ test suite contains 50 test cases (35 original + 15 unsorted).
+The $\AvgSpread$ test suite contains 49 test cases (35 original + 14 unsorted).
 Since $\AvgSpread$ computes $\Spread(\x)$ and $\Spread(\y)$ independently, unsorted tests are critical to verify that both samples are sorted independently before computing their spreads.
 
 **Demo examples** ($n = m = 5$) — from manual introduction, validating properties:
@@ -444,7 +444,7 @@ The asymmetric size combinations are particularly important for $\AvgSpread$ bec
 - `composite-zero-spread-one`: $\x = (5, 5, 5)$, $\y = (1, 2, 3, 4, 5)$ (one zero spread, tests edge case)
 - `composite-extreme-sizes`: $\x = (10)$, $\y = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10)$ (1 vs 10, extreme weighting)
 
-**Unsorted tests** — critical for verifying independent sorting (15 tests):
+**Unsorted tests** — critical for verifying independent sorting (14 tests):
 
 - `unsorted-x-natural-{n}-{m}` for $(n,m) \in \{(3,3), (4,4)\}$: X unsorted (reversed), Y sorted (2 tests)
 - `unsorted-y-natural-{n}-{m}` for $(n,m) \in \{(3,3), (4,4)\}$: X sorted, Y unsorted (reversed) (2 tests)

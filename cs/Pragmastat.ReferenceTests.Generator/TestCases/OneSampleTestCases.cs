@@ -7,7 +7,7 @@ public static class OneSampleTestCases
 {
   public static void Generate()
   {
-    // Center: 39 test cases (24 original + 15 unsorted)
+    // Center: 38 test cases (24 original + 14 unsorted)
     // Note: Performance tests (perf-100k) are not stored in the repository because they generate
     // large JSON files. Instead, they should be implemented manually in each language's test suite.
     GenerateTests("center", input => input.ToSample().Center(),
@@ -49,7 +49,7 @@ public static class OneSampleTestCases
         .AddUnsortedShuffle("extreme-large-unsorted-5", 5e8, 1e8, 4e8, 2e8, 3e8)  // Large values unsorted
         .AddUnsortedShuffle("parity-odd-reverse-7", 7, 6, 5, 4, 3, 2, 1));  // Odd size reverse
 
-    // Spread: 39 test cases (24 original + 15 unsorted)
+    // Spread: 38 test cases (24 original + 14 unsorted)
     // Note: Performance tests (perf-100k) are not stored in the repository because they generate
     // large JSON files. Instead, they should be implemented manually in each language's test suite.
     GenerateTests("spread", input => input.ToSample().Spread(),
