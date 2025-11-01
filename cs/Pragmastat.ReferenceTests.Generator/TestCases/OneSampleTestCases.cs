@@ -37,7 +37,7 @@ public static class OneSampleTestCases
         .Add("extreme-large-5", new Sample(1e8, 2e8, 3e8, 4e8, 5e8))
         .Add("extreme-small-5", new Sample(1e-8, 2e-8, 3e-8, 4e-8, 5e-8))
         .Add("extreme-wide-5", new Sample(0.001, 1, 100, 1000, 1000000))
-        // Unsorted tests - 15 tests (verify sorting works correctly)
+        // Unsorted tests - 14 tests (verify sorting works correctly)
         .AddUnsortedReverse([2, 3, 4, 5, 7])  // 5 tests: reverse sorted
         .AddUnsortedShuffle("shuffle-3", 2, 1, 3)  // Middle element first
         .AddUnsortedShuffle("shuffle-4", 3, 1, 4, 2)  // Interleaved
@@ -79,7 +79,7 @@ public static class OneSampleTestCases
         .Add("extreme-large-5", new Sample(1e8, 2e8, 3e8, 4e8, 5e8))
         .Add("extreme-small-5", new Sample(1e-8, 2e-8, 3e-8, 4e-8, 5e-8))
         .Add("extreme-wide-5", new Sample(0.001, 1, 100, 1000, 1000000))
-        // Unsorted tests - 15 tests (verify sorting works correctly)
+        // Unsorted tests - 14 tests (verify sorting works correctly)
         .AddUnsortedReverse([2, 3, 4, 5, 7])  // 5 tests: reverse sorted
         .AddUnsortedShuffle("shuffle-3", 3, 1, 2)  // Rotated
         .AddUnsortedShuffle("shuffle-4", 4, 2, 1, 3)  // Mixed order
