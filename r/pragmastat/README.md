@@ -2,9 +2,9 @@
 
 This is a R implementation of 'Pragmastat: Pragmatic Statistical Toolkit', which presents a toolkit of statistical procedures that provide reliable results across diverse real-world distributions, with ready-to-use implementations and detailed explanations.
 
-- PDF manual for this version: [pragmastat-v3.2.0.pdf](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.0/pragmastat-v3.2.0.pdf)
-- Markdown manual for this version: [pragmastat-v3.2.0.md](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.0/pragmastat-v3.2.0.md)
-- Source code for this version: [pragmastat/r/v3.2.0](https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.0/r)
+- PDF manual for this version: [pragmastat-v3.2.1.pdf](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.1/pragmastat-v3.2.1.pdf)
+- Markdown manual for this version: [pragmastat-v3.2.1.md](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.1/pragmastat-v3.2.1.md)
+- Source code for this version: [pragmastat/r/v3.2.1](https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.1/r)
 - Latest online manual: https://pragmastat.dev
 - Manual DOI: [10.5281/zenodo.17236778](https://doi.org/10.5281/zenodo.17236778)
 
@@ -15,7 +15,7 @@ Install from GitHub:
 ```r
 install.packages("remotes") # If 'remotes' is not installed
 remotes::install_github("AndreyAkinshin/pragmastat",
-                        subdir = "r/pragmastat", ref = "v3.2.0")
+                        subdir = "r/pragmastat", ref = "v3.2.1")
 library(pragmastat)
 ```
 
