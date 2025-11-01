@@ -9,7 +9,7 @@
  */
 export function median(values: number[]): number {
   if (values.length === 0) {
-    return 0;
+    throw new Error('Input array cannot be empty');
   }
 
   const sorted = [...values].sort((a, b) => a - b);
