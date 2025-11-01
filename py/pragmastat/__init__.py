@@ -1,4 +1,12 @@
-from .estimators import center, spread, rel_spread, shift, ratio, avg_spread, disparity
+from .estimators import (
+    center,
+    spread,
+    rel_spread,
+    shift,
+    ratio,
+    avg_spread,
+    disparity,
+)
 
 __all__ = [
     "center",
