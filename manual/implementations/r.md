@@ -7,11 +7,11 @@ Install from GitHub:
 ```r
 install.packages("remotes") # If 'remotes' is not installed
 remotes::install_github("AndreyAkinshin/pragmastat",
-                        subdir = "r/pragmastat", ref = "v3.1.33")
+                        subdir = "r/pragmastat", ref = "v3.2.0")
 library(pragmastat)
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.33/r
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.0/r
 
 
 

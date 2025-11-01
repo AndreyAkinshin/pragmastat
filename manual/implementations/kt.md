@@ -8,23 +8,23 @@ Install from Maven Central Repository via Apache Maven:
 <dependency>
     <groupId>dev.pragmastat</groupId>
     <artifactId>pragmastat</artifactId>
-    <version>3.1.33</version>
+    <version>3.2.0</version>
 </dependency>
 ```
 
 Install from Maven Central Repository via Gradle:
 
 ```java
-implementation 'dev.pragmastat:pragmastat:3.1.33'
+implementation 'dev.pragmastat:pragmastat:3.2.0'
 ```
 
 Install from Maven Central Repository via Gradle (Kotlin):
 
 ```kotlin
-implementation("dev.pragmastat:pragmastat:3.1.33")
+implementation("dev.pragmastat:pragmastat:3.2.0")
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.1.33/kt
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.0/kt
 
 Pragmastat on Maven Central Repository: https://central.sonatype.com/artifact/dev.pragmastat/pragmastat/overview
 
