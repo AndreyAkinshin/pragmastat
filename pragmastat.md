@@ -1,6 +1,6 @@
 ---
 title: "Pragmastat: Pragmatic Statistical Toolkit"
-version: 3.2.0
+version: 3.2.1
 ---
 
 <div style="display: none;">
@@ -160,7 +160,7 @@ The toolkit has ready-to-use implementations for Python, TypeScript/JavaScript, 
 ## Breaking changes
 
 Statistical practice has evolved through decades of research and teaching,
-  creating a system where historical naming conventions became permanently embedded in textbooks and standard practice.
+  creating a system where historical naming conventions became embedded in textbooks and standard practice.
 Traditional statistics often names procedures after their discoverers or uses arbitrary symbols
   that reveal nothing about their actual purpose or application context.
 This approach forces practitioners to memorize meaningless mappings between historical figures and mathematical concepts.
@@ -169,15 +169,15 @@ The result is unnecessary friction for anyone learning or applying statistical m
 Beginners face an inconsistent landscape of confusing names, fragile defaults,
   and incompatible approaches with little guidance on selection or interpretation.
 Modern practitioners would benefit from a more consistent system, which requires some renaming and redefining.
-This manual breaks from tradition, offering a coherent system designed for clarity and practical use.
+This manual offers a coherent system designed for clarity and practical use, breaking from tradition.
 The following concepts were adopted from traditional textbooks via renaming or reworking:
 
 - Estimators
   - Average: $\Center$ (former 'Hodges-Lehmann location estimator')
   - Dispersion: $\Spread$ (former 'Shamos scale estimator')
-  - Effect Size: $\Disparity$ (reworked 'Cohen's $d$')
+  - Effect Size: $\Disparity$ (a robust alternative to 'Cohen's $d$')
 - Estimator properties
-  - Precision: $\Drift$ (reworked statistical efficiency)
+  - Precision: $\Drift$ (a robust alternative to statistical efficiency)
 - Distributions
   - $\Additive$ (former 'Normal' or 'Gaussian')
   - $\Multiplic$ (former 'Log-Normal' or 'Galton')
@@ -244,7 +244,7 @@ $$
 - Corner case: for $n=1$, $\Spread(\x) = 0$
 - Equals the *Shamos scale estimator* ([@shamos1976]), renamed to $\Spread$ for clarity
 - Pragmatic alternative to the standard deviation and the median absolute deviation
-- Asymptotically, $\Spread[X]$ is the median of the absolute difference of two random measurements from $X$
+- Asymptotically, $\Spread[X]$ is the median of the absolute difference between two random measurements from distribution $X$
 - Straightforward implementations have $O(n^2 \log n)$ complexity; a fast $O(n \log n)$ version is provided in the Algorithms section.
 - Domain: any real numbers
 - Unit: the same as measurements
@@ -405,8 +405,8 @@ $$
 - **Properties:** symmetric, bell-shaped, characterized by central limit theorem convergence.
 - **Applications:** measurement errors, heights and weights in populations, test scores, temperature variations.
 - **Characteristics:** symmetric around the mean, light tails, finite variance.
-- **Caution:** no perfectly additive distributions exist;
-    all real data contain some deviations.
+- **Caution:** no perfectly additive distributions exist in real data;
+    all real-world measurements contain some deviations.
   Traditional estimators like $\Mean$ and $\StdDev$ lack robustness to outliers;
   use them only when strong evidence supports small deviations from additivity with no extreme measurements.
 
@@ -427,8 +427,8 @@ $$
 - **Rename Motivation:** renamed to $\Multiplic$ to reflect its formation mechanism through multiplication.
 - **Properties:** logarithm of a $\Multiplic$ ('LogNormal') variable follows an $\Additive$ ('Normal') distribution.
 - **Applications:** stock prices, file sizes, reaction times, income distributions, biological growth rates.
-- **Caution:** no perfectly multiplic distributions exist;
-    all real data contain some deviations.
+- **Caution:** no perfectly multiplic distributions exist in real data;
+    all real-world measurements contain some deviations.
   Traditional estimators may struggle with the inherent skewness and heavy right tail.
 
 ## Exponential
@@ -447,7 +447,7 @@ $$
   of an event occurring is constant over time.
 - **Properties:** memoryless (past events do not affect future probabilities).
 - **Applications:** time between failures, waiting times in queues, radioactive decay, customer service times.
-- **Characteristics:** always positive, right-skewed with light (exponential) tail.
+- **Characteristics:** always positive, right-skewed with a light (exponential) tail.
 - **Caution:** extreme skewness makes traditional location estimators like $\Mean$ unreliable;
     robust estimators provide more stable results.
 
@@ -465,12 +465,12 @@ $$
 
 - **Formation:** follows a power-law relationship where large values are rare but possible.
 - **Origin:** historically called 'Pareto' distribution after Vilfredo Pareto's work on wealth distribution.
-- **Rename Motivation:** renamed to $\Power$ to reflect connection with power-law.
+- **Rename Motivation:** renamed to $\Power$ to reflect its connection with power-law.
 - **Properties:** exhibits scale invariance and extremely heavy tails.
 - **Applications:** wealth distribution, city population sizes, word frequencies, earthquake magnitudes, website traffic.
-- **Characteristics:** infinite variance for many parameter values, extreme outliers common.
+- **Characteristics:** infinite variance for many parameter values; extreme outliers are common.
 - **Caution:** traditional variance-based estimators completely fail;
-    robust estimators essential for reliable analysis.
+    robust estimators are essential for reliable analysis.
 
 ## Uniform
 
@@ -539,20 +539,20 @@ $$
 
 Heavy-tailed distributions naturally produce extreme outliers that completely distort traditional estimators.
 A single extreme measurement from the $\Power$ distribution can make the sample mean arbitrarily large.
-Real-world data also contains corrupted measurements from instrument failures, recording errors, or transmission problems.
+Real-world data can also contain corrupted measurements from instrument failures, recording errors, or transmission problems.
 Both natural extremes and data corruption create the same challenge:
-  how to extract reliable information when some measurements are too influential.
+  extracting reliable information when some measurements are too influential.
 
-The breakdown point is the fraction of the sample that can be replaced by arbitrarily large values
-  without making the estimator arbitrarily large.
-The theoretical maximum is $50\%$ — no estimator can guarantee reliable results
+The breakdown point is the fraction of a sample that can be replaced by arbitrarily large values
+  without making an estimator arbitrarily large.
+The theoretical maximum is $50\%$; no estimator can guarantee reliable results
   when more than half the measurements are extreme or corrupted.
-In such cases, summary estimators are not applicable; a more sophisticated approach is needed.
+In such cases, summary estimators are not applicable, and a more sophisticated approach is needed.
 
-Even $50\%$ is rarely needed in practice; more conservative breakdown points also cover practical needs.
-Additionally, when the breakdown point is high, the precision is low
-  (we lose information by neglecting part of the data).
-The optimal practical breakdown point should be somewhere between
+A $50\%$ breakdown point is rarely needed in practice, as more conservative values also cover practical needs.
+Additionally, a high breakdown point corresponds to low precision
+  (information is lost by neglecting part of the data).
+The optimal practical breakdown point should be between
   $0\%$ (no robustness) and $50\%$ (low precision).
 
 The $\Center$ and $\Spread$ estimators achieve $29\%$ breakdown points,
@@ -575,17 +575,17 @@ Below is a comparison with traditional estimators.
 ## Drift
 
 Drift measures estimator precision by quantifying how much estimates scatter across repeated samples.
-It is based on $\Spread$ of the estimates, and therefore has a breakdown point of $\approx 29\%$.
+It is based on the $\Spread$ of estimates and therefore has a breakdown point of approximately $29\%$.
 
-Drift is useful when comparing the precisions of several estimators.
-To simplify the comparison, it is convenient to choose one of the estimators as a baseline.
-A table with drift squares normalized by the baseline shows the sample size adjustment factor
+Drift is useful for comparing the precision of several estimators.
+To simplify the comparison, one of the estimators can be chosen as a baseline.
+A table of squared drift values, normalized by the baseline, shows the required sample size adjustment factor
   for switching from the baseline to another estimator.
-For example, if $\Center$ is the baseline, and the rescaled drift square of $\Median$ is $1.5$,
-  this means that $\Median$ would require $1.5$ times more data than $\Center$ to achieve the same precision.
+For example, if $\Center$ is the baseline and the rescaled drift square of $\Median$ is $1.5$,
+  this means that $\Median$ requires $1.5$ times more data than $\Center$ to achieve the same precision.
 See the "From Statistical Efficiency to Drift" section for details.
 
-**Asymptotic Average estimator drift²** (values are approximated):
+**Squared Asymptotic Drift of Average Estimators** (values are approximated):
 
 
 |              | $\Mean$  | $\Median$ | $\Center$ |
@@ -623,7 +623,7 @@ Rescaled to $\Center$ (sample size adjustment factors):
 
 ---
 
-**Asymptotic Dispersion estimator drift²** (values are approximated):
+**Squared Asymptotic Drift of Dispersion Estimators** (values are approximated):
 
 |              | $\StdDev$ | $\MAD$ | $\Spread$ |
 |--------------|-----------|--------|-----------|
@@ -673,7 +673,7 @@ For example, when comparing datasets collected with different instruments or pro
   location-invariant estimators eliminate the need for data centering,
   while scale-invariant estimators eliminate the need for normalization.
 
-**Location-invariance**: An estimator $T$ is location-invariant if adding constants to the measurements leaves the result unchanged:
+**Location-invariance**: An estimator $T$ is location-invariant if adding a constant to the measurements leaves the result unchanged:
 
 $$
 T(\x + k) = T(\x)
@@ -732,7 +732,7 @@ This chapter examines the methodological principles that guide the toolkit's des
 The toolkit consists of statistical *procedures* — practical methods that transform raw measurements into actionable insights and decisions.
 When practitioners face real-world problems involving data analysis,
   their success depends on selecting the right procedure for each specific situation.
-Convenient and efficient procedures have the following *desired properties*:
+Convenient and efficient procedures have the following *essential attributes*:
 
 - **Usability.**
   Procedures should feel natural to practitioners and minimize opportunities for misuse.
@@ -753,7 +753,7 @@ This manual introduces a unified toolkit that aims to satisfy these properties a
 
 Traditional statistical practice starts with model assumptions,
   then derives optimal procedures under those assumptions.
-This approach works backward from mathematical convenience to practical application.
+This approach prioritizes mathematical convenience over practical application.
 Practitioners don't know the distribution in advance,
   so they lack clear guidance on which procedure to choose by default.
 
@@ -797,7 +797,7 @@ The sample mean achieves optimal efficiency, while the median operates at roughl
 However, this variance-based definition creates four critical limitations:
 
 - Absolute efficiency requires knowing the optimal estimator, which is often difficult to determine.
-  For many distributions, deriving the minimum variance unbiased estimator requires complex mathematical analysis.
+  For many distributions, deriving the minimum-variance unbiased estimator requires complex mathematical analysis.
   Without this reference point, absolute efficiency cannot be computed.
 - Relative efficiency only compares estimator pairs, preventing systematic evaluation.
   This limits understanding of how multiple estimators perform relative to each other.
@@ -806,7 +806,7 @@ However, this variance-based definition creates four critical limitations:
   or when distributions have heavy tails.
   Many real-world distributions, such as those with power-law tails, exhibit infinite variance.
   When the variance is undefined, efficiency comparisons become impossible.
-- Variance lacks robustness to outliers, which can corrupt efficiency calculations.
+- Variance is not robust to outliers, which can corrupt efficiency calculations.
   A single extreme observation can greatly inflate variance estimates.
   This sensitivity can make efficient estimators look inefficient and vice versa.
 
@@ -822,7 +822,7 @@ $$
 
 This formula measures estimator variability compared to data variability.
 $\Spread\big[T(X_1, \ldots, X_n)\big]$ captures the median absolute difference between estimates across repeated samples.
-Multiplying by $\sqrt{n}$ removes sample size dependency, making drift values comparable across different study sizes.
+Multiplying by $\sqrt{n}$ removes sample size dependency, making drift values comparable across different sample sizes.
 Dividing by $\Spread[X]$ creates a scale-free measure that provides consistent drift values
   across different distribution parameters and measurement units.
 
@@ -836,11 +836,11 @@ Here $\RelSpread$ normalizes by the estimator's typical value for fair compariso
 
 Drift offers four key advantages:
 
-- For estimators with $\sqrt{n}$ convergence rate, drift remains finite and comparable across distributions; for heavier tails, drift may diverge, flagging estimator instability.
+- For estimators with $\sqrt{n}$ convergence rates, drift remains finite and comparable across distributions; for heavier tails, drift may diverge, flagging estimator instability.
 - It provides absolute precision measures rather than only pairwise comparisons.
 - The robust $\Spread$ foundation resists outlier distortion that corrupts variance-based calculations.
 - The $\sqrt{n}$ normalization makes drift values comparable across different sample sizes,
-  enabling direct comparison of estimator performance regardless of study size.
+  enabling direct comparison of estimator performance regardless of sample size.
 
 Under $\Additive$ ('Normal') conditions, drift matches traditional efficiency.
 The sample mean achieves drift near 1.0; the median achieves drift around 1.25.
@@ -902,18 +902,18 @@ $$
 $$
 
 A direct implementation would generate all $\frac{n(n+1)}{2}$ pairwise averages and sort them.
-With $n = 10,000$, this creates approximately 50 million values, requiring quadratic memory and $O(n^2 \log n)$ time.
+With $n = 10,000$, this approach creates approximately 50 million values, requiring quadratic memory and $O(n^2 \log n)$ time.
 
 The breakthrough came in 1984 when John Monahan developed an algorithm that reduces expected complexity
   to $O(n \log n)$ while using only linear memory (see [@monahan1984]).
 The algorithm exploits the inherent structure in pairwise sums rather than computing them explicitly.
-After sorting the input values $x_1 \leq x_2 \leq \cdots \leq x_n$,
-  consider the implicit upper triangular matrix $M$ where $M_{i,j} = x_i + x_j$ for $i \leq j$.
-This matrix has crucial properties: each row and column are sorted in non-decreasing order,
-  enabling efficient median selection without materializing the quadratic structure.
+After sorting the values $x_1 \leq x_2 \leq \cdots \leq x_n$,
+  the algorithm considers the implicit upper triangular matrix $M$ where $M_{i,j} = x_i + x_j$ for $i \leq j$.
+This matrix has a crucial property: each row and column is sorted in non-decreasing order,
+  enabling efficient median selection without storing the matrix.
 
 Rather than sorting all pairwise sums, the algorithm uses a selection approach similar to quickselect.
-The process maintains search bounds for each matrix row and iteratively narrows the search space.
+It maintains search bounds for each matrix row and iteratively narrows the search space.
 For each row $i$, the algorithm tracks active column indices from $i+1$ to $n$,
   defining which pairwise sums remain candidates for the median.
 It selects a candidate sum as a pivot using randomized selection from active matrix elements,
@@ -937,10 +937,9 @@ This tie-breaking mechanism ensures reliable convergence with discrete or duplic
 The algorithm achieves $O(n \log n)$ time complexity through linear partitioning
   (each pivot evaluation requires only $O(n)$ operations) and logarithmic iterations
   (randomized pivot selection leads to expected $O(\log n)$ iterations, similar to quickselect).
-The algorithm maintains only row bounds and counters, using $O(n)$ additional space
-  regardless of the number of pairwise sums.
-This matches the complexity of sorting a single array while avoiding the quadratic explosion
-  of materializing all pairwise combinations.
+The algorithm maintains only row bounds and counters, using $O(n)$ additional space.
+This matches the complexity of sorting a single array while avoiding the quadratic memory and time explosion
+  of computing all pairwise combinations.
 
 ```cs
 namespace Pragmastat.Algorithms;
@@ -1187,45 +1186,44 @@ Like $\Center$, computing $\Spread$ naively requires generating
   all $\frac{n(n-1)}{2}$ pairwise differences, sorting them, and finding the median —
   a quadratic approach that becomes computationally prohibitive for large datasets.
 
-The same structural principles that accelerate $\Center$ computation apply to pairwise differences,
+The same structural principles that accelerate $\Center$ computation also apply to pairwise differences,
   yielding an exact $O(n \log n)$ algorithm.
 After sorting the input to obtain $y_1 \leq y_2 \leq \cdots \leq y_n$,
   all pairwise absolute differences $|x_i - x_j|$ with $i < j$ become positive differences $y_j - y_i$.
-Consider the implicit upper triangular matrix $D$ where $D_{i,j} = y_j - y_i$ for $i < j$.
-This matrix inherits crucial structural properties: for fixed row $i$, differences increase monotonically,
-  while for fixed column $j$, differences decrease as $i$ increases.
-The sorted structure enables linear-time counting of elements below any threshold.
+This allows considering the implicit upper triangular matrix $D$ where $D_{i,j} = y_j - y_i$ for $i < j$.
+This matrix has a crucial structural property: for a fixed row $i$, differences increase monotonically,
+  while for a fixed column $j$, differences decrease as $i$ increases.
+This sorted structure enables linear-time counting of elements below any threshold.
 
-The algorithm applies Monahan's selection strategy adapted for differences rather than sums.
+The algorithm applies Monahan's selection strategy, adapted for differences rather than sums.
 For each row $i$, it tracks active column indices representing differences still under consideration,
   initially spanning columns $i+1$ through $n$.
-The algorithm chooses candidate differences from the active set using weighted random row selection,
+It chooses candidate differences from the active set using weighted random row selection,
   maintaining expected logarithmic convergence while avoiding expensive pivot computations.
-For any pivot value $p$, it counts how many differences fall below $p$ using a single sweep,
-  with the monotonic structure ensuring this counting requires only $O(n)$ operations.
-While counting, the algorithm maintains the largest difference below $p$ and smallest difference at or above $p$ —
+For any pivot value $p$, the number of differences falling below $p$ is counted using a single sweep;
+  the monotonic structure ensures this counting requires only $O(n)$ operations.
+While counting, the largest difference below $p$ and the smallest difference at or above $p$ are maintained—
   these boundary values become the exact answer when the target rank is reached.
 
-The algorithm handles both odd and even cases naturally.
+The algorithm naturally handles both odd and even cases.
 For an odd number of differences, it returns the single middle element when the count exactly hits the median rank.
-For an even number of differences, it returns the average of the two middle elements,
-  with boundary tracking during counting providing both values simultaneously.
-Unlike approximation methods, this algorithm returns the precise median of all pairwise differences,
-  with randomness affecting only performance, not correctness.
+For an even number of differences, it returns the average of the two middle elements;
+  boundary tracking during counting provides both values simultaneously.
+Unlike approximation methods, this algorithm returns the precise median of all pairwise differences;
+  randomness affects only performance, not correctness.
 
 The algorithm includes the same stall-handling mechanisms as the center algorithm.
-It tracks whether the count below the pivot changes between iterations,
-  and when progress stalls due to tied values, it computes the range of remaining active differences
+It tracks whether the count below the pivot changes between iterations;
+  when progress stalls due to tied values, it computes the range of remaining active differences
   and pivots to their midrange.
-This midrange strategy ensures convergence even with highly discrete data or datasets containing many identical values.
+This midrange strategy ensures convergence even with highly discrete data or datasets with many identical values.
 
-Several optimizations make the algorithm practical for production use.
+Several optimizations make the implementation practical for production use.
 A global column pointer that never moves backward during counting exploits the matrix structure
   to avoid redundant comparisons.
-The algorithm captures exact boundary values during each counting pass,
+Exact boundary values are captured during each counting pass,
   eliminating the need for additional searches when the target rank is reached.
 Using only $O(n)$ additional space for row bounds and counters,
-  independent of the quadratic number of pairwise differences,
   the algorithm achieves $O(n \log n)$ time complexity with minimal memory overhead,
   making robust scale estimation practical for large datasets.
 
@@ -1510,33 +1508,33 @@ This definition represents a special case of a more general problem:
   computing arbitrary quantiles of all pairwise differences.
 For samples of size $n$ and $m$, the total number of pairwise differences is $n \times m$.
 A naive approach would materialize all differences, sort them, and extract the desired quantile.
-With $n = m = 10,000$, this creates 100 million values,
+With $n = m = 10,000$, this approach creates 100 million values,
   requiring quadratic memory and $O(nm \log(nm))$ time.
 
-The algorithm avoids materializing any pairwise differences by exploiting the sorted structure of the samples.
+The presented algorithm avoids materializing pairwise differences by exploiting the sorted structure of the samples.
 After sorting both samples to obtain $x_1 \leq x_2 \leq \cdots \leq x_n$ and $y_1 \leq y_2 \leq \cdots \leq y_m$,
-  the key insight is that we can count how many pairwise differences fall below any threshold value
+  the key insight is that it's possible to count how many pairwise differences fall below any threshold
   without computing them explicitly.
-This counting operation enables binary search over the continuous space of possible difference values,
-  iteratively narrowing the search range until convergence to the exact quantile.
+This counting operation enables a binary search over the continuous space of possible difference values,
+  iteratively narrowing the search range until it converges to the exact quantile.
 
-The algorithm operates through value-space search rather than index-space selection.
-It maintains a search interval $[\text{searchMin}, \text{searchMax}]$ initialized to the range
+The algorithm operates through a value-space search rather than index-space selection.
+It maintains a search interval $[\text{searchMin}, \text{searchMax}]$, initialized to the range
   of all possible differences: $[x_1 - y_m, x_n - y_1]$.
 At each iteration, it selects a candidate value within this interval and counts
   how many pairwise differences are less than or equal to this threshold.
 For the median (quantile $p = 0.5$), if fewer than half the differences lie below the threshold,
   the median must be larger; if more than half lie below, the median must be smaller.
-Based on this comparison, the algorithm eliminates portions of the search space
+Based on this comparison, the search space is reduced by eliminating portions
   that cannot contain the target quantile.
 
-The counting operation achieves linear complexity through a two-pointer sweep.
-For a given threshold $t$, the algorithm counts how many pairs $(i,j)$ satisfy $x_i - y_j \leq t$.
+The counting operation achieves linear complexity via a two-pointer sweep.
+For a given threshold $t$, the number of pairs $(i,j)$ satisfying $x_i - y_j \leq t$ is counted.
 This is equivalent to counting pairs where $y_j \geq x_i - t$.
-For each row $i$ in the implicit matrix, the algorithm advances a column pointer
-  through the sorted $y$ array while $x_i - y_j > t$, stopping at the first position
+For each row $i$ in the implicit matrix of differences, a column pointer
+  advances through the sorted $y$ array while $x_i - y_j > t$, stopping at the first position
   where $x_i - y_j \leq t$.
-All remaining positions in that row satisfy the condition,
+All subsequent positions in that row satisfy the condition,
   contributing $(m - j)$ pairs to the count for row $i$.
 Because both samples are sorted, the column pointer advances monotonically and never backtracks across rows,
   making each counting pass $O(n + m)$ regardless of the total number of differences.
@@ -1559,17 +1557,17 @@ Otherwise, it uses the boundary values from the counting pass to snap the search
 
 The binary search employs numerically stable midpoint calculations and terminates
   when the search interval collapses to a single value or when boundary tracking confirms convergence.
-The algorithm includes iteration limits as a safety mechanism,
+Iteration limits are included as a safety mechanism,
   though convergence typically occurs much earlier due to the exponential narrowing of the search space.
 
-The algorithm generalizes naturally to multiple quantiles by computing each one independently.
-For $k$ quantiles with samples of size $n$ and $m$, the total complexity becomes $O(k(n + m) \log L)$,
+The algorithm naturally generalizes to multiple quantiles by computing each one independently.
+For $k$ quantiles with samples of size $n$ and $m$, the total complexity is $O(k(n + m) \log L)$,
   where $L$ represents the convergence precision.
 This is dramatically more efficient than the naive $O(nm \log(nm))$ approach,
-  especially when $n$ and $m$ are large but $k$ is small.
+  especially for large $n$ and $m$ with small $k$.
 The algorithm requires only $O(1)$ additional space beyond the input arrays,
   making it practical for large-scale statistical analysis
-  where memory constraints prohibit materializing quadratic structures.
+  where memory constraints prohibit materializing quadratic data structures.
 
 ```cs
 namespace Pragmastat.Algorithms;
@@ -1765,7 +1763,7 @@ By linearity of expectation, $E[D] = 0$. By independence, $\mathrm{Var}[D] = 2 \
 Thus $D$ has distribution $\Additive(0, \sqrt{2} \cdot \mathrm{stdDev})$,
   and the problem reduces to finding the median of $|D|$.
 The location parameter $\mathrm{mean}$ disappears, as expected,
-  because absolute differences are invariant under shifts.
+  because absolute differences are invariant to shifts.
 
 Let $\tau=\sqrt{2} \cdot \mathrm{stdDev}$, so that $D\sim \Additive(0,\tau)$.
 The random variable $|D|$ then follows the Half-$\Additive$ ('Folded Normal') distribution with scale $\tau$.
@@ -1823,8 +1821,8 @@ $$
 \Drift(\Mean, X) = 1
 $$
 
-$\Mean$ achieves unit drift under $\Additive$ ('Normal') distribution, serving as the natural baseline for comparison.
-$\Mean$ is the optimal estimator under $\Additive$ ('Normal') distribution: no other estimators achieve lower $\Drift$.
+$\Mean$ achieves unit drift under the $\Additive$ ('Normal') distribution, serving as the natural baseline for comparison.
+$\Mean$ is the optimal estimator under the $\Additive$ ('Normal') distribution: no other estimator achieves lower $\Drift$.
 
 ### Asymptotic Median Drift
 
@@ -1851,10 +1849,10 @@ Numerically, $\sqrt{\pi/2} \approx 1.2533$, so the median has approximately 25% 
 ### Asymptotic Center Drift
 
 For the sample center $\Center(\x) = \underset{1 \leq i \leq j \leq n}{\Median} \left(\frac{x_i + x_j}{2}\right)$ applied to samples from $\Additive(\mathrm{mean}, \mathrm{stdDev})$,
-  we need to determine the asymptotic sampling distribution.
+  its asymptotic sampling distribution must be determined.
 
 The center estimator computes all pairwise averages (including $i=j$) and takes their median.
-For the $\Additive$ ('Normal') distribution, the asymptotic theory shows that the center estimator
+For the $\Additive$ ('Normal') distribution, asymptotic theory shows that the center estimator
   is asymptotically $\Additive$ ('Normal') with mean $\mathrm{mean}$.
 
 The exact asymptotic variance of the center estimator for the $\Additive$ ('Normal') distribution is:
@@ -1876,7 +1874,7 @@ $$
 $$
 
 Numerically, $\sqrt{\pi/3} \approx 1.0233$,
-  so the center estimator achieves drift very close to 1 under the $\Additive$ ('Normal') distribution,
+  so the center estimator achieves a drift very close to 1 under the $\Additive$ ('Normal') distribution,
   performing nearly as well as the mean while offering greater robustness to outliers.
 
 ### Lemma: Dispersion Estimator Drift Formula
@@ -2040,9 +2038,9 @@ For instance, switching from $\StdDev$ to $\MAD$ while maintaining the same prec
 Similarly, switching from $\StdDev$ to $\Spread$ requires a factor of $0.52/0.45 \approx 1.16$.
 
 The $\StdDev$ achieves optimal performance for the $\Additive$ ('Normal') distribution.
-The $\MAD$ requires about 2.7 times more data to match $\StdDev$ precision,
+The $\MAD$ requires about 2.7 times more data to match the $\StdDev$ precision
   while offering greater robustness to outliers.
-The $\Spread$ requires about 1.16 times more data to match $\StdDev$ precision under purely $\Additive$ ('Normal') conditions while maintaining robustness.
+The $\Spread$ requires about 1.16 times more data to match the $\StdDev$ precision under purely $\Additive$ ('Normal') conditions while maintaining robustness.
 
 # Reference Implementations
 
@@ -2053,10 +2051,10 @@ The $\Spread$ requires about 1.16 times more data to match $\StdDev$ precision u
 Install from PyPI:
 
 ```bash
-pip install pragmastat==3.2.0
+pip install pragmastat==3.2.1
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.0/py
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.1/py
 
 Pragmastat on PyPI: https://pypi.org/project/pragmastat/
 
@@ -2123,10 +2121,10 @@ if __name__ == "__main__":
 Install from npm:
 
 ```bash
-npm i pragmastat@3.2.0
+npm i pragmastat@3.2.1
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.0/ts
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.1/ts
 
 Pragmastat on npm: https://www.npmjs.com/package/pragmastat
 
@@ -2193,11 +2191,11 @@ Install from GitHub:
 ```r
 install.packages("remotes") # If 'remotes' is not installed
 remotes::install_github("AndreyAkinshin/pragmastat",
-                        subdir = "r/pragmastat", ref = "v3.2.0")
+                        subdir = "r/pragmastat", ref = "v3.2.1")
 library(pragmastat)
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.0/r
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.1/r
 
 
 
@@ -2258,16 +2256,16 @@ print(disparity(y, x)) # -0.4
 Install from NuGet via .NET CLI:
 
 ```bash
-dotnet add package Pragmastat --version 3.2.0
+dotnet add package Pragmastat --version 3.2.1
 ```
 
 Install from NuGet via Package Manager Console:
 
 ```ps1
-NuGet\Install-Package Pragmastat -Version 3.2.0
+NuGet\Install-Package Pragmastat -Version 3.2.1
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.0/cs
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.1/cs
 
 Pragmastat on NuGet: https://www.nuget.org/packages/Pragmastat/
 
@@ -2339,30 +2337,30 @@ Install from Maven Central Repository via Apache Maven:
 <dependency>
     <groupId>dev.pragmastat</groupId>
     <artifactId>pragmastat</artifactId>
-    <version>3.2.0</version>
+    <version>3.2.1</version>
 </dependency>
 ```
 
 Install from Maven Central Repository via Gradle:
 
 ```java
-implementation 'dev.pragmastat:pragmastat:3.2.0'
+implementation 'dev.pragmastat:pragmastat:3.2.1'
 ```
 
 Install from Maven Central Repository via Gradle (Kotlin):
 
 ```kotlin
-implementation("dev.pragmastat:pragmastat:3.2.0")
+implementation("dev.pragmastat:pragmastat:3.2.1")
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.0/kt
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.1/kt
 
 Pragmastat on Maven Central Repository: https://central.sonatype.com/artifact/dev.pragmastat/pragmastat/overview
 
 Demo:
 
 ```kotlin
-package dev.pragmastat.example
+package dev.pragmastat.demo
 
 import dev.pragmastat.*
 
@@ -2420,17 +2418,17 @@ fun main() {
 Install from crates.io via cargo:
 
 ```bash
-cargo add pragmastat@3.2.0
+cargo add pragmastat@3.2.1
 ```
 
 Install from crates.io via `Cargo.toml`:
 
 ```toml
 [dependencies]
-pragmastat = "3.2.0"
+pragmastat = "3.2.1"
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.0/rs
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.1/rs
 
 Pragmastat on crates.io: https://crates.io/crates/pragmastat
 
@@ -2505,10 +2503,10 @@ fn main() {
 Install from GitHub:
 
 ```bash
-go get github.com/AndreyAkinshin/pragmastat/go/v3@v3.2.0
+go get github.com/AndreyAkinshin/pragmastat/go/v3@v3.2.1
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.0/go
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.1/go
 
 
 
@@ -2610,7 +2608,7 @@ Reference tests serve three critical purposes:
 
 - **Cross-language validation.** All implementations must pass identical test cases, ensuring consistent behavior regardless of language choice.
 - **Regression prevention.** Changes to any implementation can be validated against the reference outputs to detect unintended modifications.
-- **Implementation guidance.** The test cases provide concrete examples that guide developers implementing the toolkit in new languages.
+- **Implementation guidance.** The test cases provide concrete examples that guide developers in implementing the toolkit in new languages.
 
 The test design follows established quality assurance principles:
 
@@ -2629,8 +2627,8 @@ The test suite balances three categories:
   Random tests catch issues that might not be apparent from simple deterministic cases.
 
 The C# implementation serves as the reference generator.
-All test cases are defined programmatically, executed to produce expected outputs, and serialized to JSON format.
-Other implementations load these JSON files and verify their estimators produce matching results within numerical tolerance.
+All test cases are defined programmatically, executed to produce expected outputs, and serialized to JSON.
+Other implementations load these JSON files and verify that their estimators produce matching results within a given numerical tolerance.
 
 ## Center
 
@@ -2638,7 +2636,7 @@ $$
 \Center(\x) = \underset{1 \leq i \leq j \leq n}{\Median} \left(\frac{x_i + x_j}{2} \right)
 $$
 
-The $\Center$ test suite contains 39 correctness test cases stored in the repository (24 original + 15 unsorted), plus 1 performance test that should be implemented manually (see §Test Framework).
+The $\Center$ test suite contains 38 correctness test cases stored in the repository (24 original + 14 unsorted), plus 1 performance test that should be implemented manually (see §Test Framework).
 
 **Demo examples** ($n = 5$) — from manual introduction, validating properties:
 
@@ -2688,7 +2686,7 @@ The progression from small ($n = 5$) to large ($n = 100$) samples helps identify
 - `extreme-small-5`: $\x = (1e{-}8, 2e{-}8, 3e{-}8, 4e{-}8, 5e{-}8)$ (very small positive values)
 - `extreme-wide-5`: $\x = (0.001, 1, 100, 1000, 1000000)$ (wide range, tests precision)
 
-**Unsorted tests** — verify sorting correctness (15 tests):
+**Unsorted tests** — verify sorting correctness (14 tests):
 
 - `unsorted-reverse-{n}` for $n \in \{2, 3, 4, 5, 7\}$: reverse sorted natural sequences (5 tests)
 - `unsorted-shuffle-3`: $\x = (2, 1, 3)$ (middle element first)
@@ -2709,7 +2707,7 @@ The variety of shuffle patterns (reverse, rotation, interleaving, single element
 - **Input**: $\x = (1, 2, 3, \ldots, 100000)$
 - **Expected output**: $50000.5$
 - **Time constraint**: Must complete in under 5 seconds
-- **Purpose**: Ensures the implementation uses the efficient algorithm rather than materializing all $\binom{n+1}{2} \approx 5$ billion pairwise averages
+- **Purpose**: Ensures that the implementation uses the efficient algorithm rather than materializing all $\binom{n+1}{2} \approx 5$ billion pairwise averages
 
 This test case is not stored in the repository because it generates a large JSON file (approximately 1.5 MB).
 Each language implementation should manually implement this test with the hardcoded expected result.
@@ -2720,7 +2718,7 @@ $$
 \Spread(\x) = \underset{1 \leq i < j \leq n}{\Median} |x_i - x_j|
 $$
 
-The $\Spread$ test suite contains 39 correctness test cases stored in the repository (24 original + 15 unsorted), plus 1 performance test that should be implemented manually (see §Test Framework).
+The $\Spread$ test suite contains 38 correctness test cases stored in the repository (24 original + 14 unsorted), plus 1 performance test that should be implemented manually (see §Test Framework).
 
 **Demo examples** ($n = 5$) — from manual introduction, validating properties:
 
@@ -2770,7 +2768,7 @@ The zero cases confirm that constant samples correctly produce zero spread.
 - `extreme-small-5`: $\x = (1e{-}8, 2e{-}8, 3e{-}8, 4e{-}8, 5e{-}8)$ (very small positive values)
 - `extreme-wide-5`: $\x = (0.001, 1, 100, 1000, 1000000)$ (wide range, tests precision)
 
-**Unsorted tests** — verify sorting correctness (15 tests):
+**Unsorted tests** — verify sorting correctness (14 tests):
 
 - `unsorted-reverse-{n}` for $n \in \{2, 3, 4, 5, 7\}$: reverse sorted natural sequences (5 tests)
 - `unsorted-shuffle-3`: $\x = (3, 1, 2)$ (rotated)
@@ -2791,7 +2789,7 @@ Since $\Spread$ uses absolute differences, order-dependent bugs would manifest d
 - **Input**: $\x = (1, 2, 3, \ldots, 100000)$
 - **Expected output**: $29290$
 - **Time constraint**: Must complete in under 5 seconds
-- **Purpose**: Ensures the implementation uses the efficient algorithm rather than materializing all $\binom{n}{2} \approx 5$ billion pairwise differences
+- **Purpose**: Ensures that the implementation uses the efficient algorithm rather than materializing all $\binom{n}{2} \approx 5$ billion pairwise differences
 
 This test case is not stored in the repository because it generates a large JSON file (approximately 1.5 MB).
 Each language implementation should manually implement this test with the hardcoded expected result.
@@ -2939,7 +2937,7 @@ The variety includes cases where only one sample is unsorted, ensuring implement
 - **Input**: $\x = (1, 2, 3, \ldots, 100000)$, $\y = (1, 2, 3, \ldots, 100000)$
 - **Expected output**: $0$
 - **Time constraint**: Must complete in under 5 seconds
-- **Purpose**: Ensures the implementation uses the efficient algorithm rather than materializing all $mn = 10$ billion pairwise differences
+- **Purpose**: Ensures that the implementation uses the efficient algorithm rather than materializing all $mn = 10$ billion pairwise differences
 
 This test case is not stored in the repository because it generates a large JSON file (approximately 1.5 MB).
 Each language implementation should manually implement this test with the hardcoded expected result.
@@ -2950,7 +2948,7 @@ $$
 \Ratio(\x, \y) = \underset{1 \leq i \leq n, 1 \leq j \leq m}{\Median} \left( \dfrac{x_i}{y_j} \right)
 $$
 
-The $\Ratio$ test suite contains 38 test cases (26 original + 12 unsorted), excluding zero values due to division constraints.
+The $\Ratio$ test suite contains 37 test cases (25 original + 12 unsorted), excluding zero values due to division constraints.
 
 **Demo examples** ($n = m = 5$) — from manual introduction, validating properties:
 
@@ -3003,7 +3001,7 @@ $$
 \AvgSpread(\x, \y) = \dfrac{n\Spread(\x) + m\Spread(\y)}{n + m}
 $$
 
-The $\AvgSpread$ test suite contains 50 test cases (35 original + 15 unsorted).
+The $\AvgSpread$ test suite contains 49 test cases (35 original + 14 unsorted).
 Since $\AvgSpread$ computes $\Spread(\x)$ and $\Spread(\y)$ independently, unsorted tests are critical to verify that both samples are sorted independently before computing their spreads.
 
 **Demo examples** ($n = m = 5$) — from manual introduction, validating properties:
@@ -3044,7 +3042,7 @@ The asymmetric size combinations are particularly important for $\AvgSpread$ bec
 - `composite-zero-spread-one`: $\x = (5, 5, 5)$, $\y = (1, 2, 3, 4, 5)$ (one zero spread, tests edge case)
 - `composite-extreme-sizes`: $\x = (10)$, $\y = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10)$ (1 vs 10, extreme weighting)
 
-**Unsorted tests** — critical for verifying independent sorting (15 tests):
+**Unsorted tests** — critical for verifying independent sorting (14 tests):
 
 - `unsorted-x-natural-{n}-{m}` for $(n,m) \in \{(3,3), (4,4)\}$: X unsorted (reversed), Y sorted (2 tests)
 - `unsorted-y-natural-{n}-{m}` for $(n,m) \in \{(3,3), (4,4)\}$: X sorted, Y unsorted (reversed) (2 tests)
@@ -3152,11 +3150,11 @@ where $U$ is a uniform random value from $\Uniform(0, 1)$.
 
 The framework executes the reference implementation on all generated inputs and serializes input-output pairs to JSON format.
 
-**Test validation** — Each language implementation loads the JSON test cases and executes them against the local estimator implementation.
-Assertions verify that outputs match expected values within numerical tolerance (typically $10^{-10}$ for relative error).
+**Test validation** — Each language implementation loads the JSON test cases and executes them against its local estimator implementation.
+Assertions verify that outputs match expected values within a given numerical tolerance (typically $10^{-10}$ for relative error).
 
 **Test data format** — Each test case is a JSON file containing `input` and `output` fields.
-For one-sample estimators, input contains array `x` and optional `parameters`.
+For one-sample estimators, the input contains array `x` and optional `parameters`.
 For two-sample estimators, input contains arrays `x` and `y`.
 Output is a single numeric value.
 
@@ -3165,7 +3163,7 @@ dramatically more efficient than naive implementations that materialize all pair
 Performance tests use sample size $n = 100{,}000$ (for one-sample) or $n = m = 100{,}000$ (for two-sample).
 This specific size creates a clear performance distinction:
 fast implementations ($O(n \log n)$ or $O((m+n) \log L)$) complete in under 5 seconds on modern hardware across all supported languages,
-while naive implementations ($O(n^2 \log n)$ or $O(mn \log(mn))$) would be unbearably slow (taking hours or failing due to memory exhaustion).
+while naive implementations ($O(n^2 \log n)$ or $O(mn \log(mn))$) would be prohibitively slow (taking hours or failing due to memory exhaustion).
 With $n = 100{,}000$, naive approaches would need to materialize approximately 5 billion pairwise values for $\Center$/$\Spread$
 or 10 billion for $\Shift$, whereas fast algorithms require only $O(n)$ additional memory.
 Performance tests serve dual purposes: correctness validation at scale and performance regression detection,
@@ -3178,25 +3176,25 @@ This framework ensures that all seven language implementations maintain strict n
 
 Manual:
 
-- PDF: [pragmastat-v3.2.0.pdf](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.0/pragmastat-v3.2.0.pdf)
-- Markdown: [pragmastat-v3.2.0.md](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.0/pragmastat-v3.2.0.md)
-- Website: [web-v3.2.0.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.0/web-v3.2.0.zip)
+- PDF: [pragmastat-v3.2.1.pdf](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.1/pragmastat-v3.2.1.pdf)
+- Markdown: [pragmastat-v3.2.1.md](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.1/pragmastat-v3.2.1.md)
+- Website: [web-v3.2.1.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.1/web-v3.2.1.zip)
 
 Implementations:
 
-- Python: [py-v3.2.0.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.0/py-v3.2.0.zip)
-- TypeScript: [ts-v3.2.0.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.0/ts-v3.2.0.zip)
-- R: [r-v3.2.0.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.0/r-v3.2.0.zip)
-- C#: [cs-v3.2.0.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.0/cs-v3.2.0.zip)
-- Kotlin: [kt-v3.2.0.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.0/kt-v3.2.0.zip)
-- Rust: [rs-v3.2.0.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.0/rs-v3.2.0.zip)
-- Go: [go-v3.2.0.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.0/go-v3.2.0.zip)
+- Python: [py-v3.2.1.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.1/py-v3.2.1.zip)
+- TypeScript: [ts-v3.2.1.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.1/ts-v3.2.1.zip)
+- R: [r-v3.2.1.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.1/r-v3.2.1.zip)
+- C#: [cs-v3.2.1.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.1/cs-v3.2.1.zip)
+- Kotlin: [kt-v3.2.1.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.1/kt-v3.2.1.zip)
+- Rust: [rs-v3.2.1.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.1/rs-v3.2.1.zip)
+- Go: [go-v3.2.1.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.1/go-v3.2.1.zip)
 
 Data:
 
-- Reference tests (json): [tests-v3.2.0.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.0/tests-v3.2.0.zip)
-- Reference simulations (json) [sim-v3.2.0.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.0/sim-v3.2.0.zip)
+- Reference tests (json): [tests-v3.2.1.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.1/tests-v3.2.1.zip)
+- Reference simulations (json): [sim-v3.2.1.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.1/sim-v3.2.1.zip)
 
 Source code:
 
-- [pragmastat-3.2.0.zip](https://github.com/AndreyAkinshin/pragmastat/archive/refs/tags/v3.2.0.zip)
+- [pragmastat-3.2.1.zip](https://github.com/AndreyAkinshin/pragmastat/archive/refs/tags/v3.2.1.zip)
