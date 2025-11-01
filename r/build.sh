@@ -139,6 +139,24 @@ lint() {
     cd ..
 }
 
+# Function to run demo
+run_demo() {
+    # Install the package first so it can be loaded
+    cd pragmastat
+
+    # In Docker with user mapping, install to a writable location
+    if [ -f "/.dockerenv" ]; then
+        export R_LIBS_USER="/workspace/r/.r-packages"
+        mkdir -p "$R_LIBS_USER"
+        run_command "Rscript -e \".libPaths(c(Sys.getenv('R_LIBS_USER'), .libPaths())); if (!requireNamespace('devtools', quietly = TRUE)) install.packages('devtools', repos = 'https://cloud.r-project.org'); devtools::install(quiet = TRUE, upgrade = 'never')\"" "Installing package for demo"
+    else
+        run_command "Rscript -e \"if (!requireNamespace('devtools', quietly = TRUE)) install.packages('devtools', repos = 'https://cloud.r-project.org'); devtools::install(quiet = TRUE, upgrade = 'never')\"" "Installing package for demo"
+    fi
+
+    run_command "Rscript inst/examples/demo.R" "Running demo"
+    cd ..
+}
+
 # Function to show help
 show_help() {
     echo -e "${BOLD}Usage:${RESET} pragmastat/r/build.sh ${HIGHLIGHT}<command>${RESET}"
@@ -149,6 +167,7 @@ show_help() {
     echo -e "  ${HIGHLIGHT}check${RESET}      ${DIM}# Run R CMD check (fast, skips tests and dependencies)${RESET}"
     echo -e "  ${HIGHLIGHT}check-full${RESET} ${DIM}# Run R CMD check --as-cran (full CRAN checks)${RESET}"
     echo -e "  ${HIGHLIGHT}install${RESET}    ${DIM}# Install package locally (copies test data first)${RESET}"
+    echo -e "  ${HIGHLIGHT}demo${RESET}       ${DIM}# Run demo examples${RESET}"
     echo -e "  ${HIGHLIGHT}docs${RESET}       ${DIM}# Build documentation with roxygen2${RESET}"
     echo -e "  ${HIGHLIGHT}clean${RESET}      ${DIM}# Clean build artifacts and test data${RESET}"
     echo -e "  ${HIGHLIGHT}format${RESET}     ${DIM}# Format R code with styler${RESET}"
@@ -158,6 +177,7 @@ show_help() {
     echo -e "${HEADER}${BOLD}Examples:${RESET}"
     echo -e "  ${SUCCESS}build.sh test${RESET}  ${DIM}# Run all tests${RESET}"
     echo -e "  ${SUCCESS}build.sh build${RESET} ${DIM}# Build source package${RESET}"
+    echo -e "  ${SUCCESS}build.sh demo${RESET}  ${DIM}# Run demo examples${RESET}"
     echo -e "  ${SUCCESS}build.sh all${RESET}   ${DIM}# Run all tasks${RESET}"
 }
 
@@ -191,6 +211,9 @@ case "$1" in
     install)
         copy_test_data
         install_package
+        ;;
+    demo)
+        run_demo
         ;;
     docs)
         build_docs

@@ -130,6 +130,11 @@ publish() {
     print_warning "cd pragmastat && cargo publish"
 }
 
+# Function to run demo
+run_demo() {
+    run_command "cargo run --example demo" "Running demo"
+}
+
 # Function to show help
 show_help() {
     echo -e "${BOLD}Usage:${RESET} pragmastat/rs/build.sh ${HIGHLIGHT}<command>${RESET} ${ARG}[--release]${RESET}"
@@ -138,6 +143,7 @@ show_help() {
     echo -e "  ${HIGHLIGHT}test${RESET}                    ${DIM}# Run tests${RESET}"
     echo -e "  ${HIGHLIGHT}build${RESET} ${ARG}[--release]${RESET}       ${DIM}# Build package (debug by default, release with --release flag)${RESET}"
     echo -e "  ${HIGHLIGHT}check${RESET}                   ${DIM}# Check package (clippy, fmt check, cargo check)${RESET}"
+    echo -e "  ${HIGHLIGHT}demo${RESET}                    ${DIM}# Run demo examples${RESET}"
     echo -e "  ${HIGHLIGHT}clean${RESET}                   ${DIM}# Clean build artifacts${RESET}"
     echo -e "  ${HIGHLIGHT}format${RESET}                  ${DIM}# Format code with rustfmt${RESET}"
     echo -e "  ${HIGHLIGHT}doc${RESET}                     ${DIM}# Build and open documentation${RESET}"
@@ -149,6 +155,7 @@ show_help() {
     echo -e "  ${SUCCESS}build.sh test${RESET}             ${DIM}# Run tests${RESET}"
     echo -e "  ${SUCCESS}build.sh build${RESET}            ${DIM}# Build debug package${RESET}"
     echo -e "  ${SUCCESS}build.sh build ${ARG}--release${RESET}  ${DIM}# Build release package${RESET}"
+    echo -e "  ${SUCCESS}build.sh demo${RESET}             ${DIM}# Run demo examples${RESET}"
     echo -e "  ${SUCCESS}build.sh all${RESET}              ${DIM}# Run all tasks${RESET}"
 }
 
@@ -171,6 +178,9 @@ case "$1" in
         ;;
     check)
         check_package
+        ;;
+    demo)
+        run_demo
         ;;
     clean)
         clean

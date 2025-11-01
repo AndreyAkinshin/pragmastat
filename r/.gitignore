@@ -1,3 +1,4 @@
 pragmastat.Rcheck
 pragmastat_*.tar.gz
 .Rhistory
+.r-packages

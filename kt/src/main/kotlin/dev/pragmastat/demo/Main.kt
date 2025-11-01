@@ -1,4 +1,4 @@
-package dev.pragmastat.example
+package dev.pragmastat.demo
 
 import dev.pragmastat.*
 

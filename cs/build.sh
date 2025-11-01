@@ -112,6 +112,11 @@ lint_code() {
     run_command "dotnet format --verify-no-changes" "Verifying code formatting"
 }
 
+# Function to run demo
+run_demo() {
+    run_command "(cd Pragmastat.Demo && dotnet run)" "Running demo"
+}
+
 # Function to show help
 show_help() {
     echo -e "${BOLD}Usage:${RESET} pragmastat/cs/build.sh ${HIGHLIGHT}<command>${RESET} ${ARG}[--release]${RESET}"
@@ -122,6 +127,7 @@ show_help() {
     echo -e "  ${HIGHLIGHT}build${RESET} ${ARG}[--release]${RESET}       ${DIM}# Build package (debug by default, release with --release flag)${RESET}"
     echo -e "  ${HIGHLIGHT}pack${RESET} ${ARG}[--release]${RESET}        ${DIM}# Pack NuGet package (debug by default, release with --release flag)${RESET}"
     echo -e "  ${HIGHLIGHT}restore${RESET}                 ${DIM}# Restore dependencies${RESET}"
+    echo -e "  ${HIGHLIGHT}demo${RESET}                    ${DIM}# Run demo examples${RESET}"
     echo -e "  ${HIGHLIGHT}clean${RESET}                   ${DIM}# Clean build artifacts${RESET}"
     echo -e "  ${HIGHLIGHT}format${RESET}                  ${DIM}# Format code with dotnet format${RESET}"
     echo -e "  ${HIGHLIGHT}lint${RESET}                    ${DIM}# Verify code formatting${RESET}"
@@ -132,6 +138,7 @@ show_help() {
     echo -e "  ${SUCCESS}build.sh test${RESET}             ${DIM}# Run all tests${RESET}"
     echo -e "  ${SUCCESS}build.sh build${RESET}            ${DIM}# Build debug package${RESET}"
     echo -e "  ${SUCCESS}build.sh build ${ARG}--release${RESET}  ${DIM}# Build release package${RESET}"
+    echo -e "  ${SUCCESS}build.sh demo${RESET}             ${DIM}# Run demo examples${RESET}"
     echo -e "  ${SUCCESS}build.sh all${RESET}              ${DIM}# Run all tasks${RESET}"
 }
 
@@ -160,6 +167,9 @@ case "$1" in
         ;;
     restore)
         restore_deps
+        ;;
+    demo)
+        run_demo
         ;;
     clean)
         clean

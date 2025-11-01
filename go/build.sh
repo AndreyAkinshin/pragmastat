@@ -48,6 +48,11 @@ run_command() {
     fi
 }
 
+# Function to run demo
+run_demo() {
+    run_command "go run ./demo" "Running demo"
+}
+
 # Function to show help
 show_help() {
     echo -e "${BOLD}Usage:${RESET} pragmastat/go/build.sh ${HIGHLIGHT}<command>${RESET}"
@@ -56,6 +61,7 @@ show_help() {
     echo -e "  ${HIGHLIGHT}test${RESET}              ${DIM}# Run all tests${RESET}"
     echo -e "  ${HIGHLIGHT}test-verbose${RESET}      ${DIM}# Run all tests with verbose output${RESET}"
     echo -e "  ${HIGHLIGHT}build${RESET}             ${DIM}# Build the Go package${RESET}"
+    echo -e "  ${HIGHLIGHT}demo${RESET}              ${DIM}# Run demo examples${RESET}"
     echo -e "  ${HIGHLIGHT}lint${RESET}              ${DIM}# Run golangci-lint (if installed)${RESET}"
     echo -e "  ${HIGHLIGHT}format${RESET}            ${DIM}# Format code with go fmt${RESET}"
     echo -e "  ${HIGHLIGHT}coverage${RESET}          ${DIM}# Run tests with coverage summary${RESET}"
@@ -69,6 +75,7 @@ show_help() {
     echo -e "${HEADER}${BOLD}Examples:${RESET}"
     echo -e "  ${SUCCESS}build.sh test${RESET}   ${DIM}# Run all tests${RESET}"
     echo -e "  ${SUCCESS}build.sh build${RESET}  ${DIM}# Build the package${RESET}"
+    echo -e "  ${SUCCESS}build.sh demo${RESET}   ${DIM}# Run demo examples${RESET}"
     echo -e "  ${SUCCESS}build.sh all${RESET}    ${DIM}# Run all tasks${RESET}"
 }
 
@@ -91,6 +98,9 @@ case "$1" in
         ;;
     build)
         run_command "go build ./..." "Building Go package"
+        ;;
+    demo)
+        run_demo
         ;;
     lint)
         if command -v golangci-lint &> /dev/null; then

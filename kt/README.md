@@ -35,7 +35,7 @@ implementation("dev.pragmastat:pragmastat:3.2.0")
 ## Demo
 
 ```kotlin
-package dev.pragmastat.example
+package dev.pragmastat.demo
 
 import dev.pragmastat.*
 

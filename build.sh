@@ -77,6 +77,9 @@ Run full CI build pipeline, replicating GitHub Actions workflow
 .BI "test " "[--docker]"
 Run tests for all language implementations
 .TP
+.BI "demo " "[--docker]"
+Run demo examples for all language implementations
+.TP
 .BI "clean " "[--docker]"
 Clean build artifacts for all projects
 .TP
@@ -121,6 +124,15 @@ Build C# implementation in Docker:
 Build C# using environment variable:
 .B PRAGMASTAT_DOCKER=1 ./build.sh cs build
 .TP
+Run demo for Go implementation:
+.B ./build.sh go demo
+.TP
+Run demos for all implementations:
+.B ./build.sh demo
+.TP
+Run demos in Docker:
+.B ./build.sh demo --docker
+.TP
 Run tests for all implementations:
 .B ./build.sh test
 .TP
@@ -147,6 +159,9 @@ Compile/build the project
 .TP
 .B test
 Run unit tests
+.TP
+.B demo
+Run demo examples (language projects only)
 .TP
 .B check
 Run linters, formatters, or validation
@@ -460,6 +475,84 @@ run_all_projects() {
     else
         echo ""
         print_status "✓ All projects completed '$command' successfully!"
+    fi
+}
+
+# Function to run demos for all projects
+run_all_demos() {
+    local start_time=$(date +%s)
+
+    print_status "Starting demos for all language projects..."
+    echo ""
+
+    # Language projects (all have demo commands)
+    local lang_projects=(
+        "r"
+        "cs"
+        "py"
+        "rs"
+        "ts"
+        "go"
+        "kt"
+    )
+
+    local failed_projects=()
+    local succeeded_projects=()
+    local skipped_projects=()
+
+    for project in "${lang_projects[@]}"; do
+        echo ""
+        print_status "════════════════════════════════════════"
+        print_status "Running demo for: $project"
+        print_status "════════════════════════════════════════"
+
+        # Check if project has build.sh
+        if [ ! -f "./$project/build.sh" ]; then
+            print_warning "No build.sh found for $project, skipping"
+            skipped_projects+=("$project")
+            continue
+        fi
+
+        # Run the demo command (in Docker if enabled)
+        if [ "$USE_DOCKER" == "true" ]; then
+            if run_in_docker "$project" "./build.sh demo"; then
+                succeeded_projects+=("$project")
+            else
+                failed_projects+=("$project")
+                print_error "✗ Failed to run demo for: $project"
+            fi
+        else
+            if "./$project/build.sh" demo; then
+                succeeded_projects+=("$project")
+            else
+                failed_projects+=("$project")
+                print_error "✗ Failed to run demo for: $project"
+            fi
+        fi
+    done
+
+    local end_time=$(date +%s)
+    local elapsed=$((end_time - start_time))
+
+    echo ""
+    print_status "════════════════════════════════════════"
+    print_status "Summary: demo"
+    print_status "════════════════════════════════════════"
+    print_status "Total time: ${elapsed}s"
+    print_status "Succeeded: ${#succeeded_projects[@]}"
+    print_status "Failed: ${#failed_projects[@]}"
+    print_status "Skipped: ${#skipped_projects[@]}"
+
+    if [ ${#failed_projects[@]} -gt 0 ]; then
+        echo ""
+        print_error "Failed projects:"
+        for project in "${failed_projects[@]}"; do
+            print_error "  - $project"
+        done
+        exit 1
+    else
+        echo ""
+        print_status "✓ All project demos completed successfully!"
     fi
 }
 
@@ -910,6 +1003,7 @@ show_help() {
     echo -e "  ${HIGHLIGHT}all${RESET} ${ARG}[--release] [--docker]${RESET} ${DIM}# Build all projects${RESET}"
     echo -e "  ${HIGHLIGHT}ci${RESET} ${ARG}[--release] [--docker]${RESET}  ${DIM}# Run full CI build (replicates GitHub Actions)${RESET}"
     echo -e "  ${HIGHLIGHT}test${RESET} ${ARG}[--docker]${RESET}            ${DIM}# Run tests for all projects${RESET}"
+    echo -e "  ${HIGHLIGHT}demo${RESET} ${ARG}[--docker]${RESET}            ${DIM}# Run demos for all language projects${RESET}"
     echo -e "  ${HIGHLIGHT}clean${RESET} ${ARG}[--docker]${RESET}           ${DIM}# Clean all projects${RESET}"
     echo -e "  ${HIGHLIGHT}release${RESET} ${ARG}<ver> [--push]${RESET}     ${DIM}# Create release version${RESET}"
     echo ""
@@ -1011,6 +1105,10 @@ case "$DIR" in
         ;;
     test)
         run_all_projects "test" ""
+        exit 0
+        ;;
+    demo)
+        run_all_demos
         exit 0
         ;;
     clean)

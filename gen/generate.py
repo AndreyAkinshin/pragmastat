@@ -186,7 +186,7 @@ LANGUAGES = [
         slug='go',
         title='Go',
         code_language='go',
-        demo_path='go/example/main.go',
+        demo_path='go/demo/main.go',
         readme_path='go/README.md',
         package_url=''
     ),
@@ -194,7 +194,7 @@ LANGUAGES = [
         slug='kt',
         title='Kotlin',
         code_language='kotlin',
-        demo_path='kt/src/main/kotlin/dev/pragmastat/example/Main.kt',
+        demo_path='kt/src/main/kotlin/dev/pragmastat/demo/Main.kt',
         readme_path='kt/README.md',
         package_url='Pragmastat on Maven Central Repository: https://central.sonatype.com/artifact/dev.pragmastat/pragmastat/overview',
         version_file='kt/build.gradle.kts',

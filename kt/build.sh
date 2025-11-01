@@ -48,6 +48,11 @@ run_command() {
     fi
 }
 
+# Function to run demo
+run_demo() {
+    run_command "./gradlew run" "Running demo"
+}
+
 # Function to show help
 show_help() {
     echo -e "${BOLD}Usage:${RESET} pragmastat/kt/build.sh ${HIGHLIGHT}<command>${RESET}"
@@ -56,6 +61,7 @@ show_help() {
     echo -e "  ${HIGHLIGHT}test${RESET}    ${DIM}# Run all tests${RESET}"
     echo -e "  ${HIGHLIGHT}build${RESET}   ${DIM}# Build the Kotlin package${RESET}"
     echo -e "  ${HIGHLIGHT}jar${RESET}     ${DIM}# Package JAR file${RESET}"
+    echo -e "  ${HIGHLIGHT}demo${RESET}    ${DIM}# Run demo examples${RESET}"
     echo -e "  ${HIGHLIGHT}clean${RESET}   ${DIM}# Clean build artifacts${RESET}"
     echo -e "  ${HIGHLIGHT}deps${RESET}    ${DIM}# Display project dependencies${RESET}"
     echo -e "  ${HIGHLIGHT}all${RESET}     ${DIM}# Run all tasks (clean, test, build, jar)${RESET}"
@@ -63,6 +69,7 @@ show_help() {
     echo -e "${HEADER}${BOLD}Examples:${RESET}"
     echo -e "  ${SUCCESS}build.sh test${RESET}  ${DIM}# Run all tests${RESET}"
     echo -e "  ${SUCCESS}build.sh build${RESET} ${DIM}# Build package${RESET}"
+    echo -e "  ${SUCCESS}build.sh demo${RESET}  ${DIM}# Run demo examples${RESET}"
     echo -e "  ${SUCCESS}build.sh all${RESET}   ${DIM}# Run all tasks${RESET}"
 }
 
@@ -86,6 +93,9 @@ case "$1" in
         ;;
     jar)
         run_command "./gradlew jar" "Packaging JAR"
+        ;;
+    demo)
+        run_demo
         ;;
     clean)
         run_command "./gradlew clean" "Cleaning build artifacts"

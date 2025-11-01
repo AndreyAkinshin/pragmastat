@@ -213,6 +213,18 @@ lint_code() {
     fi
 }
 
+# Function to run demo
+run_demo() {
+    ensure_package_installed
+    # Set PYTHONPATH for Docker if needed
+    if [ -f "/.dockerenv" ] && [ -d "/workspace/py/.pip-packages" ]; then
+        export PYTHONUSERBASE="/workspace/py/.pip-packages"
+        export PATH="$PYTHONUSERBASE/bin:$PATH"
+        export PYTHONPATH="$PYTHONUSERBASE/lib/python$(python -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')/site-packages:$PYTHONPATH"
+    fi
+    run_command "PYTHONPATH=. python examples/demo.py" "Running demo"
+}
+
 # Function to show help
 show_help() {
     echo -e "${BOLD}Usage:${RESET} pragmastat/py/build.sh ${HIGHLIGHT}<command>${RESET}"
@@ -222,6 +234,7 @@ show_help() {
     echo -e "  ${HIGHLIGHT}test${RESET}       ${DIM}# Run tests${RESET}"
     echo -e "  ${HIGHLIGHT}build${RESET}      ${DIM}# Build distribution packages${RESET}"
     echo -e "  ${HIGHLIGHT}check${RESET}      ${DIM}# Check package with twine${RESET}"
+    echo -e "  ${HIGHLIGHT}demo${RESET}       ${DIM}# Run demo examples${RESET}"
     echo -e "  ${HIGHLIGHT}clean${RESET}      ${DIM}# Clean build artifacts${RESET}"
     echo -e "  ${HIGHLIGHT}format${RESET}     ${DIM}# Format code with black${RESET}"
     echo -e "  ${HIGHLIGHT}lint${RESET}       ${DIM}# Lint code with flake8${RESET}"
@@ -230,6 +243,7 @@ show_help() {
     echo -e "${HEADER}${BOLD}Examples:${RESET}"
     echo -e "  ${SUCCESS}build.sh test${RESET}  ${DIM}# Run tests${RESET}"
     echo -e "  ${SUCCESS}build.sh build${RESET} ${DIM}# Build package${RESET}"
+    echo -e "  ${SUCCESS}build.sh demo${RESET}  ${DIM}# Run demo examples${RESET}"
     echo -e "  ${SUCCESS}build.sh all${RESET}   ${DIM}# Run all tasks${RESET}"
 }
 
@@ -255,6 +269,9 @@ case "$1" in
         ;;
     check)
         check_package
+        ;;
+    demo)
+        run_demo
         ;;
     clean)
         clean

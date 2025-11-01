@@ -31,7 +31,7 @@ Pragmastat on Maven Central Repository: https://central.sonatype.com/artifact/de
 Demo:
 
 ```kotlin
-package dev.pragmastat.example
+package dev.pragmastat.demo
 
 import dev.pragmastat.*
 

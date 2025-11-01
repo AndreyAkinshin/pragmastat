@@ -48,6 +48,11 @@ run_command() {
     fi
 }
 
+# Function to run demo
+run_demo() {
+    run_command "npx ts-node examples/demo.ts" "Running demo"
+}
+
 # Function to show help
 show_help() {
     echo -e "${BOLD}Usage:${RESET} pragmastat/ts/build.sh ${HIGHLIGHT}<command>${RESET}"
@@ -55,6 +60,7 @@ show_help() {
     echo -e "${HEADER}${BOLD}Commands:${RESET}"
     echo -e "  ${HIGHLIGHT}test${RESET}      ${DIM}# Run all tests${RESET}"
     echo -e "  ${HIGHLIGHT}build${RESET}     ${DIM}# Build TypeScript to JavaScript${RESET}"
+    echo -e "  ${HIGHLIGHT}demo${RESET}      ${DIM}# Run demo examples${RESET}"
     echo -e "  ${HIGHLIGHT}lint${RESET}      ${DIM}# Run ESLint${RESET}"
     echo -e "  ${HIGHLIGHT}check${RESET}     ${DIM}# Run linting and format checking${RESET}"
     echo -e "  ${HIGHLIGHT}clean${RESET}     ${DIM}# Clean build artifacts${RESET}"
@@ -67,6 +73,7 @@ show_help() {
     echo -e "${HEADER}${BOLD}Examples:${RESET}"
     echo -e "  ${SUCCESS}build.sh test${RESET}  ${DIM}# Run all tests${RESET}"
     echo -e "  ${SUCCESS}build.sh build${RESET} ${DIM}# Build TypeScript${RESET}"
+    echo -e "  ${SUCCESS}build.sh demo${RESET}  ${DIM}# Run demo examples${RESET}"
     echo -e "  ${SUCCESS}build.sh all${RESET}   ${DIM}# Run all tasks${RESET}"
 }
 
@@ -86,6 +93,9 @@ case "$1" in
         ;;
     build)
         run_command "npm run build" "Building TypeScript"
+        ;;
+    demo)
+        run_demo
         ;;
     lint)
         run_command "npm run lint" "Running ESLint"

@@ -1,6 +1,20 @@
 # Reference Demo
 
+## Context
+
+Pragmastat is a multi-language statistical toolkit providing robust estimators:
+
+- **Center** - Location estimator (central tendency)
+- **Spread** - Scale estimator (variability)
+- **RelSpread** - Relative spread (spread/center)
+- **Shift** - Location difference between two samples
+- **Ratio** - Scale ratio between two samples
+- **AvgSpread** - Average scale of two samples
+- **Disparity** - Relative shift (shift/avgSpread)
+
 ## Scheme
+
+Reference test values demonstrating expected behavior:
 
 x = (0, 2, 4, 6, 8)
 
@@ -52,64 +66,74 @@ Disparity(y, x) = -0.4
 
 ## Task
 
-Read their implementations recursively from folders
+### Step 1: Learn the APIs
+
+Explore the implementation folders to understand each language's API:
   @cs/ @go/ @kt/ @py/ @r/ @rs/ @ts/
-  and learn the correct API for each language
+
+Focus on function names, calling conventions, and type requirements.
+
+### Step 2: Implement Demo Programs
 
 Apply the above Scheme to demo examples in files:
 
 - @cs/Pragmastat.Demo/Program.cs
-- @go/example/main.go
-- @kt/src/main/kotlin/dev/pragmastat/example/Main.kt
+- @go/demo/main.go
+- @kt/src/main/kotlin/dev/pragmastat/demo/Main.kt
 - @py/examples/demo.py
 - @r/pragmastat/inst/examples/demo.R
 - @rs/pragmastat/examples/demo.rs
 - @ts/examples/demo.ts
 
-Adapt the scheme idiomatically to each language syntax and conventions in naming and API usage.
-For each expression, use a printing to console statement.
-Build all the projects and fix errors if any.
-Run demo examples and check if they produce the correct results.
+**Requirements:**
 
-Also, apply the Scheme to in the "Primer" section of @manual/introduction.md as a set of LaTeX expressions (display style).
-Put them one expression per line.
-Each group of expressions should be headed by defeinition of the introduced estimator (inline style defenition + brief comment).
+- Adapt the scheme idiomatically to each language's syntax and conventions
+- Use proper naming (e.g., `relSpread` vs `RelSpread` vs `rel_spread`)
+- Print each expression result to console (one per line)
+- Preserve the order of expressions as shown in the Scheme
+
+**Expected Output Format:**
+
+- Numeric results may vary slightly due to language differences (e.g., `4` vs `4.0`)
+- R prefixes output with `[1]`
+- All languages should produce equivalent numeric values
+
+### Step 3: Build and Verify
+
+Build all projects and fix any compilation/syntax errors:
+
+```bash
+./build.sh demo
+```
+
+Verify that each demo produces output matching the Scheme values (allowing for formatting differences).
+
+### Step 4: LaTeX Documentation
+
+Apply the Scheme to the "Primer" section of @manual/introduction.md as LaTeX expressions.
+
+**Format:**
+- Use display-style math (`$$...$$`) for expressions
+- One expression per line
+- Prefix each group with an inline estimator definition and brief description
 
 ## Commands
 
 Execute demos using the following commands from the project root:
 
-**C#:**
+**Individual language demos:**
+
 ```bash
-cd cs/Pragmastat.Demo && dotnet run
+./build.sh cs demo    # C#
+./build.sh go demo    # Go
+./build.sh kt demo    # Kotlin
+./build.sh py demo    # Python
+./build.sh r demo     # R
+./build.sh rs demo    # Rust
+./build.sh ts demo    # TypeScript
 ```
 
-**Go:**
+**Run all demos at once:**
 ```bash
-cd go && go run ./example
-```
-
-**Kotlin:**
-```bash
-cd kt && ./gradlew run
-```
-
-**Python:**
-```bash
-PYTHONPATH=py python3 py/examples/demo.py
-```
-
-**R:**
-```bash
-cd r/pragmastat && Rscript inst/examples/demo.R
-```
-
-**Rust:**
-```bash
-cd rs/pragmastat && cargo run --example demo
-```
-
-**TypeScript:**
-```bash
-cd ts && npx ts-node examples/demo.ts
+./build.sh demo
 ```
