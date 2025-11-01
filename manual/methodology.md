@@ -7,7 +7,7 @@ This chapter examines the methodological principles that guide the toolkit's des
 The toolkit consists of statistical *procedures* — practical methods that transform raw measurements into actionable insights and decisions.
 When practitioners face real-world problems involving data analysis,
   their success depends on selecting the right procedure for each specific situation.
-Convenient and efficient procedures have the following *desired properties*:
+Convenient and efficient procedures have the following *essential attributes*:
 
 - **Usability.**
   Procedures should feel natural to practitioners and minimize opportunities for misuse.
@@ -28,7 +28,7 @@ This manual introduces a unified toolkit that aims to satisfy these properties a
 
 Traditional statistical practice starts with model assumptions,
   then derives optimal procedures under those assumptions.
-This approach works backward from mathematical convenience to practical application.
+This approach prioritizes mathematical convenience over practical application.
 Practitioners don't know the distribution in advance,
   so they lack clear guidance on which procedure to choose by default.
 
@@ -111,7 +111,7 @@ Here $\RelSpread$ normalizes by the estimator's typical value for fair compariso
 
 Drift offers four key advantages:
 
-- For estimators with $\sqrt{n}$ convergence rate, drift remains finite and comparable across distributions; for heavier tails, drift may diverge, flagging estimator instability.
+- For estimators with $\sqrt{n}$ convergence rates, drift remains finite and comparable across distributions; for heavier tails, drift may diverge, flagging estimator instability.
 - It provides absolute precision measures rather than only pairwise comparisons.
 - The robust $\Spread$ foundation resists outlier distortion that corrupts variance-based calculations.
 - The $\sqrt{n}$ normalization makes drift values comparable across different sample sizes,

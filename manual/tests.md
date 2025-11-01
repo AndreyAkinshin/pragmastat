@@ -10,7 +10,7 @@ Reference tests serve three critical purposes:
 
 - **Cross-language validation.** All implementations must pass identical test cases, ensuring consistent behavior regardless of language choice.
 - **Regression prevention.** Changes to any implementation can be validated against the reference outputs to detect unintended modifications.
-- **Implementation guidance.** The test cases provide concrete examples that guide developers implementing the toolkit in new languages.
+- **Implementation guidance.** The test cases provide concrete examples that guide developers in implementing the toolkit in new languages.
 
 The test design follows established quality assurance principles:
 
@@ -29,8 +29,8 @@ The test suite balances three categories:
   Random tests catch issues that might not be apparent from simple deterministic cases.
 
 The C# implementation serves as the reference generator.
-All test cases are defined programmatically, executed to produce expected outputs, and serialized to JSON format.
-Other implementations load these JSON files and verify their estimators produce matching results within numerical tolerance.
+All test cases are defined programmatically, executed to produce expected outputs, and serialized to JSON.
+Other implementations load these JSON files and verify that their estimators produce matching results within a given numerical tolerance.
 
 ## Center
 
@@ -552,11 +552,11 @@ where $U$ is a uniform random value from $\Uniform(0, 1)$.
 
 The framework executes the reference implementation on all generated inputs and serializes input-output pairs to JSON format.
 
-**Test validation** — Each language implementation loads the JSON test cases and executes them against the local estimator implementation.
-Assertions verify that outputs match expected values within numerical tolerance (typically $10^{-10}$ for relative error).
+**Test validation** — Each language implementation loads the JSON test cases and executes them against its local estimator implementation.
+Assertions verify that outputs match expected values within a given numerical tolerance (typically $10^{-10}$ for relative error).
 
 **Test data format** — Each test case is a JSON file containing `input` and `output` fields.
-For one-sample estimators, input contains array `x` and optional `parameters`.
+For one-sample estimators, the input contains array `x` and optional `parameters`.
 For two-sample estimators, input contains arrays `x` and `y`.
 Output is a single numeric value.
 

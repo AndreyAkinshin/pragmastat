@@ -1,17 +1,17 @@
 ## Drift
 
 Drift measures estimator precision by quantifying how much estimates scatter across repeated samples.
-It is based on $\Spread$ of the estimates and therefore has a breakdown point of approximately $29\%$.
+It is based on the $\Spread$ of estimates and therefore has a breakdown point of approximately $29\%$.
 
-Drift is useful when comparing the precisions of several estimators.
-To simplify the comparison, it is convenient to choose one of the estimators as a baseline.
-A table with drift squares normalized by the baseline shows the sample size adjustment factor
+Drift is useful for comparing the precision of several estimators.
+To simplify the comparison, one of the estimators can be chosen as a baseline.
+A table of squared drift values, normalized by the baseline, shows the required sample size adjustment factor
   for switching from the baseline to another estimator.
-For example, if $\Center$ is the baseline, and the rescaled drift square of $\Median$ is $1.5$,
-  this means that $\Median$ would require $1.5$ times more data than $\Center$ to achieve the same precision.
+For example, if $\Center$ is the baseline and the rescaled drift square of $\Median$ is $1.5$,
+  this means that $\Median$ requires $1.5$ times more data than $\Center$ to achieve the same precision.
 See the "From Statistical Efficiency to Drift" section for details.
 
-**Asymptotic Average estimator drift²** (values are approximated):
+**Squared Asymptotic Drift of Average Estimators** (values are approximated):
 
 
 |              | $\Mean$  | $\Median$ | $\Center$ |
@@ -44,7 +44,7 @@ Rescaled to $\Center$ (sample size adjustment factors):
 
 ---
 
-**Asymptotic Dispersion estimator drift²** (values are approximated):
+**Squared Asymptotic Drift of Dispersion Estimators** (values are approximated):
 
 |              | $\StdDev$ | $\MAD$ | $\Spread$ |
 |--------------|-----------|--------|-----------|

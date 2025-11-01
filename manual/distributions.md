@@ -59,7 +59,7 @@ $$
   of an event occurring is constant over time.
 - **Properties:** memoryless (past events do not affect future probabilities).
 - **Applications:** time between failures, waiting times in queues, radioactive decay, customer service times.
-- **Characteristics:** always positive, right-skewed with light (exponential) tail.
+- **Characteristics:** always positive, right-skewed with a light (exponential) tail.
 - **Caution:** extreme skewness makes traditional location estimators like $\Mean$ unreliable;
     robust estimators provide more stable results.
 
@@ -76,12 +76,12 @@ $$
 
 - **Formation:** follows a power-law relationship where large values are rare but possible.
 - **Origin:** historically called 'Pareto' distribution after Vilfredo Pareto's work on wealth distribution.
-- **Rename Motivation:** renamed to $\Power$ to reflect connection with power-law.
+- **Rename Motivation:** renamed to $\Power$ to reflect its connection with power-law.
 - **Properties:** exhibits scale invariance and extremely heavy tails.
 - **Applications:** wealth distribution, city population sizes, word frequencies, earthquake magnitudes, website traffic.
-- **Characteristics:** infinite variance for many parameter values, extreme outliers common.
+- **Characteristics:** infinite variance for many parameter values; extreme outliers are common.
 - **Caution:** traditional variance-based estimators completely fail;
-    robust estimators essential for reliable analysis.
+    robust estimators are essential for reliable analysis.
 
 ## Uniform
 

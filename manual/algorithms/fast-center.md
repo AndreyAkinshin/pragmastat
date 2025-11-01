@@ -8,18 +8,18 @@ $$
 $$
 
 A direct implementation would generate all $\frac{n(n+1)}{2}$ pairwise averages and sort them.
-With $n = 10,000$, this creates approximately 50 million values, requiring quadratic memory and $O(n^2 \log n)$ time.
+With $n = 10,000$, this approach creates approximately 50 million values, requiring quadratic memory and $O(n^2 \log n)$ time.
 
 The breakthrough came in 1984 when John Monahan developed an algorithm that reduces expected complexity
   to $O(n \log n)$ while using only linear memory (see [@monahan1984]).
 The algorithm exploits the inherent structure in pairwise sums rather than computing them explicitly.
 After sorting the values $x_1 \leq x_2 \leq \cdots \leq x_n$,
-  consider the implicit upper triangular matrix $M$ where $M_{i,j} = x_i + x_j$ for $i \leq j$.
-This matrix has crucial properties: each row and column are sorted in non-decreasing order,
-  enabling efficient median selection without materializing the quadratic structure.
+  the algorithm considers the implicit upper triangular matrix $M$ where $M_{i,j} = x_i + x_j$ for $i \leq j$.
+This matrix has a crucial property: each row and column is sorted in non-decreasing order,
+  enabling efficient median selection without storing the matrix.
 
 Rather than sorting all pairwise sums, the algorithm uses a selection approach similar to quickselect.
-The process maintains search bounds for each matrix row and iteratively narrows the search space.
+It maintains search bounds for each matrix row and iteratively narrows the search space.
 For each row $i$, the algorithm tracks active column indices from $i+1$ to $n$,
   defining which pairwise sums remain candidates for the median.
 It selects a candidate sum as a pivot using randomized selection from active matrix elements,
@@ -43,10 +43,9 @@ This tie-breaking mechanism ensures reliable convergence with discrete or duplic
 The algorithm achieves $O(n \log n)$ time complexity through linear partitioning
   (each pivot evaluation requires only $O(n)$ operations) and logarithmic iterations
   (randomized pivot selection leads to expected $O(\log n)$ iterations, similar to quickselect).
-The algorithm maintains only row bounds and counters, using $O(n)$ additional space
-  regardless of the number of pairwise sums.
-This matches the complexity of sorting a single array while avoiding the quadratic explosion
-  of materializing all pairwise combinations.
+The algorithm maintains only row bounds and counters, using $O(n)$ additional space.
+This matches the complexity of sorting a single array while avoiding the quadratic memory and time explosion
+  of computing all pairwise combinations.
 
 ```cs
 <!-- INCLUDE cs/Pragmastat/Algorithms/FastCenter.cs -->

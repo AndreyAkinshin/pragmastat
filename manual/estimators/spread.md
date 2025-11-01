@@ -8,7 +8,7 @@ $$
 - Corner case: for $n=1$, $\Spread(\x) = 0$
 - Equals the *Shamos scale estimator* ([@shamos1976]), renamed to $\Spread$ for clarity
 - Pragmatic alternative to the standard deviation and the median absolute deviation
-- Asymptotically, $\Spread[X]$ is the median of the absolute difference of two random measurements from $X$
+- Asymptotically, $\Spread[X]$ is the median of the absolute difference between two random measurements from distribution $X$
 - Straightforward implementations have $O(n^2 \log n)$ complexity; a fast $O(n \log n)$ version is provided in the Algorithms section.
 - Domain: any real numbers
 - Unit: the same as measurements

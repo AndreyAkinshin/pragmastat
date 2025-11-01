@@ -12,7 +12,7 @@ By linearity of expectation, $E[D] = 0$. By independence, $\mathrm{Var}[D] = 2 \
 Thus $D$ has distribution $\Additive(0, \sqrt{2} \cdot \mathrm{stdDev})$,
   and the problem reduces to finding the median of $|D|$.
 The location parameter $\mathrm{mean}$ disappears, as expected,
-  because absolute differences are invariant under shifts.
+  because absolute differences are invariant to shifts.
 
 Let $\tau=\sqrt{2} \cdot \mathrm{stdDev}$, so that $D\sim \Additive(0,\tau)$.
 The random variable $|D|$ then follows the Half-$\Additive$ ('Folded Normal') distribution with scale $\tau$.
@@ -70,8 +70,8 @@ $$
 \Drift(\Mean, X) = 1
 $$
 
-$\Mean$ achieves unit drift under $\Additive$ ('Normal') distribution, serving as the natural baseline for comparison.
-$\Mean$ is the optimal estimator under $\Additive$ ('Normal') distribution: no other estimators achieve lower $\Drift$.
+$\Mean$ achieves unit drift under the $\Additive$ ('Normal') distribution, serving as the natural baseline for comparison.
+$\Mean$ is the optimal estimator under the $\Additive$ ('Normal') distribution: no other estimator achieves lower $\Drift$.
 
 ### Asymptotic Median Drift
 
@@ -98,10 +98,10 @@ Numerically, $\sqrt{\pi/2} \approx 1.2533$, so the median has approximately 25% 
 ### Asymptotic Center Drift
 
 For the sample center $\Center(\x) = \underset{1 \leq i \leq j \leq n}{\Median} \left(\frac{x_i + x_j}{2}\right)$ applied to samples from $\Additive(\mathrm{mean}, \mathrm{stdDev})$,
-  we need to determine the asymptotic sampling distribution.
+  its asymptotic sampling distribution must be determined.
 
 The center estimator computes all pairwise averages (including $i=j$) and takes their median.
-For the $\Additive$ ('Normal') distribution, the asymptotic theory shows that the center estimator
+For the $\Additive$ ('Normal') distribution, asymptotic theory shows that the center estimator
   is asymptotically $\Additive$ ('Normal') with mean $\mathrm{mean}$.
 
 The exact asymptotic variance of the center estimator for the $\Additive$ ('Normal') distribution is:
@@ -123,7 +123,7 @@ $$
 $$
 
 Numerically, $\sqrt{\pi/3} \approx 1.0233$,
-  so the center estimator achieves drift very close to 1 under the $\Additive$ ('Normal') distribution,
+  so the center estimator achieves a drift very close to 1 under the $\Additive$ ('Normal') distribution,
   performing nearly as well as the mean while offering greater robustness to outliers.
 
 ### Lemma: Dispersion Estimator Drift Formula
@@ -287,6 +287,6 @@ For instance, switching from $\StdDev$ to $\MAD$ while maintaining the same prec
 Similarly, switching from $\StdDev$ to $\Spread$ requires a factor of $0.52/0.45 \approx 1.16$.
 
 The $\StdDev$ achieves optimal performance for the $\Additive$ ('Normal') distribution.
-The $\MAD$ requires about 2.7 times more data to match $\StdDev$ precision,
+The $\MAD$ requires about 2.7 times more data to match the $\StdDev$ precision
   while offering greater robustness to outliers.
-The $\Spread$ requires about 1.16 times more data to match $\StdDev$ precision under purely $\Additive$ ('Normal') conditions while maintaining robustness.
+The $\Spread$ requires about 1.16 times more data to match the $\StdDev$ precision under purely $\Additive$ ('Normal') conditions while maintaining robustness.

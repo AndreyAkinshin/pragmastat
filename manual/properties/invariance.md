@@ -13,7 +13,7 @@ For example, when comparing datasets collected with different instruments or pro
   location-invariant estimators eliminate the need for data centering,
   while scale-invariant estimators eliminate the need for normalization.
 
-**Location-invariance**: An estimator $T$ is location-invariant if adding constants to the measurements leaves the result unchanged:
+**Location-invariance**: An estimator $T$ is location-invariant if adding a constant to the measurements leaves the result unchanged:
 
 $$
 T(\x + k) = T(\x)
