@@ -1,3 +1,5 @@
 .hugo_build.lock
 public/
 content/
+.bin
+.bin-docker

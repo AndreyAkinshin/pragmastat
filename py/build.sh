@@ -6,11 +6,6 @@ set -e
 
 cd "$(dirname "$0")" || exit 1
 
-# Activate virtual environment if it exists and not already activated
-if [ -d "venv" ] && [ -z "$VIRTUAL_ENV" ]; then
-    source venv/bin/activate
-fi
-
 # Colors for output (purpose-oriented names)
 ERROR='\033[0;31m'
 SUCCESS='\033[0;32m'
@@ -39,6 +34,32 @@ print_status() {
     echo -e "${SUCCESS}[$(date +'%H:%M:%S')]${RESET} $1"
 }
 
+# Function to ensure virtual environment is set up (for local runs)
+ensure_venv() {
+    local venv_dir="venv"
+    
+    # Skip if in Docker or already in a venv
+    if [ -f "/.dockerenv" ] || [ -n "$VIRTUAL_ENV" ]; then
+        return 0
+    fi
+    
+    if [ ! -d "$venv_dir" ]; then
+        print_status "Creating virtual environment..."
+        python3 -m venv "$venv_dir"
+    fi
+    
+    # Activate virtual environment
+    # shellcheck disable=SC1091
+    source "$venv_dir/bin/activate"
+    
+    # Ensure basic build tools are installed in the venv
+    if ! python -m pytest --version &>/dev/null || ! python -m build --version &>/dev/null; then
+        print_status "Installing build tools in virtual environment..."
+        pip install -q --upgrade pip
+        pip install -q pytest build twine
+    fi
+}
+
 # Function to run a command and check its status
 run_command() {
     local cmd="$1"
@@ -53,13 +74,44 @@ run_command() {
     fi
 }
 
+# Function to ensure package is installed
+ensure_package_installed() {
+    # Set up venv for local runs
+    ensure_venv
+    
+    # Check if package is already installed
+    if ! python -c "import pragmastat" &>/dev/null; then
+        print_status "Package not installed, installing in editable mode..."
+        # In Docker with user mapping, install to a writable location
+        if [ -f "/.dockerenv" ]; then
+            # Create a writable pip install directory
+            export PYTHONUSERBASE="/workspace/py/.pip-packages"
+            export PATH="$PYTHONUSERBASE/bin:$PATH"
+            export PYTHONPATH="$PYTHONUSERBASE/lib/python$(python -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')/site-packages:$PYTHONPATH"
+            pip install -q --user -e .
+        else
+            pip install -q -e .
+        fi
+    fi
+}
+
 # Function to run tests
 run_tests() {
+    ensure_package_installed
+    # Set PYTHONPATH for Docker if needed
+    if [ -f "/.dockerenv" ] && [ -d "/workspace/py/.pip-packages" ]; then
+        export PYTHONUSERBASE="/workspace/py/.pip-packages"
+        export PATH="$PYTHONUSERBASE/bin:$PATH"
+        export PYTHONPATH="$PYTHONUSERBASE/lib/python$(python -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')/site-packages:$PYTHONPATH"
+    fi
     run_command "python -m pytest tests/ -v" "Running tests"
 }
 
 # Function to build package
 build_package() {
+    # Set up venv for local runs
+    ensure_venv
+    
     # Check if build is available (either as module or pipx command)
     if command -v pyproject-build &> /dev/null; then
         BUILD_CMD="pyproject-build"
@@ -68,6 +120,20 @@ build_package() {
     else
         print_error "Python 'build' module not installed. Install with: pip install build or pipx install build"
         exit 1
+    fi
+
+    # Ensure numpy is installed (required by setup.py for building C extensions)
+    if ! python -c "import numpy" &>/dev/null; then
+        print_status "Installing numpy (required for building C extensions)..."
+        # In Docker with user mapping, install to a writable location
+        if [ -f "/.dockerenv" ]; then
+            export PYTHONUSERBASE="/workspace/py/.pip-packages"
+            export PATH="$PYTHONUSERBASE/bin:$PATH"
+            export PYTHONPATH="$PYTHONUSERBASE/lib/python$(python -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')/site-packages:$PYTHONPATH"
+            pip install -q --user "numpy>=1.20"
+        else
+            pip install -q "numpy>=1.20"
+        fi
     fi
 
     print_status "Building package..."
@@ -106,26 +172,28 @@ clean() {
     find . -type d -name "*.egg-info" -exec rm -rf {} + 2>/dev/null || true
     find . -type f -name "*.pyc" -delete 2>/dev/null || true
     find . -type f -name "*.pyo" -delete 2>/dev/null || true
+    # Also clean virtual environment and Docker pip packages
+    if [ -d "venv" ]; then
+        print_status "Removing virtual environment..."
+        rm -rf venv
+    fi
+    if [ -d ".pip-packages" ]; then
+        print_status "Removing Docker pip packages..."
+        rm -rf .pip-packages
+    fi
     print_status "✓ Clean complete"
 }
 
 # Function to run development install
 dev_install() {
-    # Check if we're in a virtual environment (skip check in CI)
-    if [ -z "$VIRTUAL_ENV" ] && [ -z "$CI" ] && [ -z "$GITHUB_ACTIONS" ]; then
-        print_error "Not in a virtual environment. Create one first:"
-        echo ""
-        echo "  python3 -m venv venv"
-        echo "  source venv/bin/activate"
-        echo "  ./build.sh dev"
-        echo ""
-        exit 1
-    fi
+    # Set up venv for local runs
+    ensure_venv
     run_command "pip install -e ." "Installing package in development mode"
 }
 
 # Function to format code
 format_code() {
+    ensure_venv
     if command -v black &> /dev/null; then
         run_command "black ." "Formatting code with black"
     else
@@ -136,6 +204,7 @@ format_code() {
 
 # Function to lint code
 lint_code() {
+    ensure_venv
     if command -v flake8 &> /dev/null; then
         run_command "flake8 ." "Linting code with flake8"
     else

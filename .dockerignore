@@ -1,0 +1,86 @@
+# Git
+.git/
+.gitignore
+.github/
+
+# Build artifacts
+**/bin/
+**/obj/
+**/dist/
+**/build/
+**/target/
+**/.bin/
+**/.bin-docker/
+**/public/
+**/resources/
+**/node_modules/
+**/__pycache__/
+**/.pytest_cache/
+**/*.egg-info/
+**/.gradle/
+# Don't ignore gradle/wrapper/ as it contains gradle-wrapper.jar needed for builds
+# **/gradle/wrapper/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Compiled files
+**/*.o
+**/*.so
+**/*.dll
+**/*.dylib
+**/*.exe
+**/*.pyc
+**/*.pyo
+
+# Package files
+**/*.tar.gz
+**/*.tgz
+**/*.zip
+**/*.nupkg
+**/*.snupkg
+**/*.crate
+**/*.whl
+
+# Documentation build artifacts
+pdf/*.pdf
+web/.bin/
+
+# Test output
+coverage.out
+coverage.html
+**/.coverage
+**/htmlcov/
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Prompts (not needed in containers)
+prompts/
+
+# Note: sim/ is needed by img container for simulation data
+

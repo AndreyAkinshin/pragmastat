@@ -38,6 +38,7 @@ lerna-debug.log*
 
 # Optional npm cache directory
 .npm
+.npm-docker
 
 # Optional eslint cache
 .eslintcache

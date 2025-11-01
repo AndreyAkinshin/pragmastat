@@ -55,3 +55,6 @@ tools/**
 artifacts
 *.nupkg
 *.snupkg
+
+# Docker cache directories
+.nuget-docker

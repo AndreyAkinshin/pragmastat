@@ -1,0 +1,25 @@
+# Rust build artifacts
+target/
+
+# Cargo lock file (for libraries, it's usually gitignored)
+# Note: For applications, you might want to commit Cargo.lock
+# Cargo.lock
+
+# Backup files
+**/*.rs.bk
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# Docker cache directories
+.cargo-docker
+

@@ -1,0 +1,181 @@
+# Docker Compose configuration for Pragmastat
+# Provides isolated build environments for each language implementation
+
+services:
+  # C# / .NET implementation
+  cs:
+    build:
+      context: .
+      dockerfile: cs/Dockerfile
+    image: pragmastat-cs:latest
+    volumes:
+      - ./cs:/workspace/cs
+      - ./tests:/workspace/tests
+      - ./img:/workspace/img:ro
+      - ./CITATION.cff:/workspace/CITATION.cff:ro
+      # Use separate cache directories for Docker builds to avoid permission conflicts
+      - ./cs/.nuget-docker:/tmp/.nuget
+    working_dir: /workspace/cs
+    container_name: pragmastat-cs
+
+  # Python implementation
+  py:
+    build:
+      context: .
+      dockerfile: py/Dockerfile
+    image: pragmastat-py:latest
+    volumes:
+      - ./py:/workspace/py
+      - ./tests:/workspace/tests
+      - ./CITATION.cff:/workspace/CITATION.cff:ro
+    working_dir: /workspace/py
+    container_name: pragmastat-py
+
+  # Rust implementation
+  rs:
+    build:
+      context: .
+      dockerfile: rs/Dockerfile
+    image: pragmastat-rs:latest
+    volumes:
+      - ./rs:/workspace/rs
+      - ./tests:/workspace/tests
+      - ./CITATION.cff:/workspace/CITATION.cff:ro
+      # Use separate cache directory for Docker builds to avoid permission conflicts
+      - ./rs/.cargo-docker:/tmp/.cargo
+    working_dir: /workspace/rs
+    container_name: pragmastat-rs
+
+  # Go implementation
+  go:
+    build:
+      context: .
+      dockerfile: go/Dockerfile
+    image: pragmastat-go:latest
+    volumes:
+      - ./go:/workspace/go
+      - ./tests:/workspace/tests
+      - ./CITATION.cff:/workspace/CITATION.cff:ro
+      # Use separate cache directories for Docker builds to avoid permission conflicts
+      - ./go/.cache-docker:/tmp/.cache
+      - ./go/.go-docker:/tmp/go
+    working_dir: /workspace/go
+    container_name: pragmastat-go
+
+  # TypeScript implementation
+  ts:
+    build:
+      context: .
+      dockerfile: ts/Dockerfile
+    image: pragmastat-ts:latest
+    volumes:
+      - ./ts:/workspace/ts
+      - ./tests:/workspace/tests
+      - ./CITATION.cff:/workspace/CITATION.cff:ro
+      # Use separate .npm-docker for Docker builds to avoid permission conflicts
+      - ./ts/.npm-docker:/tmp/.npm
+    working_dir: /workspace/ts
+    container_name: pragmastat-ts
+
+  # Kotlin implementation
+  kt:
+    build:
+      context: .
+      dockerfile: kt/Dockerfile
+    image: pragmastat-kt:latest
+    volumes:
+      - ./kt:/workspace/kt
+      - ./tests:/workspace/tests
+      - ./CITATION.cff:/workspace/CITATION.cff:ro
+      # Use separate cache directory for Docker builds to avoid permission conflicts
+      - ./kt/.gradle-docker:/tmp/.gradle
+    working_dir: /workspace/kt
+    container_name: pragmastat-kt
+
+  # R implementation
+  r:
+    build:
+      context: .
+      dockerfile: r/Dockerfile
+      platforms:
+        - linux/amd64  # rocker/verse doesn't support ARM64, use emulation on Apple Silicon
+    image: pragmastat-r:latest
+    platform: linux/amd64
+    volumes:
+      - ./r:/workspace/r
+      - ./tests:/workspace/tests
+      - ./CITATION.cff:/workspace/CITATION.cff:ro
+    working_dir: /workspace/r
+    container_name: pragmastat-r
+    entrypoint: ["/workspace/r/docker-entrypoint.sh"]
+    environment:
+      - R_CLEAN_BUILD=1
+
+  # Image generation
+  img:
+    build:
+      context: .
+      dockerfile: img/Dockerfile
+    image: pragmastat-img:latest
+    volumes:
+      - ./img:/workspace/img
+      - ./sim:/workspace/sim:ro
+    working_dir: /workspace/img
+    container_name: pragmastat-img
+
+  # PDF generation
+  pdf:
+    build:
+      context: .
+      dockerfile: pdf/Dockerfile
+      platforms:
+        - linux/amd64  # pandoc/latex doesn't support ARM64, use emulation on Apple Silicon
+    image: pragmastat-pdf:latest
+    platform: linux/amd64
+    entrypoint: []  # Override pandoc entrypoint to allow shell commands
+    volumes:
+      - ./pdf:/workspace/pdf
+      - ./manual:/workspace/manual
+      - ./img:/workspace/img
+    working_dir: /workspace/pdf
+    container_name: pragmastat-pdf
+
+  # Web/Hugo build
+  web:
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+    image: pragmastat-web:latest
+    volumes:
+      - ./web:/workspace/web
+      - ./manual:/workspace/manual
+      - ./img:/workspace/img
+      - ./pdf:/workspace/pdf
+      # Use separate .bin-docker for Docker builds to avoid architecture conflicts with host .bin
+      - ./web/.bin-docker:/workspace/web/.bin
+    working_dir: /workspace/web
+    container_name: pragmastat-web
+
+  # Content generation
+  gen:
+    build:
+      context: .
+      dockerfile: gen/Dockerfile
+    image: pragmastat-gen:latest
+    volumes:
+      - ./gen:/workspace/gen
+      - ./manual:/workspace/manual
+      - ./pdf:/workspace/pdf
+      - ./web:/workspace/web
+      - ./CITATION.cff:/workspace/CITATION.cff:ro
+      # Mount language directories (read-only) for demo code extraction
+      - ./cs:/workspace/cs:ro
+      - ./py:/workspace/py:ro
+      - ./rs:/workspace/rs:ro
+      - ./go:/workspace/go:ro
+      - ./ts:/workspace/ts:ro
+      - ./kt:/workspace/kt:ro
+      - ./r:/workspace/r:ro
+    working_dir: /workspace/gen
+    container_name: pragmastat-gen
+

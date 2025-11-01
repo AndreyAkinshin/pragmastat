@@ -6,3 +6,6 @@ artifacts
 go/example/example
 go/demo_bin
 web/.bin
+venv
+__pycache__
+.pip-packages
