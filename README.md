@@ -14,8 +14,8 @@
 [![Crates.io](https://img.shields.io/crates/v/pragmastat.svg?color=009E73)](https://crates.io/crates/pragmastat)
 [![go](https://img.shields.io/github/v/release/AndreyAkinshin/pragmastat?display_name=tag&label=go&color=009E73)](https://pkg.go.dev/github.com/AndreyAkinshin/pragmastat/go/v3)
 
-[![tests](https://img.shields.io/badge/tests-CC79A7)](./tests)
-[![tests](https://img.shields.io/badge/simulations-CC79A7)](./sim)
+[![tests](https://img.shields.io/github/v/release/AndreyAkinshin/pragmastat?display_name=tag&label=tests&color=CC79A7)](https://github.com/AndreyAkinshin/pragmastat/releases/latest)
+[![simulations](https://img.shields.io/github/v/release/AndreyAkinshin/pragmastat?display_name=tag&label=simulations&color=CC79A7)](https://github.com/AndreyAkinshin/pragmastat/releases/latest)
 
 </div>
 
