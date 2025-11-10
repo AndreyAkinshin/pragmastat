@@ -514,6 +514,21 @@ def convert_web_content(paths: Paths, version: str, is_release: bool):
     converter.include_stack.clear()  # Reset include stack
     content = converter.convert_text(content, 'web')
 
+    # Add description field to YAML frontmatter
+    abstract_text = abstract.strip()
+    # Remove newlines and normalize whitespace
+    description = ' '.join(abstract_text.split())
+    
+    lines = content.split('\n')
+    if len(lines) >= 3 and lines[0] == '---':
+        # Find the title line and insert description after it
+        for i in range(1, len(lines)):
+            if lines[i].startswith('title:'):
+                # Insert description field after title
+                lines.insert(i + 1, f'description: "{description}"')
+                break
+        content = '\n'.join(lines)
+
     # Write output
     write_file_if_changed(paths.web_index, content, 'web/_index.md')
 
