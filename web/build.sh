@@ -213,9 +213,11 @@ init_tools() {
 # Check if required tools exist
 check_tools() {
     if [ ! -f "$HUGO_BIN" ] || [ ! -f "$TAILWIND_BIN" ]; then
-        print_error "Hugo or Tailwind not found in web/.bin directory"
-        print_error "Please run './build.sh web init' or './web/build.sh init' to download tools"
-        exit 1
+        print_warning "Hugo or Tailwind not found in web/.bin directory"
+        print_status "Automatically running init to download tools..."
+        echo ""
+        init_tools
+        echo ""
     fi
 }
 

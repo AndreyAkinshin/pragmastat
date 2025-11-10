@@ -68,7 +68,7 @@ PDF manual generation
 Online manual/website (Hugo-based)
 .SH META COMMANDS
 .TP
-.BI "all " "[--release] [--docker]"
+.BI "build " "[--release] [--docker]"
 Build all projects (language implementations and auxiliary tools)
 .TP
 .BI "ci " "[--release] [--docker]"
@@ -137,7 +137,7 @@ Run tests for all implementations:
 .B ./build.sh test
 .TP
 Build all projects in release mode using Docker:
-.B ./build.sh all --release --docker
+.B ./build.sh build --release --docker
 .TP
 Run full CI pipeline:
 .B ./build.sh ci --docker
@@ -362,6 +362,7 @@ run_all_projects() {
     # Define all projects
     local all_projects=(
         "img"
+        "gen"
         "pdf"
         "web"
         "r"
@@ -1000,8 +1001,8 @@ show_help() {
     echo -e "  ${HIGHLIGHT}web${RESET}  ${DIM}# Online manual/website (Hugo)${RESET}"
     echo ""
     echo -e "${HEADER}${BOLD}Meta commands:${RESET}"
-    echo -e "  ${HIGHLIGHT}all${RESET} ${ARG}[--release] [--docker]${RESET} ${DIM}# Build all projects${RESET}"
-    echo -e "  ${HIGHLIGHT}ci${RESET} ${ARG}[--release] [--docker]${RESET}  ${DIM}# Run full CI build (replicates GitHub Actions)${RESET}"
+    echo -e "  ${HIGHLIGHT}build${RESET} ${ARG}[--release] [--docker]${RESET} ${DIM}# Build all projects${RESET}"
+    echo -e "  ${HIGHLIGHT}ci${RESET} ${ARG}[--release] [--docker]${RESET}    ${DIM}# Run full CI build (replicates GitHub Actions)${RESET}"
     echo -e "  ${HIGHLIGHT}test${RESET} ${ARG}[--docker]${RESET}            ${DIM}# Run tests for all projects${RESET}"
     echo -e "  ${HIGHLIGHT}demo${RESET} ${ARG}[--docker]${RESET}            ${DIM}# Run demos for all language projects${RESET}"
     echo -e "  ${HIGHLIGHT}clean${RESET} ${ARG}[--docker]${RESET}           ${DIM}# Clean all projects${RESET}"
@@ -1085,7 +1086,7 @@ case "$DIR" in
         docker compose down --rmi all --volumes --remove-orphans
         exit 0
         ;;
-    all)
+    build)
         # Handle optional --release flag
         release_flag=""
         if [ "$1" == "--release" ]; then
