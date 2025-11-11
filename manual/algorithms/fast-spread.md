@@ -52,6 +52,6 @@ Using only $O(n)$ additional space for row bounds and counters,
   the algorithm achieves $O(n \log n)$ time complexity with minimal memory overhead,
   making robust scale estimation practical for large datasets.
 
-```cs
+```cs { title = "FastSpread.cs" }
 <!-- INCLUDE cs/Pragmastat/Algorithms/FastSpread.cs -->
 ```

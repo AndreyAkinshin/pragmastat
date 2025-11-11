@@ -1,5 +1,3 @@
-# Summary Estimator Properties
-
 This section compares the toolkit's robust estimators against traditional statistical methods
   to demonstrate their advantages and universally good properties.
 While traditional estimators often work well under ideal conditions,
@@ -41,9 +39,3 @@ $$
 $$
 \Spread(\x) = \underset{1 \leq i < j \leq n}{\Median} |x_i - x_j|
 $$
-
-<!-- INCLUDE manual/properties/breakdown.md -->
-
-<!-- INCLUDE manual/properties/drift.md -->
-
-<!-- INCLUDE manual/properties/invariance.md -->

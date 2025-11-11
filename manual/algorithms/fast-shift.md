@@ -72,6 +72,6 @@ The algorithm requires only $O(1)$ additional space beyond the input arrays,
   making it practical for large-scale statistical analysis
   where memory constraints prohibit materializing quadratic data structures.
 
-```cs
+```cs { title = "FastShift.cs" }
 <!-- INCLUDE cs/Pragmastat/Algorithms/FastShift.cs -->
 ```
