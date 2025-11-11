@@ -8,13 +8,13 @@ All implementations must produce identical numerical results for all estimators.
 The **C# implementation** serves as the reference generator:
 - Defines test cases programmatically
 - Executes them to produce expected outputs
-- Serializes to JSON format in `@tests/` directory
+- Serializes to JSON format in @tests/ directory
 
 Other implementations load these JSON files and verify their estimators match within numerical tolerance.
 
 ## Source of Truth
 
-**Specification**: `@manual/tests.md` describes the complete reference test suite (275 test cases across 7 estimators)
+**Specification**: @manual/tests/*.md describes the complete reference test suite
 
 **Generator**: `@cs/Pragmastat.ReferenceTests.Generator/` generates the actual JSON test files
 

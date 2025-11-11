@@ -1,17 +1,5 @@
 # Reference Demo
 
-## Context
-
-Pragmastat is a multi-language statistical toolkit providing robust estimators:
-
-- **Center** - Location estimator (central tendency)
-- **Spread** - Scale estimator (variability)
-- **RelSpread** - Relative spread (spread/center)
-- **Shift** - Location difference between two samples
-- **Ratio** - Scale ratio between two samples
-- **AvgSpread** - Average scale of two samples
-- **Disparity** - Relative shift (shift/avgSpread)
-
 ## Scheme
 
 Reference test values demonstrating expected behavior:
@@ -110,7 +98,7 @@ Verify that each demo produces output matching the Scheme values (allowing for f
 
 ### Step 4: LaTeX Documentation
 
-Apply the Scheme to the "Primer" section of @manual/introduction.md as LaTeX expressions.
+Apply the Scheme to the "Primer" section of @manual/introduction/primer.md as LaTeX expressions.
 
 **Format:**
 - Use display-style math (`$$...$$`) for expressions

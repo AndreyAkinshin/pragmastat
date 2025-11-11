@@ -42,7 +42,7 @@ Auxiliary commands:
   web  # Online manual/website (Hugo)
 
 Meta commands:
-  all [--release] [--docker] # Build all projects
+  build [--release] [--docker] # Build all projects
   ci [--release] [--docker]  # Run full CI build (replicates GitHub Actions)
   test [--docker]            # Run tests for all projects
   demo [--docker]            # Run demos for all language projects
