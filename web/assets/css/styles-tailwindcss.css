@@ -124,6 +124,17 @@ code.has-jax {
 pre.chroma code {
   font-family: ui-monospace, "Cascadia Mono", "Segoe UI Mono", "Liberation Mono", Menlo, Monaco, Consolas, monospace !important;
 }
+
+/*** Collapsible code blocks ***/
+/* Remove default marker */
+details.code-collapse > summary::-webkit-details-marker {
+  display: none;
+}
+
+/* Rotate the arrow when expanded */
+details.code-collapse[open] .arrow {
+  transform: rotate(180deg);
+}
 :not(.chroma) > code {
   @apply mx-1 px-1 border rounded border-frame;
 }
