@@ -110,6 +110,7 @@ jobs:
         name: ${{ github.ref_name }}
         discussion_category_name: Releases
         generate_release_notes: true
+        token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
         files: |
           web-v*.zip
           artifacts/web/pragmastat-v*.md
