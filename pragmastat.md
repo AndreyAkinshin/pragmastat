@@ -1,6 +1,6 @@
 ---
 title: "Pragmastat: Pragmatic Statistical Toolkit"
-version: 3.2.2
+version: 3.2.3
 ---
 
 <div style="display: none;">
@@ -941,7 +941,7 @@ The algorithm maintains only row bounds and counters, using $O(n)$ additional sp
 This matches the complexity of sorting a single array while avoiding the quadratic memory and time explosion
   of computing all pairwise combinations.
 
-```cs
+```cs { title = "FastCenter.cs" }
 namespace Pragmastat.Algorithms;
 
 internal static class FastCenter
@@ -1227,7 +1227,7 @@ Using only $O(n)$ additional space for row bounds and counters,
   the algorithm achieves $O(n \log n)$ time complexity with minimal memory overhead,
   making robust scale estimation practical for large datasets.
 
-```cs
+```cs { title = "FastSpread.cs" }
 namespace Pragmastat.Algorithms;
 
 internal static class FastSpread
@@ -1569,7 +1569,7 @@ The algorithm requires only $O(1)$ additional space beyond the input arrays,
   making it practical for large-scale statistical analysis
   where memory constraints prohibit materializing quadratic data structures.
 
-```cs
+```cs { title = "FastShift.cs" }
 namespace Pragmastat.Algorithms;
 
 using System;
@@ -2051,10 +2051,10 @@ The $\Spread$ requires about 1.16 times more data to match the $\StdDev$ precisi
 Install from PyPI:
 
 ```bash
-pip install pragmastat==3.2.2
+pip install pragmastat==3.2.3
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.2/py
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.3/py
 
 Pragmastat on PyPI: https://pypi.org/project/pragmastat/
 
@@ -2121,10 +2121,10 @@ if __name__ == "__main__":
 Install from npm:
 
 ```bash
-npm i pragmastat@3.2.2
+npm i pragmastat@3.2.3
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.2/ts
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.3/ts
 
 Pragmastat on npm: https://www.npmjs.com/package/pragmastat
 
@@ -2191,11 +2191,11 @@ Install from GitHub:
 ```r
 install.packages("remotes") # If 'remotes' is not installed
 remotes::install_github("AndreyAkinshin/pragmastat",
-                        subdir = "r/pragmastat", ref = "v3.2.2")
+                        subdir = "r/pragmastat", ref = "v3.2.3")
 library(pragmastat)
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.2/r
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.3/r
 
 
 
@@ -2256,16 +2256,16 @@ print(disparity(y, x)) # -0.4
 Install from NuGet via .NET CLI:
 
 ```bash
-dotnet add package Pragmastat --version 3.2.2
+dotnet add package Pragmastat --version 3.2.3
 ```
 
 Install from NuGet via Package Manager Console:
 
 ```ps1
-NuGet\Install-Package Pragmastat -Version 3.2.2
+NuGet\Install-Package Pragmastat -Version 3.2.3
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.2/cs
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.3/cs
 
 Pragmastat on NuGet: https://www.nuget.org/packages/Pragmastat/
 
@@ -2337,23 +2337,23 @@ Install from Maven Central Repository via Apache Maven:
 <dependency>
     <groupId>dev.pragmastat</groupId>
     <artifactId>pragmastat</artifactId>
-    <version>3.2.2</version>
+    <version>3.2.3</version>
 </dependency>
 ```
 
 Install from Maven Central Repository via Gradle:
 
 ```java
-implementation 'dev.pragmastat:pragmastat:3.2.2'
+implementation 'dev.pragmastat:pragmastat:3.2.3'
 ```
 
 Install from Maven Central Repository via Gradle (Kotlin):
 
 ```kotlin
-implementation("dev.pragmastat:pragmastat:3.2.2")
+implementation("dev.pragmastat:pragmastat:3.2.3")
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.2/kt
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.3/kt
 
 Pragmastat on Maven Central Repository: https://central.sonatype.com/artifact/dev.pragmastat/pragmastat/overview
 
@@ -2418,17 +2418,17 @@ fun main() {
 Install from crates.io via cargo:
 
 ```bash
-cargo add pragmastat@3.2.2
+cargo add pragmastat@3.2.3
 ```
 
 Install from crates.io via `Cargo.toml`:
 
 ```toml
 [dependencies]
-pragmastat = "3.2.2"
+pragmastat = "3.2.3"
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.2/rs
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.3/rs
 
 Pragmastat on crates.io: https://crates.io/crates/pragmastat
 
@@ -2503,10 +2503,10 @@ fn main() {
 Install from GitHub:
 
 ```bash
-go get github.com/AndreyAkinshin/pragmastat/go/v3@v3.2.2
+go get github.com/AndreyAkinshin/pragmastat/go/v3@v3.2.3
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.2/go
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.3/go
 
 
 
@@ -2630,7 +2630,7 @@ The C# implementation serves as the reference generator.
 All test cases are defined programmatically, executed to produce expected outputs, and serialized to JSON.
 Other implementations load these JSON files and verify that their estimators produce matching results within a given numerical tolerance.
 
-## Center
+## Center Tests
 
 $$
 \Center(\x) = \underset{1 \leq i \leq j \leq n}{\Median} \left(\frac{x_i + x_j}{2} \right)
@@ -2712,7 +2712,7 @@ The variety of shuffle patterns (reverse, rotation, interleaving, single element
 This test case is not stored in the repository because it generates a large JSON file (approximately 1.5 MB).
 Each language implementation should manually implement this test with the hardcoded expected result.
 
-## Spread
+## Spread Tests
 
 $$
 \Spread(\x) = \underset{1 \leq i < j \leq n}{\Median} |x_i - x_j|
@@ -2794,7 +2794,7 @@ Since $\Spread$ uses absolute differences, order-dependent bugs would manifest d
 This test case is not stored in the repository because it generates a large JSON file (approximately 1.5 MB).
 Each language implementation should manually implement this test with the hardcoded expected result.
 
-## RelSpread
+## RelSpread Tests
 
 $$
 \RelSpread(\x) = \frac{\Spread(\x)}{\left| \Center(\x) \right|}
@@ -2844,7 +2844,7 @@ The absence of zero-value tests reflects the domain constraint requiring $\Cente
 
 Since $\RelSpread$ combines both $\Center$ and $\Spread$, these tests verify that sorting works correctly for composite estimators.
 
-## Shift
+## Shift Tests
 
 $$
 \Shift(\x, \y) = \underset{1 \leq i \leq n,\,\, 1 \leq j \leq m}{\Median} \left(x_i - y_j \right)
@@ -2942,7 +2942,7 @@ The variety includes cases where only one sample is unsorted, ensuring implement
 This test case is not stored in the repository because it generates a large JSON file (approximately 1.5 MB).
 Each language implementation should manually implement this test with the hardcoded expected result.
 
-## Ratio
+## Ratio Tests
 
 $$
 \Ratio(\x, \y) = \underset{1 \leq i \leq n, 1 \leq j \leq m}{\Median} \left( \dfrac{x_i}{y_j} \right)
@@ -2995,7 +2995,7 @@ Note that implementations should handle the practical constraint of avoiding div
 - `unsorted-asymmetric-unsorted-2-3`: $\x = (2, 1)$, $\y = (3, 1, 2)$ (asymmetric, both unsorted)
 - `unsorted-power-unsorted-5`: $\x = (16, 2, 8, 1, 4)$, $\y = (32, 4, 16, 2, 8)$ (powers of 2 unsorted)
 
-## AvgSpread
+## AvgSpread Tests
 
 $$
 \AvgSpread(\x, \y) = \dfrac{n\Spread(\x) + m\Spread(\y)}{n + m}
@@ -3058,7 +3058,7 @@ The asymmetric size combinations are particularly important for $\AvgSpread$ bec
 
 These tests verify that implementations compute $\Spread(\x)$ and $\Spread(\y)$ with properly sorted samples.
 
-## Disparity
+## Disparity Tests
 
 $$
 \Disparity(\x, \y) = \dfrac{\Shift(\x, \y)}{\AvgSpread(\x, \y)}
@@ -3176,25 +3176,25 @@ This framework ensures that all seven language implementations maintain strict n
 
 Manual:
 
-- PDF: [pragmastat-v3.2.2.pdf](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.2/pragmastat-v3.2.2.pdf)
-- Markdown: [pragmastat-v3.2.2.md](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.2/pragmastat-v3.2.2.md)
-- Website: [web-v3.2.2.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.2/web-v3.2.2.zip)
+- PDF: [pragmastat-v3.2.3.pdf](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.3/pragmastat-v3.2.3.pdf)
+- Markdown: [pragmastat-v3.2.3.md](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.3/pragmastat-v3.2.3.md)
+- Website: [web-v3.2.3.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.3/web-v3.2.3.zip)
 
 Implementations:
 
-- Python: [py-v3.2.2.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.2/py-v3.2.2.zip)
-- TypeScript: [ts-v3.2.2.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.2/ts-v3.2.2.zip)
-- R: [r-v3.2.2.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.2/r-v3.2.2.zip)
-- C#: [cs-v3.2.2.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.2/cs-v3.2.2.zip)
-- Kotlin: [kt-v3.2.2.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.2/kt-v3.2.2.zip)
-- Rust: [rs-v3.2.2.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.2/rs-v3.2.2.zip)
-- Go: [go-v3.2.2.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.2/go-v3.2.2.zip)
+- Python: [py-v3.2.3.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.3/py-v3.2.3.zip)
+- TypeScript: [ts-v3.2.3.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.3/ts-v3.2.3.zip)
+- R: [r-v3.2.3.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.3/r-v3.2.3.zip)
+- C#: [cs-v3.2.3.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.3/cs-v3.2.3.zip)
+- Kotlin: [kt-v3.2.3.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.3/kt-v3.2.3.zip)
+- Rust: [rs-v3.2.3.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.3/rs-v3.2.3.zip)
+- Go: [go-v3.2.3.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.3/go-v3.2.3.zip)
 
 Data:
 
-- Reference tests (json): [tests-v3.2.2.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.2/tests-v3.2.2.zip)
-- Reference simulations (json): [sim-v3.2.2.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.2/sim-v3.2.2.zip)
+- Reference tests (json): [tests-v3.2.3.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.3/tests-v3.2.3.zip)
+- Reference simulations (json): [sim-v3.2.3.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.3/sim-v3.2.3.zip)
 
 Source code:
 
-- [pragmastat-3.2.2.zip](https://github.com/AndreyAkinshin/pragmastat/archive/refs/tags/v3.2.2.zip)
+- [pragmastat-3.2.3.zip](https://github.com/AndreyAkinshin/pragmastat/archive/refs/tags/v3.2.3.zip)
