@@ -1,6 +1,6 @@
 ---
 title: "Pragmastat: Pragmatic Statistical Toolkit"
-version: 3.2.3
+version: 3.2.4
 ---
 
 <div style="display: none;">
@@ -2051,10 +2051,10 @@ The $\Spread$ requires about 1.16 times more data to match the $\StdDev$ precisi
 Install from PyPI:
 
 ```bash
-pip install pragmastat==3.2.3
+pip install pragmastat==3.2.4
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.3/py
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.4/py
 
 Pragmastat on PyPI: https://pypi.org/project/pragmastat/
 
@@ -2121,10 +2121,10 @@ if __name__ == "__main__":
 Install from npm:
 
 ```bash
-npm i pragmastat@3.2.3
+npm i pragmastat@3.2.4
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.3/ts
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.4/ts
 
 Pragmastat on npm: https://www.npmjs.com/package/pragmastat
 
@@ -2191,11 +2191,11 @@ Install from GitHub:
 ```r
 install.packages("remotes") # If 'remotes' is not installed
 remotes::install_github("AndreyAkinshin/pragmastat",
-                        subdir = "r/pragmastat", ref = "v3.2.3")
+                        subdir = "r/pragmastat", ref = "v3.2.4")
 library(pragmastat)
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.3/r
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.4/r
 
 
 
@@ -2256,16 +2256,16 @@ print(disparity(y, x)) # -0.4
 Install from NuGet via .NET CLI:
 
 ```bash
-dotnet add package Pragmastat --version 3.2.3
+dotnet add package Pragmastat --version 3.2.4
 ```
 
 Install from NuGet via Package Manager Console:
 
 ```ps1
-NuGet\Install-Package Pragmastat -Version 3.2.3
+NuGet\Install-Package Pragmastat -Version 3.2.4
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.3/cs
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.4/cs
 
 Pragmastat on NuGet: https://www.nuget.org/packages/Pragmastat/
 
@@ -2337,23 +2337,23 @@ Install from Maven Central Repository via Apache Maven:
 <dependency>
     <groupId>dev.pragmastat</groupId>
     <artifactId>pragmastat</artifactId>
-    <version>3.2.3</version>
+    <version>3.2.4</version>
 </dependency>
 ```
 
 Install from Maven Central Repository via Gradle:
 
 ```java
-implementation 'dev.pragmastat:pragmastat:3.2.3'
+implementation 'dev.pragmastat:pragmastat:3.2.4'
 ```
 
 Install from Maven Central Repository via Gradle (Kotlin):
 
 ```kotlin
-implementation("dev.pragmastat:pragmastat:3.2.3")
+implementation("dev.pragmastat:pragmastat:3.2.4")
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.3/kt
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.4/kt
 
 Pragmastat on Maven Central Repository: https://central.sonatype.com/artifact/dev.pragmastat/pragmastat/overview
 
@@ -2418,17 +2418,17 @@ fun main() {
 Install from crates.io via cargo:
 
 ```bash
-cargo add pragmastat@3.2.3
+cargo add pragmastat@3.2.4
 ```
 
 Install from crates.io via `Cargo.toml`:
 
 ```toml
 [dependencies]
-pragmastat = "3.2.3"
+pragmastat = "3.2.4"
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.3/rs
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.4/rs
 
 Pragmastat on crates.io: https://crates.io/crates/pragmastat
 
@@ -2503,10 +2503,10 @@ fn main() {
 Install from GitHub:
 
 ```bash
-go get github.com/AndreyAkinshin/pragmastat/go/v3@v3.2.3
+go get github.com/AndreyAkinshin/pragmastat/go/v3@v3.2.4
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.3/go
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.4/go
 
 
 
@@ -3176,25 +3176,25 @@ This framework ensures that all seven language implementations maintain strict n
 
 Manual:
 
-- PDF: [pragmastat-v3.2.3.pdf](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.3/pragmastat-v3.2.3.pdf)
-- Markdown: [pragmastat-v3.2.3.md](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.3/pragmastat-v3.2.3.md)
-- Website: [web-v3.2.3.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.3/web-v3.2.3.zip)
+- PDF: [pragmastat-v3.2.4.pdf](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.4/pragmastat-v3.2.4.pdf)
+- Markdown: [pragmastat-v3.2.4.md](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.4/pragmastat-v3.2.4.md)
+- Website: [web-v3.2.4.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.4/web-v3.2.4.zip)
 
 Implementations:
 
-- Python: [py-v3.2.3.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.3/py-v3.2.3.zip)
-- TypeScript: [ts-v3.2.3.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.3/ts-v3.2.3.zip)
-- R: [r-v3.2.3.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.3/r-v3.2.3.zip)
-- C#: [cs-v3.2.3.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.3/cs-v3.2.3.zip)
-- Kotlin: [kt-v3.2.3.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.3/kt-v3.2.3.zip)
-- Rust: [rs-v3.2.3.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.3/rs-v3.2.3.zip)
-- Go: [go-v3.2.3.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.3/go-v3.2.3.zip)
+- Python: [py-v3.2.4.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.4/py-v3.2.4.zip)
+- TypeScript: [ts-v3.2.4.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.4/ts-v3.2.4.zip)
+- R: [r-v3.2.4.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.4/r-v3.2.4.zip)
+- C#: [cs-v3.2.4.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.4/cs-v3.2.4.zip)
+- Kotlin: [kt-v3.2.4.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.4/kt-v3.2.4.zip)
+- Rust: [rs-v3.2.4.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.4/rs-v3.2.4.zip)
+- Go: [go-v3.2.4.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.4/go-v3.2.4.zip)
 
 Data:
 
-- Reference tests (json): [tests-v3.2.3.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.3/tests-v3.2.3.zip)
-- Reference simulations (json): [sim-v3.2.3.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.3/sim-v3.2.3.zip)
+- Reference tests (json): [tests-v3.2.4.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.4/tests-v3.2.4.zip)
+- Reference simulations (json): [sim-v3.2.4.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.4/sim-v3.2.4.zip)
 
 Source code:
 
-- [pragmastat-3.2.3.zip](https://github.com/AndreyAkinshin/pragmastat/archive/refs/tags/v3.2.3.zip)
+- [pragmastat-3.2.4.zip](https://github.com/AndreyAkinshin/pragmastat/archive/refs/tags/v3.2.4.zip)
