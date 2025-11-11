@@ -8,7 +8,7 @@ using Pragmastat.Properties;
 [assembly: InternalsVisibleTo("Pragmastat.Estimators,PublicKey=" + PragmastatInfo.PublicKey)]
 [assembly: InternalsVisibleTo("Pragmastat.Extended,PublicKey=" + PragmastatInfo.PublicKey)]
 
-[assembly: InternalsVisibleTo("Pragmastat.ReferenceTests.Generator,PublicKey=" + PragmastatInfo.PublicKey)]
-[assembly: InternalsVisibleTo("Pragmastat.ReferenceTests,PublicKey=" + PragmastatInfo.PublicKey)]
+[assembly: InternalsVisibleTo("Pragmastat.TestGenerator,PublicKey=" + PragmastatInfo.PublicKey)]
+[assembly: InternalsVisibleTo("Pragmastat.Tests,PublicKey=" + PragmastatInfo.PublicKey)]
 [assembly: InternalsVisibleTo("Pragmastat.UnitTests,PublicKey=" + PragmastatInfo.PublicKey)]
 [assembly: InternalsVisibleTo("Pragmastat.Simulations,PublicKey=" + PragmastatInfo.PublicKey)]

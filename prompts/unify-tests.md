@@ -16,9 +16,9 @@ Other implementations load these JSON files and verify their estimators match wi
 
 **Specification**: @manual/tests/*.md describes the complete reference test suite
 
-**Generator**: `@cs/Pragmastat.ReferenceTests.Generator/` generates the actual JSON test files
+**Generator**: @cs/Pragmastat.TestGenerator/ generates the actual JSON test files
 
-**Output**: `@tests/` contains generated JSON files
+**Output**: @tests/ contains generated JSON files
 
 ## Task
 
@@ -32,7 +32,7 @@ Examine `@manual/tests.md` to understand:
 
 ### Step 2: Audit the Generator
 
-Examine `@cs/Pragmastat.ReferenceTests.Generator/` and verify:
+Examine `@cs/Pragmastat.TestGenerator/` and verify:
 - Test case counts match the specification
 - Test names follow documented conventions
 - Input values match specification exactly

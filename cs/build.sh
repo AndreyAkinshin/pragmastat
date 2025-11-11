@@ -50,13 +50,12 @@ run_command() {
 
 # Function to generate reference tests
 generate_tests() {
-    run_command "dotnet run --project Pragmastat.ReferenceTests.Generator/Pragmastat.ReferenceTests.Generator.csproj" "Generating reference test files"
+    run_command "dotnet run --project Pragmastat.TestGenerator/Pragmastat.TestGenerator.csproj" "Generating reference test files"
 }
 
 # Function to run tests
 run_tests() {
-    run_command "(cd Pragmastat.UnitTests && dotnet run)" "Running unit tests"
-    run_command "(cd Pragmastat.ReferenceTests && dotnet run)" "Running reference tests"
+    run_command "(cd Pragmastat.Tests && dotnet run)" "Running tests"
 }
 
 # Function to build package

@@ -2,11 +2,9 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pragmastat", "Pragmastat\Pragmastat.csproj", "{99D956D5-32D7-4056-A72F-DF9A77F4C30A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pragmastat.ReferenceTests", "Pragmastat.ReferenceTests\Pragmastat.ReferenceTests.csproj", "{DE29C17F-5EB6-419D-A999-68E4F19430BC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pragmastat.Tests", "Pragmastat.Tests\Pragmastat.Tests.csproj", "{DE29C17F-5EB6-419D-A999-68E4F19430BC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pragmastat.Simulations", "Pragmastat.Simulations\Pragmastat.Simulations.csproj", "{865C3489-B0E6-44D9-98AA-0F077ACEEBAE}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pragmastat.UnitTests", "Pragmastat.UnitTests\Pragmastat.UnitTests.csproj", "{3D136D79-BF79-44B0-8E87-7EC2C42D15B9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pragmastat.Demo", "Pragmastat.Demo\Pragmastat.Demo.csproj", "{D72AFC86-80C6-48EA-8AF2-F6DB0EBE622F}"
 EndProject
@@ -14,7 +12,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pragmastat.Distributions", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pragmastat.Extended", "Pragmastat.Extended\Pragmastat.Extended.csproj", "{8C69CBDB-26CF-4767-91B8-96C9F993012E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pragmastat.ReferenceTests.Generator", "Pragmastat.ReferenceTests.Generator\Pragmastat.ReferenceTests.Generator.csproj", "{8B2807C6-B990-49B3-BC6A-B45A3D67708B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pragmastat.TestGenerator", "Pragmastat.TestGenerator\Pragmastat.TestGenerator.csproj", "{8B2807C6-B990-49B3-BC6A-B45A3D67708B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -34,10 +32,6 @@ Global
 		{865C3489-B0E6-44D9-98AA-0F077ACEEBAE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{865C3489-B0E6-44D9-98AA-0F077ACEEBAE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{865C3489-B0E6-44D9-98AA-0F077ACEEBAE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3D136D79-BF79-44B0-8E87-7EC2C42D15B9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3D136D79-BF79-44B0-8E87-7EC2C42D15B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3D136D79-BF79-44B0-8E87-7EC2C42D15B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3D136D79-BF79-44B0-8E87-7EC2C42D15B9}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D72AFC86-80C6-48EA-8AF2-F6DB0EBE622F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D72AFC86-80C6-48EA-8AF2-F6DB0EBE622F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D72AFC86-80C6-48EA-8AF2-F6DB0EBE622F}.Release|Any CPU.ActiveCfg = Release|Any CPU
