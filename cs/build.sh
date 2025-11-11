@@ -116,6 +116,16 @@ run_demo() {
     run_command "(cd Pragmastat.Demo && dotnet run)" "Running demo"
 }
 
+# Function to run simulations
+run_sim() {
+    local args="${@}"
+    if [ -z "$args" ]; then
+        run_command "(cd Pragmastat.Simulations && dotnet run)" "Running simulations"
+    else
+        run_command "(cd Pragmastat.Simulations && dotnet run -- $args)" "Running simulations with arguments: $args"
+    fi
+}
+
 # Function to show help
 show_help() {
     echo -e "${BOLD}Usage:${RESET} pragmastat/cs/build.sh ${HIGHLIGHT}<command>${RESET} ${ARG}[--release]${RESET}"
@@ -127,6 +137,7 @@ show_help() {
     echo -e "  ${HIGHLIGHT}pack${RESET} ${ARG}[--release]${RESET}        ${DIM}# Pack NuGet package (debug by default, release with --release flag)${RESET}"
     echo -e "  ${HIGHLIGHT}restore${RESET}                 ${DIM}# Restore dependencies${RESET}"
     echo -e "  ${HIGHLIGHT}demo${RESET}                    ${DIM}# Run demo examples${RESET}"
+    echo -e "  ${HIGHLIGHT}sim${RESET} ${ARG}[args...]${RESET}          ${DIM}# Run simulations (pass arguments after --)${RESET}"
     echo -e "  ${HIGHLIGHT}clean${RESET}                   ${DIM}# Clean build artifacts${RESET}"
     echo -e "  ${HIGHLIGHT}format${RESET}                  ${DIM}# Format code with dotnet format${RESET}"
     echo -e "  ${HIGHLIGHT}lint${RESET}                    ${DIM}# Verify code formatting${RESET}"
@@ -138,6 +149,8 @@ show_help() {
     echo -e "  ${SUCCESS}build.sh build${RESET}            ${DIM}# Build debug package${RESET}"
     echo -e "  ${SUCCESS}build.sh build ${ARG}--release${RESET}  ${DIM}# Build release package${RESET}"
     echo -e "  ${SUCCESS}build.sh demo${RESET}             ${DIM}# Run demo examples${RESET}"
+    echo -e "  ${SUCCESS}build.sh sim${RESET}              ${DIM}# Run simulations${RESET}"
+    echo -e "  ${SUCCESS}build.sh sim ${ARG}arg1 arg2${RESET}    ${DIM}# Run simulations with arguments${RESET}"
     echo -e "  ${SUCCESS}build.sh all${RESET}              ${DIM}# Run all tasks${RESET}"
 }
 
@@ -169,6 +182,10 @@ case "$1" in
         ;;
     demo)
         run_demo
+        ;;
+    sim)
+        shift  # Remove 'sim' from arguments
+        run_sim "$@"
         ;;
     clean)
         clean
