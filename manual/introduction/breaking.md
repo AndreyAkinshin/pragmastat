@@ -23,3 +23,7 @@ The following concepts were adopted from traditional textbooks via renaming or r
   - $\Additive$ (former 'Normal' or 'Gaussian')
   - $\Multiplic$ (former 'Log-Normal' or 'Galton')
   - $\Power$ (former 'Pareto')
+- Terms
+  - Bounds (former 'Confidence Interval')
+  - Misrate (former 1 - 'Confidence Level')
+

@@ -2,9 +2,9 @@
 
 This is a R implementation of 'Pragmastat: Pragmatic Statistical Toolkit', which presents a toolkit of statistical procedures that provide reliable results across diverse real-world distributions, with ready-to-use implementations and detailed explanations.
 
-- PDF manual for this version: [pragmastat-v3.2.4.pdf](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.4/pragmastat-v3.2.4.pdf)
-- Markdown manual for this version: [pragmastat-v3.2.4.md](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.4/pragmastat-v3.2.4.md)
-- Source code for this version: [pragmastat/r/v3.2.4](https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.4/r)
+- PDF manual for this version: [pragmastat-v4.0.0.pdf](https://github.com/AndreyAkinshin/pragmastat/releases/download/v4.0.0/pragmastat-v4.0.0.pdf)
+- Markdown manual for this version: [pragmastat-v4.0.0.md](https://github.com/AndreyAkinshin/pragmastat/releases/download/v4.0.0/pragmastat-v4.0.0.md)
+- Source code for this version: [pragmastat/r/v4.0.0](https://github.com/AndreyAkinshin/pragmastat/tree/v4.0.0/r)
 - Latest online manual: https://pragmastat.dev
 - Manual DOI: [10.5281/zenodo.17236778](https://doi.org/10.5281/zenodo.17236778)
 
@@ -15,7 +15,7 @@ Install from GitHub:
 ```r
 install.packages("remotes") # If 'remotes' is not installed
 remotes::install_github("AndreyAkinshin/pragmastat",
-                        subdir = "r/pragmastat", ref = "v3.2.4")
+                        subdir = "r/pragmastat", ref = "v4.0.0")
 library(pragmastat)
 ```
 
@@ -67,6 +67,25 @@ print(disparity(x, y)) # 0.4
 print(disparity(x + 5, y + 5)) # 0.4
 print(disparity(x * 2, y * 2)) # 0.4
 print(disparity(y, x)) # -0.4
+
+x <- 1:30
+y <- 21:50
+
+print(pairwise_margin(30, 30, 1e-6)) # 276
+print(pairwise_margin(30, 30, 1e-5)) # 328
+print(pairwise_margin(30, 30, 1e-4)) # 390
+print(pairwise_margin(30, 30, 1e-3)) # 464
+
+print(shift(x, y)) # -20
+
+bounds <- shift_bounds(x, y, 1e-6) # [-33, -7]
+print(paste("[", bounds$lower, ", ", bounds$upper, "]", sep=""))
+bounds <- shift_bounds(x, y, 1e-5) # [-32, -8]
+print(paste("[", bounds$lower, ", ", bounds$upper, "]", sep=""))
+bounds <- shift_bounds(x, y, 1e-4) # [-30, -10]
+print(paste("[", bounds$lower, ", ", bounds$upper, "]", sep=""))
+bounds <- shift_bounds(x, y, 1e-3) # [-28, -12]
+print(paste("[", bounds$lower, ", ", bounds$upper, "]", sep=""))
 ```
 
 ## The MIT License

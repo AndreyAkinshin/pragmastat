@@ -1,4 +1,4 @@
-﻿namespace Pragmastat.Internal;
+namespace Pragmastat.Internal;
 
 internal static class MathExtensions
 {

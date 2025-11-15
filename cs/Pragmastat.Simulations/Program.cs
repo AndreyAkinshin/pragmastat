@@ -1,4 +1,4 @@
-﻿using Pragmastat.Simulations.Misc;
+using Pragmastat.Simulations.Misc;
 using Pragmastat.Simulations.Simulations;
 using Spectre.Console.Cli;
 
@@ -15,6 +15,7 @@ public static class Program
       {
         config.AddCommand<AvgDriftSimulation>(AvgDriftSimulation.Name);
         config.AddCommand<DispDriftSimulation>(DispDriftSimulation.Name);
+        config.AddCommand<CoverageSimulation>(CoverageSimulation.Name);
       });
       return await app.RunAsync(args);
     }

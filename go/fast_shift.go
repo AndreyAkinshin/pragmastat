@@ -1,6 +1,7 @@
 package pragmastat
 
 import (
+	"errors"
 	"math"
 	"sort"
 )
@@ -9,46 +10,92 @@ import (
 // Time complexity: O((m + n) * log(precision)) per quantile
 // Space complexity: O(1) - avoids materializing all m*n differences
 func fastShift[T Number](x, y []T) (float64, error) {
+	result, err := fastShiftQuantiles(x, y, []float64{0.5}, false)
+	if err != nil {
+		return 0, err
+	}
+	return result[0], nil
+}
+
+// fastShiftQuantiles computes quantiles of all pairwise differences {x[i] - y[j]}.
+// Time complexity: O((m + n) * log(precision)) per unique rank
+// Space complexity: O(1) - avoids materializing all m*n differences
+func fastShiftQuantiles[T Number](x, y []T, p []float64, assumeSorted bool) ([]float64, error) {
 	m := len(x)
 	n := len(y)
 	if m == 0 || n == 0 {
-		return 0, errEmptyInput
+		return nil, errEmptyInput
 	}
 
-	// Sort both arrays
-	xs := make([]T, m)
-	ys := make([]T, n)
-	copy(xs, x)
-	copy(ys, y)
-	sort.Slice(xs, func(i, j int) bool { return xs[i] < xs[j] })
-	sort.Slice(ys, func(i, j int) bool { return ys[i] < ys[j] })
+	// Validate probabilities
+	for _, pk := range p {
+		if math.IsNaN(pk) || pk < 0.0 || pk > 1.0 {
+			return nil, errors.New("Probabilities must be within [0, 1]")
+		}
+	}
+
+	var xs, ys []T
+	if assumeSorted {
+		xs = x
+		ys = y
+	} else {
+		xs = make([]T, m)
+		ys = make([]T, n)
+		copy(xs, x)
+		copy(ys, y)
+		sort.Slice(xs, func(i, j int) bool { return xs[i] < xs[j] })
+		sort.Slice(ys, func(i, j int) bool { return ys[i] < ys[j] })
+	}
 
 	total := int64(m) * int64(n)
 
-	// Type-7 quantile: h = 1 + (n-1)*p, then interpolate between floor(h) and ceil(h)
-	// For median, p = 0.5
-	h := 1.0 + float64(total-1)*0.5
-	lowerRank := int64(math.Floor(h))
-	upperRank := int64(math.Ceil(h))
-	weight := h - float64(lowerRank)
-
-	if lowerRank < 1 {
-		lowerRank = 1
-	}
-	if upperRank > total {
-		upperRank = total
+	// Collect all required ranks using Type-7 quantile interpolation
+	type interpolationParams struct {
+		lowerRank int64
+		upperRank int64
+		weight    float64
 	}
 
-	lower := selectKthPairwiseDiff(xs, ys, lowerRank)
-	if lowerRank == upperRank {
-		return lower, nil
+	params := make([]interpolationParams, len(p))
+	requiredRanks := make(map[int64]struct{})
+
+	for i, pk := range p {
+		h := 1.0 + float64(total-1)*pk
+		lowerRank := int64(math.Floor(h))
+		upperRank := int64(math.Ceil(h))
+		weight := h - float64(lowerRank)
+
+		if lowerRank < 1 {
+			lowerRank = 1
+		}
+		if upperRank > total {
+			upperRank = total
+		}
+
+		params[i] = interpolationParams{lowerRank, upperRank, weight}
+		requiredRanks[lowerRank] = struct{}{}
+		requiredRanks[upperRank] = struct{}{}
 	}
 
-	upper := selectKthPairwiseDiff(xs, ys, upperRank)
-	if weight == 0.0 {
-		return lower, nil
+	// Compute values for all required ranks
+	rankValues := make(map[int64]float64)
+	for rank := range requiredRanks {
+		rankValues[rank] = selectKthPairwiseDiff(xs, ys, rank)
 	}
-	return (1.0-weight)*lower + weight*upper, nil
+
+	// Interpolate to get final results
+	result := make([]float64, len(p))
+	for i, param := range params {
+		lower := rankValues[param.lowerRank]
+		upper := rankValues[param.upperRank]
+		if param.weight == 0.0 {
+			result[i] = lower
+		} else {
+			result[i] = (1.0-param.weight)*lower + param.weight*upper
+		}
+	}
+
+	return result, nil
 }
 
 // selectKthPairwiseDiff finds the k-th smallest pairwise difference (1-based indexing).

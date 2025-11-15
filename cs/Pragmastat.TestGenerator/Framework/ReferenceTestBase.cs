@@ -7,7 +7,7 @@ public abstract class ReferenceTestBase<TInput, TOutput>
 {
   private readonly Lazy<ReferenceTestController<TInput, TOutput>> lazyController;
   private ReferenceTestController<TInput, TOutput> Controller => lazyController.Value;
-  
+
   /// <summary>
   /// Timeout for each individual test execution (5 seconds as per documentation)
   /// </summary>
@@ -34,7 +34,7 @@ public abstract class ReferenceTestBase<TInput, TOutput>
 
     Assert.True(Controller.Assert(testCase.Output, actual));
   }
-  
+
   /// <summary>
   /// Runs the test with a timeout. Throws TimeoutException if test exceeds the timeout.
   /// </summary>
@@ -45,7 +45,7 @@ public abstract class ReferenceTestBase<TInput, TOutput>
     {
       return task.Result;
     }
-    
+
     throw new TimeoutException(
       $"Test '{testName}' in suite '{GetSuiteName()}' exceeded timeout of {TestTimeout.TotalSeconds} seconds. " +
       $"Performance tests must complete in under 5 seconds as per documentation.");

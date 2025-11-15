@@ -2,9 +2,9 @@
 
 This is a Kotlin implementation of 'Pragmastat: Pragmatic Statistical Toolkit', which presents a toolkit of statistical procedures that provide reliable results across diverse real-world distributions, with ready-to-use implementations and detailed explanations.
 
-- PDF manual for this version: [pragmastat-v3.2.4.pdf](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.4/pragmastat-v3.2.4.pdf)
-- Markdown manual for this version: [pragmastat-v3.2.4.md](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.4/pragmastat-v3.2.4.md)
-- Source code for this version: [pragmastat/kt/v3.2.4](https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.4/kt)
+- PDF manual for this version: [pragmastat-v4.0.0.pdf](https://github.com/AndreyAkinshin/pragmastat/releases/download/v4.0.0/pragmastat-v4.0.0.pdf)
+- Markdown manual for this version: [pragmastat-v4.0.0.md](https://github.com/AndreyAkinshin/pragmastat/releases/download/v4.0.0/pragmastat-v4.0.0.md)
+- Source code for this version: [pragmastat/kt/v4.0.0](https://github.com/AndreyAkinshin/pragmastat/tree/v4.0.0/kt)
 - Latest online manual: https://pragmastat.dev
 - Manual DOI: [10.5281/zenodo.17236778](https://doi.org/10.5281/zenodo.17236778)
 
@@ -16,20 +16,20 @@ Install from Maven Central Repository via Apache Maven:
 <dependency>
     <groupId>dev.pragmastat</groupId>
     <artifactId>pragmastat</artifactId>
-    <version>3.2.4</version>
+    <version>4.0.0</version>
 </dependency>
 ```
 
 Install from Maven Central Repository via Gradle:
 
 ```java
-implementation 'dev.pragmastat:pragmastat:3.2.4'
+implementation 'dev.pragmastat:pragmastat:4.0.0'
 ```
 
 Install from Maven Central Repository via Gradle (Kotlin):
 
 ```kotlin
-implementation("dev.pragmastat:pragmastat:3.2.4")
+implementation("dev.pragmastat:pragmastat:4.0.0")
 ```
 
 ## Demo
@@ -83,6 +83,21 @@ fun main() {
     println(disparity(x.map { it + 5 }, y.map { it + 5 })) // 0.4
     println(disparity(x.map { it * 2 }, y.map { it * 2 })) // 0.4
     println(disparity(y, x)) // -0.4
+
+    x = (1..30).map { it.toDouble() }
+    y = (21..50).map { it.toDouble() }
+
+    println(pairwiseMargin(30, 30, 1e-6)) // 276
+    println(pairwiseMargin(30, 30, 1e-5)) // 328
+    println(pairwiseMargin(30, 30, 1e-4)) // 390
+    println(pairwiseMargin(30, 30, 1e-3)) // 464
+
+    println(shift(x, y)) // -20
+
+    println(shiftBounds(x, y, 1e-6)) // [-33, -7]
+    println(shiftBounds(x, y, 1e-5)) // [-32, -8]
+    println(shiftBounds(x, y, 1e-4)) // [-30, -10]
+    println(shiftBounds(x, y, 1e-3)) // [-28, -12]
 }
 ```
 

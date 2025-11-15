@@ -2,9 +2,9 @@
 
 This is a Python implementation of 'Pragmastat: Pragmatic Statistical Toolkit', which presents a toolkit of statistical procedures that provide reliable results across diverse real-world distributions, with ready-to-use implementations and detailed explanations.
 
-- PDF manual for this version: [pragmastat-v3.2.4.pdf](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.4/pragmastat-v3.2.4.pdf)
-- Markdown manual for this version: [pragmastat-v3.2.4.md](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.4/pragmastat-v3.2.4.md)
-- Source code for this version: [pragmastat/py/v3.2.4](https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.4/py)
+- PDF manual for this version: [pragmastat-v4.0.0.pdf](https://github.com/AndreyAkinshin/pragmastat/releases/download/v4.0.0/pragmastat-v4.0.0.pdf)
+- Markdown manual for this version: [pragmastat-v4.0.0.md](https://github.com/AndreyAkinshin/pragmastat/releases/download/v4.0.0/pragmastat-v4.0.0.md)
+- Source code for this version: [pragmastat/py/v4.0.0](https://github.com/AndreyAkinshin/pragmastat/tree/v4.0.0/py)
 - Latest online manual: https://pragmastat.dev
 - Manual DOI: [10.5281/zenodo.17236778](https://doi.org/10.5281/zenodo.17236778)
 
@@ -13,13 +13,23 @@ This is a Python implementation of 'Pragmastat: Pragmatic Statistical Toolkit', 
 Install from PyPI:
 
 ```bash
-pip install pragmastat==3.2.4
+pip install pragmastat==4.0.0
 ```
 
 ## Demo
 
 ```python
-from pragmastat import center, spread, rel_spread, shift, ratio, avg_spread, disparity
+from pragmastat import (
+    center,
+    spread,
+    rel_spread,
+    shift,
+    ratio,
+    avg_spread,
+    disparity,
+    pairwise_margin,
+    shift_bounds,
+)
 
 
 def main():
@@ -66,6 +76,25 @@ def main():
     print(disparity([v + 5 for v in x], [v + 5 for v in y]))  # 0.4
     print(disparity([v * 2 for v in x], [v * 2 for v in y]))  # 0.4
     print(disparity(y, x))  # -0.4
+
+    x = list(range(1, 31))
+    y = list(range(21, 51))
+
+    print(pairwise_margin(30, 30, 1e-6))  # 276
+    print(pairwise_margin(30, 30, 1e-5))  # 328
+    print(pairwise_margin(30, 30, 1e-4))  # 390
+    print(pairwise_margin(30, 30, 1e-3))  # 464
+
+    print(shift(x, y))  # -20
+
+    bounds = shift_bounds(x, y, 1e-6)  # [-33, -7]
+    print(f"Bounds(lower={bounds.lower}, upper={bounds.upper})")
+    bounds = shift_bounds(x, y, 1e-5)  # [-32, -8]
+    print(f"Bounds(lower={bounds.lower}, upper={bounds.upper})")
+    bounds = shift_bounds(x, y, 1e-4)  # [-30, -10]
+    print(f"Bounds(lower={bounds.lower}, upper={bounds.upper})")
+    bounds = shift_bounds(x, y, 1e-3)  # [-28, -12]
+    print(f"Bounds(lower={bounds.lower}, upper={bounds.upper})")
 
 
 if __name__ == "__main__":

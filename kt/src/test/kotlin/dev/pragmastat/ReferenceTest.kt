@@ -24,6 +24,33 @@ data class TwoSampleInput(
     val y: List<Double>
 )
 
+data class PairwiseMarginInput(
+    val n: Int,
+    val m: Int,
+    val misrate: Double
+)
+
+data class PairwiseMarginTestData(
+    val input: PairwiseMarginInput,
+    val output: Int
+)
+
+data class ShiftBoundsInput(
+    val x: List<Double>,
+    val y: List<Double>,
+    val misrate: Double
+)
+
+data class BoundsOutput(
+    val lower: Double,
+    val upper: Double
+)
+
+data class ShiftBoundsTestData(
+    val input: ShiftBoundsInput,
+    val output: BoundsOutput
+)
+
 class ReferenceTest {
     
     private val mapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
@@ -125,6 +152,60 @@ class ReferenceTest {
             }
         }
         
+        return tests
+    }
+
+    @TestFactory
+    fun testPairwiseMargin(): List<DynamicTest> {
+        val tests = mutableListOf<DynamicTest>()
+        val testDir = File("../tests/pairwise-margin")
+
+        if (!testDir.exists() || !testDir.isDirectory) {
+            println("Skipping pairwise-margin tests: directory not found")
+            return tests
+        }
+
+        testDir.listFiles { _, name -> name.endsWith(".json") }?.forEach { file ->
+            val testName = "pairwise-margin/${file.nameWithoutExtension}"
+            tests.add(DynamicTest.dynamicTest(testName) {
+                val testData = mapper.readValue<PairwiseMarginTestData>(file)
+                val result = pairwiseMargin(
+                    testData.input.n,
+                    testData.input.m,
+                    testData.input.misrate
+                )
+                assertTrue(result == testData.output,
+                    "Expected ${testData.output} but got $result")
+            })
+        }
+
+        return tests
+    }
+
+    @TestFactory
+    fun testShiftBounds(): List<DynamicTest> {
+        val tests = mutableListOf<DynamicTest>()
+        val testDir = File("../tests/shift-bounds")
+
+        if (!testDir.exists() || !testDir.isDirectory) {
+            println("Skipping shift-bounds tests: directory not found")
+            return tests
+        }
+
+        testDir.listFiles { _, name -> name.endsWith(".json") }?.forEach { file ->
+            val testName = "shift-bounds/${file.nameWithoutExtension}"
+            tests.add(DynamicTest.dynamicTest(testName) {
+                val testData = mapper.readValue<ShiftBoundsTestData>(file)
+                val result = shiftBounds(
+                    testData.input.x,
+                    testData.input.y,
+                    testData.input.misrate
+                )
+                assertClose(testData.output.lower, result.lower)
+                assertClose(testData.output.upper, result.upper)
+            })
+        }
+
         return tests
     }
 }

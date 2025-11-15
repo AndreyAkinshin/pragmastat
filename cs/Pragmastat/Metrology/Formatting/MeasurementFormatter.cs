@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text;
 using Pragmastat.Internal;
 
 namespace Pragmastat.Metrology;
@@ -31,6 +32,22 @@ public class MeasurementFormatter(
     UnitPresentation? unitPresentation = null)
   {
     return Format(measurement.NominalValue, measurement.Unit, format, formatProvider, unitPresentation);
+  }
+
+  public string Format(
+    Bounds bounds,
+    string? format = null,
+    IFormatProvider? formatProvider = null,
+    UnitPresentation? unitPresentation = null)
+  {
+    var builder = new StringBuilder();
+    builder.Append('[');
+    builder.Append(bounds.Lower.ToString(format, formatProvider));
+    builder.Append(';');
+    builder.Append(bounds.Upper.ToString(format, formatProvider));
+    builder.Append(']');
+    builder.Append(measurementUnitFormatter.Format(bounds.Unit, unitPresentation));
+    return builder.ToString();
   }
 
   public bool TryParse(string s, out Measurement value)

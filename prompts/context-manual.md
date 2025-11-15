@@ -1,11 +1,11 @@
 # Pragmastat Manual
 
-The core part of this project is @manual/
-  that describes the essence of statistical approaches implemented in 7 languages:
+The core part of this project is @manual/,
+  which describes the essence of statistical approaches implemented in 7 languages:
   @py/ @ts/ @r/ @cs/ @kt/ @rs/ @go/
 The whole manual is quite long, but it's decomposed into multiple short files that can be read individually when needed.
 The entry point to the manual is @manual/main.md
-Next, needed sections can be obtained by following INCLUDE directives that use file path relative to the root of the repository.
+Next, needed sections can be obtained by following INCLUDE directives that use file paths relative to the root of the repository.
 It's recommended to start learning the manual with the following essential files:
 - @manual/abstract.md
 - @manual/introduction/primer.md

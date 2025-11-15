@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 using Pragmastat.Properties;
 
 [assembly: CLSCompliant(true)]
@@ -10,5 +10,4 @@ using Pragmastat.Properties;
 
 [assembly: InternalsVisibleTo("Pragmastat.TestGenerator,PublicKey=" + PragmastatInfo.PublicKey)]
 [assembly: InternalsVisibleTo("Pragmastat.Tests,PublicKey=" + PragmastatInfo.PublicKey)]
-[assembly: InternalsVisibleTo("Pragmastat.UnitTests,PublicKey=" + PragmastatInfo.PublicKey)]
 [assembly: InternalsVisibleTo("Pragmastat.Simulations,PublicKey=" + PragmastatInfo.PublicKey)]

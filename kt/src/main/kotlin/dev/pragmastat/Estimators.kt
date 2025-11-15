@@ -1,7 +1,7 @@
 package dev.pragmastat
 
 import kotlin.math.abs
-import kotlin.math.sqrt
+import kotlin.math.min
 
 /**
  * Calculates the median of a list of values
@@ -27,6 +27,7 @@ fun median(values: List<Double>): Double {
  * Uses fast O(n log n) algorithm.
  */
 fun center(x: List<Double>): Double {
+    require(x.isNotEmpty()) { "Input list cannot be empty" }
     return fastCenter(x)
 }
 
@@ -38,6 +39,7 @@ fun center(x: List<Double>): Double {
  * Uses fast O(n log n) algorithm.
  */
 fun spread(x: List<Double>): Double {
+    require(x.isNotEmpty()) { "Input list cannot be empty" }
     return fastSpread(x)
 }
 
@@ -48,6 +50,7 @@ fun spread(x: List<Double>): Double {
  * Robust alternative to the coefficient of variation.
  */
 fun relSpread(x: List<Double>): Double {
+    require(x.isNotEmpty()) { "Input list cannot be empty" }
     val centerVal = center(x)
     require(centerVal != 0.0) { "RelSpread is undefined when Center equals zero" }
 
@@ -113,4 +116,55 @@ fun disparity(x: List<Double>, y: List<Double>): Double {
     if (avgSpreadVal == 0.0) return Double.POSITIVE_INFINITY
 
     return shift(x, y) / avgSpreadVal
+}
+
+/**
+ * Represents an interval with lower and upper bounds
+ */
+data class Bounds(val lower: Double, val upper: Double)
+
+/**
+ * Provides bounds on the Shift estimator with specified misclassification rate (ShiftBounds)
+ *
+ * The misrate represents the probability that the true shift falls outside the computed bounds.
+ * This is a pragmatic alternative to traditional confidence intervals for the Hodges-Lehmann estimator.
+ *
+ * @param x First sample
+ * @param y Second sample
+ * @param misrate Misclassification rate (probability that true shift falls outside bounds)
+ * @return A Bounds object containing the lower and upper bounds
+ */
+fun shiftBounds(x: List<Double>, y: List<Double>, misrate: Double): Bounds {
+    require(x.isNotEmpty() && y.isNotEmpty()) { "Input lists cannot be empty" }
+
+    val n = x.size
+    val m = y.size
+
+    // Sort both arrays
+    val xs = x.sorted()
+    val ys = y.sorted()
+
+    val total = n.toLong() * m.toLong()
+
+    // Special case: when there's only one pairwise difference, bounds collapse to a single value
+    if (total == 1L) {
+        val value = xs[0] - ys[0]
+        return Bounds(value, value)
+    }
+
+    val margin = pairwiseMargin(n, m, misrate)
+    val halfMargin = min(margin.toLong() / 2, (total - 1) / 2)
+    val kLeft = halfMargin
+    val kRight = (total - 1) - halfMargin
+
+    // Compute quantile positions
+    val denominator = (total - 1).toDouble().takeIf { it > 0.0 } ?: 1.0
+    val p = doubleArrayOf(kLeft.toDouble() / denominator, kRight.toDouble() / denominator)
+
+    val bounds = fastShift(xs, ys, p, assumeSorted = true)
+
+    val lower = minOf(bounds[0], bounds[1])
+    val upper = maxOf(bounds[0], bounds[1])
+
+    return Bounds(lower, upper)
 }

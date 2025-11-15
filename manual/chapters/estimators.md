@@ -21,3 +21,8 @@ Later sections will evaluate properties of these estimators and applicability to
 
 <!-- INCLUDE manual/estimators/disparity.md -->
 
+<!-- Two-sample Bounds -->
+
+<!-- INCLUDE manual/estimators/pairwise-margin.md -->
+
+<!-- INCLUDE manual/estimators/shift-bounds.md -->

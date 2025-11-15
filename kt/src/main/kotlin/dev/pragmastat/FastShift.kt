@@ -69,7 +69,7 @@ internal fun fastShift(
  * Binary search in [min_diff, max_diff] that snaps to actual discrete values.
  * Avoids materializing all m*n differences.
  */
-private fun selectKthPairwiseDiff(x: List<Double>, y: List<Double>, k: Long): Double {
+internal fun selectKthPairwiseDiff(x: List<Double>, y: List<Double>, k: Long): Double {
     val m = x.size
     val n = y.size
     val total = m.toLong() * n.toLong()

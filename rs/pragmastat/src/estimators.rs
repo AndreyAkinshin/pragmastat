@@ -115,3 +115,70 @@ pub fn disparity(x: &[f64], y: &[f64]) -> Result<f64, &'static str> {
     }
     Ok(shift_val / avg_spread_val)
 }
+
+/// Represents an interval with lower and upper bounds
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Bounds {
+    pub lower: f64,
+    pub upper: f64,
+}
+
+/// Provides bounds on the Shift estimator with specified misclassification rate (ShiftBounds)
+///
+/// The misrate represents the probability that the true shift falls outside the computed bounds.
+/// This is a pragmatic alternative to traditional confidence intervals for the Hodges-Lehmann estimator.
+///
+/// # Arguments
+///
+/// * `x` - First sample slice
+/// * `y` - Second sample slice
+/// * `misrate` - Misclassification rate (probability that true shift falls outside bounds)
+///
+/// # Returns
+///
+/// A `Bounds` struct containing the lower and upper bounds, or an error if inputs are invalid.
+pub fn shift_bounds(x: &[f64], y: &[f64], misrate: f64) -> Result<Bounds, &'static str> {
+    if x.is_empty() || y.is_empty() {
+        return Err("Input slices cannot be empty");
+    }
+
+    let n = x.len();
+    let m = y.len();
+
+    // Sort both arrays
+    let mut xs = x.to_vec();
+    let mut ys = y.to_vec();
+    xs.sort_by(|a, b| a.partial_cmp(b).unwrap());
+    ys.sort_by(|a, b| a.partial_cmp(b).unwrap());
+
+    let total = n * m;
+
+    // Special case: when there's only one pairwise difference, bounds collapse to a single value
+    if total == 1 {
+        let value = xs[0] - ys[0];
+        return Ok(Bounds {
+            lower: value,
+            upper: value,
+        });
+    }
+
+    let margin = crate::pairwise_margin::pairwise_margin(n, m, misrate);
+    let max_half_margin = (total - 1) / 2;
+    let mut half_margin = margin / 2;
+    if half_margin > max_half_margin {
+        half_margin = max_half_margin;
+    }
+    let k_left = half_margin;
+    let k_right = total - 1 - half_margin;
+
+    // Compute quantile positions
+    let denominator = (total - 1) as f64;
+    let p = vec![k_left as f64 / denominator, k_right as f64 / denominator];
+
+    let bounds = crate::fast_shift::fast_shift_quantiles(&xs, &ys, &p, true)?;
+
+    let lower = bounds[0].min(bounds[1]);
+    let upper = bounds[0].max(bounds[1]);
+
+    Ok(Bounds { lower, upper })
+}

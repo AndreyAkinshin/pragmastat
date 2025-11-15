@@ -105,7 +105,7 @@ public static class TwoSampleTestCases
         .Add("composite-asymmetric-weights", new Sample(1, 2), new Sample(3, 4, 5, 6, 7, 8, 9, 10))
         .Add("composite-zero-spread-one", new Sample(5, 5, 5), new Sample(1, 2, 3, 4, 5))
         .Add("composite-extreme-sizes", new Sample(10), new Sample(1, 2, 3, 4, 5, 6, 7, 8, 9, 10))
-        // Unsorted tests - 15 tests (critical for verifying independent sorting)
+        // Unsorted tests - 14 tests (critical for verifying independent sorting)
         .AddUnsortedVariants("natural", 3, 3)  // 3 tests
         .AddUnsortedVariants("natural", 4, 4)  // 3 tests
         .AddUnsorted("demo-unsorted-x", new Sample(12, 0, 6, 3, 9), new Sample(0, 2, 4, 6, 8))  // Demo-1 with X unsorted

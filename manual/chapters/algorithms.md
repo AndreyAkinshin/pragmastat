@@ -9,3 +9,5 @@ Both algorithms solve a fundamental computational challenge: how to efficiently 
 <!-- INCLUDE manual/algorithms/fast-spread.md -->
 
 <!-- INCLUDE manual/algorithms/fast-shift.md -->
+
+<!-- INCLUDE manual/algorithms/fast-pairwise-margin.md -->

@@ -2,9 +2,9 @@
 
 This is a Go implementation of 'Pragmastat: Pragmatic Statistical Toolkit', which presents a toolkit of statistical procedures that provide reliable results across diverse real-world distributions, with ready-to-use implementations and detailed explanations.
 
-- PDF manual for this version: [pragmastat-v3.2.4.pdf](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.4/pragmastat-v3.2.4.pdf)
-- Markdown manual for this version: [pragmastat-v3.2.4.md](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.4/pragmastat-v3.2.4.md)
-- Source code for this version: [pragmastat/go/v3.2.4](https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.4/go)
+- PDF manual for this version: [pragmastat-v4.0.0.pdf](https://github.com/AndreyAkinshin/pragmastat/releases/download/v4.0.0/pragmastat-v4.0.0.pdf)
+- Markdown manual for this version: [pragmastat-v4.0.0.md](https://github.com/AndreyAkinshin/pragmastat/releases/download/v4.0.0/pragmastat-v4.0.0.md)
+- Source code for this version: [pragmastat/go/v4.0.0](https://github.com/AndreyAkinshin/pragmastat/tree/v4.0.0/go)
 - Latest online manual: https://pragmastat.dev
 - Manual DOI: [10.5281/zenodo.17236778](https://doi.org/10.5281/zenodo.17236778)
 
@@ -13,7 +13,7 @@ This is a Go implementation of 'Pragmastat: Pragmatic Statistical Toolkit', whic
 Install from GitHub:
 
 ```bash
-go get github.com/AndreyAkinshin/pragmastat/go/v3@v3.2.4
+go get github.com/AndreyAkinshin/pragmastat/go/v3@v4.0.0
 ```
 
 ## Demo
@@ -99,6 +99,25 @@ func main() {
 	print(pragmastat.Disparity(add(x, 5), add(y, 5)))           // 0.4
 	print(pragmastat.Disparity(multiply(x, 2), multiply(y, 2))) // 0.4
 	print(pragmastat.Disparity(y, x))                           // -0.4
+
+	x = []float64{
+		1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+		16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30}
+	y = []float64{
+		21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35,
+		36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50}
+
+	fmt.Println(pragmastat.PairwiseMargin(30, 30, 1e-6)) // 276
+	fmt.Println(pragmastat.PairwiseMargin(30, 30, 1e-5)) // 328
+	fmt.Println(pragmastat.PairwiseMargin(30, 30, 1e-4)) // 390
+	fmt.Println(pragmastat.PairwiseMargin(30, 30, 1e-3)) // 464
+
+	print(pragmastat.Shift(x, y)) // -20
+
+	fmt.Println(must(pragmastat.ShiftBounds(x, y, 1e-6))) // [-33, -7]
+	fmt.Println(must(pragmastat.ShiftBounds(x, y, 1e-5))) // [-32, -8]
+	fmt.Println(must(pragmastat.ShiftBounds(x, y, 1e-4))) // [-30, -10]
+	fmt.Println(must(pragmastat.ShiftBounds(x, y, 1e-3))) // [-28, -12]
 }
 ```
 

@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pragmastat", "Pragmastat\Pragmastat.csproj", "{99D956D5-32D7-4056-A72F-DF9A77F4C30A}"
 EndProject
@@ -24,10 +24,6 @@ Global
 		{99D956D5-32D7-4056-A72F-DF9A77F4C30A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{99D956D5-32D7-4056-A72F-DF9A77F4C30A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{99D956D5-32D7-4056-A72F-DF9A77F4C30A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{DE29C17F-5EB6-419D-A999-68E4F19430BC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DE29C17F-5EB6-419D-A999-68E4F19430BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DE29C17F-5EB6-419D-A999-68E4F19430BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DE29C17F-5EB6-419D-A999-68E4F19430BC}.Release|Any CPU.Build.0 = Release|Any CPU
 		{865C3489-B0E6-44D9-98AA-0F077ACEEBAE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{865C3489-B0E6-44D9-98AA-0F077ACEEBAE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{865C3489-B0E6-44D9-98AA-0F077ACEEBAE}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -48,5 +44,9 @@ Global
 		{8B2807C6-B990-49B3-BC6A-B45A3D67708B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8B2807C6-B990-49B3-BC6A-B45A3D67708B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8B2807C6-B990-49B3-BC6A-B45A3D67708B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DE29C17F-5EB6-419D-A999-68E4F19430BC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DE29C17F-5EB6-419D-A999-68E4F19430BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DE29C17F-5EB6-419D-A999-68E4F19430BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DE29C17F-5EB6-419D-A999-68E4F19430BC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

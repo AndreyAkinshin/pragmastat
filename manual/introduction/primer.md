@@ -94,5 +94,33 @@ $$
 \end{aligned}
 $$
 
+$\PairwiseMargin(n, m, \misrate)$ — determines how many extreme pairwise differences to exclude when constructing bounds based on the distribution of dominance statistics
+
+For $n = 30, m = 30$:
+
+$$
+\begin{aligned}
+\PairwiseMargin(30, 30, 10^{-6}) &= 276 \\
+\PairwiseMargin(30, 30, 10^{-5}) &= 328 \\
+\PairwiseMargin(30, 30, 10^{-4}) &= 390 \\
+\PairwiseMargin(30, 30, 10^{-3}) &= 464
+\end{aligned}
+$$
+
+$\ShiftBounds(\x, \y, \misrate)$ — bounds on $\Shift(\x, \y)$ with specified misrate;
+  these bounds fail to cover the true value of shift in $\misrate$ probability in the long run
+
+For $\x = (1, 2, \ldots, 30)$ and $\y = (21, 22, \ldots, 50)$:
+
+$$
+\begin{aligned}
+\Shift(\x, \y) &= -20 \\
+\ShiftBounds(\x, \y, 10^{-6}) &= [-33, -7] \\
+\ShiftBounds(\x, \y, 10^{-5}) &= [-32, -8] \\
+\ShiftBounds(\x, \y, 10^{-4}) &= [-30, -10] \\
+\ShiftBounds(\x, \y, 10^{-3}) &= [-28, -12]
+\end{aligned}
+$$
+
 These procedures are designed to serve as default choices for routine analysis and comparison tasks in engineering contexts.
 The toolkit has ready-to-use implementations for Python, TypeScript/JavaScript, R, C#, Kotlin, Rust, and Go.

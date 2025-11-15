@@ -7,11 +7,11 @@ Install from GitHub:
 ```r
 install.packages("remotes") # If 'remotes' is not installed
 remotes::install_github("AndreyAkinshin/pragmastat",
-                        subdir = "r/pragmastat", ref = "v3.2.4")
+                        subdir = "r/pragmastat", ref = "v4.0.0")
 library(pragmastat)
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.4/r
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v4.0.0/r
 
 
 
@@ -63,4 +63,23 @@ print(disparity(x, y)) # 0.4
 print(disparity(x + 5, y + 5)) # 0.4
 print(disparity(x * 2, y * 2)) # 0.4
 print(disparity(y, x)) # -0.4
+
+x <- 1:30
+y <- 21:50
+
+print(pairwise_margin(30, 30, 1e-6)) # 276
+print(pairwise_margin(30, 30, 1e-5)) # 328
+print(pairwise_margin(30, 30, 1e-4)) # 390
+print(pairwise_margin(30, 30, 1e-3)) # 464
+
+print(shift(x, y)) # -20
+
+bounds <- shift_bounds(x, y, 1e-6) # [-33, -7]
+print(paste("[", bounds$lower, ", ", bounds$upper, "]", sep=""))
+bounds <- shift_bounds(x, y, 1e-5) # [-32, -8]
+print(paste("[", bounds$lower, ", ", bounds$upper, "]", sep=""))
+bounds <- shift_bounds(x, y, 1e-4) # [-30, -10]
+print(paste("[", bounds$lower, ", ", bounds$upper, "]", sep=""))
+bounds <- shift_bounds(x, y, 1e-3) # [-28, -12]
+print(paste("[", bounds$lower, ", ", bounds$upper, "]", sep=""))
 ```

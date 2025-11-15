@@ -10,5 +10,9 @@ pub mod estimators;
 pub mod fast_center;
 pub mod fast_shift;
 pub mod fast_spread;
+pub mod pairwise_margin;
 
-pub use estimators::{avg_spread, center, disparity, ratio, rel_spread, shift, spread};
+pub use estimators::{
+    avg_spread, center, disparity, ratio, rel_spread, shift, shift_bounds, spread, Bounds,
+};
+pub use pairwise_margin::pairwise_margin;

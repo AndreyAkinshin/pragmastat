@@ -194,5 +194,12 @@ public class Sample
 
   public Measurement Min() => SortedValues[0].WithUnit(Unit);
   public Measurement Max() => SortedValues[SortedValues.Count - 1].WithUnit(Unit);
-  public Interval Range() => Interval.Of(Min(), Max());
+
+  public Sample Log()
+  {
+    double[] logValues = new double[Size];
+    for (int i = 0; i < Size; i++)
+      logValues[i] = Math.Log(Values[i]);
+    return new Sample(logValues, Weights);
+  }
 }

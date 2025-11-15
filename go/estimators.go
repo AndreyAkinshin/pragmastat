@@ -138,3 +138,66 @@ func Disparity[T Number](x, y []T) (float64, error) {
 	}
 	return shiftVal / avgSpreadVal, nil
 }
+
+// Bounds represents an interval [Lower, Upper].
+type Bounds struct {
+	Lower float64
+	Upper float64
+}
+
+// ShiftBounds provides bounds on the Shift estimator with specified misclassification rate.
+// The misrate represents the probability that the true shift falls outside the computed bounds.
+// This is a pragmatic alternative to traditional confidence intervals for the Hodges-Lehmann estimator.
+func ShiftBounds[T Number](x, y []T, misrate float64) (Bounds, error) {
+	n := len(x)
+	m := len(y)
+
+	if n == 0 || m == 0 {
+		return Bounds{}, errors.New("input slices cannot be empty")
+	}
+
+	// Sort both arrays
+	xs := make([]T, n)
+	ys := make([]T, m)
+	copy(xs, x)
+	copy(ys, y)
+	sort.Slice(xs, func(i, j int) bool { return xs[i] < xs[j] })
+	sort.Slice(ys, func(i, j int) bool { return ys[i] < ys[j] })
+
+	total := int64(n) * int64(m)
+
+	// Special case: when there's only one pairwise difference, bounds collapse to a single value
+	if total == 1 {
+		value := float64(xs[0] - ys[0])
+		return Bounds{Lower: value, Upper: value}, nil
+	}
+
+	margin := PairwiseMargin(n, m, misrate)
+	halfMargin := int64(margin / 2)
+	maxHalfMargin := (total - 1) / 2
+	if halfMargin > maxHalfMargin {
+		halfMargin = maxHalfMargin
+	}
+	kLeft := halfMargin
+	kRight := (total - 1) - halfMargin
+
+	// Compute quantile positions
+	denominator := float64(total - 1)
+	if denominator <= 0 {
+		denominator = 1
+	}
+
+	p := []float64{float64(kLeft) / denominator, float64(kRight) / denominator}
+	bounds, err := fastShiftQuantiles(xs, ys, p, true)
+	if err != nil {
+		return Bounds{}, err
+	}
+
+	lower := bounds[0]
+	upper := bounds[1]
+	if lower > upper {
+		lower, upper = upper, lower
+	}
+
+	return Bounds{Lower: lower, Upper: upper}, nil
+}

@@ -2,9 +2,9 @@
 
 This is a C\# implementation of 'Pragmastat: Pragmatic Statistical Toolkit', which presents a toolkit of statistical procedures that provide reliable results across diverse real-world distributions, with ready-to-use implementations and detailed explanations.
 
-- PDF manual for this version: [pragmastat-v3.2.4.pdf](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.4/pragmastat-v3.2.4.pdf)
-- Markdown manual for this version: [pragmastat-v3.2.4.md](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.4/pragmastat-v3.2.4.md)
-- Source code for this version: [pragmastat/cs/v3.2.4](https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.4/cs)
+- PDF manual for this version: [pragmastat-v4.0.0.pdf](https://github.com/AndreyAkinshin/pragmastat/releases/download/v4.0.0/pragmastat-v4.0.0.pdf)
+- Markdown manual for this version: [pragmastat-v4.0.0.md](https://github.com/AndreyAkinshin/pragmastat/releases/download/v4.0.0/pragmastat-v4.0.0.md)
+- Source code for this version: [pragmastat/cs/v4.0.0](https://github.com/AndreyAkinshin/pragmastat/tree/v4.0.0/cs)
 - Latest online manual: https://pragmastat.dev
 - Manual DOI: [10.5281/zenodo.17236778](https://doi.org/10.5281/zenodo.17236778)
 
@@ -13,19 +13,20 @@ This is a C\# implementation of 'Pragmastat: Pragmatic Statistical Toolkit', whi
 Install from NuGet via .NET CLI:
 
 ```bash
-dotnet add package Pragmastat --version 3.2.4
+dotnet add package Pragmastat --version 4.0.0
 ```
 
 Install from NuGet via Package Manager Console:
 
 ```ps1
-NuGet\Install-Package Pragmastat -Version 3.2.4
+NuGet\Install-Package Pragmastat -Version 4.0.0
 ```
 
 ## Demo
 
 ```cs
 using static System.Console;
+using Pragmastat.Functions;
 
 namespace Pragmastat.Demo;
 
@@ -76,6 +77,25 @@ class Program
     WriteLine(Toolkit.Disparity(x + 5, y + 5)); // 0.4
     WriteLine(Toolkit.Disparity(x * 2, y * 2)); // 0.4
     WriteLine(Toolkit.Disparity(y, x)); // -0.4
+
+    x = new Sample(
+      1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+      16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30);
+    y = new Sample(
+      21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35,
+      36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50);
+
+    WriteLine(PairwiseMargin.Instance.Calc(30, 30, 1e-6)); // 276
+    WriteLine(PairwiseMargin.Instance.Calc(30, 30, 1e-5)); // 328
+    WriteLine(PairwiseMargin.Instance.Calc(30, 30, 1e-4)); // 390
+    WriteLine(PairwiseMargin.Instance.Calc(30, 30, 1e-3)); // 464
+
+    WriteLine(Toolkit.Shift(x, y)); // -20
+
+    WriteLine(Toolkit.ShiftBounds(x, y, 1e-6)); // [-33, -7]
+    WriteLine(Toolkit.ShiftBounds(x, y, 1e-5)); // [-32, -8]
+    WriteLine(Toolkit.ShiftBounds(x, y, 1e-4)); // [-30, -10]
+    WriteLine(Toolkit.ShiftBounds(x, y, 1e-3)); // [-28, -12]
   }
 }
 ```

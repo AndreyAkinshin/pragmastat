@@ -13,4 +13,7 @@ public static class Toolkit
   public static Measurement Ratio(Sample x, Sample y) => RatioEstimator.Instance.Estimate(x, y);
   public static Measurement AvgSpread(Sample x, Sample y) => AvgSpreadEstimator.Instance.Estimate(x, y);
   public static Measurement Disparity(Sample x, Sample y) => DisparityEstimator.Instance.Estimate(x, y);
+
+  public static Bounds ShiftBounds(Sample x, Sample y, Probability misrate) =>
+    ShiftBoundsEstimator.Instance.Estimate(x, y, misrate);
 }

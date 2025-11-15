@@ -6,7 +6,10 @@ from .estimators import (
     ratio,
     avg_spread,
     disparity,
+    shift_bounds,
+    Bounds,
 )
+from .pairwise_margin import pairwise_margin
 
 __all__ = [
     "center",
@@ -16,6 +19,9 @@ __all__ = [
     "ratio",
     "avg_spread",
     "disparity",
+    "shift_bounds",
+    "Bounds",
+    "pairwise_margin",
 ]
 
-__version__ = "3.2.4"
+__version__ = "4.0.0"

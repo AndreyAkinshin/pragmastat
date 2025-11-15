@@ -5,17 +5,17 @@
 Install from crates.io via cargo:
 
 ```bash
-cargo add pragmastat@3.2.4
+cargo add pragmastat@4.0.0
 ```
 
 Install from crates.io via `Cargo.toml`:
 
 ```toml
 [dependencies]
-pragmastat = "3.2.4"
+pragmastat = "4.0.0"
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.4/rs
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v4.0.0/rs
 
 Pragmastat on crates.io: https://crates.io/crates/pragmastat
 
@@ -80,5 +80,27 @@ fn main() {
     print(disparity(&add(&x, 5.0), &add(&y, 5.0))); // 0.4
     print(disparity(&multiply(&x, 2.0), &multiply(&y, 2.0))); // 0.4
     print(disparity(&y, &x)); // -0.4
+
+    let x: Vec<f64> = (1..=30).map(|i| i as f64).collect();
+    let y: Vec<f64> = (21..=50).map(|i| i as f64).collect();
+
+    println!("{}", pairwise_margin(30, 30, 1e-6)); // 276
+    println!("{}", pairwise_margin(30, 30, 1e-5)); // 328
+    println!("{}", pairwise_margin(30, 30, 1e-4)); // 390
+    println!("{}", pairwise_margin(30, 30, 1e-3)); // 464
+
+    print(shift(&x, &y)); // -20
+
+    let bounds = shift_bounds(&x, &y, 1e-6).unwrap(); // [-33, -7]
+    println!("{{lower: {}, upper: {}}}", bounds.lower, bounds.upper);
+
+    let bounds = shift_bounds(&x, &y, 1e-5).unwrap(); // [-32, -8]
+    println!("{{lower: {}, upper: {}}}", bounds.lower, bounds.upper);
+
+    let bounds = shift_bounds(&x, &y, 1e-4).unwrap(); // [-30, -10]
+    println!("{{lower: {}, upper: {}}}", bounds.lower, bounds.upper);
+
+    let bounds = shift_bounds(&x, &y, 1e-3).unwrap(); // [-28, -12]
+    println!("{{lower: {}, upper: {}}}", bounds.lower, bounds.upper);
 }
 ```

@@ -914,12 +914,17 @@ do_release() {
         exit 1
     fi
 
-    # 3. Make commit
-    print_status "Creating commit"
+    # 3. Make commit (if there are changes)
+    print_status "Checking for changes to commit"
     git add -A
-    if ! git commit -m "set version $version"; then
-        print_error "Failed to create commit"
-        exit 1
+    if git diff --cached --quiet; then
+        print_status "No changes to commit (version already up-to-date)"
+    else
+        print_status "Creating commit"
+        if ! git commit -m "set version $version"; then
+            print_error "Failed to create commit"
+            exit 1
+        fi
     fi
 
     # 4. Move branch main to HEAD

@@ -133,7 +133,7 @@ internal static class FastSpread
       }
 
       // === SHRINK ACTIVE WINDOW ===
-// --- SHRINK ACTIVE WINDOW (fixed) ---
+      // --- SHRINK ACTIVE WINDOW (fixed) ---
       if (countBelow < kLow)
       {
         // Need larger differences: discard all strictly below pivot.

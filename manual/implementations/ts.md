@@ -5,17 +5,17 @@
 Install from npm:
 
 ```bash
-npm i pragmastat@3.2.4
+npm i pragmastat@4.0.0
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.4/ts
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v4.0.0/ts
 
 Pragmastat on npm: https://www.npmjs.com/package/pragmastat
 
 Demo:
 
 ```typescript
-import { center, spread, relSpread, shift, ratio, avgSpread, disparity } from '../src';
+import { center, spread, relSpread, shift, ratio, avgSpread, disparity, shiftBounds, pairwiseMargin } from '../src';
 
 function main() {
     let x = [0, 2, 4, 6, 8];
@@ -61,6 +61,21 @@ function main() {
     console.log(disparity(x.map(v => v + 5), y.map(v => v + 5))); // 0.4
     console.log(disparity(x.map(v => v * 2), y.map(v => v * 2))); // 0.4
     console.log(disparity(y, x)); // -0.4
+
+    x = Array.from({ length: 30 }, (_, i) => i + 1);
+    y = Array.from({ length: 30 }, (_, i) => i + 21);
+
+    console.log(pairwiseMargin(30, 30, 1e-6)); // 276
+    console.log(pairwiseMargin(30, 30, 1e-5)); // 328
+    console.log(pairwiseMargin(30, 30, 1e-4)); // 390
+    console.log(pairwiseMargin(30, 30, 1e-3)); // 464
+
+    console.log(shift(x, y)); // -20
+
+    console.log(shiftBounds(x, y, 1e-6)); // [-33, -7]
+    console.log(shiftBounds(x, y, 1e-5)); // [-32, -8]
+    console.log(shiftBounds(x, y, 1e-4)); // [-30, -10]
+    console.log(shiftBounds(x, y, 1e-3)); // [-28, -12]
 }
 
 main();

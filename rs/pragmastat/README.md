@@ -2,9 +2,9 @@
 
 This is a Rust implementation of 'Pragmastat: Pragmatic Statistical Toolkit', which presents a toolkit of statistical procedures that provide reliable results across diverse real-world distributions, with ready-to-use implementations and detailed explanations.
 
-- PDF manual for this version: [pragmastat-v3.2.4.pdf](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.4/pragmastat-v3.2.4.pdf)
-- Markdown manual for this version: [pragmastat-v3.2.4.md](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.4/pragmastat-v3.2.4.md)
-- Source code for this version: [pragmastat/rs/v3.2.4](https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.4/rs)
+- PDF manual for this version: [pragmastat-v4.0.0.pdf](https://github.com/AndreyAkinshin/pragmastat/releases/download/v4.0.0/pragmastat-v4.0.0.pdf)
+- Markdown manual for this version: [pragmastat-v4.0.0.md](https://github.com/AndreyAkinshin/pragmastat/releases/download/v4.0.0/pragmastat-v4.0.0.md)
+- Source code for this version: [pragmastat/rs/v4.0.0](https://github.com/AndreyAkinshin/pragmastat/tree/v4.0.0/rs)
 - Latest online manual: https://pragmastat.dev
 - Manual DOI: [10.5281/zenodo.17236778](https://doi.org/10.5281/zenodo.17236778)
 
@@ -13,14 +13,14 @@ This is a Rust implementation of 'Pragmastat: Pragmatic Statistical Toolkit', wh
 Install from crates.io via cargo:
 
 ```bash
-cargo add pragmastat@3.2.4
+cargo add pragmastat@4.0.0
 ```
 
 Install from crates.io via `Cargo.toml`:
 
 ```toml
 [dependencies]
-pragmastat = "3.2.4"
+pragmastat = "4.0.0"
 ```
 
 ## Demo
@@ -84,6 +84,28 @@ fn main() {
     print(disparity(&add(&x, 5.0), &add(&y, 5.0))); // 0.4
     print(disparity(&multiply(&x, 2.0), &multiply(&y, 2.0))); // 0.4
     print(disparity(&y, &x)); // -0.4
+
+    let x: Vec<f64> = (1..=30).map(|i| i as f64).collect();
+    let y: Vec<f64> = (21..=50).map(|i| i as f64).collect();
+
+    println!("{}", pairwise_margin(30, 30, 1e-6)); // 276
+    println!("{}", pairwise_margin(30, 30, 1e-5)); // 328
+    println!("{}", pairwise_margin(30, 30, 1e-4)); // 390
+    println!("{}", pairwise_margin(30, 30, 1e-3)); // 464
+
+    print(shift(&x, &y)); // -20
+
+    let bounds = shift_bounds(&x, &y, 1e-6).unwrap(); // [-33, -7]
+    println!("{{lower: {}, upper: {}}}", bounds.lower, bounds.upper);
+
+    let bounds = shift_bounds(&x, &y, 1e-5).unwrap(); // [-32, -8]
+    println!("{{lower: {}, upper: {}}}", bounds.lower, bounds.upper);
+
+    let bounds = shift_bounds(&x, &y, 1e-4).unwrap(); // [-30, -10]
+    println!("{{lower: {}, upper: {}}}", bounds.lower, bounds.upper);
+
+    let bounds = shift_bounds(&x, &y, 1e-3).unwrap(); // [-28, -12]
+    println!("{{lower: {}, upper: {}}}", bounds.lower, bounds.upper);
 }
 ```
 

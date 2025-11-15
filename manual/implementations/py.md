@@ -5,17 +5,27 @@
 Install from PyPI:
 
 ```bash
-pip install pragmastat==3.2.4
+pip install pragmastat==4.0.0
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.4/py
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v4.0.0/py
 
 Pragmastat on PyPI: https://pypi.org/project/pragmastat/
 
 Demo:
 
 ```python
-from pragmastat import center, spread, rel_spread, shift, ratio, avg_spread, disparity
+from pragmastat import (
+    center,
+    spread,
+    rel_spread,
+    shift,
+    ratio,
+    avg_spread,
+    disparity,
+    pairwise_margin,
+    shift_bounds,
+)
 
 
 def main():
@@ -62,6 +72,25 @@ def main():
     print(disparity([v + 5 for v in x], [v + 5 for v in y]))  # 0.4
     print(disparity([v * 2 for v in x], [v * 2 for v in y]))  # 0.4
     print(disparity(y, x))  # -0.4
+
+    x = list(range(1, 31))
+    y = list(range(21, 51))
+
+    print(pairwise_margin(30, 30, 1e-6))  # 276
+    print(pairwise_margin(30, 30, 1e-5))  # 328
+    print(pairwise_margin(30, 30, 1e-4))  # 390
+    print(pairwise_margin(30, 30, 1e-3))  # 464
+
+    print(shift(x, y))  # -20
+
+    bounds = shift_bounds(x, y, 1e-6)  # [-33, -7]
+    print(f"Bounds(lower={bounds.lower}, upper={bounds.upper})")
+    bounds = shift_bounds(x, y, 1e-5)  # [-32, -8]
+    print(f"Bounds(lower={bounds.lower}, upper={bounds.upper})")
+    bounds = shift_bounds(x, y, 1e-4)  # [-30, -10]
+    print(f"Bounds(lower={bounds.lower}, upper={bounds.upper})")
+    bounds = shift_bounds(x, y, 1e-3)  # [-28, -12]
+    print(f"Bounds(lower={bounds.lower}, upper={bounds.upper})")
 
 
 if __name__ == "__main__":

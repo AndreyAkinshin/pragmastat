@@ -1,3 +1,6 @@
+using Pragmastat.Internal;
+using Pragmastat.Metrology;
+
 namespace Pragmastat.Distributions.Randomization;
 
 public abstract class AbstractRandomGenerator(Random? random = null)
@@ -22,4 +25,6 @@ public abstract class AbstractRandomGenerator(Random? random = null)
       numbers[i] = Next();
     return numbers;
   }
+
+  public Sample NextSample(int size, MeasurementUnit? unit = null) => Next(size).ToSample(unit);
 }

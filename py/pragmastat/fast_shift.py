@@ -134,7 +134,10 @@ def _select_kth_pairwise_diff(x: List[float], y: List[float], k: int) -> float:
 
 
 def _fast_shift_python(
-    x: List[float], y: List[float], p: Union[float, List[float]] = 0.5
+    x: List[float],
+    y: List[float],
+    p: Union[float, List[float]] = 0.5,
+    assume_sorted: bool = False,
 ) -> Union[float, List[float]]:
     """
     Pure Python implementation of fast shift estimator.
@@ -145,9 +148,10 @@ def _fast_shift_python(
     Space complexity: O(1)
 
     Args:
-        x: First sample (will be sorted if needed)
-        y: Second sample (will be sorted if needed)
+        x: First sample (will be sorted if assume_sorted is False)
+        y: Second sample (will be sorted if assume_sorted is False)
         p: Quantile(s) to compute (0.5 for median). Can be a single float or list of floats.
+        assume_sorted: If True, assumes x and y are already sorted in ascending order.
 
     Returns:
         The quantile estimate(s). Returns float if p is float, list if p is list.
@@ -164,9 +168,13 @@ def _fast_shift_python(
         if np.isnan(pk) or pk < 0.0 or pk > 1.0:
             raise ValueError(f"Probabilities must be within [0, 1], got {pk}")
 
-    # Sort the arrays
-    xs = sorted(x)
-    ys = sorted(y)
+    # Sort the arrays if not already sorted
+    if assume_sorted:
+        xs = list(x)
+        ys = list(y)
+    else:
+        xs = sorted(x)
+        ys = sorted(y)
 
     m = len(xs)
     n = len(ys)
@@ -212,6 +220,7 @@ def _fast_shift(
     x: Union[Sequence[float], NDArray],
     y: Union[Sequence[float], NDArray],
     p: Union[float, List[float]] = 0.5,
+    assume_sorted: bool = False,
 ) -> Union[float, List[float]]:
     """
     Compute quantiles of all pairwise differences {x_i - y_j} efficiently.
@@ -226,12 +235,14 @@ def _fast_shift(
         x: First sample
         y: Second sample
         p: Quantile(s) to compute (0.5 for median)
+        assume_sorted: If True, assumes x and y are already sorted in ascending order.
 
     Returns:
         The quantile estimate(s)
     """
     if _HAS_C_EXTENSION:
         # Convert to numpy arrays and use C implementation
+        # Note: C extension always sorts internally for safety
         x_arr = np.asarray(x, dtype=np.float64)
         y_arr = np.asarray(y, dtype=np.float64)
         return_single = isinstance(p, (float, int))
@@ -240,4 +251,4 @@ def _fast_shift(
         return float(result[0]) if return_single else result.tolist()
     else:
         # Fall back to pure Python implementation
-        return _fast_shift_python(x, y, p)
+        return _fast_shift_python(x, y, p, assume_sorted)

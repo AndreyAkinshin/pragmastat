@@ -6,6 +6,7 @@ import { median } from './utils';
 import { fastCenter } from './fastCenter';
 import { fastSpread } from './fastSpread';
 import { fastShift } from './fastShift';
+import { pairwiseMargin } from './pairwiseMargin';
 
 /**
  * Calculate the Center - median of all pairwise averages (x[i] + x[j])/2
@@ -14,6 +15,9 @@ import { fastShift } from './fastShift';
  * @returns The center estimate
  */
 export function center(x: number[]): number {
+  if (x.length === 0) {
+    throw new Error('Input array cannot be empty');
+  }
   return fastCenter(x);
 }
 
@@ -24,6 +28,9 @@ export function center(x: number[]): number {
  * @returns The spread estimate
  */
 export function spread(x: number[]): number {
+  if (x.length === 0) {
+    throw new Error('Input array cannot be empty');
+  }
   return fastSpread(x);
 }
 
@@ -134,4 +141,61 @@ export function disparity(x: number[], y: number[]): number {
   }
 
   return shiftVal / combinedSpread;
+}
+
+/**
+ * Represents an interval with lower and upper bounds
+ */
+export interface Bounds {
+  lower: number;
+  upper: number;
+}
+
+/**
+ * Provides bounds on the Shift estimator with specified misclassification rate (ShiftBounds)
+ *
+ * The misrate represents the probability that the true shift falls outside the computed bounds.
+ * This is a pragmatic alternative to traditional confidence intervals for the Hodges-Lehmann estimator.
+ *
+ * @param x First sample
+ * @param y Second sample
+ * @param misrate Misclassification rate (probability that true shift falls outside bounds)
+ * @returns An object containing the lower and upper bounds
+ */
+export function shiftBounds(x: number[], y: number[], misrate: number): Bounds {
+  if (x.length === 0 || y.length === 0) {
+    throw new Error('Input arrays cannot be empty');
+  }
+
+  const n = x.length;
+  const m = y.length;
+
+  // Sort both arrays
+  const xs = [...x].sort((a, b) => a - b);
+  const ys = [...y].sort((a, b) => a - b);
+
+  const total = n * m;
+
+  // Special case: when there's only one pairwise difference, bounds collapse to a single value
+  if (total === 1) {
+    const value = xs[0] - ys[0];
+    return { lower: value, upper: value };
+  }
+
+  const margin = pairwiseMargin(n, m, misrate);
+  const halfMargin = Math.min(Math.floor(margin / 2), Math.floor((total - 1) / 2));
+  const kLeft = halfMargin;
+  const kRight = total - 1 - halfMargin;
+
+  // Compute quantile positions
+  const denominator = total - 1 || 1;
+  const pLeft = kLeft / denominator;
+  const pRight = kRight / denominator;
+
+  // Use fastShift to compute quantiles of pairwise differences
+  const [left, right] = fastShift(xs, ys, [pLeft, pRight], true);
+  const lower = Math.min(left, right);
+  const upper = Math.max(left, right);
+
+  return { lower, upper };
 }

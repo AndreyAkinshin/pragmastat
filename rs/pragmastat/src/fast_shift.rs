@@ -1,47 +1,115 @@
+use std::collections::BTreeSet;
+
 /// Fast O((m+n) log precision) implementation of the Shift estimator.
 /// Computes the median of all pairwise differences {x[i] - y[j]}.
 ///
 /// Internal implementation - not part of public API.
 pub(crate) fn fast_shift(x: &[f64], y: &[f64]) -> Result<f64, &'static str> {
+    let result = fast_shift_quantiles(x, y, &[0.5], false)?;
+    Ok(result[0])
+}
+
+/// Computes quantiles of all pairwise differences {x[i] - y[j]}.
+/// Time complexity: O((m+n) log precision) per unique rank.
+/// Space complexity: O(1) - avoids materializing all m*n differences.
+///
+/// # Arguments
+/// * `x` - First sample (will be sorted if assume_sorted is false)
+/// * `y` - Second sample (will be sorted if assume_sorted is false)
+/// * `p` - Slice of probabilities in [0, 1]
+/// * `assume_sorted` - If true, assumes inputs are already sorted
+pub(crate) fn fast_shift_quantiles(
+    x: &[f64],
+    y: &[f64],
+    p: &[f64],
+    assume_sorted: bool,
+) -> Result<Vec<f64>, &'static str> {
     if x.is_empty() || y.is_empty() {
         return Err("Input slices cannot be empty");
     }
 
-    // Sort the input arrays
-    let mut x_sorted = x.to_vec();
-    let mut y_sorted = y.to_vec();
-    x_sorted.sort_by(|a, b| a.partial_cmp(b).unwrap());
-    y_sorted.sort_by(|a, b| a.partial_cmp(b).unwrap());
-
-    let m = x_sorted.len();
-    let n = y_sorted.len();
-    let total = (m * n) as i64;
-
-    // Type-7 quantile for p=0.5 (median)
-    let h = 1.0 + (total - 1) as f64 * 0.5;
-    let k_low = h.floor() as i64; // 1-based rank of lower middle
-    let k_high = h.ceil() as i64; // 1-based rank of upper middle
-    let weight = h - k_low as f64;
-
-    // Find the k_low-th and k_high-th order statistics
-    let value_low = select_kth_pairwise_diff(&x_sorted, &y_sorted, k_low);
-
-    if k_low == k_high {
-        // Odd number of pairs: single middle value
-        return Ok(value_low);
+    // Validate probabilities
+    for &pk in p {
+        if pk.is_nan() || !(0.0..=1.0).contains(&pk) {
+            return Err("Probabilities must be within [0, 1]");
+        }
     }
 
-    // Even number of pairs: interpolate between two middle values
-    let value_high = select_kth_pairwise_diff(&x_sorted, &y_sorted, k_high);
-    Ok((1.0 - weight) * value_low + weight * value_high)
+    let (xs, ys) = if assume_sorted {
+        (x.to_vec(), y.to_vec())
+    } else {
+        let mut x_sorted = x.to_vec();
+        let mut y_sorted = y.to_vec();
+        x_sorted.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        y_sorted.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        (x_sorted, y_sorted)
+    };
+
+    let m = xs.len();
+    let n = ys.len();
+    let total = (m as i64) * (n as i64);
+
+    // Collect all required ranks using Type-7 quantile interpolation
+    struct InterpolationParams {
+        lower_rank: i64,
+        upper_rank: i64,
+        weight: f64,
+    }
+
+    let mut params = Vec::with_capacity(p.len());
+    let mut required_ranks = BTreeSet::new();
+
+    for &pk in p {
+        let h = 1.0 + (total - 1) as f64 * pk;
+        let mut lower_rank = h.floor() as i64;
+        let mut upper_rank = h.ceil() as i64;
+        let weight = h - lower_rank as f64;
+
+        if lower_rank < 1 {
+            lower_rank = 1;
+        }
+        if upper_rank > total {
+            upper_rank = total;
+        }
+
+        params.push(InterpolationParams {
+            lower_rank,
+            upper_rank,
+            weight,
+        });
+        required_ranks.insert(lower_rank);
+        required_ranks.insert(upper_rank);
+    }
+
+    // Compute values for all required ranks
+    let mut rank_values = std::collections::HashMap::new();
+    for rank in required_ranks {
+        rank_values.insert(rank, select_kth_pairwise_diff(&xs, &ys, rank));
+    }
+
+    // Interpolate to get final results
+    let result: Vec<f64> = params
+        .iter()
+        .map(|param| {
+            let lower = rank_values[&param.lower_rank];
+            let upper = rank_values[&param.upper_rank];
+            if param.weight == 0.0 {
+                lower
+            } else {
+                (1.0 - param.weight) * lower + param.weight * upper
+            }
+        })
+        .collect();
+
+    Ok(result)
 }
 
 /// Binary search to find the k-th smallest pairwise difference x[i] - y[j]
 /// without materializing all m*n differences.
-fn select_kth_pairwise_diff(x: &[f64], y: &[f64], k: i64) -> f64 {
+pub(crate) fn select_kth_pairwise_diff(x: &[f64], y: &[f64], k: i64) -> f64 {
     let m = x.len();
     let n = y.len();
-    let total = (m * n) as i64;
+    let total = (m as i64) * (n as i64);
 
     if k < 1 || k > total {
         panic!("k out of range: k={}, total={}", k, total);

@@ -16,4 +16,7 @@
 
 <!-- INCLUDE manual/tests/disparity-tests.md -->
 
+<!-- INCLUDE manual/tests/pairwise-margin-tests.md -->
+
 <!-- INCLUDE manual/tests/_framework.md -->
+

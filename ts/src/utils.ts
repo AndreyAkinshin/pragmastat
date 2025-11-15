@@ -21,22 +21,3 @@ export function median(values: number[]): number {
     return sorted[mid];
   }
 }
-
-/**
- * Generate all pairwise combinations of indices
- * @param n Number of elements
- * @param includeDiagonal Whether to include pairs (i, i)
- * @returns Array of index pairs [i, j]
- */
-export function getPairs(n: number, includeDiagonal: boolean = true): [number, number][] {
-  const pairs: [number, number][] = [];
-
-  for (let i = 0; i < n; i++) {
-    const startJ = includeDiagonal ? i : i + 1;
-    for (let j = startJ; j < n; j++) {
-      pairs.push([i, j]);
-    }
-  }
-
-  return pairs;
-}

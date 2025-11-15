@@ -1,4 +1,4 @@
-﻿using Pragmastat.Internal;
+using Pragmastat.Internal;
 using Pragmastat.TestGenerator.TestCases;
 using Spectre.Console;
 
@@ -28,6 +28,8 @@ OneSampleTestCases.Generate();
 TwoSampleTestCases.Generate();
 DistributionTestCases.Generate();
 ApproximationTestCases.Generate();
+PairwiseMarginTestCases.Generate();
+ShiftBoundsTestCases.Generate();
 
 AnsiConsole.MarkupLine("");
 AnsiConsole.Write(new Rule("[bold green]Generation Completed Successfully![/]").RuleStyle("green"));

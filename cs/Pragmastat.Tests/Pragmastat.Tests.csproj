@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>net9.0</TargetFramework>
@@ -12,9 +12,9 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\Pragmastat.Distributions\Pragmastat.Distributions.csproj"/>
         <ProjectReference Include="..\Pragmastat.TestGenerator\Pragmastat.TestGenerator.csproj" />
         <ProjectReference Include="..\Pragmastat\Pragmastat.csproj"/>
-        <ProjectReference Include="..\Pragmastat.Distributions\Pragmastat.Distributions.csproj"/>
     </ItemGroup>
 
 </Project>

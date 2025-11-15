@@ -1,6 +1,16 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { center, spread, relSpread, shift, ratio, avgSpread, disparity } from '../src/estimators';
+import {
+  center,
+  spread,
+  relSpread,
+  shift,
+  ratio,
+  avgSpread,
+  disparity,
+  shiftBounds,
+} from '../src/estimators';
+import { pairwiseMargin } from '../src/pairwiseMargin';
 
 /**
  * Reference tests comparing against expected values from JSON files
@@ -11,6 +21,7 @@ describe('Reference Tests', () => {
 
   // Map estimator names to functions
   type EstimatorFunction = (x: number[], y?: number[]) => number;
+
   const estimators: Record<string, EstimatorFunction> = {
     center,
     spread,
@@ -68,5 +79,50 @@ describe('Reference Tests', () => {
         });
       });
     });
+  });
+
+  // PairwiseMargin tests
+  describe('pairwise-margin', () => {
+    const dirPath = path.join(testDataPath, 'pairwise-margin');
+    if (fs.existsSync(dirPath)) {
+      const testFiles = fs
+        .readdirSync(dirPath)
+        .filter((file) => file.endsWith('.json'))
+        .sort();
+
+      testFiles.forEach((fileName) => {
+        const filePath = path.join(dirPath, fileName);
+        const testName = fileName.replace('.json', '');
+
+        it(`should pass ${testName}`, () => {
+          const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+          const result = pairwiseMargin(data.input.n, data.input.m, data.input.misrate);
+          expect(result).toBe(data.output);
+        });
+      });
+    }
+  });
+
+  // ShiftBounds tests
+  describe('shift-bounds', () => {
+    const dirPath = path.join(testDataPath, 'shift-bounds');
+    if (fs.existsSync(dirPath)) {
+      const testFiles = fs
+        .readdirSync(dirPath)
+        .filter((file) => file.endsWith('.json'))
+        .sort();
+
+      testFiles.forEach((fileName) => {
+        const filePath = path.join(dirPath, fileName);
+        const testName = fileName.replace('.json', '');
+
+        it(`should pass ${testName}`, () => {
+          const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+          const result = shiftBounds(data.input.x, data.input.y, data.input.misrate);
+          expect(result.lower).toBeCloseTo(data.output.lower, 9);
+          expect(result.upper).toBeCloseTo(data.output.upper, 9);
+        });
+      });
+    }
   });
 });

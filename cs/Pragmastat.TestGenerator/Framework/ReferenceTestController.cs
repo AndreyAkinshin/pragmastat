@@ -8,7 +8,7 @@ namespace Pragmastat.TestGenerator.Framework;
 public abstract class ReferenceTestController<TInput, TOutput>
 {
   private readonly string testSuiteDirectory;
-  
+
   /// <summary>
   /// Timeout for each individual test execution (5 seconds as per documentation)
   /// </summary>
@@ -36,7 +36,7 @@ public abstract class ReferenceTestController<TInput, TOutput>
 
     return result;
   }
-  
+
   /// <summary>
   /// Runs the test with a timeout. Throws TimeoutException if test exceeds the timeout.
   /// </summary>
@@ -47,7 +47,7 @@ public abstract class ReferenceTestController<TInput, TOutput>
     {
       return task.Result;
     }
-    
+
     throw new TimeoutException(
       $"Test '{testName}' in suite '{SuiteName}' exceeded timeout of {TestTimeout.TotalSeconds} seconds. " +
       $"Performance tests must complete in under 5 seconds as per documentation.");

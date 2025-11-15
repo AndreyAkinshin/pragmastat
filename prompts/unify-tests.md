@@ -14,7 +14,7 @@ Other implementations load these JSON files and verify their estimators match wi
 
 ## Source of Truth
 
-**Specification**: @manual/tests/*.md describes the complete reference test suite
+**Specification**: @manual/tests/*.md describe the complete reference test suite
 
 **Generator**: @cs/Pragmastat.TestGenerator/ generates the actual JSON test files
 
@@ -24,7 +24,7 @@ Other implementations load these JSON files and verify their estimators match wi
 
 ### Step 1: Learn the Specification
 
-Examine `@manual/tests.md` to understand:
+Examine the files in `@manual/tests/` (e.g., `_framework.md`, `_motivation.md`, `center-tests.md`, `spread-tests.md`, etc.) to understand:
 - Complete test inventory for each estimator (Center, Spread, RelSpread, Shift, Ratio, AvgSpread, Disparity)
 - Test categories (demo, natural, edge cases, fuzzy, stress tests, unsorted)
 - Test naming conventions
@@ -32,7 +32,7 @@ Examine `@manual/tests.md` to understand:
 
 ### Step 2: Audit the Generator
 
-Examine `@cs/Pragmastat.TestGenerator/` and verify:
+Examine @cs/Pragmastat.TestGenerator/ and verify:
 - Test case counts match the specification
 - Test names follow documented conventions
 - Input values match specification exactly
@@ -42,7 +42,7 @@ Examine `@cs/Pragmastat.TestGenerator/` and verify:
 ### Step 3: Fix Discrepancies
 
 For any inconsistencies found:
-- Update generator code to match `@manual/tests.md`
+- Update generator code to match the documentation in `@manual/tests/*.md`
 - Regenerate JSON files using `./build.sh cs generate`
 - Verify output correctness
 
@@ -75,4 +75,3 @@ Ensure the generator implementation perfectly matches the test specification.
 ./build.sh rs test    # Rust
 ./build.sh ts test    # TypeScript
 ```
-
