@@ -1,6 +1,6 @@
 ---
 title: "Pragmastat: Pragmatic Statistical Toolkit"
-version: 3.2.4
+version: 4.0.0
 ---
 
 <div style="display: none;">
@@ -24,8 +24,11 @@ $$
 \newcommand{\Ratio}{\operatorname{Ratio}}
 \newcommand{\AvgSpread}{\operatorname{AvgSpread}}
 \newcommand{\Disparity}{\operatorname{Disparity}}
+% Toolkit: Two-sample bounds estimators
+\newcommand{\ShiftBounds}{\operatorname{ShiftBounds}}
 % Functions
 \newcommand{\PairwiseMargin}{\operatorname{PairwiseMargin}}
+\newcommand{\Dominance}{\operatorname{Dominance}}
 % Distributions
 \newcommand{\Additive}{\underline{\operatorname{Additive}}}
 \newcommand{\Multiplic}{\underline{\operatorname{Multiplic}}}
@@ -154,6 +157,34 @@ $$
 \end{aligned}
 $$
 
+$\PairwiseMargin(n, m, \misrate)$ — determines how many extreme pairwise differences to exclude when constructing bounds based on the distribution of dominance statistics
+
+For $n = 30, m = 30$:
+
+$$
+\begin{aligned}
+\PairwiseMargin(30, 30, 10^{-6}) &= 276 \\
+\PairwiseMargin(30, 30, 10^{-5}) &= 328 \\
+\PairwiseMargin(30, 30, 10^{-4}) &= 390 \\
+\PairwiseMargin(30, 30, 10^{-3}) &= 464
+\end{aligned}
+$$
+
+$\ShiftBounds(\x, \y, \misrate)$ — bounds on $\Shift(\x, \y)$ with specified misrate;
+  these bounds fail to cover the true value of shift in $\misrate$ probability in the long run
+
+For $\x = (1, 2, \ldots, 30)$ and $\y = (21, 22, \ldots, 50)$:
+
+$$
+\begin{aligned}
+\Shift(\x, \y) &= -20 \\
+\ShiftBounds(\x, \y, 10^{-6}) &= [-33, -7] \\
+\ShiftBounds(\x, \y, 10^{-5}) &= [-32, -8] \\
+\ShiftBounds(\x, \y, 10^{-4}) &= [-30, -10] \\
+\ShiftBounds(\x, \y, 10^{-3}) &= [-28, -12]
+\end{aligned}
+$$
+
 These procedures are designed to serve as default choices for routine analysis and comparison tasks in engineering contexts.
 The toolkit has ready-to-use implementations for Python, TypeScript/JavaScript, R, C#, Kotlin, Rust, and Go.
 
@@ -182,6 +213,9 @@ The following concepts were adopted from traditional textbooks via renaming or r
   - $\Additive$ (former 'Normal' or 'Gaussian')
   - $\Multiplic$ (former 'Log-Normal' or 'Galton')
   - $\Power$ (former 'Pareto')
+- Terms
+  - Bounds (former 'Confidence Interval')
+  - Misrate (former 1 - 'Confidence Level')
 
 ## Definitions
 
@@ -381,6 +415,68 @@ $$
 
 $$
 \Disparity(\x, \y) = -\Disparity(\y, \x)
+$$
+
+<!-- Two-sample Bounds -->
+
+## PairwiseMargin
+
+$$
+\PairwiseMargin(n, m, \misrate)
+$$
+
+- Determines how many extreme pairwise differences to exclude when constructing bounds
+- Based on the distribution of $\Dominance(\x, \y) = \sum_{i=1}^n \sum_{j=1}^m \mathbb{1}(x_i > y_j)$ under random sampling
+- Returns the total margin split evenly between lower and upper tails
+- Used by $\ShiftBounds$ to select appropriate order statistics
+- Can be computed exactly for small samples or approximated for large samples (see Algorithms section)
+- Domain: $n, m \geq 1$, $\misrate \in (0; 1)$
+- Unit: count (number of pairwise differences)
+
+$$
+\PairwiseMargin(n, m, \misrate) = \PairwiseMargin(m, n, \misrate)
+$$
+
+$$
+\PairwiseMargin(n, m, \misrate) \geq 0
+$$
+
+$$
+\PairwiseMargin(n, m, \misrate) \leq nm
+$$
+
+## ShiftBounds
+
+$$
+\ShiftBounds(\x, \y, \misrate) = [z_{(k_{\mathrm{left}})}; z_{(k_{\mathrm{right}})}]
+$$
+
+where
+
+$$
+\z = \left\{ x_i - y_j \right\}_{1 \leq i \leq n,\, 1 \leq j \leq m} \text{ (sorted)}
+$$
+
+$$
+k_{\mathrm{left}} = \lfloor \PairwiseMargin(n, m, \misrate) / 2 \rfloor + 1
+$$
+
+$$
+k_{\mathrm{right}} = nm - \lfloor \PairwiseMargin(n, m, \misrate) / 2 \rfloor
+$$
+
+- Provides bounds on $\Shift(\x, \y)$ with specified $\misrate$
+- The $\misrate$ represents the probability that the true shift falls outside the computed bounds
+- Pragmatic alternative to traditional confidence intervals for the Hodges-Lehmann estimator
+- Domain: any real numbers
+- Unit: the same as measurements
+
+$$
+\ShiftBounds(\x + k, \y + k, \misrate) = \ShiftBounds(\x, \y, \misrate)
+$$
+
+$$
+\ShiftBounds(k \cdot \x, k \cdot \y, \misrate) = k \cdot \ShiftBounds(\x, \y, \misrate)
 $$
 
 # Distributions
@@ -886,6 +982,228 @@ Rather than introduce additional complexity through variable instability paramet
   the fixed $\sqrt{n}$ scaling offers practical convenience while maintaining theoretical rigor
   for the distribution classes most common in applications.
 
+## From Confidence Level to Misrate
+
+Traditional statistics expresses uncertainty through confidence levels:
+  "95% confidence interval", "99% confidence", "99.9% confidence".
+This convention emerged from early statistical practice
+  when tables printed confidence intervals for common levels like 90%, 95%, and 99%.
+
+The confidence level approach creates practical problems:
+
+- **Cognitive difficulty with high confidence**.
+  Distinguishing between 99.999% and 99.9999% confidence requires mental effort.
+  The difference matters — one represents a 1-in-100,000 error rate, the other 1-in-1,000,000 —
+  but the representation obscures this distinction.
+- **Asymmetric scale**.
+  The confidence level scale compresses near 100%, where most practical values cluster.
+  Moving from 90% to 95% represents a 2× change in error rate,
+  while moving from 99% to 99.9% represents a 10× change, despite similar visual spacing.
+- **Indirect interpretation**.
+  Practitioners care about error rates, not success rates.
+  "What's the chance I'm wrong?" matters more than "What's the chance I'm right?"
+  Confidence level forces mental subtraction to answer the natural question.
+- **Unclear defaults**.
+  Traditional practice offers no clear default confidence level.
+  Different fields use different conventions (95%, 99%, 99.9%),
+  creating inconsistency and requiring arbitrary choices.
+
+The $\misrate$ provides a more natural representation.
+Misrate expresses the probability that computed bounds fail to contain the true value:
+
+$$
+\misrate = 1 - \text{confidence level}
+$$
+
+This simple inversion provides several advantages:
+
+- **Direct interpretation**.
+  $\misrate = 0.01$ means "1% chance of error" or "wrong 1 time in 100".
+  $\misrate = 10^{-6}$ means "wrong 1 time in a million".
+  No mental arithmetic required.
+- **Linear scale for practical values**.
+  $\misrate = 0.1$ (10%), $\misrate = 0.01$ (1%), $\misrate = 0.001$ (0.1%)
+  form a natural sequence.
+  Scientific notation handles extreme values cleanly: $10^{-3}$, $10^{-6}$, $10^{-9}$.
+- **Clear comparisons**.
+  $10^{-5}$ versus $10^{-6}$ immediately shows a 10× difference in error tolerance.
+  99.999% versus 99.9999% confidence obscures this same relationship.
+- **Pragmatic default**.
+  The toolkit recommends $\misrate = 10^{-6}$ (one-in-a-million error rate)
+  as a reasonable default for most applications.
+  This represents extremely high confidence (99.9999%)
+  while remaining computationally practical and conceptually clear.
+
+The terminology shift from "confidence level" to "misrate"
+  parallels other clarifying renames in this toolkit.
+Just as $\Additive$ better describes the distribution's formation than 'Normal',
+  and $\Center$ better describes the estimator's purpose than 'Hodges-Lehmann',
+  $\misrate$ better describes the quantity practitioners actually reason about:
+  the probability of error.
+
+Traditional confidence intervals become "bounds" in this framework,
+  eliminating statistical jargon in favor of descriptive terminology.
+$\ShiftBounds(\x, \y, \misrate)$ clearly indicates:
+  it provides bounds on the shift, with a specified error rate.
+No background in classical statistics required to understand the concept.
+
+## From Mann-Whitney U-test to Pairwise Margin
+
+The Mann-Whitney $U$ test (also known as the Wilcoxon rank-sum test)
+  ranks among the most widely used non-parametric statistical tests.
+Developed in the 1940s, it tests whether two independent samples come from the same distribution.
+Under $\Additive$ ('Normal') conditions, it achieves nearly the same precision as the Student's $t$-test,
+  while maintaining reliability under diverse distributional conditions where the $t$-test fails.
+
+The test operates by comparing all pairs of measurements between the two samples.
+Given samples $\x = (x_1, \ldots, x_n)$ and $\y = (y_1, \ldots, y_m)$,
+  the Mann-Whitney $U$ statistic counts how many pairs satisfy $x_i > y_j$:
+
+$$
+U = \sum_{i=1}^n \sum_{j=1}^m \mathbb{1}(x_i > y_j)
+$$
+
+If the samples come from the same distribution, $U$ should be near $nm/2$
+  (roughly half the pairs favor $\x$, half favor $\y$).
+Large deviations from $nm/2$ suggest the distributions differ.
+
+The test answers: "Could this $U$ value arise by chance if the samples were truly equivalent?"
+The $p$-value quantifies this probability.
+If $p < 0.05$, traditional practice declares the difference "statistically significant".
+
+This approach creates several problems for practitioners:
+
+- **Binary thinking**.
+  The test produces a yes/no answer: reject or fail to reject the null hypothesis.
+  Practitioners typically want to know the magnitude of difference, not just whether one exists.
+- **Arbitrary thresholds**.
+  The 0.05 threshold has no universal justification,
+  yet it dominates practice and creates a false dichotomy between $p = 0.049$ and $p = 0.051$.
+- **Hypothesis-centric framework**.
+  The test assumes a null hypothesis of "no difference"
+  and evaluates evidence against it.
+  Real questions rarely concern exact equality;
+  practitioners want to know "how different?" rather than "different or not?"
+- **Inverted logic**.
+  The natural question is "what shifts are consistent with my data?"
+  The test answers "is this specific shift (zero) consistent with my data?"
+
+The toolkit inverts this framework.
+Instead of testing whether a hypothesized shift is plausible,
+  we compute which shifts are plausible given the data.
+This inversion transforms hypothesis testing into bounds estimation.
+
+The mathematical foundation remains the same.
+The distribution of pairwise comparisons under random sampling determines
+  which order statistics of pairwise differences form reliable bounds.
+The Mann-Whitney $U$ statistic measures pairwise comparisons ($x_i > y_j$).
+The $\Shift$ estimator uses pairwise differences ($x_i - y_j$).
+These quantities are mathematically related:
+  a pairwise difference $x_i - y_j$ is positive exactly when $x_i > y_j$.
+The toolkit renames this comparison count from $U$ to $\Dominance(\x, \y)$,
+  clarifying its purpose: measuring how often one sample dominates the other in pairwise comparisons.
+
+The distribution of $\Dominance$ determines which order statistics form reliable bounds.
+Define the margin function:
+
+$$
+\PairwiseMargin(n, m, \misrate) = \text{number of pairwise differences to exclude from bounds}
+$$
+
+This function computes how many extreme pairwise differences
+  could occur by chance with probability $\misrate$,
+  based on the distribution of pairwise comparisons.
+
+The $\PairwiseMargin$ function requires knowing the distribution of pairwise comparisons under sampling.
+Two computational approaches exist:
+
+- **Exact computation** (Löffler's algorithm, 1982).
+  Uses a recurrence relation to compute the exact distribution
+  of pairwise comparisons for small samples.
+  Practical for combined sample sizes up to several hundred.
+- **Approximation** (Edgeworth expansion, 1955).
+  Refines the normal approximation with correction terms
+  based on higher moments of the distribution.
+  Provides accurate results for large samples where exact computation becomes impractical.
+
+The toolkit automatically selects the appropriate method based on sample sizes,
+  ensuring both accuracy and computational efficiency.
+
+This approach naturally complements $\Center$ and $\Spread$:
+
+- $\Center(\x)$ uses the median of pairwise averages $(x_i + x_j)/2$
+- $\Spread(\x)$ uses the median of pairwise differences $|x_i - x_j|$
+- $\Shift(\x, \y)$ uses the median of pairwise differences $x_i - y_j$
+- $\ShiftBounds(\x, \y, \misrate)$ uses order statistics of the same pairwise differences
+
+All procedures build on pairwise operations.
+This structural consistency reflects the mathematical unity underlying robust statistics:
+  pairwise operations provide natural robustness
+  while maintaining computational feasibility and statistical efficiency.
+
+The inversion from hypothesis testing to bounds estimation
+  represents a philosophical shift in statistical practice.
+Traditional methods ask "should I believe this specific hypothesis?"
+Pragmatic methods ask "what should I believe, given this data?"
+Bounds provide actionable answers:
+  they tell practitioners which values are plausible,
+  enabling informed decisions without arbitrary significance thresholds.
+
+Traditional Mann-Whitney implementations apply tie correction when samples contain repeated values.
+This correction modifies variance calculations to account for tied observations,
+  changing $p$-values and confidence intervals in ways that depend on measurement precision.
+The toolkit deliberately omits tie correction.
+Continuous distributions produce theoretically distinct values;
+  observed ties result from finite measurement precision and digital representation.
+When measurements appear identical, this reflects rounding of underlying continuous variation,
+  not true equality in the measured quantity.
+Treating ties as artifacts of discretization rather than distributional features
+  simplifies computation while maintaining accuracy.
+The exact and approximate methods compute comparison distributions
+  without requiring adjustments for tied values,
+  eliminating a source of complexity and potential inconsistency in statistical practice.
+
+**Historical Development**
+
+The mathematical foundations emerged through decades of refinement.
+Mann and Whitney (1947) established the distribution of pairwise comparisons under random sampling,
+  creating the theoretical basis for comparing samples through rank-based methods.
+Their work demonstrated that comparison counts follow predictable patterns
+  regardless of the underlying population distributions.
+
+The original computational approaches suffered from severe limitations.
+Mann and Whitney proposed a slow exact method requiring exponential resources
+  and a normal approximation that proved grossly inaccurate for practical use.
+The approximation works reasonably in distribution centers
+  but fails catastrophically in the tails where practitioners most need accuracy.
+For moderate sample sizes, approximation errors can exceed factors of $10^{11}$.
+
+Fix and Hodges (1955) addressed the approximation problem through higher-order corrections.
+Their expansion adds terms based on the distribution's actual moments
+  rather than assuming perfect normality.
+This refinement reduces tail probability errors from orders of magnitude to roughly 1%,
+  making approximation practical for large samples where exact computation becomes infeasible.
+
+Löffler (1982) solved the exact computation problem through algorithmic innovation.
+The naive recurrence requires quadratic memory—
+  infeasible for samples beyond a few dozen measurements.
+Löffler discovered a reformulation that reduces memory to linear scale,
+  making exact computation practical for combined sample sizes up to several hundred.
+
+Despite these advances, most statistical software continues using the 1947 approximation.
+The computational literature contains the solutions,
+  but software implementations lag decades behind theoretical developments.
+This toolkit implements both the exact method for small samples
+  and the refined approximation for large samples,
+  automatically selecting the appropriate approach based on sample sizes.
+
+The shift from hypothesis testing to bounds estimation requires no new mathematics.
+The same comparison distributions that enable hypothesis tests
+  also determine which order statistics form reliable bounds.
+Traditional applications ask "is zero plausible?" and answer yes or no.
+This toolkit asks "which values are plausible?" and answers with an interval.
+The perspective inverts while the mathematical foundation remains identical.
+
 # Algorithms
 
 This chapter describes the core algorithms that power the robust estimators in the toolkit.
@@ -1363,7 +1681,7 @@ internal static class FastSpread
       }
 
       // === SHRINK ACTIVE WINDOW ===
-// --- SHRINK ACTIVE WINDOW (fixed) ---
+      // --- SHRINK ACTIVE WINDOW (fixed) ---
       if (countBelow < kLow)
       {
         // Need larger differences: discard all strictly below pivot.
@@ -1739,6 +2057,469 @@ public static class FastShift
 }
 ```
 
+## Fast PairwiseMargin
+
+The $\PairwiseMargin$ function determines how many extreme pairwise differences to exclude
+  when constructing bounds around $\Shift(\x, \y)$.
+Given samples $\x = (x_1, \ldots, x_n)$ and $\y = (y_1, \ldots, y_m)$,
+  the $\ShiftBounds$ estimator computes all $nm$ pairwise differences $z_{ij} = x_i - y_j$ and sorts them.
+The bounds select specific order statistics from this sorted sequence:
+  $[z_{(k_{\mathrm{left}})}, z_{(k_{\mathrm{right}})}]$.
+The challenge lies in determining which order statistics produce bounds
+  that contain the true shift $\Shift[X, Y]$ with probability $1 - \misrate$.
+
+Random sampling creates natural variation in pairwise differences.
+Even when populations have identical distributions, sampling variation produces both positive and negative differences.
+The margin function quantifies this sampling variability:
+  it specifies how many extreme pairwise differences could occur by chance with probability $\misrate$.
+For symmetric bounds, this margin splits evenly between the tails,
+  giving $k_{\mathrm{left}} = \lfloor \PairwiseMargin(n, m, \misrate) / 2 \rfloor + 1$
+  and $k_{\mathrm{right}} = nm - \lfloor \PairwiseMargin(n, m, \misrate) / 2 \rfloor$.
+
+Computing the margin requires understanding the distribution of pairwise comparisons.
+Each pairwise difference corresponds to a comparison: $x_i - y_j > 0$ exactly when $x_i > y_j$.
+This connection motivates the dominance function:
+
+$$
+\Dominance(\x, \y) = \sum_{i=1}^n \sum_{j=1}^m \mathbb{1}(x_i > y_j)
+$$
+
+The dominance function counts how many pairwise comparisons favor $\x$ over $\y$.
+Both $\Shift$ and $\Dominance$ operate on the same collection of $nm$ pairwise differences.
+The $\Shift$ estimator examines difference values, returning the median as a location estimate.
+The $\Dominance$ function examines difference signs,
+  counting how many comparisons produce positive differences.
+While $\Shift$ provides the estimate itself,
+  $\Dominance$ determines which order statistics form reliable bounds around that estimate.
+
+When populations have equivalent distributions, $\Dominance$ concentrates near $nm/2$ by symmetry.
+The distribution of $\Dominance$ across all possible sample orderings determines reliable bounds.
+If $\Dominance$ deviates from $nm/2$ by at least $k/2$ with probability $\misrate$,
+  then the interval excluding the $k$ most extreme pairwise differences
+  contains zero with probability $1 - \misrate$.
+Translation invariance extends this relationship to arbitrary shifts:
+  the margin computed from the comparison distribution applies regardless of the true shift value.
+
+Two computational approaches provide the distribution of $\Dominance$:
+  exact calculation for small samples and approximation for large samples.
+
+**Exact method**
+
+Small sample sizes allow exact computation without approximation.
+The exact approach exploits a fundamental symmetry: under equivalent populations,
+  all $C_{n+m}^n$ orderings of the combined measurements occur with equal probability.
+This symmetry enables direct calculation of how many orderings produce each comparison count.
+
+Direct computation faces a combinatorial challenge.
+Enumerating all orderings to count comparison outcomes requires substantial memory and computation time.
+For samples beyond a few dozen measurements, naive implementation becomes impractical.
+
+Löffler's recurrence relation ([@loeffler1982]) resolves this through algebraic structure.
+The recurrence exploits cycle properties in the comparison distribution,
+  reducing memory requirements while maintaining exact calculation.
+The algorithm builds cumulative probabilities sequentially
+  until reaching the threshold corresponding to the desired error rate.
+This approach extends practical exact computation to combined sample sizes of several hundred.
+
+Define $p_{n,m}(c)$ as the number of orderings producing exactly $c$ comparisons favoring $\x$.
+The probability mass function becomes:
+
+$$
+\Pr(\Dominance = c) = \frac{p_{n,m}(c)}{C_{n+m}^n}
+$$
+
+A direct recurrence follows from considering the largest measurement.
+The rightmost element comes from either $\x$ (contributing $m$ comparisons)
+  or $\y$ (contributing zero):
+
+$$
+p_{n,m}(c) = p_{n-1,m}(c - m) + p_{n,m-1}(c)
+$$
+
+with base cases $p_{n,0}(0) = 1$ and $p_{0,m}(0) = 1$.
+
+Direct implementation requires $O(n \cdot m \cdot nm)$ time and $O(nm)$ memory.
+An alternative recurrence ([@loeffler1982]) exploits cycle structure:
+
+$$
+p_{n,m}(c) = \frac{1}{c} \sum_{i=0}^{c-1} p_{n,m}(i) \cdot \sigma_{n,m}(c - i)
+$$
+
+where $\sigma_{n,m}(d)$ captures structural properties through divisors:
+
+$$
+\sigma_{n,m}(d) = \sum_{k|d} \varepsilon_k \cdot k, \quad
+\varepsilon_k = \begin{cases}
+1, & 1 \leq k \leq n \\
+-1, & m+1 \leq k \leq m+n \\
+0, & \text{otherwise}
+\end{cases}
+$$
+
+This reduces memory to $O(nm)$ and enables efficient computation through $c = nm$.
+
+The algorithm computes cumulative probabilities $\Pr(\Dominance \leq c)$ sequentially
+  until the threshold $\misrate/2$ is exceeded.
+By symmetry, the lower and upper thresholds determine the total margin $\PairwiseMargin = 2c$.
+
+The sequential computation proceeds incrementally.
+Starting from $u = 0$ with base probability $p_{n,m}(0) = 1$,
+  the algorithm computes $p_{n,m}(1)$, then $p_{n,m}(2)$, and so on,
+  accumulating the cumulative distribution function with each step.
+The loop terminates as soon as $\Pr(\Dominance \leq u)$ reaches $\misrate/2$,
+  returning the threshold value $u$ without computing further probabilities.
+
+This sequential approach performs particularly well for small misrates.
+For $\misrate = 10^{-6}$, the threshold $u$ typically remains small even with large sample sizes,
+  requiring only a few iterations regardless of whether $n$ and $m$ equal 50 or 200.
+The algorithm computes only the extreme tail probabilities needed to reach the threshold,
+  never touching the vast majority of probability mass concentrated near $nm/2$.
+This efficiency advantage grows as misrates decrease:
+  stricter bounds require fewer computed values,
+  making exact calculation particularly attractive for high-confidence applications.
+
+**Approximate method**
+
+Large samples make exact computation impractical.
+The dominance count $\Dominance$ concentrates near $nm/2$ with variance $nm(n+m+1)/12$.
+A basic $\Additive$ ('Normal') approximation suffices asymptotically:
+
+$$
+\Dominance \approx \Additive\left(\frac{nm}{2}, \sqrt{\frac{nm(n+m+1)}{12}}\right)
+$$
+
+This approximation underestimates tail probabilities for moderate sample sizes.
+The $\Additive$ ('Normal') approximation provides a convenient baseline
+  but fails to capture the true distribution shape in the tails,
+  producing mis-calibrated probabilities that become problematic for small error rates.
+
+The Edgeworth expansion refines this approximation through moment-based corrections ([@fix1955]).
+The expansion starts with the $\Additive$ ('Normal') cumulative distribution as a baseline,
+  then adds correction terms that account for the distribution's asymmetry (skewness) and tail weight (kurtosis).
+These corrections use Hermite polynomials to adjust the baseline curve
+  where the $\Additive$ ('Normal') approximation deviates most from the true distribution.
+The first few correction terms typically achieve the practical balance between accuracy and computational cost,
+  substantially improving tail probability estimates compared to the basic approximation.
+
+The standardized comparison count:
+
+$$
+z = \frac{c - nm/2}{\sqrt{nm(n+m+1)/12}}
+$$
+
+produces the approximated cumulative distribution:
+
+$$
+\Pr(\Dominance \leq c) \approx \Phi(z) + e_3 \varphi^{(3)}(z) + e_5 \varphi^{(5)}(z) + e_7 \varphi^{(7)}(z)
+$$
+
+where $\Phi$ denotes the standard $\Additive$ ('Normal') CDF.
+
+The correction coefficients depend on standardized moments:
+
+$$
+e_3 = \frac{1}{24}\left( \frac{\mu_4}{\mu_2^2} - 3 \right), \quad
+e_5 = \frac{1}{720}\left( \frac{\mu_6}{\mu_2^3} - 15\frac{\mu_4}{\mu_2^2} + 30 \right), \quad
+e_7 = \frac{35}{40320}\left( \frac{\mu_4}{\mu_2^2} - 3 \right)^2
+$$
+
+The moments $\mu_2$, $\mu_4$, $\mu_6$ are computed from sample sizes:
+
+$$
+\mu_2 = \frac{nm(n+m+1)}{12}
+$$
+
+$$
+\mu_4 = \frac{nm(n+m+1)}{240} \left(5nm(n+m) - 2(n^2 + m^2) + 3nm - 2(n+m)\right)
+$$
+
+$$
+\begin{aligned}
+\mu_6 = \frac{nm(n+m+1)}{4032} \bigl(&35n^2m^2(n^2 + m^2) + 70n^3m^3 - 42nm(n^3 + m^3) \\
+&- 14n^2m^2(n + m) + 16(n^4 + m^4) - 52nm(n^2 + m^2) \\
+&- 43n^2m^2 + 32(n^3 + m^3) + 14nm(n + m) \\
+&+ 8(n^2 + m^2) + 16nm - 8(n + m)\bigr)
+\end{aligned}
+$$
+
+The correction terms use Hermite polynomials:
+
+$$
+\varphi^{(k)}(z) = -\varphi(z) H_k(z)
+$$
+
+$$
+H_3(z) = z^3 - 3z, \quad
+H_5(z) = z^5 - 10z^3 + 15z, \quad
+H_7(z) = z^7 - 21z^5 + 105z^3 - 105z
+$$
+
+Binary search locates the threshold value efficiently.
+The algorithm maintains a search interval $[a, b]$ initialized to $[0, nm]$.
+Each iteration computes the midpoint $c = (a + b)/2$ and evaluates the Edgeworth CDF at $c$.
+If $\Pr(\Dominance \leq c) < \misrate/2$, the threshold lies above $c$ and the search continues with $a = c$.
+If $\Pr(\Dominance \leq c) \geq \misrate/2$, the threshold lies below $c$ and the search continues with $b = c$.
+The loop terminates when $a$ and $b$ become adjacent, requiring $O(\log(nm))$ CDF evaluations.
+
+This binary search exhibits uniform performance across misrate values.
+Whether computing bounds for $\misrate = 10^{-6}$ or $\misrate = 0.05$,
+  the algorithm performs the same number of iterations determined solely by the sample sizes.
+Each CDF evaluation costs constant time regardless of the threshold location,
+  making the approximate method particularly efficient for large samples where exact computation becomes impractical.
+The logarithmic scaling ensures that doubling the sample size adds only one additional iteration,
+  enabling practical computation for samples in the thousands or tens of thousands.
+
+The toolkit selects between exact and approximate computation based on combined sample size:
+  exact method for $n + m \leq 400$, approximate method for $n + m > 400$.
+The exact method guarantees correctness but scales as $O(nm)$ memory and $O((nm)^2)$ time.
+For $n = m = 200$, this requires 40,000 memory locations.
+The approximate method achieves 1% accuracy with $O(\log(nm))$ constant-time evaluations.
+For $n = m = 10,000$, the approximate method completes in milliseconds versus minutes for exact computation.
+
+Both methods handle discrete data.
+Repeated measurements produce tied pairwise differences,
+  creating plateaus in the sorted sequence.
+The exact method counts orderings without assuming continuity.
+The approximate method's moment-based corrections capture the actual distribution shape
+  regardless of discreteness.
+
+**Minimum reasonable misrate**
+
+The $\misrate$ parameter controls how many extreme pairwise differences the bounds exclude.
+Lower misrate produces narrower bounds with higher confidence but requires excluding fewer extreme values.
+However, sample size limits how small misrate can meaningfully become.
+
+Consider the most extreme configuration:
+  all measurements from $\x$ exceed all measurements from $\y$, giving $x_1, \ldots, x_n > y_1, \ldots, y_m$.
+Under equivalent populations, this arrangement occurs purely by chance.
+The probability equals the chance of having all $n$ elements from $\x$
+  occupy the top $n$ positions among $n+m$ total measurements:
+
+$$
+\misrate_{\min} = \frac{1}{C_{n+m}^n} = \frac{n! \cdot m!}{(n+m)!}
+$$
+
+This represents the minimum probability of the most extreme ordering under random sampling.
+Setting $\misrate < \misrate_{\min}$ makes bounds construction problematic.
+The exact distribution of $\Dominance$ cannot support misrates smaller than the probability
+  of its most extreme realization.
+Attempting to construct bounds with $\misrate < \misrate_{\min}$ forces the algorithm
+  to exclude zero pairwise differences from the tails, making $\PairwiseMargin = 0$.
+The resulting bounds span all $nm$ pairwise differences,
+  returning $[z_{(1)}, z_{(nm)}]$ regardless of the desired confidence level.
+These bounds convey no useful information beyond the range of observed pairwise differences.
+
+For small samples, $\misrate_{\min}$ can exceed commonly used values.
+With $n = m = 6$, the minimum misrate equals $1/C_{12}^6 \approx 0.00108$,
+  making the typical choice of $\misrate = 10^{-3}$ impossible.
+With $n = m = 4$, the minimum becomes $1/C_8^4 \approx 0.0143$,
+  exceeding even $\misrate = 0.01$.
+The table below shows $\misrate_{\min}$ for small sample sizes:
+
+|   |        1|        2|        3|        4|        5|        6|        7|        8|        9|       10|
+|:--|--------:|--------:|--------:|--------:|--------:|--------:|--------:|--------:|--------:|--------:|
+|1  | 0.500000| 0.333333| 0.250000| 0.200000| 0.166667| 0.142857| 0.125000| 0.111111| 0.100000| 0.090909|
+|2  | 0.333333| 0.166667| 0.100000| 0.066667| 0.047619| 0.035714| 0.027778| 0.022222| 0.018182| 0.015152|
+|3  | 0.250000| 0.100000| 0.050000| 0.028571| 0.017857| 0.011905| 0.008333| 0.006061| 0.004545| 0.003497|
+|4  | 0.200000| 0.066667| 0.028571| 0.014286| 0.007937| 0.004762| 0.003030| 0.002020| 0.001399| 0.000999|
+|5  | 0.166667| 0.047619| 0.017857| 0.007937| 0.003968| 0.002165| 0.001263| 0.000777| 0.000500| 0.000333|
+|6  | 0.142857| 0.035714| 0.011905| 0.004762| 0.002165| 0.001082| 0.000583| 0.000333| 0.000200| 0.000125|
+|7  | 0.125000| 0.027778| 0.008333| 0.003030| 0.001263| 0.000583| 0.000291| 0.000155| 0.000087| 0.000051|
+|8  | 0.111111| 0.022222| 0.006061| 0.002020| 0.000777| 0.000333| 0.000155| 0.000078| 0.000041| 0.000023|
+|9  | 0.100000| 0.018182| 0.004545| 0.001399| 0.000500| 0.000200| 0.000087| 0.000041| 0.000021| 0.000011|
+|10 | 0.090909| 0.015152| 0.003497| 0.000999| 0.000333| 0.000125| 0.000051| 0.000023| 0.000011| 0.000005|
+
+For meaningful bounds construction, choose $\misrate > \misrate_{\min}$.
+This ensures the margin function excludes at least some extreme pairwise differences,
+  producing bounds narrower than the full range.
+When working with small samples, verify that the desired misrate exceeds $\misrate_{\min}$
+  for the given sample sizes.
+With moderate sample sizes ($n, m \geq 15$), $\misrate_{\min}$ drops below $10^{-8}$,
+  making standard choices like $\misrate = 10^{-6}$ feasible.
+
+```cs { title = "PairwiseMargin.cs" }
+using System;
+using JetBrains.Annotations;
+using Pragmastat.Internal;
+
+namespace Pragmastat.Functions;
+
+/// <summary>
+/// PairwiseMargin function
+/// </summary>
+/// <param name="threshold">The maximum value for n+m, after which implementation switches from exact to approx</param>
+public class PairwiseMargin(int threshold = PairwiseMargin.MaxExactSize)
+{
+  public static readonly PairwiseMargin Instance = new();
+
+  private const int MaxExactSize = 400;
+
+  [PublicAPI]
+  public int Calc(int n, int m, double misrate)
+  {
+    Assertion.MoreThan(nameof(n), n, 0);
+    Assertion.MoreThan(nameof(m), m, 0);
+    Assertion.InRangeInclusive(nameof(misrate), misrate, 0, 1);
+
+    return n + m <= threshold
+      ? CalcExact(n, m, misrate)
+      : CalcApprox(n, m, misrate);
+  }
+
+  [PublicAPI]
+  public int CalcExact(int n, int m, double misrate)
+  {
+    int raw = CalcExactRaw(n, m, misrate / 2);
+    return checked(raw * 2);
+  }
+
+  [PublicAPI]
+  public int CalcApprox(int n, int m, double misrate)
+  {
+    long raw = CalcApproxRaw(n, m, misrate / 2);
+    long margin = raw * 2;
+    if (margin > int.MaxValue)
+      throw new OverflowException($"Pairwise margin exceeds supported range for n={n}, m={m}");
+    return (int)margin;
+  }
+
+  // Inversed implementation of Andreas Löffler's (1982) "Über eine Partition der nat. Zahlen und ihre Anwendung beim U-Test"
+  private static int CalcExactRaw(int n, int m, double p)
+  {
+    double total = n + m < BinomialCoefficientFunction.MaxAcceptableN
+      ? BinomialCoefficientFunction.BinomialCoefficient(n + m, m)
+      : BinomialCoefficientFunction.BinomialCoefficient(n + m, m * 1.0);
+
+    var pmf = new List<double> { 1 }; // pmf[0] = 1
+    var sigma = new List<double> { 0 }; // sigma[0] is unused
+
+    int u = 0;
+    double cdf = 1.0 / total;
+
+    if (cdf >= p)
+      return 0;
+
+    while (true)
+    {
+      u++;
+      // Ensure sigma has entry for u
+      if (sigma.Count <= u)
+      {
+        int value = 0;
+        for (int d = 1; d <= n; d++)
+          if (u % d == 0 && u >= d)
+            value += d;
+        for (int d = m + 1; d <= m + n; d++)
+          if (u % d == 0 && u >= d)
+            value -= d;
+        sigma.Add(value);
+      }
+
+      // Compute pmf[u] using Loeffler recurrence
+      double sum = 0;
+      for (int i = 0; i < u; i++)
+        sum += pmf[i] * sigma[u - i];
+      sum /= u;
+      pmf.Add(sum);
+
+      cdf += sum / total;
+      if (cdf >= p)
+        return u;
+      if (sum == 0)
+        break;
+    }
+
+    return pmf.Count - 1;
+  }
+
+  // Inverse Edgeworth Approximation
+  private static long CalcApproxRaw(int n, int m, double misrate)
+  {
+    long a = 0;
+    long b = (long)n * m;
+    while (a < b - 1)
+    {
+      long c = (a + b) / 2;
+      double p = EdgeworthCdf(n, m, c);
+      if (p < misrate)
+        a = c;
+      else
+        b = c;
+    }
+
+    return EdgeworthCdf(n, m, b) < misrate ? b : a;
+  }
+
+  private static double EdgeworthCdf(int n, int m, long u)
+  {
+    double nm = (double)n * m;
+    double mu = nm / 2.0;
+    double su = Sqrt(nm * (n + m + 1) / 12.0);
+    double z = (u - mu - 0.5) / su;
+    double phi = Exp(-z.Sqr() / 2) / Sqrt(2 * PI);
+    double Phi = AcmAlgorithm209.Gauss(z);
+
+    // Pre-compute powers of n and m for efficiency
+    double n2 = n * n;
+    double n3 = n2 * n;
+    double n4 = n2 * n2;
+    double m2 = m * m;
+    double m3 = m2 * m;
+    double m4 = m2 * m2;
+
+    double mu2 = n * m * (n + m + 1) / 12.0;
+    double mu4 =
+      n * m * (n + m + 1) *
+      (0
+       + 5 * m * n * (m + n)
+       - 2 * (m2 + n2)
+       + 3 * m * n
+       - 2 * (n + m)
+      ) / 240.0;
+
+    double mu6 =
+      n * m * (n + m + 1) *
+      (0
+       + 35 * m2 * n2 * (m2 + n2)
+       + 70 * m3 * n3
+       - 42 * m * n * (m3 + n3)
+       - 14 * m2 * n2 * (n + m)
+       + 16 * (n4 + m4)
+       - 52 * n * m * (n2 + m2)
+       - 43 * n2 * m2
+       + 32 * (m3 + n3)
+       + 14 * m * n * (n + m)
+       + 8 * (n2 + m2)
+       + 16 * n * m
+       - 8 * (n + m)
+      ) / 4032.0;
+
+    // Pre-compute powers of mu2 and related terms
+    double mu2_2 = mu2 * mu2;
+    double mu2_3 = mu2_2 * mu2;
+    double mu4_mu2_2 = mu4 / mu2_2;
+
+    // Factorial constants: 4! = 24, 6! = 720, 8! = 40320
+    double e3 = (mu4_mu2_2 - 3) / 24.0;
+    double e5 = (mu6 / mu2_3 - 15 * mu4_mu2_2 + 30) / 720.0;
+    double e7 = 35 * (mu4_mu2_2 - 3) * (mu4_mu2_2 - 3) / 40320.0;
+
+    // Pre-compute powers of z for Hermite polynomials
+    double z2 = z * z;
+    double z3 = z2 * z;
+    double z5 = z3 * z2;
+    double z7 = z5 * z2;
+
+    double f3 = -phi * (z3 - 3 * z);
+    double f5 = -phi * (z5 - 10 * z3 + 15 * z);
+    double f7 = -phi * (z7 - 21 * z5 + 105 * z3 - 105 * z);
+
+    double edgeworth = Phi + e3 * f3 + e5 * f5 + e7 * f7;
+    return Min(Max(edgeworth, 0), 1);
+  }
+}
+```
+
 # Studies
 
 This section analyzes the estimators' properties using mathematical proofs.
@@ -2051,17 +2832,27 @@ The $\Spread$ requires about 1.16 times more data to match the $\StdDev$ precisi
 Install from PyPI:
 
 ```bash
-pip install pragmastat==3.2.4
+pip install pragmastat==4.0.0
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.4/py
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v4.0.0/py
 
 Pragmastat on PyPI: https://pypi.org/project/pragmastat/
 
 Demo:
 
 ```python
-from pragmastat import center, spread, rel_spread, shift, ratio, avg_spread, disparity
+from pragmastat import (
+    center,
+    spread,
+    rel_spread,
+    shift,
+    ratio,
+    avg_spread,
+    disparity,
+    pairwise_margin,
+    shift_bounds,
+)
 
 
 def main():
@@ -2109,6 +2900,25 @@ def main():
     print(disparity([v * 2 for v in x], [v * 2 for v in y]))  # 0.4
     print(disparity(y, x))  # -0.4
 
+    x = list(range(1, 31))
+    y = list(range(21, 51))
+
+    print(pairwise_margin(30, 30, 1e-6))  # 276
+    print(pairwise_margin(30, 30, 1e-5))  # 328
+    print(pairwise_margin(30, 30, 1e-4))  # 390
+    print(pairwise_margin(30, 30, 1e-3))  # 464
+
+    print(shift(x, y))  # -20
+
+    bounds = shift_bounds(x, y, 1e-6)  # [-33, -7]
+    print(f"Bounds(lower={bounds.lower}, upper={bounds.upper})")
+    bounds = shift_bounds(x, y, 1e-5)  # [-32, -8]
+    print(f"Bounds(lower={bounds.lower}, upper={bounds.upper})")
+    bounds = shift_bounds(x, y, 1e-4)  # [-30, -10]
+    print(f"Bounds(lower={bounds.lower}, upper={bounds.upper})")
+    bounds = shift_bounds(x, y, 1e-3)  # [-28, -12]
+    print(f"Bounds(lower={bounds.lower}, upper={bounds.upper})")
+
 
 if __name__ == "__main__":
     main()
@@ -2121,17 +2931,17 @@ if __name__ == "__main__":
 Install from npm:
 
 ```bash
-npm i pragmastat@3.2.4
+npm i pragmastat@4.0.0
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.4/ts
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v4.0.0/ts
 
 Pragmastat on npm: https://www.npmjs.com/package/pragmastat
 
 Demo:
 
 ```typescript
-import { center, spread, relSpread, shift, ratio, avgSpread, disparity } from '../src';
+import { center, spread, relSpread, shift, ratio, avgSpread, disparity, shiftBounds, pairwiseMargin } from '../src';
 
 function main() {
     let x = [0, 2, 4, 6, 8];
@@ -2177,6 +2987,21 @@ function main() {
     console.log(disparity(x.map(v => v + 5), y.map(v => v + 5))); // 0.4
     console.log(disparity(x.map(v => v * 2), y.map(v => v * 2))); // 0.4
     console.log(disparity(y, x)); // -0.4
+
+    x = Array.from({ length: 30 }, (_, i) => i + 1);
+    y = Array.from({ length: 30 }, (_, i) => i + 21);
+
+    console.log(pairwiseMargin(30, 30, 1e-6)); // 276
+    console.log(pairwiseMargin(30, 30, 1e-5)); // 328
+    console.log(pairwiseMargin(30, 30, 1e-4)); // 390
+    console.log(pairwiseMargin(30, 30, 1e-3)); // 464
+
+    console.log(shift(x, y)); // -20
+
+    console.log(shiftBounds(x, y, 1e-6)); // [-33, -7]
+    console.log(shiftBounds(x, y, 1e-5)); // [-32, -8]
+    console.log(shiftBounds(x, y, 1e-4)); // [-30, -10]
+    console.log(shiftBounds(x, y, 1e-3)); // [-28, -12]
 }
 
 main();
@@ -2191,11 +3016,11 @@ Install from GitHub:
 ```r
 install.packages("remotes") # If 'remotes' is not installed
 remotes::install_github("AndreyAkinshin/pragmastat",
-                        subdir = "r/pragmastat", ref = "v3.2.4")
+                        subdir = "r/pragmastat", ref = "v4.0.0")
 library(pragmastat)
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.4/r
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v4.0.0/r
 
 
 
@@ -2247,6 +3072,25 @@ print(disparity(x, y)) # 0.4
 print(disparity(x + 5, y + 5)) # 0.4
 print(disparity(x * 2, y * 2)) # 0.4
 print(disparity(y, x)) # -0.4
+
+x <- 1:30
+y <- 21:50
+
+print(pairwise_margin(30, 30, 1e-6)) # 276
+print(pairwise_margin(30, 30, 1e-5)) # 328
+print(pairwise_margin(30, 30, 1e-4)) # 390
+print(pairwise_margin(30, 30, 1e-3)) # 464
+
+print(shift(x, y)) # -20
+
+bounds <- shift_bounds(x, y, 1e-6) # [-33, -7]
+print(paste("[", bounds$lower, ", ", bounds$upper, "]", sep=""))
+bounds <- shift_bounds(x, y, 1e-5) # [-32, -8]
+print(paste("[", bounds$lower, ", ", bounds$upper, "]", sep=""))
+bounds <- shift_bounds(x, y, 1e-4) # [-30, -10]
+print(paste("[", bounds$lower, ", ", bounds$upper, "]", sep=""))
+bounds <- shift_bounds(x, y, 1e-3) # [-28, -12]
+print(paste("[", bounds$lower, ", ", bounds$upper, "]", sep=""))
 ```
 
 <span id="cs"></span> <!-- [pdf] DELETE -->
@@ -2256,16 +3100,16 @@ print(disparity(y, x)) # -0.4
 Install from NuGet via .NET CLI:
 
 ```bash
-dotnet add package Pragmastat --version 3.2.4
+dotnet add package Pragmastat --version 4.0.0
 ```
 
 Install from NuGet via Package Manager Console:
 
 ```ps1
-NuGet\Install-Package Pragmastat -Version 3.2.4
+NuGet\Install-Package Pragmastat -Version 4.0.0
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.4/cs
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v4.0.0/cs
 
 Pragmastat on NuGet: https://www.nuget.org/packages/Pragmastat/
 
@@ -2273,6 +3117,7 @@ Demo:
 
 ```cs
 using static System.Console;
+using Pragmastat.Functions;
 
 namespace Pragmastat.Demo;
 
@@ -2323,6 +3168,25 @@ class Program
     WriteLine(Toolkit.Disparity(x + 5, y + 5)); // 0.4
     WriteLine(Toolkit.Disparity(x * 2, y * 2)); // 0.4
     WriteLine(Toolkit.Disparity(y, x)); // -0.4
+
+    x = new Sample(
+      1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+      16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30);
+    y = new Sample(
+      21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35,
+      36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50);
+
+    WriteLine(PairwiseMargin.Instance.Calc(30, 30, 1e-6)); // 276
+    WriteLine(PairwiseMargin.Instance.Calc(30, 30, 1e-5)); // 328
+    WriteLine(PairwiseMargin.Instance.Calc(30, 30, 1e-4)); // 390
+    WriteLine(PairwiseMargin.Instance.Calc(30, 30, 1e-3)); // 464
+
+    WriteLine(Toolkit.Shift(x, y)); // -20
+
+    WriteLine(Toolkit.ShiftBounds(x, y, 1e-6)); // [-33, -7]
+    WriteLine(Toolkit.ShiftBounds(x, y, 1e-5)); // [-32, -8]
+    WriteLine(Toolkit.ShiftBounds(x, y, 1e-4)); // [-30, -10]
+    WriteLine(Toolkit.ShiftBounds(x, y, 1e-3)); // [-28, -12]
   }
 }
 ```
@@ -2337,23 +3201,23 @@ Install from Maven Central Repository via Apache Maven:
 <dependency>
     <groupId>dev.pragmastat</groupId>
     <artifactId>pragmastat</artifactId>
-    <version>3.2.4</version>
+    <version>4.0.0</version>
 </dependency>
 ```
 
 Install from Maven Central Repository via Gradle:
 
 ```java
-implementation 'dev.pragmastat:pragmastat:3.2.4'
+implementation 'dev.pragmastat:pragmastat:4.0.0'
 ```
 
 Install from Maven Central Repository via Gradle (Kotlin):
 
 ```kotlin
-implementation("dev.pragmastat:pragmastat:3.2.4")
+implementation("dev.pragmastat:pragmastat:4.0.0")
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.4/kt
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v4.0.0/kt
 
 Pragmastat on Maven Central Repository: https://central.sonatype.com/artifact/dev.pragmastat/pragmastat/overview
 
@@ -2408,6 +3272,21 @@ fun main() {
     println(disparity(x.map { it + 5 }, y.map { it + 5 })) // 0.4
     println(disparity(x.map { it * 2 }, y.map { it * 2 })) // 0.4
     println(disparity(y, x)) // -0.4
+
+    x = (1..30).map { it.toDouble() }
+    y = (21..50).map { it.toDouble() }
+
+    println(pairwiseMargin(30, 30, 1e-6)) // 276
+    println(pairwiseMargin(30, 30, 1e-5)) // 328
+    println(pairwiseMargin(30, 30, 1e-4)) // 390
+    println(pairwiseMargin(30, 30, 1e-3)) // 464
+
+    println(shift(x, y)) // -20
+
+    println(shiftBounds(x, y, 1e-6)) // [-33, -7]
+    println(shiftBounds(x, y, 1e-5)) // [-32, -8]
+    println(shiftBounds(x, y, 1e-4)) // [-30, -10]
+    println(shiftBounds(x, y, 1e-3)) // [-28, -12]
 }
 ```
 
@@ -2418,17 +3297,17 @@ fun main() {
 Install from crates.io via cargo:
 
 ```bash
-cargo add pragmastat@3.2.4
+cargo add pragmastat@4.0.0
 ```
 
 Install from crates.io via `Cargo.toml`:
 
 ```toml
 [dependencies]
-pragmastat = "3.2.4"
+pragmastat = "4.0.0"
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.4/rs
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v4.0.0/rs
 
 Pragmastat on crates.io: https://crates.io/crates/pragmastat
 
@@ -2493,6 +3372,28 @@ fn main() {
     print(disparity(&add(&x, 5.0), &add(&y, 5.0))); // 0.4
     print(disparity(&multiply(&x, 2.0), &multiply(&y, 2.0))); // 0.4
     print(disparity(&y, &x)); // -0.4
+
+    let x: Vec<f64> = (1..=30).map(|i| i as f64).collect();
+    let y: Vec<f64> = (21..=50).map(|i| i as f64).collect();
+
+    println!("{}", pairwise_margin(30, 30, 1e-6)); // 276
+    println!("{}", pairwise_margin(30, 30, 1e-5)); // 328
+    println!("{}", pairwise_margin(30, 30, 1e-4)); // 390
+    println!("{}", pairwise_margin(30, 30, 1e-3)); // 464
+
+    print(shift(&x, &y)); // -20
+
+    let bounds = shift_bounds(&x, &y, 1e-6).unwrap(); // [-33, -7]
+    println!("{{lower: {}, upper: {}}}", bounds.lower, bounds.upper);
+
+    let bounds = shift_bounds(&x, &y, 1e-5).unwrap(); // [-32, -8]
+    println!("{{lower: {}, upper: {}}}", bounds.lower, bounds.upper);
+
+    let bounds = shift_bounds(&x, &y, 1e-4).unwrap(); // [-30, -10]
+    println!("{{lower: {}, upper: {}}}", bounds.lower, bounds.upper);
+
+    let bounds = shift_bounds(&x, &y, 1e-3).unwrap(); // [-28, -12]
+    println!("{{lower: {}, upper: {}}}", bounds.lower, bounds.upper);
 }
 ```
 
@@ -2503,10 +3404,10 @@ fn main() {
 Install from GitHub:
 
 ```bash
-go get github.com/AndreyAkinshin/pragmastat/go/v3@v3.2.4
+go get github.com/AndreyAkinshin/pragmastat/go/v3@v4.0.0
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v3.2.4/go
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v4.0.0/go
 
 
 
@@ -2593,6 +3494,25 @@ func main() {
 	print(pragmastat.Disparity(add(x, 5), add(y, 5)))           // 0.4
 	print(pragmastat.Disparity(multiply(x, 2), multiply(y, 2))) // 0.4
 	print(pragmastat.Disparity(y, x))                           // -0.4
+
+	x = []float64{
+		1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+		16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30}
+	y = []float64{
+		21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35,
+		36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50}
+
+	fmt.Println(pragmastat.PairwiseMargin(30, 30, 1e-6)) // 276
+	fmt.Println(pragmastat.PairwiseMargin(30, 30, 1e-5)) // 328
+	fmt.Println(pragmastat.PairwiseMargin(30, 30, 1e-4)) // 390
+	fmt.Println(pragmastat.PairwiseMargin(30, 30, 1e-3)) // 464
+
+	print(pragmastat.Shift(x, y)) // -20
+
+	fmt.Println(must(pragmastat.ShiftBounds(x, y, 1e-6))) // [-33, -7]
+	fmt.Println(must(pragmastat.ShiftBounds(x, y, 1e-5))) // [-32, -8]
+	fmt.Println(must(pragmastat.ShiftBounds(x, y, 1e-4))) // [-30, -10]
+	fmt.Println(must(pragmastat.ShiftBounds(x, y, 1e-3))) // [-28, -12]
 }
 ```
 
@@ -3113,6 +4033,73 @@ The test cases validate the division operation and confirm scale-free properties
 As a composite estimator, $\Disparity$ tests both the numerator ($\Shift$) and denominator ($\AvgSpread$).
 Unsorted variants verify end-to-end correctness including invariance properties.
 
+## PairwiseMargin Tests
+
+$$
+\PairwiseMargin(n, m, \misrate)
+$$
+
+The $\PairwiseMargin$ test suite contains 346 correctness test cases (4 demo + 32 natural + 10 edge + 300 comprehensive grid).
+
+**Demo examples** ($n = m = 30$) — from manual introduction:
+
+- `demo-1`: $n=30$, $m=30$, $\misrate=10^{-6}$, expected output: $276$
+- `demo-2`: $n=30$, $m=30$, $\misrate=10^{-5}$, expected output: $328$
+- `demo-3`: $n=30$, $m=30$, $\misrate=10^{-4}$, expected output: $390$
+- `demo-4`: $n=30$, $m=30$, $\misrate=10^{-3}$, expected output: $464$
+
+These demo cases match the reference values used throughout the manual to illustrate $\ShiftBounds$ construction.
+
+**Natural sequences** ($[n, m] \in \{1, 2, 3, 4\} \times \{1, 2, 3, 4\}$ × 2 misrates) — 32 tests:
+
+- Misrate values: $\misrate \in \{10^{-1}, 10^{-2}\}$
+- Test naming: `natural-{n}-{m}-mr{k}` where $k$ is the negative log10 of misrate
+- Examples:
+  - `natural-1-1-mr1`: $n=1$, $m=1$, $\misrate=0.1$, expected output: $0$
+  - `natural-2-2-mr1`: $n=2$, $m=2$, $\misrate=0.1$, expected output: $0$
+  - `natural-3-3-mr2`: $n=3$, $m=3$, $\misrate=0.01$, expected output: $0$
+  - `natural-4-4-mr1`: $n=4$, $m=4$, $\misrate=0.1$, expected output: $4$
+
+The natural sequences provide canonical examples with small, easily verified parameter values.
+
+**Edge cases** — boundary condition validation:
+
+- `boundary-min`: $n=1$, $m=1$, $\misrate=0.5$ (minimum samples, expected output: $0$)
+- `boundary-zero-margin-small`: $n=2$, $m=2$, $\misrate=10^{-6}$ (misrate too strict, expected output: $0$)
+- `boundary-loose`: $n=5$, $m=5$, $\misrate=0.9$ (very permissive misrate)
+- `symmetry-2-5`: $n=2$, $m=5$, $\misrate=0.1$ (tests symmetry property)
+- `symmetry-5-2`: $n=5$, $m=2$, $\misrate=0.1$ (symmetric counterpart, same output as above)
+- `symmetry-3-7`: $n=3$, $m=7$, $\misrate=0.05$ (asymmetric sizes)
+- `symmetry-7-3`: $n=7$, $m=3$, $\misrate=0.05$ (symmetric counterpart)
+- `asymmetry-extreme-1-100`: $n=1$, $m=100$, $\misrate=0.1$ (extreme size difference)
+- `asymmetry-extreme-100-1`: $n=100$, $m=1$, $\misrate=0.1$ (reversed extreme)
+- `asymmetry-extreme-2-50`: $n=2$, $m=50$, $\misrate=0.05$ (highly unbalanced)
+
+These edge cases validate correct handling of boundary conditions, the symmetry property $\PairwiseMargin(n, m, \misrate) = \PairwiseMargin(m, n, \misrate)$, and extreme asymmetry in sample sizes.
+
+**Comprehensive grid** — systematic coverage for thorough validation:
+
+Small sample combinations ($[n, m] \in \{1, 2, 3, 4, 5\} \times \{1, 2, 3, 4, 5\}$ × 6 misrates) — 150 tests:
+
+- Misrate values: $\misrate \in \{10^{-1}, 10^{-2}, 10^{-3}, 10^{-4}, 10^{-5}, 10^{-6}\}$
+- Test naming: `n{n}_m{m}_mr{k}` where $k$ is the negative log10 of misrate
+- Examples:
+  - `n1_m1_mr1`: $n=1$, $m=1$, $\misrate=0.1$, expected output: $0$
+  - `n5_m5_mr1`: $n=5$, $m=5$, $\misrate=0.1$, expected output: $10$
+  - `n5_m5_mr3`: $n=5$, $m=5$, $\misrate=0.001$, expected output: $0$
+
+Large sample combinations ($[n, m] \in \{10, 20, 30, 50, 100\} \times \{10, 20, 30, 50, 100\}$ × 6 misrates) — 150 tests:
+
+- Misrate values: same as small samples
+- Test naming: `n{n}_m{m}_r{k}` where $k$ is the negative log10 of misrate
+- Examples:
+  - `n10_m10_r1`: $n=10$, $m=10$, $\misrate=0.1$, expected output: $56$
+  - `n10_m10_r6`: $n=10$, $m=10$, $\misrate=10^{-6}$, expected output: $0$
+  - `n50_m50_r3`: $n=50$, $m=50$, $\misrate=0.001$, expected output: $1556$
+  - `n100_m100_r6`: $n=100$, $m=100$, $\misrate=10^{-6}$, expected output: $6060$
+
+The comprehensive grid validates both symmetric ($n = m$) and asymmetric sample size combinations across six orders of magnitude in misrate, ensuring robust coverage of the parameter space.
+
 ## Test Framework
 
 The reference test framework consists of three components:
@@ -3176,25 +4163,25 @@ This framework ensures that all seven language implementations maintain strict n
 
 Manual:
 
-- PDF: [pragmastat-v3.2.4.pdf](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.4/pragmastat-v3.2.4.pdf)
-- Markdown: [pragmastat-v3.2.4.md](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.4/pragmastat-v3.2.4.md)
-- Website: [web-v3.2.4.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.4/web-v3.2.4.zip)
+- PDF: [pragmastat-v4.0.0.pdf](https://github.com/AndreyAkinshin/pragmastat/releases/download/v4.0.0/pragmastat-v4.0.0.pdf)
+- Markdown: [pragmastat-v4.0.0.md](https://github.com/AndreyAkinshin/pragmastat/releases/download/v4.0.0/pragmastat-v4.0.0.md)
+- Website: [web-v4.0.0.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v4.0.0/web-v4.0.0.zip)
 
 Implementations:
 
-- Python: [py-v3.2.4.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.4/py-v3.2.4.zip)
-- TypeScript: [ts-v3.2.4.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.4/ts-v3.2.4.zip)
-- R: [r-v3.2.4.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.4/r-v3.2.4.zip)
-- C#: [cs-v3.2.4.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.4/cs-v3.2.4.zip)
-- Kotlin: [kt-v3.2.4.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.4/kt-v3.2.4.zip)
-- Rust: [rs-v3.2.4.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.4/rs-v3.2.4.zip)
-- Go: [go-v3.2.4.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.4/go-v3.2.4.zip)
+- Python: [py-v4.0.0.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v4.0.0/py-v4.0.0.zip)
+- TypeScript: [ts-v4.0.0.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v4.0.0/ts-v4.0.0.zip)
+- R: [r-v4.0.0.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v4.0.0/r-v4.0.0.zip)
+- C#: [cs-v4.0.0.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v4.0.0/cs-v4.0.0.zip)
+- Kotlin: [kt-v4.0.0.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v4.0.0/kt-v4.0.0.zip)
+- Rust: [rs-v4.0.0.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v4.0.0/rs-v4.0.0.zip)
+- Go: [go-v4.0.0.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v4.0.0/go-v4.0.0.zip)
 
 Data:
 
-- Reference tests (json): [tests-v3.2.4.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.4/tests-v3.2.4.zip)
-- Reference simulations (json): [sim-v3.2.4.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v3.2.4/sim-v3.2.4.zip)
+- Reference tests (json): [tests-v4.0.0.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v4.0.0/tests-v4.0.0.zip)
+- Reference simulations (json): [sim-v4.0.0.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v4.0.0/sim-v4.0.0.zip)
 
 Source code:
 
-- [pragmastat-3.2.4.zip](https://github.com/AndreyAkinshin/pragmastat/archive/refs/tags/v3.2.4.zip)
+- [pragmastat-4.0.0.zip](https://github.com/AndreyAkinshin/pragmastat/archive/refs/tags/v4.0.0.zip)
