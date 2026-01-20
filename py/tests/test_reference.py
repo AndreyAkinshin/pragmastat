@@ -47,13 +47,12 @@ def run_reference_tests(estimator_name, estimator_func, is_two_sample=False):
 
             actual_output = estimator_func(input_x)
 
-        assert (
-            abs(actual_output - expected_output) < 1e-10
-        ), f"Failed for test file: {json_file.name}, expected: {expected_output}, got: {actual_output}"
+        assert abs(actual_output - expected_output) < 1e-10, (
+            f"Failed for test file: {json_file.name}, expected: {expected_output}, got: {actual_output}"
+        )
 
 
 class TestReference:
-
     def test_center_reference(self):
         run_reference_tests("center", center)
 
@@ -94,9 +93,9 @@ class TestReference:
 
             actual_output = pairwise_margin(n, m, misrate)
 
-            assert (
-                actual_output == expected_output
-            ), f"Failed for test file: {json_file.name}, expected: {expected_output}, got: {actual_output}"
+            assert actual_output == expected_output, (
+                f"Failed for test file: {json_file.name}, expected: {expected_output}, got: {actual_output}"
+            )
 
     def test_shift_bounds_reference(self):
         """Test shift_bounds against reference data."""
@@ -118,9 +117,9 @@ class TestReference:
 
             result = shift_bounds(input_x, input_y, misrate)
 
-            assert (
-                abs(result.lower - expected_lower) < 1e-10
-            ), f"Failed lower bound for test file: {json_file.name}, expected: {expected_lower}, got: {result.lower}"
-            assert (
-                abs(result.upper - expected_upper) < 1e-10
-            ), f"Failed upper bound for test file: {json_file.name}, expected: {expected_upper}, got: {result.upper}"
+            assert abs(result.lower - expected_lower) < 1e-10, (
+                f"Failed lower bound for test file: {json_file.name}, expected: {expected_lower}, got: {result.lower}"
+            )
+            assert abs(result.upper - expected_upper) < 1e-10, (
+                f"Failed upper bound for test file: {json_file.name}, expected: {expected_upper}, got: {result.upper}"
+            )

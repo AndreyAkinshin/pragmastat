@@ -13,9 +13,9 @@ class TestInvariance:
             x = np.random.uniform(0, 1, n)
             result1 = expr1_func(x)
             result2 = expr2_func(x)
-            assert (
-                abs(result1 - result2) < self.tolerance
-            ), f"Failed for n={n}: {result1} != {result2}"
+            assert abs(result1 - result2) < self.tolerance, (
+                f"Failed for n={n}: {result1} != {result2}"
+            )
 
     def perform_test_two(self, expr1_func, expr2_func):
         np.random.seed(self.seed)
@@ -24,9 +24,9 @@ class TestInvariance:
             y = np.random.uniform(0, 1, n)
             result1 = expr1_func(x, y)
             result2 = expr2_func(x, y)
-            assert (
-                abs(result1 - result2) < self.tolerance
-            ), f"Failed for n={n}: {result1} != {result2}"
+            assert abs(result1 - result2) < self.tolerance, (
+                f"Failed for n={n}: {result1} != {result2}"
+            )
 
     # Center tests
     def test_center_shift(self):
