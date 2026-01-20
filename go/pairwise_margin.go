@@ -103,8 +103,8 @@ func pairwiseMarginExactRaw(n, m int, p float64) int {
 
 // pairwiseMarginApproxRaw uses inverse Edgeworth approximation.
 func pairwiseMarginApproxRaw(n, m int, misrate float64) int {
-	var a int64 = 0
-	var b int64 = int64(n) * int64(m)
+	a := int64(0)
+	b := int64(n) * int64(m)
 	for a < b-1 {
 		c := (a + b) / 2
 		p := edgeworthCdf(n, m, c)

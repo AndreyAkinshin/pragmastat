@@ -106,7 +106,7 @@ Apply the above Scheme to demo examples in files:
 Build all projects and fix any compilation/syntax errors:
 
 ```bash
-./build.sh demo
+mise run demo
 ```
 
 Verify that each demo produces output matching the Scheme values (allowing for formatting differences).
@@ -127,16 +127,16 @@ Execute demos using the following commands from the project root:
 **Individual language demos:**
 
 ```bash
-./build.sh cs demo    # C#
-./build.sh go demo    # Go
-./build.sh kt demo    # Kotlin
-./build.sh py demo    # Python
-./build.sh r demo     # R
-./build.sh rs demo    # Rust
-./build.sh ts demo    # TypeScript
+mise run demo:cs    # C#
+mise run demo:go    # Go
+mise run demo:kt    # Kotlin
+mise run demo:py    # Python
+mise run demo:r     # R
+mise run demo:rs    # Rust
+mise run demo:ts    # TypeScript
 ```
 
 **Run all demos at once:**
 ```bash
-./build.sh demo
+mise run demo
 ```

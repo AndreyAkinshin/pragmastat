@@ -5,133 +5,139 @@
 Pragmastat is a multi-language statistical library
   with **7 language implementations** (C#, Go, Kotlin, Python, R, Rust, TypeScript)
   plus **4 auxiliary tools** (gen, img, pdf, web).
-The build system provides a unified interface with support for both native and Docker-based builds.
+The build system uses [mise](https://mise.jdx.dev/) as the task runner.
 
 ## Architecture
 
 ```
-build.sh (root dispatcher)
-├── Languages: cs, go, kt, py, r, rs, ts → <lang>/build.sh
-├── Tools: gen, img, pdf, web → <tool>/build.sh
-└── Meta: all, ci, test, demo, clean, release, docker-*
+mise.toml (root)
+├── Languages: cs, go, kt, py, r, rs, ts
+├── Auxiliary: gen, img, pdf, web
+└── Aggregate: build, test, check, clean, demo, ci
 ```
 
 ## Usage
 
-```
-Usage: ./build.sh <lang> <command> [args] [--docker]
-       ./build.sh <aux>  [command] [args] [--docker]
-       ./build.sh <meta> [args] [--docker]
-       ./build.sh -h | --help | --man
+```bash
+# List all tasks
+mise tasks
 
-Pragmastat Build Dispatcher
+# Run a specific task
+mise run <task>
 
-Language commands:
-  cs   # C# (.NET)
-  go   # Go
-  kt   # Kotlin (JVM)
-  py   # Python
-  r    # R
-  rs   # Rust
-  ts   # TypeScript (npm)
-
-Auxiliary commands:
-  gen  # Content and auxiliary files generation
-  img  # Image generation
-  pdf  # PDF manual generation
-  web  # Online manual/website (Hugo)
-
-Meta commands:
-  build [--release] [--docker] # Build all projects
-  ci [--release] [--docker]  # Run full CI build (replicates GitHub Actions)
-  test [--docker]            # Run tests for all projects
-  demo [--docker]            # Run demos for all language projects
-  clean [--docker]           # Clean all projects
-  release <ver> [--push]     # Create release version
-
-Docker support:
-  --docker                   # Run builds in Docker containers
-  PRAGMASTAT_DOCKER=1        # Environment variable to auto-enable Docker mode
-  docker-build               # Build all Docker images
-  docker-clean               # Remove all Docker containers and images
-
-Help and documentation:
-  -h, --help                 # Show this help message
-  --man                      # Show detailed manual page
+# Examples
+mise run build:rs          # Build Rust
+mise run test:py           # Test Python
+mise run check:go          # Check Go code
 ```
 
-## Language-Specific Commands
+## Task Naming Convention
 
-All language scripts support: `build`, `test`, `demo`, `clean`, `all`, `-h|--help`
+Tasks follow the pattern `<action>:<qualifier>:<target>`:
 
-**Differences:**
-- **cs, rs**: Support `--release` flag for optimized builds
-- **cs**: Has `generate` (reference tests), `pack` (NuGet), `format`, `lint`
-- **py**: Has `dev` (editable install), `check` (twine), auto-creates venv
-- **r**: Copies test data from `../tests`, has `check`, `check-full`, `docs`
-- **go**: Has `deps`, `tidy`, `coverage`, `bench`, `lint` (optional golangci-lint)
-- **rs**: Works in `pragmastat/` subdirectory, has `check` (clippy+fmt), `bench`, `doc`
-- **kt**: Uses Gradle wrapper, has `jar`
-- **ts**: Uses npm scripts, has `lint`, `check`, `format`, `coverage`, `watch`
+```
+build:cs          # Build C# (debug)
+build:release:cs  # Build C# (release)
+test:go           # Run Go tests
+check:rs          # Check Rust code
+```
+
+## Language-Specific Tasks
+
+All languages support: `build`, `test`, `check`, `check:fix`, `clean`, `demo`, `ci`
+
+| Task | Description |
+|------|-------------|
+| `build:<lang>` | Build the package |
+| `build:release:<lang>` | Build in release mode (cs, rs only) |
+| `test:<lang>` | Run tests |
+| `check:<lang>` | Run linting and formatting checks |
+| `check:fix:<lang>` | Auto-fix formatting issues |
+| `clean:<lang>` | Clean build artifacts |
+| `restore:<lang>` | Restore/install dependencies |
+| `demo:<lang>` | Run demo examples |
+| `ci:<lang>` | Run full CI pipeline |
+
+**Additional tasks:**
+- `pack:cs`, `pack:kt`, `pack:rs`, `pack:ts` - Create distribution packages
+- `bench:go`, `bench:rs` - Run benchmarks
+- `coverage:go`, `coverage:ts` - Run tests with coverage
+- `doc:r`, `doc:rs` - Build documentation
+- `gen:cs`, `sim:cs` - Generate tests / run simulations
 
 ## Auxiliary Tools
 
 **gen**: Generates version-dependent files (Markdown, configs). Run after version changes.
-- Usage: `./build.sh gen [--release]`
+- `mise run build:gen` - Draft mode
+- `mise run build:release:gen` - Release mode
 
 **img**: Generates plots/diagrams using Python. Auto-manages venv.
-- Usage: `./build.sh img build`
+- `mise run build:img` - Generate images
+- `mise run logo:img` - Generate logo
 
 **pdf**: Generates PDF manual using Pandoc/LaTeX. Reads `manual/version.txt`.
-- Usage: `./build.sh pdf [--release]`
+- `mise run build:pdf` - Draft mode
+- `mise run build:release:pdf` - Release mode
 - Requires: gen, img
 
-**web**: Hugo-based website. Run `init` first (downloads Hugo/Tailwind to `.bin/`).
-- Usage: `./build.sh web init` (one-time), `./build.sh web build [--release]`
-- Serve: `./build.sh web serve` (port 1729)
+**web**: Hugo-based website.
+- `mise run restore:web` - Download Hugo/Tailwind (one-time)
+- `mise run build:web` - Build draft site
+- `mise run build:release:web` - Build release site
+- `mise run serve:web` - Start dev server (port 1729)
 - Requires: gen, img, pdf
 
-## CI Build
+## Aggregate Tasks
 
-`./build.sh ci [--release]` runs full build pipeline:
-1. img → gen → pdf → web (documentation)
-2. r, cs, py, rs, ts, go, kt (all languages)
-
-Collects artifacts to `./artifacts/` with versioned outputs.
+```bash
+mise run build   # Build all language implementations
+mise run test    # Test all language implementations
+mise run check   # Check all language implementations
+mise run clean   # Clean all build artifacts
+mise run demo    # Run demos for all implementations
+mise run ci      # Run CI pipeline for all languages
+```
 
 ## Release Process
 
-`./build.sh release <version> [--push]`
+```bash
+mise run release 3.2.5           # Create release locally
+mise run release 3.2.5 --push    # Create and push release
+```
 
 Steps:
 1. Writes version to `manual/version.txt`
-2. Runs `./build.sh gen`
+2. Runs `mise run build:gen`
 3. Creates commit "set version <version>"
 4. Moves `main` branch to HEAD
 5. With `--push`: Creates tags `v<version>` and `go/v<version>`, pushes to upstream
 
-## Docker Mode
+## Docker Support
 
-Enable with `--docker` flag or `PRAGMASTAT_DOCKER=1`. Runs commands in containers with user mapping to prevent root ownership. No local toolchains required.
+Docker can be used via `docker-compose.yml` for containerized builds:
 
-## Key Files & Variables
+```bash
+mise run docker:build    # Build all Docker images
+mise run docker:clean    # Remove all Docker containers/images
+```
 
-- `./build.sh` - Main dispatcher
-- `./docker-compose.yml` - Docker services
-- `./manual/version.txt` - Current version
-- `PRAGMASTAT_DOCKER` - Auto-enable Docker mode
+Or use `docker-run.sh` for individual container execution:
 
-## Docker User Mapping
+```bash
+./docker-run.sh cs mise run build:cs
+./docker-run.sh py mise run test:py
+```
 
-**Python/R special handling:**
-- **py (Docker)**: `PYTHONUSERBASE=/workspace/py/.pip-packages`
-- **r (Docker)**: `R_LIBS_USER=/workspace/r/.r-packages`
-- Ensures writable package installs without root
+## Key Files
+
+- `mise.toml` - Task definitions
+- `docker-compose.yml` - Docker services
+- `manual/version.txt` - Current version
 
 ## Tips for LLM Agents
 
-1. **Start from root**: `./build.sh <project> <command>`
-2. **Check help**: Every script has `-h`
+1. **Use mise**: Always run `mise run <task>` instead of raw commands
+2. **Check tasks**: Run `mise tasks` to list all available tasks
 3. **Dependencies**: gen → img → pdf → web
-4. **CI test**: `./build.sh ci` validates everything
-5. **Web init**: Run `./build.sh web init` once before building website
+4. **CI test**: `mise run ci` validates all languages
+5. **Web init**: Run `mise run restore:web` once before building website

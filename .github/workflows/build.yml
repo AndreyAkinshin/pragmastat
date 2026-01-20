@@ -25,6 +25,9 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Set up mise
+      uses: jdx/mise-action@v2
+
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
@@ -37,7 +40,7 @@ jobs:
       working-directory: img
 
     - name: Generate images
-      run: ./img/build.sh build
+      run: mise run build:img
 
     - name: Upload image artifacts
       uses: actions/upload-artifact@v4
@@ -51,6 +54,9 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Set up mise
+      uses: jdx/mise-action@v2
+
     - name: Download image artifacts
       uses: actions/download-artifact@v4
       with:
@@ -58,16 +64,16 @@ jobs:
         path: img/
 
     - name: Generate auxiliary files
-      run: ./build.sh gen ${{ inputs.release && '--release' || '' }}
+      run: mise run build${{ inputs.release && ':release' || '' }}:gen
 
     - name: Install LaTeX packages and build PDF
       uses: docker://pandoc/latex:3.7
       env:
         GITHUB_WORKSPACE: ${{ github.workspace }}
-        RELEASE_FLAG: ${{ inputs.release && '--release' || '' }}
+        RELEASE_MODE: ${{ inputs.release }}
       with:
         entrypoint: /bin/sh
-        args: -c "set -euo pipefail && tlmgr --version && tlmgr update --self && tlmgr install pgf caption textpos mdframed zref needspace csquotes multirow wrapfig colortbl pdflscape tabu varwidth threeparttable threeparttablex environ trimspaces ulem makecell biblatex logreq biber fvextra upquote lineno && cd \"$GITHUB_WORKSPACE/pdf\" && sh ./build.sh build $RELEASE_FLAG"
+        args: -c "set -euo pipefail && tlmgr --version && tlmgr update --self && tlmgr install pgf caption textpos mdframed zref needspace csquotes multirow wrapfig colortbl pdflscape tabu varwidth threeparttable threeparttablex environ trimspaces ulem makecell biblatex logreq biber fvextra upquote lineno && cd \"$GITHUB_WORKSPACE/pdf\" && VERSION=$(cat ../manual/version.txt) && if [ \"$RELEASE_MODE\" = \"true\" ]; then SUFFIX=\"\"; else SUFFIX=\"-draft\"; fi && pandoc 'pragmastat.md' --pdf-engine=latexmk --pdf-engine-opt=-xelatex --pdf-engine-opt=-shell-escape --pdf-engine-opt=-interaction=batchmode --number-sections --citeproc -o \"pragmastat-v${VERSION}${SUFFIX}.pdf\""
 
     - name: Upload pdf artifacts
       uses: actions/upload-artifact@v4
@@ -80,6 +86,9 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v4
+
+    - name: Set up mise
+      uses: jdx/mise-action@v2
 
     - name: Download image artifacts
       uses: actions/download-artifact@v4
@@ -94,13 +103,13 @@ jobs:
         path: pdf/
 
     - name: Generate auxiliary files
-      run: ./build.sh gen ${{ inputs.release && '--release' || '' }}
+      run: mise run build${{ inputs.release && ':release' || '' }}:gen
 
     - name: Initialize web tools
-      run: ./web/build.sh init
+      run: mise run restore:web
 
-    - name: Build 'web'
-      run: ./web/build.sh build ${{ inputs.release && '--release' || '' }}
+    - name: Build website
+      run: mise run build${{ inputs.release && ':release' || '' }}:web
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
@@ -121,14 +130,22 @@ jobs:
         tlmgr update --self
         tlmgr install amsfonts
 
+    - name: Copy test data
+      run: |
+        mkdir -p r/pragmastat/tests/tests
+        cp -r tests/* r/pragmastat/tests/tests/
+
     - name: Check package
-      run: ./r/build.sh check
+      run: R CMD check --no-tests --no-check-dependencies r/pragmastat
 
     - name: Build package
-      run: ./r/build.sh build
+      run: |
+        cd r
+        rm -rf pragmastat/src/*.o pragmastat/src/*.so pragmastat/src/*.dll 2>/dev/null || true
+        R CMD build pragmastat
 
     - name: Test package
-      run: ./r/build.sh test
+      run: cd r/pragmastat && Rscript -e "devtools::test()"
 
     - name: Upload r artifacts
       uses: actions/upload-artifact@v4
@@ -141,19 +158,22 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Set up mise
+      uses: jdx/mise-action@v2
+
     - name: Set up .NET
       uses: actions/setup-dotnet@v5
       with:
         dotnet-version: '9.0.305'
 
     - name: Build
-      run: ./cs/build.sh build ${{ inputs.release && '--release' || '' }}
+      run: mise run build${{ inputs.release && ':release' || '' }}:cs
 
     - name: Test
-      run: ./cs/build.sh test
+      run: mise run test:cs
 
     - name: Pack
-      run: ./cs/build.sh pack ${{ inputs.release && '--release' || '' }}
+      run: mise run pack:cs
 
     - name: Upload cs artifacts
       uses: actions/upload-artifact@v4
@@ -166,6 +186,9 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Set up mise
+      uses: jdx/mise-action@v2
+
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
@@ -174,20 +197,20 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install pytest build twine
+        pip install pytest build twine ruff
       working-directory: py
 
     - name: Install package in development mode
-      run: ./py/build.sh dev
+      run: mise run restore:py
+
+    - name: Check code (lint and format)
+      run: mise run check:py
 
     - name: Run tests
-      run: ./py/build.sh test
+      run: mise run test:py
 
-    - name: Build package
-      run: ./py/build.sh build
-
-    - name: Check package
-      run: ./py/build.sh check
+    - name: Build and verify package
+      run: mise run pack:py
 
     - name: Upload py artifacts
       uses: actions/upload-artifact@v4
@@ -199,6 +222,9 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v4
+
+    - name: Set up mise
+      uses: jdx/mise-action@v2
 
     - name: Set up Rust
       uses: dtolnay/rust-toolchain@stable
@@ -224,17 +250,16 @@ jobs:
         key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
 
     - name: Check package
-      run: ./rs/build.sh check
+      run: mise run check:rs
 
     - name: Run tests
-      run: ./rs/build.sh test
+      run: mise run test:rs
 
     - name: Build
-      run: ./rs/build.sh build ${{ inputs.release && '--release' || '' }}
+      run: mise run build${{ inputs.release && ':release' || '' }}:rs
 
     - name: Package crate
-      run: cargo package --verbose
-      working-directory: rs/pragmastat
+      run: mise run pack:rs
 
     - name: Upload rs artifacts
       uses: actions/upload-artifact@v4
@@ -247,6 +272,9 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Set up mise
+      uses: jdx/mise-action@v2
+
     - name: Set up Node.js
       uses: actions/setup-node@v4
       with:
@@ -255,21 +283,19 @@ jobs:
         cache-dependency-path: ts/package-lock.json
 
     - name: Install dependencies
-      run: npm ci
-      working-directory: ts
+      run: mise run restore:ts
 
     - name: Check formatting and linting
-      run: ./ts/build.sh check
+      run: mise run check:ts
 
     - name: Run tests
-      run: ./ts/build.sh test
+      run: mise run test:ts
 
     - name: Build TypeScript
-      run: ./ts/build.sh build
+      run: mise run build:ts
 
     - name: Create tarball
-      run: npm pack
-      working-directory: ts
+      run: mise run pack:ts
 
     - name: Upload ts artifacts
       uses: actions/upload-artifact@v4
@@ -282,6 +308,9 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Set up mise
+      uses: jdx/mise-action@v2
+
     - name: Set up Go
       uses: actions/setup-go@v5
       with:
@@ -289,7 +318,7 @@ jobs:
         cache-dependency-path: go/go.mod
 
     - name: Download dependencies
-      run: ./go/build.sh deps
+      run: mise run restore:go
 
     - name: Check formatting
       run: |
@@ -300,14 +329,14 @@ jobs:
       working-directory: go
 
     - name: Run tests
-      run: ./go/build.sh test-verbose
+      run: mise run test:verbose:go
 
     - name: Run tests with coverage
       run: go test -race -coverprofile=coverage.out -covermode=atomic ./...
       working-directory: go
 
     - name: Build
-      run: ./go/build.sh build
+      run: mise run build:go
 
     - name: Upload go artifacts
       uses: actions/upload-artifact@v4
@@ -319,6 +348,9 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v4
+
+    - name: Set up mise
+      uses: jdx/mise-action@v2
 
     - name: Set up JDK
       uses: actions/setup-java@v4
@@ -351,8 +383,7 @@ jobs:
 
     - name: Build and test (non-release mode)
       if: ${{ !inputs.release }}
-      run: ./gradlew build --info --stacktrace
-      working-directory: kt
+      run: mise run build:kt
 
     - name: Upload kt artifacts
       uses: actions/upload-artifact@v4

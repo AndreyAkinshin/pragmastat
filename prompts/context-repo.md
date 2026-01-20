@@ -33,9 +33,8 @@ pragmastat/
 ├── artifacts/       # Generated after CI build
 │
 └── Build system
-    ├── build.sh     # Main dispatcher (entry point)
-    ├── docker-compose.yml
-    └── <subdir>/build.sh
+    ├── mise.toml           # Task definitions (entry point)
+    └── docker-compose.yml  # Docker services
 ```
 
 ## Directory Purpose
@@ -75,7 +74,7 @@ JSON files with drift simulation results for documentation plots.
 
 ## Key Entry Points
 
-- **Build system**: `./build.sh` (see @prompts/context-build.md)
+- **Build system**: `mise run <task>` (see @prompts/context-build.md)
 - **Version**: `manual/version.txt`
 - **Documentation**: `manual/*.md`
 - **Tests**: `tests/<estimator>/*.json`

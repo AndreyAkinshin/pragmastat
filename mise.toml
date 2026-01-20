@@ -1,0 +1,826 @@
+# Pragmastat Build Configuration
+# Task runner: mise (https://mise.jdx.dev/)
+#
+# Usage: mise run <task>
+# List all tasks: mise tasks
+
+[tools]
+dotnet = "9.0"
+go = "1.24"
+golangci-lint = "latest"
+java = "temurin-23"
+node = "22"
+python = "3.13"
+ruff = "latest"
+rust = "stable"
+uv = "0.6"
+
+# ==========================================================================
+# C# Tasks (cs/)
+# ==========================================================================
+
+[tasks."build:cs"]
+description = "Build C# package (debug mode)"
+dir = "cs"
+run = "dotnet build -c Debug"
+
+[tasks."build:release:cs"]
+description = "Build C# package (release mode)"
+dir = "cs"
+run = "dotnet build -c Release"
+
+[tasks."test:cs"]
+description = "Run C# tests"
+dir = "cs/Pragmastat.Tests"
+run = "dotnet run"
+
+[tasks."check:cs"]
+description = "Verify C# code formatting"
+dir = "cs"
+run = "dotnet format --verify-no-changes"
+
+[tasks."check:fix:cs"]
+description = "Format C# code"
+dir = "cs"
+run = "dotnet format"
+
+[tasks."clean:cs"]
+description = "Clean C# build artifacts"
+dir = "cs"
+run = """
+dotnet clean
+rm -rf bin/ obj/ *.nupkg
+"""
+
+[tasks."restore:cs"]
+description = "Restore C# dependencies"
+dir = "cs"
+run = "dotnet restore"
+
+[tasks."demo:cs"]
+description = "Run C# demo"
+dir = "cs/Pragmastat.Demo"
+run = "dotnet run"
+
+[tasks."pack:cs"]
+description = "Pack C# NuGet package"
+dir = "cs"
+run = """
+mkdir -p ./artifacts
+dotnet pack ./Pragmastat/Pragmastat.csproj --configuration Release --include-symbols --include-source -p:SymbolPackageFormat=snupkg --output ./artifacts
+"""
+
+[tasks."gen:cs"]
+description = "Generate C# reference test files"
+dir = "cs"
+run = "dotnet run --project Pragmastat.TestGenerator/Pragmastat.TestGenerator.csproj"
+
+[tasks."sim:cs"]
+description = "Run C# simulations"
+dir = "cs/Pragmastat.Simulations"
+run = "dotnet run"
+
+[tasks."ci:cs"]
+description = "Run C# CI pipeline"
+run = [
+    { task = "clean:cs" },
+    { task = "restore:cs" },
+    { task = "check:cs" },
+    { task = "build:cs" },
+    { task = "test:cs" },
+]
+
+# ==========================================================================
+# Go Tasks (go/)
+# ==========================================================================
+
+[tasks."build:go"]
+description = "Build Go package"
+dir = "go"
+run = "go build ./..."
+
+[tasks."test:go"]
+description = "Run Go tests"
+dir = "go"
+run = "go test ./..."
+
+[tasks."test:verbose:go"]
+description = "Run Go tests with verbose output"
+dir = "go"
+run = "go test -v ./..."
+
+[tasks."check:go"]
+description = "Check Go code (format and lint)"
+dir = "go"
+run = """
+test -z "$(go fmt ./...)" || { echo "Code is not formatted"; exit 1; }
+golangci-lint run
+"""
+
+[tasks."check:fix:go"]
+description = "Format Go code"
+dir = "go"
+run = "go fmt ./..."
+
+[tasks."clean:go"]
+description = "Clean Go build cache"
+dir = "go"
+run = """
+go clean
+rm -f coverage.out coverage.html
+"""
+
+[tasks."restore:go"]
+description = "Download and verify Go dependencies"
+dir = "go"
+run = """
+go mod download
+go mod verify
+"""
+
+[tasks."demo:go"]
+description = "Run Go demo"
+dir = "go"
+run = "go run ./demo"
+
+[tasks."bench:go"]
+description = "Run Go benchmarks"
+dir = "go"
+run = "go test -bench=. ./..."
+
+[tasks."coverage:go"]
+description = "Run Go tests with coverage"
+dir = "go"
+run = "go test -cover ./..."
+
+[tasks."ci:go"]
+description = "Run Go CI pipeline"
+run = [
+    { task = "clean:go" },
+    { task = "restore:go" },
+    { task = "check:go" },
+    { task = "build:go" },
+    { task = "test:go" },
+]
+
+# ==========================================================================
+# Kotlin Tasks (kt/)
+# ==========================================================================
+
+[tasks."build:kt"]
+description = "Build Kotlin package"
+dir = "kt"
+run = "./gradlew build"
+
+[tasks."test:kt"]
+description = "Run Kotlin tests"
+dir = "kt"
+run = "./gradlew test"
+
+[tasks."check:kt"]
+description = "Check Kotlin code"
+dir = "kt"
+run = "./gradlew check"
+
+[tasks."clean:kt"]
+description = "Clean Kotlin build artifacts"
+dir = "kt"
+run = "./gradlew clean"
+
+[tasks."demo:kt"]
+description = "Run Kotlin demo"
+dir = "kt"
+run = "./gradlew run"
+
+[tasks."pack:kt"]
+description = "Package Kotlin JAR"
+dir = "kt"
+run = "./gradlew jar"
+
+[tasks."ci:kt"]
+description = "Run Kotlin CI pipeline"
+run = [
+    { task = "clean:kt" },
+    { task = "check:kt" },
+    { task = "build:kt" },
+    { task = "test:kt" },
+]
+
+# ==========================================================================
+# Python Tasks (py/)
+# ==========================================================================
+
+[tasks."build:py"]
+description = "Build Python package"
+dir = "py"
+run = """
+pip install -q build
+rm -rf dist/ build/ *.egg-info
+python -m build
+"""
+
+[tasks."test:py"]
+description = "Run Python tests"
+dir = "py"
+run = """
+pip install -q pytest
+pip install -q -e .
+python -m pytest tests/ -v
+"""
+
+[tasks."check:py"]
+description = "Check Python code (lint and format)"
+dir = "py"
+run = """
+ruff check .
+ruff format --check .
+"""
+
+[tasks."check:fix:py"]
+description = "Format Python code"
+dir = "py"
+run = """
+ruff check --fix .
+ruff format .
+"""
+
+[tasks."pack:py"]
+description = "Build and verify Python package"
+dir = "py"
+depends = ["build:py"]
+run = "twine check dist/*"
+
+[tasks."clean:py"]
+description = "Clean Python build artifacts"
+dir = "py"
+run = """
+rm -rf build/ dist/ *.egg-info __pycache__/ .pytest_cache/ venv/ .pip-packages
+find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
+find . -type d -name "*.egg-info" -exec rm -rf {} + 2>/dev/null || true
+find . -type f -name "*.pyc" -delete 2>/dev/null || true
+find . -type f -name "*.pyo" -delete 2>/dev/null || true
+"""
+
+[tasks."restore:py"]
+description = "Install Python package in development mode"
+dir = "py"
+run = "pip install -e ."
+
+[tasks."demo:py"]
+description = "Run Python demo"
+dir = "py"
+run = """
+pip install -q -e .
+python examples/demo.py
+"""
+
+[tasks."ci:py"]
+description = "Run Python CI pipeline"
+run = [
+    { task = "clean:py" },
+    { task = "restore:py" },
+    { task = "check:py" },
+    { task = "test:py" },
+    { task = "pack:py" },
+]
+
+# ==========================================================================
+# R Tasks (r/)
+# R is not managed by mise - uses system R via Rscript
+# ==========================================================================
+
+[tasks."build:r"]
+description = "Build R source package"
+dir = "r"
+run = """
+rm -rf pragmastat/src/*.o pragmastat/src/*.so pragmastat/src/*.dll 2>/dev/null || true
+R CMD build pragmastat
+"""
+
+[tasks."test:r"]
+description = "Run R tests"
+dir = "r"
+run = """
+if [ ! -d "pragmastat/tests/tests" ]; then
+    mkdir -p pragmastat/tests/tests
+    cp -r ../tests/* pragmastat/tests/tests/
+fi
+cd pragmastat && Rscript -e "devtools::test()"
+"""
+
+[tasks."check:r"]
+description = "Check R package"
+dir = "r"
+run = """
+if [ ! -d "pragmastat/tests/tests" ]; then
+    mkdir -p pragmastat/tests/tests
+    cp -r ../tests/* pragmastat/tests/tests/
+fi
+R CMD check --no-tests --no-check-dependencies pragmastat
+"""
+
+[tasks."check:fix:r"]
+description = "Format R code with styler"
+dir = "r/pragmastat"
+run = "Rscript -e \"if (!requireNamespace('styler', quietly = TRUE)) install.packages('styler', repos = 'https://cloud.r-project.org'); styler::style_pkg()\""
+
+[tasks."clean:r"]
+description = "Clean R build artifacts"
+dir = "r"
+run = """
+rm -rf pragmastat.Rcheck pragmastat_*.tar.gz pragmastat/..Rcheck ..Rcheck
+rm -rf pragmastat/src/*.o pragmastat/src/*.so pragmastat/src/*.dll
+rm -rf pragmastat/inst/testdata pragmastat/tests/tests
+"""
+
+[tasks."restore:r"]
+description = "Install R package locally"
+dir = "r/pragmastat"
+run = "Rscript -e \"if (!requireNamespace('devtools', quietly = TRUE)) install.packages('devtools', repos = 'https://cloud.r-project.org'); devtools::install()\""
+
+[tasks."demo:r"]
+description = "Run R demo"
+dir = "r/pragmastat"
+run = """
+Rscript -e "if (!requireNamespace('devtools', quietly = TRUE)) install.packages('devtools', repos = 'https://cloud.r-project.org'); devtools::install(quiet = TRUE, upgrade = 'never')"
+Rscript inst/examples/demo.R
+"""
+
+[tasks."doc:r"]
+description = "Build R documentation"
+dir = "r/pragmastat"
+run = "Rscript -e \"if (!requireNamespace('devtools', quietly = TRUE)) install.packages('devtools', repos = 'https://cloud.r-project.org'); devtools::document()\""
+
+[tasks."ci:r"]
+description = "Run R CI pipeline"
+run = [
+    { task = "clean:r" },
+    { task = "check:r" },
+    { task = "build:r" },
+    { task = "test:r" },
+]
+
+# ==========================================================================
+# Rust Tasks (rs/)
+# ==========================================================================
+
+[tasks."build:rs"]
+description = "Build Rust package (debug mode)"
+dir = "rs/pragmastat"
+run = "cargo build"
+
+[tasks."build:release:rs"]
+description = "Build Rust package (release mode)"
+dir = "rs/pragmastat"
+run = "cargo build --release"
+
+[tasks."test:rs"]
+description = "Run Rust tests"
+dir = "rs/pragmastat"
+run = "cargo test --verbose"
+
+[tasks."check:rs"]
+description = "Check Rust code (clippy, fmt, cargo check)"
+dir = "rs/pragmastat"
+run = """
+cargo clippy -- -D warnings
+cargo fmt -- --check
+cargo check
+"""
+
+[tasks."check:fix:rs"]
+description = "Format Rust code"
+dir = "rs/pragmastat"
+run = "cargo fmt"
+
+[tasks."clean:rs"]
+description = "Clean Rust build artifacts"
+dir = "rs/pragmastat"
+run = """
+cargo clean
+rm -rf Cargo.lock
+"""
+
+[tasks."demo:rs"]
+description = "Run Rust demo"
+dir = "rs/pragmastat"
+run = "cargo run --example demo"
+
+[tasks."bench:rs"]
+description = "Run Rust benchmarks"
+dir = "rs/pragmastat"
+run = "cargo bench"
+
+[tasks."doc:rs"]
+description = "Build Rust documentation"
+dir = "rs/pragmastat"
+run = "cargo doc --no-deps"
+
+[tasks."pack:rs"]
+description = "Package Rust crate"
+dir = "rs/pragmastat"
+run = "cargo package --verbose"
+
+[tasks."publish:dry:rs"]
+description = "Dry run of publishing Rust crate"
+dir = "rs/pragmastat"
+run = "cargo publish --dry-run"
+
+[tasks."ci:rs"]
+description = "Run Rust CI pipeline"
+run = [
+    { task = "clean:rs" },
+    { task = "check:rs" },
+    { task = "build:rs" },
+    { task = "test:rs" },
+]
+
+# ==========================================================================
+# TypeScript Tasks (ts/)
+# ==========================================================================
+
+[tasks."build:ts"]
+description = "Build TypeScript package"
+dir = "ts"
+run = "npm run build"
+
+[tasks."test:ts"]
+description = "Run TypeScript tests"
+dir = "ts"
+run = "npm test"
+
+[tasks."check:ts"]
+description = "Check TypeScript code (lint and format)"
+dir = "ts"
+run = """
+npm run lint
+npm run format:check
+"""
+
+[tasks."check:fix:ts"]
+description = "Format TypeScript code"
+dir = "ts"
+run = "npm run format"
+
+[tasks."clean:ts"]
+description = "Clean TypeScript build artifacts"
+dir = "ts"
+run = "npm run clean"
+
+[tasks."restore:ts"]
+description = "Install TypeScript dependencies"
+dir = "ts"
+run = "npm ci"
+
+[tasks."demo:ts"]
+description = "Run TypeScript demo"
+dir = "ts"
+run = "npx ts-node examples/demo.ts"
+
+[tasks."coverage:ts"]
+description = "Run TypeScript tests with coverage"
+dir = "ts"
+run = "npm run test:coverage"
+
+[tasks."pack:ts"]
+description = "Package TypeScript npm tarball"
+dir = "ts"
+run = "npm pack"
+
+[tasks."ci:ts"]
+description = "Run TypeScript CI pipeline"
+run = [
+    { task = "clean:ts" },
+    { task = "restore:ts" },
+    { task = "check:ts" },
+    { task = "build:ts" },
+    { task = "test:ts" },
+]
+
+# ==========================================================================
+# Content Generation Tasks (gen/)
+# ==========================================================================
+
+[tasks."build:gen"]
+description = "Generate content (draft mode)"
+dir = "gen"
+run = "python3 generate.py"
+
+[tasks."build:release:gen"]
+description = "Generate content (release mode)"
+dir = "gen"
+run = "python3 generate.py --release"
+
+[tasks."clean:gen"]
+description = "Clean generated content"
+run = "echo 'No clean operation defined for gen'"
+
+# ==========================================================================
+# Image Generation Tasks (img/)
+# ==========================================================================
+
+[tasks."build:img"]
+description = "Generate images"
+dir = "img"
+run = """
+if [ ! -d "venv" ] && [ ! -f "/.dockerenv" ] && [ -z "$VIRTUAL_ENV" ]; then
+    python3 -m venv venv
+    ./venv/bin/pip install -q --upgrade pip
+    ./venv/bin/pip install -q -r requirements.txt
+fi
+if [ -d "venv" ]; then
+    ./venv/bin/python3 generate-images.py
+else
+    python3 generate-images.py
+fi
+"""
+
+[tasks."logo:img"]
+description = "Generate logo"
+dir = "img"
+run = """
+if [ ! -d "venv" ] && [ ! -f "/.dockerenv" ] && [ -z "$VIRTUAL_ENV" ]; then
+    python3 -m venv venv
+    ./venv/bin/pip install -q --upgrade pip
+    ./venv/bin/pip install -q -r requirements.txt
+fi
+if [ -d "venv" ]; then
+    ./venv/bin/python3 generate-logo.py
+else
+    python3 generate-logo.py
+fi
+"""
+
+[tasks."clean:img"]
+description = "Clean generated images"
+dir = "img"
+run = """
+find . -maxdepth 1 -type f \\( -name "*.png" ! -name "logo.png" -o -name "*.jpg" -o -name "*.svg" \\) -delete 2>/dev/null || true
+rm -rf venv
+"""
+
+# ==========================================================================
+# PDF Generation Tasks (pdf/)
+# ==========================================================================
+
+[tasks."build:pdf"]
+description = "Build PDF manual (draft mode)"
+dir = "pdf"
+run = """
+VERSION=$(cat ../manual/version.txt)
+pandoc 'pragmastat.md' \
+    --pdf-engine=latexmk \
+    --pdf-engine-opt=-xelatex \
+    --pdf-engine-opt=-shell-escape \
+    --pdf-engine-opt=-interaction=batchmode \
+    --number-sections \
+    --citeproc \
+    -o "pragmastat-v${VERSION}-draft.pdf"
+"""
+
+[tasks."build:release:pdf"]
+description = "Build PDF manual (release mode)"
+dir = "pdf"
+run = """
+VERSION=$(cat ../manual/version.txt)
+pandoc 'pragmastat.md' \
+    --pdf-engine=latexmk \
+    --pdf-engine-opt=-xelatex \
+    --pdf-engine-opt=-shell-escape \
+    --pdf-engine-opt=-interaction=batchmode \
+    --number-sections \
+    --citeproc \
+    -o "pragmastat-v${VERSION}.pdf"
+"""
+
+[tasks."clean:pdf"]
+description = "Clean generated PDF files"
+dir = "pdf"
+run = "rm -f pragmastat-v*.pdf 2>/dev/null || true"
+
+# ==========================================================================
+# Website Tasks (web/)
+# ==========================================================================
+
+[tasks."restore:web"]
+description = "Initialize web tools (download Hugo and Tailwind)"
+dir = "web"
+run = """
+mkdir -p .bin
+OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+ARCH=$(uname -m)
+[ "$OS" = "darwin" ] && OS="darwin"
+[ "$ARCH" = "x86_64" ] && ARCH="amd64"
+[ "$ARCH" = "aarch64" ] && ARCH="arm64"
+
+HUGO_VERSION="0.152.2"
+TAILWIND_VERSION="4.1.16"
+
+# Download Hugo
+HUGO_ARCH="$ARCH"
+[ "$OS" = "darwin" ] && HUGO_ARCH="universal"
+curl -L -o .bin/hugo.tar.gz "https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_${HUGO_VERSION}_${OS}-${HUGO_ARCH}.tar.gz"
+cd .bin && tar -xzf hugo.tar.gz hugo && rm hugo.tar.gz && chmod +x hugo && cd ..
+
+# Download Tailwind
+TAILWIND_OS="$OS"
+TAILWIND_ARCH="$ARCH"
+[ "$OS" = "darwin" ] && TAILWIND_OS="macos"
+[ "$ARCH" = "amd64" ] && TAILWIND_ARCH="x64"
+curl -L -o .bin/tailwind "https://github.com/tailwindlabs/tailwindcss/releases/download/v${TAILWIND_VERSION}/tailwindcss-${TAILWIND_OS}-${TAILWIND_ARCH}"
+chmod +x .bin/tailwind
+"""
+
+[tasks."build:web"]
+description = "Build website (draft mode)"
+dir = "web"
+depends = ["_ensure-web-tools"]
+run = """
+VERSION=$(cat ../manual/version.txt)
+DATE=$(date +%Y-%m-%d)
+
+# Run Tailwind
+.bin/tailwind -i ./assets/css/styles-tailwindcss.css -o ./assets/css/styles.css --minify
+
+# Copy PDF
+cp "../pdf/pragmastat-v${VERSION}-draft.pdf" static/pragmastat.pdf
+
+# Write config
+cat > data/config.toml << EOF
+version = "$VERSION"
+date = "$DATE"
+isRelease = false
+EOF
+
+# Copy favicon
+if [ -f "../img/logo.ico" ]; then
+    mkdir -p content/img
+    cp ../img/logo.ico content/img/favicon.ico
+fi
+
+# Build Hugo
+.bin/hugo --minify
+"""
+
+[tasks."build:release:web"]
+description = "Build website (release mode)"
+dir = "web"
+depends = ["_ensure-web-tools"]
+run = """
+VERSION=$(cat ../manual/version.txt)
+DATE=$(date +%Y-%m-%d)
+
+# Run Tailwind
+.bin/tailwind -i ./assets/css/styles-tailwindcss.css -o ./assets/css/styles.css --minify
+
+# Copy PDF
+cp "../pdf/pragmastat-v${VERSION}.pdf" static/pragmastat.pdf
+
+# Write config
+cat > data/config.toml << EOF
+version = "$VERSION"
+date = "$DATE"
+isRelease = true
+EOF
+
+# Copy favicon
+if [ -f "../img/logo.ico" ]; then
+    mkdir -p content/img
+    cp ../img/logo.ico content/img/favicon.ico
+fi
+
+# Build Hugo
+.bin/hugo --minify
+"""
+
+[tasks."serve:web"]
+description = "Start Hugo development server"
+dir = "web"
+depends = ["_ensure-web-tools"]
+run = ".bin/hugo server --renderToMemory --port 1729 --liveReloadPort 1729 --forceSyncStatic --gc --watch --buildDrafts"
+
+[tasks."clean:web"]
+description = "Clean website build artifacts"
+dir = "web"
+run = """
+rm -rf public/ resources/
+rm -f .hugo_build.lock
+rm -f assets/css/styles.css
+"""
+
+[tasks."_ensure-web-tools"]
+description = "Ensure Hugo and Tailwind are available"
+dir = "web"
+run = """
+if [ ! -f ".bin/hugo" ] || [ ! -f ".bin/tailwind" ]; then
+    echo "Hugo or Tailwind not found. Running restore:web..."
+    mise run restore:web
+fi
+"""
+hide = true
+
+# ==========================================================================
+# Aggregate Tasks
+# ==========================================================================
+
+[tasks."build"]
+description = "Build all language implementations"
+depends = ["build:cs", "build:go", "build:kt", "build:py", "build:r", "build:rs", "build:ts"]
+
+[tasks."test"]
+description = "Test all language implementations"
+depends = ["test:cs", "test:go", "test:kt", "test:py", "test:r", "test:rs", "test:ts"]
+
+[tasks."check"]
+description = "Check all language implementations"
+depends = ["check:cs", "check:go", "check:kt", "check:py", "check:r", "check:rs", "check:ts"]
+
+[tasks."clean"]
+description = "Clean all build artifacts"
+depends = ["clean:cs", "clean:go", "clean:kt", "clean:py", "clean:r", "clean:rs", "clean:ts", "clean:img", "clean:pdf", "clean:web"]
+
+[tasks."demo"]
+description = "Run demos for all language implementations"
+depends = ["demo:cs", "demo:go", "demo:kt", "demo:py", "demo:r", "demo:rs", "demo:ts"]
+
+[tasks."ci"]
+description = "Run CI pipeline for all language implementations"
+depends = ["ci:cs", "ci:go", "ci:kt", "ci:py", "ci:r", "ci:rs", "ci:ts"]
+
+# ==========================================================================
+# Release Tasks
+# ==========================================================================
+
+[tasks."release"]
+description = "Create a new release version"
+run = """
+if [ -z "$1" ]; then
+    echo "Usage: mise run release <version> [--push]"
+    echo ""
+    echo "Creates a new release by:"
+    echo "  1. Writing version to manual/version.txt"
+    echo "  2. Running mise run build:gen"
+    echo "  3. Creating commit 'set version <version>'"
+    echo "  4. Moving main branch to HEAD"
+    echo ""
+    echo "With --push flag, also:"
+    echo "  5. Adding upstream remote"
+    echo "  6. Creating tags v<version> and go/v<version>"
+    echo "  7. Pushing main branch and tags to upstream"
+    echo "  8. Removing upstream remote"
+    exit 1
+fi
+
+VERSION="${1#v}"
+PUSH_FLAG="$2"
+
+# Check git status
+if ! git diff-index --quiet HEAD -- 2>/dev/null; then
+    echo "Error: Git working directory is not clean"
+    git status --short
+    exit 1
+fi
+
+echo "Starting release process for version: $VERSION"
+
+# 1. Write version
+echo "$VERSION" > ./manual/version.txt
+
+# 2. Run gen
+mise run build:gen
+
+# 3. Commit
+git add -A
+if ! git diff --cached --quiet; then
+    git commit -m "set version $VERSION"
+fi
+
+# 4. Move main branch
+git branch -f main HEAD
+
+# 5. Push if requested
+if [ "$PUSH_FLAG" = "--push" ]; then
+    git remote add upstream git@github.com:AndreyAkinshin/pragmastat.git 2>/dev/null || git remote set-url upstream git@github.com:AndreyAkinshin/pragmastat.git
+    git tag "v$VERSION"
+    git tag "go/v$VERSION"
+    git push upstream main
+    git push upstream "v$VERSION"
+    git push upstream "go/v$VERSION"
+    git remote remove upstream
+    echo "Release $VERSION pushed successfully!"
+else
+    echo "Release $VERSION completed locally (not pushed)"
+fi
+"""
+
+# ==========================================================================
+# Docker Tasks
+# ==========================================================================
+
+[tasks."docker:build"]
+description = "Build all Docker images"
+run = "docker compose build"
+
+[tasks."docker:clean"]
+description = "Remove all Docker containers and images"
+run = "docker compose down --rmi all --volumes --remove-orphans"

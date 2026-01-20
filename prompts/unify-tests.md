@@ -43,7 +43,7 @@ Examine @cs/Pragmastat.TestGenerator/ and verify:
 
 For any inconsistencies found:
 - Update generator code to match the documentation in `@manual/tests/*.md`
-- Regenerate JSON files using `./build.sh cs generate`
+- Regenerate JSON files using `mise run gen:cs`
 - Verify output correctness
 
 ### Step 4: Validate
@@ -55,23 +55,23 @@ Ensure the generator implementation perfectly matches the test specification.
 **Regenerate reference test JSON files:**
 
 ```bash
-./build.sh cs generate
+mise run gen:cs
 ```
 
 **Run all reference tests:**
 
 ```bash
-./build.sh test
+mise run test
 ```
 
 **Individual language tests:**
 
 ```bash
-./build.sh cs test    # C#
-./build.sh go test    # Go
-./build.sh kt test    # Kotlin
-./build.sh py test    # Python
-./build.sh r test     # R
-./build.sh rs test    # Rust
-./build.sh ts test    # TypeScript
+mise run test:cs    # C#
+mise run test:go    # Go
+mise run test:kt    # Kotlin
+mise run test:py    # Python
+mise run test:r     # R
+mise run test:rs    # Rust
+mise run test:ts    # TypeScript
 ```

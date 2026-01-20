@@ -25,6 +25,24 @@ This manual presents a toolkit of statistical procedures that
 The toolkit consists of renamed, recombined, and refined versions of existing methods.
 Written for software developers, mathematicians, and LLMs.
 
+## Building
+
+Builds are managed via [mise](https://mise.jdx.dev/):
+
+```bash
+# Build all implementations
+mise run build
+
+# Run all tests
+mise run test
+
+# Build specific language
+mise run build:rs
+mise run test:rs
+```
+
+See [AGENTS.md](AGENTS.md) for full development documentation.
+
 ## Citation
 
 > Andrey Akinshin. (2025). Pragmastat: Pragmatic Statistical Toolkit. Zenodo. https://doi.org/10.5281/zenodo.17236778

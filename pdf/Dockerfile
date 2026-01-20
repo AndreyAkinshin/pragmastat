@@ -3,7 +3,7 @@
 # The platform is specified in docker-compose.yml as linux/amd64
 FROM pandoc/latex:3.7
 
-# Install bash (needed for build.sh scripts)
+# Install bash (needed for shell scripts)
 RUN apk add --no-cache bash
 
 # Update TeX Live and install required packages

@@ -4,7 +4,7 @@ FROM rust:1.90-slim
 # Install additional components
 RUN rustup component add rustfmt clippy
 
-# Set working directory to rs (not rs/pragmastat, for build.sh access)
+# Set working directory to rs (not rs/pragmastat, for mise task access)
 WORKDIR /workspace/rs
 
 # Set Cargo home to a writable location for non-root users

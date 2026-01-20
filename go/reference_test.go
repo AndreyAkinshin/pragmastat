@@ -3,7 +3,7 @@ package pragmastat
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -64,7 +64,7 @@ func TestReferenceData(t *testing.T) {
 	// Special test for pairwise-margin
 	t.Run("pairwise-margin", func(t *testing.T) {
 		dirPath := filepath.Join("../tests", "pairwise-margin")
-		files, err := ioutil.ReadDir(dirPath)
+		files, err := os.ReadDir(dirPath)
 		if err != nil {
 			t.Logf("Skipping pairwise-margin tests: %v", err)
 			return
@@ -78,7 +78,7 @@ func TestReferenceData(t *testing.T) {
 			testName := strings.TrimSuffix(file.Name(), ".json")
 			t.Run(testName, func(t *testing.T) {
 				filePath := filepath.Join(dirPath, file.Name())
-				data, err := ioutil.ReadFile(filePath)
+				data, err := os.ReadFile(filePath)
 				if err != nil {
 					t.Fatalf("Failed to read test file: %v", err)
 				}
@@ -110,7 +110,7 @@ func TestReferenceData(t *testing.T) {
 	// Special test for shift-bounds
 	t.Run("shift-bounds", func(t *testing.T) {
 		dirPath := filepath.Join("../tests", "shift-bounds")
-		files, err := ioutil.ReadDir(dirPath)
+		files, err := os.ReadDir(dirPath)
 		if err != nil {
 			t.Logf("Skipping shift-bounds tests: %v", err)
 			return
@@ -124,7 +124,7 @@ func TestReferenceData(t *testing.T) {
 			testName := strings.TrimSuffix(file.Name(), ".json")
 			t.Run(testName, func(t *testing.T) {
 				filePath := filepath.Join(dirPath, file.Name())
-				data, err := ioutil.ReadFile(filePath)
+				data, err := os.ReadFile(filePath)
 				if err != nil {
 					t.Fatalf("Failed to read test file: %v", err)
 				}
@@ -165,7 +165,7 @@ func TestReferenceData(t *testing.T) {
 	// Test one-sample estimators
 	for estimatorName, estimatorFunc := range oneSampleEstimators {
 		dirPath := filepath.Join(testDataPath, estimatorName)
-		files, err := ioutil.ReadDir(dirPath)
+		files, err := os.ReadDir(dirPath)
 		if err != nil {
 			t.Logf("Skipping %s tests: %v", estimatorName, err)
 			continue
@@ -179,7 +179,7 @@ func TestReferenceData(t *testing.T) {
 			testName := strings.TrimSuffix(file.Name(), ".json")
 			t.Run(fmt.Sprintf("%s/%s", estimatorName, testName), func(t *testing.T) {
 				filePath := filepath.Join(dirPath, file.Name())
-				data, err := ioutil.ReadFile(filePath)
+				data, err := os.ReadFile(filePath)
 				if err != nil {
 					t.Fatalf("Failed to read test file: %v", err)
 				}
@@ -228,7 +228,7 @@ func TestReferenceData(t *testing.T) {
 	// Test two-sample estimators
 	for estimatorName, estimatorFunc := range twoSampleEstimators {
 		dirPath := filepath.Join(testDataPath, estimatorName)
-		files, err := ioutil.ReadDir(dirPath)
+		files, err := os.ReadDir(dirPath)
 		if err != nil {
 			t.Logf("Skipping %s tests: %v", estimatorName, err)
 			continue
@@ -242,7 +242,7 @@ func TestReferenceData(t *testing.T) {
 			testName := strings.TrimSuffix(file.Name(), ".json")
 			t.Run(fmt.Sprintf("%s/%s", estimatorName, testName), func(t *testing.T) {
 				filePath := filepath.Join(dirPath, file.Name())
-				data, err := ioutil.ReadFile(filePath)
+				data, err := os.ReadFile(filePath)
 				if err != nil {
 					t.Fatalf("Failed to read test file: %v", err)
 				}

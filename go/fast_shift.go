@@ -30,7 +30,7 @@ func fastShiftQuantiles[T Number](x, y []T, p []float64, assumeSorted bool) ([]f
 	// Validate probabilities
 	for _, pk := range p {
 		if math.IsNaN(pk) || pk < 0.0 || pk > 1.0 {
-			return nil, errors.New("Probabilities must be within [0, 1]")
+			return nil, errors.New("probabilities must be within [0, 1]")
 		}
 	}
 
