@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+#MISE description="Publish a new version"
+#USAGE arg "<version>" help="Version to publish (e.g., 4.0.1 or v4.0.1)"
+#USAGE flag "--push" help="Push to upstream after creating release"
+set -euo pipefail
+
+VERSION="${usage_version#v}"
+
+# Check git status
+if ! git diff-index --quiet HEAD -- 2>/dev/null; then
+    echo "Error: Git working directory is not clean"
+    git status --short
+    exit 1
+fi
+
+echo "Starting release process for version: $VERSION"
+
+# 1. Write version
+echo "$VERSION" > ./manual/version.txt
+
+# 2. Run gen
+mise run build:gen
+
+# 3. Commit
+git add -A
+if ! git diff --cached --quiet; then
+    git commit -m "chore(release): $VERSION"
+fi
+
+# 4. Move main branch
+git branch -f main HEAD
+
+# 5. Push if requested
+if [ "${usage_push:-false}" = "true" ]; then
+    git remote add upstream git@github.com:AndreyAkinshin/pragmastat.git 2>/dev/null || git remote set-url upstream git@github.com:AndreyAkinshin/pragmastat.git
+    git tag "v$VERSION"
+    git tag "go/v$VERSION"
+    git push upstream main
+    git push upstream "v$VERSION"
+    git push upstream "go/v$VERSION"
+    git remote remove upstream
+    echo "Release $VERSION pushed successfully!"
+else
+    echo "Release $VERSION completed locally (not pushed)"
+fi
