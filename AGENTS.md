@@ -154,7 +154,7 @@ mise run check:rs
 
 ### CI Pipeline
 
-The GitHub Actions workflow (`.github/workflows/build.yml`) runs:
+The GitHub Actions workflow (`.github/workflows/ci.yml`) runs:
 1. `build-img` - Generate images
 2. `build-pdf` - Generate PDF (requires images)
 3. `build-web` - Build website (requires images and PDF)

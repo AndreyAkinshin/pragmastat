@@ -1,5 +1,5 @@
-name: build
-run-name: "[build] ${{ github.event.head_commit.message }}"
+name: ci
+run-name: "[ci] ${{ github.event.head_commit.message }}"
 
 on:
   pull_request:
