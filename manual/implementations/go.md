@@ -5,7 +5,7 @@
 Install from GitHub:
 
 ```bash
-go get github.com/AndreyAkinshin/pragmastat/go/v3@v4.0.0
+go get github.com/AndreyAkinshin/pragmastat/go/v4@v4.0.0
 ```
 
 Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v4.0.0/go
@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"log"
 
-	pragmastat "github.com/AndreyAkinshin/pragmastat/go/v3"
+	pragmastat "github.com/AndreyAkinshin/pragmastat/go/v4"
 )
 
 func must[T any](val T, err error) T {

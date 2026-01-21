@@ -13,7 +13,7 @@ This is a Go implementation of 'Pragmastat: Pragmatic Statistical Toolkit', whic
 Install from GitHub:
 
 ```bash
-go get github.com/AndreyAkinshin/pragmastat/go/v3@v4.0.0
+go get github.com/AndreyAkinshin/pragmastat/go/v4@v4.0.0
 ```
 
 ## Demo
@@ -25,7 +25,7 @@ import (
 	"fmt"
 	"log"
 
-	pragmastat "github.com/AndreyAkinshin/pragmastat/go/v3"
+	pragmastat "github.com/AndreyAkinshin/pragmastat/go/v4"
 )
 
 func must[T any](val T, err error) T {
