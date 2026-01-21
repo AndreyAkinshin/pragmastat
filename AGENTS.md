@@ -21,11 +21,11 @@ All builds are managed via [mise](https://mise.jdx.dev/). Never run raw commands
 
 ### Task Naming Convention
 
-Tasks follow the pattern `<action>:<language>` or `<action>:<qualifier>:<target>`:
+Tasks follow the pattern `<action>:<target>` or `<action>:<target>:<variant>`:
 
 ```
 build:cs          # Build C# (debug)
-build:release:cs  # Build C# (release)
+build:cs:release  # Build C# (release)
 test:go           # Run Go tests
 check:rs          # Check Rust code
 ```
@@ -48,7 +48,7 @@ Each language (cs, go, kt, py, r, rs, ts) supports:
 | Task | Description |
 |------|-------------|
 | `build:<lang>` | Build the package |
-| `build:release:<lang>` | Build in release mode (cs, rs only) |
+| `build:<lang>:release` | Build in release mode (cs, rs only) |
 | `test:<lang>` | Run tests |
 | `check:<lang>` | Run linting and formatting checks |
 | `check:fix:<lang>` | Auto-fix formatting issues |
@@ -69,14 +69,14 @@ Additional tasks:
 | Task | Description |
 |------|-------------|
 | `build:gen` | Generate content (draft mode) |
-| `build:release:gen` | Generate content (release mode) |
+| `build:gen:release` | Generate content (release mode) |
 | `build:img` | Generate images |
 | `logo:img` | Generate logo |
 | `build:pdf` | Build PDF manual (draft) |
-| `build:release:pdf` | Build PDF manual (release) |
+| `build:pdf:release` | Build PDF manual (release) |
 | `restore:web` | Download Hugo and Tailwind |
 | `build:web` | Build website (draft) |
-| `build:release:web` | Build website (release) |
+| `build:web:release` | Build website (release) |
 | `serve:web` | Start Hugo dev server |
 
 ### Release Tasks

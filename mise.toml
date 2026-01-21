@@ -24,7 +24,7 @@ description = "Build C# package (debug mode)"
 dir = "cs"
 run = "dotnet build -c Debug"
 
-[tasks."build:release:cs"]
+[tasks."build:cs:release"]
 description = "Build C# package (release mode)"
 dir = "cs"
 run = "dotnet build -c Release"
@@ -369,7 +369,7 @@ description = "Build Rust package (debug mode)"
 dir = "rs/pragmastat"
 run = "cargo build"
 
-[tasks."build:release:rs"]
+[tasks."build:rs:release"]
 description = "Build Rust package (release mode)"
 dir = "rs/pragmastat"
 run = "cargo build --release"
@@ -506,7 +506,7 @@ description = "Generate content (draft mode)"
 dir = "gen"
 run = "python3 generate.py"
 
-[tasks."build:release:gen"]
+[tasks."build:gen:release"]
 description = "Generate content (release mode)"
 dir = "gen"
 run = "python3 generate.py --release"
@@ -578,7 +578,7 @@ pandoc 'pragmastat.md' \
     -o "pragmastat-v${VERSION}-draft.pdf"
 """
 
-[tasks."build:release:pdf"]
+[tasks."build:pdf:release"]
 description = "Build PDF manual (release mode)"
 dir = "pdf"
 run = """
@@ -662,7 +662,7 @@ fi
 .bin/hugo --minify
 """
 
-[tasks."build:release:web"]
+[tasks."build:web:release"]
 description = "Build website (release mode)"
 dir = "web"
 depends = ["_ensure-web-tools"]

@@ -64,7 +64,7 @@ jobs:
         path: img/
 
     - name: Generate auxiliary files
-      run: mise run build${{ inputs.release && ':release' || '' }}:gen
+      run: mise run build:gen${{ inputs.release && ':release' || '' }}
 
     - name: Install LaTeX packages and build PDF
       uses: docker://pandoc/latex:3.7
@@ -103,13 +103,13 @@ jobs:
         path: pdf/
 
     - name: Generate auxiliary files
-      run: mise run build${{ inputs.release && ':release' || '' }}:gen
+      run: mise run build:gen${{ inputs.release && ':release' || '' }}
 
     - name: Initialize web tools
       run: mise run restore:web
 
     - name: Build website
-      run: mise run build${{ inputs.release && ':release' || '' }}:web
+      run: mise run build:web${{ inputs.release && ':release' || '' }}
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
@@ -167,7 +167,7 @@ jobs:
         dotnet-version: '9.0.305'
 
     - name: Build
-      run: mise run build${{ inputs.release && ':release' || '' }}:cs
+      run: mise run build:cs${{ inputs.release && ':release' || '' }}
 
     - name: Test
       run: mise run test:cs
@@ -256,7 +256,7 @@ jobs:
       run: mise run test:rs
 
     - name: Build
-      run: mise run build${{ inputs.release && ':release' || '' }}:rs
+      run: mise run build:rs${{ inputs.release && ':release' || '' }}
 
     - name: Package crate
       run: mise run pack:rs

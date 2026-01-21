@@ -33,11 +33,11 @@ mise run check:go          # Check Go code
 
 ## Task Naming Convention
 
-Tasks follow the pattern `<action>:<qualifier>:<target>`:
+Tasks follow the pattern `<action>:<target>` or `<action>:<target>:<variant>`:
 
 ```
 build:cs          # Build C# (debug)
-build:release:cs  # Build C# (release)
+build:cs:release  # Build C# (release)
 test:go           # Run Go tests
 check:rs          # Check Rust code
 ```
@@ -49,7 +49,7 @@ All languages support: `build`, `test`, `check`, `check:fix`, `clean`, `demo`, `
 | Task | Description |
 |------|-------------|
 | `build:<lang>` | Build the package |
-| `build:release:<lang>` | Build in release mode (cs, rs only) |
+| `build:<lang>:release` | Build in release mode (cs, rs only) |
 | `test:<lang>` | Run tests |
 | `check:<lang>` | Run linting and formatting checks |
 | `check:fix:<lang>` | Auto-fix formatting issues |
@@ -69,7 +69,7 @@ All languages support: `build`, `test`, `check`, `check:fix`, `clean`, `demo`, `
 
 **gen**: Generates version-dependent files (Markdown, configs). Run after version changes.
 - `mise run build:gen` - Draft mode
-- `mise run build:release:gen` - Release mode
+- `mise run build:gen:release` - Release mode
 
 **img**: Generates plots/diagrams using Python. Auto-manages venv.
 - `mise run build:img` - Generate images
@@ -77,13 +77,13 @@ All languages support: `build`, `test`, `check`, `check:fix`, `clean`, `demo`, `
 
 **pdf**: Generates PDF manual using Pandoc/LaTeX. Reads `manual/version.txt`.
 - `mise run build:pdf` - Draft mode
-- `mise run build:release:pdf` - Release mode
+- `mise run build:pdf:release` - Release mode
 - Requires: gen, img
 
 **web**: Hugo-based website.
 - `mise run restore:web` - Download Hugo/Tailwind (one-time)
 - `mise run build:web` - Build draft site
-- `mise run build:release:web` - Build release site
+- `mise run build:web:release` - Build release site
 - `mise run serve:web` - Start dev server (port 1729)
 - Requires: gen, img, pdf
 
