@@ -792,7 +792,7 @@ mise run build:gen
 # 3. Commit
 git add -A
 if ! git diff --cached --quiet; then
-    git commit -m "set version $VERSION"
+    git commit -m "chore(release): $VERSION"
 fi
 
 # 4. Move main branch
