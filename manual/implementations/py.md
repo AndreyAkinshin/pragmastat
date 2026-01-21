@@ -5,10 +5,10 @@
 Install from PyPI:
 
 ```bash
-pip install pragmastat==4.0.0
+pip install pragmastat==4.0.1
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v4.0.0/py
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v4.0.1/py
 
 Pragmastat on PyPI: https://pypi.org/project/pragmastat/
 
