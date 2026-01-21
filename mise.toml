@@ -5,7 +5,7 @@
 # List all tasks: mise tasks
 
 [tools]
-dotnet = "9.0"
+dotnet = "10.0"
 go = "1.24"
 golangci-lint = "latest"
 java = "temurin-23"

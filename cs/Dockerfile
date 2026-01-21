@@ -1,5 +1,5 @@
 # Dockerfile for Pragmastat .NET implementation
-FROM mcr.microsoft.com/dotnet/sdk:9.0
+FROM mcr.microsoft.com/dotnet/sdk:10.0
 
 # Set working directory
 WORKDIR /workspace/cs
