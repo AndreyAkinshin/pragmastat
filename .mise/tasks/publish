@@ -19,7 +19,7 @@ echo "Starting release process for version: $VERSION"
 echo "$VERSION" > ./manual/version.txt
 
 # 2. Run gen
-mise run build:gen
+mise run gen:build
 
 # 3. Commit
 git add -A

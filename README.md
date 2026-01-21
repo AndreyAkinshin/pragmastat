@@ -37,8 +37,8 @@ mise run build
 mise run test
 
 # Build specific language
-mise run build:rs
-mise run test:rs
+mise run rs:build
+mise run rs:test
 ```
 
 See [AGENTS.md](AGENTS.md) for full development documentation.

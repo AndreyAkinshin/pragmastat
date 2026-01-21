@@ -40,7 +40,7 @@ jobs:
       working-directory: img
 
     - name: Generate images
-      run: mise run build:img
+      run: mise run img:build
 
     - name: Upload image artifacts
       uses: actions/upload-artifact@v4
@@ -64,7 +64,7 @@ jobs:
         path: img/
 
     - name: Generate auxiliary files
-      run: mise run build:gen${{ inputs.release && ':release' || '' }}
+      run: mise run gen:build${{ inputs.release && ':release' || '' }}
 
     - name: Install LaTeX packages and build PDF
       uses: docker://pandoc/latex:3.7
@@ -103,13 +103,13 @@ jobs:
         path: pdf/
 
     - name: Generate auxiliary files
-      run: mise run build:gen${{ inputs.release && ':release' || '' }}
+      run: mise run gen:build${{ inputs.release && ':release' || '' }}
 
     - name: Initialize web tools
-      run: mise run restore:web
+      run: mise run web:restore
 
     - name: Build website
-      run: mise run build:web${{ inputs.release && ':release' || '' }}
+      run: mise run web:build${{ inputs.release && ':release' || '' }}
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
@@ -167,13 +167,13 @@ jobs:
         dotnet-version: '10.0.x'
 
     - name: Build
-      run: mise run build:cs${{ inputs.release && ':release' || '' }}
+      run: mise run cs:build${{ inputs.release && ':release' || '' }}
 
     - name: Test
-      run: mise run test:cs
+      run: mise run cs:test
 
     - name: Pack
-      run: mise run pack:cs
+      run: mise run cs:pack
 
     - name: Upload cs artifacts
       uses: actions/upload-artifact@v4
@@ -201,16 +201,16 @@ jobs:
       working-directory: py
 
     - name: Install package in development mode
-      run: mise run restore:py
+      run: mise run py:restore
 
     - name: Check code (lint and format)
-      run: mise run check:py
+      run: mise run py:check
 
     - name: Run tests
-      run: mise run test:py
+      run: mise run py:test
 
     - name: Build and verify package
-      run: mise run pack:py
+      run: mise run py:pack
 
     - name: Upload py artifacts
       uses: actions/upload-artifact@v4
@@ -250,16 +250,16 @@ jobs:
         key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
 
     - name: Check package
-      run: mise run check:rs
+      run: mise run rs:check
 
     - name: Run tests
-      run: mise run test:rs
+      run: mise run rs:test
 
     - name: Build
-      run: mise run build:rs${{ inputs.release && ':release' || '' }}
+      run: mise run rs:build${{ inputs.release && ':release' || '' }}
 
     - name: Package crate
-      run: mise run pack:rs
+      run: mise run rs:pack
 
     - name: Upload rs artifacts
       uses: actions/upload-artifact@v4
@@ -283,19 +283,19 @@ jobs:
         cache-dependency-path: ts/package-lock.json
 
     - name: Install dependencies
-      run: mise run restore:ts
+      run: mise run ts:restore
 
     - name: Check formatting and linting
-      run: mise run check:ts
+      run: mise run ts:check
 
     - name: Run tests
-      run: mise run test:ts
+      run: mise run ts:test
 
     - name: Build TypeScript
-      run: mise run build:ts
+      run: mise run ts:build
 
     - name: Create tarball
-      run: mise run pack:ts
+      run: mise run ts:pack
 
     - name: Upload ts artifacts
       uses: actions/upload-artifact@v4
@@ -312,7 +312,7 @@ jobs:
       uses: jdx/mise-action@v2
 
     - name: Download dependencies
-      run: mise run restore:go
+      run: mise run go:restore
 
     - name: Check formatting
       run: |
@@ -323,14 +323,14 @@ jobs:
       working-directory: go
 
     - name: Run tests
-      run: mise run test:verbose:go
+      run: mise run go:test:verbose
 
     - name: Run tests with coverage
       run: go test -race -coverprofile=coverage.out -covermode=atomic ./...
       working-directory: go
 
     - name: Build
-      run: mise run build:go
+      run: mise run go:build
 
     - name: Upload go artifacts
       uses: actions/upload-artifact@v4
@@ -377,7 +377,7 @@ jobs:
 
     - name: Build and test (non-release mode)
       if: ${{ !inputs.release }}
-      run: mise run build:kt
+      run: mise run kt:build
 
     - name: Upload kt artifacts
       uses: actions/upload-artifact@v4

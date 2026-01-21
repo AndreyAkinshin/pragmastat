@@ -21,13 +21,13 @@ All builds are managed via [mise](https://mise.jdx.dev/). Never run raw commands
 
 ### Task Naming Convention
 
-Tasks follow the pattern `<action>:<target>` or `<action>:<target>:<variant>`:
+Tasks follow the pattern `<target>:<action>` or `<target>:<action>:<variant>`:
 
 ```
-build:cs          # Build C# (debug)
-build:cs:release  # Build C# (release)
-test:go           # Run Go tests
-check:rs          # Check Rust code
+cs:build          # Build C# (debug)
+cs:build:release  # Build C# (release)
+go:test           # Run Go tests
+rs:check          # Check Rust code
 ```
 
 ### Common Tasks
@@ -47,37 +47,37 @@ Each language (cs, go, kt, py, r, rs, ts) supports:
 
 | Task | Description |
 |------|-------------|
-| `build:<lang>` | Build the package |
-| `build:<lang>:release` | Build in release mode (cs, rs only) |
-| `test:<lang>` | Run tests |
-| `check:<lang>` | Run linting and formatting checks |
-| `check:fix:<lang>` | Auto-fix formatting issues |
-| `clean:<lang>` | Clean build artifacts |
-| `restore:<lang>` | Restore/install dependencies |
-| `demo:<lang>` | Run demo examples |
-| `ci:<lang>` | Run full CI pipeline |
+| `<lang>:build` | Build the package |
+| `<lang>:build:release` | Build in release mode (cs, rs only) |
+| `<lang>:test` | Run tests |
+| `<lang>:check` | Run linting and formatting checks |
+| `<lang>:check:fix` | Auto-fix formatting issues |
+| `<lang>:clean` | Clean build artifacts |
+| `<lang>:restore` | Restore/install dependencies |
+| `<lang>:demo` | Run demo examples |
+| `<lang>:ci` | Run full CI pipeline |
 
 Additional tasks:
-- `pack:cs`, `pack:kt`, `pack:rs`, `pack:ts` - Create distribution packages
-- `bench:go`, `bench:rs` - Run benchmarks
-- `coverage:go`, `coverage:ts` - Run tests with coverage
-- `doc:r`, `doc:rs` - Build documentation
-- `gen:cs`, `sim:cs` - Generate tests / run simulations
+- `cs:pack`, `kt:pack`, `rs:pack`, `ts:pack` - Create distribution packages
+- `go:bench`, `rs:bench` - Run benchmarks
+- `go:coverage`, `ts:coverage` - Run tests with coverage
+- `r:doc`, `rs:doc` - Build documentation
+- `cs:gen`, `cs:sim` - Generate tests / run simulations
 
 ### Auxiliary Tasks
 
 | Task | Description |
 |------|-------------|
-| `build:gen` | Generate content (draft mode) |
-| `build:gen:release` | Generate content (release mode) |
-| `build:img` | Generate images |
-| `logo:img` | Generate logo |
-| `build:pdf` | Build PDF manual (draft) |
-| `build:pdf:release` | Build PDF manual (release) |
-| `restore:web` | Download Hugo and Tailwind |
-| `build:web` | Build website (draft) |
-| `build:web:release` | Build website (release) |
-| `serve:web` | Start Hugo dev server |
+| `gen:build` | Generate content (draft mode) |
+| `gen:build:release` | Generate content (release mode) |
+| `img:build` | Generate images |
+| `img:logo` | Generate logo |
+| `pdf:build` | Build PDF manual (draft) |
+| `pdf:build:release` | Build PDF manual (release) |
+| `web:restore` | Download Hugo and Tailwind |
+| `web:build` | Build website (draft) |
+| `web:build:release` | Build website (release) |
+| `web:serve` | Start Hugo dev server |
 
 ### Release Tasks
 
@@ -126,15 +126,15 @@ All implementations share test data in `tests/` as JSON files. Each language loa
 ### Version Management
 
 - Single version in `manual/version.txt`
-- Propagated to language manifests via `build:gen`
+- Propagated to language manifests via `gen:build`
 - Release process: `mise run release <version> [--push]`
 
 ### Manual Generation Pipeline
 
-1. `build:img` - Generate images
-2. `build:gen` - Generate auxiliary files
-3. `build:pdf` - Generate PDF manual
-4. `build:web` - Build website
+1. `img:build` - Generate images
+2. `gen:build` - Generate auxiliary files
+3. `pdf:build` - Generate PDF manual
+4. `web:build` - Build website
 
 ## Development Workflows
 
@@ -145,11 +145,11 @@ All implementations share test data in `tests/` as JSON files. Each language loa
 # See: https://mise.jdx.dev/getting-started.html
 
 # Build and test a specific language
-mise run build:rs
-mise run test:rs
+mise run rs:build
+mise run rs:test
 
 # Run all checks before committing
-mise run check:rs
+mise run rs:check
 ```
 
 ### CI Pipeline
@@ -170,7 +170,7 @@ The GitHub Actions workflow (`.github/workflows/ci.yml`) runs:
 
 1. Implement in the appropriate language directory
 2. Add tests (preferably cross-language in `tests/`)
-3. Run `mise run ci:<lang>` to verify
+3. Run `mise run <lang>:ci` to verify
 4. Update documentation if needed
 
 ## Key Interfaces
@@ -189,4 +189,4 @@ Each language implementation exposes the same core statistical functions. See in
 - Check `mise tasks` for full task list
 - R tasks run outside mise management (uses system R)
 - PDF builds require LaTeX (handled via Docker in CI)
-- Website builds require Hugo and Tailwind (auto-downloaded via `restore:web`)
+- Website builds require Hugo and Tailwind (auto-downloaded via `web:restore`)

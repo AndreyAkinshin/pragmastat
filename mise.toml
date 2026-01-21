@@ -19,32 +19,32 @@ uv = "0.6"
 # C# Tasks (cs/)
 # ==========================================================================
 
-[tasks."build:cs"]
+[tasks."cs:build"]
 description = "Build C# package (debug mode)"
 dir = "cs"
 run = "dotnet build -c Debug"
 
-[tasks."build:cs:release"]
+[tasks."cs:build:release"]
 description = "Build C# package (release mode)"
 dir = "cs"
 run = "dotnet build -c Release"
 
-[tasks."test:cs"]
+[tasks."cs:test"]
 description = "Run C# tests"
 dir = "cs/Pragmastat.Tests"
 run = "dotnet run"
 
-[tasks."check:cs"]
+[tasks."cs:check"]
 description = "Verify C# code formatting"
 dir = "cs"
 run = "dotnet format --verify-no-changes"
 
-[tasks."check:fix:cs"]
+[tasks."cs:check:fix"]
 description = "Format C# code"
 dir = "cs"
 run = "dotnet format"
 
-[tasks."clean:cs"]
+[tasks."cs:clean"]
 description = "Clean C# build artifacts"
 dir = "cs"
 run = """
@@ -52,17 +52,17 @@ dotnet clean
 rm -rf bin/ obj/ *.nupkg
 """
 
-[tasks."restore:cs"]
+[tasks."cs:restore"]
 description = "Restore C# dependencies"
 dir = "cs"
 run = "dotnet restore"
 
-[tasks."demo:cs"]
+[tasks."cs:demo"]
 description = "Run C# demo"
 dir = "cs/Pragmastat.Demo"
 run = "dotnet run"
 
-[tasks."pack:cs"]
+[tasks."cs:pack"]
 description = "Pack C# NuGet package"
 dir = "cs"
 run = """
@@ -70,46 +70,46 @@ mkdir -p ./artifacts
 dotnet pack ./Pragmastat/Pragmastat.csproj --configuration Release --include-symbols --include-source -p:SymbolPackageFormat=snupkg --output ./artifacts
 """
 
-[tasks."gen:cs"]
+[tasks."cs:gen"]
 description = "Generate C# reference test files"
 dir = "cs"
 run = "dotnet run --project Pragmastat.TestGenerator/Pragmastat.TestGenerator.csproj"
 
-[tasks."sim:cs"]
+[tasks."cs:sim"]
 description = "Run C# simulations"
 dir = "cs/Pragmastat.Simulations"
 run = "dotnet run"
 
-[tasks."ci:cs"]
+[tasks."cs:ci"]
 description = "Run C# CI pipeline"
 run = [
-    { task = "clean:cs" },
-    { task = "restore:cs" },
-    { task = "check:cs" },
-    { task = "build:cs" },
-    { task = "test:cs" },
+    { task = "cs:clean" },
+    { task = "cs:restore" },
+    { task = "cs:check" },
+    { task = "cs:build" },
+    { task = "cs:test" },
 ]
 
 # ==========================================================================
 # Go Tasks (go/)
 # ==========================================================================
 
-[tasks."build:go"]
+[tasks."go:build"]
 description = "Build Go package"
 dir = "go"
 run = "go build ./..."
 
-[tasks."test:go"]
+[tasks."go:test"]
 description = "Run Go tests"
 dir = "go"
 run = "go test ./..."
 
-[tasks."test:verbose:go"]
+[tasks."go:test:verbose"]
 description = "Run Go tests with verbose output"
 dir = "go"
 run = "go test -v ./..."
 
-[tasks."check:go"]
+[tasks."go:check"]
 description = "Check Go code (format and lint)"
 dir = "go"
 run = """
@@ -117,12 +117,12 @@ test -z "$(go fmt ./...)" || { echo "Code is not formatted"; exit 1; }
 golangci-lint run
 """
 
-[tasks."check:fix:go"]
+[tasks."go:check:fix"]
 description = "Format Go code"
 dir = "go"
 run = "go fmt ./..."
 
-[tasks."clean:go"]
+[tasks."go:clean"]
 description = "Clean Go build cache"
 dir = "go"
 run = """
@@ -130,7 +130,7 @@ go clean
 rm -f coverage.out coverage.html
 """
 
-[tasks."restore:go"]
+[tasks."go:restore"]
 description = "Download and verify Go dependencies"
 dir = "go"
 run = """
@@ -138,79 +138,79 @@ go mod download
 go mod verify
 """
 
-[tasks."demo:go"]
+[tasks."go:demo"]
 description = "Run Go demo"
 dir = "go"
 run = "go run ./demo"
 
-[tasks."bench:go"]
+[tasks."go:bench"]
 description = "Run Go benchmarks"
 dir = "go"
 run = "go test -bench=. ./..."
 
-[tasks."coverage:go"]
+[tasks."go:coverage"]
 description = "Run Go tests with coverage"
 dir = "go"
 run = "go test -cover ./..."
 
-[tasks."ci:go"]
+[tasks."go:ci"]
 description = "Run Go CI pipeline"
 run = [
-    { task = "clean:go" },
-    { task = "restore:go" },
-    { task = "check:go" },
-    { task = "build:go" },
-    { task = "test:go" },
+    { task = "go:clean" },
+    { task = "go:restore" },
+    { task = "go:check" },
+    { task = "go:build" },
+    { task = "go:test" },
 ]
 
 # ==========================================================================
 # Kotlin Tasks (kt/)
 # ==========================================================================
 
-[tasks."build:kt"]
+[tasks."kt:build"]
 description = "Build Kotlin package"
 dir = "kt"
 run = "./gradlew build"
 
-[tasks."test:kt"]
+[tasks."kt:test"]
 description = "Run Kotlin tests"
 dir = "kt"
 run = "./gradlew test"
 
-[tasks."check:kt"]
+[tasks."kt:check"]
 description = "Check Kotlin code"
 dir = "kt"
 run = "./gradlew check"
 
-[tasks."clean:kt"]
+[tasks."kt:clean"]
 description = "Clean Kotlin build artifacts"
 dir = "kt"
 run = "./gradlew clean"
 
-[tasks."demo:kt"]
+[tasks."kt:demo"]
 description = "Run Kotlin demo"
 dir = "kt"
 run = "./gradlew run"
 
-[tasks."pack:kt"]
+[tasks."kt:pack"]
 description = "Package Kotlin JAR"
 dir = "kt"
 run = "./gradlew jar"
 
-[tasks."ci:kt"]
+[tasks."kt:ci"]
 description = "Run Kotlin CI pipeline"
 run = [
-    { task = "clean:kt" },
-    { task = "check:kt" },
-    { task = "build:kt" },
-    { task = "test:kt" },
+    { task = "kt:clean" },
+    { task = "kt:check" },
+    { task = "kt:build" },
+    { task = "kt:test" },
 ]
 
 # ==========================================================================
 # Python Tasks (py/)
 # ==========================================================================
 
-[tasks."build:py"]
+[tasks."py:build"]
 description = "Build Python package"
 dir = "py"
 run = """
@@ -219,7 +219,7 @@ rm -rf dist/ build/ *.egg-info
 python -m build
 """
 
-[tasks."test:py"]
+[tasks."py:test"]
 description = "Run Python tests"
 dir = "py"
 run = """
@@ -228,7 +228,7 @@ pip install -q -e .
 python -m pytest tests/ -v
 """
 
-[tasks."check:py"]
+[tasks."py:check"]
 description = "Check Python code (lint and format)"
 dir = "py"
 run = """
@@ -236,7 +236,7 @@ ruff check .
 ruff format --check .
 """
 
-[tasks."check:fix:py"]
+[tasks."py:check:fix"]
 description = "Format Python code"
 dir = "py"
 run = """
@@ -244,13 +244,13 @@ ruff check --fix .
 ruff format .
 """
 
-[tasks."pack:py"]
+[tasks."py:pack"]
 description = "Build and verify Python package"
 dir = "py"
-depends = ["build:py"]
+depends = ["py:build"]
 run = "twine check dist/*"
 
-[tasks."clean:py"]
+[tasks."py:clean"]
 description = "Clean Python build artifacts"
 dir = "py"
 run = """
@@ -261,12 +261,12 @@ find . -type f -name "*.pyc" -delete 2>/dev/null || true
 find . -type f -name "*.pyo" -delete 2>/dev/null || true
 """
 
-[tasks."restore:py"]
+[tasks."py:restore"]
 description = "Install Python package in development mode"
 dir = "py"
 run = "pip install -e ."
 
-[tasks."demo:py"]
+[tasks."py:demo"]
 description = "Run Python demo"
 dir = "py"
 run = """
@@ -274,14 +274,14 @@ pip install -q -e .
 python examples/demo.py
 """
 
-[tasks."ci:py"]
+[tasks."py:ci"]
 description = "Run Python CI pipeline"
 run = [
-    { task = "clean:py" },
-    { task = "restore:py" },
-    { task = "check:py" },
-    { task = "test:py" },
-    { task = "pack:py" },
+    { task = "py:clean" },
+    { task = "py:restore" },
+    { task = "py:check" },
+    { task = "py:test" },
+    { task = "py:pack" },
 ]
 
 # ==========================================================================
@@ -289,7 +289,7 @@ run = [
 # R is not managed by mise - uses system R via Rscript
 # ==========================================================================
 
-[tasks."build:r"]
+[tasks."r:build"]
 description = "Build R source package"
 dir = "r"
 run = """
@@ -297,7 +297,7 @@ rm -rf pragmastat/src/*.o pragmastat/src/*.so pragmastat/src/*.dll 2>/dev/null |
 R CMD build pragmastat
 """
 
-[tasks."test:r"]
+[tasks."r:test"]
 description = "Run R tests"
 dir = "r"
 run = """
@@ -308,7 +308,7 @@ fi
 cd pragmastat && Rscript -e "devtools::test()"
 """
 
-[tasks."check:r"]
+[tasks."r:check"]
 description = "Check R package"
 dir = "r"
 run = """
@@ -319,12 +319,12 @@ fi
 R CMD check --no-tests --no-check-dependencies pragmastat
 """
 
-[tasks."check:fix:r"]
+[tasks."r:check:fix"]
 description = "Format R code with styler"
 dir = "r/pragmastat"
 run = "Rscript -e \"if (!requireNamespace('styler', quietly = TRUE)) install.packages('styler', repos = 'https://cloud.r-project.org'); styler::style_pkg()\""
 
-[tasks."clean:r"]
+[tasks."r:clean"]
 description = "Clean R build artifacts"
 dir = "r"
 run = """
@@ -333,12 +333,12 @@ rm -rf pragmastat/src/*.o pragmastat/src/*.so pragmastat/src/*.dll
 rm -rf pragmastat/inst/testdata pragmastat/tests/tests
 """
 
-[tasks."restore:r"]
+[tasks."r:restore"]
 description = "Install R package locally"
 dir = "r/pragmastat"
 run = "Rscript -e \"if (!requireNamespace('devtools', quietly = TRUE)) install.packages('devtools', repos = 'https://cloud.r-project.org'); devtools::install()\""
 
-[tasks."demo:r"]
+[tasks."r:demo"]
 description = "Run R demo"
 dir = "r/pragmastat"
 run = """
@@ -346,40 +346,40 @@ Rscript -e "if (!requireNamespace('devtools', quietly = TRUE)) install.packages(
 Rscript inst/examples/demo.R
 """
 
-[tasks."doc:r"]
+[tasks."r:doc"]
 description = "Build R documentation"
 dir = "r/pragmastat"
 run = "Rscript -e \"if (!requireNamespace('devtools', quietly = TRUE)) install.packages('devtools', repos = 'https://cloud.r-project.org'); devtools::document()\""
 
-[tasks."ci:r"]
+[tasks."r:ci"]
 description = "Run R CI pipeline"
 run = [
-    { task = "clean:r" },
-    { task = "check:r" },
-    { task = "build:r" },
-    { task = "test:r" },
+    { task = "r:clean" },
+    { task = "r:check" },
+    { task = "r:build" },
+    { task = "r:test" },
 ]
 
 # ==========================================================================
 # Rust Tasks (rs/)
 # ==========================================================================
 
-[tasks."build:rs"]
+[tasks."rs:build"]
 description = "Build Rust package (debug mode)"
 dir = "rs/pragmastat"
 run = "cargo build"
 
-[tasks."build:rs:release"]
+[tasks."rs:build:release"]
 description = "Build Rust package (release mode)"
 dir = "rs/pragmastat"
 run = "cargo build --release"
 
-[tasks."test:rs"]
+[tasks."rs:test"]
 description = "Run Rust tests"
 dir = "rs/pragmastat"
 run = "cargo test --verbose"
 
-[tasks."check:rs"]
+[tasks."rs:check"]
 description = "Check Rust code (clippy, fmt, cargo check)"
 dir = "rs/pragmastat"
 run = """
@@ -388,12 +388,12 @@ cargo fmt -- --check
 cargo check
 """
 
-[tasks."check:fix:rs"]
+[tasks."rs:check:fix"]
 description = "Format Rust code"
 dir = "rs/pragmastat"
 run = "cargo fmt"
 
-[tasks."clean:rs"]
+[tasks."rs:clean"]
 description = "Clean Rust build artifacts"
 dir = "rs/pragmastat"
 run = """
@@ -401,55 +401,55 @@ cargo clean
 rm -rf Cargo.lock
 """
 
-[tasks."demo:rs"]
+[tasks."rs:demo"]
 description = "Run Rust demo"
 dir = "rs/pragmastat"
 run = "cargo run --example demo"
 
-[tasks."bench:rs"]
+[tasks."rs:bench"]
 description = "Run Rust benchmarks"
 dir = "rs/pragmastat"
 run = "cargo bench"
 
-[tasks."doc:rs"]
+[tasks."rs:doc"]
 description = "Build Rust documentation"
 dir = "rs/pragmastat"
 run = "cargo doc --no-deps"
 
-[tasks."pack:rs"]
+[tasks."rs:pack"]
 description = "Package Rust crate"
 dir = "rs/pragmastat"
 run = "cargo package --verbose"
 
-[tasks."publish:dry:rs"]
+[tasks."rs:publish:dry"]
 description = "Dry run of publishing Rust crate"
 dir = "rs/pragmastat"
 run = "cargo publish --dry-run"
 
-[tasks."ci:rs"]
+[tasks."rs:ci"]
 description = "Run Rust CI pipeline"
 run = [
-    { task = "clean:rs" },
-    { task = "check:rs" },
-    { task = "build:rs" },
-    { task = "test:rs" },
+    { task = "rs:clean" },
+    { task = "rs:check" },
+    { task = "rs:build" },
+    { task = "rs:test" },
 ]
 
 # ==========================================================================
 # TypeScript Tasks (ts/)
 # ==========================================================================
 
-[tasks."build:ts"]
+[tasks."ts:build"]
 description = "Build TypeScript package"
 dir = "ts"
 run = "npm run build"
 
-[tasks."test:ts"]
+[tasks."ts:test"]
 description = "Run TypeScript tests"
 dir = "ts"
 run = "npm test"
 
-[tasks."check:ts"]
+[tasks."ts:check"]
 description = "Check TypeScript code (lint and format)"
 dir = "ts"
 run = """
@@ -457,61 +457,61 @@ npm run lint
 npm run format:check
 """
 
-[tasks."check:fix:ts"]
+[tasks."ts:check:fix"]
 description = "Format TypeScript code"
 dir = "ts"
 run = "npm run format"
 
-[tasks."clean:ts"]
+[tasks."ts:clean"]
 description = "Clean TypeScript build artifacts"
 dir = "ts"
 run = "npm run clean"
 
-[tasks."restore:ts"]
+[tasks."ts:restore"]
 description = "Install TypeScript dependencies"
 dir = "ts"
 run = "npm ci"
 
-[tasks."demo:ts"]
+[tasks."ts:demo"]
 description = "Run TypeScript demo"
 dir = "ts"
 run = "npx ts-node examples/demo.ts"
 
-[tasks."coverage:ts"]
+[tasks."ts:coverage"]
 description = "Run TypeScript tests with coverage"
 dir = "ts"
 run = "npm run test:coverage"
 
-[tasks."pack:ts"]
+[tasks."ts:pack"]
 description = "Package TypeScript npm tarball"
 dir = "ts"
 run = "npm pack"
 
-[tasks."ci:ts"]
+[tasks."ts:ci"]
 description = "Run TypeScript CI pipeline"
 run = [
-    { task = "clean:ts" },
-    { task = "restore:ts" },
-    { task = "check:ts" },
-    { task = "build:ts" },
-    { task = "test:ts" },
+    { task = "ts:clean" },
+    { task = "ts:restore" },
+    { task = "ts:check" },
+    { task = "ts:build" },
+    { task = "ts:test" },
 ]
 
 # ==========================================================================
 # Content Generation Tasks (gen/)
 # ==========================================================================
 
-[tasks."build:gen"]
+[tasks."gen:build"]
 description = "Generate content (draft mode)"
 dir = "gen"
 run = "python3 generate.py"
 
-[tasks."build:gen:release"]
+[tasks."gen:build:release"]
 description = "Generate content (release mode)"
 dir = "gen"
 run = "python3 generate.py --release"
 
-[tasks."clean:gen"]
+[tasks."gen:clean"]
 description = "Clean generated content"
 run = "echo 'No clean operation defined for gen'"
 
@@ -519,7 +519,7 @@ run = "echo 'No clean operation defined for gen'"
 # Image Generation Tasks (img/)
 # ==========================================================================
 
-[tasks."build:img"]
+[tasks."img:build"]
 description = "Generate images"
 dir = "img"
 run = """
@@ -535,7 +535,7 @@ else
 fi
 """
 
-[tasks."logo:img"]
+[tasks."img:logo"]
 description = "Generate logo"
 dir = "img"
 run = """
@@ -551,7 +551,7 @@ else
 fi
 """
 
-[tasks."clean:img"]
+[tasks."img:clean"]
 description = "Clean generated images"
 dir = "img"
 run = """
@@ -563,7 +563,7 @@ rm -rf venv
 # PDF Generation Tasks (pdf/)
 # ==========================================================================
 
-[tasks."build:pdf"]
+[tasks."pdf:build"]
 description = "Build PDF manual (draft mode)"
 dir = "pdf"
 run = """
@@ -578,7 +578,7 @@ pandoc 'pragmastat.md' \
     -o "pragmastat-v${VERSION}-draft.pdf"
 """
 
-[tasks."build:pdf:release"]
+[tasks."pdf:build:release"]
 description = "Build PDF manual (release mode)"
 dir = "pdf"
 run = """
@@ -593,7 +593,7 @@ pandoc 'pragmastat.md' \
     -o "pragmastat-v${VERSION}.pdf"
 """
 
-[tasks."clean:pdf"]
+[tasks."pdf:clean"]
 description = "Clean generated PDF files"
 dir = "pdf"
 run = "rm -f pragmastat-v*.pdf 2>/dev/null || true"
@@ -602,7 +602,7 @@ run = "rm -f pragmastat-v*.pdf 2>/dev/null || true"
 # Website Tasks (web/)
 # ==========================================================================
 
-[tasks."restore:web"]
+[tasks."web:restore"]
 description = "Initialize web tools (download Hugo and Tailwind)"
 dir = "web"
 run = """
@@ -631,10 +631,10 @@ curl -L -o .bin/tailwind "https://github.com/tailwindlabs/tailwindcss/releases/d
 chmod +x .bin/tailwind
 """
 
-[tasks."build:web"]
+[tasks."web:build"]
 description = "Build website (draft mode)"
 dir = "web"
-depends = ["_ensure-web-tools"]
+depends = ["_web:ensure-tools"]
 run = """
 VERSION=$(cat ../manual/version.txt)
 DATE=$(date +%Y-%m-%d)
@@ -662,10 +662,10 @@ fi
 .bin/hugo --minify
 """
 
-[tasks."build:web:release"]
+[tasks."web:build:release"]
 description = "Build website (release mode)"
 dir = "web"
-depends = ["_ensure-web-tools"]
+depends = ["_web:ensure-tools"]
 run = """
 VERSION=$(cat ../manual/version.txt)
 DATE=$(date +%Y-%m-%d)
@@ -693,13 +693,13 @@ fi
 .bin/hugo --minify
 """
 
-[tasks."serve:web"]
+[tasks."web:serve"]
 description = "Start Hugo development server"
 dir = "web"
-depends = ["_ensure-web-tools"]
+depends = ["_web:ensure-tools"]
 run = ".bin/hugo server --renderToMemory --port 1729 --liveReloadPort 1729 --forceSyncStatic --gc --watch --buildDrafts"
 
-[tasks."clean:web"]
+[tasks."web:clean"]
 description = "Clean website build artifacts"
 dir = "web"
 run = """
@@ -708,13 +708,13 @@ rm -f .hugo_build.lock
 rm -f assets/css/styles.css
 """
 
-[tasks."_ensure-web-tools"]
+[tasks."_web:ensure-tools"]
 description = "Ensure Hugo and Tailwind are available"
 dir = "web"
 run = """
 if [ ! -f ".bin/hugo" ] || [ ! -f ".bin/tailwind" ]; then
-    echo "Hugo or Tailwind not found. Running restore:web..."
-    mise run restore:web
+    echo "Hugo or Tailwind not found. Running web:restore..."
+    mise run web:restore
 fi
 """
 hide = true
@@ -725,27 +725,27 @@ hide = true
 
 [tasks."build"]
 description = "Build all language implementations"
-depends = ["build:cs", "build:go", "build:kt", "build:py", "build:r", "build:rs", "build:ts"]
+depends = ["cs:build", "go:build", "kt:build", "py:build", "r:build", "rs:build", "ts:build"]
 
 [tasks."test"]
 description = "Test all language implementations"
-depends = ["test:cs", "test:go", "test:kt", "test:py", "test:r", "test:rs", "test:ts"]
+depends = ["cs:test", "go:test", "kt:test", "py:test", "r:test", "rs:test", "ts:test"]
 
 [tasks."check"]
 description = "Check all language implementations"
-depends = ["check:cs", "check:go", "check:kt", "check:py", "check:r", "check:rs", "check:ts"]
+depends = ["cs:check", "go:check", "kt:check", "py:check", "r:check", "rs:check", "ts:check"]
 
 [tasks."clean"]
 description = "Clean all build artifacts"
-depends = ["clean:cs", "clean:go", "clean:kt", "clean:py", "clean:r", "clean:rs", "clean:ts", "clean:img", "clean:pdf", "clean:web"]
+depends = ["cs:clean", "go:clean", "kt:clean", "py:clean", "r:clean", "rs:clean", "ts:clean", "img:clean", "pdf:clean", "web:clean"]
 
 [tasks."demo"]
 description = "Run demos for all language implementations"
-depends = ["demo:cs", "demo:go", "demo:kt", "demo:py", "demo:r", "demo:rs", "demo:ts"]
+depends = ["cs:demo", "go:demo", "kt:demo", "py:demo", "r:demo", "rs:demo", "ts:demo"]
 
 [tasks."ci"]
 description = "Run CI pipeline for all language implementations"
-depends = ["ci:cs", "ci:go", "ci:kt", "ci:py", "ci:r", "ci:rs", "ci:ts"]
+depends = ["cs:ci", "go:ci", "kt:ci", "py:ci", "r:ci", "rs:ci", "ts:ci"]
 
 # ==========================================================================
 # Publish Task

@@ -26,20 +26,20 @@ mise tasks
 mise run <task>
 
 # Examples
-mise run build:rs          # Build Rust
-mise run test:py           # Test Python
-mise run check:go          # Check Go code
+mise run rs:build          # Build Rust
+mise run py:test           # Test Python
+mise run go:check          # Check Go code
 ```
 
 ## Task Naming Convention
 
-Tasks follow the pattern `<action>:<target>` or `<action>:<target>:<variant>`:
+Tasks follow the pattern `<target>:<action>` or `<target>:<action>:<variant>`:
 
 ```
-build:cs          # Build C# (debug)
-build:cs:release  # Build C# (release)
-test:go           # Run Go tests
-check:rs          # Check Rust code
+cs:build          # Build C# (debug)
+cs:build:release  # Build C# (release)
+go:test           # Run Go tests
+rs:check          # Check Rust code
 ```
 
 ## Language-Specific Tasks
@@ -48,43 +48,43 @@ All languages support: `build`, `test`, `check`, `check:fix`, `clean`, `demo`, `
 
 | Task | Description |
 |------|-------------|
-| `build:<lang>` | Build the package |
-| `build:<lang>:release` | Build in release mode (cs, rs only) |
-| `test:<lang>` | Run tests |
-| `check:<lang>` | Run linting and formatting checks |
-| `check:fix:<lang>` | Auto-fix formatting issues |
-| `clean:<lang>` | Clean build artifacts |
-| `restore:<lang>` | Restore/install dependencies |
-| `demo:<lang>` | Run demo examples |
-| `ci:<lang>` | Run full CI pipeline |
+| `<lang>:build` | Build the package |
+| `<lang>:build:release` | Build in release mode (cs, rs only) |
+| `<lang>:test` | Run tests |
+| `<lang>:check` | Run linting and formatting checks |
+| `<lang>:check:fix` | Auto-fix formatting issues |
+| `<lang>:clean` | Clean build artifacts |
+| `<lang>:restore` | Restore/install dependencies |
+| `<lang>:demo` | Run demo examples |
+| `<lang>:ci` | Run full CI pipeline |
 
 **Additional tasks:**
-- `pack:cs`, `pack:kt`, `pack:rs`, `pack:ts` - Create distribution packages
-- `bench:go`, `bench:rs` - Run benchmarks
-- `coverage:go`, `coverage:ts` - Run tests with coverage
-- `doc:r`, `doc:rs` - Build documentation
-- `gen:cs`, `sim:cs` - Generate tests / run simulations
+- `cs:pack`, `kt:pack`, `rs:pack`, `ts:pack` - Create distribution packages
+- `go:bench`, `rs:bench` - Run benchmarks
+- `go:coverage`, `ts:coverage` - Run tests with coverage
+- `r:doc`, `rs:doc` - Build documentation
+- `cs:gen`, `cs:sim` - Generate tests / run simulations
 
 ## Auxiliary Tools
 
 **gen**: Generates version-dependent files (Markdown, configs). Run after version changes.
-- `mise run build:gen` - Draft mode
-- `mise run build:gen:release` - Release mode
+- `mise run gen:build` - Draft mode
+- `mise run gen:build:release` - Release mode
 
 **img**: Generates plots/diagrams using Python. Auto-manages venv.
-- `mise run build:img` - Generate images
-- `mise run logo:img` - Generate logo
+- `mise run img:build` - Generate images
+- `mise run img:logo` - Generate logo
 
 **pdf**: Generates PDF manual using Pandoc/LaTeX. Reads `manual/version.txt`.
-- `mise run build:pdf` - Draft mode
-- `mise run build:pdf:release` - Release mode
+- `mise run pdf:build` - Draft mode
+- `mise run pdf:build:release` - Release mode
 - Requires: gen, img
 
 **web**: Hugo-based website.
-- `mise run restore:web` - Download Hugo/Tailwind (one-time)
-- `mise run build:web` - Build draft site
-- `mise run build:web:release` - Build release site
-- `mise run serve:web` - Start dev server (port 1729)
+- `mise run web:restore` - Download Hugo/Tailwind (one-time)
+- `mise run web:build` - Build draft site
+- `mise run web:build:release` - Build release site
+- `mise run web:serve` - Start dev server (port 1729)
 - Requires: gen, img, pdf
 
 ## Aggregate Tasks
@@ -107,7 +107,7 @@ mise run release 3.2.5 --push    # Create and push release
 
 Steps:
 1. Writes version to `manual/version.txt`
-2. Runs `mise run build:gen`
+2. Runs `mise run gen:build`
 3. Creates commit "set version <version>"
 4. Moves `main` branch to HEAD
 5. With `--push`: Creates tags `v<version>` and `go/v<version>`, pushes to upstream
@@ -124,8 +124,8 @@ mise run docker:clean    # Remove all Docker containers/images
 Or use `docker-run.sh` for individual container execution:
 
 ```bash
-./docker-run.sh cs mise run build:cs
-./docker-run.sh py mise run test:py
+./docker-run.sh cs mise run cs:build
+./docker-run.sh py mise run py:test
 ```
 
 ## Key Files
@@ -140,4 +140,4 @@ Or use `docker-run.sh` for individual container execution:
 2. **Check tasks**: Run `mise tasks` to list all available tasks
 3. **Dependencies**: gen → img → pdf → web
 4. **CI test**: `mise run ci` validates all languages
-5. **Web init**: Run `mise run restore:web` once before building website
+5. **Web init**: Run `mise run web:restore` once before building website

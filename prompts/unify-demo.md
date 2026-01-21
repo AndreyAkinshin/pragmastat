@@ -127,13 +127,13 @@ Execute demos using the following commands from the project root:
 **Individual language demos:**
 
 ```bash
-mise run demo:cs    # C#
-mise run demo:go    # Go
-mise run demo:kt    # Kotlin
-mise run demo:py    # Python
-mise run demo:r     # R
-mise run demo:rs    # Rust
-mise run demo:ts    # TypeScript
+mise run cs:demo    # C#
+mise run go:demo    # Go
+mise run kt:demo    # Kotlin
+mise run py:demo    # Python
+mise run r:demo     # R
+mise run rs:demo    # Rust
+mise run ts:demo    # TypeScript
 ```
 
 **Run all demos at once:**
