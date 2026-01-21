@@ -1,6 +1,6 @@
 ---
 title: "Pragmastat: Pragmatic Statistical Toolkit"
-version: 4.0.0
+version: 4.0.1
 ---
 
 <div style="display: none;">
@@ -2832,10 +2832,10 @@ The $\Spread$ requires about 1.16 times more data to match the $\StdDev$ precisi
 Install from PyPI:
 
 ```bash
-pip install pragmastat==4.0.0
+pip install pragmastat==4.0.1
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v4.0.0/py
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v4.0.1/py
 
 Pragmastat on PyPI: https://pypi.org/project/pragmastat/
 
@@ -2931,10 +2931,10 @@ if __name__ == "__main__":
 Install from npm:
 
 ```bash
-npm i pragmastat@4.0.0
+npm i pragmastat@4.0.1
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v4.0.0/ts
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v4.0.1/ts
 
 Pragmastat on npm: https://www.npmjs.com/package/pragmastat
 
@@ -3016,11 +3016,11 @@ Install from GitHub:
 ```r
 install.packages("remotes") # If 'remotes' is not installed
 remotes::install_github("AndreyAkinshin/pragmastat",
-                        subdir = "r/pragmastat", ref = "v4.0.0")
+                        subdir = "r/pragmastat", ref = "v4.0.1")
 library(pragmastat)
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v4.0.0/r
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v4.0.1/r
 
 
 
@@ -3100,16 +3100,16 @@ print(paste("[", bounds$lower, ", ", bounds$upper, "]", sep=""))
 Install from NuGet via .NET CLI:
 
 ```bash
-dotnet add package Pragmastat --version 4.0.0
+dotnet add package Pragmastat --version 4.0.1
 ```
 
 Install from NuGet via Package Manager Console:
 
 ```ps1
-NuGet\Install-Package Pragmastat -Version 4.0.0
+NuGet\Install-Package Pragmastat -Version 4.0.1
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v4.0.0/cs
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v4.0.1/cs
 
 Pragmastat on NuGet: https://www.nuget.org/packages/Pragmastat/
 
@@ -3201,23 +3201,23 @@ Install from Maven Central Repository via Apache Maven:
 <dependency>
     <groupId>dev.pragmastat</groupId>
     <artifactId>pragmastat</artifactId>
-    <version>4.0.0</version>
+    <version>4.0.1</version>
 </dependency>
 ```
 
 Install from Maven Central Repository via Gradle:
 
 ```java
-implementation 'dev.pragmastat:pragmastat:4.0.0'
+implementation 'dev.pragmastat:pragmastat:4.0.1'
 ```
 
 Install from Maven Central Repository via Gradle (Kotlin):
 
 ```kotlin
-implementation("dev.pragmastat:pragmastat:4.0.0")
+implementation("dev.pragmastat:pragmastat:4.0.1")
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v4.0.0/kt
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v4.0.1/kt
 
 Pragmastat on Maven Central Repository: https://central.sonatype.com/artifact/dev.pragmastat/pragmastat/overview
 
@@ -3297,17 +3297,17 @@ fun main() {
 Install from crates.io via cargo:
 
 ```bash
-cargo add pragmastat@4.0.0
+cargo add pragmastat@4.0.1
 ```
 
 Install from crates.io via `Cargo.toml`:
 
 ```toml
 [dependencies]
-pragmastat = "4.0.0"
+pragmastat = "4.0.1"
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v4.0.0/rs
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v4.0.1/rs
 
 Pragmastat on crates.io: https://crates.io/crates/pragmastat
 
@@ -3404,10 +3404,10 @@ fn main() {
 Install from GitHub:
 
 ```bash
-go get github.com/AndreyAkinshin/pragmastat/go/v3@v4.0.0
+go get github.com/AndreyAkinshin/pragmastat/go/v4@v4.0.1
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v4.0.0/go
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v4.0.1/go
 
 
 
@@ -3420,7 +3420,7 @@ import (
 	"fmt"
 	"log"
 
-	pragmastat "github.com/AndreyAkinshin/pragmastat/go/v3"
+	pragmastat "github.com/AndreyAkinshin/pragmastat/go/v4"
 )
 
 func must[T any](val T, err error) T {
@@ -4163,25 +4163,25 @@ This framework ensures that all seven language implementations maintain strict n
 
 Manual:
 
-- PDF: [pragmastat-v4.0.0.pdf](https://github.com/AndreyAkinshin/pragmastat/releases/download/v4.0.0/pragmastat-v4.0.0.pdf)
-- Markdown: [pragmastat-v4.0.0.md](https://github.com/AndreyAkinshin/pragmastat/releases/download/v4.0.0/pragmastat-v4.0.0.md)
-- Website: [web-v4.0.0.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v4.0.0/web-v4.0.0.zip)
+- PDF: [pragmastat-v4.0.1.pdf](https://github.com/AndreyAkinshin/pragmastat/releases/download/v4.0.1/pragmastat-v4.0.1.pdf)
+- Markdown: [pragmastat-v4.0.1.md](https://github.com/AndreyAkinshin/pragmastat/releases/download/v4.0.1/pragmastat-v4.0.1.md)
+- Website: [web-v4.0.1.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v4.0.1/web-v4.0.1.zip)
 
 Implementations:
 
-- Python: [py-v4.0.0.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v4.0.0/py-v4.0.0.zip)
-- TypeScript: [ts-v4.0.0.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v4.0.0/ts-v4.0.0.zip)
-- R: [r-v4.0.0.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v4.0.0/r-v4.0.0.zip)
-- C#: [cs-v4.0.0.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v4.0.0/cs-v4.0.0.zip)
-- Kotlin: [kt-v4.0.0.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v4.0.0/kt-v4.0.0.zip)
-- Rust: [rs-v4.0.0.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v4.0.0/rs-v4.0.0.zip)
-- Go: [go-v4.0.0.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v4.0.0/go-v4.0.0.zip)
+- Python: [py-v4.0.1.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v4.0.1/py-v4.0.1.zip)
+- TypeScript: [ts-v4.0.1.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v4.0.1/ts-v4.0.1.zip)
+- R: [r-v4.0.1.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v4.0.1/r-v4.0.1.zip)
+- C#: [cs-v4.0.1.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v4.0.1/cs-v4.0.1.zip)
+- Kotlin: [kt-v4.0.1.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v4.0.1/kt-v4.0.1.zip)
+- Rust: [rs-v4.0.1.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v4.0.1/rs-v4.0.1.zip)
+- Go: [go-v4.0.1.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v4.0.1/go-v4.0.1.zip)
 
 Data:
 
-- Reference tests (json): [tests-v4.0.0.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v4.0.0/tests-v4.0.0.zip)
-- Reference simulations (json): [sim-v4.0.0.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v4.0.0/sim-v4.0.0.zip)
+- Reference tests (json): [tests-v4.0.1.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v4.0.1/tests-v4.0.1.zip)
+- Reference simulations (json): [sim-v4.0.1.zip](https://github.com/AndreyAkinshin/pragmastat/releases/download/v4.0.1/sim-v4.0.1.zip)
 
 Source code:
 
-- [pragmastat-4.0.0.zip](https://github.com/AndreyAkinshin/pragmastat/archive/refs/tags/v4.0.0.zip)
+- [pragmastat-4.0.1.zip](https://github.com/AndreyAkinshin/pragmastat/archive/refs/tags/v4.0.1.zip)
