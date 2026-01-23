@@ -4,7 +4,7 @@
 
 Pragmastat is a multi-language statistical library
   with **7 language implementations** (C#, Go, Kotlin, Python, R, Rust, TypeScript)
-  plus **4 auxiliary tools** (gen, img, pdf, web).
+  plus **4 auxiliary tools** (docs, img, pdf, web).
 The build system uses [mise](https://mise.jdx.dev/) as the task runner.
 
 ## Architecture
@@ -12,7 +12,7 @@ The build system uses [mise](https://mise.jdx.dev/) as the task runner.
 ```
 mise.toml (root)
 ├── Languages: cs, go, kt, py, r, rs, ts
-├── Auxiliary: gen, img, pdf, web
+├── Auxiliary: docs, img, pdf, web
 └── Aggregate: build, test, check, clean, demo, ci
 ```
 
@@ -67,25 +67,26 @@ All languages support: `build`, `test`, `check`, `check:fix`, `clean`, `demo`, `
 
 ## Auxiliary Tools
 
-**gen**: Generates version-dependent files (Markdown, configs). Run after version changes.
-- `mise run gen:build` - Draft mode
-- `mise run gen:build:release` - Release mode
+**docs**: Syncs versioned manifests and templated docs.
+- `mise run docs:version` - Sync versions
+- `mise run docs:templates` - Sync templated docs and READMEs
+- `mise run docs:sync` - Sync versions + templates
 
 **img**: Generates plots/diagrams using Python. Auto-manages venv.
 - `mise run img:build` - Generate images
 - `mise run img:logo` - Generate logo
 
-**pdf**: Generates PDF manual using Pandoc/LaTeX. Reads `manual/version.txt`.
+**pdf**: Generates PDF manual using Typst. Reads `manual/version.typ`.
 - `mise run pdf:build` - Draft mode
 - `mise run pdf:build:release` - Release mode
-- Requires: gen, img
+- Requires: docs, img
 
-**web**: Hugo-based website.
-- `mise run web:restore` - Download Hugo/Tailwind (one-time)
+**web**: Astro-based website.
+- `mise run web:restore` - Install dependencies (one-time)
 - `mise run web:build` - Build draft site
 - `mise run web:build:release` - Build release site
 - `mise run web:serve` - Start dev server (port 1729)
-- Requires: gen, img, pdf
+- Requires: docs, img, pdf
 
 ## Aggregate Tasks
 
@@ -106,8 +107,8 @@ mise run release 3.2.5 --push    # Create and push release
 ```
 
 Steps:
-1. Writes version to `manual/version.txt`
-2. Runs `mise run gen:build`
+1. Writes version to `manual/version.typ`
+2. Runs `mise run docs:sync`
 3. Creates commit "set version <version>"
 4. Moves `main` branch to HEAD
 5. With `--push`: Creates tags `v<version>` and `go/v<version>`, pushes to upstream
@@ -132,12 +133,12 @@ Or use `docker-run.sh` for individual container execution:
 
 - `mise.toml` - Task definitions
 - `docker-compose.yml` - Docker services
-- `manual/version.txt` - Current version
+- `manual/version.typ` - Current version
 
 ## Tips for LLM Agents
 
 1. **Use mise**: Always run `mise run <task>` instead of raw commands
 2. **Check tasks**: Run `mise tasks` to list all available tasks
-3. **Dependencies**: gen → img → pdf → web
+3. **Dependencies**: docs → img → pdf → web
 4. **CI test**: `mise run ci` validates all languages
 5. **Web init**: Run `mise run web:restore` once before building website

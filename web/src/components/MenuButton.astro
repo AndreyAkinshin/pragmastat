@@ -1,0 +1,48 @@
+---
+---
+
+<button
+  id="menu-button"
+  class="menu-button"
+  aria-label="Toggle navigation menu"
+  aria-expanded="false"
+>
+  <svg
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <line x1="3" y1="6" x2="21" y2="6" />
+    <line x1="3" y1="12" x2="21" y2="12" />
+    <line x1="3" y1="18" x2="21" y2="18" />
+  </svg>
+</button>
+
+<style>
+  .menu-button {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+    background: transparent;
+    border: none;
+    color: var(--color-text-muted);
+    transition: color var(--transition-fast);
+  }
+
+  .menu-button:hover {
+    color: var(--color-accent);
+  }
+
+  @media (max-width: 960px) {
+    .menu-button {
+      display: flex;
+    }
+  }
+</style>

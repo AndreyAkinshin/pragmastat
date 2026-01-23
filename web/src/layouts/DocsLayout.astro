@@ -1,0 +1,469 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import MenuButton from '../components/MenuButton.astro';
+import Sidebar from '../components/Sidebar.astro';
+import GitHubButton from '../components/GitHubButton.astro';
+import ThemeSwitcher from '../components/ThemeSwitcher.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+  headings?: { depth: number; slug: string; text: string }[];
+}
+
+const { title, description, headings = [] } = Astro.props;
+const currentSlug = Astro.url.pathname.replace(/^\/|\/$/g, '');
+---
+
+<BaseLayout title={title} description={description}>
+  <div class="layout" id="docs-layout">
+    <aside class="sidebar-container">
+      <Sidebar headings={headings} currentSlug={currentSlug} />
+    </aside>
+
+    <main class="main-content">
+      <article class="content">
+        <h1>{title}</h1>
+        <slot />
+      </article>
+    </main>
+
+    <!-- Expand button (visible when sidebar is collapsed) -->
+    <button
+      id="sidebar-expand"
+      class="sidebar-expand"
+      aria-label="Expand sidebar"
+    >
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <polyline points="13 17 18 12 13 7" />
+        <polyline points="6 17 11 12 6 7" />
+      </svg>
+    </button>
+  </div>
+
+  <!-- Mobile header -->
+  <header class="mobile-header">
+    <MenuButton />
+    <a href="/" class="mobile-logo">Pragmastat</a>
+    <div class="mobile-header-right">
+      <GitHubButton />
+      <ThemeSwitcher />
+    </div>
+  </header>
+
+  <!-- Mobile sidebar overlay -->
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <script>
+    // Copy button for code blocks
+    const copyIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
+    const checkIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+
+    document.querySelectorAll('.content pre').forEach((pre) => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.innerHTML = copyIcon;
+      button.setAttribute('aria-label', 'Copy code');
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code')?.textContent || '';
+        await navigator.clipboard.writeText(code);
+        button.innerHTML = checkIcon;
+        button.classList.add('copied');
+        setTimeout(() => {
+          button.innerHTML = copyIcon;
+          button.classList.remove('copied');
+        }, 3000);
+      });
+
+      pre.appendChild(button);
+    });
+
+    // Mobile sidebar toggle
+    const menuButton = document.getElementById('menu-button');
+    const sidebar = document.querySelector('.sidebar-container');
+    const overlay = document.getElementById('sidebar-overlay');
+
+    menuButton?.addEventListener('click', () => {
+      sidebar?.classList.toggle('open');
+      overlay?.classList.toggle('open');
+    });
+
+    overlay?.addEventListener('click', () => {
+      sidebar?.classList.remove('open');
+      overlay?.classList.remove('open');
+    });
+
+    // Desktop sidebar collapse toggle
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+    const layout = document.getElementById('docs-layout');
+
+    function setSidebarCollapsed(collapsed: boolean) {
+      if (collapsed) {
+        document.documentElement.setAttribute('data-sidebar-collapsed', '');
+        layout?.setAttribute('data-sidebar-collapsed', '');
+        sidebarToggle?.setAttribute('aria-expanded', 'false');
+        localStorage.setItem('pragmastat-sidebar-collapsed', 'true');
+      } else {
+        document.documentElement.removeAttribute('data-sidebar-collapsed');
+        layout?.removeAttribute('data-sidebar-collapsed');
+        sidebarToggle?.setAttribute('aria-expanded', 'true');
+        localStorage.removeItem('pragmastat-sidebar-collapsed');
+      }
+    }
+
+    // Initialize from localStorage (also set on documentElement by BaseLayout inline script)
+    const sidebarCollapsed = localStorage.getItem('pragmastat-sidebar-collapsed') === 'true';
+    if (sidebarCollapsed) {
+      layout?.setAttribute('data-sidebar-collapsed', '');
+      sidebarToggle?.setAttribute('aria-expanded', 'false');
+    }
+
+    sidebarToggle?.addEventListener('click', () => {
+      const isCollapsed = layout?.hasAttribute('data-sidebar-collapsed');
+      setSidebarCollapsed(!isCollapsed);
+    });
+
+    const sidebarExpand = document.getElementById('sidebar-expand');
+    sidebarExpand?.addEventListener('click', () => {
+      setSidebarCollapsed(false);
+    });
+
+    // Citation popovers
+    (async function initCitations() {
+      const citations = document.querySelectorAll('.citation');
+      if (citations.length === 0) return;
+
+      let references = {};
+      try {
+        const res = await fetch('/references.json');
+        if (!res.ok) {
+          console.warn('Failed to load references.json:', res.status);
+          return;
+        }
+        references = await res.json();
+      } catch (e) {
+        console.warn('Could not load references.json', e);
+        return;
+      }
+
+      let popover = null;
+      let hideTimeout = null;
+      let isOverPopover = false;
+
+      function showPopover(citation, ref) {
+        // Clear any pending hide
+        if (hideTimeout) {
+          clearTimeout(hideTimeout);
+          hideTimeout = null;
+        }
+
+        // Don't recreate if already showing for this citation
+        if (popover && popover.dataset.key === citation.dataset.key) return;
+
+        hidePopoverNow();
+        popover = document.createElement('div');
+        popover.className = 'citation-popover';
+        popover.dataset.key = citation.dataset.key;
+        // Build popover content safely using DOM APIs to prevent XSS
+        const titleDiv = document.createElement('div');
+        titleDiv.className = 'citation-popover-title';
+        titleDiv.textContent = ref.title;
+        popover.appendChild(titleDiv);
+
+        const authorsDiv = document.createElement('div');
+        authorsDiv.className = 'citation-popover-authors';
+        authorsDiv.textContent = `${ref.authors.join(', ')} (${ref.year})`;
+        popover.appendChild(authorsDiv);
+
+        if (ref.venue) {
+          const venueDiv = document.createElement('div');
+          venueDiv.className = 'citation-popover-venue';
+          venueDiv.textContent = ref.venue;
+          popover.appendChild(venueDiv);
+        }
+
+        if (ref.doi) {
+          const doiDiv = document.createElement('div');
+          doiDiv.className = 'citation-popover-doi';
+          const doiLink = document.createElement('a');
+          doiLink.href = `https://doi.org/${encodeURIComponent(ref.doi)}`;
+          doiLink.target = '_blank';
+          doiLink.rel = 'noopener noreferrer';
+          doiLink.textContent = `DOI: ${ref.doi}`;
+          doiDiv.appendChild(doiLink);
+          popover.appendChild(doiDiv);
+        }
+
+        // Track mouse entering/leaving the popover
+        popover.addEventListener('mouseenter', () => {
+          isOverPopover = true;
+          if (hideTimeout) {
+            clearTimeout(hideTimeout);
+            hideTimeout = null;
+          }
+        });
+        popover.addEventListener('mouseleave', () => {
+          isOverPopover = false;
+          scheduleHide();
+        });
+
+        document.body.appendChild(popover);
+
+        // Position near the citation (with small gap for mouse movement)
+        const rect = citation.getBoundingClientRect();
+        const popRect = popover.getBoundingClientRect();
+        let left = rect.left;
+        let top = rect.bottom + 4; // Reduced gap for easier mouse transition
+
+        // Keep within viewport
+        if (left + popRect.width > window.innerWidth - 16) {
+          left = window.innerWidth - popRect.width - 16;
+        }
+        if (top + popRect.height > window.innerHeight - 16) {
+          top = rect.top - popRect.height - 4;
+        }
+
+        popover.style.left = `${left}px`;
+        popover.style.top = `${top}px`;
+      }
+
+      function scheduleHide() {
+        if (hideTimeout) return;
+        hideTimeout = setTimeout(() => {
+          if (!isOverPopover) {
+            hidePopoverNow();
+          }
+          hideTimeout = null;
+        }, 150); // Small delay to allow moving to popover
+      }
+
+      function hidePopoverNow() {
+        if (popover) {
+          popover.remove();
+          popover = null;
+        }
+        isOverPopover = false;
+      }
+
+      citations.forEach(citation => {
+        const key = citation.dataset.key;
+        if (!key) return;
+        const ref = references[key];
+        if (!ref) return;
+
+        citation.addEventListener('mouseenter', () => showPopover(citation, ref));
+        citation.addEventListener('mouseleave', scheduleHide);
+        citation.addEventListener('click', (e) => {
+          e.preventDefault();
+          if (popover) hidePopoverNow();
+          else showPopover(citation, ref);
+        });
+      });
+    })();
+  </script>
+</BaseLayout>
+
+<style>
+  .layout {
+    display: grid;
+    grid-template-columns: var(--sidebar-width) 1fr;
+    min-height: 100vh;
+    transition: grid-template-columns var(--transition-normal);
+  }
+
+  .sidebar-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: var(--sidebar-width);
+    height: 100vh;
+    overflow-y: auto;
+    padding: 1.5rem 1rem;
+    background-color: var(--color-bg);
+    z-index: 10;
+    transition: transform var(--transition-normal);
+  }
+
+  .main-content {
+    grid-column: 2;
+    padding: 2rem;
+    max-width: 100%;
+    overflow-x: hidden;
+    transition: grid-column var(--transition-normal);
+  }
+
+  /* Collapsed sidebar state (desktop only) */
+  /* Target both html[data-sidebar-collapsed] (early, from inline script) and .layout[data-sidebar-collapsed] (after JS) */
+  @media (min-width: 961px) {
+    :global(html[data-sidebar-collapsed]) .layout,
+    .layout[data-sidebar-collapsed] {
+      grid-template-columns: 0 1fr;
+    }
+
+    :global(html[data-sidebar-collapsed]) .sidebar-container,
+    .layout[data-sidebar-collapsed] .sidebar-container {
+      transform: translateX(-100%);
+    }
+
+    :global(html[data-sidebar-collapsed]) .main-content,
+    .layout[data-sidebar-collapsed] .main-content {
+      grid-column: 1 / -1;
+    }
+
+    :global(html[data-sidebar-collapsed]) .sidebar-expand,
+    .layout[data-sidebar-collapsed] .sidebar-expand {
+      opacity: 1;
+      pointer-events: auto;
+    }
+  }
+
+  /* Expand button - hidden by default, shown when collapsed */
+  .sidebar-expand {
+    display: none;
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    color: var(--color-text-muted);
+    opacity: 0;
+    pointer-events: none;
+    transition:
+      opacity var(--transition-normal),
+      color var(--transition-fast);
+    z-index: 15;
+  }
+
+  .sidebar-expand:hover {
+    color: var(--color-accent);
+  }
+
+  @media (min-width: 961px) {
+    .sidebar-expand {
+      display: flex;
+    }
+  }
+
+  .content {
+    max-width: var(--content-max-width);
+    margin: 0 auto;
+  }
+
+  .mobile-header {
+    --mobile-header-height: calc(var(--header-height) * 1.5);
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--mobile-header-height);
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1rem;
+    z-index: 20;
+  }
+
+  /* Blur/background layer behind header content */
+  .mobile-header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--color-bg) 92%, transparent) 0%,
+      color-mix(in srgb, var(--color-bg) 80%, transparent) 70%,
+      color-mix(in srgb, var(--color-bg) 65%, transparent) 100%
+    );
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    mask-image: linear-gradient(to bottom, black 0%, black 70%, rgba(0,0,0,0.5) 90%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 0%, black 70%, rgba(0,0,0,0.5) 90%, transparent 100%);
+    z-index: -1;
+  }
+
+  /* Soft fade below header */
+  .mobile-header::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    height: 32px;
+    background: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--color-bg) 35%, transparent) 0%,
+      color-mix(in srgb, var(--color-bg) 15%, transparent) 50%,
+      transparent 100%
+    );
+    pointer-events: none;
+  }
+
+  .mobile-logo {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-text);
+    text-decoration: none;
+  }
+
+  .mobile-header-right {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background-color: var(--color-overlay);
+    z-index: 9;
+  }
+
+  /* Mobile layout */
+  @media (max-width: 960px) {
+    .layout {
+      grid-template-columns: 1fr;
+      padding-top: calc(var(--header-height) * 1.5);
+    }
+
+    .mobile-header {
+      display: flex;
+    }
+
+    .sidebar-container {
+      top: calc(var(--header-height) * 1.5);
+      height: calc(100vh - var(--header-height) * 1.5);
+      transform: translateX(-100%);
+      transition: transform var(--transition-normal);
+    }
+
+    .sidebar-container.open {
+      transform: translateX(0);
+    }
+
+    .sidebar-overlay.open {
+      display: block;
+    }
+
+    .main-content {
+      grid-column: 1;
+      padding: 1.5rem 1rem;
+    }
+  }
+</style>

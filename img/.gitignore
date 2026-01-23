@@ -1,5 +1,5 @@
 *.png
+*.ico
 *.pdf
 .Rhistory
-!logo.png
 __pycache__

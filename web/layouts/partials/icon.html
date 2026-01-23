@@ -1,2 +1,0 @@
-{{- $icons := resources.Get "icons.svg" | resources.Minify | resources.Fingerprint -}}
-<svg class="icon"><use xlink:href="{{ $icons.RelPermalink }}#{{ . }}"></use></svg>

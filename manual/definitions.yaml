@@ -1,0 +1,64 @@
+# KaTeX macro definitions for web rendering
+# Maps Typst identifiers to LaTeX equivalents
+# Used by tools to generate katex-macros.json
+
+# Estimators
+Center: \operatorname{Center}
+Spread: \operatorname{Spread}
+Shift: \operatorname{Shift}
+Ratio: \operatorname{Ratio}
+RelSpread: \operatorname{RelSpread}
+AvgSpread: \operatorname{AvgSpread}
+Disparity: \operatorname{Disparity}
+PairwiseMargin: \operatorname{PairwiseMargin}
+ShiftBounds: \operatorname{ShiftBounds}
+Dominance: \operatorname{Dominance}
+
+# Traditional Estimators
+Median: \operatorname{Median}
+Mean: \operatorname{Mean}
+StdDev: \operatorname{StdDev}
+Var: \operatorname{Var}
+IQR: \operatorname{IQR}
+MAD: \operatorname{MAD}
+Mode: \operatorname{Mode}
+Quantile: \operatorname{Quantile}
+median: \operatorname{median}
+
+# Distributions (underlined to distinguish from estimators)
+Additive: \underline{\operatorname{Additive}}
+Multiplic: \underline{\operatorname{Multiplic}}
+Exp: \underline{\operatorname{Exp}}
+Power: \underline{\operatorname{Power}}
+Uniform: \underline{\operatorname{Uniform}}
+
+# Vectors (bold)
+vx: \mathbf{x}
+vy: \mathbf{y}
+vz: \mathbf{z}
+
+# Drift and Efficiency
+Drift: \operatorname{Drift}
+AvgDrift: \operatorname{AvgDrift}
+DispDrift: \operatorname{DispDrift}
+
+# Distribution Parameters (upright text in math mode)
+pmean: \mathrm{mean}
+pstddev: \mathrm{stdDev}
+plogmean: \mathrm{logMean}
+plogstddev: \mathrm{logStdDev}
+pmin: \mathrm{min}
+pmax: \mathrm{max}
+pshape: \mathrm{shape}
+prate: \mathrm{rate}
+
+# Asymptotic Constants
+cmad: c_{\mathrm{mad}}
+cspr: c_{\mathrm{spr}}
+
+# Special Symbols
+misrate: \mathrm{misrate}
+approxdist: \sim\text{approx}
+EE: \mathbb{E}
+RR: \mathbb{R}
+NN: \mathbb{N}

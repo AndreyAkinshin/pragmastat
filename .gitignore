@@ -4,3 +4,26 @@ artifacts
 venv
 __pycache__
 .pip-packages
+
+# PDF build artifacts
+manual/fonts/
+manual/pragmastat.pdf
+
+# Rust tooling outputs
+tools/target/
+
+# Astro/web dependencies and builds
+web/node_modules/
+web/dist/
+web/.astro/
+web/.vercel/
+web/.netlify/
+web/.output/
+web/pnpm-debug.log*
+
+# Generated Astro content
+web/src/content/docs/
+web/src/content/manual/
+web/katex-macros.json
+web/public/img/
+web/public/references.json

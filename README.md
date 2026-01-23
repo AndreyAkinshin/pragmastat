@@ -23,25 +23,6 @@ This manual presents a toolkit of statistical procedures that
   provide reliable results across diverse real-world distributions,
   with ready-to-use implementations and detailed explanations.
 The toolkit consists of renamed, recombined, and refined versions of existing methods.
-Written for software developers, mathematicians, and LLMs.
-
-## Building
-
-Builds are managed via [mise](https://mise.jdx.dev/):
-
-```bash
-# Build all implementations
-mise run build
-
-# Run all tests
-mise run test
-
-# Build specific language
-mise run rs:build
-mise run rs:test
-```
-
-See [AGENTS.md](AGENTS.md) for full development documentation.
 
 ## Citation
 

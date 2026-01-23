@@ -6,6 +6,20 @@ set -euo pipefail
 
 VERSION="${usage_version#v}"
 
+# Require interactive terminal (blocks LLM/automation)
+if [ ! -t 0 ]; then
+    echo "Error: publish requires an interactive terminal"
+    exit 1
+fi
+
+# Require explicit confirmation
+read -p "Release version $VERSION? [y/N] " -n 1 -r
+echo
+if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    echo "Aborted."
+    exit 1
+fi
+
 # Check git status
 if ! git diff-index --quiet HEAD -- 2>/dev/null; then
     echo "Error: Git working directory is not clean"
@@ -15,11 +29,11 @@ fi
 
 echo "Starting release process for version: $VERSION"
 
-# 1. Write version
-echo "$VERSION" > ./manual/version.txt
+# 1. Write version (Typst format)
+echo "#let version = \"$VERSION\"" > ./manual/version.typ
 
-# 2. Run gen
-mise run gen:build
+# 2. Sync versions and regenerate docs
+mise run docs:sync
 
 # 3. Commit
 git add -A

@@ -1,0 +1,147 @@
+fix1955:
+  type: article
+  title: Significance probabilities of the Wilcoxon test
+  author:
+    - name: Fix
+      given-name: Evelyn
+    - name: Hodges
+      given-name: J. L.
+  date: 1955
+  parent:
+    - type: periodical
+      title: The Annals of Mathematical Statistics
+      volume: 26
+      issue: 2
+  page-range: 301-312
+  doi: 10.1214/aoms/1177728547
+  url: https://projecteuclid.org/euclid.aoms/1177728547
+
+hodges1963:
+  type: article
+  title: Estimates of Location Based on Rank Tests
+  author:
+    - name: Hodges
+      given-name: J. L.
+    - name: Lehmann
+      given-name: E. L.
+  date: 1963
+  parent:
+    - type: periodical
+      title: The Annals of Mathematical Statistics
+      volume: 34
+      issue: 2
+  page-range: 598-611
+  doi: 10.1214/aoms/1177704172
+  url: http://projecteuclid.org/euclid.aoms/1177704172
+
+huber2009:
+  type: chapter
+  title: Robust statistics
+  author:
+    - name: Huber
+      given-name: Peter J
+  date: 2009
+  parent:
+    - type: book
+      title: International encyclopedia of statistical science
+      publisher: Springer
+  page-range: 1248-1251
+
+hyndman1996:
+  type: article
+  title: Sample Quantiles in Statistical Packages
+  author:
+    - name: Hyndman
+      given-name: Rob J
+    - name: Fan
+      given-name: Yanan
+  date: 1996
+  parent:
+    - type: periodical
+      title: The American Statistician
+      volume: 50
+      issue: 4
+  page-range: 361
+  doi: 10.2307/2684934
+  url: https://www.jstor.org/stable/2684934
+
+loeffler1982:
+  type: article
+  title: On the calculation of the exact null-distribution of the Wilcoxon-Mann-Whitney U-statistic
+  author:
+    - name: Löffler
+      given-name: Andreas
+  date: 1982
+
+monahan1984:
+  type: article
+  title: "Algorithm 616: fast computation of the Hodges-Lehmann location estimator"
+  author:
+    - name: Monahan
+      given-name: John F
+  date: 1984
+  parent:
+    - type: periodical
+      title: ACM Transactions on Mathematical Software
+      volume: 10
+      issue: 3
+  page-range: 265-270
+  doi: 10.1145/1271.319414
+  url: https://dl.acm.org/doi/10.1145/1271.319414
+
+norman2013:
+  type: book
+  title: "The Design of Everyday Things: Revised and Expanded Edition"
+  author:
+    - name: Norman
+      given-name: Donald A.
+  date: 2013
+  publisher: Basic Books
+  location: New York
+  isbn: 9780465050659
+
+sen1963:
+  type: article
+  title: On the Estimation of Relative Potency in Dilution (-Direct) Assays by Distribution-Free Methods
+  author:
+    - name: Sen
+      given-name: Pranab Kumar
+  date: 1963
+  parent:
+    - type: periodical
+      title: Biometrics
+      volume: 19
+      issue: 4
+  page-range: 532
+  doi: 10.2307/2527532
+  url: https://www.jstor.org/stable/2527532
+
+serfling2009:
+  type: book
+  title: Approximation theorems of mathematical statistics
+  author:
+    - name: Serfling
+      given-name: Robert J
+  date: 2009
+  publisher: John Wiley & Sons
+
+shamos1976:
+  type: article
+  title: "Geometry and Statistics: Problems at the Interface"
+  author:
+    - name: Shamos
+      given-name: Michael Ian
+  date: 1976
+
+sidak1999:
+  type: book
+  title: Theory of rank tests
+  author:
+    - name: Sidak
+      given-name: Zbynek
+    - name: Sen
+      given-name: Pranab Kumar
+    - name: Hajek
+      given-name: Jaroslav
+  date: 1999
+  publisher: Elsevier

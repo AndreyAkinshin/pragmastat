@@ -123,24 +123,7 @@ services:
     working_dir: /workspace/img
     container_name: pragmastat-img
 
-  # PDF generation
-  pdf:
-    build:
-      context: .
-      dockerfile: pdf/Dockerfile
-      platforms:
-        - linux/amd64  # pandoc/latex doesn't support ARM64, use emulation on Apple Silicon
-    image: pragmastat-pdf:latest
-    platform: linux/amd64
-    entrypoint: []  # Override pandoc entrypoint to allow shell commands
-    volumes:
-      - ./pdf:/workspace/pdf
-      - ./manual:/workspace/manual
-      - ./img:/workspace/img
-    working_dir: /workspace/pdf
-    container_name: pragmastat-pdf
-
-  # Web/Hugo build
+  # Web/Astro build
   web:
     build:
       context: .
@@ -150,32 +133,8 @@ services:
       - ./web:/workspace/web
       - ./manual:/workspace/manual
       - ./img:/workspace/img
-      - ./pdf:/workspace/pdf
       # Use separate .bin-docker for Docker builds to avoid architecture conflicts with host .bin
       - ./web/.bin-docker:/workspace/web/.bin
     working_dir: /workspace/web
     container_name: pragmastat-web
-
-  # Content generation
-  gen:
-    build:
-      context: .
-      dockerfile: gen/Dockerfile
-    image: pragmastat-gen:latest
-    volumes:
-      - ./gen:/workspace/gen
-      - ./manual:/workspace/manual
-      - ./pdf:/workspace/pdf
-      - ./web:/workspace/web
-      - ./CITATION.cff:/workspace/CITATION.cff:ro
-      # Mount language directories (read-only) for demo code extraction
-      - ./cs:/workspace/cs:ro
-      - ./py:/workspace/py:ro
-      - ./rs:/workspace/rs:ro
-      - ./go:/workspace/go:ro
-      - ./ts:/workspace/ts:ro
-      - ./kt:/workspace/kt:ro
-      - ./r:/workspace/r:ro
-    working_dir: /workspace/gen
-    container_name: pragmastat-gen
 

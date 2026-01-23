@@ -1,0 +1,214 @@
+---
+---
+
+<div class="theme-switcher">
+  <button
+    class="theme-button"
+    id="theme-button"
+    aria-label="Toggle theme"
+    aria-haspopup="true"
+  >
+    <svg class="icon icon-system" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"/>
+      <path d="M12 2a10 10 0 0 1 0 20" fill="currentColor" stroke="none"/>
+    </svg>
+    <svg class="icon icon-light" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="5"/>
+      <line x1="12" y1="1" x2="12" y2="3"/>
+      <line x1="12" y1="21" x2="12" y2="23"/>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+      <line x1="1" y1="12" x2="3" y2="12"/>
+      <line x1="21" y1="12" x2="23" y2="12"/>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+    </svg>
+    <svg class="icon icon-dark" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+    </svg>
+  </button>
+
+  <div class="theme-dropdown" id="theme-dropdown">
+    <button class="theme-option" data-theme="system">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <path d="M12 2a10 10 0 0 1 0 20" fill="currentColor" stroke="none"/>
+      </svg>
+      System
+    </button>
+    <button class="theme-option" data-theme="light">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="5"/>
+        <line x1="12" y1="1" x2="12" y2="3"/>
+        <line x1="12" y1="21" x2="12" y2="23"/>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+        <line x1="1" y1="12" x2="3" y2="12"/>
+        <line x1="21" y1="12" x2="23" y2="12"/>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+      </svg>
+      Light
+    </button>
+    <button class="theme-option" data-theme="dark">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </svg>
+      Dark
+    </button>
+  </div>
+</div>
+
+<script>
+  const button = document.getElementById('theme-button');
+  const dropdown = document.getElementById('theme-dropdown');
+  const options = document.querySelectorAll('.theme-option');
+  const root = document.documentElement;
+
+  function getEffectiveTheme(setting: string | null): string {
+    if (setting === 'light' || setting === 'dark') return setting;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+
+  function updateIcons(setting: string | null) {
+    const switcher = document.querySelector('.theme-switcher');
+    switcher?.setAttribute('data-setting', setting || 'system');
+  }
+
+  function applyTheme(setting: string | null) {
+    const effective = getEffectiveTheme(setting);
+    root.setAttribute('data-theme', effective);
+    if (setting) {
+      root.setAttribute('data-theme-setting', setting);
+      localStorage.setItem('pragmastat-theme', setting);
+    } else {
+      root.removeAttribute('data-theme-setting');
+      localStorage.removeItem('pragmastat-theme');
+    }
+    updateIcons(setting);
+  }
+
+  // Initialize
+  const stored = localStorage.getItem('pragmastat-theme');
+  updateIcons(stored);
+
+  // Toggle dropdown
+  button?.addEventListener('click', () => {
+    dropdown?.classList.toggle('open');
+  });
+
+  // Close dropdown on outside click
+  document.addEventListener('click', (e) => {
+    if (!button?.contains(e.target as Node) && !dropdown?.contains(e.target as Node)) {
+      dropdown?.classList.remove('open');
+    }
+  });
+
+  // Handle option selection
+  options.forEach((option) => {
+    option.addEventListener('click', () => {
+      const theme = option.getAttribute('data-theme');
+      applyTheme(theme === 'system' ? null : theme);
+      dropdown?.classList.remove('open');
+    });
+  });
+
+  // Listen for system theme changes
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+    const setting = localStorage.getItem('pragmastat-theme');
+    if (!setting) {
+      applyTheme(null);
+    }
+  });
+</script>
+
+<style>
+  .theme-switcher {
+    position: relative;
+  }
+
+  .theme-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+    background: transparent;
+    border: none;
+    color: var(--color-text-muted);
+    transition: color var(--transition-fast);
+  }
+
+  .theme-button:hover {
+    color: var(--color-accent);
+  }
+
+  .icon {
+    display: none;
+  }
+
+  /* Show system icon by default (no setting stored) */
+  .theme-switcher:not([data-setting]) .icon-system,
+  .theme-switcher[data-setting='system'] .icon-system {
+    display: block;
+  }
+
+  .theme-switcher[data-setting='light'] .icon-light {
+    display: block;
+  }
+
+  .theme-switcher[data-setting='dark'] .icon-dark {
+    display: block;
+  }
+
+  /* Early state from html attribute (before JS runs) - hide system, show correct icon */
+  :global(html[data-theme-setting='light']) .theme-switcher:not([data-setting]) .icon-system {
+    display: none;
+  }
+  :global(html[data-theme-setting='light']) .theme-switcher:not([data-setting]) .icon-light {
+    display: block;
+  }
+
+  :global(html[data-theme-setting='dark']) .theme-switcher:not([data-setting]) .icon-system {
+    display: none;
+  }
+  :global(html[data-theme-setting='dark']) .theme-switcher:not([data-setting]) .icon-dark {
+    display: block;
+  }
+
+  .theme-dropdown {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    right: 0;
+    min-width: 120px;
+    background-color: var(--color-bg);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-4px);
+    transition: opacity var(--transition-fast), transform var(--transition-fast), visibility var(--transition-fast);
+    z-index: 100;
+  }
+
+  .theme-dropdown.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+
+  .theme-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    background: transparent;
+    border: none;
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    text-align: left;
+    transition: color var(--transition-fast);
+  }
+
+  .theme-option:hover {
+    color: var(--color-accent);
+  }
+</style>

@@ -10,6 +10,7 @@ go = "1.24"
 golangci-lint = "latest"
 java = "temurin-23"
 node = "22"
+pnpm = "10"
 python = "3.13"
 ruff = "latest"
 rust = "stable"
@@ -65,6 +66,7 @@ run = "dotnet run"
 [tasks."cs:pack"]
 description = "Pack C# NuGet package"
 dir = "cs"
+depends = ["img:logo"]
 run = """
 mkdir -p ./artifacts
 dotnet pack ./Pragmastat/Pragmastat.csproj --configuration Release --include-symbols --include-source -p:SymbolPackageFormat=snupkg --output ./artifacts
@@ -197,10 +199,16 @@ description = "Package Kotlin JAR"
 dir = "kt"
 run = "./gradlew jar"
 
+[tasks."kt:restore"]
+description = "Restore Kotlin dependencies"
+dir = "kt"
+run = "./gradlew dependencies --quiet"
+
 [tasks."kt:ci"]
 description = "Run Kotlin CI pipeline"
 run = [
     { task = "kt:clean" },
+    { task = "kt:restore" },
     { task = "kt:check" },
     { task = "kt:build" },
     { task = "kt:test" },
@@ -262,9 +270,13 @@ find . -type f -name "*.pyo" -delete 2>/dev/null || true
 """
 
 [tasks."py:restore"]
-description = "Install Python package in development mode"
+description = "Install Python package and dev dependencies"
 dir = "py"
-run = "pip install -e ."
+run = """
+python -m pip install --upgrade pip
+pip install pytest build twine ruff
+pip install -e .
+"""
 
 [tasks."py:demo"]
 description = "Run Python demo"
@@ -498,24 +510,6 @@ run = [
 ]
 
 # ==========================================================================
-# Content Generation Tasks (gen/)
-# ==========================================================================
-
-[tasks."gen:build"]
-description = "Generate content (draft mode)"
-dir = "gen"
-run = "python3 generate.py"
-
-[tasks."gen:build:release"]
-description = "Generate content (release mode)"
-dir = "gen"
-run = "python3 generate.py --release"
-
-[tasks."gen:clean"]
-description = "Clean generated content"
-run = "echo 'No clean operation defined for gen'"
-
-# ==========================================================================
 # Image Generation Tasks (img/)
 # ==========================================================================
 
@@ -536,188 +530,125 @@ fi
 """
 
 [tasks."img:logo"]
-description = "Generate logo"
-dir = "img"
-run = """
-if [ ! -d "venv" ] && [ ! -f "/.dockerenv" ] && [ -z "$VIRTUAL_ENV" ]; then
-    python3 -m venv venv
-    ./venv/bin/pip install -q --upgrade pip
-    ./venv/bin/pip install -q -r requirements.txt
-fi
-if [ -d "venv" ]; then
-    ./venv/bin/python3 generate-logo.py
-else
-    python3 generate-logo.py
-fi
-"""
+description = "Generate logo PNG files from SVG"
+run = "cargo run --manifest-path tools/Cargo.toml --release -- build img"
 
 [tasks."img:clean"]
 description = "Clean generated images"
 dir = "img"
 run = """
-find . -maxdepth 1 -type f \\( -name "*.png" ! -name "logo.png" -o -name "*.jpg" -o -name "*.svg" \\) -delete 2>/dev/null || true
+find . -maxdepth 1 -type f \\( -name "*.png" -o -name "*.jpg" -o -name "*.ico" \\) -delete 2>/dev/null || true
 rm -rf venv
 """
 
 # ==========================================================================
-# PDF Generation Tasks (pdf/)
+# Documentation Generation Tasks
 # ==========================================================================
 
-[tasks."pdf:build"]
-description = "Build PDF manual (draft mode)"
-dir = "pdf"
+[tasks."docs:version"]
+description = "Sync versioned manifests"
+run = "cargo run --manifest-path tools/Cargo.toml --release -- sync version"
+
+[tasks."docs:templates"]
+description = "Sync templated docs and READMEs"
+run = "cargo run --manifest-path tools/Cargo.toml --release -- sync templates"
+
+[tasks."docs:sync"]
+description = "Sync versions and templated docs"
+run = "cargo run --manifest-path tools/Cargo.toml --release -- sync all"
+
+[tasks."pdf:restore"]
+description = "Download required fonts for PDF generation"
 run = """
-VERSION=$(cat ../manual/version.txt)
-pandoc 'pragmastat.md' \
-    --pdf-engine=latexmk \
-    --pdf-engine-opt=-xelatex \
-    --pdf-engine-opt=-shell-escape \
-    --pdf-engine-opt=-interaction=batchmode \
-    --number-sections \
-    --citeproc \
-    -o "pragmastat-v${VERSION}-draft.pdf"
+if [ ! -d "manual/fonts/Ubuntu" ] || [ ! -d "manual/fonts/Vollkorn" ]; then
+  mkdir -p manual/fonts/Ubuntu manual/fonts/Vollkorn
+  FONTS_BASE="https://raw.githubusercontent.com/google/fonts/main"
+  echo "Downloading Ubuntu font..."
+  curl -sL -o manual/fonts/Ubuntu/Ubuntu-Regular.ttf "${FONTS_BASE}/ufl/ubuntu/Ubuntu-Regular.ttf"
+  curl -sL -o manual/fonts/Ubuntu/Ubuntu-Bold.ttf "${FONTS_BASE}/ufl/ubuntu/Ubuntu-Bold.ttf"
+  curl -sL -o manual/fonts/Ubuntu/Ubuntu-Light.ttf "${FONTS_BASE}/ufl/ubuntu/Ubuntu-Light.ttf"
+  curl -sL -o manual/fonts/Ubuntu/Ubuntu-Italic.ttf "${FONTS_BASE}/ufl/ubuntu/Ubuntu-Italic.ttf"
+  echo "Downloading Vollkorn font..."
+  VOLLKORN_BASE="https://cdn.jsdelivr.net/fontsource/fonts/vollkorn@latest/latin"
+  curl -sL -o manual/fonts/Vollkorn/Vollkorn-Regular.ttf "${VOLLKORN_BASE}-400-normal.ttf"
+  curl -sL -o manual/fonts/Vollkorn/Vollkorn-Bold.ttf "${VOLLKORN_BASE}-700-normal.ttf"
+  curl -sL -o manual/fonts/Vollkorn/Vollkorn-Italic.ttf "${VOLLKORN_BASE}-400-italic.ttf"
+  curl -sL -o manual/fonts/Vollkorn/Vollkorn-BoldItalic.ttf "${VOLLKORN_BASE}-700-italic.ttf"
+  echo "Fonts installed."
+else
+  echo "Fonts already installed."
+fi
 """
+
+[tasks."pdf:build"]
+description = "Build PDF manual"
+depends = ["pdf:restore", "docs:sync"]
+run = "typst compile --root . --font-path manual/fonts manual/template.typ manual/pragmastat.pdf"
 
 [tasks."pdf:build:release"]
 description = "Build PDF manual (release mode)"
-dir = "pdf"
-run = """
-VERSION=$(cat ../manual/version.txt)
-pandoc 'pragmastat.md' \
-    --pdf-engine=latexmk \
-    --pdf-engine-opt=-xelatex \
-    --pdf-engine-opt=-shell-escape \
-    --pdf-engine-opt=-interaction=batchmode \
-    --number-sections \
-    --citeproc \
-    -o "pragmastat-v${VERSION}.pdf"
-"""
+depends = ["pdf:restore", "docs:sync"]
+run = "typst compile --root . --font-path manual/fonts manual/template.typ manual/pragmastat.pdf"
 
-[tasks."pdf:clean"]
-description = "Clean generated PDF files"
-dir = "pdf"
-run = "rm -f pragmastat-v*.pdf 2>/dev/null || true"
-
-# ==========================================================================
-# Website Tasks (web/)
-# ==========================================================================
+[tasks."web:gen"]
+description = "Generate Astro content"
+depends = ["docs:sync"]
+run = "cargo run --manifest-path tools/Cargo.toml --release -- build web"
 
 [tasks."web:restore"]
-description = "Initialize web tools (download Hugo and Tailwind)"
+description = "Install web dependencies"
 dir = "web"
-run = """
-mkdir -p .bin
-OS=$(uname -s | tr '[:upper:]' '[:lower:]')
-ARCH=$(uname -m)
-[ "$OS" = "darwin" ] && OS="darwin"
-[ "$ARCH" = "x86_64" ] && ARCH="amd64"
-[ "$ARCH" = "aarch64" ] && ARCH="arm64"
+run = "pnpm install"
 
-HUGO_VERSION="0.152.2"
-TAILWIND_VERSION="4.1.16"
+[tasks."web:dev"]
+description = "Start Astro dev server"
+depends = ["web:restore", "web:gen"]
+dir = "web"
+run = "pnpm dev"
 
-# Download Hugo
-HUGO_ARCH="$ARCH"
-[ "$OS" = "darwin" ] && HUGO_ARCH="universal"
-curl -L -o .bin/hugo.tar.gz "https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_${HUGO_VERSION}_${OS}-${HUGO_ARCH}.tar.gz"
-cd .bin && tar -xzf hugo.tar.gz hugo && rm hugo.tar.gz && chmod +x hugo && cd ..
-
-# Download Tailwind
-TAILWIND_OS="$OS"
-TAILWIND_ARCH="$ARCH"
-[ "$OS" = "darwin" ] && TAILWIND_OS="macos"
-[ "$ARCH" = "amd64" ] && TAILWIND_ARCH="x64"
-curl -L -o .bin/tailwind "https://github.com/tailwindlabs/tailwindcss/releases/download/v${TAILWIND_VERSION}/tailwindcss-${TAILWIND_OS}-${TAILWIND_ARCH}"
-chmod +x .bin/tailwind
-"""
+[tasks."web:serve"]
+description = "Alias for web:dev"
+depends = ["web:restore", "web:gen"]
+dir = "web"
+run = "pnpm dev"
 
 [tasks."web:build"]
-description = "Build website (draft mode)"
+description = "Build Astro site"
+depends = ["web:restore", "web:gen"]
 dir = "web"
-depends = ["_web:ensure-tools"]
 run = """
-VERSION=$(cat ../manual/version.txt)
-DATE=$(date +%Y-%m-%d)
-
-# Run Tailwind
-.bin/tailwind -i ./assets/css/styles-tailwindcss.css -o ./assets/css/styles.css --minify
-
-# Copy PDF
-cp "../pdf/pragmastat-v${VERSION}-draft.pdf" static/pragmastat.pdf
-
-# Write config
-cat > data/config.toml << EOF
-version = "$VERSION"
-date = "$DATE"
-isRelease = false
-EOF
-
-# Copy favicon
-if [ -f "../img/logo.ico" ]; then
-    mkdir -p content/img
-    cp ../img/logo.ico content/img/favicon.ico
-fi
-
-# Build Hugo
-.bin/hugo --minify
+cp ../manual/pragmastat.pdf public/
+pnpm build
 """
 
 [tasks."web:build:release"]
-description = "Build website (release mode)"
+description = "Build Astro site (release mode)"
+depends = ["web:restore", "web:gen"]
 dir = "web"
-depends = ["_web:ensure-tools"]
 run = """
-VERSION=$(cat ../manual/version.txt)
-DATE=$(date +%Y-%m-%d)
-
-# Run Tailwind
-.bin/tailwind -i ./assets/css/styles-tailwindcss.css -o ./assets/css/styles.css --minify
-
-# Copy PDF
-cp "../pdf/pragmastat-v${VERSION}.pdf" static/pragmastat.pdf
-
-# Write config
-cat > data/config.toml << EOF
-version = "$VERSION"
-date = "$DATE"
-isRelease = true
-EOF
-
-# Copy favicon
-if [ -f "../img/logo.ico" ]; then
-    mkdir -p content/img
-    cp ../img/logo.ico content/img/favicon.ico
-fi
-
-# Build Hugo
-.bin/hugo --minify
+cp ../manual/pragmastat.pdf public/
+NODE_ENV=production pnpm build
 """
-
-[tasks."web:serve"]
-description = "Start Hugo development server"
-dir = "web"
-depends = ["_web:ensure-tools"]
-run = ".bin/hugo server --renderToMemory --port 1729 --liveReloadPort 1729 --forceSyncStatic --gc --watch --buildDrafts"
 
 [tasks."web:clean"]
-description = "Clean website build artifacts"
+description = "Clean Astro build artifacts"
 dir = "web"
 run = """
-rm -rf public/ resources/
-rm -f .hugo_build.lock
-rm -f assets/css/styles.css
+rm -rf dist .astro .output
 """
 
-[tasks."_web:ensure-tools"]
-description = "Ensure Hugo and Tailwind are available"
-dir = "web"
-run = """
-if [ ! -f ".bin/hugo" ] || [ ! -f ".bin/tailwind" ]; then
-    echo "Hugo or Tailwind not found. Running web:restore..."
-    mise run web:restore
-fi
-"""
-hide = true
+[tasks."docs:clean"]
+description = "Clean generated documentation artifacts"
+run = "cargo run --manifest-path tools/Cargo.toml --release -- clean"
+
+[tasks."docs:ci"]
+description = "Run documentation CI pipeline"
+run = [
+    { task = "docs:clean" },
+    { task = "docs:sync" },
+    { task = "pdf:build" },
+    { task = "web:build" },
+]
 
 # ==========================================================================
 # Aggregate Tasks
@@ -737,7 +668,7 @@ depends = ["cs:check", "go:check", "kt:check", "py:check", "r:check", "rs:check"
 
 [tasks."clean"]
 description = "Clean all build artifacts"
-depends = ["cs:clean", "go:clean", "kt:clean", "py:clean", "r:clean", "rs:clean", "ts:clean", "img:clean", "pdf:clean", "web:clean"]
+depends = ["cs:clean", "go:clean", "kt:clean", "py:clean", "r:clean", "rs:clean", "ts:clean", "img:clean", "web:clean", "docs:clean"]
 
 [tasks."demo"]
 description = "Run demos for all language implementations"
@@ -745,7 +676,7 @@ depends = ["cs:demo", "go:demo", "kt:demo", "py:demo", "r:demo", "rs:demo", "ts:
 
 [tasks."ci"]
 description = "Run CI pipeline for all language implementations"
-depends = ["cs:ci", "go:ci", "kt:ci", "py:ci", "r:ci", "rs:ci", "ts:ci"]
+depends = ["cs:ci", "go:ci", "kt:ci", "py:ci", "r:ci", "rs:ci", "ts:ci", "docs:ci"]
 
 # ==========================================================================
 # Publish Task

@@ -13,15 +13,14 @@ pragmastat/
 │   ├── rs/          # Rust
 │   └── ts/          # TypeScript/JavaScript
 │
-├── Auxiliary tools (4)
-│   ├── gen/         # Content generation (Markdown, configs)
+├── Auxiliary tools (3)
+│   ├── tools/       # Docs/version sync + conversion (Rust)
 │   ├── img/         # Image generation (plots, diagrams, logo)
-│   ├── pdf/         # PDF manual (Pandoc/LaTeX)
-│   └── web/         # Website (Hugo)
+│   └── web/         # Website (Astro)
 │
-├── manual/          # Documentation source (Markdown)
-│   ├── **/*.md      # Manual content
-│   └── version.txt  # Single source of truth for version
+├── manual/          # Documentation source (Typst)
+│   ├── **/*.typ     # Manual content in Typst format
+│   └── definitions.typ  # Shared definitions and version
 │
 ├── tests/           # Reference tests (JSON)
 │
@@ -48,16 +47,15 @@ Each implements 7 core estimators with:
 - Build script and Dockerfile
 - Package metadata
 
-### Auxiliary Tools (`gen/`, `img/`, `pdf/`, `web/`)
+### Auxiliary Tools (`tools/`, `img/`, `web/`)
 
-- **gen**: Reads `manual/version.txt`, generates version-dependent files
+- **tools**: Reads version from `manual/definitions.typ`, syncs versioned files and generates Astro content
 - **img**: Generates plots and logo using Python/matplotlib
-- **pdf**: Pandoc-based PDF generation from `manual/`
-- **web**: Hugo-based website, downloads tools via `init` command
+- **web**: Astro-based website, uses pnpm
 
 ### Documentation (`manual/`)
 
-Organized Markdown source covering:
+Organized Typst source covering:
 - Estimators, algorithms, properties
 - Distributions and studies
 - Implementation guides for each language
@@ -75,6 +73,6 @@ JSON files with drift simulation results for documentation plots.
 ## Key Entry Points
 
 - **Build system**: `mise run <task>` (see @prompts/context-build.md)
-- **Version**: `manual/version.txt`
-- **Documentation**: `manual/*.md`
+- **Version**: `manual/version.typ`
+- **Documentation**: `manual/*.typ`
 - **Tests**: `tests/<estimator>/*.json`

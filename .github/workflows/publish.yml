@@ -26,7 +26,7 @@ jobs:
 
     - name: Read version
       id: version
-      run: echo "VERSION=$(cat manual/version.txt | tr -d '\n')" >> $GITHUB_OUTPUT
+      run: echo "VERSION=$(sed -n 's/^#let version = "\(.*\)"$/\1/p' manual/version.typ)" >> $GITHUB_OUTPUT
 
     - name: Download web artifacts
       uses: actions/download-artifact@v4
@@ -98,11 +98,10 @@ jobs:
         zip -r "tests-v${VERSION}.zip" tests
         zip -r "sim-v${VERSION}.zip" sim
 
-    - name: Add version suffix to documentation files
+    - name: Add version suffix to PDF
       run: |
         VERSION="${{ steps.version.outputs.VERSION }}"
-        cp artifacts/web/pragmastat.md artifacts/web/pragmastat-v${VERSION}.md
-        cp artifacts/web/pragmastat.pdf artifacts/web/pragmastat-v${VERSION}.pdf
+        cp artifacts/pdf/pragmastat.pdf "pragmastat-v${VERSION}.pdf"
 
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2.4.1
@@ -113,8 +112,7 @@ jobs:
         token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
         files: |
           web-v*.zip
-          artifacts/web/pragmastat-v*.md
-          artifacts/web/pragmastat-v*.pdf
+          pragmastat-v*.pdf
           cs-v*.zip
           py-v*.zip
           rs-v*.zip

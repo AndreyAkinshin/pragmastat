@@ -1,29 +1,15 @@
 {
-  "permissions": {
-    "allow": [
-      "Read(*)",
-      "Write(*)",
-      "Edit(*)",
-      "Glob(*)",
-      "Grep(*)",
-      "Bash(awk:*)",
-      "Bash(cat:*)",
-      "Bash(cd:*)",
-      "Bash(cp:*)",
-      "Bash(echo:*)",
-      "Bash(find:*)",
-      "Bash(git show:*)",
-      "Bash(git status:*)",
-      "Bash(grep:*)",
-      "Bash(jq:*)",
-      "Bash(ls:*)",
-      "Bash(mkdir:*)",
-      "Bash(mv:*)",
-      "Bash(pwd)",
-      "Bash(rm:*)",
-      "Bash(sed:*)"
-    ],
-    "deny": [],
-    "ask": []
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if echo \"$CLAUDE_TOOL_INPUT\" | grep -qE 'mise (run )?publish'; then echo 'BLOCKED: publish is a protected operation requiring manual execution' >&2; exit 2; fi"
+          }
+        ]
+      }
+    ]
   }
 }

@@ -1,0 +1,175 @@
+---
+import Logo from './Logo.astro';
+import GitHubButton from './GitHubButton.astro';
+import ThemeSwitcher from './ThemeSwitcher.astro';
+import SidebarToggle from './SidebarToggle.astro';
+
+interface Props {
+  headings?: { depth: number; slug: string; text: string }[];
+  currentSlug?: string;
+}
+
+const { headings = [], currentSlug = '' } = Astro.props;
+
+const chapters = [
+  { slug: 'introduction', label: 'Introduction' },
+  { slug: 'estimators', label: 'Estimators' },
+  { slug: 'distributions', label: 'Distributions' },
+  { slug: 'properties', label: 'Properties' },
+  { slug: 'methodology', label: 'Methodology' },
+  { slug: 'algorithms', label: 'Algorithms' },
+  { slug: 'studies', label: 'Studies' },
+  { slug: 'implementations', label: 'Implementations' },
+  { slug: 'tests', label: 'Tests' },
+  { slug: 'artifacts', label: 'Artifacts' },
+  { slug: 'bibliography', label: 'Bibliography' },
+  { slug: 'colophon', label: 'Colophon' },
+];
+
+function isActive(slug: string): boolean {
+  return currentSlug === slug;
+}
+---
+
+<nav class="sidebar" aria-label="Main navigation">
+  <div class="sidebar-header">
+    <Logo />
+    <div class="sidebar-controls">
+      <GitHubButton />
+      <ThemeSwitcher />
+      <SidebarToggle />
+    </div>
+  </div>
+  <div class="sidebar-section">
+    <ul class="sidebar-list">
+      {chapters.map(({ slug, label }) => (
+        <li>
+          <a
+            href={`/${slug}`}
+            class:list={['sidebar-link', { active: isActive(slug) }]}
+            aria-current={isActive(slug) ? 'page' : undefined}
+          >
+            {label}
+          </a>
+          {isActive(slug) && headings.length > 0 && (
+            <ul class="sidebar-sublist">
+              {headings.map((heading) => (
+                <li>
+                  <a
+                    href={`#${heading.slug}`}
+                    class:list={['sidebar-sublink', `depth-${heading.depth}`]}
+                  >
+                    {heading.text}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
+        </li>
+      ))}
+    </ul>
+  </div>
+</nav>
+
+<style>
+  .sidebar {
+    height: 100%;
+  }
+
+  .sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+  }
+
+  /* Hide sidebar header on mobile - it's redundant with mobile-header */
+  @media (max-width: 960px) {
+    .sidebar-header {
+      display: none;
+    }
+  }
+
+  .sidebar-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .sidebar-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-muted);
+    margin-bottom: 0.75rem;
+  }
+
+  .sidebar-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .sidebar-link {
+    display: block;
+    padding: 0.375rem 0.75rem;
+    font-size: 0.9375rem;
+    color: var(--color-text-muted);
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    transition: color var(--transition-fast), background-color var(--transition-fast);
+  }
+
+  .sidebar-link:hover {
+    color: var(--color-accent);
+    background-color: var(--color-bg-muted);
+  }
+
+  .sidebar-link.active {
+    color: var(--color-accent);
+    background-color: var(--color-accent-muted);
+    font-weight: 500;
+  }
+
+  .sidebar-sublist {
+    list-style: none;
+    padding: 0;
+    margin: 0.25rem 0 0.5rem 0.75rem;
+    border-left: 1px solid var(--color-border);
+  }
+
+  .sidebar-sublink {
+    display: block;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    transition: color var(--transition-fast), background-color var(--transition-fast);
+  }
+
+  .sidebar-sublink:hover {
+    color: var(--color-accent);
+    background-color: var(--color-bg-muted);
+  }
+
+  .sidebar-sublink.depth-3 {
+    padding-left: 1.5rem;
+  }
+
+  .sidebar-sublink.depth-4 {
+    padding-left: 2.25rem;
+  }
+
+  .sidebar-sublink.depth-5 {
+    padding-left: 3rem;
+  }
+
+  .sidebar-sublink.depth-6 {
+    padding-left: 3.75rem;
+  }
+</style>

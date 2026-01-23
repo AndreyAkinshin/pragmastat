@@ -48,7 +48,8 @@
 **/*.whl
 
 # Documentation build artifacts
-pdf/*.pdf
+manual/*.pdf
+manual/fonts/
 web/.bin/
 
 # Test output

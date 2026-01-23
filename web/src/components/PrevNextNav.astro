@@ -1,0 +1,110 @@
+---
+import { getPrevNextChapters } from '../data/chapters';
+
+interface Props {
+  currentSlug: string;
+}
+
+const { currentSlug } = Astro.props;
+const { prev, next } = getPrevNextChapters(currentSlug);
+---
+
+{(prev || next) && (
+  <nav class="prev-next-nav" aria-label="Page navigation">
+    <div class="prev-next-container">
+      {prev ? (
+        <a href={`/${prev.slug}`} class="prev-next-link prev">
+          <span class="prev-next-direction">Previous</span>
+          <span class="prev-next-title">{prev.label}</span>
+        </a>
+      ) : (
+        <div class="prev-next-spacer"></div>
+      )}
+      {next ? (
+        <a href={`/${next.slug}`} class="prev-next-link next">
+          <span class="prev-next-direction">Next</span>
+          <span class="prev-next-title">{next.label}</span>
+        </a>
+      ) : (
+        <div class="prev-next-spacer"></div>
+      )}
+    </div>
+  </nav>
+)}
+
+<style>
+  .prev-next-nav {
+    margin-top: 4rem;
+  }
+
+  .prev-next-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .prev-next-spacer {
+    flex: 1;
+  }
+
+  .prev-next-link {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    transition: background-color var(--transition-fast);
+    min-width: 0;
+    max-width: 50%;
+  }
+
+  .prev-next-link:hover {
+    background-color: color-mix(in srgb, var(--color-accent) 15%, transparent);
+  }
+
+  .prev-next-link.prev {
+    align-items: flex-start;
+  }
+
+  .prev-next-link.next {
+    align-items: flex-end;
+    margin-left: auto;
+  }
+
+  .prev-next-direction {
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-muted);
+  }
+
+  .prev-next-title {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--color-accent);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  @media (max-width: 480px) {
+    .prev-next-container {
+      flex-direction: column;
+    }
+
+    .prev-next-link {
+      max-width: 100%;
+    }
+
+    .prev-next-link.next {
+      align-items: flex-start;
+      margin-left: 0;
+    }
+
+    .prev-next-spacer {
+      display: none;
+    }
+  }
+</style>

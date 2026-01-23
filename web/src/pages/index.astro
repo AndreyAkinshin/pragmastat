@@ -1,0 +1,181 @@
+---
+import FrontpageLayout from '../layouts/FrontpageLayout.astro';
+import ThemeSwitcher from '../components/ThemeSwitcher.astro';
+---
+
+<FrontpageLayout title="Pragmatic Statistical Toolkit">
+  <article class="frontpage">
+    <div class="page-frame">
+      <div class="frontpage-theme-switcher">
+        <ThemeSwitcher />
+      </div>
+      <header class="frontpage-header">
+        <h1 class="frontpage-title">Pragmastat</h1>
+        <p class="frontpage-subtitle">Pragmatic Statistical Toolkit</p>
+        <p class="frontpage-version">v4.0.2</p>
+      </header>
+
+      <section class="frontpage-abstract">
+        <p>
+          This manual presents a toolkit of statistical procedures that
+          provide reliable results across diverse real-world distributions,
+          with ready-to-use implementations and detailed explanations.
+          The toolkit consists of renamed, recombined, and refined versions of existing methods.
+        </p>
+        <p class="frontpage-buttons">
+          <a href="/introduction">HTML</a>
+          <span class="separator">·</span>
+          <a href="/pragmastat.pdf">PDF</a>
+        </p>
+      </section>
+
+      <section class="frontpage-links">
+        <nav class="frontpage-meta">
+          <a href="/implementations#python">Python</a>
+          <a href="/implementations#typescript">TypeScript</a>
+          <a href="/implementations#r">R</a>
+          <a href="/implementations#c">C#</a>
+          <a href="/implementations#kotlin">Kotlin</a>
+          <a href="/implementations#rust">Rust</a>
+          <a href="/implementations#go">Go</a>
+        </nav>
+        <p class="frontpage-meta">
+          <a href="https://github.com/AndreyAkinshin/pragmastat">github.com/AndreyAkinshin/pragmastat</a>
+        </p>
+        <p class="frontpage-meta">
+          <a href="https://doi.org/10.5281/zenodo.17236778">doi:10.5281/zenodo.17236778</a>
+        </p>
+        <p class="frontpage-meta">
+          <a href="https://cv.akinshin.dev">Andrey Akinshin</a>
+        </p>
+      </section>
+    </div>
+  </article>
+</FrontpageLayout>
+
+<style>
+  .frontpage {
+    text-align: center;
+    padding: 1rem;
+    max-width: 36rem;
+    position: relative;
+  }
+
+  .frontpage-theme-switcher {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+  }
+
+  /* Page frame with A4 aspect ratio (210:297) */
+  .page-frame {
+    border: 1px solid var(--color-border);
+    padding: 2rem 2.5rem 2.5rem;
+    aspect-ratio: 210 / 297;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+  }
+
+  /* Header */
+  .frontpage-header {
+    margin-bottom: 2rem;
+  }
+
+  .frontpage-title {
+    font-size: 2.75rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    margin-bottom: 0.5rem;
+  }
+
+  .frontpage-subtitle {
+    color: var(--color-text-muted);
+    font-weight: 400;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    font-size: 0.875rem;
+  }
+
+  /* Abstract */
+  .frontpage-abstract {
+    text-align: left;
+    margin: 2rem auto 0;
+  }
+
+  .frontpage-abstract p:not(.frontpage-buttons) {
+    font-size: 0.9375rem;
+    line-height: 1.7;
+    color: var(--color-text-muted);
+    margin: 0;
+  }
+
+  /* Version */
+  .frontpage-version {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    margin-top: 0.75rem;
+    margin-bottom: 0;
+  }
+
+  /* Action buttons */
+  .frontpage-buttons {
+    display: flex;
+    gap: 0.25rem;
+    justify-content: center;
+    margin-top: 0.5rem;
+    margin-bottom: 0;
+  }
+
+  .frontpage-buttons a {
+    color: var(--color-accent);
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: normal;
+    padding: 0.125rem 0.375rem;
+    border-radius: var(--radius-sm);
+    transition: background-color var(--transition-fast);
+  }
+
+  .frontpage-buttons a:hover {
+    background-color: color-mix(in srgb, var(--color-accent) 15%, transparent);
+  }
+
+  .frontpage-buttons .separator {
+    color: var(--color-text-muted);
+  }
+
+  /* Footer links */
+  .frontpage-links {
+    margin-top: auto;
+  }
+
+  .frontpage-meta {
+    font-size: 0.875rem;
+    font-family: var(--font-mono);
+    color: var(--color-text-muted);
+    margin-top: 0.5rem;
+    margin-bottom: 0;
+  }
+
+  .frontpage-meta a {
+    color: var(--color-accent);
+    text-decoration: none;
+    padding: 0.125rem 0.375rem;
+    border-radius: var(--radius-sm);
+    transition: background-color var(--transition-fast);
+  }
+
+  .frontpage-meta a:hover {
+    background-color: color-mix(in srgb, var(--color-accent) 15%, transparent);
+  }
+
+  nav.frontpage-meta {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+  }
+</style>

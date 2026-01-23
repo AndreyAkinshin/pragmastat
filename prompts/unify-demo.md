@@ -113,7 +113,7 @@ Verify that each demo produces output matching the Scheme values (allowing for f
 
 ### Step 4: LaTeX Documentation
 
-Apply the Scheme to the "Primer" section of @manual/introduction/primer.md as LaTeX expressions.
+Apply the Scheme to the "Primer" section of @manual/introduction/primer.typ as Typst math expressions.
 
 **Format:**
 - Use display-style math (`$$...$$`) for expressions
