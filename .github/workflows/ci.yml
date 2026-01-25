@@ -19,8 +19,16 @@ on:
       GRADLE_SIGNING_PASSWORD:
         required: false
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  build-img:
+  # ==========================================================================
+  # Manual (img + pdf + web)
+  # ==========================================================================
+
+  ci-manual:
     runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v4
@@ -28,12 +36,22 @@ jobs:
     - name: Set up mise
       uses: jdx/mise-action@v2
 
+    # --- Rust tools (for Typst → MDX conversion) ---
+    - name: Set up Rust
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Cache Rust tools
+      uses: Swatinem/rust-cache@v2
+      with:
+        workspaces: "tools -> target"
+
+    # --- Image generation ---
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.10'
 
-    - name: Install dependencies
+    - name: Install image dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
@@ -42,27 +60,7 @@ jobs:
     - name: Generate images
       run: mise run img:build
 
-    - name: Upload image artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: img
-        path: img/
-
-  build-pdf:
-    needs: build-img
-    runs-on: ubuntu-24.04
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Set up mise
-      uses: jdx/mise-action@v2
-
-    - name: Download image artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: img
-        path: img/
-
+    # --- PDF generation ---
     - name: Install Typst
       uses: typst-community/setup-typst@v4
 
@@ -72,33 +70,7 @@ jobs:
     - name: Build PDF
       run: mise run pdf:build
 
-    - name: Upload pdf artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: pdf
-        path: manual/pragmastat.pdf
-
-  build-web:
-    needs: [build-img, build-pdf]
-    runs-on: ubuntu-24.04
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Set up mise
-      uses: jdx/mise-action@v2
-
-    - name: Download image artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: img
-        path: img/
-
-    - name: Download pdf artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: pdf
-        path: manual/
-
+    # --- Web build ---
     - name: Install web dependencies
       run: mise run web:restore
 
@@ -108,13 +80,26 @@ jobs:
     - name: Copy PDF to web output
       run: cp manual/pragmastat.pdf web/dist/
 
-    - name: Upload build artifacts
+    # --- Upload artifacts (release only) ---
+    - name: Upload web artifacts
+      if: inputs.release
       uses: actions/upload-artifact@v4
       with:
         name: web
         path: web/dist
 
-  build-r:
+    - name: Upload pdf artifacts
+      if: inputs.release
+      uses: actions/upload-artifact@v4
+      with:
+        name: pdf
+        path: manual/pragmastat.pdf
+
+  # ==========================================================================
+  # Language Builds (all run in parallel)
+  # ==========================================================================
+
+  ci-r:
     runs-on: ubuntu-24.04
     container: rocker/verse:4.5.1
     steps:
@@ -145,12 +130,13 @@ jobs:
       run: cd r/pragmastat && Rscript -e "devtools::test()"
 
     - name: Upload r artifacts
+      if: inputs.release
       uses: actions/upload-artifact@v4
       with:
         name: r
         path: 'r/*.tar.gz'
 
-  build-cs:
+  ci-cs:
     runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v4
@@ -170,15 +156,19 @@ jobs:
       run: mise run cs:test
 
     - name: Pack
-      run: mise run cs:pack
+      run: |
+        mkdir -p ./artifacts
+        dotnet pack ./Pragmastat/Pragmastat.csproj --configuration Release --include-symbols --include-source -p:SymbolPackageFormat=snupkg --output ./artifacts
+      working-directory: cs
 
     - name: Upload cs artifacts
+      if: inputs.release
       uses: actions/upload-artifact@v4
       with:
         name: cs
         path: cs/artifacts
 
-  build-py:
+  ci-py:
     runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v4
@@ -200,16 +190,17 @@ jobs:
     - name: Run tests
       run: mise run py:test
 
-    - name: Build and verify package
+    - name: Build package
       run: mise run py:pack
 
     - name: Upload py artifacts
+      if: inputs.release
       uses: actions/upload-artifact@v4
       with:
         name: py
         path: py/dist/
 
-  build-rs:
+  ci-rs:
     runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v4
@@ -222,23 +213,10 @@ jobs:
       with:
         components: rustfmt, clippy
 
-    - name: Cache cargo registry
-      uses: actions/cache@v4
+    - name: Cache Rust
+      uses: Swatinem/rust-cache@v2
       with:
-        path: ~/.cargo/registry
-        key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
-
-    - name: Cache cargo index
-      uses: actions/cache@v4
-      with:
-        path: ~/.cargo/git
-        key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
-
-    - name: Cache cargo build
-      uses: actions/cache@v4
-      with:
-        path: rs/pragmastat/target
-        key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
+        workspaces: "rs/pragmastat -> target"
 
     - name: Check package
       run: mise run rs:check
@@ -253,12 +231,13 @@ jobs:
       run: mise run rs:pack
 
     - name: Upload rs artifacts
+      if: inputs.release
       uses: actions/upload-artifact@v4
       with:
         name: rs
         path: rs/pragmastat/target/package/*.crate
 
-  build-ts:
+  ci-ts:
     runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v4
@@ -289,12 +268,13 @@ jobs:
       run: mise run ts:pack
 
     - name: Upload ts artifacts
+      if: inputs.release
       uses: actions/upload-artifact@v4
       with:
         name: ts
         path: ts/*.tgz
 
-  build-go:
+  ci-go:
     runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v4
@@ -313,23 +293,21 @@ jobs:
         fi
       working-directory: go
 
-    - name: Run tests
-      run: mise run go:test:verbose
-
     - name: Run tests with coverage
-      run: go test -race -coverprofile=coverage.out -covermode=atomic ./...
+      run: go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
       working-directory: go
 
     - name: Build
       run: mise run go:build
 
     - name: Upload go artifacts
+      if: inputs.release
       uses: actions/upload-artifact@v4
       with:
         name: go
         path: go/
 
-  build-kt:
+  ci-kt:
     runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v4
@@ -371,6 +349,7 @@ jobs:
       run: mise run kt:build
 
     - name: Upload kt artifacts
+      if: inputs.release
       uses: actions/upload-artifact@v4
       with:
         name: kt
