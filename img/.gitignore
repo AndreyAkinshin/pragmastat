@@ -1,4 +1,5 @@
 *.png
+!logo.png
 *.ico
 *.pdf
 .Rhistory
