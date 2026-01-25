@@ -1,0 +1,111 @@
+{
+  "fix1955": {
+    "key": "fix1955",
+    "authors": [
+      "Fix, Evelyn",
+      "Hodges, J. L."
+    ],
+    "title": "Significance probabilities of the Wilcoxon test",
+    "year": "1955",
+    "venue": "The Annals of Mathematical Statistics",
+    "doi": "10.1214/aoms/1177728547",
+    "url": "https://projecteuclid.org/euclid.aoms/1177728547"
+  },
+  "hyndman1996": {
+    "key": "hyndman1996",
+    "authors": [
+      "Hyndman, Rob J",
+      "Fan, Yanan"
+    ],
+    "title": "Sample Quantiles in Statistical Packages",
+    "year": "1996",
+    "venue": "The American Statistician",
+    "doi": "10.2307/2684934",
+    "url": "https://www.jstor.org/stable/2684934"
+  },
+  "sidak1999": {
+    "key": "sidak1999",
+    "authors": [
+      "Sidak, Zbynek",
+      "Sen, Pranab Kumar",
+      "Hajek, Jaroslav"
+    ],
+    "title": "Theory of rank tests",
+    "year": "1999"
+  },
+  "monahan1984": {
+    "key": "monahan1984",
+    "authors": [
+      "Monahan, John F"
+    ],
+    "title": "Algorithm 616: fast computation of the Hodges-Lehmann location estimator",
+    "year": "1984",
+    "venue": "ACM Transactions on Mathematical Software",
+    "doi": "10.1145/1271.319414",
+    "url": "https://dl.acm.org/doi/10.1145/1271.319414"
+  },
+  "hodges1963": {
+    "key": "hodges1963",
+    "authors": [
+      "Hodges, J. L.",
+      "Lehmann, E. L."
+    ],
+    "title": "Estimates of Location Based on Rank Tests",
+    "year": "1963",
+    "venue": "The Annals of Mathematical Statistics",
+    "doi": "10.1214/aoms/1177704172",
+    "url": "http://projecteuclid.org/euclid.aoms/1177704172"
+  },
+  "sen1963": {
+    "key": "sen1963",
+    "authors": [
+      "Sen, Pranab Kumar"
+    ],
+    "title": "On the Estimation of Relative Potency in Dilution (-Direct) Assays by Distribution-Free Methods",
+    "year": "1963",
+    "venue": "Biometrics",
+    "doi": "10.2307/2527532",
+    "url": "https://www.jstor.org/stable/2527532"
+  },
+  "huber2009": {
+    "key": "huber2009",
+    "authors": [
+      "Huber, Peter J"
+    ],
+    "title": "Robust statistics",
+    "year": "2009",
+    "venue": "International encyclopedia of statistical science"
+  },
+  "serfling2009": {
+    "key": "serfling2009",
+    "authors": [
+      "Serfling, Robert J"
+    ],
+    "title": "Approximation theorems of mathematical statistics",
+    "year": "2009"
+  },
+  "shamos1976": {
+    "key": "shamos1976",
+    "authors": [
+      "Shamos, Michael Ian"
+    ],
+    "title": "Geometry and Statistics: Problems at the Interface",
+    "year": "1976"
+  },
+  "norman2013": {
+    "key": "norman2013",
+    "authors": [
+      "Norman, Donald A."
+    ],
+    "title": "The Design of Everyday Things: Revised and Expanded Edition",
+    "year": "2013"
+  },
+  "loeffler1982": {
+    "key": "loeffler1982",
+    "authors": [
+      "Löffler, Andreas"
+    ],
+    "title": "On the calculation of the exact null-distribution of the Wilcoxon-Mann-Whitney U-statistic",
+    "year": "1982"
+  }
+}

@@ -1,0 +1,10 @@
+# Generated favicon files (copied from img/ during build)
+favicon.ico
+favicon-32.png
+apple-touch-icon.png
+
+# Generated images (copied from img/ during build)
+img/
+
+# Generated PDF (copied from manual/ during build)
+pragmastat.pdf
