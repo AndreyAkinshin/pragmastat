@@ -1,12 +1,12 @@
 <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:#06b6d4;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
+      <stop offset="0%" style="stop-color:#67e8f9;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#c4b5fd;stop-opacity:1" />
     </linearGradient>
     <linearGradient id="fillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" style="stop-color:#06b6d4;stop-opacity:0.3" />
-      <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:0.1" />
+      <stop offset="0%" style="stop-color:#67e8f9;stop-opacity:0.5" />
+      <stop offset="100%" style="stop-color:#c4b5fd;stop-opacity:0.2" />
     </linearGradient>
 
     <!-- Clipping mask for rounded rect -->
