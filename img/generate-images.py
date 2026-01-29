@@ -346,7 +346,7 @@ def regenerate_figures():
     # Remove all existing images (except logo.png)
     for pattern in ['*.png', '*.jpg', '*.svg']:
         for file in glob.glob(pattern):
-            if file != 'logo.png':
+            if file not in ('logo.png', 'logo.svg'):
                 Path(file).unlink()
 
     # Generate all figures
