@@ -16,4 +16,10 @@ export {
   type Bounds,
 } from './estimators';
 
+export { median } from './utils';
+
 export { pairwiseMargin } from './pairwiseMargin';
+
+export { Rng } from './rng';
+
+export { type Distribution, Uniform, Additive, Multiplic, Exp, Power } from './distributions/index';

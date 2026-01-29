@@ -14,7 +14,7 @@ fn median_sorted(sorted: &[f64]) -> Result<f64, &'static str> {
 }
 
 /// Calculates the median of a slice
-fn median(values: &[f64]) -> Result<f64, &'static str> {
+pub fn median(values: &[f64]) -> Result<f64, &'static str> {
     if values.is_empty() {
         return Err("Input slice cannot be empty");
     }

@@ -14,6 +14,13 @@ class Bounds(NamedTuple):
     upper: float
 
 
+def median(x: Union[Sequence[float], NDArray]) -> float:
+    x = np.asarray(x)
+    if len(x) == 0:
+        raise ValueError("Input array cannot be empty")
+    return float(np.median(x))
+
+
 def center(x: Union[Sequence[float], NDArray]) -> float:
     x = np.asarray(x)
     n = len(x)

@@ -14,8 +14,8 @@ type Number interface {
 
 var errEmptyInput = errors.New("input slice cannot be empty")
 
-// median calculates the median of a slice of numeric values.
-func median[T Number](values []T) (float64, error) {
+// Median calculates the median of a slice of numeric values.
+func Median[T Number](values []T) (float64, error) {
 	n := len(values)
 	if n == 0 {
 		return 0, errors.New("input slice cannot be empty")
@@ -96,7 +96,7 @@ func Ratio[T Number](x, y []T) (float64, error) {
 		}
 	}
 
-	return median(pairwiseRatios)
+	return Median(pairwiseRatios)
 }
 
 // AvgSpread measures the typical variability when considering both samples together.

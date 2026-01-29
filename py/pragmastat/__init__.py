@@ -1,4 +1,5 @@
 from .estimators import (
+    median,
     center,
     spread,
     rel_spread,
@@ -10,8 +11,18 @@ from .estimators import (
     Bounds,
 )
 from .pairwise_margin import pairwise_margin
+from .rng import Rng
+from .distributions import (
+    Distribution,
+    Uniform,
+    Additive,
+    Multiplic,
+    Exp,
+    Power,
+)
 
 __all__ = [
+    "median",
     "center",
     "spread",
     "rel_spread",
@@ -22,6 +33,13 @@ __all__ = [
     "shift_bounds",
     "Bounds",
     "pairwise_margin",
+    "Rng",
+    "Distribution",
+    "Uniform",
+    "Additive",
+    "Multiplic",
+    "Exp",
+    "Power",
 ]
 
 __version__ = "4.0.3"

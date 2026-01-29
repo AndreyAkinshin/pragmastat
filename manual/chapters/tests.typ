@@ -1,6 +1,4 @@
-= Reference Tests
-
-#include "../tests/_motivation.typ"
+= Reference Tests <ch-tests>
 
 #include "../tests/center-tests.typ"
 

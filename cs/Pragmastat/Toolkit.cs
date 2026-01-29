@@ -5,6 +5,7 @@ namespace Pragmastat;
 
 public static class Toolkit
 {
+  public static Measurement Median(Sample x) => MedianEstimator.Instance.Estimate(x);
   public static Measurement Center(Sample x) => CenterEstimator.Instance.Estimate(x);
   public static Measurement Spread(Sample x) => SpreadEstimator.Instance.Estimate(x);
   public static Measurement RelSpread(Sample x) => RelSpreadEstimator.Instance.Estimate(x);

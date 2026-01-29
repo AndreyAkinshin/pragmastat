@@ -4,8 +4,6 @@ using Pragmastat.Properties;
 [assembly: CLSCompliant(true)]
 
 [assembly: InternalsVisibleTo("Pragmastat,PublicKey=" + PragmastatInfo.PublicKey)]
-[assembly: InternalsVisibleTo("Pragmastat.Distributions,PublicKey=" + PragmastatInfo.PublicKey)]
-[assembly: InternalsVisibleTo("Pragmastat.Estimators,PublicKey=" + PragmastatInfo.PublicKey)]
 [assembly: InternalsVisibleTo("Pragmastat.Extended,PublicKey=" + PragmastatInfo.PublicKey)]
 
 [assembly: InternalsVisibleTo("Pragmastat.TestGenerator,PublicKey=" + PragmastatInfo.PublicKey)]
