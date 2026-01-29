@@ -273,3 +273,520 @@ func TestReferenceData(t *testing.T) {
 		}
 	}
 }
+
+// Rng reference tests
+
+// UniformInput represents input for uniform tests
+type UniformInput struct {
+	Seed  int64 `json:"seed"`
+	Count int   `json:"count"`
+}
+
+// UniformIntInput represents input for uniform int tests
+type UniformIntInput struct {
+	Seed  int64 `json:"seed"`
+	Min   int64 `json:"min"`
+	Max   int64 `json:"max"`
+	Count int   `json:"count"`
+}
+
+// StringSeedInput represents input for string seed tests
+type StringSeedInput struct {
+	Seed  string `json:"seed"`
+	Count int    `json:"count"`
+}
+
+// ShuffleInput represents input for shuffle tests
+type ShuffleInput struct {
+	Seed int64     `json:"seed"`
+	X    []float64 `json:"x"`
+}
+
+// SampleInput represents input for sample tests
+type SampleInput struct {
+	Seed int64     `json:"seed"`
+	X    []float64 `json:"x"`
+	K    int       `json:"k"`
+}
+
+// Distribution reference tests
+
+type UniformDistInput struct {
+	Seed  int64   `json:"seed"`
+	Min   float64 `json:"min"`
+	Max   float64 `json:"max"`
+	Count int     `json:"count"`
+}
+
+type UniformDistTestCase struct {
+	Input  UniformDistInput `json:"input"`
+	Output []float64        `json:"output"`
+}
+
+type AdditiveDistInput struct {
+	Seed   int64   `json:"seed"`
+	Mean   float64 `json:"mean"`
+	StdDev float64 `json:"stdDev"`
+	Count  int     `json:"count"`
+}
+
+type AdditiveDistTestCase struct {
+	Input  AdditiveDistInput `json:"input"`
+	Output []float64         `json:"output"`
+}
+
+type MultiplicDistInput struct {
+	Seed      int64   `json:"seed"`
+	LogMean   float64 `json:"logMean"`
+	LogStdDev float64 `json:"logStdDev"`
+	Count     int     `json:"count"`
+}
+
+type MultiplicDistTestCase struct {
+	Input  MultiplicDistInput `json:"input"`
+	Output []float64          `json:"output"`
+}
+
+type ExpDistInput struct {
+	Seed  int64   `json:"seed"`
+	Rate  float64 `json:"rate"`
+	Count int     `json:"count"`
+}
+
+type ExpDistTestCase struct {
+	Input  ExpDistInput `json:"input"`
+	Output []float64    `json:"output"`
+}
+
+type PowerDistInput struct {
+	Seed  int64   `json:"seed"`
+	Min   float64 `json:"min"`
+	Shape float64 `json:"shape"`
+	Count int     `json:"count"`
+}
+
+type PowerDistTestCase struct {
+	Input  PowerDistInput `json:"input"`
+	Output []float64      `json:"output"`
+}
+
+func TestRngUniformReference(t *testing.T) {
+	dirPath := "../tests/rng"
+	files, err := os.ReadDir(dirPath)
+	if err != nil {
+		t.Fatalf("Failed to read directory: %v", err)
+	}
+
+	for _, file := range files {
+		if !strings.HasPrefix(file.Name(), "uniform-seed-") || !strings.HasSuffix(file.Name(), ".json") {
+			continue
+		}
+
+		testName := strings.TrimSuffix(file.Name(), ".json")
+		t.Run(testName, func(t *testing.T) {
+			filePath := filepath.Join(dirPath, file.Name())
+			data, err := os.ReadFile(filePath)
+			if err != nil {
+				t.Fatalf("Failed to read test file: %v", err)
+			}
+
+			var testData struct {
+				Input  UniformInput `json:"input"`
+				Output []float64    `json:"output"`
+			}
+			if err := json.Unmarshal(data, &testData); err != nil {
+				t.Fatalf("Failed to parse test data: %v", err)
+			}
+
+			rng := NewRngFromSeed(testData.Input.Seed)
+			if len(testData.Output) != testData.Input.Count {
+				t.Fatalf("Output length %d != count %d", len(testData.Output), testData.Input.Count)
+			}
+			for i := 0; i < testData.Input.Count; i++ {
+				actual := rng.Uniform()
+				expected := testData.Output[i]
+				if !floatEquals(actual, expected, 1e-15) {
+					t.Errorf("Uniform() at index %d = %v, want %v", i, actual, expected)
+				}
+			}
+		})
+	}
+}
+
+func TestRngUniformIntReference(t *testing.T) {
+	dirPath := "../tests/rng"
+	files, err := os.ReadDir(dirPath)
+	if err != nil {
+		t.Fatalf("Failed to read directory: %v", err)
+	}
+
+	for _, file := range files {
+		if !strings.HasPrefix(file.Name(), "uniform-int-") || !strings.HasSuffix(file.Name(), ".json") {
+			continue
+		}
+
+		testName := strings.TrimSuffix(file.Name(), ".json")
+		t.Run(testName, func(t *testing.T) {
+			filePath := filepath.Join(dirPath, file.Name())
+			data, err := os.ReadFile(filePath)
+			if err != nil {
+				t.Fatalf("Failed to read test file: %v", err)
+			}
+
+			var testData struct {
+				Input  UniformIntInput `json:"input"`
+				Output []int64         `json:"output"`
+			}
+			if err := json.Unmarshal(data, &testData); err != nil {
+				t.Fatalf("Failed to parse test data: %v", err)
+			}
+
+			rng := NewRngFromSeed(testData.Input.Seed)
+			if len(testData.Output) != testData.Input.Count {
+				t.Fatalf("Output length %d != count %d", len(testData.Output), testData.Input.Count)
+			}
+			for i := 0; i < testData.Input.Count; i++ {
+				actual := rng.UniformInt(testData.Input.Min, testData.Input.Max)
+				expected := testData.Output[i]
+				if actual != expected {
+					t.Errorf("UniformInt(%d, %d) at index %d = %d, want %d",
+						testData.Input.Min, testData.Input.Max, i, actual, expected)
+				}
+			}
+		})
+	}
+}
+
+func TestRngStringSeedReference(t *testing.T) {
+	dirPath := "../tests/rng"
+	files, err := os.ReadDir(dirPath)
+	if err != nil {
+		t.Fatalf("Failed to read directory: %v", err)
+	}
+
+	for _, file := range files {
+		if !strings.HasPrefix(file.Name(), "uniform-string-") || !strings.HasSuffix(file.Name(), ".json") {
+			continue
+		}
+
+		testName := strings.TrimSuffix(file.Name(), ".json")
+		t.Run(testName, func(t *testing.T) {
+			filePath := filepath.Join(dirPath, file.Name())
+			data, err := os.ReadFile(filePath)
+			if err != nil {
+				t.Fatalf("Failed to read test file: %v", err)
+			}
+
+			var testData struct {
+				Input  StringSeedInput `json:"input"`
+				Output []float64       `json:"output"`
+			}
+			if err := json.Unmarshal(data, &testData); err != nil {
+				t.Fatalf("Failed to parse test data: %v", err)
+			}
+
+			rng := NewRngFromString(testData.Input.Seed)
+			if len(testData.Output) != testData.Input.Count {
+				t.Fatalf("Output length %d != count %d", len(testData.Output), testData.Input.Count)
+			}
+			for i := 0; i < testData.Input.Count; i++ {
+				actual := rng.Uniform()
+				expected := testData.Output[i]
+				if !floatEquals(actual, expected, 1e-15) {
+					t.Errorf("Uniform() at index %d = %v, want %v", i, actual, expected)
+				}
+			}
+		})
+	}
+}
+
+func TestShuffleReference(t *testing.T) {
+	dirPath := "../tests/shuffle"
+	files, err := os.ReadDir(dirPath)
+	if err != nil {
+		t.Fatalf("Failed to read directory: %v", err)
+	}
+
+	for _, file := range files {
+		if !strings.HasSuffix(file.Name(), ".json") {
+			continue
+		}
+
+		testName := strings.TrimSuffix(file.Name(), ".json")
+		t.Run(testName, func(t *testing.T) {
+			filePath := filepath.Join(dirPath, file.Name())
+			data, err := os.ReadFile(filePath)
+			if err != nil {
+				t.Fatalf("Failed to read test file: %v", err)
+			}
+
+			var testData struct {
+				Input  ShuffleInput `json:"input"`
+				Output []float64    `json:"output"`
+			}
+			if err := json.Unmarshal(data, &testData); err != nil {
+				t.Fatalf("Failed to parse test data: %v", err)
+			}
+
+			rng := NewRngFromSeed(testData.Input.Seed)
+			actual := Shuffle(rng, testData.Input.X)
+
+			if len(actual) != len(testData.Output) {
+				t.Fatalf("Shuffle() length = %d, want %d", len(actual), len(testData.Output))
+			}
+			for i, v := range actual {
+				if !floatEquals(v, testData.Output[i], 1e-15) {
+					t.Errorf("Shuffle() at index %d = %v, want %v", i, v, testData.Output[i])
+				}
+			}
+		})
+	}
+}
+
+func TestSampleReference(t *testing.T) {
+	dirPath := "../tests/sample"
+	files, err := os.ReadDir(dirPath)
+	if err != nil {
+		t.Fatalf("Failed to read directory: %v", err)
+	}
+
+	for _, file := range files {
+		if !strings.HasSuffix(file.Name(), ".json") {
+			continue
+		}
+
+		testName := strings.TrimSuffix(file.Name(), ".json")
+		t.Run(testName, func(t *testing.T) {
+			filePath := filepath.Join(dirPath, file.Name())
+			data, err := os.ReadFile(filePath)
+			if err != nil {
+				t.Fatalf("Failed to read test file: %v", err)
+			}
+
+			var testData struct {
+				Input  SampleInput `json:"input"`
+				Output []float64   `json:"output"`
+			}
+			if err := json.Unmarshal(data, &testData); err != nil {
+				t.Fatalf("Failed to parse test data: %v", err)
+			}
+
+			rng := NewRngFromSeed(testData.Input.Seed)
+			actual := Sample(rng, testData.Input.X, testData.Input.K)
+
+			if len(actual) != len(testData.Output) {
+				t.Fatalf("Sample() length = %d, want %d", len(actual), len(testData.Output))
+			}
+			for i, v := range actual {
+				if !floatEquals(v, testData.Output[i], 1e-15) {
+					t.Errorf("Sample() at index %d = %v, want %v", i, v, testData.Output[i])
+				}
+			}
+		})
+	}
+}
+
+func TestUniformDistributionReference(t *testing.T) {
+	dirPath := filepath.Join("../tests", "distributions", "uniform")
+	files, err := os.ReadDir(dirPath)
+	if err != nil {
+		t.Fatalf("Failed to read directory: %v", err)
+	}
+
+	for _, file := range files {
+		if !strings.HasSuffix(file.Name(), ".json") {
+			continue
+		}
+
+		testName := strings.TrimSuffix(file.Name(), ".json")
+		t.Run(testName, func(t *testing.T) {
+			filePath := filepath.Join(dirPath, file.Name())
+			data, err := os.ReadFile(filePath)
+			if err != nil {
+				t.Fatalf("Failed to read test file: %v", err)
+			}
+
+			var testData UniformDistTestCase
+			if err := json.Unmarshal(data, &testData); err != nil {
+				t.Fatalf("Failed to parse test data: %v", err)
+			}
+
+			rng := NewRngFromSeed(testData.Input.Seed)
+			dist := NewUniform(testData.Input.Min, testData.Input.Max)
+
+			for i := 0; i < testData.Input.Count; i++ {
+				actual := dist.Sample(rng)
+				expected := testData.Output[i]
+				if !floatEquals(actual, expected, 1e-12) {
+					t.Errorf("Uniform sample at index %d = %v, want %v", i, actual, expected)
+				}
+			}
+		})
+	}
+}
+
+func TestAdditiveDistributionReference(t *testing.T) {
+	dirPath := filepath.Join("../tests", "distributions", "additive")
+	files, err := os.ReadDir(dirPath)
+	if err != nil {
+		t.Fatalf("Failed to read directory: %v", err)
+	}
+
+	for _, file := range files {
+		if !strings.HasSuffix(file.Name(), ".json") {
+			continue
+		}
+
+		testName := strings.TrimSuffix(file.Name(), ".json")
+		t.Run(testName, func(t *testing.T) {
+			filePath := filepath.Join(dirPath, file.Name())
+			data, err := os.ReadFile(filePath)
+			if err != nil {
+				t.Fatalf("Failed to read test file: %v", err)
+			}
+
+			var testData AdditiveDistTestCase
+			if err := json.Unmarshal(data, &testData); err != nil {
+				t.Fatalf("Failed to parse test data: %v", err)
+			}
+
+			rng := NewRngFromSeed(testData.Input.Seed)
+			dist := NewAdditive(testData.Input.Mean, testData.Input.StdDev)
+
+			for i := 0; i < testData.Input.Count; i++ {
+				actual := dist.Sample(rng)
+				expected := testData.Output[i]
+				if !floatEquals(actual, expected, 1e-12) {
+					t.Errorf("Additive sample at index %d = %v, want %v", i, actual, expected)
+				}
+			}
+		})
+	}
+}
+
+func TestMultiplicDistributionReference(t *testing.T) {
+	dirPath := filepath.Join("../tests", "distributions", "multiplic")
+	files, err := os.ReadDir(dirPath)
+	if err != nil {
+		t.Fatalf("Failed to read directory: %v", err)
+	}
+
+	for _, file := range files {
+		if !strings.HasSuffix(file.Name(), ".json") {
+			continue
+		}
+
+		testName := strings.TrimSuffix(file.Name(), ".json")
+		t.Run(testName, func(t *testing.T) {
+			filePath := filepath.Join(dirPath, file.Name())
+			data, err := os.ReadFile(filePath)
+			if err != nil {
+				t.Fatalf("Failed to read test file: %v", err)
+			}
+
+			var testData MultiplicDistTestCase
+			if err := json.Unmarshal(data, &testData); err != nil {
+				t.Fatalf("Failed to parse test data: %v", err)
+			}
+
+			rng := NewRngFromSeed(testData.Input.Seed)
+			dist := NewMultiplic(testData.Input.LogMean, testData.Input.LogStdDev)
+
+			for i := 0; i < testData.Input.Count; i++ {
+				actual := dist.Sample(rng)
+				expected := testData.Output[i]
+				if !floatEquals(actual, expected, 1e-12) {
+					t.Errorf("Multiplic sample at index %d = %v, want %v", i, actual, expected)
+				}
+			}
+		})
+	}
+}
+
+func TestExpDistributionReference(t *testing.T) {
+	dirPath := filepath.Join("../tests", "distributions", "exp")
+	files, err := os.ReadDir(dirPath)
+	if err != nil {
+		t.Fatalf("Failed to read directory: %v", err)
+	}
+
+	for _, file := range files {
+		if !strings.HasSuffix(file.Name(), ".json") {
+			continue
+		}
+
+		testName := strings.TrimSuffix(file.Name(), ".json")
+		t.Run(testName, func(t *testing.T) {
+			filePath := filepath.Join(dirPath, file.Name())
+			data, err := os.ReadFile(filePath)
+			if err != nil {
+				t.Fatalf("Failed to read test file: %v", err)
+			}
+
+			var testData ExpDistTestCase
+			if err := json.Unmarshal(data, &testData); err != nil {
+				t.Fatalf("Failed to parse test data: %v", err)
+			}
+
+			rng := NewRngFromSeed(testData.Input.Seed)
+			dist := NewExp(testData.Input.Rate)
+
+			for i := 0; i < testData.Input.Count; i++ {
+				actual := dist.Sample(rng)
+				expected := testData.Output[i]
+				if !floatEquals(actual, expected, 1e-12) {
+					t.Errorf("Exp sample at index %d = %v, want %v", i, actual, expected)
+				}
+			}
+		})
+	}
+}
+
+func TestPowerDistributionReference(t *testing.T) {
+	dirPath := filepath.Join("../tests", "distributions", "power")
+	files, err := os.ReadDir(dirPath)
+	if err != nil {
+		t.Fatalf("Failed to read directory: %v", err)
+	}
+
+	for _, file := range files {
+		if !strings.HasSuffix(file.Name(), ".json") {
+			continue
+		}
+
+		testName := strings.TrimSuffix(file.Name(), ".json")
+		t.Run(testName, func(t *testing.T) {
+			filePath := filepath.Join(dirPath, file.Name())
+			data, err := os.ReadFile(filePath)
+			if err != nil {
+				t.Fatalf("Failed to read test file: %v", err)
+			}
+
+			var testData PowerDistTestCase
+			if err := json.Unmarshal(data, &testData); err != nil {
+				t.Fatalf("Failed to parse test data: %v", err)
+			}
+
+			rng := NewRngFromSeed(testData.Input.Seed)
+			dist := NewPower(testData.Input.Min, testData.Input.Shape)
+
+			for i := 0; i < testData.Input.Count; i++ {
+				actual := dist.Sample(rng)
+				expected := testData.Output[i]
+				if !floatEquals(actual, expected, 1e-12) {
+					t.Errorf("Power sample at index %d = %v, want %v", i, actual, expected)
+				}
+			}
+		})
+	}
+}
+
+func TestSampleNegativeKPanics(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("Sample with negative k should panic")
+		}
+	}()
+	rng := NewRngFromSeed(42)
+	Sample(rng, []float64{1, 2, 3}, -1)
+}

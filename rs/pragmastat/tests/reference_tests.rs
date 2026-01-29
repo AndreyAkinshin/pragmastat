@@ -317,3 +317,642 @@ fn test_pairwise_margin() {
 fn test_shift_bounds() {
     run_shift_bounds_tests();
 }
+
+// Rng reference tests
+
+#[derive(Debug, Deserialize)]
+struct UniformInput {
+    seed: i64,
+    count: usize,
+}
+
+#[derive(Debug, Deserialize)]
+struct UniformTestCase {
+    input: UniformInput,
+    output: Vec<f64>,
+}
+
+#[derive(Debug, Deserialize)]
+struct UniformIntInput {
+    seed: i64,
+    min: i64,
+    max: i64,
+    count: usize,
+}
+
+#[derive(Debug, Deserialize)]
+struct UniformIntTestCase {
+    input: UniformIntInput,
+    output: Vec<i64>,
+}
+
+#[derive(Debug, Deserialize)]
+struct StringSeedInput {
+    seed: String,
+    count: usize,
+}
+
+#[derive(Debug, Deserialize)]
+struct StringSeedTestCase {
+    input: StringSeedInput,
+    output: Vec<f64>,
+}
+
+#[derive(Debug, Deserialize)]
+struct ShuffleInput {
+    seed: i64,
+    x: Vec<f64>,
+}
+
+#[derive(Debug, Deserialize)]
+struct ShuffleTestCase {
+    input: ShuffleInput,
+    output: Vec<f64>,
+}
+
+#[derive(Debug, Deserialize)]
+struct SampleInput {
+    seed: i64,
+    x: Vec<f64>,
+    k: usize,
+}
+
+#[derive(Debug, Deserialize)]
+struct SampleTestCase {
+    input: SampleInput,
+    output: Vec<f64>,
+}
+
+// Distribution reference tests
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct UniformDistInput {
+    seed: i64,
+    min: f64,
+    max: f64,
+    count: usize,
+}
+
+#[derive(Debug, Deserialize)]
+struct UniformDistTestCase {
+    input: UniformDistInput,
+    output: Vec<f64>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct AdditiveDistInput {
+    seed: i64,
+    mean: f64,
+    std_dev: f64,
+    count: usize,
+}
+
+#[derive(Debug, Deserialize)]
+struct AdditiveDistTestCase {
+    input: AdditiveDistInput,
+    output: Vec<f64>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct MultiplicDistInput {
+    seed: i64,
+    log_mean: f64,
+    log_std_dev: f64,
+    count: usize,
+}
+
+#[derive(Debug, Deserialize)]
+struct MultiplicDistTestCase {
+    input: MultiplicDistInput,
+    output: Vec<f64>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct ExpDistInput {
+    seed: i64,
+    rate: f64,
+    count: usize,
+}
+
+#[derive(Debug, Deserialize)]
+struct ExpDistTestCase {
+    input: ExpDistInput,
+    output: Vec<f64>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct PowerDistInput {
+    seed: i64,
+    min: f64,
+    shape: f64,
+    count: usize,
+}
+
+#[derive(Debug, Deserialize)]
+struct PowerDistTestCase {
+    input: PowerDistInput,
+    output: Vec<f64>,
+}
+
+fn run_rng_uniform_tests() {
+    let repo_root = find_repo_root();
+    let test_data_dir = repo_root.join("tests").join("rng");
+
+    let json_files: Vec<_> = fs::read_dir(&test_data_dir)
+        .unwrap()
+        .filter_map(|entry| {
+            let entry = entry.unwrap();
+            let path = entry.path();
+            let name = path.file_name()?.to_str()?;
+            if name.starts_with("uniform-seed-") && name.ends_with(".json") {
+                Some(path)
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    assert!(!json_files.is_empty(), "No uniform seed test files found");
+
+    for json_file in json_files {
+        let content = fs::read_to_string(&json_file).unwrap();
+        let test_case: UniformTestCase = serde_json::from_str(&content).unwrap();
+
+        let mut rng = Rng::from_seed(test_case.input.seed);
+        let actual: Vec<f64> = (0..test_case.input.count).map(|_| rng.uniform()).collect();
+
+        for (i, (actual_val, expected_val)) in
+            actual.iter().zip(test_case.output.iter()).enumerate()
+        {
+            assert!(
+                approx_eq!(f64, *actual_val, *expected_val, epsilon = 1e-15),
+                "Failed for test file: {:?}, index {}, expected: {}, got: {}",
+                json_file.file_name().unwrap(),
+                i,
+                expected_val,
+                actual_val
+            );
+        }
+    }
+}
+
+fn run_rng_uniform_int_tests() {
+    let repo_root = find_repo_root();
+    let test_data_dir = repo_root.join("tests").join("rng");
+
+    let json_files: Vec<_> = fs::read_dir(&test_data_dir)
+        .unwrap()
+        .filter_map(|entry| {
+            let entry = entry.unwrap();
+            let path = entry.path();
+            let name = path.file_name()?.to_str()?;
+            if name.starts_with("uniform-int-") && name.ends_with(".json") {
+                Some(path)
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    assert!(!json_files.is_empty(), "No uniform int test files found");
+
+    for json_file in json_files {
+        let content = fs::read_to_string(&json_file).unwrap();
+        let test_case: UniformIntTestCase = serde_json::from_str(&content).unwrap();
+
+        let mut rng = Rng::from_seed(test_case.input.seed);
+        let actual: Vec<i64> = (0..test_case.input.count)
+            .map(|_| rng.uniform_int(test_case.input.min, test_case.input.max))
+            .collect();
+
+        assert_eq!(
+            actual,
+            test_case.output,
+            "Failed for test file: {:?}",
+            json_file.file_name().unwrap()
+        );
+    }
+}
+
+fn run_rng_string_seed_tests() {
+    let repo_root = find_repo_root();
+    let test_data_dir = repo_root.join("tests").join("rng");
+
+    let json_files: Vec<_> = fs::read_dir(&test_data_dir)
+        .unwrap()
+        .filter_map(|entry| {
+            let entry = entry.unwrap();
+            let path = entry.path();
+            let name = path.file_name()?.to_str()?;
+            if name.starts_with("uniform-string-") && name.ends_with(".json") {
+                Some(path)
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    assert!(!json_files.is_empty(), "No string seed test files found");
+
+    for json_file in json_files {
+        let content = fs::read_to_string(&json_file).unwrap();
+        let test_case: StringSeedTestCase = serde_json::from_str(&content).unwrap();
+
+        let mut rng = Rng::from_string(&test_case.input.seed);
+        let actual: Vec<f64> = (0..test_case.input.count).map(|_| rng.uniform()).collect();
+
+        for (i, (actual_val, expected_val)) in
+            actual.iter().zip(test_case.output.iter()).enumerate()
+        {
+            assert!(
+                approx_eq!(f64, *actual_val, *expected_val, epsilon = 1e-15),
+                "Failed for test file: {:?}, index {}, expected: {}, got: {}",
+                json_file.file_name().unwrap(),
+                i,
+                expected_val,
+                actual_val
+            );
+        }
+    }
+}
+
+fn run_shuffle_tests() {
+    let repo_root = find_repo_root();
+    let test_data_dir = repo_root.join("tests").join("shuffle");
+
+    let json_files: Vec<_> = fs::read_dir(&test_data_dir)
+        .unwrap()
+        .filter_map(|entry| {
+            let entry = entry.unwrap();
+            let path = entry.path();
+            if path.extension()?.to_str()? == "json" {
+                Some(path)
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    assert!(!json_files.is_empty(), "No shuffle test files found");
+
+    for json_file in json_files {
+        let content = fs::read_to_string(&json_file).unwrap();
+        let test_case: ShuffleTestCase = serde_json::from_str(&content).unwrap();
+
+        let mut rng = Rng::from_seed(test_case.input.seed);
+        let actual = rng.shuffle(&test_case.input.x);
+
+        for (i, (actual_val, expected_val)) in
+            actual.iter().zip(test_case.output.iter()).enumerate()
+        {
+            assert!(
+                approx_eq!(f64, *actual_val, *expected_val, epsilon = 1e-15),
+                "Failed for test file: {:?}, index {}, expected: {}, got: {}",
+                json_file.file_name().unwrap(),
+                i,
+                expected_val,
+                actual_val
+            );
+        }
+    }
+}
+
+fn run_sample_tests() {
+    let repo_root = find_repo_root();
+    let test_data_dir = repo_root.join("tests").join("sample");
+
+    let json_files: Vec<_> = fs::read_dir(&test_data_dir)
+        .unwrap()
+        .filter_map(|entry| {
+            let entry = entry.unwrap();
+            let path = entry.path();
+            if path.extension()?.to_str()? == "json" {
+                Some(path)
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    assert!(!json_files.is_empty(), "No sample test files found");
+
+    for json_file in json_files {
+        let content = fs::read_to_string(&json_file).unwrap();
+        let test_case: SampleTestCase = serde_json::from_str(&content).unwrap();
+
+        let mut rng = Rng::from_seed(test_case.input.seed);
+        let actual = rng.sample(&test_case.input.x, test_case.input.k);
+
+        for (i, (actual_val, expected_val)) in
+            actual.iter().zip(test_case.output.iter()).enumerate()
+        {
+            assert!(
+                approx_eq!(f64, *actual_val, *expected_val, epsilon = 1e-15),
+                "Failed for test file: {:?}, index {}, expected: {}, got: {}",
+                json_file.file_name().unwrap(),
+                i,
+                expected_val,
+                actual_val
+            );
+        }
+    }
+}
+
+fn run_uniform_distribution_tests() {
+    let repo_root = find_repo_root();
+    let test_data_dir = repo_root
+        .join("tests")
+        .join("distributions")
+        .join("uniform");
+
+    let json_files: Vec<_> = fs::read_dir(&test_data_dir)
+        .unwrap()
+        .filter_map(|entry| {
+            let entry = entry.unwrap();
+            let path = entry.path();
+            if path.extension()?.to_str()? == "json" {
+                Some(path)
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    assert!(
+        !json_files.is_empty(),
+        "No uniform distribution test files found"
+    );
+
+    for json_file in json_files {
+        let content = fs::read_to_string(&json_file).unwrap();
+        let test_case: UniformDistTestCase = serde_json::from_str(&content).unwrap();
+
+        let mut rng = Rng::from_seed(test_case.input.seed);
+        let dist = Uniform::new(test_case.input.min, test_case.input.max);
+        let actual: Vec<f64> = (0..test_case.input.count)
+            .map(|_| dist.sample(&mut rng))
+            .collect();
+
+        for (i, (actual_val, expected_val)) in
+            actual.iter().zip(test_case.output.iter()).enumerate()
+        {
+            assert!(
+                approx_eq!(f64, *actual_val, *expected_val, epsilon = 1e-12),
+                "Failed for test file: {:?}, index {}, expected: {}, got: {}",
+                json_file.file_name().unwrap(),
+                i,
+                expected_val,
+                actual_val
+            );
+        }
+    }
+}
+
+fn run_additive_distribution_tests() {
+    let repo_root = find_repo_root();
+    let test_data_dir = repo_root
+        .join("tests")
+        .join("distributions")
+        .join("additive");
+
+    let json_files: Vec<_> = fs::read_dir(&test_data_dir)
+        .unwrap()
+        .filter_map(|entry| {
+            let entry = entry.unwrap();
+            let path = entry.path();
+            if path.extension()?.to_str()? == "json" {
+                Some(path)
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    assert!(
+        !json_files.is_empty(),
+        "No additive distribution test files found"
+    );
+
+    for json_file in json_files {
+        let content = fs::read_to_string(&json_file).unwrap();
+        let test_case: AdditiveDistTestCase = serde_json::from_str(&content).unwrap();
+
+        let mut rng = Rng::from_seed(test_case.input.seed);
+        let dist = Additive::new(test_case.input.mean, test_case.input.std_dev);
+        let actual: Vec<f64> = (0..test_case.input.count)
+            .map(|_| dist.sample(&mut rng))
+            .collect();
+
+        for (i, (actual_val, expected_val)) in
+            actual.iter().zip(test_case.output.iter()).enumerate()
+        {
+            assert!(
+                approx_eq!(f64, *actual_val, *expected_val, epsilon = 1e-12),
+                "Failed for test file: {:?}, index {}, expected: {}, got: {}",
+                json_file.file_name().unwrap(),
+                i,
+                expected_val,
+                actual_val
+            );
+        }
+    }
+}
+
+fn run_multiplic_distribution_tests() {
+    let repo_root = find_repo_root();
+    let test_data_dir = repo_root
+        .join("tests")
+        .join("distributions")
+        .join("multiplic");
+
+    let json_files: Vec<_> = fs::read_dir(&test_data_dir)
+        .unwrap()
+        .filter_map(|entry| {
+            let entry = entry.unwrap();
+            let path = entry.path();
+            if path.extension()?.to_str()? == "json" {
+                Some(path)
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    assert!(
+        !json_files.is_empty(),
+        "No multiplic distribution test files found"
+    );
+
+    for json_file in json_files {
+        let content = fs::read_to_string(&json_file).unwrap();
+        let test_case: MultiplicDistTestCase = serde_json::from_str(&content).unwrap();
+
+        let mut rng = Rng::from_seed(test_case.input.seed);
+        let dist = Multiplic::new(test_case.input.log_mean, test_case.input.log_std_dev);
+        let actual: Vec<f64> = (0..test_case.input.count)
+            .map(|_| dist.sample(&mut rng))
+            .collect();
+
+        for (i, (actual_val, expected_val)) in
+            actual.iter().zip(test_case.output.iter()).enumerate()
+        {
+            assert!(
+                approx_eq!(f64, *actual_val, *expected_val, epsilon = 1e-12),
+                "Failed for test file: {:?}, index {}, expected: {}, got: {}",
+                json_file.file_name().unwrap(),
+                i,
+                expected_val,
+                actual_val
+            );
+        }
+    }
+}
+
+fn run_exp_distribution_tests() {
+    let repo_root = find_repo_root();
+    let test_data_dir = repo_root.join("tests").join("distributions").join("exp");
+
+    let json_files: Vec<_> = fs::read_dir(&test_data_dir)
+        .unwrap()
+        .filter_map(|entry| {
+            let entry = entry.unwrap();
+            let path = entry.path();
+            if path.extension()?.to_str()? == "json" {
+                Some(path)
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    assert!(
+        !json_files.is_empty(),
+        "No exp distribution test files found"
+    );
+
+    for json_file in json_files {
+        let content = fs::read_to_string(&json_file).unwrap();
+        let test_case: ExpDistTestCase = serde_json::from_str(&content).unwrap();
+
+        let mut rng = Rng::from_seed(test_case.input.seed);
+        let dist = Exp::new(test_case.input.rate);
+        let actual: Vec<f64> = (0..test_case.input.count)
+            .map(|_| dist.sample(&mut rng))
+            .collect();
+
+        for (i, (actual_val, expected_val)) in
+            actual.iter().zip(test_case.output.iter()).enumerate()
+        {
+            assert!(
+                approx_eq!(f64, *actual_val, *expected_val, epsilon = 1e-12),
+                "Failed for test file: {:?}, index {}, expected: {}, got: {}",
+                json_file.file_name().unwrap(),
+                i,
+                expected_val,
+                actual_val
+            );
+        }
+    }
+}
+
+fn run_power_distribution_tests() {
+    let repo_root = find_repo_root();
+    let test_data_dir = repo_root.join("tests").join("distributions").join("power");
+
+    let json_files: Vec<_> = fs::read_dir(&test_data_dir)
+        .unwrap()
+        .filter_map(|entry| {
+            let entry = entry.unwrap();
+            let path = entry.path();
+            if path.extension()?.to_str()? == "json" {
+                Some(path)
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    assert!(
+        !json_files.is_empty(),
+        "No power distribution test files found"
+    );
+
+    for json_file in json_files {
+        let content = fs::read_to_string(&json_file).unwrap();
+        let test_case: PowerDistTestCase = serde_json::from_str(&content).unwrap();
+
+        let mut rng = Rng::from_seed(test_case.input.seed);
+        let dist = Power::new(test_case.input.min, test_case.input.shape);
+        let actual: Vec<f64> = (0..test_case.input.count)
+            .map(|_| dist.sample(&mut rng))
+            .collect();
+
+        for (i, (actual_val, expected_val)) in
+            actual.iter().zip(test_case.output.iter()).enumerate()
+        {
+            assert!(
+                approx_eq!(f64, *actual_val, *expected_val, epsilon = 1e-12),
+                "Failed for test file: {:?}, index {}, expected: {}, got: {}",
+                json_file.file_name().unwrap(),
+                i,
+                expected_val,
+                actual_val
+            );
+        }
+    }
+}
+
+#[test]
+fn test_rng_uniform() {
+    run_rng_uniform_tests();
+}
+
+#[test]
+fn test_rng_uniform_int() {
+    run_rng_uniform_int_tests();
+}
+
+#[test]
+fn test_rng_string_seed() {
+    run_rng_string_seed_tests();
+}
+
+#[test]
+fn test_shuffle() {
+    run_shuffle_tests();
+}
+
+#[test]
+fn test_sample() {
+    run_sample_tests();
+}
+
+#[test]
+fn test_uniform_distribution() {
+    run_uniform_distribution_tests();
+}
+
+#[test]
+fn test_additive_distribution() {
+    run_additive_distribution_tests();
+}
+
+#[test]
+fn test_multiplic_distribution() {
+    run_multiplic_distribution_tests();
+}
+
+#[test]
+fn test_exp_distribution() {
+    run_exp_distribution_tests();
+}
+
+#[test]
+fn test_power_distribution() {
+    run_power_distribution_tests();
+}

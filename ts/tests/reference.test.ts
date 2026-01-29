@@ -11,6 +11,8 @@ import {
   shiftBounds,
 } from '../src/estimators';
 import { pairwiseMargin } from '../src/pairwiseMargin';
+import { Rng } from '../src/rng';
+import { Additive, Exp, Multiplic, Power, Uniform } from '../src/distributions';
 
 /**
  * Reference tests comparing against expected values from JSON files
@@ -124,5 +126,273 @@ describe('Reference Tests', () => {
         });
       });
     }
+  });
+
+  // Rng uniform tests
+  describe('rng-uniform', () => {
+    const dirPath = path.join(testDataPath, 'rng');
+    if (fs.existsSync(dirPath)) {
+      const testFiles = fs
+        .readdirSync(dirPath)
+        .filter((file) => file.startsWith('uniform-seed-') && file.endsWith('.json'))
+        .sort();
+
+      testFiles.forEach((fileName) => {
+        const filePath = path.join(dirPath, fileName);
+        const testName = fileName.replace('.json', '');
+
+        it(`should pass ${testName}`, () => {
+          const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+          const rng = new Rng(data.input.seed);
+          const actual = Array.from({ length: data.input.count }, () => rng.uniform());
+
+          for (let i = 0; i < actual.length; i++) {
+            expect(actual[i]).toBeCloseTo(data.output[i], 15);
+          }
+        });
+      });
+    }
+  });
+
+  // Rng uniform int tests
+  describe('rng-uniform-int', () => {
+    const dirPath = path.join(testDataPath, 'rng');
+    if (fs.existsSync(dirPath)) {
+      const testFiles = fs
+        .readdirSync(dirPath)
+        .filter((file) => file.startsWith('uniform-int-') && file.endsWith('.json'))
+        .sort();
+
+      testFiles.forEach((fileName) => {
+        const filePath = path.join(dirPath, fileName);
+        const testName = fileName.replace('.json', '');
+
+        it(`should pass ${testName}`, () => {
+          const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+          const rng = new Rng(data.input.seed);
+          const actual = Array.from({ length: data.input.count }, () =>
+            rng.uniformInt(data.input.min, data.input.max),
+          );
+
+          expect(actual).toEqual(data.output);
+        });
+      });
+    }
+  });
+
+  // Rng string seed tests
+  describe('rng-string-seed', () => {
+    const dirPath = path.join(testDataPath, 'rng');
+    if (fs.existsSync(dirPath)) {
+      const testFiles = fs
+        .readdirSync(dirPath)
+        .filter((file) => file.startsWith('uniform-string-') && file.endsWith('.json'))
+        .sort();
+
+      testFiles.forEach((fileName) => {
+        const filePath = path.join(dirPath, fileName);
+        const testName = fileName.replace('.json', '');
+
+        it(`should pass ${testName}`, () => {
+          const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+          const rng = new Rng(data.input.seed);
+          const actual = Array.from({ length: data.input.count }, () => rng.uniform());
+
+          for (let i = 0; i < actual.length; i++) {
+            expect(actual[i]).toBeCloseTo(data.output[i], 15);
+          }
+        });
+      });
+    }
+  });
+
+  // Shuffle tests
+  describe('shuffle', () => {
+    const dirPath = path.join(testDataPath, 'shuffle');
+    if (fs.existsSync(dirPath)) {
+      const testFiles = fs
+        .readdirSync(dirPath)
+        .filter((file) => file.endsWith('.json'))
+        .sort();
+
+      testFiles.forEach((fileName) => {
+        const filePath = path.join(dirPath, fileName);
+        const testName = fileName.replace('.json', '');
+
+        it(`should pass ${testName}`, () => {
+          const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+          const rng = new Rng(data.input.seed);
+          const actual = rng.shuffle(data.input.x);
+
+          for (let i = 0; i < actual.length; i++) {
+            expect(actual[i]).toBeCloseTo(data.output[i], 15);
+          }
+        });
+      });
+    }
+  });
+
+  // Sample tests
+  describe('sample', () => {
+    const dirPath = path.join(testDataPath, 'sample');
+    if (fs.existsSync(dirPath)) {
+      const testFiles = fs
+        .readdirSync(dirPath)
+        .filter((file) => file.endsWith('.json'))
+        .sort();
+
+      testFiles.forEach((fileName) => {
+        const filePath = path.join(dirPath, fileName);
+        const testName = fileName.replace('.json', '');
+
+        it(`should pass ${testName}`, () => {
+          const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+          const rng = new Rng(data.input.seed);
+          const actual = rng.sample(data.input.x, data.input.k);
+
+          for (let i = 0; i < actual.length; i++) {
+            expect(actual[i]).toBeCloseTo(data.output[i], 15);
+          }
+        });
+      });
+    }
+  });
+
+  // Distribution tests
+  describe('distributions/uniform', () => {
+    const dirPath = path.join(testDataPath, 'distributions', 'uniform');
+    if (fs.existsSync(dirPath)) {
+      const testFiles = fs
+        .readdirSync(dirPath)
+        .filter((file) => file.endsWith('.json'))
+        .sort();
+
+      testFiles.forEach((fileName) => {
+        const filePath = path.join(dirPath, fileName);
+        const testName = fileName.replace('.json', '');
+
+        it(`should pass ${testName}`, () => {
+          const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+          const rng = new Rng(data.input.seed);
+          const dist = new Uniform(data.input.min, data.input.max);
+          const actual = Array.from({ length: data.input.count }, () => dist.sample(rng));
+
+          for (let i = 0; i < actual.length; i++) {
+            expect(actual[i]).toBeCloseTo(data.output[i], 12);
+          }
+        });
+      });
+    }
+  });
+
+  describe('distributions/additive', () => {
+    const dirPath = path.join(testDataPath, 'distributions', 'additive');
+    if (fs.existsSync(dirPath)) {
+      const testFiles = fs
+        .readdirSync(dirPath)
+        .filter((file) => file.endsWith('.json'))
+        .sort();
+
+      testFiles.forEach((fileName) => {
+        const filePath = path.join(dirPath, fileName);
+        const testName = fileName.replace('.json', '');
+
+        it(`should pass ${testName}`, () => {
+          const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+          const rng = new Rng(data.input.seed);
+          const dist = new Additive(data.input.mean, data.input.stdDev);
+          const actual = Array.from({ length: data.input.count }, () => dist.sample(rng));
+
+          for (let i = 0; i < actual.length; i++) {
+            expect(actual[i]).toBeCloseTo(data.output[i], 12);
+          }
+        });
+      });
+    }
+  });
+
+  describe('distributions/multiplic', () => {
+    const dirPath = path.join(testDataPath, 'distributions', 'multiplic');
+    if (fs.existsSync(dirPath)) {
+      const testFiles = fs
+        .readdirSync(dirPath)
+        .filter((file) => file.endsWith('.json'))
+        .sort();
+
+      testFiles.forEach((fileName) => {
+        const filePath = path.join(dirPath, fileName);
+        const testName = fileName.replace('.json', '');
+
+        it(`should pass ${testName}`, () => {
+          const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+          const rng = new Rng(data.input.seed);
+          const dist = new Multiplic(data.input.logMean, data.input.logStdDev);
+          const actual = Array.from({ length: data.input.count }, () => dist.sample(rng));
+
+          for (let i = 0; i < actual.length; i++) {
+            expect(actual[i]).toBeCloseTo(data.output[i], 12);
+          }
+        });
+      });
+    }
+  });
+
+  describe('distributions/exp', () => {
+    const dirPath = path.join(testDataPath, 'distributions', 'exp');
+    if (fs.existsSync(dirPath)) {
+      const testFiles = fs
+        .readdirSync(dirPath)
+        .filter((file) => file.endsWith('.json'))
+        .sort();
+
+      testFiles.forEach((fileName) => {
+        const filePath = path.join(dirPath, fileName);
+        const testName = fileName.replace('.json', '');
+
+        it(`should pass ${testName}`, () => {
+          const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+          const rng = new Rng(data.input.seed);
+          const dist = new Exp(data.input.rate);
+          const actual = Array.from({ length: data.input.count }, () => dist.sample(rng));
+
+          for (let i = 0; i < actual.length; i++) {
+            expect(actual[i]).toBeCloseTo(data.output[i], 12);
+          }
+        });
+      });
+    }
+  });
+
+  describe('distributions/power', () => {
+    const dirPath = path.join(testDataPath, 'distributions', 'power');
+    if (fs.existsSync(dirPath)) {
+      const testFiles = fs
+        .readdirSync(dirPath)
+        .filter((file) => file.endsWith('.json'))
+        .sort();
+
+      testFiles.forEach((fileName) => {
+        const filePath = path.join(dirPath, fileName);
+        const testName = fileName.replace('.json', '');
+
+        it(`should pass ${testName}`, () => {
+          const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+          const rng = new Rng(data.input.seed);
+          const dist = new Power(data.input.min, data.input.shape);
+          const actual = Array.from({ length: data.input.count }, () => dist.sample(rng));
+
+          for (let i = 0; i < actual.length; i++) {
+            expect(actual[i]).toBeCloseTo(data.output[i], 12);
+          }
+        });
+      });
+    }
+  });
+
+  describe('sample validation', () => {
+    it('should throw error for negative k', () => {
+      const rng = new Rng(42);
+      expect(() => rng.sample([1, 2, 3], -1)).toThrow('k must be non-negative');
+    });
   });
 });
