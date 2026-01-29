@@ -8,8 +8,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pragmastat.Simulations", "P
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pragmastat.Demo", "Pragmastat.Demo\Pragmastat.Demo.csproj", "{D72AFC86-80C6-48EA-8AF2-F6DB0EBE622F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pragmastat.Distributions", "Pragmastat.Distributions\Pragmastat.Distributions.csproj", "{264E4FAB-98BC-4C58-A1A8-14F5ABB7CEF8}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pragmastat.Extended", "Pragmastat.Extended\Pragmastat.Extended.csproj", "{8C69CBDB-26CF-4767-91B8-96C9F993012E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pragmastat.TestGenerator", "Pragmastat.TestGenerator\Pragmastat.TestGenerator.csproj", "{8B2807C6-B990-49B3-BC6A-B45A3D67708B}"
@@ -32,10 +30,6 @@ Global
 		{D72AFC86-80C6-48EA-8AF2-F6DB0EBE622F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D72AFC86-80C6-48EA-8AF2-F6DB0EBE622F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D72AFC86-80C6-48EA-8AF2-F6DB0EBE622F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{264E4FAB-98BC-4C58-A1A8-14F5ABB7CEF8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{264E4FAB-98BC-4C58-A1A8-14F5ABB7CEF8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{264E4FAB-98BC-4C58-A1A8-14F5ABB7CEF8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{264E4FAB-98BC-4C58-A1A8-14F5ABB7CEF8}.Release|Any CPU.Build.0 = Release|Any CPU
 		{8C69CBDB-26CF-4767-91B8-96C9F993012E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8C69CBDB-26CF-4767-91B8-96C9F993012E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8C69CBDB-26CF-4767-91B8-96C9F993012E}.Release|Any CPU.ActiveCfg = Release|Any CPU

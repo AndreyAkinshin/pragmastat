@@ -14,7 +14,6 @@
     <ItemGroup>
         <ProjectReference Include="..\Pragmastat.Extended\Pragmastat.Extended.csproj"/>
         <ProjectReference Include="..\Pragmastat\Pragmastat.csproj"/>
-        <ProjectReference Include="..\Pragmastat.Distributions\Pragmastat.Distributions.csproj"/>
     </ItemGroup>
 
 </Project>

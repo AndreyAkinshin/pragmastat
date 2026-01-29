@@ -12,7 +12,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Pragmastat.Distributions\Pragmastat.Distributions.csproj"/>
         <ProjectReference Include="..\Pragmastat.TestGenerator\Pragmastat.TestGenerator.csproj" />
         <ProjectReference Include="..\Pragmastat\Pragmastat.csproj"/>
     </ItemGroup>

@@ -7,7 +7,7 @@ namespace Pragmastat.Tests.Distributions;
 public class AdditiveDistributionTests
 {
   private const string SuiteName = "distribution-normal";
-  private readonly DistributionController<AdditiveDistribution> controller = new(SuiteName);
+  private readonly DistributionController<Additive> controller = new(SuiteName);
 
   public static readonly TheoryData<string> TestCaseNames = ReferenceTestSuiteHelper.GetTheoryData(SuiteName);
 

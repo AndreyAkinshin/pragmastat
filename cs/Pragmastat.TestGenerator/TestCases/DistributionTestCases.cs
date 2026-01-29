@@ -8,23 +8,23 @@ public static class DistributionTestCases
 {
   public static void Generate()
   {
-    GenerateTests<AdditiveDistribution>("distribution-normal",
+    GenerateTests<Additive>("distribution-normal",
       new DistributionInputBuilder()
-        .Add(new AdditiveDistribution())
-        .Add(new AdditiveDistribution(1, 2))
-        .Add(new AdditiveDistribution(-1, 0.5))
-        .Add(new AdditiveDistribution(5, 3))
-        .Add(new AdditiveDistribution(0, 0.1))
-        .Add(new AdditiveDistribution(-2, 10)));
+        .Add(new Additive(0, 1))
+        .Add(new Additive(1, 2))
+        .Add(new Additive(-1, 0.5))
+        .Add(new Additive(5, 3))
+        .Add(new Additive(0, 0.1))
+        .Add(new Additive(-2, 10)));
 
-    GenerateTests<UniformDistribution>("distribution-uniform",
+    GenerateTests<Uniform>("distribution-uniform",
       new DistributionInputBuilder()
-        .Add(new UniformDistribution(0, 1))
-        .Add(new UniformDistribution(2, 3))
-        .Add(new UniformDistribution(-1, 1))
-        .Add(new UniformDistribution(-5, -2))
-        .Add(new UniformDistribution(0, 10))
-        .Add(new UniformDistribution(-2.5, 7.5)));
+        .Add(new Uniform(0, 1))
+        .Add(new Uniform(2, 3))
+        .Add(new Uniform(-1, 1))
+        .Add(new Uniform(-5, -2))
+        .Add(new Uniform(0, 10))
+        .Add(new Uniform(-2.5, 7.5)));
   }
 
   private static void GenerateTests<TDistribution>(string suiteName, DistributionInputBuilder inputBuilder)
@@ -38,4 +38,3 @@ public static class DistributionTestCases
     AnsiConsole.MarkupLine($"  [green]✓[/] Generated [bold]{testData.Count}[/] test cases");
   }
 }
-

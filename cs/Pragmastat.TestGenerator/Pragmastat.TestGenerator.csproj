@@ -6,7 +6,6 @@
     </PropertyGroup>
     
     <ItemGroup>
-        <ProjectReference Include="..\Pragmastat.Distributions\Pragmastat.Distributions.csproj" />
         <ProjectReference Include="..\Pragmastat\Pragmastat.csproj"/>
         <PackageReference Include="Spectre.Console" Version="0.50.0"/>
         <PackageReference Include="Spectre.Console.Cli" Version="0.50.0"/>

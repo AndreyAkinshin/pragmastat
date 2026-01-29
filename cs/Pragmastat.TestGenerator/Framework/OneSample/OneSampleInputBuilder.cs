@@ -1,6 +1,5 @@
 using JetBrains.Annotations;
 using Pragmastat.Distributions;
-using Pragmastat.Distributions.Randomization;
 
 namespace Pragmastat.TestGenerator.Framework.OneSample;
 
@@ -29,7 +28,7 @@ public class OneSampleInputBuilder : ReferenceTestCaseInputBuilder<OneSampleInpu
 
         if (weighted)
         {
-          var weightGenerator = UniformDistribution.Standard.Random(seed++);
+          var weightGenerator = Uniform.Standard.Random(seed++);
           double[] values = valueGenerator.Next(n);
           double[] weights = weightGenerator.Next(n);
           var weightedSample = new Sample(values, weights);
@@ -83,17 +82,17 @@ public class OneSampleInputBuilder : ReferenceTestCaseInputBuilder<OneSampleInpu
 
   public OneSampleInputBuilder AddNormal(int[] sizes, int count = DefaultCount, bool weighted = DefaultWeighted)
   {
-    return AddDistributionSamples("normal", new AdditiveDistribution(10), sizes, count, weighted);
+    return AddDistributionSamples("normal", new Additive(10, 1), sizes, count, weighted);
   }
 
   public OneSampleInputBuilder AddAdditive(int[] sizes, int count = DefaultCount, bool weighted = DefaultWeighted)
   {
-    return AddDistributionSamples("additive", new AdditiveDistribution(10, 1), sizes, count, weighted);
+    return AddDistributionSamples("additive", new Additive(10, 1), sizes, count, weighted);
   }
 
   public OneSampleInputBuilder AddUniform(int[] sizes, int count = DefaultCount, bool weighted = DefaultWeighted)
   {
-    return AddDistributionSamples("uniform", UniformDistribution.Standard, sizes, count, weighted);
+    return AddDistributionSamples("uniform", Uniform.Standard, sizes, count, weighted);
   }
 
   public OneSampleInputBuilder AddUnsortedReverse(int[] sizes)

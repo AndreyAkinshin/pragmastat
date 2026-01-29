@@ -43,11 +43,11 @@ public static class Registries
 {
   public static readonly NameRegistry<IContinuousDistribution> Distributions =
     new NameRegistry<IContinuousDistribution>()
-      .Add("Additive", AdditiveDistribution.Standard)
-      .Add("Multiplic", MultiplicDistribution.Standard)
-      .Add("Exp", ExponentialDistribution.Standard)
-      .Add("Power", PowerDistribution.Standard)
-      .Add("Uniform", UniformDistribution.Standard);
+      .Add("Additive", Additive.Standard)
+      .Add("Multiplic", Multiplic.Standard)
+      .Add("Exp", Exp.Standard)
+      .Add("Power", Power.Standard)
+      .Add("Uniform", Uniform.Standard);
 
   public static readonly NameRegistry<IOneSampleEstimator> AverageEstimators =
     new NameRegistry<IOneSampleEstimator>()

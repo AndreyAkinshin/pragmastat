@@ -1,6 +1,5 @@
 using JetBrains.Annotations;
 using Pragmastat.Distributions;
-using Pragmastat.Distributions.Randomization;
 
 namespace Pragmastat.TestGenerator.Framework.ShiftBounds;
 
@@ -74,14 +73,14 @@ public class ShiftBoundsInputBuilder : ReferenceTestCaseInputBuilder<ShiftBounds
 
   public ShiftBoundsInputBuilder AddAdditive(int[] xSizes, int[] ySizes, double misrate, int count = DefaultCount)
   {
-    return AddDistributionSamples("additive", new AdditiveDistribution(10, 1), new AdditiveDistribution(10, 1), xSizes,
+    return AddDistributionSamples("additive", new Additive(10, 1), new Additive(10, 1), xSizes,
       ySizes,
       misrate, count);
   }
 
   public ShiftBoundsInputBuilder AddUniform(int[] xSizes, int[] ySizes, double misrate, int count = DefaultCount)
   {
-    return AddDistributionSamples("uniform", UniformDistribution.Standard, UniformDistribution.Standard, xSizes, ySizes,
+    return AddDistributionSamples("uniform", Uniform.Standard, Uniform.Standard, xSizes, ySizes,
       misrate, count);
   }
 
@@ -113,4 +112,3 @@ public class ShiftBoundsInputBuilder : ReferenceTestCaseInputBuilder<ShiftBounds
     return this;
   }
 }
-

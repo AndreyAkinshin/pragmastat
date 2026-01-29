@@ -7,7 +7,7 @@ namespace Pragmastat.Tests.Distributions;
 public class UniformDistributionTests
 {
   private const string SuiteName = "distribution-uniform";
-  private readonly DistributionController<UniformDistribution> controller = new(SuiteName);
+  private readonly DistributionController<Uniform> controller = new(SuiteName);
 
   public static readonly TheoryData<string> TestCaseNames = ReferenceTestSuiteHelper.GetTheoryData(SuiteName);
 
