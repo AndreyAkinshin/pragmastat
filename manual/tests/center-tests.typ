@@ -4,7 +4,7 @@
 
 $ Center(vx) = median_(1 <= i <= j <= n) (x_i + x_j) / 2 $
 
-The $Center$ test suite contains 38 correctness test cases stored in the repository (24 original + 14 unsorted), plus 1 performance test that should be implemented manually (see §Test Framework).
+The $Center$ test suite contains 38 correctness test cases stored in the repository (24 original + 14 unsorted), plus 1 performance test that should be implemented manually (see #link(<sec-test-framework>)[Test Framework]).
 
 *Demo examples* ($n = 5$) — from manual introduction, validating properties:
 

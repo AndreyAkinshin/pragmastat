@@ -1,6 +1,6 @@
 #import "/manual/definitions.typ": *
 
-== Fast Shift
+== Fast Shift <sec-fast-shift>
 
 The $Shift$ estimator measures the median of all pairwise differences between elements of two samples.
 Given samples $vx = (x_1, x_2, ..., x_n)$ and $vy = (y_1, y_2, ..., y_m)$, this estimator is defined as:
@@ -46,7 +46,7 @@ During each counting pass, the algorithm tracks boundary values:
   the largest difference at or below the threshold and the smallest difference above it.
 When the count exactly matches the target rank (or the two middle ranks for even-length samples),
   these boundary values provide the exact answer without additional searches.
-For Type-7 quantile computation, which interpolates between order statistics,
+For Type-7 quantile computation (@hyndman1996), which interpolates between order statistics,
   the algorithm collects the necessary boundary values in a single pass
   and performs linear interpolation: $(1 - w) dot "lower" + w dot "upper"$.
 

@@ -1,6 +1,6 @@
 #import "/manual/definitions.typ": *
 
-== Test Framework
+== Test Framework <sec-test-framework>
 
 The reference test framework consists of three components:
 

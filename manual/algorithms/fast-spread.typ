@@ -1,6 +1,6 @@
 #import "/manual/definitions.typ": *
 
-== Fast Spread
+== Fast Spread <sec-fast-spread>
 
 The $Spread$ estimator computes the median of all pairwise absolute differences.
 Given a sample $x = (x_1, x_2, ..., x_n)$, this estimator is defined as:
@@ -20,7 +20,7 @@ This matrix has a crucial structural property: for a fixed row $i$, differences 
   while for a fixed column $j$, differences decrease as $i$ increases.
 This sorted structure enables linear-time counting of elements below any threshold.
 
-The algorithm applies Monahan's selection strategy, adapted for differences rather than sums.
+The algorithm applies Monahan's selection strategy (@monahan1984), adapted for differences rather than sums.
 For each row $i$, it tracks active column indices representing differences still under consideration,
   initially spanning columns $i+1$ through $n$.
 It chooses candidate differences from the active set using weighted random row selection,

@@ -145,3 +145,126 @@ sidak1999:
       given-name: Jaroslav
   date: 1999
   publisher: Elsevier
+
+blackman2021:
+  type: article
+  title: "Scrambled Linear Pseudorandom Number Generators"
+  author:
+    - name: Blackman
+      given-name: David
+    - name: Vigna
+      given-name: Sebastiano
+  date: 2021
+  parent:
+    - type: periodical
+      title: ACM Transactions on Mathematical Software
+      volume: 47
+      issue: 4
+  page-range: 1-32
+  doi: 10.1145/3460772
+  url: https://dl.acm.org/doi/10.1145/3460772
+
+steele2014:
+  type: chapter
+  title: "Fast Splittable Pseudorandom Number Generators"
+  author:
+    - name: Steele
+      given-name: Guy L.
+    - name: Lea
+      given-name: Doug
+    - name: Flood
+      given-name: Christine H.
+  date: 2014
+  parent:
+    - type: proceedings
+      title: "OOPSLA '14: Proceedings of the 2014 ACM International Conference on Object Oriented Programming Systems Languages & Applications"
+      publisher: ACM
+  page-range: 453-472
+  doi: 10.1145/2660193.2660195
+  url: https://dl.acm.org/doi/10.1145/2660193.2660195
+
+fowler1991:
+  type: web
+  title: "FNV Hash"
+  author:
+    - name: Fowler
+      given-name: Glenn
+    - name: Noll
+      given-name: Landon Curt
+    - name: Vo
+      given-name: Kiem-Phong
+  date: 1991
+  url: http://www.isthe.com/chongo/tech/comp/fnv/
+
+fisher1938:
+  type: article
+  title: "Statistical Tables for Biological, Agricultural and Medical Research"
+  author:
+    - name: Fisher
+      given-name: Ronald A.
+    - name: Yates
+      given-name: Frank
+  date: 1938
+  publisher: Oliver and Boyd
+  location: Edinburgh
+
+knuth1997:
+  type: book
+  title: "The Art of Computer Programming, Volume 2: Seminumerical Algorithms"
+  author:
+    - name: Knuth
+      given-name: Donald E.
+  date: 1997
+  edition: 3
+  publisher: Addison-Wesley
+  location: Reading, Massachusetts
+
+fan1962:
+  type: article
+  title: "Development of Sampling Plans by Using Sequential (Item by Item) Selection Techniques and Digital Computers"
+  author:
+    - name: Fan
+      given-name: C. T.
+    - name: Muller
+      given-name: Mervin E.
+    - name: Rezucha
+      given-name: Ivan
+  date: 1962
+  parent:
+    - type: periodical
+      title: Journal of the American Statistical Association
+      volume: 57
+      issue: 298
+  page-range: 387-402
+  doi: 10.1080/01621459.1962.10480667
+  url: https://www.tandfonline.com/doi/abs/10.1080/01621459.1962.10480667
+
+cohen1988:
+  type: book
+  title: "Statistical Power Analysis for the Behavioral Sciences"
+  author:
+    - name: Cohen
+      given-name: Jacob
+  date: 1988
+  edition: 2
+  publisher: Lawrence Erlbaum Associates
+  location: Hillsdale, New Jersey
+  isbn: 0805802835
+
+boxmuller1958:
+  type: article
+  title: "A Note on the Generation of Random Normal Deviates"
+  author:
+    - name: Box
+      given-name: George E. P.
+    - name: Muller
+      given-name: Mervin E.
+  date: 1958
+  parent:
+    - type: periodical
+      title: The Annals of Mathematical Statistics
+      volume: 29
+      issue: 2
+  page-range: 610-611
+  doi: 10.1214/aoms/1177706645
+  url: https://projecteuclid.org/euclid.aoms/1177706645

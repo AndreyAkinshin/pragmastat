@@ -1,6 +1,6 @@
 #import "/manual/definitions.typ": *
 
-== Fast Center
+== Fast Center <sec-fast-center>
 
 The $Center$ estimator computes the median of all pairwise averages from a sample.
 Given a dataset $x = (x_1, x_2, ..., x_n)$, this estimator is defined as:

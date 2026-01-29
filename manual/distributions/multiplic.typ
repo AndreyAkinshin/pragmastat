@@ -15,5 +15,5 @@ $ Multiplic(plogmean, plogstddev) $
 - *Properties:* logarithm of a $Multiplic$ ('LogNormal') variable follows an $Additive$ ('Normal') distribution.
 - *Applications:* stock prices, file sizes, reaction times, income distributions, biological growth rates.
 - *Caution:* no perfectly multiplic distributions exist in real data;
-    all real-world measurements contain some deviations.
-  Traditional estimators may struggle with the inherent skewness and heavy right tail.
+    all real-world measurements contain deviations.
+  Traditional estimators struggle with the inherent skewness and heavy right tail.

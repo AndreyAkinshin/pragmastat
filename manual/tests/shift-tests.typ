@@ -4,7 +4,7 @@
 
 $ Shift(vx, vy) = median_(1 <= i <= n, 1 <= j <= m) (x_i - y_j) $
 
-The $Shift$ test suite contains 60 correctness test cases stored in the repository (42 original + 18 unsorted), plus 1 performance test that should be implemented manually (see §Test Framework).
+The $Shift$ test suite contains 60 correctness test cases stored in the repository (42 original + 18 unsorted), plus 1 performance test that should be implemented manually (see #link(<sec-test-framework>)[Test Framework]).
 
 *Demo examples* ($n = m = 5$) — from manual introduction, validating properties:
 

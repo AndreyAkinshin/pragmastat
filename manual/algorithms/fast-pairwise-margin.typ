@@ -1,6 +1,6 @@
 #import "/manual/definitions.typ": *
 
-== Fast PairwiseMargin
+== Fast PairwiseMargin <sec-fast-pairwise-margin>
 
 The $PairwiseMargin$ function determines how many extreme pairwise differences to exclude
   when constructing bounds around $Shift(vx, vy)$.
@@ -52,7 +52,7 @@ The exact approach exploits a fundamental symmetry: under equivalent populations
 This symmetry enables direct calculation of how many orderings produce each comparison count.
 
 Direct computation faces a combinatorial challenge.
-Enumerating all orderings to count comparison outcomes requires substantial memory and computation time.
+Enumerating all orderings to count comparison outcomes requires substantial resources.
 For samples beyond a few dozen measurements, naive implementation becomes impractical.
 
 Löffler's recurrence relation (@loeffler1982) resolves this through algebraic structure.
@@ -120,7 +120,7 @@ A basic $Additive$ (Normal) approximation suffices asymptotically:
 $ "Dominance" approx Additive(n m \/ 2, sqrt(n m(n+m+1)\/12)) $
 
 This approximation underestimates tail probabilities for moderate sample sizes.
-The $Additive$ (Normal) approximation provides a convenient baseline
+The $Additive$ (Normal) approximation provides a baseline
   but fails to capture the true distribution shape in the tails,
   producing mis-calibrated probabilities that become problematic for small error rates.
 
@@ -170,8 +170,8 @@ H_7(z) = z^7 - 21z^5 + 105z^3 - 105z $
 Binary search locates the threshold value efficiently.
 The algorithm maintains a search interval $[a, b]$ initialized to $[0, n m]$.
 Each iteration computes the midpoint $c = (a + b)\/2$ and evaluates the Edgeworth CDF at $c$.
-If $Pr("Dominance" <= c) < misrate\/2$, the threshold lies above $c$ and the search continues with $a = c$.
-If $Pr("Dominance" <= c) >= misrate\/2$, the threshold lies below $c$ and the search continues with $b = c$.
+If $Pr("Dominance" <= c) < misrate\/2$, the threshold lies above $c$ and the search continues in $[c, b]$.
+If $Pr("Dominance" <= c) >= misrate\/2$, the threshold lies below $c$ and the search continues in $[a, c]$.
 The loop terminates when $a$ and $b$ become adjacent, requiring $O(log(n m))$ CDF evaluations.
 
 This binary search exhibits uniform performance across misrate values.

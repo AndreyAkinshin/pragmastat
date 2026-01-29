@@ -28,18 +28,45 @@
   it
 }
 
+// Render citations without parentheses: "Hodges & Lehmann, 1963" instead of "(Hodges & Lehmann, 1963)"
+#set cite(form: "prose")
+
 // Make citations clickable links to the bibliography section
 #show cite: it => link(<bibliography>)[#it]
 
-// Abstract
-#text(size: 1.4em, weight: "bold", fill: accent-color)[Abstract]
-#v(1em)
+// Lists: no bullet markers, indented like standard definition list continuation
+#set list(marker: none, indent: 0em, body-indent: 2em)
+
+// Abstract (no title in PDF - web has separate abstract page)
 #include "abstract.typ"
 
-// Colophon
-#v(2em)
-#text(size: 1.4em, weight: "bold", fill: accent-color)[Colophon]
-#v(1em)
+// Artifacts table
+#let release-base = github-repo + "/releases/download/v" + version + "/"
+#let a(name) = link(release-base + name)[#name]
+#v(1.5em)
+#table(
+  columns: (auto, 1fr),
+  stroke: none,
+  row-gutter: 0.3em,
+  column-gutter: 1.5em,
+  align: (right, left),
+  [*Documentation*], a("pragmastat-v" + version + ".pdf"),
+  [], a("pragmastat-v" + version + ".md"),
+  [], a("web-v" + version + ".zip"),
+  [*Implementations*], a("py-v" + version + ".zip"),
+  [], a("ts-v" + version + ".zip"),
+  [], a("r-v" + version + ".zip"),
+  [], a("cs-v" + version + ".zip"),
+  [], a("kt-v" + version + ".zip"),
+  [], a("rs-v" + version + ".zip"),
+  [], a("go-v" + version + ".zip"),
+  [*Reference data*], a("tests-v" + version + ".zip"),
+  [], a("sim-v" + version + ".zip"),
+  [*Source code*], link(github-repo + "/archive/refs/tags/v" + version + ".zip")[pragmastat-#(version)\.zip],
+)
+
+// Colophon at bottom of page (no title in PDF - web has separate colophon page)
+#v(1fr)
 #text(size: 0.9em)[
   #set par(justify: true)
 

@@ -4,7 +4,7 @@
 
 $ Spread(vx) = median_(1 <= i < j <= n) abs(x_i - x_j) $
 
-The $Spread$ test suite contains 38 correctness test cases stored in the repository (24 original + 14 unsorted), plus 1 performance test that should be implemented manually (see §Test Framework).
+The $Spread$ test suite contains 38 correctness test cases stored in the repository (24 original + 14 unsorted), plus 1 performance test that should be implemented manually (see #link(<sec-test-framework>)[Test Framework]).
 
 *Demo examples* ($n = 5$) — from manual introduction, validating properties:
 

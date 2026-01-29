@@ -16,6 +16,6 @@ $ Additive(pmean, pstddev) $
 - *Applications:* measurement errors, heights and weights in populations, test scores, temperature variations.
 - *Characteristics:* symmetric around the mean, light tails, finite variance.
 - *Caution:* no perfectly additive distributions exist in real data;
-    all real-world measurements contain some deviations.
+    all real-world measurements contain deviations.
   Traditional estimators like $Mean$ and $StdDev$ lack robustness to outliers;
-  use them only when strong evidence supports small deviations from additivity with no extreme measurements.
+  use them only when strong evidence supports approximate additivity with no extreme measurements.

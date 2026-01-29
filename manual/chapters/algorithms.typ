@@ -1,8 +1,8 @@
-= Algorithms
+= Algorithms <ch-algorithms>
 
-This chapter describes the core algorithms that power the robust estimators in the toolkit.
-Both algorithms solve a fundamental computational challenge: how to efficiently find medians within large collections
-  of derived values without materializing the entire collection in memory.
+This chapter describes the core algorithms that power the toolkit.
+
+#include "../algorithms/randomization.typ"
 
 #include "../algorithms/fast-center.typ"
 
