@@ -51,7 +51,6 @@
   column-gutter: 1.5em,
   align: (right, left),
   [*Documentation*], a("pragmastat-v" + version + ".pdf"),
-  [], a("pragmastat-v" + version + ".md"),
   [], a("web-v" + version + ".zip"),
   [*Implementations*], a("py-v" + version + ".zip"),
   [], a("ts-v" + version + ".zip"),
