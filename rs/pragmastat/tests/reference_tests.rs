@@ -236,7 +236,8 @@ fn run_pairwise_margin_tests() {
             test_case.input.n,
             test_case.input.m,
             test_case.input.misrate,
-        );
+        )
+        .expect("pairwise_margin should not fail for valid inputs");
         let expected_output = test_case.output;
 
         assert_eq!(

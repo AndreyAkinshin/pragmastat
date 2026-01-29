@@ -98,7 +98,10 @@ func TestReferenceData(t *testing.T) {
 					t.Fatalf("Failed to parse output data: %v", err)
 				}
 
-				actual := PairwiseMargin(input.N, input.M, input.Misrate)
+				actual, err := PairwiseMargin(input.N, input.M, input.Misrate)
+				if err != nil {
+					t.Fatalf("PairwiseMargin returned unexpected error: %v", err)
+				}
 				if actual != expected {
 					t.Errorf("PairwiseMargin(%d, %d, %v) = %d, want %d",
 						input.N, input.M, input.Misrate, actual, expected)

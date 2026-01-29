@@ -13,6 +13,9 @@ type Number interface {
 }
 
 var errEmptyInput = errors.New("input slice cannot be empty")
+var errNMustBePositive = errors.New("n must be positive")
+var errMMustBePositive = errors.New("m must be positive")
+var errMisrateOutOfRange = errors.New("misrate must be in range [0, 1]")
 
 // Median calculates the median of a slice of numeric values.
 func Median[T Number](values []T) (float64, error) {
@@ -172,7 +175,10 @@ func ShiftBounds[T Number](x, y []T, misrate float64) (Bounds, error) {
 		return Bounds{Lower: value, Upper: value}, nil
 	}
 
-	margin := PairwiseMargin(n, m, misrate)
+	margin, err := PairwiseMargin(n, m, misrate)
+	if err != nil {
+		return Bounds{}, err
+	}
 	halfMargin := int64(margin / 2)
 	maxHalfMargin := (total - 1) / 2
 	if halfMargin > maxHalfMargin {

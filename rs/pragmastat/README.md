@@ -107,7 +107,7 @@ fn main() {
     let x: Vec<f64> = (1..=30).map(|i| i as f64).collect();
     let y: Vec<f64> = (21..=50).map(|i| i as f64).collect();
 
-    println!("{}", pairwise_margin(30, 30, 1e-4)); // 390
+    println!("{}", pairwise_margin(30, 30, 1e-4).unwrap()); // 390
     print(shift(&x, &y)); // -20
 
     let bounds = shift_bounds(&x, &y, 1e-4).unwrap(); // [-30, -10]

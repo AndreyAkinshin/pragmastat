@@ -19,23 +19,27 @@ const MAX_ACCEPTABLE_BINOM_N: usize = 65;
 ///
 /// # Returns
 ///
-/// Integer representing the total margin split between lower and upper tails
+/// Integer representing the total margin split between lower and upper tails,
+/// or an error if inputs are invalid.
 ///
-/// # Panics
+/// # Errors
 ///
-/// Panics if n == 0, m == 0, or misrate is outside [0, 1].
-pub fn pairwise_margin(n: usize, m: usize, misrate: f64) -> usize {
-    assert!(n > 0, "n must be positive");
-    assert!(m > 0, "m must be positive");
-    assert!(
-        (0.0..=1.0).contains(&misrate),
-        "misrate must be in range [0, 1]"
-    );
+/// Returns an error if n == 0, m == 0, or misrate is outside [0, 1] or is NaN.
+pub fn pairwise_margin(n: usize, m: usize, misrate: f64) -> Result<usize, &'static str> {
+    if n == 0 {
+        return Err("n must be positive");
+    }
+    if m == 0 {
+        return Err("m must be positive");
+    }
+    if misrate.is_nan() || !(0.0..=1.0).contains(&misrate) {
+        return Err("misrate must be in range [0, 1]");
+    }
 
     if n + m <= MAX_EXACT_SIZE {
-        pairwise_margin_exact(n, m, misrate)
+        Ok(pairwise_margin_exact(n, m, misrate))
     } else {
-        pairwise_margin_approx(n, m, misrate)
+        Ok(pairwise_margin_approx(n, m, misrate))
     }
 }
 

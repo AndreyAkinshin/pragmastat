@@ -14,23 +14,23 @@ const (
 // Uses exact calculation for small samples (n+m <= 400) and Edgeworth
 // approximation for larger samples.
 //
-// Panics if n <= 0, m <= 0, or misrate is outside [0, 1].
-func PairwiseMargin(n, m int, misrate float64) int {
+// Returns an error if n <= 0, m <= 0, or misrate is outside [0, 1] or NaN.
+func PairwiseMargin(n, m int, misrate float64) (int, error) {
 	if n <= 0 {
-		panic("n must be positive")
+		return 0, errNMustBePositive
 	}
 	if m <= 0 {
-		panic("m must be positive")
+		return 0, errMMustBePositive
 	}
-	if misrate < 0 || misrate > 1 {
-		panic("misrate must be in range [0, 1]")
+	if math.IsNaN(misrate) || misrate < 0 || misrate > 1 {
+		return 0, errMisrateOutOfRange
 	}
 
 	// Use exact method for small to medium samples
 	if n+m <= maxExactSize {
-		return pairwiseMarginExact(n, m, misrate)
+		return pairwiseMarginExact(n, m, misrate), nil
 	}
-	return pairwiseMarginApprox(n, m, misrate)
+	return pairwiseMarginApprox(n, m, misrate), nil
 }
 
 // pairwiseMarginExact uses the exact distribution based on Loeffler's recurrence.
