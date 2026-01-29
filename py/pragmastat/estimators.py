@@ -15,6 +15,18 @@ class Bounds(NamedTuple):
 
 
 def median(x: Union[Sequence[float], NDArray]) -> float:
+    """
+    Calculate the median of a sample.
+
+    Args:
+        x: Input sample.
+
+    Returns:
+        The median value.
+
+    Raises:
+        ValueError: If input is empty.
+    """
     x = np.asarray(x)
     if len(x) == 0:
         raise ValueError("Input array cannot be empty")
@@ -22,6 +34,21 @@ def median(x: Union[Sequence[float], NDArray]) -> float:
 
 
 def center(x: Union[Sequence[float], NDArray]) -> float:
+    """
+    Estimate the central value using Hodges-Lehmann estimator.
+
+    Calculates the median of all pairwise averages (x[i] + x[j])/2.
+    More robust than the mean and more efficient than the median.
+
+    Args:
+        x: Input sample.
+
+    Returns:
+        Center estimate (median of pairwise averages).
+
+    Raises:
+        ValueError: If input is empty.
+    """
     x = np.asarray(x)
     n = len(x)
     if n == 0:
@@ -31,6 +58,21 @@ def center(x: Union[Sequence[float], NDArray]) -> float:
 
 
 def spread(x: Union[Sequence[float], NDArray]) -> float:
+    """
+    Estimate data dispersion using Shamos estimator.
+
+    Calculates the median of all pairwise absolute differences |x[i] - x[j]|.
+    More robust than standard deviation and more efficient than MAD.
+
+    Args:
+        x: Input sample.
+
+    Returns:
+        Spread estimate (median of pairwise absolute differences).
+
+    Raises:
+        ValueError: If input is empty.
+    """
     x = np.asarray(x)
     n = len(x)
     if n == 0:
@@ -42,6 +84,21 @@ def spread(x: Union[Sequence[float], NDArray]) -> float:
 
 
 def rel_spread(x: Union[Sequence[float], NDArray]) -> float:
+    """
+    Measure relative dispersion of a sample.
+
+    Calculates the ratio of Spread to absolute Center.
+    Robust alternative to the coefficient of variation.
+
+    Args:
+        x: Input sample.
+
+    Returns:
+        Relative spread (Spread / |Center|).
+
+    Raises:
+        ValueError: If input is empty or Center equals zero.
+    """
     center_val = center(x)
     if center_val == 0:
         raise ValueError("RelSpread is undefined when Center equals zero")
@@ -51,6 +108,22 @@ def rel_spread(x: Union[Sequence[float], NDArray]) -> float:
 def shift(
     x: Union[Sequence[float], NDArray], y: Union[Sequence[float], NDArray]
 ) -> float:
+    """
+    Measure the typical difference between elements of x and y.
+
+    Calculates the median of all pairwise differences (x[i] - y[j]).
+    Positive values mean x is typically larger, negative means y is typically larger.
+
+    Args:
+        x: First sample.
+        y: Second sample.
+
+    Returns:
+        Shift estimate (median of pairwise differences).
+
+    Raises:
+        ValueError: If either input is empty.
+    """
     x = np.asarray(x)
     y = np.asarray(y)
     if len(x) == 0 or len(y) == 0:
@@ -62,6 +135,22 @@ def shift(
 def ratio(
     x: Union[Sequence[float], NDArray], y: Union[Sequence[float], NDArray]
 ) -> float:
+    """
+    Measure how many times larger x is compared to y.
+
+    Calculates the median of all pairwise ratios (x[i] / y[j]).
+    For example, ratio = 1.2 means x is typically 20% larger than y.
+
+    Args:
+        x: First sample.
+        y: Second sample (must be strictly positive).
+
+    Returns:
+        Ratio estimate (median of pairwise ratios).
+
+    Raises:
+        ValueError: If either input is empty or y contains non-positive values.
+    """
     x = np.asarray(x)
     y = np.asarray(y)
     if len(x) == 0 or len(y) == 0:
@@ -75,6 +164,22 @@ def ratio(
 def avg_spread(
     x: Union[Sequence[float], NDArray], y: Union[Sequence[float], NDArray]
 ) -> float:
+    """
+    Measure the typical variability when considering both samples together.
+
+    Computes the weighted average of individual spreads:
+    (n * Spread(x) + m * Spread(y)) / (n + m).
+
+    Args:
+        x: First sample.
+        y: Second sample.
+
+    Returns:
+        Weighted average of individual spreads.
+
+    Raises:
+        ValueError: If either input is empty.
+    """
     x = np.asarray(x)
     y = np.asarray(y)
     n = len(x)
@@ -89,6 +194,22 @@ def avg_spread(
 def disparity(
     x: Union[Sequence[float], NDArray], y: Union[Sequence[float], NDArray]
 ) -> float:
+    """
+    Measure effect size: a normalized difference between x and y.
+
+    Calculated as Shift / AvgSpread. Robust alternative to Cohen's d.
+    Returns infinity if avg_spread is zero.
+
+    Args:
+        x: First sample.
+        y: Second sample.
+
+    Returns:
+        Effect size (Shift / AvgSpread).
+
+    Raises:
+        ValueError: If either input is empty.
+    """
     avg_spread_val = avg_spread(x, y)
     if avg_spread_val == 0:
         return float("inf")
