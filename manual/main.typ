@@ -1,12 +1,6 @@
-#include "chapters/introduction.typ"
-
-#include "chapters/estimators.typ"
+#include "chapters/toolkit.typ"
 
 #include "chapters/distributions.typ"
-
-#include "chapters/properties.typ"
-
-#include "chapters/methodology.typ"
 
 #include "chapters/algorithms.typ"
 
@@ -16,4 +10,4 @@
 
 #include "chapters/tests.typ"
 
-#include "chapters/artifacts.typ"
+#include "chapters/methodology.typ"

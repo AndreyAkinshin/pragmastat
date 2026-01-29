@@ -32,6 +32,11 @@ Exp: \underline{\operatorname{Exp}}
 Power: \underline{\operatorname{Power}}
 Uniform: \underline{\operatorname{Uniform}}
 
+# Utilities (randomization)
+Rng: \operatorname{Rng}
+Shuffle: \operatorname{Shuffle}
+Sample: \operatorname{Sample}
+
 # Vectors (bold)
 vx: \mathbf{x}
 vy: \mathbf{y}
