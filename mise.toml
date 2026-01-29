@@ -587,12 +587,12 @@ fi
 
 [tasks."pdf:build"]
 description = "Build PDF manual"
-depends = ["pdf:restore", "docs:sync"]
+depends = ["pdf:restore", "docs:sync", "img:build"]
 run = "typst compile --root . --font-path manual/fonts manual/template.typ manual/pragmastat.pdf"
 
 [tasks."pdf:build:release"]
 description = "Build PDF manual (release mode)"
-depends = ["pdf:restore", "docs:sync"]
+depends = ["pdf:restore", "docs:sync", "img:build"]
 run = "typst compile --root . --font-path manual/fonts manual/template.typ manual/pragmastat.pdf"
 
 [tasks."web:gen"]
