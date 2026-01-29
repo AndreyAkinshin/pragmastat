@@ -1,0 +1,89 @@
+package dev.pragmastat
+
+/**
+ * SplitMix64 PRNG for seed expansion.
+ */
+internal class SplitMix64(private var state: ULong) {
+    fun next(): ULong {
+        state += 0x9e3779b97f4a7c15UL
+        var z = state
+        z = (z xor (z shr 30)) * 0xbf58476d1ce4e5b9UL
+        z = (z xor (z shr 27)) * 0x94d049bb133111ebUL
+        return z xor (z shr 31)
+    }
+}
+
+/**
+ * xoshiro256++ PRNG.
+ * Reference: https://prng.di.unimi.it/xoshiro256plusplus.c
+ *
+ * This is the jump-free version of the algorithm. It passes BigCrush
+ * and is used by .NET 6+, Julia, and Rust's rand crate.
+ */
+internal class Xoshiro256PlusPlus(seed: ULong) {
+    private var s0: ULong
+    private var s1: ULong
+    private var s2: ULong
+    private var s3: ULong
+
+    init {
+        val sm = SplitMix64(seed)
+        s0 = sm.next()
+        s1 = sm.next()
+        s2 = sm.next()
+        s3 = sm.next()
+    }
+
+    private fun rotl(x: ULong, k: Int): ULong = (x shl k) or (x shr (64 - k))
+
+    fun nextU64(): ULong {
+        val result = rotl(s0 + s3, 23) + s0
+
+        val t = s1 shl 17
+
+        s2 = s2 xor s0
+        s3 = s3 xor s1
+        s1 = s1 xor s2
+        s0 = s0 xor s3
+
+        s2 = s2 xor t
+        s3 = rotl(s3, 45)
+
+        return result
+    }
+
+    fun uniform(): Double {
+        // Use upper 53 bits for maximum precision
+        return (nextU64() shr 11).toDouble() * (1.0 / (1UL shl 53).toDouble())
+    }
+
+    /**
+     * Generate a uniform integer in [min, max).
+     * @throws ArithmeticException if max - min overflows.
+     */
+    fun uniformInt(min: Long, max: Long): Long {
+        if (min >= max) return min
+        val range = Math.subtractExact(max, min).toULong()
+        return min + (nextU64() % range).toLong()
+    }
+}
+
+/**
+ * FNV-1a hash constants and implementation.
+ */
+internal object Fnv1a {
+    private const val OFFSET_BASIS = 0xcbf29ce484222325UL
+    private const val PRIME = 0x00000100000001b3UL
+
+    /**
+     * Compute FNV-1a 64-bit hash of a string.
+     */
+    fun hash(s: String): ULong {
+        var hash = OFFSET_BASIS
+        for (byte in s.encodeToByteArray()) {
+            hash = hash xor byte.toUByte().toULong()
+            hash *= PRIME
+        }
+        return hash
+    }
+}
