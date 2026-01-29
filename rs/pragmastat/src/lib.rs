@@ -8,11 +8,13 @@
 
 pub mod distributions;
 pub mod estimators;
-pub mod fast_center;
-pub mod fast_shift;
-pub mod fast_spread;
 pub mod pairwise_margin;
 pub mod rng;
+
+// Internal fast algorithm implementations
+mod fast_center;
+mod fast_shift;
+mod fast_spread;
 
 mod fnv1a;
 mod splitmix64;
