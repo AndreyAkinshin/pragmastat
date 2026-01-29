@@ -1,12 +1,22 @@
 ---
-import { getPrevNextChapters } from '../data/chapters';
+import { getCollection } from 'astro:content';
 
 interface Props {
   currentSlug: string;
 }
 
 const { currentSlug } = Astro.props;
-const { prev, next } = getPrevNextChapters(currentSlug);
+
+// Dynamically fetch chapters from content collection, sorted by sidebar.order
+const allPages = await getCollection('manual');
+const chapters = allPages
+  .filter((page) => page.data.sidebar?.order !== undefined)
+  .sort((a, b) => (a.data.sidebar?.order ?? 0) - (b.data.sidebar?.order ?? 0))
+  .map((page) => ({ slug: page.id, label: page.data.title }));
+
+const currentIndex = chapters.findIndex((c) => c.slug === currentSlug);
+const prev = currentIndex > 0 ? chapters[currentIndex - 1] : null;
+const next = currentIndex < chapters.length - 1 ? chapters[currentIndex + 1] : null;
 ---
 
 {(prev || next) && (

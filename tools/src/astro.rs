@@ -2,6 +2,7 @@ use crate::definitions::Definitions;
 use crate::hayagriva::{References, short_citation};
 use crate::math_conv::typst_to_latex;
 use crate::typst_parser::{TypstDocument, TypstEvent};
+use crate::xref::XRefMap;
 use std::fmt::Write;
 
 /// Generate the index/landing page with abstract and chapter links
@@ -49,6 +50,7 @@ pub fn convert_typst_to_mdx(
     document: &TypstDocument,
     definitions: &Definitions,
     references: &References,
+    xref_map: &XRefMap,
     title: &str,
     order: u8,
 ) -> String {
@@ -67,7 +69,7 @@ pub fn convert_typst_to_mdx(
             skip_first_h1 = false;
             continue;
         }
-        convert_typst_event_to_mdx(event, definitions, references, &mut output);
+        convert_typst_event_to_mdx(event, definitions, references, xref_map, &mut output);
     }
 
     output
@@ -79,10 +81,11 @@ fn convert_typst_event_to_mdx(
     event: &TypstEvent,
     definitions: &Definitions,
     references: &References,
+    xref_map: &XRefMap,
     output: &mut String,
 ) {
     match event {
-        TypstEvent::Heading { level, text } => {
+        TypstEvent::Heading { level, text, .. } => {
             let after_frontmatter = output.ends_with("---\n\n");
             if !output.is_empty() && !output.ends_with("\n\n") && !after_frontmatter {
                 if output.ends_with('\n') {
@@ -155,7 +158,7 @@ fn convert_typst_event_to_mdx(
                     output.push('\n');
                     before_first_nested = false;
                 }
-                convert_typst_event_to_mdx(item, definitions, references, output);
+                convert_typst_event_to_mdx(item, definitions, references, xref_map, output);
             }
 
             if !has_nested_lists {
@@ -179,14 +182,14 @@ fn convert_typst_event_to_mdx(
         TypstEvent::Strong(content) => {
             output.push_str("**");
             for item in content {
-                convert_typst_event_to_mdx(item, definitions, references, output);
+                convert_typst_event_to_mdx(item, definitions, references, xref_map, output);
             }
             output.push_str("**");
         }
         TypstEvent::Emphasis(content) => {
             output.push('*');
             for item in content {
-                convert_typst_event_to_mdx(item, definitions, references, output);
+                convert_typst_event_to_mdx(item, definitions, references, xref_map, output);
             }
             output.push('*');
         }
@@ -195,7 +198,7 @@ fn convert_typst_event_to_mdx(
             for cell in headers {
                 output.push(' ');
                 for item in cell {
-                    convert_typst_event_to_mdx(item, definitions, references, output);
+                    convert_typst_event_to_mdx(item, definitions, references, xref_map, output);
                 }
                 output.push_str(" |");
             }
@@ -212,7 +215,7 @@ fn convert_typst_event_to_mdx(
                 for cell in row {
                     output.push(' ');
                     for item in cell {
-                        convert_typst_event_to_mdx(item, definitions, references, output);
+                        convert_typst_event_to_mdx(item, definitions, references, xref_map, output);
                     }
                     output.push_str(" |");
                 }
@@ -223,8 +226,22 @@ fn convert_typst_event_to_mdx(
         TypstEvent::ThematicBreak => {
             output.push_str("---\n\n");
         }
+        TypstEvent::Linebreak => {
+            // Use HTML <br> for forced line break (more reliable than trailing spaces in markdown)
+            output.push_str("<br/>\n");
+        }
         TypstEvent::Link { text, dest } => {
-            let _ = write!(output, "[{text}]({dest})");
+            // Handle internal links (cross-references)
+            if let Some(label) = dest.strip_prefix("internal:") {
+                if let Some(url) = xref_map.resolve(label) {
+                    let _ = write!(output, "[{text}]({url})");
+                } else {
+                    eprintln!("Warning: unresolved xref: {label}");
+                    output.push_str(text);
+                }
+            } else {
+                let _ = write!(output, "[{text}]({dest})");
+            }
         }
     }
 }
@@ -269,9 +286,9 @@ pub fn generate_colophon_page(info: &ColophonInfo, order: u8) -> String {
     let _ = write!(output, "sidebar:\n  order: {order}\n");
     output.push_str("---\n\n");
 
-    // Author info
-    let _ = writeln!(output, "{}", info.author);
-    let _ = writeln!(output, "[{}](mailto:{})", info.email, info.email);
+    // Author info (use <br /> for line breaks within the block)
+    let _ = writeln!(output, "{}<br />", info.author);
+    let _ = writeln!(output, "[{}](mailto:{})<br />", info.email, info.email);
     let _ = writeln!(
         output,
         "[DOI: {}](https://doi.org/{})\n",
@@ -288,7 +305,8 @@ pub fn generate_colophon_page(info: &ColophonInfo, order: u8) -> String {
     // Code license
     output.push_str("The accompanying source code and software implementations are licensed under the **MIT License**. ");
     output.push_str("You are free to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the software, subject to the conditions stated in the license. ");
-    output.push_str("For complete license terms, see the LICENSE file in the source repository.\n\n");
+    output
+        .push_str("For complete license terms, see the LICENSE file in the source repository.\n\n");
 
     // Disclaimer
     output.push_str("While the information in this manual is believed to be accurate at the date of publication, the author makes no warranty, express or implied, with respect to the material contained herein. ");
@@ -410,8 +428,9 @@ mod tests {
 
         let defs = HashMap::new();
         let refs = crate::hayagriva::References::new();
+        let xref = XRefMap::new();
         let mut output = String::new();
-        convert_typst_event_to_mdx(&event, &defs, &refs, &mut output);
+        convert_typst_event_to_mdx(&event, &defs, &refs, &xref, &mut output);
 
         // Code block should not have blank lines after opening or before closing fence
         assert_eq!(output, "```bash\necho hello\n```\n\n");
@@ -438,9 +457,10 @@ mod tests {
 
         let defs = HashMap::new();
         let refs = crate::hayagriva::References::new();
+        let xref = XRefMap::new();
         let mut output = String::new();
         for event in &events {
-            convert_typst_event_to_mdx(event, &defs, &refs, &mut output);
+            convert_typst_event_to_mdx(event, &defs, &refs, &xref, &mut output);
         }
 
         // List items should not have leading spaces before the dash
@@ -457,6 +477,42 @@ mod tests {
             output.contains("\n- Second"),
             "Second item should be at start of line. Got: {output:?}"
         );
+    }
+
+    #[test]
+    fn internal_link_resolved() {
+        use crate::typst_parser::TypstEvent;
+
+        let event = TypstEvent::Link {
+            text: "Algorithms".to_string(),
+            dest: "internal:ch-algorithms".to_string(),
+        };
+
+        let defs = HashMap::new();
+        let refs = crate::hayagriva::References::new();
+        let xref = XRefMap::new();
+        let mut output = String::new();
+        convert_typst_event_to_mdx(&event, &defs, &refs, &xref, &mut output);
+
+        assert_eq!(output, "[Algorithms](/algorithms)");
+    }
+
+    #[test]
+    fn external_link_unchanged() {
+        use crate::typst_parser::TypstEvent;
+
+        let event = TypstEvent::Link {
+            text: "Example".to_string(),
+            dest: "https://example.com".to_string(),
+        };
+
+        let defs = HashMap::new();
+        let refs = crate::hayagriva::References::new();
+        let xref = XRefMap::new();
+        let mut output = String::new();
+        convert_typst_event_to_mdx(&event, &defs, &refs, &xref, &mut output);
+
+        assert_eq!(output, "[Example](https://example.com)");
     }
 
     #[test]

@@ -1,4 +1,5 @@
 ---
+import { getCollection } from 'astro:content';
 import Logo from './Logo.astro';
 import GitHubButton from './GitHubButton.astro';
 import ThemeSwitcher from './ThemeSwitcher.astro';
@@ -11,20 +12,12 @@ interface Props {
 
 const { headings = [], currentSlug = '' } = Astro.props;
 
-const chapters = [
-  { slug: 'introduction', label: 'Introduction' },
-  { slug: 'estimators', label: 'Estimators' },
-  { slug: 'distributions', label: 'Distributions' },
-  { slug: 'properties', label: 'Properties' },
-  { slug: 'methodology', label: 'Methodology' },
-  { slug: 'algorithms', label: 'Algorithms' },
-  { slug: 'studies', label: 'Studies' },
-  { slug: 'implementations', label: 'Implementations' },
-  { slug: 'tests', label: 'Tests' },
-  { slug: 'artifacts', label: 'Artifacts' },
-  { slug: 'bibliography', label: 'Bibliography' },
-  { slug: 'colophon', label: 'Colophon' },
-];
+// Dynamically fetch chapters from content collection, sorted by sidebar.order
+const allPages = await getCollection('manual');
+const chapters = allPages
+  .filter((page) => page.data.sidebar?.order !== undefined)
+  .sort((a, b) => (a.data.sidebar?.order ?? 0) - (b.data.sidebar?.order ?? 0))
+  .map((page) => ({ slug: page.id, label: page.data.title }));
 
 function isActive(slug: string): boolean {
   return currentSlug === slug;

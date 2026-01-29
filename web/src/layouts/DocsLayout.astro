@@ -4,6 +4,7 @@ import MenuButton from '../components/MenuButton.astro';
 import Sidebar from '../components/Sidebar.astro';
 import GitHubButton from '../components/GitHubButton.astro';
 import ThemeSwitcher from '../components/ThemeSwitcher.astro';
+import PrevNextNav from '../components/PrevNextNav.astro';
 
 interface Props {
   title: string;
@@ -25,6 +26,7 @@ const currentSlug = Astro.url.pathname.replace(/^\/|\/$/g, '');
       <article class="content">
         <h1>{title}</h1>
         <slot />
+        <PrevNextNav currentSlug={currentSlug} />
       </article>
     </main>
 

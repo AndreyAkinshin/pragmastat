@@ -60,6 +60,10 @@ pub enum TypstEvent {
     Heading {
         level: u8,
         text: String,
+        /// Label for cross-referencing (e.g., `<ch-algorithms>`)
+        /// Used for internal link resolution, kept for completeness even if not directly read
+        #[allow(dead_code)]
+        label: Option<String>,
     },
     CodeBlock {
         lang: String,
@@ -90,6 +94,7 @@ pub enum TypstEvent {
         rows: Vec<Vec<Vec<TypstEvent>>>,
     },
     ThematicBreak,
+    Linebreak,
 }
 
 /// Parse a Typst document, resolving #include directives and evaluating variables
@@ -479,6 +484,11 @@ fn parse_link_call_chars(
         i += 1;
     }
 
+    // Check for label syntax (<label>) - let the AST parser handle these
+    if i < chars.len() && chars[i] == '<' {
+        return Ok(None);
+    }
+
     // Parse URL (first argument)
     let url: String;
     if i < chars.len() && chars[i] == '"' {
@@ -823,9 +833,68 @@ fn parse_typst_content(content: &str) -> Vec<TypstEvent> {
     let root = parse(content);
     let mut events = Vec::new();
 
-    parse_node(&root, &mut events, 0);
+    // Use a specialized parser that handles heading-label pairs
+    parse_children_with_labels(&root, &mut events, 0);
 
     events
+}
+
+/// Parse children, handling heading-label pairs
+fn parse_children_with_labels(node: &SyntaxNode, events: &mut Vec<TypstEvent>, list_depth: u8) {
+    let children: Vec<_> = node.children().collect();
+    let mut i = 0;
+    while i < children.len() {
+        let child = children[i];
+
+        if child.kind() == SyntaxKind::Heading {
+            // Look ahead for a Label (possibly after Space)
+            let mut label_text = None;
+            let mut label_idx = None;
+            let mut j = i + 1;
+            while j < children.len() {
+                let next = children[j];
+                if next.kind() == SyntaxKind::Label {
+                    let text = next.text();
+                    label_text = Some(
+                        text.trim_start_matches('<')
+                            .trim_end_matches('>')
+                            .to_string(),
+                    );
+                    label_idx = Some(j);
+                    break;
+                } else if next.kind() == SyntaxKind::Space {
+                    // Skip whitespace between heading and label
+                    j += 1;
+                } else {
+                    // Some other content, no label follows
+                    break;
+                }
+            }
+
+            // Parse the heading with the label
+            if let Some(heading) = child.cast::<ast::Heading>() {
+                #[allow(clippy::cast_possible_truncation)]
+                let level = heading.depth().get() as u8;
+                let text = extract_text_content(heading.body().to_untyped());
+                events.push(TypstEvent::Heading {
+                    level,
+                    text,
+                    label: label_text,
+                });
+            }
+
+            // Skip the label if we found one
+            if let Some(idx) = label_idx {
+                i = idx;
+            }
+        } else if child.kind() == SyntaxKind::Label {
+            // Skip standalone labels that follow headings (already handled)
+            // This handles the case where we just processed a heading with its label
+        } else {
+            parse_node(child, events, list_depth);
+        }
+        i += 1;
+    }
 }
 
 /// Recursively parse a syntax node
@@ -833,11 +902,17 @@ fn parse_typst_content(content: &str) -> Vec<TypstEvent> {
 fn parse_node(node: &SyntaxNode, events: &mut Vec<TypstEvent>, list_depth: u8) {
     match node.kind() {
         SyntaxKind::Heading => {
+            // Headings are processed by parse_children_with_labels to handle label siblings
+            // This case handles headings called directly (shouldn't happen in normal flow)
             if let Some(heading) = node.cast::<ast::Heading>() {
                 #[allow(clippy::cast_possible_truncation)]
                 let level = heading.depth().get() as u8;
                 let text = extract_text_content(heading.body().to_untyped());
-                events.push(TypstEvent::Heading { level, text });
+                events.push(TypstEvent::Heading {
+                    level,
+                    text,
+                    label: None,
+                });
             }
         }
         SyntaxKind::Text => {
@@ -868,6 +943,10 @@ fn parse_node(node: &SyntaxNode, events: &mut Vec<TypstEvent>, list_depth: u8) {
             } else {
                 events.push(TypstEvent::Text(escaped.to_string()));
             }
+        }
+        SyntaxKind::Linebreak => {
+            // Handle forced line breaks (\ at end of line in Typst)
+            events.push(TypstEvent::Linebreak);
         }
         SyntaxKind::Raw => {
             if let Some(raw) = node.cast::<ast::Raw>() {
@@ -996,8 +1075,19 @@ fn parse_node(node: &SyntaxNode, events: &mut Vec<TypstEvent>, list_depth: u8) {
                         let mut text = String::new();
 
                         for arg in call.args().items() {
-                            if let ast::Arg::Pos(ast::Expr::Str(s)) = arg {
-                                dest = s.to_untyped().text().trim_matches('"').to_string();
+                            match arg {
+                                ast::Arg::Pos(ast::Expr::Str(s)) => {
+                                    dest = s.to_untyped().text().trim_matches('"').to_string();
+                                }
+                                ast::Arg::Pos(ast::Expr::Label(label)) => {
+                                    // Internal link: #link(<label-name>)
+                                    let label_text = label.to_untyped().text();
+                                    let label_name = label_text
+                                        .trim_start_matches('<')
+                                        .trim_end_matches('>');
+                                    dest = format!("internal:{label_name}");
+                                }
+                                _ => {}
                             }
                         }
 
@@ -1022,6 +1112,37 @@ fn parse_node(node: &SyntaxNode, events: &mut Vec<TypstEvent>, list_depth: u8) {
                         let (headers, rows) = parse_table_call(call);
                         events.push(TypstEvent::Table { headers, rows });
                     }
+                    "v" => {
+                        // Vertical spacing - emit paragraph break
+                        events.push(TypstEvent::ParagraphBreak);
+                    }
+                    "h" | "pagebreak" => {
+                        // Horizontal spacing and page breaks are ignored in web output
+                    }
+                    "list" => {
+                        // Custom list: #list(marker: none, tight: true, [item1], [item2])
+                        // Parse content block arguments as list items
+                        for arg in call.args().items() {
+                            if let ast::Arg::Pos(ast::Expr::Content(content)) = arg {
+                                let mut item_content = Vec::new();
+                                parse_node(content.body().to_untyped(), &mut item_content, 0);
+                                events.push(TypstEvent::ListItem {
+                                    depth: 1,
+                                    content: item_content,
+                                });
+                            }
+                        }
+                    }
+                    "block" => {
+                        // Indented block: #block(inset: ...)[content]
+                        // Parse the content block
+                        for child in call.args().to_untyped().children() {
+                            if child.kind() == SyntaxKind::ContentBlock {
+                                parse_node(child, events, list_depth);
+                                break;
+                            }
+                        }
+                    }
                     _ => {
                         // Other function calls - recurse into children
                         for child in node.children() {
@@ -1032,10 +1153,8 @@ fn parse_node(node: &SyntaxNode, events: &mut Vec<TypstEvent>, list_depth: u8) {
             }
         }
         _ => {
-            // Recurse into children
-            for child in node.children() {
-                parse_node(child, events, list_depth);
-            }
+            // Recurse into children, handling heading-label pairs
+            parse_children_with_labels(node, events, list_depth);
         }
     }
 }
@@ -1348,7 +1467,7 @@ Source code: #link(github-tree + "/py")
         let content = "== C\\#\n\nSome text.";
         let events = parse_typst_content(content);
         let heading = events.iter().find_map(|e| {
-            if let TypstEvent::Heading { level, text } = e {
+            if let TypstEvent::Heading { level, text, .. } = e {
                 Some((level, text.clone()))
             } else {
                 None
@@ -1422,7 +1541,7 @@ Source code: #link(github-tree + "/py")
         let content = "= Test Heading\n\nSome text.";
         let events = parse_typst_content(content);
         assert!(events.iter().any(
-            |e| matches!(e, TypstEvent::Heading { level: 1, text } if text == "Test Heading")
+            |e| matches!(e, TypstEvent::Heading { level: 1, text, .. } if text == "Test Heading")
         ));
     }
 
@@ -1556,6 +1675,48 @@ Some text after."#,
         assert!(
             code.contains("public class Test"),
             "Code should contain source, got: {code}"
+        );
+    }
+
+    #[test]
+    fn parse_heading_with_label() {
+        let content = "= Algorithms <ch-algorithms>\n\nSome text.";
+        let events = parse_typst_content(content);
+        let heading = events.iter().find_map(|e| {
+            if let TypstEvent::Heading { level, text, label } = e {
+                Some((*level, text.clone(), label.clone()))
+            } else {
+                None
+            }
+        });
+        assert!(heading.is_some(), "Should find a heading");
+        let (level, text, label) = heading.unwrap();
+        assert_eq!(level, 1, "Heading level should be 1");
+        assert_eq!(text, "Algorithms", "Heading text should be 'Algorithms'");
+        assert_eq!(
+            label,
+            Some("ch-algorithms".to_string()),
+            "Label should be 'ch-algorithms'"
+        );
+    }
+
+    #[test]
+    fn parse_internal_link() {
+        let content = r#"See #link(<ch-algorithms>)[Algorithms] for details."#;
+        let events = parse_typst_content(content);
+        let link = events.iter().find_map(|e| {
+            if let TypstEvent::Link { text, dest } = e {
+                Some((text.clone(), dest.clone()))
+            } else {
+                None
+            }
+        });
+        assert!(link.is_some(), "Should find a link");
+        let (text, dest) = link.unwrap();
+        assert_eq!(text, "Algorithms", "Link text should be 'Algorithms'");
+        assert_eq!(
+            dest, "internal:ch-algorithms",
+            "Link dest should be 'internal:ch-algorithms'"
         );
     }
 }

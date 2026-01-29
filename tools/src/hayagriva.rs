@@ -69,13 +69,16 @@ pub fn parse_hayagriva(content: &str) -> Result<References> {
             .map(|t| t.value.to_string());
 
         // Extract DOI - try hayagriva first, then fall back to raw YAML parsing
-        let doi = entry.doi().map(std::string::ToString::to_string).or_else(|| {
-            raw_yaml
-                .get(&key)
-                .and_then(|v| v.get("doi"))
-                .and_then(serde_yaml::Value::as_str)
-                .map(String::from)
-        });
+        let doi = entry
+            .doi()
+            .map(std::string::ToString::to_string)
+            .or_else(|| {
+                raw_yaml
+                    .get(&key)
+                    .and_then(|v| v.get("doi"))
+                    .and_then(serde_yaml::Value::as_str)
+                    .map(String::from)
+            });
 
         // Extract URL
         let url = entry.url().map(|u| u.value.to_string());

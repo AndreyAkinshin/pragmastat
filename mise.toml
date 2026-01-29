@@ -423,6 +423,11 @@ description = "Run Rust benchmarks"
 dir = "rs/pragmastat"
 run = "cargo bench"
 
+[tasks."rs:gen:rng-tests"]
+description = "Generate RNG and distribution reference test files"
+dir = "rs/pragmastat"
+run = "cargo run --example gen_rng_tests"
+
 [tasks."rs:doc"]
 description = "Build Rust documentation"
 dir = "rs/pragmastat"
@@ -618,6 +623,7 @@ depends = ["web:restore", "web:gen"]
 dir = "web"
 run = """
 cp ../manual/pragmastat.pdf public/
+cp ../img/logo.svg public/img/
 pnpm build
 """
 
@@ -627,6 +633,7 @@ depends = ["web:restore", "web:gen"]
 dir = "web"
 run = """
 cp ../manual/pragmastat.pdf public/
+cp ../img/logo.svg public/img/
 NODE_ENV=production pnpm build
 """
 

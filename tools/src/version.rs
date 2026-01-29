@@ -44,16 +44,6 @@ const VERSION_TARGETS: &[VersionTarget] = &[
         pattern: r#"("name":\s*"pragmastat",\s*)"version":\s*"[^"]*""#,
         replacement: r#"$1"version": "{version}""#,
     },
-    VersionTarget {
-        path: "manual/chapters/artifacts.typ",
-        pattern: r"v\d+\.\d+\.\d+",
-        replacement: "v{version}",
-    },
-    VersionTarget {
-        path: "manual/chapters/artifacts.typ",
-        pattern: r"pragmastat-\d+\.\d+\.\d+",
-        replacement: "pragmastat-{version}",
-    },
     // Version in version.typ is the SINGLE SOURCE for all Typst files
     VersionTarget {
         path: "manual/version.typ",
@@ -74,8 +64,8 @@ pub fn read_version(base_path: &Path) -> Result<String> {
         .with_context(|| format!("Failed to read {}", version_path.display()))?;
 
     // Parse Typst syntax: #let version = "X.Y.Z"
-    let regex = Regex::new(r#"#let version = "([^"]+)""#)
-        .context("Failed to compile version regex")?;
+    let regex =
+        Regex::new(r#"#let version = "([^"]+)""#).context("Failed to compile version regex")?;
     let captures = regex
         .captures(&content)
         .with_context(|| format!("Version pattern not found in {}", version_path.display()))?;

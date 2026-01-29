@@ -23,6 +23,7 @@ pub fn typst_to_latex(typst_math: &str, definitions: &HashMap<String, String>) -
 
     // Handle Typst functions that need proper delimiter matching
     result = convert_bb(&result);
+    result = convert_bold(&result);
     result = convert_binom(&result);
     result = convert_upright(&result);
     result = convert_floor_ceil_abs(&result);
@@ -171,6 +172,39 @@ fn convert_bb(input: &str) -> String {
     result
 }
 
+/// Convert Typst `bold()` to LaTeX `\mathbf{}`
+/// Example: `bold(1)` -> `\mathbf{1}`
+fn convert_bold(input: &str) -> String {
+    let mut result = String::new();
+    let mut i = 0;
+    let chars: Vec<char> = input.chars().collect();
+
+    while i < chars.len() {
+        // Check for bold( pattern (but not bb which is blackboard bold)
+        if i + 5 <= chars.len()
+            && chars[i] == 'b'
+            && chars[i + 1] == 'o'
+            && chars[i + 2] == 'l'
+            && chars[i + 3] == 'd'
+            && chars[i + 4] == '('
+        {
+            // Calculate byte offset for string slicing
+            let byte_start: usize = chars[..i + 5].iter().map(|c| c.len_utf8()).sum();
+            if let Some(end) = find_matching_paren(&input[byte_start..]) {
+                let inner = &input[byte_start..byte_start + end];
+                let _ = write!(result, "\\mathbf{{{inner}}}");
+                let content_chars = inner.chars().count();
+                i = i + 5 + content_chars + 1; // bold( + inner + )
+                continue;
+            }
+        }
+        result.push(chars[i]);
+        i += 1;
+    }
+
+    result
+}
+
 /// Convert Typst `binom(n, k)` to LaTeX `\binom{n}{k}`
 /// Example: `binom(n+m, n)` -> `\binom{n+m}{n}`
 fn convert_binom(input: &str) -> String {
@@ -259,7 +293,7 @@ fn convert_upright(input: &str) -> String {
 /// Examples:
 ///   `floor(x/2)` -> `\lfloor x/2 \rfloor`
 ///   `ceil(x/2)`  -> `\lceil x/2 \rceil`
-///   `abs(x-y)`   -> `\left|x-y\right|`
+///   `abs(x-y)`   -> `\lvert x-y \rvert`
 fn convert_floor_ceil_abs(input: &str) -> String {
     let mut result = input.to_string();
 
@@ -269,8 +303,8 @@ fn convert_floor_ceil_abs(input: &str) -> String {
     // Process ceil() calls
     result = convert_delimiter_func(&result, "ceil(", "\\lceil ", " \\rceil");
 
-    // Process abs() calls
-    result = convert_delimiter_func(&result, "abs(", "\\left|", "\\right|");
+    // Process abs() calls (use \lvert/\rvert to avoid | conflicting with markdown tables)
+    result = convert_delimiter_func(&result, "abs(", "\\lvert ", " \\rvert");
 
     result
 }
@@ -552,11 +586,15 @@ fn convert_syntax(input: &str) -> String {
 
     // Comparison operators (must come before word mappings to handle multi-char operators)
     // These are literal replacements, not word-boundary
+    // Order matters: longer patterns first to avoid partial matches
     let operator_replacements = [
         (">=", "\\geq"),
         ("<=", "\\leq"),
+        ("<-", "\\leftarrow"),
         ("->", "\\to"),
         ("!=", "\\neq"),
+        (">>", "\\gg"),
+        ("<<", "\\ll"),
     ];
 
     for (typst, latex) in operator_replacements {
@@ -599,6 +637,28 @@ fn convert_syntax(input: &str) -> String {
         ("zeta", "\\zeta"),
         ("iota", "\\iota"),
         ("star", "\\star"),
+        ("quad", "\\quad"),
+        ("qquad", "\\qquad"),
+        ("xor", "\\operatorname{xor}"),
+        // Math operators without parentheses (e.g., "log n" not "log(n)")
+        ("log", "\\log"),
+        ("sin", "\\sin"),
+        ("cos", "\\cos"),
+        ("tan", "\\tan"),
+        ("exp", "\\exp"),
+        ("max", "\\max"),
+        ("min", "\\min"),
+        ("sup", "\\sup"),
+        ("inf", "\\inf"),
+        ("lim", "\\lim"),
+        ("det", "\\det"),
+        ("dim", "\\dim"),
+        ("ker", "\\ker"),
+        ("arg", "\\arg"),
+        ("gcd", "\\gcd"),
+        ("lcm", "\\operatorname{lcm}"),
+        ("mod", "\\mod"),
+        ("ln", "\\ln"),
         // Note: Phi and Psi need special handling - see convert_greek_capitals below
         ("eta", "\\eta"),
         ("phi", "\\phi"),
@@ -626,35 +686,70 @@ fn convert_syntax(input: &str) -> String {
         ("mp", "\\mp"),
     ];
 
-    // Protect \text{} blocks from word-boundary replacements (e.g., approx -> \approx)
+    // Protect \text{} and \mathrm{} blocks from word-boundary replacements
+    // (e.g., approx -> \approx, min -> \min should not happen inside these blocks)
     // Extract them and replace with placeholders before applying word mappings
     let mut text_blocks_syntax: Vec<String> = Vec::new();
+    let protected_commands = ["\\text{", "\\mathrm{"];
     loop {
-        if let Some(start) = result.find("\\text{") {
-            let after_text = &result[start + 6..];
-            if let Some(end) = find_matching_brace(after_text) {
-                let text_content = &result[start..=start + 6 + end];
-                let placeholder = format!("\u{FFFD}{len}\u{FFFD}", len = text_blocks_syntax.len());
-                text_blocks_syntax.push(text_content.to_string());
-                result = format!(
-                    "{}{}{}",
-                    &result[..start],
-                    placeholder,
-                    &result[start + 6 + end + 1..]
-                );
-                continue;
+        let mut found = false;
+        for cmd in &protected_commands {
+            if let Some(start) = result.find(cmd) {
+                let cmd_len = cmd.len();
+                let after_cmd = &result[start + cmd_len..];
+                if let Some(end) = find_matching_brace(after_cmd) {
+                    let block_content = &result[start..=start + cmd_len + end];
+                    let placeholder =
+                        format!("\u{FFFD}{len}\u{FFFD}", len = text_blocks_syntax.len());
+                    text_blocks_syntax.push(block_content.to_string());
+                    result = format!(
+                        "{}{}{}",
+                        &result[..start],
+                        placeholder,
+                        &result[start + cmd_len + end + 1..]
+                    );
+                    found = true;
+                    break;
+                }
             }
         }
-        break;
+        if !found {
+            break;
+        }
     }
 
     for (typst, latex) in word_mappings {
         if typst.contains('(') || typst.contains('|') || typst.contains('.') {
             result = result.replace(typst, latex);
         } else {
+            // Use word boundary matching but skip if preceded by backslash
+            // (to avoid double-converting \log to \\log)
             let pattern = format!(r"\b{}\b", regex::escape(typst));
             if let Ok(re) = regex::Regex::new(&pattern) {
-                result = re.replace_all(&result, latex).to_string();
+                let mut new_result = String::new();
+                let mut last_end = 0;
+
+                for m in re.find_iter(&result) {
+                    // Check if preceded by backslash
+                    let preceded_by_backslash =
+                        m.start() > 0 && result.as_bytes()[m.start() - 1] == b'\\';
+
+                    // Add text before this match
+                    new_result.push_str(&result[last_end..m.start()]);
+
+                    // Add replacement or original depending on backslash
+                    if preceded_by_backslash {
+                        new_result.push_str(m.as_str());
+                    } else {
+                        new_result.push_str(latex);
+                    }
+
+                    last_end = m.end();
+                }
+
+                // Add remaining text
+                new_result.push_str(&result[last_end..]);
+                result = new_result;
             }
         }
     }
@@ -669,14 +764,17 @@ fn convert_syntax(input: &str) -> String {
     // Use negative lookbehind to avoid double-converting \Phi to \\Phi
     result = convert_greek_capitals(&result);
 
-    // Handle fractions: a/b -> \frac{a}{b}
-    result = convert_fractions(&result);
-
-    // Handle subscripts: x_i -> x_{i}, x_(i+1) -> x_{i+1}
+    // Handle subscripts BEFORE fractions so that p_(n,m)(c) becomes p_{n,m}(c)
+    // and the function call detection in fraction conversion works correctly
     result = convert_subscripts(&result);
 
-    // Handle superscripts: x^2 -> x^{2}, x^(i+1) -> x^{i+1}
+    // Handle superscripts BEFORE fractions so that a/(1-x)^2 keeps the exponent
+    // as part of the denominator
     result = convert_superscripts(&result);
+
+    // Handle fractions: a/b -> \frac{a}{b}
+    // Must run AFTER subscript/superscript conversion for proper parsing
+    result = convert_fractions(&result);
 
     // Convert Typst lr() for auto-sizing delimiters
     result = convert_lr(&result);
@@ -738,7 +836,17 @@ fn convert_greek_capitals(input: &str) -> String {
 fn convert_fractions(input: &str) -> String {
     // First pass: convert all explicit fractions (⁄ marker from Typst \/)
     // These are always converted regardless of context
-    let mut result = convert_explicit_fractions(input);
+    // Loop until no more changes to handle nested explicit fractions
+    // (e.g., a \/ b^(c\/d) has two explicit fractions, inner one gets included
+    // in denominator and needs another pass to convert)
+    let mut result = input.to_string();
+    loop {
+        let next = convert_explicit_fractions(&result);
+        if next == result {
+            break;
+        }
+        result = next;
+    }
 
     // Second pass: convert regular / fractions (only in simple contexts)
     result = convert_regular_fractions(&result);
@@ -975,14 +1083,37 @@ fn find_fraction_part_before(chars: &[char], slash_pos: usize) -> Option<(usize,
         if depth != 0 {
             return None;
         }
-        // Check if this looks like a function call (letter/} before the opening paren)
-        // If so, don't treat it as a fraction numerator
-        if start > 0 {
-            let prev_char = chars[start - 1];
-            if prev_char.is_alphabetic() || prev_char == '}' {
-                // This is likely a function call like f(x) or \operatorname{Shift}(x)
-                // Don't convert to fraction
-                return None;
+        // Include function name before the paren (e.g., "f(x)", "p_{n,m}(c)", "Drift^2(x)")
+        // This allows function calls to be fraction numerators
+        // Note: Include '^' to handle superscripts like Drift^2(x) where ^2 is part of the term
+        while start > 0
+            && (chars[start - 1].is_alphanumeric()
+                || chars[start - 1] == '_'
+                || chars[start - 1] == '\\'
+                || chars[start - 1] == '}'
+                || chars[start - 1] == '^')
+        {
+            start -= 1;
+            // If we hit a closing brace, find matching open (for subscripts like p_{n,m})
+            if chars[start] == '}' {
+                let mut brace_depth = 1;
+                while start > 0 && brace_depth > 0 {
+                    start -= 1;
+                    match chars[start] {
+                        '}' => brace_depth += 1,
+                        '{' => brace_depth -= 1,
+                        _ => {}
+                    }
+                }
+                // Continue to include content before the brace (subscript marker, variable name)
+                while start > 0
+                    && (chars[start - 1].is_alphanumeric()
+                        || chars[start - 1] == '_'
+                        || chars[start - 1] == '\\'
+                        || chars[start - 1] == '^')
+                {
+                    start -= 1;
+                }
             }
         }
         return Some((start, end));
@@ -1002,12 +1133,13 @@ fn find_fraction_part_before(chars: &[char], slash_pos: usize) -> Option<(usize,
         if depth != 0 {
             return None;
         }
-        // Include function name before the bracket (e.g., "Var[...]")
+        // Include function name before the bracket (e.g., "Var[...]", "Drift^2[...]")
         while start > 0
             && (chars[start - 1].is_alphanumeric()
                 || chars[start - 1] == '_'
                 || chars[start - 1] == '\\'
-                || chars[start - 1] == '}')
+                || chars[start - 1] == '}'
+                || chars[start - 1] == '^')
         {
             start -= 1;
             // If we hit a closing brace, find matching open (for \text{Var}[...])
@@ -1022,7 +1154,11 @@ fn find_fraction_part_before(chars: &[char], slash_pos: usize) -> Option<(usize,
                     }
                 }
                 // Continue to include the command before the brace
-                while start > 0 && (chars[start - 1].is_alphabetic() || chars[start - 1] == '\\') {
+                while start > 0
+                    && (chars[start - 1].is_alphabetic()
+                        || chars[start - 1] == '\\'
+                        || chars[start - 1] == '^')
+                {
                     start -= 1;
                 }
             }
@@ -1082,6 +1218,34 @@ fn find_fraction_part_after(chars: &[char], start_pos: usize) -> Option<(usize, 
         if depth != 0 {
             return None;
         }
+
+        // Include trailing factorial operator(s)
+        while end < chars.len() && chars[end] == '!' {
+            end += 1;
+        }
+
+        // Include trailing superscript (e.g., (1-x)^{2} should be one term)
+        // Superscripts are already converted to ^{...} by now
+        if end < chars.len() && chars[end] == '^' {
+            end += 1;
+            if end < chars.len() && chars[end] == '{' {
+                // Find matching close brace
+                let mut brace_depth = 1;
+                end += 1;
+                while end < chars.len() && brace_depth > 0 {
+                    match chars[end] {
+                        '{' => brace_depth += 1,
+                        '}' => brace_depth -= 1,
+                        _ => {}
+                    }
+                    end += 1;
+                }
+            } else if end < chars.len() && (chars[end].is_alphanumeric() || chars[end] == '-') {
+                // Simple superscript like ^2 or ^n or ^-1
+                end += 1;
+            }
+        }
+
         return Some((start, end));
     }
 
@@ -1090,6 +1254,17 @@ fn find_fraction_part_after(chars: &[char], start_pos: usize) -> Option<(usize, 
         && (chars[end].is_alphanumeric() || chars[end] == '_' || chars[end] == '\\')
     {
         end += 1;
+    }
+
+    // Handle \lvert...\rvert as a single unit
+    // After collecting alphanumeric, check if we have \lvert and find matching \rvert
+    let collected: String = chars[start..end].iter().collect();
+    if collected.ends_with("\\lvert") {
+        // Find matching \rvert
+        let remaining: String = chars[end..].iter().collect();
+        if let Some(right_pos) = remaining.find("\\rvert") {
+            end += right_pos + 6; // 6 = length of "\rvert"
+        }
     }
 
     // If we hit an opening brace, include content up to matching close
@@ -1123,10 +1298,50 @@ fn find_fraction_part_after(chars: &[char], start_pos: usize) -> Option<(usize, 
         }
     }
 
-    // Check if this is followed by a paren (function call)
-    // If so, don't treat as fraction denominator
+    // Handle superscript after the base term (e.g., \operatorname{Drift}^2)
+    // Track if we've seen a superscript, as it affects function call handling
+    let mut had_superscript = false;
+    if end < chars.len() && chars[end] == '^' {
+        had_superscript = true;
+        end += 1;
+        if end < chars.len() && chars[end] == '{' {
+            // Superscript with braces: ^{...}
+            let mut brace_depth = 1;
+            end += 1;
+            while end < chars.len() && brace_depth > 0 {
+                match chars[end] {
+                    '{' => brace_depth += 1,
+                    '}' => brace_depth -= 1,
+                    _ => {}
+                }
+                end += 1;
+            }
+        } else if end < chars.len() && (chars[end].is_alphanumeric() || chars[end] == '-') {
+            // Simple superscript like ^2 or ^n or ^-1
+            end += 1;
+        }
+    }
+
+    // Handle function call arguments after superscript (e.g., Drift^2(T_1, X))
+    // If we had a superscript and see (, include the function arguments
+    // If no superscript and see (, don't include it (it's a separate function call)
     if end < chars.len() && chars[end] == '(' {
-        return None;
+        if had_superscript {
+            // Include function arguments as part of the term
+            let mut depth = 1;
+            end += 1;
+            while end < chars.len() && depth > 0 {
+                match chars[end] {
+                    '(' => depth += 1,
+                    ')' => depth -= 1,
+                    _ => {}
+                }
+                end += 1;
+            }
+        } else {
+            // No superscript, so this is a separate function call - don't include
+            return None;
+        }
     }
 
     if end > start {
@@ -1147,11 +1362,9 @@ fn convert_subscripts(input: &str) -> String {
     // Handle _\text{...} -> _{\text{...}} (subscripts with text blocks)
     result = wrap_text_subscripts(&result, "_");
 
-    // Handle single character subscripts that aren't already braced
-    let re = regex::Regex::new(r"_([a-zA-Z0-9])([^a-zA-Z0-9{]|$)").ok();
-    if let Some(re) = re {
-        result = re.replace_all(&result, "_{$1}$2").to_string();
-    }
+    // NOTE: Single character subscripts like x_i are left as-is (not wrapped in braces).
+    // KaTeX handles x_i correctly, and wrapping in braces like x_{i} causes issues
+    // with MDX which interprets {i} as a JavaScript expression.
 
     result
 }
@@ -1166,11 +1379,8 @@ fn convert_superscripts(input: &str) -> String {
     // Handle ^\text{...} -> ^{\text{...}} (superscripts with text blocks)
     result = wrap_text_subscripts(&result, "^");
 
-    // Handle single character superscripts
-    let re = regex::Regex::new(r"\^([a-zA-Z0-9])([^a-zA-Z0-9{]|$)").ok();
-    if let Some(re) = re {
-        result = re.replace_all(&result, "^{$1}$2").to_string();
-    }
+    // NOTE: Single character superscripts like x^2 are left as-is (not wrapped in braces).
+    // KaTeX handles x^2 correctly, and wrapping in braces causes issues with MDX.
 
     result
 }
@@ -1258,7 +1468,7 @@ fn wrap_text_subscripts(input: &str, prefix: &str) -> String {
 /// Convert Typst `lr()` to LaTeX `\left \right`
 ///
 /// Typst `lr()` creates auto-sizing delimiters. For example:
-/// - `lr(|x|)` -> `\left|x\right|`
+/// - `lr(|x|)` -> `\left\lvert x\right\rvert`
 /// - `lr((a+b))` -> `\left(a+b\right)`
 fn convert_lr(input: &str) -> String {
     let mut result = String::new();
@@ -1280,9 +1490,10 @@ fn convert_lr(input: &str) -> String {
                 // The inner content starts with a delimiter (e.g., "(", "|", "[")
                 // and ends with the matching delimiter
                 if let Some(first_char) = inner.chars().next() {
+                    // Use \lvert/\rvert for | to avoid conflicts with markdown tables
                     let (left_delim, right_delim) = match first_char {
                         '(' => ("\\left(", "\\right)"),
-                        '|' => ("\\left|", "\\right|"),
+                        '|' => ("\\left\\lvert ", " \\right\\rvert"),
                         '[' => ("\\left[", "\\right]"),
                         '{' => ("\\left\\{", "\\right\\}"),
                         _ => ("", ""),
@@ -1361,14 +1572,17 @@ mod tests {
 
     #[test]
     fn convert_subscript() {
+        // Single character subscripts are NOT wrapped in braces
+        // KaTeX handles x_i correctly without braces, and braces cause MDX issues
         let result = convert_subscripts("x_i");
-        assert_eq!(result, "x_{i}");
+        assert_eq!(result, "x_i");
     }
 
     #[test]
     fn convert_superscript() {
+        // Single character superscripts are NOT wrapped in braces
         let result = convert_superscripts("x^2");
-        assert_eq!(result, "x^{2}");
+        assert_eq!(result, "x^2");
     }
 
     #[test]
@@ -1607,15 +1821,28 @@ mod tests {
     fn convert_abs() {
         let defs = HashMap::new();
         let result = typst_to_latex("abs(x)", &defs);
-        assert_eq!(result, "\\left|x\\right|");
+        assert_eq!(result, "\\lvert x \\rvert");
     }
 
     #[test]
     fn convert_abs_complex() {
         let defs = HashMap::new();
         let result = typst_to_latex("abs(x_i - x_j)", &defs);
-        assert!(result.contains("\\left|"), "Should have left|: {result}");
-        assert!(result.contains("\\right|"), "Should have right|: {result}");
+        assert!(result.contains("\\lvert"), "Should have lvert: {result}");
+        assert!(result.contains("\\rvert"), "Should have rvert: {result}");
+    }
+
+    #[test]
+    fn convert_abs_in_fraction_denominator() {
+        // Test that abs() in fraction denominator stays intact
+        // This was a bug where \lvert...\rvert got split by fraction conversion
+        let defs = HashMap::new();
+        let result = typst_to_latex("a / abs(b)", &defs);
+        eprintln!("Result: {result}");
+        assert!(
+            result.contains("\\lvert") && result.contains("\\rvert"),
+            "abs should be intact in denominator: {result}"
+        );
     }
 
     #[test]
@@ -1939,5 +2166,229 @@ mod tests {
         // But pmean outside quotes should be converted
         let result2 = typst_to_latex("pmean", &defs);
         assert_eq!(result2, "\\mathrm{mean}");
+    }
+
+    #[test]
+    fn convert_assignment_arrow() {
+        let defs = HashMap::new();
+        let result = typst_to_latex("x <- x + 1", &defs);
+        assert_eq!(result, "x \\leftarrow x + 1");
+    }
+
+    #[test]
+    fn convert_xor_operator() {
+        let defs = HashMap::new();
+        let result = typst_to_latex("x xor y", &defs);
+        assert_eq!(result, "x \\operatorname{xor} y");
+    }
+
+    #[test]
+    fn convert_log_operator() {
+        let defs = HashMap::new();
+        // Standalone log should become \log
+        let result = typst_to_latex("O(n log n)", &defs);
+        assert_eq!(result, "O(n \\log n)");
+
+        // log with parentheses should also work
+        let result2 = typst_to_latex("log(x)", &defs);
+        assert_eq!(result2, "\\log(x)");
+    }
+
+    #[test]
+    fn convert_math_operators() {
+        let defs = HashMap::new();
+        // Test various math operators
+        assert_eq!(typst_to_latex("sin x", &defs), "\\sin x");
+        assert_eq!(typst_to_latex("cos x", &defs), "\\cos x");
+        assert_eq!(typst_to_latex("max(a, b)", &defs), "\\max(a, b)");
+        assert_eq!(typst_to_latex("min(a, b)", &defs), "\\min(a, b)");
+        assert_eq!(typst_to_latex("ln x", &defs), "\\ln x");
+        assert_eq!(typst_to_latex("exp x", &defs), "\\exp x");
+    }
+
+    #[test]
+    fn convert_quad_spacing() {
+        let defs = HashMap::new();
+        let result = typst_to_latex("a quad b", &defs);
+        assert_eq!(result, "a \\quad b");
+    }
+
+    #[test]
+    fn convert_right_shift() {
+        let defs = HashMap::new();
+        let result = typst_to_latex("x >> 30", &defs);
+        assert_eq!(result, "x \\gg 30");
+    }
+
+    #[test]
+    fn convert_left_shift() {
+        let defs = HashMap::new();
+        let result = typst_to_latex("x << 3", &defs);
+        assert_eq!(result, "x \\ll 3");
+    }
+
+    #[test]
+    fn convert_splitmix64_formula() {
+        let defs = HashMap::new();
+        // Test the actual formula from the randomization chapter
+        let result = typst_to_latex("x <- (x xor (x >> 30)) times \"0xbf58476d1ce4e5b9\"", &defs);
+        eprintln!("Result: {result}");
+        assert!(
+            result.contains("\\leftarrow"),
+            "Should have leftarrow: {result}"
+        );
+        assert!(
+            result.contains("\\operatorname{xor}"),
+            "Should have xor operator: {result}"
+        );
+        assert!(result.contains("\\gg"), "Should have >> as \\gg: {result}");
+        assert!(result.contains("\\times"), "Should have times: {result}");
+    }
+
+    #[test]
+    fn convert_fnv1a_hash_formula() {
+        let defs = HashMap::new();
+        // Test with quad spacing
+        let result = typst_to_latex(
+            "\"hash\" <- \"0xcbf29ce484222325\" quad \"(offset basis)\"",
+            &defs,
+        );
+        eprintln!("Result: {result}");
+        assert!(
+            result.contains("\\leftarrow"),
+            "Should have leftarrow: {result}"
+        );
+        assert!(result.contains("\\quad"), "Should have quad: {result}");
+    }
+
+    #[test]
+    fn convert_function_call_with_subscript_as_numerator() {
+        // Test that p_{n,m}(c) / x creates a proper fraction with p_{n,m}(c) as numerator
+        // This was a bug where (c) alone became the numerator
+        let defs = HashMap::new();
+        let result = typst_to_latex("p_(n,m)(c) / binom(n+m, n)", &defs);
+        eprintln!("Result: {result}");
+        // The result should have p_{n,m}(c) as the numerator
+        assert!(
+            result.contains("\\frac{p_{n,m}(c)}{"),
+            "Should have p_{{n,m}}(c) as fraction numerator: {result}"
+        );
+        assert!(
+            result.contains("\\binom{n+m}{n}"),
+            "Should have binom as denominator: {result}"
+        );
+    }
+
+    #[test]
+    fn convert_fraction_with_superscript_in_denominator() {
+        // Test that (1-U)^{2} stays together as denominator
+        let defs = HashMap::new();
+        let result = typst_to_latex("x_min \\/ (1 - U)^(2)", &defs);
+        eprintln!("Result: {result}");
+        // The entire (1 - U)^{2} should be in the denominator
+        assert!(
+            result.contains("\\frac{x_min}{(1 - U)^{2}}"),
+            "Superscript should be part of denominator: {result}"
+        );
+    }
+
+    #[test]
+    fn convert_fraction_with_nested_fraction_exponent() {
+        // Test x_min \/ (1 - U)^(1\/alpha) - the exponent has a fraction inside
+        let defs = HashMap::new();
+        let result = typst_to_latex("x_min \\/ (1 - U)^(1\\/alpha)", &defs);
+        eprintln!("Result: {result}");
+        // The denominator should include the entire (1-U)^{...} expression
+        // Note: alpha gets converted to \alpha by Greek letter conversion
+        assert!(
+            result.contains("\\frac{x_min}{(1 - U)^{\\frac{1}{\\alpha}}}"),
+            "Exponent with fraction should be part of denominator: {result}"
+        );
+    }
+
+    #[test]
+    fn convert_factorial_in_denominator() {
+        // Test that (n+m)! has the factorial as part of the term
+        let defs = HashMap::new();
+        let result = typst_to_latex("(n! dot m!) / (n+m)!", &defs);
+        eprintln!("Result: {result}");
+        // The factorial should be inside the fraction, not outside
+        assert!(
+            result.contains("\\frac{"),
+            "Should create a fraction: {result}"
+        );
+        // The denominator should be (n+m)! not just (n+m)
+        assert!(
+            result.contains("{(n+m)!}") || result.contains("/(n+m)!"),
+            "Factorial should be part of denominator: {result}"
+        );
+        // Make sure ! is not dangling outside
+        assert!(
+            !result.ends_with("}!"),
+            "Factorial should not be outside the fraction: {result}"
+        );
+    }
+
+    #[test]
+    fn convert_explicit_fraction_factorial() {
+        // Test explicit fraction with factorial
+        let defs = HashMap::new();
+        let result = typst_to_latex("(n! dot m!) \\/ (n+m)!", &defs);
+        eprintln!("Result: {result}");
+        // Should be \frac{n! \cdot m!}{(n+m)!}
+        assert!(
+            result.contains("\\frac{n! \\cdot m!}{(n+m)!}"),
+            "Factorial should be inside denominator: {result}"
+        );
+    }
+
+    #[test]
+    fn convert_fraction_with_superscript_function_call() {
+        // Test Drift^2(T_2, X) / Drift^2(T_1, X) pattern
+        // The ^2 superscript should be included as part of the numerator/denominator
+        let mut defs = HashMap::new();
+        defs.insert("Drift".to_string(), "\\operatorname{Drift}".to_string());
+
+        let result = typst_to_latex("Drift^2(T_2, X) / Drift^2(T_1, X)", &defs);
+        eprintln!("Result: {result}");
+
+        // Should create a proper fraction with superscripts intact
+        assert!(
+            result.contains("\\frac{\\operatorname{Drift}^2(T_2, X)}{\\operatorname{Drift}^2(T_1, X)}"),
+            "Superscript function calls should be proper fraction parts: {result}"
+        );
+
+        // Should NOT have the broken pattern where ^2 is split
+        assert!(
+            !result.contains("^\\frac"),
+            "Should not have superscript followed by frac: {result}"
+        );
+    }
+
+    #[test]
+    fn convert_sample_size_formula() {
+        // Test the actual formula from efficiency-drift.typ
+        let mut defs = HashMap::new();
+        defs.insert("Drift".to_string(), "\\operatorname{Drift}".to_string());
+
+        let result =
+            typst_to_latex("n_\"new\" = n_\"original\" dot Drift^2(T_2, X) / Drift^2(T_1, X)", &defs);
+        eprintln!("Result: {result}");
+
+        // Should have proper text subscripts
+        assert!(
+            result.contains("n_{\\text{new}}"),
+            "Should have n_{{\\text{{new}}}}: {result}"
+        );
+        assert!(
+            result.contains("n_{\\text{original}}"),
+            "Should have n_{{\\text{{original}}}}: {result}"
+        );
+
+        // Should have proper fraction
+        assert!(
+            result.contains("\\frac{\\operatorname{Drift}^2(T_2, X)}{\\operatorname{Drift}^2(T_1, X)}"),
+            "Should have proper fraction with Drift^2: {result}"
+        );
     }
 }

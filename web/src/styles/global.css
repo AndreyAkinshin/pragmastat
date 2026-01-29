@@ -46,7 +46,7 @@ a:active {
 }
 
 :global(.content ul) {
-  list-style-type: disc;
+  list-style-type: none;
 }
 
 :global(.content ol) {

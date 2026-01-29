@@ -7,6 +7,7 @@ mod templates;
 mod typst_eval;
 mod typst_parser;
 mod version;
+mod xref;
 
 use anyhow::Result;
 use clap::{Parser, Subcommand};
@@ -103,64 +104,46 @@ impl astro::ChapterInfoProvider<astro::ChapterInfoRef> for Chapter {
 
 const CHAPTERS: &[Chapter] = &[
     Chapter {
-        slug: "introduction",
-        file: "chapters/introduction",
-        title: "Introduction",
+        slug: "toolkit",
+        file: "chapters/toolkit",
+        title: "Toolkit",
         order: 1,
-    },
-    Chapter {
-        slug: "estimators",
-        file: "chapters/estimators",
-        title: "Summary Estimators",
-        order: 2,
     },
     Chapter {
         slug: "distributions",
         file: "chapters/distributions",
         title: "Distributions",
-        order: 3,
-    },
-    Chapter {
-        slug: "properties",
-        file: "chapters/properties",
-        title: "Properties",
-        order: 4,
-    },
-    Chapter {
-        slug: "methodology",
-        file: "chapters/methodology",
-        title: "Methodology",
-        order: 5,
+        order: 2,
     },
     Chapter {
         slug: "algorithms",
         file: "chapters/algorithms",
         title: "Algorithms",
-        order: 6,
+        order: 3,
     },
     Chapter {
         slug: "studies",
         file: "chapters/studies",
         title: "Studies",
-        order: 7,
+        order: 4,
     },
     Chapter {
         slug: "implementations",
         file: "chapters/implementations",
         title: "Implementations",
-        order: 8,
+        order: 5,
     },
     Chapter {
         slug: "tests",
         file: "chapters/tests",
         title: "Tests",
-        order: 9,
+        order: 6,
     },
     Chapter {
-        slug: "artifacts",
-        file: "chapters/artifacts",
-        title: "Artifacts",
-        order: 10,
+        slug: "methodology",
+        file: "chapters/methodology",
+        title: "Methodology",
+        order: 7,
     },
 ];
 
@@ -197,6 +180,9 @@ fn build_web(base_path: &Path) -> Result<()> {
     std::fs::write(web_content_path.join("index.mdx"), index_mdx)?;
     println!("  Generated: web/src/content/manual/index.mdx");
 
+    // Create cross-reference map for internal links
+    let xref_map = xref::XRefMap::new();
+
     // Generate each chapter as a separate page and collect used citations
     let mut used_citations = std::collections::HashSet::new();
     for chapter in CHAPTERS {
@@ -207,6 +193,7 @@ fn build_web(base_path: &Path) -> Result<()> {
             &content,
             &definitions,
             &references,
+            &xref_map,
             chapter.title,
             chapter.order,
         );
@@ -217,7 +204,7 @@ fn build_web(base_path: &Path) -> Result<()> {
     }
 
     // Generate bibliography page (only includes actually used references)
-    let bibliography_mdx = astro::generate_bibliography_page(&references, &used_citations, 11);
+    let bibliography_mdx = astro::generate_bibliography_page(&references, &used_citations, 12);
     std::fs::write(web_content_path.join("bibliography.mdx"), bibliography_mdx)?;
     println!(
         "  Generated: web/src/content/manual/bibliography.mdx ({} cited)",
@@ -231,7 +218,7 @@ fn build_web(base_path: &Path) -> Result<()> {
         doi: "10.5281/zenodo.17236778",
         github_url: "https://github.com/AndreyAkinshin/pragmastat",
     };
-    let colophon_mdx = astro::generate_colophon_page(&colophon_info, 12);
+    let colophon_mdx = astro::generate_colophon_page(&colophon_info, 13);
     std::fs::write(web_content_path.join("colophon.mdx"), colophon_mdx)?;
     println!("  Generated: web/src/content/manual/colophon.mdx");
 
