@@ -5,6 +5,39 @@
  * Internal implementation - not part of public API.
  */
 
+import { Rng } from './rng';
+
+const FNV_OFFSET_BASIS = 0xcbf29ce484222325n;
+const FNV_PRIME = 0x00000100000001b3n;
+const MASK64 = (1n << 64n) - 1n;
+
+/**
+ * Convert a float64 to its IEEE 754 binary representation as bigint.
+ */
+function float64ToBits(value: number): bigint {
+  const buffer = new ArrayBuffer(8);
+  new Float64Array(buffer)[0] = value;
+  const view = new DataView(buffer);
+  return (BigInt(view.getUint32(4, true)) << 32n) | BigInt(view.getUint32(0, true));
+}
+
+/**
+ * Derive a deterministic seed from input values using FNV-1a hash.
+ */
+function deriveSeed(values: number[]): number {
+  let hash = FNV_OFFSET_BASIS;
+  for (const v of values) {
+    const bits = float64ToBits(v);
+    for (let i = 0; i < 8; i++) {
+      hash ^= (bits >> BigInt(i * 8)) & 0xffn;
+      hash = (hash * FNV_PRIME) & MASK64;
+    }
+  }
+  // Convert to signed int64 for consistency
+  const signedHash = BigInt.asIntN(64, hash);
+  return Number(signedHash);
+}
+
 /**
  * Compute the median of all pairwise absolute differences |xi - xj| efficiently.
  *
@@ -26,6 +59,9 @@ export function fastSpread(values: number[]): number {
   if (n === 2) {
     return Math.abs(values[1] - values[0]);
   }
+
+  // Create deterministic RNG from input values
+  const rng = new Rng(deriveSeed(values));
 
   // Sort the values
   const a = [...values].sort((a, b) => a - b);
@@ -199,7 +235,7 @@ export function fastSpread(values: number[]): number {
       return Math.abs(kLow - 1 - countBelow) <= Math.abs(countBelow - kLow) ? minRem : maxRem;
     } else {
       // Weighted random row selection
-      const t = Math.floor(Math.random() * activeSize);
+      const t = rng.uniformInt(0, activeSize);
       let acc = 0;
       let row = 0;
       for (row = 0; row < n - 1; row++) {

@@ -4,8 +4,10 @@ Based on Monahan's selection algorithm adapted for pairwise differences.
 """
 
 from typing import List
-import random
+import struct
 import numpy as np
+
+from .rng import Rng
 
 # Try to import the C implementation, fall back to pure Python if unavailable
 try:
@@ -14,6 +16,25 @@ try:
     _HAS_C_EXTENSION = True
 except ImportError:
     _HAS_C_EXTENSION = False
+
+
+def _derive_seed(values: List[float]) -> int:
+    """Derive a deterministic seed from input values using FNV-1a hash."""
+    FNV_OFFSET_BASIS = 0xCBF29CE484222325
+    FNV_PRIME = 0x00000100000001B3
+    MASK64 = (1 << 64) - 1
+
+    hash_val = FNV_OFFSET_BASIS
+    for v in values:
+        bits = struct.unpack("<Q", struct.pack("<d", v))[0]
+        for i in range(8):
+            hash_val ^= (bits >> (i * 8)) & 0xFF
+            hash_val = (hash_val * FNV_PRIME) & MASK64
+
+    # Convert to signed int64 for consistency with Rust
+    if hash_val >= (1 << 63):
+        return hash_val - (1 << 64)
+    return hash_val
 
 
 def _fast_spread_python(values: List[float]) -> float:
@@ -36,6 +57,9 @@ def _fast_spread_python(values: List[float]) -> float:
         return 0.0
     if n == 2:
         return abs(values[1] - values[0])
+
+    # Create deterministic RNG from input values
+    rng = Rng(_derive_seed(values))
 
     # Sort the values
     a = sorted(values)
@@ -181,7 +205,7 @@ def _fast_spread_python(values: List[float]) -> float:
             )
         else:
             # Weighted random row selection
-            t = random.randint(0, active_size - 1)
+            t = rng.uniform_int(0, active_size)
             acc = 0
             row = 0
             for row in range(n - 1):

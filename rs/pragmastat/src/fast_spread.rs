@@ -2,7 +2,24 @@
 /// Based on Monahan's selection algorithm adapted for pairwise differences.
 ///
 /// Internal implementation - not part of public API.
-use rand::Rng;
+use crate::rng::Rng;
+
+/// Derive a deterministic seed from input values using FNV-1a hash.
+fn derive_seed(values: &[f64]) -> i64 {
+    const FNV_OFFSET_BASIS: u64 = 0xcbf29ce484222325;
+    const FNV_PRIME: u64 = 0x00000100000001b3;
+
+    let mut hash = FNV_OFFSET_BASIS;
+    for v in values {
+        let bits = v.to_bits();
+        // Hash each byte of the f64 representation
+        for i in 0..8 {
+            hash ^= (bits >> (i * 8)) & 0xff;
+            hash = hash.wrapping_mul(FNV_PRIME);
+        }
+    }
+    hash as i64
+}
 
 pub(crate) fn fast_spread(values: &[f64]) -> Result<f64, &'static str> {
     let n = values.len();
@@ -13,9 +30,14 @@ pub(crate) fn fast_spread(values: &[f64]) -> Result<f64, &'static str> {
         return Ok((values[1] - values[0]).abs());
     }
 
+    // Validate for NaN/infinite values
+    if values.iter().any(|v| !v.is_finite()) {
+        return Err("Input contains NaN or infinite values");
+    }
+
     // Sort the values
     let mut a = values.to_vec();
-    a.sort_by(|x, y| x.partial_cmp(y).unwrap());
+    a.sort_by(|x, y| x.total_cmp(y));
 
     // Total number of pairwise differences with i < j
     let total_pairs = (n * (n - 1)) / 2;
@@ -40,7 +62,7 @@ pub(crate) fn fast_spread(values: &[f64]) -> Result<f64, &'static str> {
     let mut pivot = a[n / 2] - a[(n - 1) / 2];
     let mut prev_count_below = -1i64;
 
-    let mut rng = rand::thread_rng();
+    let mut rng = Rng::from_seed(derive_seed(values));
 
     loop {
         // === PARTITION: count how many differences are < pivot ===
@@ -210,7 +232,7 @@ pub(crate) fn fast_spread(values: &[f64]) -> Result<f64, &'static str> {
             );
         } else {
             // Weighted random row selection
-            let t = rng.gen_range(0..active_size);
+            let t = rng.uniform_int(0, active_size as i64) as usize;
             let mut acc = 0;
             let mut row = 0;
             for r in 0..n - 1 {

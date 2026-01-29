@@ -2,7 +2,6 @@ package pragmastat
 
 import (
 	"math"
-	"math/rand"
 	"sort"
 )
 
@@ -20,6 +19,9 @@ func fastSpread[T Number](values []T) (float64, error) {
 	if n == 2 {
 		return math.Abs(float64(values[1] - values[0])), nil
 	}
+
+	// Create deterministic RNG from input values
+	rng := NewRngFromSeed(deriveSeed(values))
 
 	// Sort the values
 	a := make([]T, n)
@@ -217,7 +219,7 @@ func fastSpread[T Number](values []T) (float64, error) {
 		}
 
 		// Weighted random row selection
-		t := rand.Int63n(activeSize)
+		t := rng.UniformInt(0, activeSize)
 		acc := int64(0)
 		row := 0
 		for row = 0; row < n-1; row++ {

@@ -4,8 +4,10 @@ Based on Monahan's Algorithm 616 (1984).
 """
 
 from typing import List
-import random
+import struct
 import numpy as np
+
+from .rng import Rng
 
 # Try to import the C implementation, fall back to pure Python if unavailable
 try:
@@ -14,6 +16,25 @@ try:
     _HAS_C_EXTENSION = True
 except ImportError:
     _HAS_C_EXTENSION = False
+
+
+def _derive_seed(values: List[float]) -> int:
+    """Derive a deterministic seed from input values using FNV-1a hash."""
+    FNV_OFFSET_BASIS = 0xCBF29CE484222325
+    FNV_PRIME = 0x00000100000001B3
+    MASK64 = (1 << 64) - 1
+
+    hash_val = FNV_OFFSET_BASIS
+    for v in values:
+        bits = struct.unpack("<Q", struct.pack("<d", v))[0]
+        for i in range(8):
+            hash_val ^= (bits >> (i * 8)) & 0xFF
+            hash_val = (hash_val * FNV_PRIME) & MASK64
+
+    # Convert to signed int64 for consistency with Rust
+    if hash_val >= (1 << 63):
+        return hash_val - (1 << 64)
+    return hash_val
 
 
 def _fast_center_python(values: List[float]) -> float:
@@ -38,6 +59,9 @@ def _fast_center_python(values: List[float]) -> float:
         return values[0]
     if n == 2:
         return (values[0] + values[1]) / 2
+
+    # Create deterministic RNG from input values
+    rng = Rng(_derive_seed(values))
 
     # Sort the values
     sorted_values = sorted(values)
@@ -166,7 +190,7 @@ def _fast_center_python(values: List[float]) -> float:
         # Choose next pivot
         if active_set_size > 2:
             # Use randomized row median strategy
-            target_index = random.randint(0, active_set_size - 1)
+            target_index = rng.uniform_int(0, active_set_size)
             cumulative_size = 0
             selected_row = 0
 

@@ -2,9 +2,24 @@ package pragmastat
 
 import (
 	"math"
-	"math/rand"
 	"sort"
 )
+
+// deriveSeed computes a deterministic seed from input values using FNV-1a hash.
+func deriveSeed[T Number](values []T) int64 {
+	const fnvOffsetBasis = uint64(0xcbf29ce484222325)
+	const fnvPrime = uint64(0x00000100000001b3)
+
+	hash := fnvOffsetBasis
+	for _, v := range values {
+		bits := math.Float64bits(float64(v))
+		for i := 0; i < 8; i++ {
+			hash ^= (bits >> (i * 8)) & 0xff
+			hash *= fnvPrime
+		}
+	}
+	return int64(hash)
+}
 
 // fastCenter computes the median of all pairwise averages efficiently.
 // Time complexity: O(n log n) expected
@@ -20,6 +35,9 @@ func fastCenter[T Number](values []T) (float64, error) {
 	if n == 2 {
 		return (float64(values[0] + values[1])) / 2, nil
 	}
+
+	// Create deterministic RNG from input values
+	rng := NewRngFromSeed(deriveSeed(values))
 
 	// Sort the values
 	sortedValues := make([]T, n)
@@ -162,7 +180,7 @@ func fastCenter[T Number](values []T) (float64, error) {
 		// Choose next pivot
 		if activeSetSize > 2 {
 			// Use randomized row median strategy
-			targetIndex := rand.Int63n(activeSetSize)
+			targetIndex := rng.UniformInt(0, activeSetSize)
 			cumulativeSize := int64(0)
 			selectedRow := 0
 

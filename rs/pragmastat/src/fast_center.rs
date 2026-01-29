@@ -2,7 +2,24 @@
 /// Based on Monahan's Algorithm 616 (1984).
 ///
 /// Internal implementation - not part of public API.
-use rand::Rng;
+use crate::rng::Rng;
+
+/// Derive a deterministic seed from input values using FNV-1a hash.
+fn derive_seed(values: &[f64]) -> i64 {
+    const FNV_OFFSET_BASIS: u64 = 0xcbf29ce484222325;
+    const FNV_PRIME: u64 = 0x00000100000001b3;
+
+    let mut hash = FNV_OFFSET_BASIS;
+    for v in values {
+        let bits = v.to_bits();
+        // Hash each byte of the f64 representation
+        for i in 0..8 {
+            hash ^= (bits >> (i * 8)) & 0xff;
+            hash = hash.wrapping_mul(FNV_PRIME);
+        }
+    }
+    hash as i64
+}
 
 pub(crate) fn fast_center(values: &[f64]) -> Result<f64, &'static str> {
     let n = values.len();
@@ -16,9 +33,14 @@ pub(crate) fn fast_center(values: &[f64]) -> Result<f64, &'static str> {
         return Ok((values[0] + values[1]) / 2.0);
     }
 
+    // Validate for NaN/infinite values
+    if values.iter().any(|v| !v.is_finite()) {
+        return Err("Input contains NaN or infinite values");
+    }
+
     // Sort the values
     let mut sorted_values = values.to_vec();
-    sorted_values.sort_by(|a, b| a.partial_cmp(b).unwrap());
+    sorted_values.sort_by(|a, b| a.total_cmp(b));
 
     // Calculate target median rank(s) among all pairwise sums
     let total_pairs = (n * (n + 1)) / 2;
@@ -34,7 +56,7 @@ pub(crate) fn fast_center(values: &[f64]) -> Result<f64, &'static str> {
     let mut active_set_size = total_pairs;
     let mut previous_count = 0;
 
-    let mut rng = rand::thread_rng();
+    let mut rng = Rng::from_seed(derive_seed(values));
 
     loop {
         // === PARTITION STEP ===
@@ -161,7 +183,7 @@ pub(crate) fn fast_center(values: &[f64]) -> Result<f64, &'static str> {
         // Choose next pivot
         if active_set_size > 2 {
             // Use randomized row median strategy
-            let target_index = rng.gen_range(0..active_set_size);
+            let target_index = rng.uniform_int(0, active_set_size as i64) as usize;
             let mut cumulative_size = 0;
             let mut selected_row = 0;
 
