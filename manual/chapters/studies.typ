@@ -8,4 +8,20 @@ Well-known facts and commonly accepted notation are used without special introdu
 The studies provide detailed analyses of estimator properties for practitioners
   interested in rigorous proofs and numerical simulation results.
 
+== Summary Estimator Properties
+
+#include "../properties/properties-intro.typ"
+
+#include "../studies/breakdown.typ"
+
+#include "../studies/drift.typ"
+
+#include "../studies/invariance.typ"
+
+#include "../studies/efficiency-drift.typ"
+
+#include "../studies/ci-misrate.typ"
+
+#include "../studies/mw-margin.typ"
+
 #include "../studies/additive.typ"

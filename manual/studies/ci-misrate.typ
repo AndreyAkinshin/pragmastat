@@ -26,7 +26,7 @@ The confidence level approach creates practical problems:
   Different fields use different conventions (95%, 99%, 99.9%),
   creating inconsistency and requiring arbitrary choices.
 
-The $misrate$ provides a more natural representation.
+The $misrate$ parameter provides a more natural representation.
 Misrate expresses the probability that computed bounds fail to contain the true value:
 
 $ misrate = 1 - "confidence level" $

@@ -3,8 +3,8 @@
 == From Mann-Whitney U-test to Pairwise Margin
 
 The Mann-Whitney $U$ test (also known as the Wilcoxon rank-sum test)
-  ranks among the most widely used non-parametric statistical tests.
-Developed in the 1940s, it tests whether two independent samples come from the same distribution.
+  ranks among the most widely used non-parametric statistical tests,
+  testing whether two independent samples come from the same distribution.
 Under $Additive$ (Normal) conditions, it achieves nearly the same precision as the Student's $t$-test,
   while maintaining reliability under diverse distributional conditions where the $t$-test fails.
 

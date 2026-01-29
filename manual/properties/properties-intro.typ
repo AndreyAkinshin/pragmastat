@@ -1,7 +1,7 @@
 #import "/manual/definitions.typ": *
 
 This section compares the toolkit's robust estimators against traditional statistical methods
-  to demonstrate their advantages and universally good properties.
+  to demonstrate their advantages across diverse conditions.
 While traditional estimators often work well under ideal conditions,
   the toolkit's estimators maintain reliable performance across diverse real-world scenarios.
 

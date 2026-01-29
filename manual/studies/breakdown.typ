@@ -8,7 +8,7 @@ Real-world data can also contain corrupted measurements from instrument failures
 Both natural extremes and data corruption create the same challenge:
   extracting reliable information when some measurements are too influential.
 
-The breakdown point is the fraction of a sample that can be replaced by arbitrarily large values
+The breakdown point (@huber2009) is the fraction of a sample that can be replaced by arbitrarily large values
   without making an estimator arbitrarily large.
 The theoretical maximum is $50%$; no estimator can guarantee reliable results
   when more than half the measurements are extreme or corrupted.

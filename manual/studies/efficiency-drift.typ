@@ -2,7 +2,7 @@
 
 == From Statistical Efficiency to Drift
 
-Statistical efficiency measures estimator precision.
+Statistical efficiency measures estimator precision (@serfling2009).
 When multiple estimators target the same quantity, efficiency determines which provides more reliable results.
 
 Efficiency measures how tightly estimates cluster around the true value across repeated samples.
@@ -20,7 +20,7 @@ The sample mean achieves optimal efficiency, while the median operates at roughl
 
 However, this variance-based definition creates four critical limitations:
 
-- Absolute efficiency requires knowing the optimal estimator, which is often difficult to determine.
+- Absolute efficiency requires knowing the optimal estimator, which is difficult to determine.
   For many distributions, deriving the minimum-variance unbiased estimator requires complex mathematical analysis.
   Without this reference point, absolute efficiency cannot be computed.
 - Relative efficiency only compares estimator pairs, preventing systematic evaluation.
