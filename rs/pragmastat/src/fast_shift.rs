@@ -35,13 +35,18 @@ pub(crate) fn fast_shift_quantiles(
         }
     }
 
+    // Validate for NaN/infinite values
+    if x.iter().any(|v| !v.is_finite()) || y.iter().any(|v| !v.is_finite()) {
+        return Err("Input contains NaN or infinite values");
+    }
+
     let (xs, ys) = if assume_sorted {
         (x.to_vec(), y.to_vec())
     } else {
         let mut x_sorted = x.to_vec();
         let mut y_sorted = y.to_vec();
-        x_sorted.sort_by(|a, b| a.partial_cmp(b).unwrap());
-        y_sorted.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        x_sorted.sort_by(|a, b| a.total_cmp(b));
+        y_sorted.sort_by(|a, b| a.total_cmp(b));
         (x_sorted, y_sorted)
     };
 

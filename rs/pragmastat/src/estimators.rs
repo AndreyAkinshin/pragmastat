@@ -1,5 +1,13 @@
 //! Statistical estimators for one-sample and two-sample analysis
 
+/// Validates that all values in the slice are finite (not NaN or infinite).
+fn validate_finite(values: &[f64]) -> Result<(), &'static str> {
+    if values.iter().any(|v| !v.is_finite()) {
+        return Err("Input contains NaN or infinite values");
+    }
+    Ok(())
+}
+
 /// Calculates the median of a sorted slice
 fn median_sorted(sorted: &[f64]) -> Result<f64, &'static str> {
     let n = sorted.len();
@@ -18,8 +26,9 @@ pub fn median(values: &[f64]) -> Result<f64, &'static str> {
     if values.is_empty() {
         return Err("Input slice cannot be empty");
     }
+    validate_finite(values)?;
     let mut sorted = values.to_vec();
-    sorted.sort_by(|a, b| a.partial_cmp(b).unwrap());
+    sorted.sort_by(|a, b| a.total_cmp(b));
     median_sorted(&sorted)
 }
 
@@ -145,11 +154,15 @@ pub fn shift_bounds(x: &[f64], y: &[f64], misrate: f64) -> Result<Bounds, &'stat
     let n = x.len();
     let m = y.len();
 
+    // Validate inputs for NaN/infinite values
+    validate_finite(x)?;
+    validate_finite(y)?;
+
     // Sort both arrays
     let mut xs = x.to_vec();
     let mut ys = y.to_vec();
-    xs.sort_by(|a, b| a.partial_cmp(b).unwrap());
-    ys.sort_by(|a, b| a.partial_cmp(b).unwrap());
+    xs.sort_by(|a, b| a.total_cmp(b));
+    ys.sort_by(|a, b| a.total_cmp(b));
 
     let total = n * m;
 
@@ -162,7 +175,7 @@ pub fn shift_bounds(x: &[f64], y: &[f64], misrate: f64) -> Result<Bounds, &'stat
         });
     }
 
-    let margin = crate::pairwise_margin::pairwise_margin(n, m, misrate);
+    let margin = crate::pairwise_margin::pairwise_margin(n, m, misrate)?;
     let max_half_margin = (total - 1) / 2;
     let mut half_margin = margin / 2;
     if half_margin > max_half_margin {
