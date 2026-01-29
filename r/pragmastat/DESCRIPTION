@@ -12,7 +12,9 @@ License: MIT + file LICENSE
 URL: https://github.com/AndreyAkinshin/pragmastat
 BugReports: https://github.com/AndreyAkinshin/pragmastat/issues
 Encoding: UTF-8
-Suggests: 
+Imports:
+    R6
+Suggests:
     testthat (>= 3.0.0),
     jsonlite
 Config/testthat/edition: 3
