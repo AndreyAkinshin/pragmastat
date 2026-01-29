@@ -42,4 +42,4 @@ __all__ = [
     "Power",
 ]
 
-__version__ = "4.0.3"
+__version__ = "5.0.0"

@@ -3,10 +3,10 @@
 Install from npm:
 
 ```bash
-npm i pragmastat@4.0.3
+npm i pragmastat@5.0.0
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v4.0.3/ts
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v5.0.0/ts
 
 Pragmastat on npm: https://www.npmjs.com/package/pragmastat
 
