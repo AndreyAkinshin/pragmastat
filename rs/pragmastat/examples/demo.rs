@@ -1,7 +1,7 @@
 use pragmastat::distributions::{Additive, Distribution, Exp, Multiplic, Power, Uniform};
 use pragmastat::*;
 
-fn print(result: Result<f64, &str>) {
+fn print<E: std::fmt::Debug>(result: Result<f64, E>) {
     println!("{}", result.unwrap());
 }
 

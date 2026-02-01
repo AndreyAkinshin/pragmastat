@@ -37,8 +37,20 @@ fn center_infinite_input() {
 
 #[test]
 fn spread_empty_input() {
-    // spread returns 0.0 for empty input (single element returns 0.0 spread)
-    assert!(spread(&[]).is_ok());
+    // spread now requires sparity (Spread > 0), which implies at least 2 elements
+    assert!(spread(&[]).is_err());
+}
+
+#[test]
+fn spread_single_input() {
+    // single element fails sparity (Spread = 0)
+    assert!(spread(&[5.0]).is_err());
+}
+
+#[test]
+fn spread_constant_input() {
+    // constant values fail sparity (Spread = 0)
+    assert!(spread(&[5.0, 5.0, 5.0]).is_err());
 }
 
 #[test]

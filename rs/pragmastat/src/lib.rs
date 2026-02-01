@@ -6,6 +6,7 @@
 //! - Enable simple implementations without advanced statistical libraries
 //! - Provide clear explanations accessible to practitioners without deep statistical training
 
+pub mod assumptions;
 pub mod distributions;
 pub mod estimators;
 pub mod pairwise_margin;
@@ -20,6 +21,7 @@ mod fnv1a;
 mod splitmix64;
 mod xoshiro256;
 
+pub use assumptions::{AssumptionError, AssumptionId, EstimatorError, Subject, Violation};
 pub use distributions::{Additive, Distribution, Exp, Multiplic, Power, Uniform};
 pub use estimators::{
     avg_spread, center, disparity, median, ratio, rel_spread, shift, shift_bounds, spread, Bounds,
