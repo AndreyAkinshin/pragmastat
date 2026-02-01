@@ -15,7 +15,19 @@ impl XRefMap {
 
         // Chapter labels -> chapter URLs
         mappings.insert("ch-algorithms".into(), "/algorithms".into());
+        mappings.insert("ch-assumptions".into(), "/assumptions".into());
         mappings.insert("ch-tests".into(), "/tests".into());
+
+        // Assumptions chapter sections
+        mappings.insert("sec-assumptions".into(), "/assumptions".into());
+        mappings.insert(
+            "sec-positivity".into(),
+            "/assumptions#positivity-assumption".into(),
+        );
+        mappings.insert(
+            "sec-sparity".into(),
+            "/assumptions#sparity-assumption".into(),
+        );
 
         // Section labels -> chapter URLs with anchors
         mappings.insert(

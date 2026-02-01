@@ -122,28 +122,34 @@ const CHAPTERS: &[Chapter] = &[
         order: 3,
     },
     Chapter {
+        slug: "assumptions",
+        file: "chapters/assumptions",
+        title: "Assumptions",
+        order: 4,
+    },
+    Chapter {
         slug: "studies",
         file: "chapters/studies",
         title: "Studies",
-        order: 4,
+        order: 5,
     },
     Chapter {
         slug: "implementations",
         file: "chapters/implementations",
         title: "Implementations",
-        order: 5,
+        order: 6,
     },
     Chapter {
         slug: "tests",
         file: "chapters/tests",
         title: "Tests",
-        order: 6,
+        order: 7,
     },
     Chapter {
         slug: "methodology",
         file: "chapters/methodology",
         title: "Methodology",
-        order: 7,
+        order: 8,
     },
 ];
 
