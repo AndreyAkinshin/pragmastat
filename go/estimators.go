@@ -19,10 +19,11 @@ var errMisrateOutOfRange = errors.New("misrate must be in range [0, 1]")
 
 // Median calculates the median of a slice of numeric values.
 func Median[T Number](values []T) (float64, error) {
-	n := len(values)
-	if n == 0 {
-		return 0, errors.New("input slice cannot be empty")
+	// Check validity (priority 0)
+	if err := checkValidity(values, SubjectX, "Median"); err != nil {
+		return 0, err
 	}
+	n := len(values)
 
 	// Create a copy to avoid modifying the original slice
 	sorted := make([]T, n)
@@ -40,6 +41,10 @@ func Median[T Number](values []T) (float64, error) {
 // More robust than the mean and more efficient than the median.
 // Uses fast O(n log n) algorithm.
 func Center[T Number](x []T) (float64, error) {
+	// Check validity (priority 0)
+	if err := checkValidity(x, SubjectX, "Center"); err != nil {
+		return 0, err
+	}
 	return fastCenter(x)
 }
 
@@ -47,25 +52,47 @@ func Center[T Number](x []T) (float64, error) {
 // Calculates the median of all pairwise absolute differences |x[i] - x[j]|.
 // More robust than standard deviation and more efficient than MAD.
 // Uses fast O(n log n) algorithm.
+//
+// Assumptions:
+//   - sparity(x) - sample must be non tie-dominant (Spread > 0)
 func Spread[T Number](x []T) (float64, error) {
+	// Check validity (priority 0)
+	if err := checkValidity(x, SubjectX, "Spread"); err != nil {
+		return 0, err
+	}
+	// Check sparity (priority 2)
+	if err := checkSparity(x, SubjectX, "Spread"); err != nil {
+		return 0, err
+	}
 	return fastSpread(x)
 }
 
 // RelSpread measures the relative dispersion of a sample.
 // Calculates the ratio of Spread to absolute Center.
 // Robust alternative to the coefficient of variation.
+//
+// Assumptions:
+//   - positivity(x) - all values must be strictly positive (ensures Center > 0)
 func RelSpread[T Number](x []T) (float64, error) {
-	centerVal, err := Center(x)
+	// Check validity (priority 0)
+	if err := checkValidity(x, SubjectX, "RelSpread"); err != nil {
+		return 0, err
+	}
+	// Check positivity (priority 1)
+	if err := checkPositivity(x, SubjectX, "RelSpread"); err != nil {
+		return 0, err
+	}
+	// Calculate center (we know x is valid)
+	centerVal, err := fastCenter(x)
 	if err != nil {
 		return 0, err
 	}
-	if centerVal == 0.0 {
-		return 0, errors.New("RelSpread is undefined when Center equals zero")
-	}
-	spreadVal, err := Spread(x)
+	// Calculate spread (using internal implementation since we already validated)
+	spreadVal, err := fastSpread(x)
 	if err != nil {
 		return 0, err
 	}
+	// center is guaranteed positive because all values are positive
 	return spreadVal / math.Abs(centerVal), nil
 }
 
@@ -74,22 +101,39 @@ func RelSpread[T Number](x []T) (float64, error) {
 // Positive values mean x is typically larger, negative means y is typically larger.
 // Uses fast O((m + n) * log(precision)) algorithm.
 func Shift[T Number](x, y []T) (float64, error) {
+	// Check validity (priority 0)
+	if err := checkValidity(x, SubjectX, "Shift"); err != nil {
+		return 0, err
+	}
+	if err := checkValidity(y, SubjectY, "Shift"); err != nil {
+		return 0, err
+	}
 	return fastShift(x, y)
 }
 
 // Ratio measures how many times larger x is compared to y.
 // Calculates the median of all pairwise ratios (x[i] / y[j]).
 // For example, Ratio = 1.2 means x is typically 20% larger than y.
+//
+// Assumptions:
+//   - positivity(x) - all values in x must be strictly positive
+//   - positivity(y) - all values in y must be strictly positive
 func Ratio[T Number](x, y []T) (float64, error) {
-	if len(x) == 0 || len(y) == 0 {
-		return 0, errors.New("input slices cannot be empty")
+	// Check validity for x (priority 0, subject x)
+	if err := checkValidity(x, SubjectX, "Ratio"); err != nil {
+		return 0, err
 	}
-
-	// Check that all y values are strictly positive
-	for _, yj := range y {
-		if yj <= 0 {
-			return 0, errors.New("all values in y must be strictly positive")
-		}
+	// Check validity for y (priority 0, subject y)
+	if err := checkValidity(y, SubjectY, "Ratio"); err != nil {
+		return 0, err
+	}
+	// Check positivity for x (priority 1, subject x)
+	if err := checkPositivity(x, SubjectX, "Ratio"); err != nil {
+		return 0, err
+	}
+	// Check positivity for y (priority 1, subject y)
+	if err := checkPositivity(y, SubjectY, "Ratio"); err != nil {
+		return 0, err
 	}
 
 	var pairwiseRatios []float64
@@ -104,19 +148,37 @@ func Ratio[T Number](x, y []T) (float64, error) {
 
 // AvgSpread measures the typical variability when considering both samples together.
 // Computes the weighted average of individual spreads: (n*Spread(x) + m*Spread(y))/(n+m).
+//
+// Assumptions:
+//   - sparity(x) - first sample must be non tie-dominant (Spread > 0)
+//   - sparity(y) - second sample must be non tie-dominant (Spread > 0)
 func AvgSpread[T Number](x, y []T) (float64, error) {
-	if len(x) == 0 || len(y) == 0 {
-		return 0, errors.New("input slices cannot be empty")
+	// Check validity for x (priority 0, subject x)
+	if err := checkValidity(x, SubjectX, "AvgSpread"); err != nil {
+		return 0, err
+	}
+	// Check validity for y (priority 0, subject y)
+	if err := checkValidity(y, SubjectY, "AvgSpread"); err != nil {
+		return 0, err
+	}
+	// Check sparity for x (priority 2, subject x)
+	if err := checkSparity(x, SubjectX, "AvgSpread"); err != nil {
+		return 0, err
+	}
+	// Check sparity for y (priority 2, subject y)
+	if err := checkSparity(y, SubjectY, "AvgSpread"); err != nil {
+		return 0, err
 	}
 
 	n := float64(len(x))
 	m := float64(len(y))
 
-	spreadX, err := Spread(x)
+	// Calculate spreads (using internal implementation since we already validated)
+	spreadX, err := fastSpread(x)
 	if err != nil {
 		return 0, err
 	}
-	spreadY, err := Spread(y)
+	spreadY, err := fastSpread(y)
 	if err != nil {
 		return 0, err
 	}
@@ -126,19 +188,47 @@ func AvgSpread[T Number](x, y []T) (float64, error) {
 
 // Disparity measures effect size: a normalized difference between x and y.
 // Calculated as Shift / AvgSpread. Robust alternative to Cohen's d.
-// Returns infinity if AvgSpread is zero.
+//
+// Assumptions:
+//   - sparity(x) - first sample must be non tie-dominant (Spread > 0)
+//   - sparity(y) - second sample must be non tie-dominant (Spread > 0)
 func Disparity[T Number](x, y []T) (float64, error) {
-	shiftVal, err := Shift(x, y)
+	// Check validity for x (priority 0, subject x)
+	if err := checkValidity(x, SubjectX, "Disparity"); err != nil {
+		return 0, err
+	}
+	// Check validity for y (priority 0, subject y)
+	if err := checkValidity(y, SubjectY, "Disparity"); err != nil {
+		return 0, err
+	}
+	// Check sparity for x (priority 2, subject x)
+	if err := checkSparity(x, SubjectX, "Disparity"); err != nil {
+		return 0, err
+	}
+	// Check sparity for y (priority 2, subject y)
+	if err := checkSparity(y, SubjectY, "Disparity"); err != nil {
+		return 0, err
+	}
+
+	n := float64(len(x))
+	m := float64(len(y))
+
+	// Calculate shift (we know inputs are valid)
+	shiftVal, err := fastShift(x, y)
 	if err != nil {
 		return 0, err
 	}
-	avgSpreadVal, err := AvgSpread(x, y)
+	// Calculate avg_spread (using internal implementation since we already validated)
+	spreadX, err := fastSpread(x)
 	if err != nil {
 		return 0, err
 	}
-	if avgSpreadVal == 0.0 {
-		return math.Inf(1), nil
+	spreadY, err := fastSpread(y)
+	if err != nil {
+		return 0, err
 	}
+	avgSpreadVal := (n*spreadX + m*spreadY) / (n + m)
+
 	return shiftVal / avgSpreadVal, nil
 }
 
@@ -152,12 +242,17 @@ type Bounds struct {
 // The misrate represents the probability that the true shift falls outside the computed bounds.
 // This is a pragmatic alternative to traditional confidence intervals for the Hodges-Lehmann estimator.
 func ShiftBounds[T Number](x, y []T, misrate float64) (Bounds, error) {
+	// Check validity for x
+	if err := checkValidity(x, SubjectX, "ShiftBounds"); err != nil {
+		return Bounds{}, err
+	}
+	// Check validity for y
+	if err := checkValidity(y, SubjectY, "ShiftBounds"); err != nil {
+		return Bounds{}, err
+	}
+
 	n := len(x)
 	m := len(y)
-
-	if n == 0 || m == 0 {
-		return Bounds{}, errors.New("input slices cannot be empty")
-	}
 
 	// Sort both arrays
 	xs := make([]T, n)
