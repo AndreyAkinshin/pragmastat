@@ -43,8 +43,11 @@ Drift tables in this manual are empirically measured, not analytically derived.
 
 This approach has practical advantages:
 simulations can explore conditions that resist closed-form analysis,
-and empirical results are self-validating—they show what actually happens,
+and empirical results are self-validating — they show what actually happens,
 not what theory predicts should happen.
+
+For the formal treatment of domain assumptions that govern valid inputs,
+see the Assumptions chapter.
 
 #pagebreak()
 == Epistemic Humility
@@ -185,6 +188,7 @@ Names in this toolkit encode operational knowledge rather than historical proven
   [Pareto], [$Power$], [Behavior: power-law relationship],
   [Hodges-Lehmann], [$Center$], [Function: measures central tendency],
   [Shamos], [$Spread$], [Function: measures variability],
+  [(none)], [sparity], [Assumption: property of having positive spread],
 )
 
 #v(0.5em)

@@ -1,3 +1,5 @@
+#include "chapters/assumptions.typ"
+
 #include "chapters/toolkit.typ"
 
 #include "chapters/distributions.typ"
