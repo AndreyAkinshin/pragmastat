@@ -1,0 +1,252 @@
+{
+  "suite": "validity",
+  "description": "Tests for the validity assumption: non-empty input with finite defined real values",
+  "cases": [
+    {
+      "name": "ratio_empty_x",
+      "function": "Ratio",
+      "inputs": {
+        "x": [],
+        "y": [1.0, 2.0, 3.0]
+      },
+      "expected_violation": {
+        "id": "validity",
+        "subject": "x"
+      }
+    },
+    {
+      "name": "ratio_empty_y",
+      "function": "Ratio",
+      "inputs": {
+        "x": [1.0, 2.0, 3.0],
+        "y": []
+      },
+      "expected_violation": {
+        "id": "validity",
+        "subject": "y"
+      }
+    },
+    {
+      "name": "ratio_nan_x",
+      "function": "Ratio",
+      "inputs": {
+        "x": [1.0, "NaN", 3.0],
+        "y": [1.0, 2.0, 3.0]
+      },
+      "expected_violation": {
+        "id": "validity",
+        "subject": "x"
+      }
+    },
+    {
+      "name": "ratio_nan_y",
+      "function": "Ratio",
+      "inputs": {
+        "x": [1.0, 2.0, 3.0],
+        "y": [1.0, "NaN", 3.0]
+      },
+      "expected_violation": {
+        "id": "validity",
+        "subject": "y"
+      }
+    },
+    {
+      "name": "ratio_inf_x",
+      "function": "Ratio",
+      "inputs": {
+        "x": [1.0, "Infinity", 3.0],
+        "y": [1.0, 2.0, 3.0]
+      },
+      "expected_violation": {
+        "id": "validity",
+        "subject": "x"
+      }
+    },
+    {
+      "name": "ratio_neg_inf_y",
+      "function": "Ratio",
+      "inputs": {
+        "x": [1.0, 2.0, 3.0],
+        "y": [1.0, "-Infinity", 3.0]
+      },
+      "expected_violation": {
+        "id": "validity",
+        "subject": "y"
+      }
+    },
+    {
+      "name": "center_empty",
+      "function": "Center",
+      "inputs": {
+        "x": []
+      },
+      "expected_violation": {
+        "id": "validity",
+        "subject": "x"
+      }
+    },
+    {
+      "name": "center_nan",
+      "function": "Center",
+      "inputs": {
+        "x": [1.0, "NaN", 3.0]
+      },
+      "expected_violation": {
+        "id": "validity",
+        "subject": "x"
+      }
+    },
+    {
+      "name": "shift_empty_x",
+      "function": "Shift",
+      "inputs": {
+        "x": [],
+        "y": [1.0, 2.0, 3.0]
+      },
+      "expected_violation": {
+        "id": "validity",
+        "subject": "x"
+      }
+    },
+    {
+      "name": "shift_empty_y",
+      "function": "Shift",
+      "inputs": {
+        "x": [1.0, 2.0, 3.0],
+        "y": []
+      },
+      "expected_violation": {
+        "id": "validity",
+        "subject": "y"
+      }
+    },
+    {
+      "name": "shift_nan_x",
+      "function": "Shift",
+      "inputs": {
+        "x": [1.0, "NaN", 3.0],
+        "y": [1.0, 2.0, 3.0]
+      },
+      "expected_violation": {
+        "id": "validity",
+        "subject": "x"
+      }
+    },
+    {
+      "name": "shift_nan_y",
+      "function": "Shift",
+      "inputs": {
+        "x": [1.0, 2.0, 3.0],
+        "y": [1.0, "NaN", 3.0]
+      },
+      "expected_violation": {
+        "id": "validity",
+        "subject": "y"
+      }
+    },
+    {
+      "name": "rel_spread_empty",
+      "function": "RelSpread",
+      "inputs": {
+        "x": []
+      },
+      "expected_violation": {
+        "id": "validity",
+        "subject": "x"
+      }
+    },
+    {
+      "name": "rel_spread_nan",
+      "function": "RelSpread",
+      "inputs": {
+        "x": [1.0, "NaN", 3.0]
+      },
+      "expected_violation": {
+        "id": "validity",
+        "subject": "x"
+      }
+    },
+    {
+      "name": "spread_nan",
+      "function": "Spread",
+      "inputs": {
+        "x": [1.0, "NaN", 3.0]
+      },
+      "expected_violation": {
+        "id": "validity",
+        "subject": "x"
+      }
+    },
+    {
+      "name": "spread_inf",
+      "function": "Spread",
+      "inputs": {
+        "x": [1.0, "Infinity", 3.0]
+      },
+      "expected_violation": {
+        "id": "validity",
+        "subject": "x"
+      }
+    },
+    {
+      "name": "avg_spread_empty_x",
+      "function": "AvgSpread",
+      "inputs": {
+        "x": [],
+        "y": [1.0, 2.0, 3.0]
+      },
+      "expected_violation": {
+        "id": "validity",
+        "subject": "x"
+      }
+    },
+    {
+      "name": "avg_spread_empty_y",
+      "function": "AvgSpread",
+      "inputs": {
+        "x": [1.0, 2.0, 3.0],
+        "y": []
+      },
+      "expected_violation": {
+        "id": "validity",
+        "subject": "y"
+      }
+    },
+    {
+      "name": "avg_spread_nan_x",
+      "function": "AvgSpread",
+      "inputs": {
+        "x": ["NaN", 2.0, 3.0],
+        "y": [1.0, 2.0, 3.0]
+      },
+      "expected_violation": {
+        "id": "validity",
+        "subject": "x"
+      }
+    },
+    {
+      "name": "disparity_empty_x",
+      "function": "Disparity",
+      "inputs": {
+        "x": [],
+        "y": [1.0, 2.0, 3.0]
+      },
+      "expected_violation": {
+        "id": "validity",
+        "subject": "x"
+      }
+    },
+    {
+      "name": "disparity_inf_y",
+      "function": "Disparity",
+      "inputs": {
+        "x": [1.0, 2.0, 3.0],
+        "y": ["Infinity"]
+      },
+      "expected_violation": {
+        "id": "validity",
+        "subject": "y"
+      }
+    }
+  ]
+}

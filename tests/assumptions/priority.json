@@ -1,0 +1,148 @@
+{
+  "suite": "priority",
+  "description": "Tests for priority order (validity > positivity > sparity) and subject order (x before y)",
+  "cases": [
+    {
+      "name": "validity_over_positivity_empty_vs_negative",
+      "description": "Empty x should report validity, not positivity on negative y",
+      "function": "Ratio",
+      "inputs": {
+        "x": [],
+        "y": [-1.0, -2.0]
+      },
+      "expected_violation": {
+        "id": "validity",
+        "subject": "x"
+      }
+    },
+    {
+      "name": "validity_over_positivity_nan_vs_negative",
+      "description": "NaN in x should report validity, not positivity on negative y",
+      "function": "Ratio",
+      "inputs": {
+        "x": [1.0, "NaN"],
+        "y": [-1.0, -2.0]
+      },
+      "expected_violation": {
+        "id": "validity",
+        "subject": "x"
+      }
+    },
+    {
+      "name": "validity_over_sparity",
+      "description": "Empty x should report validity, not sparity on constant y",
+      "function": "AvgSpread",
+      "inputs": {
+        "x": [],
+        "y": [5.0, 5.0, 5.0]
+      },
+      "expected_violation": {
+        "id": "validity",
+        "subject": "x"
+      }
+    },
+    {
+      "name": "positivity_over_sparity_ratio",
+      "description": "Negative x should report positivity, not sparity on constant y (for Ratio, y is never checked for sparity)",
+      "function": "Ratio",
+      "inputs": {
+        "x": [-1.0, -2.0],
+        "y": [5.0, 5.0, 5.0]
+      },
+      "expected_violation": {
+        "id": "positivity",
+        "subject": "x"
+      }
+    },
+    {
+      "name": "x_before_y_validity_both_empty",
+      "description": "Both empty should report x first",
+      "function": "Ratio",
+      "inputs": {
+        "x": [],
+        "y": []
+      },
+      "expected_violation": {
+        "id": "validity",
+        "subject": "x"
+      }
+    },
+    {
+      "name": "x_before_y_validity_both_nan",
+      "description": "Both contain NaN should report x first",
+      "function": "Ratio",
+      "inputs": {
+        "x": ["NaN"],
+        "y": ["NaN"]
+      },
+      "expected_violation": {
+        "id": "validity",
+        "subject": "x"
+      }
+    },
+    {
+      "name": "x_before_y_positivity_both_negative",
+      "description": "Both negative should report x first",
+      "function": "Ratio",
+      "inputs": {
+        "x": [-1.0, -2.0],
+        "y": [-3.0, -4.0]
+      },
+      "expected_violation": {
+        "id": "positivity",
+        "subject": "x"
+      }
+    },
+    {
+      "name": "x_before_y_positivity_both_zero",
+      "description": "Both contain zero should report x first",
+      "function": "Ratio",
+      "inputs": {
+        "x": [0.0, 1.0],
+        "y": [0.0, 2.0]
+      },
+      "expected_violation": {
+        "id": "positivity",
+        "subject": "x"
+      }
+    },
+    {
+      "name": "x_before_y_sparity_both_constant",
+      "description": "Both constant should report x first",
+      "function": "AvgSpread",
+      "inputs": {
+        "x": [5.0, 5.0],
+        "y": [7.0, 7.0]
+      },
+      "expected_violation": {
+        "id": "sparity",
+        "subject": "x"
+      }
+    },
+    {
+      "name": "x_before_y_sparity_both_single",
+      "description": "Both single element should report x first",
+      "function": "Disparity",
+      "inputs": {
+        "x": [5.0],
+        "y": [7.0]
+      },
+      "expected_violation": {
+        "id": "sparity",
+        "subject": "x"
+      }
+    },
+    {
+      "name": "spread_validity_over_sparity",
+      "description": "Empty spread should report validity (priority 0), not sparity",
+      "function": "Spread",
+      "inputs": {
+        "x": []
+      },
+      "expected_violation": {
+        "id": "validity",
+        "subject": "x"
+      }
+    }
+  ]
+}

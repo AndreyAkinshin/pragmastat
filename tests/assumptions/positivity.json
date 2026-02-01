@@ -1,0 +1,99 @@
+{
+  "suite": "positivity",
+  "description": "Tests for the positivity assumption: all values must be strictly positive (> 0)",
+  "cases": [
+    {
+      "name": "ratio_negative_x",
+      "function": "Ratio",
+      "inputs": {
+        "x": [-1.0, -2.0, -3.0],
+        "y": [1.0, 2.0, 3.0]
+      },
+      "expected_violation": {
+        "id": "positivity",
+        "subject": "x"
+      }
+    },
+    {
+      "name": "ratio_zero_x",
+      "function": "Ratio",
+      "inputs": {
+        "x": [0.0, 1.0, 2.0],
+        "y": [1.0, 2.0, 3.0]
+      },
+      "expected_violation": {
+        "id": "positivity",
+        "subject": "x"
+      }
+    },
+    {
+      "name": "ratio_negative_y",
+      "function": "Ratio",
+      "inputs": {
+        "x": [1.0, 2.0, 3.0],
+        "y": [-1.0, -2.0, -3.0]
+      },
+      "expected_violation": {
+        "id": "positivity",
+        "subject": "y"
+      }
+    },
+    {
+      "name": "ratio_zero_y",
+      "function": "Ratio",
+      "inputs": {
+        "x": [1.0, 2.0, 3.0],
+        "y": [0.0, 1.0, 2.0]
+      },
+      "expected_violation": {
+        "id": "positivity",
+        "subject": "y"
+      }
+    },
+    {
+      "name": "ratio_mixed_sign_x",
+      "function": "Ratio",
+      "inputs": {
+        "x": [-1.0, 0.0, 1.0],
+        "y": [1.0, 2.0, 3.0]
+      },
+      "expected_violation": {
+        "id": "positivity",
+        "subject": "x"
+      }
+    },
+    {
+      "name": "rel_spread_negative",
+      "function": "RelSpread",
+      "inputs": {
+        "x": [-1.0, -2.0, -3.0]
+      },
+      "expected_violation": {
+        "id": "positivity",
+        "subject": "x"
+      }
+    },
+    {
+      "name": "rel_spread_zero",
+      "function": "RelSpread",
+      "inputs": {
+        "x": [0.0, 1.0, 2.0]
+      },
+      "expected_violation": {
+        "id": "positivity",
+        "subject": "x"
+      }
+    },
+    {
+      "name": "rel_spread_mixed_sign",
+      "function": "RelSpread",
+      "inputs": {
+        "x": [-1.0, 0.0, 1.0]
+      },
+      "expected_violation": {
+        "id": "positivity",
+        "subject": "x"
+      }
+    }
+  ]
+}

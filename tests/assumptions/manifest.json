@@ -1,0 +1,26 @@
+{
+  "name": "assumptions",
+  "description": "Assumption violation conformance tests for cross-language consistency",
+  "suites": [
+    {
+      "name": "validity",
+      "file": "validity.json",
+      "description": "Tests for the validity assumption (non-empty, finite values)"
+    },
+    {
+      "name": "positivity",
+      "file": "positivity.json",
+      "description": "Tests for the positivity assumption (strictly positive values)"
+    },
+    {
+      "name": "sparity",
+      "file": "sparity.json",
+      "description": "Tests for the sparity assumption (Spread > 0)"
+    },
+    {
+      "name": "priority",
+      "file": "priority.json",
+      "description": "Tests for priority order and subject order (x before y)"
+    }
+  ]
+}
