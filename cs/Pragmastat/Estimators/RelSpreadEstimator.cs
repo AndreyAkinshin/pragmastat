@@ -1,3 +1,5 @@
+using Pragmastat.Algorithms;
+using Pragmastat.Exceptions;
 using Pragmastat.Internal;
 using Pragmastat.Metrology;
 
@@ -9,10 +11,15 @@ public class RelSpreadEstimator : IOneSampleEstimator
 
   public Measurement Estimate(Sample x)
   {
-    var center = x.Center();
-    if (center.NominalValue == 0)
-      throw new ArgumentException("RelSpread is undefined when Center equals zero", nameof(x));
-
-    return (x.Spread() / Abs(center)).NominalValue.WithUnit(NumberUnit.Instance);
+    // Check validity (priority 0)
+    Assertion.Validity(x, Subject.X, "RelSpread");
+    // Check positivity (priority 1)
+    Assertion.PositivityAssumption(x, Subject.X, "RelSpread");
+    // Calculate center (we know x is valid, center should succeed)
+    var centerVal = FastCenter.Estimate(x.SortedValues);
+    // Calculate spread (using internal implementation since we already validated)
+    var spreadVal = FastSpread.Estimate(x.SortedValues, isSorted: true);
+    // center is guaranteed positive because all values are positive
+    return (spreadVal / Abs(centerVal)).WithUnit(NumberUnit.Instance);
   }
 }

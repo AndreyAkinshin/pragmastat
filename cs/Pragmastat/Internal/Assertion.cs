@@ -1,5 +1,6 @@
 using System.Globalization;
 using JetBrains.Annotations;
+using Pragmastat.Algorithms;
 using Pragmastat.Exceptions;
 using Pragmastat.Metrology;
 
@@ -214,6 +215,49 @@ internal static class Assertion
     NotNull(name, sample);
     if (sample is { IsWeighted: true })
       throw new WeightedSampleNotSupportedException(name);
+  }
+
+  /// <summary>
+  /// Checks that a sample is valid (non-empty with finite values).
+  /// This validates the implicit validity assumption that applies to all functions.
+  /// </summary>
+  [AssertionMethod]
+  public static void Validity(Sample sample, Subject subject, string functionName)
+  {
+    if (sample.Size == 0)
+      throw AssumptionException.Validity(functionName, subject);
+    foreach (var value in sample.Values)
+    {
+      if (!value.IsFinite())
+        throw AssumptionException.Validity(functionName, subject);
+    }
+  }
+
+  /// <summary>
+  /// Checks that all values in a sample are strictly positive.
+  /// </summary>
+  [AssertionMethod]
+  public static void PositivityAssumption(Sample sample, Subject subject, string functionName)
+  {
+    foreach (var value in sample.Values)
+    {
+      if (value <= 0)
+        throw AssumptionException.Positivity(functionName, subject);
+    }
+  }
+
+  /// <summary>
+  /// Checks that a sample is non tie-dominant (Spread > 0).
+  /// This also fails for samples with fewer than 2 elements.
+  /// </summary>
+  [AssertionMethod]
+  public static void Sparity(Sample sample, Subject subject, string functionName)
+  {
+    if (sample.Size < 2)
+      throw AssumptionException.Sparity(functionName, subject);
+    var spread = FastSpread.Estimate(sample.SortedValues, isSorted: true);
+    if (spread <= 0)
+      throw AssumptionException.Sparity(functionName, subject);
   }
 
   [StringFormatMethod("format")]

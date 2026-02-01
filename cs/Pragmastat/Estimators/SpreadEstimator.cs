@@ -1,4 +1,5 @@
 using Pragmastat.Algorithms;
+using Pragmastat.Exceptions;
 using Pragmastat.Internal;
 using Pragmastat.Metrology;
 
@@ -10,8 +11,10 @@ public class SpreadEstimator : IOneSampleEstimator
 
   public Measurement Estimate(Sample x)
   {
-    if (x.Size == 1)
-      return Measurement.Zero(x.Unit);
+    // Check validity first (priority 0)
+    Assertion.Validity(x, Subject.X, "Spread");
+    // Check sparity (priority 2)
+    Assertion.Sparity(x, Subject.X, "Spread");
     return FastSpread.Estimate(x.SortedValues, isSorted: true).WithUnitOf(x);
   }
 }

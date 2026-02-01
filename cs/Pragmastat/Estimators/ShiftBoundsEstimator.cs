@@ -1,4 +1,5 @@
 using Pragmastat.Algorithms;
+using Pragmastat.Exceptions;
 using Pragmastat.Functions;
 using Pragmastat.Internal;
 
@@ -11,6 +12,10 @@ public class ShiftBoundsEstimator : ITwoSampleBoundsEstimator
   public Bounds Estimate(Sample x, Sample y, Probability misrate)
   {
     Assertion.MatchedUnit(x, y);
+    // Check validity for x
+    Assertion.Validity(x, Subject.X, "ShiftBounds");
+    // Check validity for y
+    Assertion.Validity(y, Subject.Y, "ShiftBounds");
 
     int n = x.Size, m = y.Size;
     long total = (long)n * m;

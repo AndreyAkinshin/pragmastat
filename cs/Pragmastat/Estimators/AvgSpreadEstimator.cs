@@ -1,15 +1,29 @@
+using Pragmastat.Algorithms;
+using Pragmastat.Exceptions;
 using Pragmastat.Internal;
 using Pragmastat.Metrology;
 
 namespace Pragmastat.Estimators;
 
-public class AvgSpreadEstimator(IOneSampleEstimator spread) : ITwoSampleEstimator
+public class AvgSpreadEstimator : ITwoSampleEstimator
 {
-  public static readonly AvgSpreadEstimator Instance = new(SpreadEstimator.Instance);
+  public static readonly AvgSpreadEstimator Instance = new();
 
   public Measurement Estimate(Sample x, Sample y)
   {
     Assertion.MatchedUnit(x, y);
-    return (x.Size * spread.Estimate(x) + y.Size * spread.Estimate(y)) / (x.Size + y.Size);
+    // Check validity for x (priority 0, subject x)
+    Assertion.Validity(x, Subject.X, "AvgSpread");
+    // Check validity for y (priority 0, subject y)
+    Assertion.Validity(y, Subject.Y, "AvgSpread");
+    // Check sparity for x (priority 2, subject x)
+    Assertion.Sparity(x, Subject.X, "AvgSpread");
+    // Check sparity for y (priority 2, subject y)
+    Assertion.Sparity(y, Subject.Y, "AvgSpread");
+
+    // Calculate spreads (using internal implementation since we already validated)
+    var spreadX = FastSpread.Estimate(x.SortedValues, isSorted: true);
+    var spreadY = FastSpread.Estimate(y.SortedValues, isSorted: true);
+    return ((x.Size * spreadX + y.Size * spreadY) / (x.Size + y.Size)).WithUnitOf(x);
   }
 }

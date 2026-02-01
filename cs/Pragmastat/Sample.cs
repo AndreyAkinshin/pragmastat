@@ -1,4 +1,5 @@
 using JetBrains.Annotations;
+using Pragmastat.Exceptions;
 using Pragmastat.Internal;
 using Pragmastat.Metrology;
 
@@ -27,17 +28,29 @@ public class Sample
   /// </summary>
   public double WeightedSize { get; }
 
-  public Sample(params double[] values) : this(values, null)
+  public Sample(params double[] values) : this((IReadOnlyList<double>)values, null, null)
   {
   }
 
-  public Sample(params int[] values) : this(values, null)
+  public Sample(params int[] values) : this(Array.ConvertAll(values, x => (double)x), null, null)
   {
   }
 
-  public Sample(IReadOnlyList<double> values, MeasurementUnit? unit = null)
+  internal Subject? ValidationSubject { get; }
+
+  public Sample(IReadOnlyList<double> values, MeasurementUnit? unit = null, Subject? validationSubject = null)
   {
-    Assertion.NotNullOrEmpty(nameof(values), values);
+    // Validate validity assumption at construction time
+    if (values == null)
+      throw new ArgumentNullException(nameof(values), "values can't be null");
+    ValidationSubject = validationSubject ?? Subject.X;
+    if (values.Count == 0)
+      throw AssumptionException.Validity("Sample", ValidationSubject.Value);
+    foreach (var value in values)
+    {
+      if (!value.IsFinite())
+        throw AssumptionException.Validity("Sample", ValidationSubject.Value);
+    }
 
     Values = values;
     Unit = unit ?? NumberUnit.Instance;
@@ -55,9 +68,20 @@ public class Sample
     });
   }
 
-  public Sample(IReadOnlyList<double> values, IReadOnlyList<double> weights, MeasurementUnit? measurementUnit = null)
+  public Sample(IReadOnlyList<double> values, IReadOnlyList<double> weights, MeasurementUnit? measurementUnit = null, Subject? validationSubject = null)
   {
-    Assertion.NotNullOrEmpty(nameof(values), values);
+    // Validate validity assumption at construction time
+    if (values == null)
+      throw new ArgumentNullException(nameof(values), "values can't be null");
+    ValidationSubject = validationSubject ?? Subject.X;
+    if (values.Count == 0)
+      throw AssumptionException.Validity("Sample", ValidationSubject.Value);
+    foreach (var value in values)
+    {
+      if (!value.IsFinite())
+        throw AssumptionException.Validity("Sample", ValidationSubject.Value);
+    }
+
     Assertion.NotNullOrEmpty(nameof(weights), weights);
     if (values.Count != weights.Count)
       throw new ArgumentException(

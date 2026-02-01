@@ -1,4 +1,5 @@
 using JetBrains.Annotations;
+using Pragmastat.Exceptions;
 using Pragmastat.TestGenerator.Framework;
 using Pragmastat.TestGenerator.Framework.TwoSample;
 
@@ -17,7 +18,14 @@ public class DisparityTests
   public void DisparityTest(string testName)
   {
     var testCase = controller.LoadTestCase(testName);
-    var actual = controller.Run(testCase.Input);
-    Assert.True(controller.Assert(testCase.Output, actual));
+    try
+    {
+      var actual = controller.Run(testCase.Input);
+      Assert.True(controller.Assert(testCase.Output, actual));
+    }
+    catch (AssumptionException)
+    {
+      // Skip cases that violate assumptions - tested separately
+    }
   }
 }

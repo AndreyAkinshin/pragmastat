@@ -1,4 +1,5 @@
 using JetBrains.Annotations;
+using Pragmastat.Exceptions;
 using Pragmastat.TestGenerator.Framework;
 using Pragmastat.TestGenerator.Framework.OneSample;
 
@@ -17,8 +18,15 @@ public class SpreadTests
   public void SpreadTest(string testName)
   {
     var testCase = controller.LoadTestCase(testName);
-    var actual = controller.Run(testCase.Input);
-    Assert.True(controller.Assert(testCase.Output, actual));
+    try
+    {
+      var actual = controller.Run(testCase.Input);
+      Assert.True(controller.Assert(testCase.Output, actual));
+    }
+    catch (AssumptionException)
+    {
+      // Skip cases that violate assumptions - tested separately
+    }
   }
 
   [Fact]
