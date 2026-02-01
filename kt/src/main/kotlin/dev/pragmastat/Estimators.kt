@@ -7,7 +7,8 @@ import kotlin.math.min
  * Calculates the median of a list of values
  */
 fun median(values: List<Double>): Double {
-    require(values.isNotEmpty()) { "Input list cannot be empty" }
+    // Check validity (priority 0)
+    checkValidity(values, Subject.X, "Median")
     
     val sorted = values.sorted()
     val n = sorted.size
@@ -27,7 +28,8 @@ fun median(values: List<Double>): Double {
  * Uses fast O(n log n) algorithm.
  */
 fun center(x: List<Double>): Double {
-    require(x.isNotEmpty()) { "Input list cannot be empty" }
+    // Check validity (priority 0)
+    checkValidity(x, Subject.X, "Center")
     return fastCenter(x)
 }
 
@@ -37,9 +39,15 @@ fun center(x: List<Double>): Double {
  * Calculates the median of all pairwise absolute differences |x[i] - x[j]|.
  * More robust than standard deviation and more efficient than MAD.
  * Uses fast O(n log n) algorithm.
+ *
+ * Assumptions:
+ *   - sparity(x) - sample must be non tie-dominant (Spread > 0)
  */
 fun spread(x: List<Double>): Double {
-    require(x.isNotEmpty()) { "Input list cannot be empty" }
+    // Check validity (priority 0)
+    checkValidity(x, Subject.X, "Spread")
+    // Check sparity (priority 2)
+    checkSparity(x, Subject.X, "Spread")
     return fastSpread(x)
 }
 
@@ -48,13 +56,21 @@ fun spread(x: List<Double>): Double {
  *
  * Calculates the ratio of Spread to absolute Center.
  * Robust alternative to the coefficient of variation.
+ *
+ * Assumptions:
+ *   - positivity(x) - all values must be strictly positive (ensures Center > 0)
  */
 fun relSpread(x: List<Double>): Double {
-    require(x.isNotEmpty()) { "Input list cannot be empty" }
-    val centerVal = center(x)
-    require(centerVal != 0.0) { "RelSpread is undefined when Center equals zero" }
+    // Check validity (priority 0)
+    checkValidity(x, Subject.X, "RelSpread")
+    // Check positivity (priority 1)
+    checkPositivity(x, Subject.X, "RelSpread")
 
-    return spread(x) / abs(centerVal)
+    val centerVal = fastCenter(x)
+    // Calculate spread (using internal implementation since we already validated)
+    val spreadVal = fastSpread(x)
+    // center is guaranteed positive because all values are positive
+    return spreadVal / abs(centerVal)
 }
 
 /**
@@ -65,7 +81,9 @@ fun relSpread(x: List<Double>): Double {
  * Uses fast O((m + n) * log(precision)) algorithm.
  */
 fun shift(x: List<Double>, y: List<Double>): Double {
-    require(x.isNotEmpty() && y.isNotEmpty()) { "Input lists cannot be empty" }
+    // Check validity (priority 0)
+    checkValidity(x, Subject.X, "Shift")
+    checkValidity(y, Subject.Y, "Shift")
     return fastShift(x, y)[0]
 }
 
@@ -74,10 +92,20 @@ fun shift(x: List<Double>, y: List<Double>): Double {
  *
  * Calculates the median of all pairwise ratios (x[i] / y[j]).
  * For example, ratio = 1.2 means x is typically 20% larger than y.
+ *
+ * Assumptions:
+ *   - positivity(x) - all values in x must be strictly positive
+ *   - positivity(y) - all values in y must be strictly positive
  */
 fun ratio(x: List<Double>, y: List<Double>): Double {
-    require(x.isNotEmpty() && y.isNotEmpty()) { "Input lists cannot be empty" }
-    require(y.all { it > 0 }) { "All values in y must be strictly positive" }
+    // Check validity for x (priority 0, subject x)
+    checkValidity(x, Subject.X, "Ratio")
+    // Check validity for y (priority 0, subject y)
+    checkValidity(y, Subject.Y, "Ratio")
+    // Check positivity for x (priority 1, subject x)
+    checkPositivity(x, Subject.X, "Ratio")
+    // Check positivity for y (priority 1, subject y)
+    checkPositivity(y, Subject.Y, "Ratio")
 
     val pairwiseRatios = mutableListOf<Double>()
     for (xi in x) {
@@ -93,14 +121,26 @@ fun ratio(x: List<Double>, y: List<Double>): Double {
  * Measures the typical variability when considering both samples together (AvgSpread)
  *
  * Computes the weighted average of individual spreads: (n*Spread(x) + m*Spread(y))/(n+m).
+ *
+ * Assumptions:
+ *   - sparity(x) - first sample must be non tie-dominant (Spread > 0)
+ *   - sparity(y) - second sample must be non tie-dominant (Spread > 0)
  */
 fun avgSpread(x: List<Double>, y: List<Double>): Double {
-    require(x.isNotEmpty() && y.isNotEmpty()) { "Input lists cannot be empty" }
+    // Check validity for x (priority 0, subject x)
+    checkValidity(x, Subject.X, "AvgSpread")
+    // Check validity for y (priority 0, subject y)
+    checkValidity(y, Subject.Y, "AvgSpread")
+    // Check sparity for x (priority 2, subject x)
+    checkSparity(x, Subject.X, "AvgSpread")
+    // Check sparity for y (priority 2, subject y)
+    checkSparity(y, Subject.Y, "AvgSpread")
 
     val n = x.size
     val m = y.size
-    val spreadX = spread(x)
-    val spreadY = spread(y)
+    // Calculate spreads (using internal implementation since we already validated)
+    val spreadX = fastSpread(x)
+    val spreadY = fastSpread(y)
 
     return (n * spreadX + m * spreadY) / (n + m).toDouble()
 }
@@ -109,13 +149,32 @@ fun avgSpread(x: List<Double>, y: List<Double>): Double {
  * Measures effect size: a normalized difference between x and y (Disparity)
  *
  * Calculated as Shift / AvgSpread. Robust alternative to Cohen's d.
- * Returns infinity if avgSpread is zero.
+ *
+ * Assumptions:
+ *   - sparity(x) - first sample must be non tie-dominant (Spread > 0)
+ *   - sparity(y) - second sample must be non tie-dominant (Spread > 0)
  */
 fun disparity(x: List<Double>, y: List<Double>): Double {
-    val avgSpreadVal = avgSpread(x, y)
-    if (avgSpreadVal == 0.0) return Double.POSITIVE_INFINITY
+    // Check validity for x (priority 0, subject x)
+    checkValidity(x, Subject.X, "Disparity")
+    // Check validity for y (priority 0, subject y)
+    checkValidity(y, Subject.Y, "Disparity")
+    // Check sparity for x (priority 2, subject x)
+    checkSparity(x, Subject.X, "Disparity")
+    // Check sparity for y (priority 2, subject y)
+    checkSparity(y, Subject.Y, "Disparity")
 
-    return shift(x, y) / avgSpreadVal
+    val n = x.size
+    val m = y.size
+
+    // Calculate shift (we know inputs are valid)
+    val shiftVal = fastShift(x, y)[0]
+    // Calculate avg_spread (using internal implementation since we already validated)
+    val spreadX = fastSpread(x)
+    val spreadY = fastSpread(y)
+    val avgSpreadVal = (n * spreadX + m * spreadY) / (n + m).toDouble()
+
+    return shiftVal / avgSpreadVal
 }
 
 /**
@@ -135,7 +194,10 @@ data class Bounds(val lower: Double, val upper: Double)
  * @return A Bounds object containing the lower and upper bounds
  */
 fun shiftBounds(x: List<Double>, y: List<Double>, misrate: Double): Bounds {
-    require(x.isNotEmpty() && y.isNotEmpty()) { "Input lists cannot be empty" }
+    // Check validity for x
+    checkValidity(x, Subject.X, "ShiftBounds")
+    // Check validity for y
+    checkValidity(y, Subject.Y, "ShiftBounds")
 
     val n = x.size
     val m = y.size
