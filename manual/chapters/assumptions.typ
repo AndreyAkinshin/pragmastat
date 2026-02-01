@@ -1,83 +1,33 @@
 #import "/manual/definitions.typ": *
 
-= Assumptions
+= Assumptions <sec-assumptions>
 
 This chapter defines the *domain assumptions* that govern Pragmastat functions.
 Unlike parametric assumptions (Normal, LogNormal, Pareto), domain assumptions describe
 which values are _meaningful inputs_ in the first place.
 
-They form a formal system:
-every function declares the non-trivial assumptions it requires,
-and a function is applicable only when its assumptions hold.
-
-#pagebreak()
-== Assumption Framework
-
-*What assumptions are in Pragmastat*
-
-Assumptions in Pragmastat are *domain constraints*, not statistical models.
-Practitioners often do not know which parametric distribution fits,
-but they do know the domain of their measurements:
-"Are values strictly positive?", "Can zeros occur?", "Do ties have physical meaning?".
-
-This chapter makes those constraints explicit and operational.
-
 #v(0.3em)
 #list(marker: none, tight: true,
   [*Domain over parametric* — assumptions define valid inputs, not distributional shape],
-  [*Formal system* — each function declares a list of required assumptions],
-  [*Decision rule* — a function is applicable iff all its assumptions hold],
-  [*Robustness is not a substitute* — invalid-domain values must be cleaned or transformed],
+  [*Formal system* — each function declares required assumptions; a function is applicable iff all hold],
+  [*Structured errors* — violations report assumption ID and subject, not ad-hoc strings],
 )
 
 #v(0.5em)
 *Implicit Validity Assumption*
 
-All functions in Pragmastat implicitly assume that each sample is a *valid sample*.
-This is the shared domain of the toolkit and is not listed per function.
-
-#list(marker: none, tight: true,
-  [*Non-empty input* — every sample must contain at least one value],
-  [*Finite defined real values* — no NaN, +Inf, or -Inf; all values must be representable real numbers],
-)
-
-Because this is implicit, it does not appear in function-specific assumption lists,
-but it *does* have a formal ID (`validity`) and is reported in structured violations when it fails.
-
-Parameter validity (e.g., $misrate$ ranges) is a regular requirement handled by each implementation
-and is not part of the assumption system.
+All functions implicitly require *valid samples*: non-empty, with finite defined real values
+(no NaN, +Inf, -Inf). This shared constraint has formal ID `validity` but is not listed per function.
 
 #v(0.5em)
-*Decision strategy*
+*Hard vs. Weak Assumptions*
 
-#list(marker: none, tight: true,
-  [1. Ensure samples are valid (non-empty, finite, defined real numbers).],
-  [2. Identify domain constraints (positivity, continuity, sparity).],
-  [3. Select functions whose assumptions match those constraints.],
-  [4. If needed, transform data (e.g., multiply by $-1$ for strictly negative data).],
-)
+Hard assumptions (`validity`, `positivity`, `sparity`) are enforced constraints —
+violating them makes the function inapplicable and triggers a structured error.
 
-#v(0.5em)
-*Common decisions*
-
-#list(marker: none, tight: true,
-  [*Data may be negative* — use sign-agnostic estimators such as $Shift$, $Center$, $Spread$.],
-  [*Data strictly positive* — ratio-based tools and log-space estimators become available.],
-)
-
-#v(0.5em)
-*Hard vs. weak assumptions*
-
-Assumptions in the registry are *hard constraints*: violating them makes the function inapplicable.
-Pragmastat also documents *weak assumptions* (e.g., weak continuity and weak distribution assumptions)
-as performance or design expectations; weak assumptions are not enforced and never produce violations.
-
-#v(0.5em)
-*Assumptions are a contract*
-
-Each function provides an *Assumptions* line in its definition when non-trivial assumptions apply.
-Those assumptions define the _domain support_ of the estimator and
-the behavior expected across all implementations.
+Weak assumptions (e.g., weak continuity, weak distribution) are performance expectations —
+estimators are designed to work well when they hold, but violations are never reported.
+Weak assumptions are assessed through drift tables and simulation studies, not input validation.
 
 #pagebreak()
 == Weak Distribution Assumption
@@ -105,7 +55,7 @@ They are assessed through drift tables, tests, and simulation studies,
 not by checking inputs.
 
 #pagebreak()
-== Positivity Assumption
+== Positivity Assumption <sec-positivity>
 
 *Definition*
 
@@ -176,16 +126,7 @@ If ties dominate pairwise differences, the median pairwise distance collapses to
 and spread-based estimators are no longer meaningful. This is enforced by the sparity assumption.
 
 #pagebreak()
-== Sparity Assumption
-
-*Naming*
-
-_Sparity_ is a Pragmastat term combining "spread" and "-ity" (the property suffix):
-the property of having positive spread.
-It can also be read as evoking "sparse" — pairwise differences are not dominated by zeros.
-
-This follows the toolkit's generative naming principle:
-the name encodes what the assumption checks (`Spread > 0`), not who defined it.
+== Sparity Assumption <sec-sparity>
 
 *Definition*
 
@@ -216,6 +157,14 @@ A sample with $n = 1$ fails sparity because `Spread(x) = 0`, not because of a se
   [`AvgSpread(x, y)` — both samples must have sparity.],
   [`Disparity(x, y)` — both samples must have sparity.],
 )
+
+*Naming*
+
+_Sparity_ is a Pragmastat term combining "spread" and "-ity" (the property suffix):
+the property of having positive spread.
+It can also be read as evoking "sparse" — pairwise differences are not dominated by zeros.
+This follows the toolkit's generative naming principle:
+the name encodes what the assumption checks (`Spread > 0`), not who defined it.
 
 #pagebreak()
 == Assumption IDs and Violation Reporting

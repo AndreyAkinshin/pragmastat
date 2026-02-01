@@ -10,7 +10,7 @@ Weighted average of dispersions (pooled scale).
 #list(marker: none, tight: true,
   [*Also known as* — robust pooled standard deviation],
   [*Domain* — any real numbers],
-  [*Assumptions* — `sparity(x)`, `sparity(y)`],
+  [*Assumptions* — #link(<sec-sparity>)[`sparity(x)`], #link(<sec-sparity>)[`sparity(y)`]],
   [*Unit* — same as measurements],
   [*Caveat* — $AvgSpread(vx, vy) != Spread(vx union vy)$ (pooled scale, not concatenated spread)],
 )

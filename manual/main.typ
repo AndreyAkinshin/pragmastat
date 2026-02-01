@@ -1,10 +1,10 @@
-#include "chapters/assumptions.typ"
-
 #include "chapters/toolkit.typ"
 
 #include "chapters/distributions.typ"
 
 #include "chapters/algorithms.typ"
+
+#include "chapters/assumptions.typ"
 
 #include "chapters/studies.typ"
 

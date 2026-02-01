@@ -47,7 +47,7 @@ and empirical results are self-validating — they show what actually happens,
 not what theory predicts should happen.
 
 For the formal treatment of domain assumptions that govern valid inputs,
-see the Assumptions chapter.
+see the #link(<sec-assumptions>)[Assumptions] chapter.
 
 #pagebreak()
 == Epistemic Humility

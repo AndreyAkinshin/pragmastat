@@ -10,7 +10,7 @@ Relative dispersion normalized by location.
 #list(marker: none, tight: true,
   [*Also known as* — robust coefficient of variation],
   [*Domain* — $Center(vx) != 0$],
-  [*Assumptions* — `positivity(x)`],
+  [*Assumptions* — #link(<sec-positivity>)[`positivity(x)`]],
   [*Unit* — dimensionless],
 )
 

@@ -10,7 +10,7 @@ Robust measure of scale ratio between two samples.
 #list(marker: none, tight: true,
   [*Asymptotic* — median of the ratio of random measurements from $X$ and $Y$],
   [*Domain* — $x_i > 0$, $y_j > 0$],
-  [*Assumptions* — `positivity(x)`, `positivity(y)`],
+  [*Assumptions* — #link(<sec-positivity>)[`positivity(x)`], #link(<sec-positivity>)[`positivity(y)`]],
   [*Unit* — dimensionless],
   [*Caveat* — $Ratio(vx, vy) != 1 / Ratio(vy, vx)$ in general],
 )
