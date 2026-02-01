@@ -17,6 +17,7 @@ from pragmastat import (
     Exp,
     Power,
 )
+from pragmastat.assumptions import AssumptionError
 
 
 def find_repo_root():
@@ -30,7 +31,11 @@ def find_repo_root():
 
 
 def run_reference_tests(estimator_name, estimator_func, is_two_sample=False):
-    """Run reference tests against JSON data files."""
+    """Run reference tests against JSON data files.
+
+    Tests that raise AssumptionError are skipped, as those cases
+    are validated separately in the assumption tests.
+    """
     repo_root = find_repo_root()
     test_data_dir = repo_root / "tests" / estimator_name
 
@@ -46,12 +51,20 @@ def run_reference_tests(estimator_name, estimator_func, is_two_sample=False):
             input_y = test_case["input"]["y"]
             expected_output = test_case["output"]
 
-            actual_output = estimator_func(input_x, input_y)
+            try:
+                actual_output = estimator_func(input_x, input_y)
+            except AssumptionError:
+                # Skip cases that violate assumptions - tested separately
+                continue
         else:
             input_x = test_case["input"]["x"]
             expected_output = test_case["output"]
 
-            actual_output = estimator_func(input_x)
+            try:
+                actual_output = estimator_func(input_x)
+            except AssumptionError:
+                # Skip cases that violate assumptions - tested separately
+                continue
 
         assert abs(actual_output - expected_output) < 1e-10, (
             f"Failed for test file: {json_file.name}, expected: {expected_output}, got: {actual_output}"

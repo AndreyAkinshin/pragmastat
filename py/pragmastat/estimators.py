@@ -5,6 +5,11 @@ from .fast_center import _fast_center
 from .fast_spread import _fast_spread
 from .fast_shift import _fast_shift
 from .pairwise_margin import pairwise_margin
+from .assumptions import (
+    check_validity,
+    check_positivity,
+    check_sparity,
+)
 
 
 class Bounds(NamedTuple):
@@ -25,11 +30,10 @@ def median(x: Union[Sequence[float], NDArray]) -> float:
         The median value.
 
     Raises:
-        ValueError: If input is empty.
+        AssumptionError: If input is empty or contains NaN/Inf.
     """
     x = np.asarray(x)
-    if len(x) == 0:
-        raise ValueError("Input array cannot be empty")
+    check_validity(x, "x", "Median")
     return float(np.median(x))
 
 
@@ -47,12 +51,10 @@ def center(x: Union[Sequence[float], NDArray]) -> float:
         Center estimate (median of pairwise averages).
 
     Raises:
-        ValueError: If input is empty.
+        AssumptionError: If input is empty or contains NaN/Inf.
     """
     x = np.asarray(x)
-    n = len(x)
-    if n == 0:
-        raise ValueError("Input array cannot be empty")
+    check_validity(x, "x", "Center")
     # Use fast O(n log n) algorithm
     return _fast_center(x.tolist())
 
@@ -64,6 +66,9 @@ def spread(x: Union[Sequence[float], NDArray]) -> float:
     Calculates the median of all pairwise absolute differences |x[i] - x[j]|.
     More robust than standard deviation and more efficient than MAD.
 
+    Assumptions:
+        sparity(x) - sample must be non tie-dominant (Spread > 0)
+
     Args:
         x: Input sample.
 
@@ -71,14 +76,14 @@ def spread(x: Union[Sequence[float], NDArray]) -> float:
         Spread estimate (median of pairwise absolute differences).
 
     Raises:
-        ValueError: If input is empty.
+        AssumptionError: If sample is empty, contains NaN/Inf,
+            or is tie-dominant.
     """
     x = np.asarray(x)
-    n = len(x)
-    if n == 0:
-        raise ValueError("Input array cannot be empty")
-    if n == 1:
-        return 0.0
+    # Check validity (priority 0)
+    check_validity(x, "x", "Spread")
+    # Check sparity (priority 2)
+    check_sparity(x, "x", "Spread")
     # Use fast O(n log n) algorithm
     return _fast_spread(x.tolist())
 
@@ -90,6 +95,9 @@ def rel_spread(x: Union[Sequence[float], NDArray]) -> float:
     Calculates the ratio of Spread to absolute Center.
     Robust alternative to the coefficient of variation.
 
+    Assumptions:
+        positivity(x) - all values must be strictly positive (ensures Center > 0)
+
     Args:
         x: Input sample.
 
@@ -97,12 +105,20 @@ def rel_spread(x: Union[Sequence[float], NDArray]) -> float:
         Relative spread (Spread / |Center|).
 
     Raises:
-        ValueError: If input is empty or Center equals zero.
+        AssumptionError: If sample is empty, contains NaN/Inf,
+            or contains non-positive values.
     """
-    center_val = center(x)
-    if center_val == 0:
-        raise ValueError("RelSpread is undefined when Center equals zero")
-    return spread(x) / abs(center_val)
+    x = np.asarray(x)
+    # Check validity (priority 0)
+    check_validity(x, "x", "RelSpread")
+    # Check positivity (priority 1)
+    check_positivity(x, "x", "RelSpread")
+    # Calculate center (we know x is valid, center should succeed)
+    center_val = _fast_center(x.tolist())
+    # Calculate spread (using internal implementation since we already validated)
+    spread_val = _fast_spread(x.tolist())
+    # center_val is guaranteed positive because all values are positive
+    return spread_val / abs(center_val)
 
 
 def shift(
@@ -122,12 +138,12 @@ def shift(
         Shift estimate (median of pairwise differences).
 
     Raises:
-        ValueError: If either input is empty.
+        AssumptionError: If either input is empty or contains NaN/Inf.
     """
     x = np.asarray(x)
     y = np.asarray(y)
-    if len(x) == 0 or len(y) == 0:
-        raise ValueError("Input arrays cannot be empty")
+    check_validity(x, "x", "Shift")
+    check_validity(y, "y", "Shift")
     # Use fast O((m+n) log L) algorithm instead of materializing all m*n differences
     return float(_fast_shift(x, y, p=0.5))
 
@@ -141,6 +157,10 @@ def ratio(
     Calculates the median of all pairwise ratios (x[i] / y[j]).
     For example, ratio = 1.2 means x is typically 20% larger than y.
 
+    Assumptions:
+        positivity(x) - all values in x must be strictly positive
+        positivity(y) - all values in y must be strictly positive
+
     Args:
         x: First sample.
         y: Second sample (must be strictly positive).
@@ -149,14 +169,19 @@ def ratio(
         Ratio estimate (median of pairwise ratios).
 
     Raises:
-        ValueError: If either input is empty or y contains non-positive values.
+        AssumptionError: If either sample is empty, contains NaN/Inf,
+            or contains non-positive values.
     """
     x = np.asarray(x)
     y = np.asarray(y)
-    if len(x) == 0 or len(y) == 0:
-        raise ValueError("Input arrays cannot be empty")
-    if np.any(y <= 0):
-        raise ValueError("All values in y must be strictly positive")
+    # Check validity for x (priority 0, subject x)
+    check_validity(x, "x", "Ratio")
+    # Check validity for y (priority 0, subject y)
+    check_validity(y, "y", "Ratio")
+    # Check positivity for x (priority 1, subject x)
+    check_positivity(x, "x", "Ratio")
+    # Check positivity for y (priority 1, subject y)
+    check_positivity(y, "y", "Ratio")
     pairwise_ratios = np.divide.outer(x, y)
     return float(np.median(pairwise_ratios))
 
@@ -170,6 +195,10 @@ def avg_spread(
     Computes the weighted average of individual spreads:
     (n * Spread(x) + m * Spread(y)) / (n + m).
 
+    Assumptions:
+        sparity(x) - first sample must be non tie-dominant (Spread > 0)
+        sparity(y) - second sample must be non tie-dominant (Spread > 0)
+
     Args:
         x: First sample.
         y: Second sample.
@@ -178,16 +207,24 @@ def avg_spread(
         Weighted average of individual spreads.
 
     Raises:
-        ValueError: If either input is empty.
+        AssumptionError: If either sample is empty, contains NaN/Inf,
+            or is tie-dominant.
     """
     x = np.asarray(x)
     y = np.asarray(y)
+    # Check validity for x (priority 0, subject x)
+    check_validity(x, "x", "AvgSpread")
+    # Check validity for y (priority 0, subject y)
+    check_validity(y, "y", "AvgSpread")
+    # Check sparity for x (priority 2, subject x)
+    check_sparity(x, "x", "AvgSpread")
+    # Check sparity for y (priority 2, subject y)
+    check_sparity(y, "y", "AvgSpread")
     n = len(x)
     m = len(y)
-    if n == 0 or m == 0:
-        raise ValueError("Input arrays cannot be empty")
-    spread_x = spread(x)
-    spread_y = spread(y)
+    # Calculate spreads (using internal implementation since we already validated)
+    spread_x = _fast_spread(x.tolist())
+    spread_y = _fast_spread(y.tolist())
     return (n * spread_x + m * spread_y) / (n + m)
 
 
@@ -198,7 +235,10 @@ def disparity(
     Measure effect size: a normalized difference between x and y.
 
     Calculated as Shift / AvgSpread. Robust alternative to Cohen's d.
-    Returns infinity if avg_spread is zero.
+
+    Assumptions:
+        sparity(x) - first sample must be non tie-dominant (Spread > 0)
+        sparity(y) - second sample must be non tie-dominant (Spread > 0)
 
     Args:
         x: First sample.
@@ -208,12 +248,28 @@ def disparity(
         Effect size (Shift / AvgSpread).
 
     Raises:
-        ValueError: If either input is empty.
+        AssumptionError: If either sample is empty, contains NaN/Inf,
+            or is tie-dominant.
     """
-    avg_spread_val = avg_spread(x, y)
-    if avg_spread_val == 0:
-        return float("inf")
-    return shift(x, y) / avg_spread_val
+    x = np.asarray(x)
+    y = np.asarray(y)
+    # Check validity for x (priority 0, subject x)
+    check_validity(x, "x", "Disparity")
+    # Check validity for y (priority 0, subject y)
+    check_validity(y, "y", "Disparity")
+    # Check sparity for x (priority 2, subject x)
+    check_sparity(x, "x", "Disparity")
+    # Check sparity for y (priority 2, subject y)
+    check_sparity(y, "y", "Disparity")
+    n = len(x)
+    m = len(y)
+    # Calculate shift (we know inputs are valid)
+    shift_val = float(_fast_shift(x, y, p=0.5))
+    # Calculate avg_spread (using internal implementation since we already validated)
+    spread_x = _fast_spread(x.tolist())
+    spread_y = _fast_spread(y.tolist())
+    avg_spread_val = (n * spread_x + m * spread_y) / (n + m)
+    return shift_val / avg_spread_val
 
 
 def shift_bounds(
@@ -235,12 +291,18 @@ def shift_bounds(
 
     Returns:
         A Bounds object containing the lower and upper bounds
+
+    Raises:
+        AssumptionError: If either sample is empty or contains NaN/Inf.
+        ValueError: If misrate is out of range.
     """
     x = np.asarray(x)
     y = np.asarray(y)
 
-    if len(x) == 0 or len(y) == 0:
-        raise ValueError("Input arrays cannot be empty")
+    # Check validity for x
+    check_validity(x, "x", "ShiftBounds")
+    # Check validity for y
+    check_validity(y, "y", "ShiftBounds")
 
     n = len(x)
     m = len(y)

@@ -1,3 +1,9 @@
+from .assumptions import (
+    AssumptionId,
+    AssumptionError,
+    Subject,
+    Violation,
+)
 from .estimators import (
     median,
     center,
@@ -22,6 +28,12 @@ from .distributions import (
 )
 
 __all__ = [
+    # Assumptions
+    "AssumptionId",
+    "AssumptionError",
+    "Subject",
+    "Violation",
+    # Estimators
     "median",
     "center",
     "spread",
@@ -33,7 +45,9 @@ __all__ = [
     "shift_bounds",
     "Bounds",
     "pairwise_margin",
+    # Random
     "Rng",
+    # Distributions
     "Distribution",
     "Uniform",
     "Additive",
