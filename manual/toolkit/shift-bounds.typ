@@ -16,6 +16,7 @@ Robust bounds on $Shift(vx, vy)$ with specified coverage.
   [*Interpretation* — $misrate$ is probability that true shift falls outside bounds],
   [*Domain* — any real numbers],
   [*Unit* — same as measurements],
+  [*Note* — assumes weak continuity (ties from measurement resolution are tolerated but may yield conservative bounds)],
 )
 
 #v(0.5em)

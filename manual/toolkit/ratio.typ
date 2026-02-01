@@ -9,7 +9,8 @@ Robust measure of scale ratio between two samples.
 #v(0.3em)
 #list(marker: none, tight: true,
   [*Asymptotic* — median of the ratio of random measurements from $X$ and $Y$],
-  [*Domain* — $x_i, y_j > 0$ or $x_i, y_j < 0$ (exclude $abs(y_j) approx 0$)],
+  [*Domain* — $x_i > 0$, $y_j > 0$],
+  [*Assumptions* — `positivity(x)`, `positivity(y)`],
   [*Unit* — dimensionless],
   [*Caveat* — $Ratio(vx, vy) != 1 / Ratio(vy, vx)$ in general],
 )
@@ -33,4 +34,4 @@ Use $Ratio$ when you care about multiplicative relationships rather than additiv
 If one system is "twice as fast" or prices are "30% lower," you are thinking in ratios.
 A result of 0.5 means the first group is typically half the size of the second; 2.0 means twice as large.
 This estimator is appropriate for quantities like prices, response times, and concentrations where relative comparisons make more sense than absolute ones.
-All values must have the same sign, and you should avoid values close to zero in the denominator sample.
+Both samples must contain strictly positive values.

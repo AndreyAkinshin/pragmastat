@@ -10,6 +10,7 @@ Robust effect size (shift normalized by pooled dispersion).
 #list(marker: none, tight: true,
   [*Also known as* — robust Cohen's d (@cohen1988; estimates differ due to robust construction)],
   [*Domain* — $AvgSpread(vx, vy) > 0$],
+  [*Assumptions* — `sparity(x)`, `sparity(y)`],
   [*Unit* — spread units],
 )
 

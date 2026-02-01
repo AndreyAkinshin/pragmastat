@@ -12,8 +12,8 @@ Robust measure of dispersion (variability, scatter).
   [*Asymptotic* — median of the absolute difference between two random measurements from $X$],
   [*Complexity* — $O(n^2 log n)$ naive, $O(n log n)$ fast (see #link(<sec-fast-spread>)[Fast Spread])],
   [*Domain* — any real numbers],
+  [*Assumptions* — `sparity(x)`],
   [*Unit* — same as measurements],
-  [*Corner case* — $Spread(vx) = 0$ when $n = 1$],
 )
 
 #v(0.5em)

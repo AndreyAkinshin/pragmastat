@@ -15,6 +15,7 @@ Exclusion count for dominance-based bounds.
   [*Complexity* — exact for small samples, approximated for large (see #link(<sec-fast-pairwise-margin>)[Fast PairwiseMargin])],
   [*Domain* — $n, m >= 1$, $misrate in (0, 1)$],
   [*Unit* — count],
+  [*Note* — assumes weak continuity (ties from measurement resolution are tolerated)],
 )
 
 #v(0.5em)
