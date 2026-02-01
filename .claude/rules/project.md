@@ -39,3 +39,14 @@ mise run rs:ci          # Multi-language: Rust
 ```
 
 If a task doesn't exist for what you need, ask before running raw commands.
+
+---
+
+## Generated Files
+
+**MANDATORY**: Never edit auto-generated files directly.
+
+Generated files in this repository:
+- `web/src/content/manual/*.mdx` — generated from `manual/**/*.typ` (Typst sources)
+
+Always edit the source files and run the generation task to update generated outputs.
