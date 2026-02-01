@@ -1,7 +1,22 @@
+# Measures the relative dispersion of a sample (RelSpread)
+#
+# Calculates the ratio of Spread to absolute Center.
+# Robust alternative to the coefficient of variation.
+#
+# Assumptions:
+#   - positivity(x) - all values must be strictly positive (ensures Center > 0)
+#
+# @param x Numeric vector of values
+# @return The relative spread estimate
 rel_spread <- function(x) {
-  center_val <- center(x)
-  if (center_val == 0) {
-    stop("RelSpread is undefined when Center equals zero")
-  }
-  spread(x) / abs(center_val)
+  # Check validity (priority 0)
+  check_validity(x, SUBJECTS$X, "RelSpread")
+  # Check positivity (priority 1)
+  check_positivity(x, SUBJECTS$X, "RelSpread")
+
+  center_val <- fast_center(x)
+  # Calculate spread (using internal implementation since we already validated)
+  spread_val <- fast_spread(x)
+  # center is guaranteed positive because all values are positive
+  spread_val / abs(center_val)
 }

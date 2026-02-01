@@ -7,15 +7,13 @@
 # @param misrate Misclassification rate (probability that true shift falls outside bounds)
 # @return List with 'lower' and 'upper' components
 shift_bounds <- function(x, y, misrate) {
-  if (!is.numeric(x) || !is.numeric(y)) {
-    stop("x and y must be numeric vectors")
-  }
+  # Check validity for x
+  check_validity(x, SUBJECTS$X, "ShiftBounds")
+  # Check validity for y
+  check_validity(y, SUBJECTS$Y, "ShiftBounds")
+
   n <- length(x)
   m <- length(y)
-
-  if (n == 0 || m == 0) {
-    stop("Input vectors cannot be empty")
-  }
 
   # Sort both arrays
   xs <- sort(x)
