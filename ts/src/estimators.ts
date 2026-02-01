@@ -7,6 +7,7 @@ import { fastCenter } from './fastCenter';
 import { fastSpread } from './fastSpread';
 import { fastShift } from './fastShift';
 import { pairwiseMargin } from './pairwiseMargin';
+import { checkValidity, checkPositivity, checkSparity } from './assumptions';
 
 /**
  * Calculate the Center - median of all pairwise averages (x[i] + x[j])/2
@@ -15,42 +16,50 @@ import { pairwiseMargin } from './pairwiseMargin';
  * @returns The center estimate
  */
 export function center(x: number[]): number {
-  if (x.length === 0) {
-    throw new Error('Input array cannot be empty');
-  }
+  // Check validity (priority 0)
+  checkValidity(x, 'x', 'Center');
   return fastCenter(x);
 }
 
 /**
  * Calculate the Spread - median of all pairwise absolute differences |x[i] - x[j]|
  * Uses fast O(n log n) algorithm.
+ *
+ * Assumptions:
+ *   sparity(x) - sample must be non tie-dominant (Spread > 0)
+ *
  * @param x Array of sample values
  * @returns The spread estimate
+ * @throws AssumptionError if sample is empty, contains NaN/Inf, or is tie-dominant
  */
 export function spread(x: number[]): number {
-  if (x.length === 0) {
-    throw new Error('Input array cannot be empty');
-  }
+  // Check validity (priority 0)
+  checkValidity(x, 'x', 'Spread');
+  // Check sparity (priority 2)
+  checkSparity(x, 'x', 'Spread');
   return fastSpread(x);
 }
 
 /**
  * Calculate the RelSpread - ratio of Spread to absolute Center
+ *
+ * Assumptions:
+ *   positivity(x) - all values must be strictly positive (ensures Center > 0)
+ *
  * @param x Array of sample values
  * @returns The relative spread estimate
+ * @throws AssumptionError if sample is empty, contains NaN/Inf, or contains non-positive values
  */
 export function relSpread(x: number[]): number {
-  if (x.length === 0) {
-    throw new Error('Input array cannot be empty');
-  }
-
-  const s = spread(x);
-  const c = center(x);
-
-  if (c === 0) {
-    throw new Error('RelSpread is undefined when Center equals zero');
-  }
-
+  // Check validity (priority 0)
+  checkValidity(x, 'x', 'RelSpread');
+  // Check positivity (priority 1)
+  checkPositivity(x, 'x', 'RelSpread');
+  // Calculate center (we know x is valid, center should succeed)
+  const c = fastCenter(x);
+  // Calculate spread (using internal implementation since we already validated)
+  const s = fastSpread(x);
+  // center is guaranteed positive because all values are positive
   return s / Math.abs(c);
 }
 
@@ -62,35 +71,37 @@ export function relSpread(x: number[]): number {
  * @returns The shift estimate
  */
 export function shift(x: number[], y: number[]): number {
-  const nx = x.length;
-  const ny = y.length;
-
-  if (nx === 0 || ny === 0) {
-    throw new Error('Input arrays cannot be empty');
-  }
+  // Check validity (priority 0)
+  checkValidity(x, 'x', 'Shift');
+  checkValidity(y, 'y', 'Shift');
 
   return fastShift(x, y, [0.5], false)[0];
 }
 
 /**
  * Calculate the Ratio - median of all pairwise ratios (x[i] / y[j])
+ *
+ * Assumptions:
+ *   positivity(x) - all values in x must be strictly positive
+ *   positivity(y) - all values in y must be strictly positive
+ *
  * @param x First sample
  * @param y Second sample
  * @returns The ratio estimate
+ * @throws AssumptionError if either sample is empty, contains NaN/Inf, or contains non-positive values
  */
 export function ratio(x: number[], y: number[]): number {
+  // Check validity for x (priority 0, subject x)
+  checkValidity(x, 'x', 'Ratio');
+  // Check validity for y (priority 0, subject y)
+  checkValidity(y, 'y', 'Ratio');
+  // Check positivity for x (priority 1, subject x)
+  checkPositivity(x, 'x', 'Ratio');
+  // Check positivity for y (priority 1, subject y)
+  checkPositivity(y, 'y', 'Ratio');
+
   const nx = x.length;
   const ny = y.length;
-
-  if (nx === 0 || ny === 0) {
-    throw new Error('Input arrays cannot be empty');
-  }
-
-  // Check that all y values are strictly positive
-  if (y.some((val) => val <= 0)) {
-    throw new Error('All values in y must be strictly positive');
-  }
-
   const pairwiseRatios: number[] = [];
   for (let i = 0; i < nx; i++) {
     for (let j = 0; j < ny; j++) {
@@ -103,44 +114,69 @@ export function ratio(x: number[], y: number[]): number {
 
 /**
  * Calculate the AvgSpread - weighted average of spreads: (n*Spread(x) + m*Spread(y))/(n+m)
+ *
+ * Assumptions:
+ *   sparity(x) - first sample must be non tie-dominant (Spread > 0)
+ *   sparity(y) - second sample must be non tie-dominant (Spread > 0)
+ *
  * @param x First sample
  * @param y Second sample
  * @returns The combined spread estimate
+ * @throws AssumptionError if either sample is empty, contains NaN/Inf, or is tie-dominant
  */
 export function avgSpread(x: number[], y: number[]): number {
+  // Check validity for x (priority 0, subject x)
+  checkValidity(x, 'x', 'AvgSpread');
+  // Check validity for y (priority 0, subject y)
+  checkValidity(y, 'y', 'AvgSpread');
+  // Check sparity for x (priority 2, subject x)
+  checkSparity(x, 'x', 'AvgSpread');
+  // Check sparity for y (priority 2, subject y)
+  checkSparity(y, 'y', 'AvgSpread');
+
   const nx = x.length;
   const ny = y.length;
 
-  if (nx === 0 || ny === 0) {
-    throw new Error('Input arrays cannot be empty');
-  }
-
-  // Calculate weighted average of individual spreads
-  const spreadX = spread(x);
-  const spreadY = spread(y);
+  // Calculate spreads (using internal implementation since we already validated)
+  const spreadX = fastSpread(x);
+  const spreadY = fastSpread(y);
 
   return (nx * spreadX + ny * spreadY) / (nx + ny);
 }
 
 /**
  * Calculate the Disparity - Shift / AvgSpread
+ *
+ * Assumptions:
+ *   sparity(x) - first sample must be non tie-dominant (Spread > 0)
+ *   sparity(y) - second sample must be non tie-dominant (Spread > 0)
+ *
  * @param x First sample
  * @param y Second sample
  * @returns The disparity estimate
+ * @throws AssumptionError if either sample is empty, contains NaN/Inf, or is tie-dominant
  */
 export function disparity(x: number[], y: number[]): number {
-  if (x.length === 0 || y.length === 0) {
-    throw new Error('Input arrays cannot be empty');
-  }
+  // Check validity for x (priority 0, subject x)
+  checkValidity(x, 'x', 'Disparity');
+  // Check validity for y (priority 0, subject y)
+  checkValidity(y, 'y', 'Disparity');
+  // Check sparity for x (priority 2, subject x)
+  checkSparity(x, 'x', 'Disparity');
+  // Check sparity for y (priority 2, subject y)
+  checkSparity(y, 'y', 'Disparity');
 
-  const shiftVal = shift(x, y);
-  const combinedSpread = avgSpread(x, y);
+  const nx = x.length;
+  const ny = y.length;
 
-  if (combinedSpread === 0) {
-    return Infinity;
-  }
+  // Calculate shift (we know inputs are valid)
+  const shiftVal = fastShift(x, y, [0.5], false)[0];
+  // Calculate avg_spread (using internal implementation since we already validated)
+  const spreadX = fastSpread(x);
+  const spreadY = fastSpread(y);
+  const avgSpreadVal = (nx * spreadX + ny * spreadY) / (nx + ny);
 
-  return shiftVal / combinedSpread;
+  return shiftVal / avgSpreadVal;
 }
 
 /**
@@ -161,11 +197,13 @@ export interface Bounds {
  * @param y Second sample
  * @param misrate Misclassification rate (probability that true shift falls outside bounds)
  * @returns An object containing the lower and upper bounds
+ * @throws AssumptionError if either sample is empty or contains NaN/Inf
  */
 export function shiftBounds(x: number[], y: number[], misrate: number): Bounds {
-  if (x.length === 0 || y.length === 0) {
-    throw new Error('Input arrays cannot be empty');
-  }
+  // Check validity for x
+  checkValidity(x, 'x', 'ShiftBounds');
+  // Check validity for y
+  checkValidity(y, 'y', 'ShiftBounds');
 
   const n = x.length;
   const m = y.length;

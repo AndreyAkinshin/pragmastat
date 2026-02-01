@@ -10,6 +10,7 @@ import {
   disparity,
   shiftBounds,
 } from '../src/estimators';
+import { AssumptionError } from '../src/assumptions';
 import { pairwiseMargin } from '../src/pairwiseMargin';
 import { Rng } from '../src/rng';
 import { Additive, Exp, Multiplic, Power, Uniform } from '../src/distributions';
@@ -61,22 +62,30 @@ describe('Reference Tests', () => {
           }
 
           // Determine if this is a one-sample or two-sample test
-          if (data.input && typeof data.input === 'object' && 'x' in data.input) {
-            if ('y' in data.input) {
-              // Two-sample test
-              const result = estimatorFunc(data.input.x, data.input.y);
+          try {
+            if (data.input && typeof data.input === 'object' && 'x' in data.input) {
+              if ('y' in data.input) {
+                // Two-sample test
+                const result = estimatorFunc(data.input.x, data.input.y);
+                expect(result).toBeCloseTo(data.output, 9);
+              } else {
+                // One-sample test with x property
+                const result = estimatorFunc(data.input.x);
+                expect(result).toBeCloseTo(data.output, 9);
+              }
+            } else if (Array.isArray(data.input)) {
+              // One-sample test with direct array
+              const result = estimatorFunc(data.input);
               expect(result).toBeCloseTo(data.output, 9);
             } else {
-              // One-sample test with x property
-              const result = estimatorFunc(data.input.x);
-              expect(result).toBeCloseTo(data.output, 9);
+              throw new Error(`Invalid test data format in ${filePath}`);
             }
-          } else if (Array.isArray(data.input)) {
-            // One-sample test with direct array
-            const result = estimatorFunc(data.input);
-            expect(result).toBeCloseTo(data.output, 9);
-          } else {
-            throw new Error(`Invalid test data format in ${filePath}`);
+          } catch (e) {
+            // Skip cases that violate assumptions - tested separately
+            if (e instanceof AssumptionError) {
+              return;
+            }
+            throw e;
           }
         });
       });

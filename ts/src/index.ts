@@ -4,6 +4,10 @@
  * A collection of robust statistical estimators for real-world data analysis.
  */
 
+// Assumptions
+export { AssumptionId, AssumptionError, type Subject, type Violation } from './assumptions';
+
+// Estimators
 export {
   center,
   spread,

@@ -2,15 +2,16 @@
  * Utility functions for statistical calculations
  */
 
+import { checkValidity } from './assumptions';
+
 /**
  * Calculate the median of an array of numbers
  * @param values Array of numbers
  * @returns The median value
  */
 export function median(values: number[]): number {
-  if (values.length === 0) {
-    throw new Error('Input array cannot be empty');
-  }
+  // Check validity (priority 0)
+  checkValidity(values, 'x', 'Median');
 
   const sorted = [...values].sort((a, b) => a - b);
   const mid = Math.floor(sorted.length / 2);
