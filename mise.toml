@@ -459,50 +459,50 @@ run = [
 [tasks."ts:build"]
 description = "Build TypeScript package"
 dir = "ts"
-run = "npm run build"
+run = "pnpm build"
 
 [tasks."ts:test"]
 description = "Run TypeScript tests"
 dir = "ts"
-run = "npm test"
+run = "pnpm test"
 
 [tasks."ts:check"]
 description = "Check TypeScript code (lint and format)"
 dir = "ts"
 run = """
-npm run lint
-npm run format:check
+pnpm lint
+pnpm format:check
 """
 
 [tasks."ts:check:fix"]
 description = "Format TypeScript code"
 dir = "ts"
-run = "npm run format"
+run = "pnpm format"
 
 [tasks."ts:clean"]
 description = "Clean TypeScript build artifacts"
 dir = "ts"
-run = "npm run clean"
+run = "pnpm clean"
 
 [tasks."ts:restore"]
 description = "Install TypeScript dependencies"
 dir = "ts"
-run = "npm ci"
+run = "pnpm install --frozen-lockfile"
 
 [tasks."ts:demo"]
 description = "Run TypeScript demo"
 dir = "ts"
-run = "npx ts-node examples/demo.ts"
+run = "pnpm exec ts-node examples/demo.ts"
 
 [tasks."ts:coverage"]
 description = "Run TypeScript tests with coverage"
 dir = "ts"
-run = "npm run test:coverage"
+run = "pnpm test:coverage"
 
 [tasks."ts:pack"]
 description = "Package TypeScript npm tarball"
 dir = "ts"
-run = "npm pack"
+run = "pnpm pack"
 
 [tasks."ts:ci"]
 description = "Run TypeScript CI pipeline"
