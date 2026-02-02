@@ -590,7 +590,7 @@ fn run_rng_uniform_int_tests() {
 
         let mut rng = Rng::from_seed(test_case.input.seed);
         let actual: Vec<i64> = (0..test_case.input.count)
-            .map(|_| rng.uniform_int(test_case.input.min, test_case.input.max))
+            .map(|_| rng.uniform_i64(test_case.input.min, test_case.input.max))
             .collect();
 
         assert_eq!(

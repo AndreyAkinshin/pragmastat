@@ -5,8 +5,6 @@
 //! This generates JSON test files in the tests/ directory that all language
 //! implementations must pass to ensure cross-language consistency.
 
-#![allow(deprecated)]
-
 use pragmastat::distributions::{Additive, Distribution, Exp, Multiplic, Power, Uniform};
 use pragmastat::Rng;
 use serde::Serialize;
@@ -398,7 +396,7 @@ fn generate_uniform_int_tests(tests_dir: &PathBuf) {
 
     for (seed, min, max, count) in test_configs {
         let mut rng = Rng::from_seed(seed);
-        let values: Vec<i64> = (0..count).map(|_| rng.uniform_int(min, max)).collect();
+        let values: Vec<i64> = (0..count).map(|_| rng.uniform_i64(min, max)).collect();
 
         let test_case = UniformIntTestCase {
             input: UniformIntTestInput {
