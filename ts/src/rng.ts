@@ -57,6 +57,10 @@ export class Rng {
     this.inner = new Xoshiro256PlusPlus(seedBigInt);
   }
 
+  // ========================================================================
+  // Floating Point Methods
+  // ========================================================================
+
   /**
    * Generate a uniform random float in [0, 1).
    *
@@ -67,6 +71,21 @@ export class Rng {
   uniform(): number {
     return this.inner.uniform();
   }
+
+  /**
+   * Generate a uniform random float in [min, max).
+   *
+   * @param min - Minimum value (inclusive).
+   * @param max - Maximum value (exclusive).
+   * @returns Random value in [min, max). Returns min if min >= max.
+   */
+  uniformRange(min: number, max: number): number {
+    return this.inner.uniformRange(min, max);
+  }
+
+  // ========================================================================
+  // Integer Methods
+  // ========================================================================
 
   /**
    * Generate a uniform random integer in [min, max).
@@ -82,6 +101,34 @@ export class Rng {
   uniformInt(min: number, max: number): number {
     const result = this.inner.uniformInt(BigInt(min), BigInt(max));
     return Number(result);
+  }
+
+  /**
+   * Generate a uniform random BigInt in [min, max).
+   *
+   * Uses modulo reduction which introduces slight bias for ranges that don't
+   * evenly divide 2^64. This bias is negligible for statistical simulations
+   * but not suitable for cryptographic applications.
+   *
+   * @param min - Minimum value (inclusive).
+   * @param max - Maximum value (exclusive).
+   * @returns Random BigInt in [min, max). Returns min if min >= max.
+   */
+  uniformBigInt(min: bigint, max: bigint): bigint {
+    return this.inner.uniformInt(min, max);
+  }
+
+  // ========================================================================
+  // Boolean Methods
+  // ========================================================================
+
+  /**
+   * Generate a uniform random boolean with P(true) = 0.5.
+   *
+   * @returns Random boolean value.
+   */
+  uniformBool(): boolean {
+    return this.inner.uniformBool();
   }
 
   /**

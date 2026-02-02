@@ -62,11 +62,24 @@ export class Xoshiro256PlusPlus {
     return result;
   }
 
+  // ========================================================================
+  // Floating Point Methods
+  // ========================================================================
+
   uniform(): number {
     // Use upper 53 bits for maximum precision in float64
     const u64 = this.nextU64();
     return Number(u64 >> 11n) * (1.0 / Number(1n << 53n));
   }
+
+  uniformRange(min: number, max: number): number {
+    if (min >= max) return min;
+    return min + (max - min) * this.uniform();
+  }
+
+  // ========================================================================
+  // Integer Methods
+  // ========================================================================
 
   /**
    * Generate a uniform integer in [min, max).
@@ -82,6 +95,14 @@ export class Xoshiro256PlusPlus {
       throw new RangeError('uniform_int: range overflow (max - min exceeds i64)');
     }
     return min + (this.nextU64() % range);
+  }
+
+  // ========================================================================
+  // Boolean Methods
+  // ========================================================================
+
+  uniformBool(): boolean {
+    return this.uniform() < 0.5;
   }
 }
 

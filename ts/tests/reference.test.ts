@@ -215,6 +215,58 @@ describe('Reference Tests', () => {
     }
   });
 
+  // Rng uniform range tests
+  describe('rng-uniform-range', () => {
+    const dirPath = path.join(testDataPath, 'rng');
+    if (fs.existsSync(dirPath)) {
+      const testFiles = fs
+        .readdirSync(dirPath)
+        .filter((file) => file.startsWith('uniform-range-') && file.endsWith('.json'))
+        .sort();
+
+      testFiles.forEach((fileName) => {
+        const filePath = path.join(dirPath, fileName);
+        const testName = fileName.replace('.json', '');
+
+        it(`should pass ${testName}`, () => {
+          const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+          const rng = new Rng(data.input.seed);
+          const actual = Array.from({ length: data.input.count }, () =>
+            rng.uniformRange(data.input.min, data.input.max),
+          );
+
+          for (let i = 0; i < actual.length; i++) {
+            expect(actual[i]).toBeCloseTo(data.output[i], 12);
+          }
+        });
+      });
+    }
+  });
+
+  // Rng uniform bool tests
+  describe('rng-uniform-bool', () => {
+    const dirPath = path.join(testDataPath, 'rng');
+    if (fs.existsSync(dirPath)) {
+      const testFiles = fs
+        .readdirSync(dirPath)
+        .filter((file) => file.startsWith('uniform-bool-seed-') && file.endsWith('.json'))
+        .sort();
+
+      testFiles.forEach((fileName) => {
+        const filePath = path.join(dirPath, fileName);
+        const testName = fileName.replace('.json', '');
+
+        it(`should pass ${testName}`, () => {
+          const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+          const rng = new Rng(data.input.seed);
+          const actual = Array.from({ length: data.input.count }, () => rng.uniformBool());
+
+          expect(actual).toEqual(data.output);
+        });
+      });
+    }
+  });
+
   // Shuffle tests
   describe('shuffle', () => {
     const dirPath = path.join(testDataPath, 'shuffle');
