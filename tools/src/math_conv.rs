@@ -601,21 +601,12 @@ fn convert_syntax(input: &str) -> String {
         result = result.replace(typst, latex);
     }
 
-    // Greek letters and symbols - sorted by length (longest first)
-    let word_mappings = [
-        // Multi-char symbols first
-        ("arrow.r.double", "\\Rightarrow"),
-        ("arrow.l.double", "\\Leftarrow"),
-        ("arrow.lr.double", "\\Leftrightarrow"),
-        ("infinity", "\\infty"),
+    // Greek letters - should convert even when followed by subscript/superscript markers
+    // e.g., sigma_(n,m) -> \sigma_{n,m}, epsilon_k -> \epsilon_k
+    let greek_letters = [
         ("epsilon", "\\epsilon"),
-        ("arrow.r", "\\rightarrow"),
-        ("arrow.l", "\\leftarrow"),
-        ("forall", "\\forall"),
-        ("exists", "\\exists"),
         ("Lambda", "\\Lambda"),
         ("lambda", "\\lambda"),
-        ("approx", "\\approx"),
         ("Omega", "\\Omega"),
         ("omega", "\\omega"),
         ("Sigma", "\\Sigma"),
@@ -627,15 +618,43 @@ fn convert_syntax(input: &str) -> String {
         ("Delta", "\\Delta"),
         ("delta", "\\delta"),
         ("kappa", "\\kappa"),
+        ("alpha", "\\alpha"),
+        ("beta", "\\beta"),
+        ("zeta", "\\zeta"),
+        ("iota", "\\iota"),
+        // Note: Phi and Psi need special handling - see convert_greek_capitals below
+        ("eta", "\\eta"),
+        ("phi", "\\phi"),
+        ("chi", "\\chi"),
+        ("psi", "\\psi"),
+        ("rho", "\\rho"),
+        ("tau", "\\tau"),
+        ("Xi", "\\Xi"),
+        ("Pi", "\\Pi"),
+        ("xi", "\\xi"),
+        ("pi", "\\pi"),
+        ("nu", "\\nu"),
+        ("mu", "\\mu"),
+    ];
+
+    // Symbols and operators - should NOT convert when used as subscripts
+    // e.g., x_min should stay as x_min, not x_\min
+    let word_mappings = [
+        // Multi-char symbols first
+        ("arrow.r.double", "\\Rightarrow"),
+        ("arrow.l.double", "\\Leftarrow"),
+        ("arrow.lr.double", "\\Leftrightarrow"),
+        ("infinity", "\\infty"),
+        ("arrow.r", "\\rightarrow"),
+        ("arrow.l", "\\leftarrow"),
+        ("forall", "\\forall"),
+        ("exists", "\\exists"),
+        ("approx", "\\approx"),
         ("dots.c", "\\cdots"),
         ("dots.v", "\\vdots"),
         ("dots.h", "\\ldots"),
         ("times", "\\times"),
-        ("alpha", "\\alpha"),
         ("tilde", "\\sim"),
-        ("beta", "\\beta"),
-        ("zeta", "\\zeta"),
-        ("iota", "\\iota"),
         ("star", "\\star"),
         ("quad", "\\quad"),
         ("qquad", "\\qquad"),
@@ -659,13 +678,6 @@ fn convert_syntax(input: &str) -> String {
         ("lcm", "\\operatorname{lcm}"),
         ("mod", "\\mod"),
         ("ln", "\\ln"),
-        // Note: Phi and Psi need special handling - see convert_greek_capitals below
-        ("eta", "\\eta"),
-        ("phi", "\\phi"),
-        ("chi", "\\chi"),
-        ("psi", "\\psi"),
-        ("rho", "\\rho"),
-        ("tau", "\\tau"),
         ("...", "\\ldots"),
         // neq, leq, geq are handled by operator_replacements (!=, <=, >=)
         ("cup", "\\cup"),
@@ -676,12 +688,6 @@ fn convert_syntax(input: &str) -> String {
         ("dot", "\\cdot"),
         // Note: lr(|...|) is handled by convert_lr function, not here
         // Don't add |) -> \right| here as it incorrectly matches |x|) patterns
-        ("Xi", "\\Xi"),
-        ("Pi", "\\Pi"),
-        ("xi", "\\xi"),
-        ("pi", "\\pi"),
-        ("nu", "\\nu"),
-        ("mu", "\\mu"),
         ("pm", "\\pm"),
         ("mp", "\\mp"),
     ];
@@ -718,12 +724,55 @@ fn convert_syntax(input: &str) -> String {
         }
     }
 
+    // Process Greek letters first - they should convert even when followed by _ or ^
+    // e.g., sigma_(n,m) -> \sigma_{n,m}, epsilon_k -> \epsilon_k
+    for (typst, latex) in greek_letters {
+        let pattern = regex::escape(typst);
+        if let Ok(re) = regex::Regex::new(&pattern) {
+            let mut new_result = String::new();
+            let mut last_end = 0;
+
+            for m in re.find_iter(&result) {
+                let bytes = result.as_bytes();
+
+                // Check if preceded by backslash (already converted, e.g., \sigma)
+                let preceded_by_backslash =
+                    m.start() > 0 && bytes[m.start() - 1] == b'\\';
+
+                // Check if embedded in a larger word (preceded by letter)
+                let preceded_by_letter =
+                    m.start() > 0 && bytes[m.start() - 1].is_ascii_alphabetic();
+
+                // Check if embedded in a larger word (followed by letter)
+                let followed_by_letter =
+                    m.end() < bytes.len() && bytes[m.end()].is_ascii_alphabetic();
+
+                // Add text before this match
+                new_result.push_str(&result[last_end..m.start()]);
+
+                // Replace only if not preceded by backslash and not embedded in word
+                if preceded_by_backslash || preceded_by_letter || followed_by_letter {
+                    new_result.push_str(m.as_str());
+                } else {
+                    new_result.push_str(latex);
+                }
+
+                last_end = m.end();
+            }
+
+            // Add remaining text
+            new_result.push_str(&result[last_end..]);
+            result = new_result;
+        }
+    }
+
+    // Process operators and symbols - these should NOT convert when used as subscripts
+    // e.g., x_min should stay as x_min, not x_\min
     for (typst, latex) in word_mappings {
         if typst.contains('(') || typst.contains('|') || typst.contains('.') {
             result = result.replace(typst, latex);
         } else {
-            // Use word boundary matching but skip if preceded by backslash
-            // (to avoid double-converting \log to \\log)
+            // Use word boundary matching - treats _ as word character so x_min won't convert
             let pattern = format!(r"\b{}\b", regex::escape(typst));
             if let Ok(re) = regex::Regex::new(&pattern) {
                 let mut new_result = String::new();
@@ -2390,5 +2439,95 @@ mod tests {
             result.contains("\\frac{\\operatorname{Drift}^2(T_2, X)}{\\operatorname{Drift}^2(T_1, X)}"),
             "Should have proper fraction with Drift^2: {result}"
         );
+    }
+
+    #[test]
+    fn convert_greek_with_subscript_parens() {
+        // Greek letters followed by subscript in parentheses: sigma_(n,m)
+        let defs = HashMap::new();
+        let result = typst_to_latex("sigma_(n,m)(d)", &defs);
+        assert_eq!(
+            result, "\\sigma_{n,m}(d)",
+            "sigma with subscript parens should convert: {result}"
+        );
+    }
+
+    #[test]
+    fn convert_greek_with_simple_subscript() {
+        // Greek letters followed by simple subscript: epsilon_k
+        let defs = HashMap::new();
+        let result = typst_to_latex("epsilon_k", &defs);
+        assert_eq!(
+            result, "\\epsilon_k",
+            "epsilon with subscript should convert: {result}"
+        );
+    }
+
+    #[test]
+    fn convert_greek_with_superscript() {
+        // Greek letters followed by superscript: sigma^2
+        let defs = HashMap::new();
+        let result = typst_to_latex("sigma^2", &defs);
+        assert_eq!(
+            result, "\\sigma^2",
+            "sigma with superscript should convert: {result}"
+        );
+    }
+
+    #[test]
+    fn convert_pairwise_margin_formula() {
+        // Test the actual formula from fast-pairwise-margin.typ
+        let defs = HashMap::new();
+        let result = typst_to_latex("sigma_(n,m)(d) = sum_(k|d) epsilon_k dot k", &defs);
+        eprintln!("Result: {result}");
+        assert!(
+            result.contains("\\sigma_{n,m}(d)"),
+            "sigma with subscript should convert: {result}"
+        );
+        assert!(
+            result.contains("\\sum_{k|d}"),
+            "sum with subscript condition should convert: {result}"
+        );
+        assert!(
+            result.contains("\\epsilon_k"),
+            "epsilon with subscript should convert: {result}"
+        );
+    }
+
+    #[test]
+    fn greek_not_converted_inside_word() {
+        // Greek letter names embedded in larger words should NOT be converted
+        let defs = HashMap::new();
+
+        // "thesigma" should stay as-is (sigma is embedded)
+        let result = typst_to_latex("thesigma", &defs);
+        assert_eq!(result, "thesigma", "Embedded sigma should not convert: {result}");
+
+        // "sigmaX" should stay as-is (sigma followed by letter)
+        let result = typst_to_latex("sigmaX", &defs);
+        assert_eq!(result, "sigmaX", "sigma followed by letter should not convert: {result}");
+
+        // But "sigma X" should convert (space separator)
+        let result = typst_to_latex("sigma X", &defs);
+        assert_eq!(result, "\\sigma X", "sigma with space should convert: {result}");
+    }
+
+    #[test]
+    fn greek_standalone_converts() {
+        // Standalone Greek letters should convert
+        let defs = HashMap::new();
+        assert_eq!(typst_to_latex("sigma", &defs), "\\sigma");
+        assert_eq!(typst_to_latex("epsilon", &defs), "\\epsilon");
+        assert_eq!(typst_to_latex("alpha", &defs), "\\alpha");
+        assert_eq!(typst_to_latex("beta", &defs), "\\beta");
+    }
+
+    #[test]
+    fn greek_with_operators_converts() {
+        // Greek letters adjacent to operators should convert
+        let defs = HashMap::new();
+        assert_eq!(typst_to_latex("sigma + tau", &defs), "\\sigma + \\tau");
+        assert_eq!(typst_to_latex("(sigma)", &defs), "(\\sigma)");
+        assert_eq!(typst_to_latex("sigma,tau", &defs), "\\sigma,\\tau");
     }
 }
