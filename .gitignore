@@ -28,6 +28,10 @@ web/src/content/manual/
 web/katex-macros.json
 web/public/img/
 web/public/references.json
+web/public/favicon.ico
+web/public/favicon-32.png
+web/public/apple-touch-icon.png
+web/public/pragmastat.pdf
 
 # Logs
 logs
