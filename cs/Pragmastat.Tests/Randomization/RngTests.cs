@@ -60,7 +60,7 @@ public class RngTests
       Assert.Equal(count, output.GetArrayLength());
       for (int i = 0; i < count; i++)
       {
-        long actual = rng.UniformInt(min, max);
+        long actual = rng.UniformInt64(min, max);
         long expected = output[i].GetInt64();
         Assert.Equal(expected, actual);
       }
@@ -175,5 +175,122 @@ public class RngTests
     var rng = new Rng(42);
     var data = new List<double> { 1, 2, 3 };
     Assert.Throws<ArgumentOutOfRangeException>(() => rng.Sample(data, -1));
+  }
+
+  [Fact]
+  public void UniformRangeTests()
+  {
+    string rngDir = Path.Combine(TestsDir, "rng");
+    var files = Directory.GetFiles(rngDir, "uniform-range-*.json");
+    Assert.True(files.Length > 0, "No uniform range test files found");
+
+    foreach (string filePath in files)
+    {
+      string json = File.ReadAllText(filePath);
+      using JsonDocument doc = JsonDocument.Parse(json);
+      JsonElement root = doc.RootElement;
+
+      long seed = root.GetProperty("input").GetProperty("seed").GetInt64();
+      double min = root.GetProperty("input").GetProperty("min").GetDouble();
+      double max = root.GetProperty("input").GetProperty("max").GetDouble();
+      int count = root.GetProperty("input").GetProperty("count").GetInt32();
+      JsonElement output = root.GetProperty("output");
+
+      var rng = new Rng(seed);
+      Assert.Equal(count, output.GetArrayLength());
+      for (int i = 0; i < count; i++)
+      {
+        double actual = rng.Uniform(min, max);
+        double expected = output[i].GetDouble();
+        Assert.True(Math.Abs(actual - expected) < 1e-12,
+            $"File: {Path.GetFileName(filePath)}, index {i}: expected {expected}, got {actual}");
+      }
+    }
+  }
+
+  [Fact]
+  public void UniformSingleTests()
+  {
+    string rngDir = Path.Combine(TestsDir, "rng");
+    var files = Directory.GetFiles(rngDir, "uniform-f32-*.json");
+    Assert.True(files.Length > 0, "No uniform f32 test files found");
+
+    foreach (string filePath in files)
+    {
+      string json = File.ReadAllText(filePath);
+      using JsonDocument doc = JsonDocument.Parse(json);
+      JsonElement root = doc.RootElement;
+
+      long seed = root.GetProperty("input").GetProperty("seed").GetInt64();
+      int count = root.GetProperty("input").GetProperty("count").GetInt32();
+      JsonElement output = root.GetProperty("output");
+
+      var rng = new Rng(seed);
+      Assert.Equal(count, output.GetArrayLength());
+      for (int i = 0; i < count; i++)
+      {
+        float actual = rng.UniformSingle();
+        float expected = output[i].GetSingle();
+        Assert.Equal(expected, actual);
+      }
+    }
+  }
+
+  [Fact]
+  public void UniformInt32Tests()
+  {
+    string rngDir = Path.Combine(TestsDir, "rng");
+    var files = Directory.GetFiles(rngDir, "uniform-i32-*.json");
+    Assert.True(files.Length > 0, "No uniform i32 test files found");
+
+    foreach (string filePath in files)
+    {
+      string json = File.ReadAllText(filePath);
+      using JsonDocument doc = JsonDocument.Parse(json);
+      JsonElement root = doc.RootElement;
+
+      long seed = root.GetProperty("input").GetProperty("seed").GetInt64();
+      int min = root.GetProperty("input").GetProperty("min").GetInt32();
+      int max = root.GetProperty("input").GetProperty("max").GetInt32();
+      int count = root.GetProperty("input").GetProperty("count").GetInt32();
+      JsonElement output = root.GetProperty("output");
+
+      var rng = new Rng(seed);
+      Assert.Equal(count, output.GetArrayLength());
+      for (int i = 0; i < count; i++)
+      {
+        int actual = rng.UniformInt32(min, max);
+        int expected = output[i].GetInt32();
+        Assert.Equal(expected, actual);
+      }
+    }
+  }
+
+  [Fact]
+  public void UniformBoolTests()
+  {
+    string rngDir = Path.Combine(TestsDir, "rng");
+    var files = Directory.GetFiles(rngDir, "uniform-bool-seed-*.json");
+    Assert.True(files.Length > 0, "No uniform bool test files found");
+
+    foreach (string filePath in files)
+    {
+      string json = File.ReadAllText(filePath);
+      using JsonDocument doc = JsonDocument.Parse(json);
+      JsonElement root = doc.RootElement;
+
+      long seed = root.GetProperty("input").GetProperty("seed").GetInt64();
+      int count = root.GetProperty("input").GetProperty("count").GetInt32();
+      JsonElement output = root.GetProperty("output");
+
+      var rng = new Rng(seed);
+      Assert.Equal(count, output.GetArrayLength());
+      for (int i = 0; i < count; i++)
+      {
+        bool actual = rng.UniformBool();
+        bool expected = output[i].GetBoolean();
+        Assert.Equal(expected, actual);
+      }
+    }
   }
 }

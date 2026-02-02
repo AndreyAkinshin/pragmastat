@@ -1,3 +1,4 @@
+using System;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -71,21 +72,194 @@ internal sealed class Xoshiro256PlusPlus
     return result;
   }
 
+  // ========================================================================
+  // Floating Point Methods
+  // ========================================================================
+
+  /// <summary>
+  /// Generate a uniform double in [0, 1).
+  /// Uses upper 53 bits for maximum precision.
+  /// </summary>
   [MethodImpl(MethodImplOptions.AggressiveInlining)]
   public double Uniform()
   {
-    // Use upper 53 bits for maximum precision
     return (NextU64() >> 11) * (1.0 / (1UL << 53));
   }
 
+  /// <summary>
+  /// Generate a uniform double in [min, max).
+  /// Returns min if min >= max.
+  /// </summary>
+  [MethodImpl(MethodImplOptions.AggressiveInlining)]
+  public double Uniform(double min, double max)
+  {
+    if (min >= max)
+      return min;
+    return min + (max - min) * Uniform();
+  }
+
+  /// <summary>
+  /// Generate a uniform float in [0, 1).
+  /// Uses 24 bits for float mantissa precision.
+  /// </summary>
+  [MethodImpl(MethodImplOptions.AggressiveInlining)]
+  public float UniformSingle()
+  {
+    return (NextU64() >> 40) * (1.0f / (1UL << 24));
+  }
+
+  /// <summary>
+  /// Generate a uniform float in [min, max).
+  /// Returns min if min >= max.
+  /// </summary>
+  [MethodImpl(MethodImplOptions.AggressiveInlining)]
+  public float UniformSingle(float min, float max)
+  {
+    if (min >= max)
+      return min;
+    return min + (max - min) * UniformSingle();
+  }
+
+  // ========================================================================
+  // Signed Integer Methods
+  // ========================================================================
+
+  /// <summary>
+  /// Generate a uniform long in [min, max).
+  /// Returns min if min >= max.
+  /// </summary>
   /// <exception cref="OverflowException">Thrown if max - min overflows.</exception>
   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-  public long UniformInt(long min, long max)
+  public long UniformInt64(long min, long max)
   {
     if (min >= max)
       return min;
     ulong range = checked((ulong)(max - min));
     return min + (long)(NextU64() % range);
+  }
+
+  /// <summary>
+  /// Generate a uniform int in [min, max).
+  /// Returns min if min >= max.
+  /// </summary>
+  [MethodImpl(MethodImplOptions.AggressiveInlining)]
+  public int UniformInt32(int min, int max)
+  {
+    if (min >= max)
+      return min;
+    ulong range = (ulong)((long)max - min);
+    return min + (int)(NextU64() % range);
+  }
+
+  /// <summary>
+  /// Generate a uniform short in [min, max).
+  /// Returns min if min >= max.
+  /// </summary>
+  [MethodImpl(MethodImplOptions.AggressiveInlining)]
+  public short UniformInt16(short min, short max)
+  {
+    if (min >= max)
+      return min;
+    ulong range = (ulong)(max - min);
+    return (short)(min + (short)(NextU64() % range));
+  }
+
+  /// <summary>
+  /// Generate a uniform sbyte in [min, max).
+  /// Returns min if min >= max.
+  /// </summary>
+  [MethodImpl(MethodImplOptions.AggressiveInlining)]
+  public sbyte UniformInt8(sbyte min, sbyte max)
+  {
+    if (min >= max)
+      return min;
+    ulong range = (ulong)(max - min);
+    return (sbyte)(min + (sbyte)(NextU64() % range));
+  }
+
+  // ========================================================================
+  // Unsigned Integer Methods
+  // ========================================================================
+
+  /// <summary>
+  /// Generate a uniform ulong in [min, max).
+  /// Returns min if min >= max.
+  /// </summary>
+  [MethodImpl(MethodImplOptions.AggressiveInlining)]
+  public ulong UniformUInt64(ulong min, ulong max)
+  {
+    if (min >= max)
+      return min;
+    ulong range = max - min;
+    return min + NextU64() % range;
+  }
+
+  /// <summary>
+  /// Generate a uniform uint in [min, max).
+  /// Returns min if min >= max.
+  /// </summary>
+  [MethodImpl(MethodImplOptions.AggressiveInlining)]
+  public uint UniformUInt32(uint min, uint max)
+  {
+    if (min >= max)
+      return min;
+    ulong range = (ulong)(max - min);
+    return min + (uint)(NextU64() % range);
+  }
+
+  /// <summary>
+  /// Generate a uniform ushort in [min, max).
+  /// Returns min if min >= max.
+  /// </summary>
+  [MethodImpl(MethodImplOptions.AggressiveInlining)]
+  public ushort UniformUInt16(ushort min, ushort max)
+  {
+    if (min >= max)
+      return min;
+    ulong range = (ulong)(max - min);
+    return (ushort)(min + (ushort)(NextU64() % range));
+  }
+
+  /// <summary>
+  /// Generate a uniform byte in [min, max).
+  /// Returns min if min >= max.
+  /// </summary>
+  [MethodImpl(MethodImplOptions.AggressiveInlining)]
+  public byte UniformByte(byte min, byte max)
+  {
+    if (min >= max)
+      return min;
+    ulong range = (ulong)(max - min);
+    return (byte)(min + (byte)(NextU64() % range));
+  }
+
+  // ========================================================================
+  // Boolean Methods
+  // ========================================================================
+
+  /// <summary>
+  /// Generate a uniform boolean with P(true) = 0.5.
+  /// </summary>
+  [MethodImpl(MethodImplOptions.AggressiveInlining)]
+  public bool UniformBool()
+  {
+    return Uniform() < 0.5;
+  }
+
+  // ========================================================================
+  // Deprecated Methods
+  // ========================================================================
+
+  /// <summary>
+  /// Generate a uniform long in [min, max).
+  /// Returns min if min >= max.
+  /// </summary>
+  /// <exception cref="OverflowException">Thrown if max - min overflows.</exception>
+  [Obsolete("Use UniformInt64 instead")]
+  [MethodImpl(MethodImplOptions.AggressiveInlining)]
+  public long UniformInt(long min, long max)
+  {
+    return UniformInt64(min, max);
   }
 }
 

@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 
+#pragma warning disable CS0618 // Type or member is obsolete
+
 namespace Pragmastat.Randomization;
 
 /// <summary>
@@ -45,8 +47,12 @@ public sealed class Rng
     _inner = new Xoshiro256PlusPlus(Fnv1a.Hash(seed));
   }
 
+  // ========================================================================
+  // Floating Point Methods
+  // ========================================================================
+
   /// <summary>
-  /// Generate a uniform random float in [0, 1).
+  /// Generate a uniform random double in [0, 1).
   /// Uses 53 bits of precision for the mantissa.
   /// </summary>
   /// <returns>A random value in [0, 1).</returns>
@@ -54,6 +60,160 @@ public sealed class Rng
   {
     return _inner.Uniform();
   }
+
+  /// <summary>
+  /// Generate a uniform random double in [min, max).
+  /// </summary>
+  /// <param name="min">Minimum value (inclusive).</param>
+  /// <param name="max">Maximum value (exclusive).</param>
+  /// <returns>A random value in [min, max). Returns min if min >= max.</returns>
+  public double Uniform(double min, double max)
+  {
+    return _inner.Uniform(min, max);
+  }
+
+  /// <summary>
+  /// Generate a uniform random float in [0, 1).
+  /// Uses 24 bits for float mantissa precision.
+  /// </summary>
+  /// <returns>A random value in [0, 1).</returns>
+  public float UniformSingle()
+  {
+    return _inner.UniformSingle();
+  }
+
+  /// <summary>
+  /// Generate a uniform random float in [min, max).
+  /// </summary>
+  /// <param name="min">Minimum value (inclusive).</param>
+  /// <param name="max">Maximum value (exclusive).</param>
+  /// <returns>A random value in [min, max). Returns min if min >= max.</returns>
+  public float UniformSingle(float min, float max)
+  {
+    return _inner.UniformSingle(min, max);
+  }
+
+  // ========================================================================
+  // Signed Integer Methods
+  // ========================================================================
+
+  /// <summary>
+  /// Generate a uniform random long in [min, max).
+  /// </summary>
+  /// <remarks>
+  /// Uses modulo reduction which introduces slight bias for ranges that don't
+  /// evenly divide 2^64. This bias is negligible for statistical simulations
+  /// but not suitable for cryptographic applications.
+  /// </remarks>
+  /// <param name="min">Minimum value (inclusive).</param>
+  /// <param name="max">Maximum value (exclusive).</param>
+  /// <returns>A random long in [min, max). Returns min if min >= max.</returns>
+  public long UniformInt64(long min, long max)
+  {
+    return _inner.UniformInt64(min, max);
+  }
+
+  /// <summary>
+  /// Generate a uniform random int in [min, max).
+  /// </summary>
+  /// <param name="min">Minimum value (inclusive).</param>
+  /// <param name="max">Maximum value (exclusive).</param>
+  /// <returns>A random int in [min, max). Returns min if min >= max.</returns>
+  public int UniformInt32(int min, int max)
+  {
+    return _inner.UniformInt32(min, max);
+  }
+
+  /// <summary>
+  /// Generate a uniform random short in [min, max).
+  /// </summary>
+  /// <param name="min">Minimum value (inclusive).</param>
+  /// <param name="max">Maximum value (exclusive).</param>
+  /// <returns>A random short in [min, max). Returns min if min >= max.</returns>
+  public short UniformInt16(short min, short max)
+  {
+    return _inner.UniformInt16(min, max);
+  }
+
+  /// <summary>
+  /// Generate a uniform random sbyte in [min, max).
+  /// </summary>
+  /// <param name="min">Minimum value (inclusive).</param>
+  /// <param name="max">Maximum value (exclusive).</param>
+  /// <returns>A random sbyte in [min, max). Returns min if min >= max.</returns>
+  [CLSCompliant(false)]
+  public sbyte UniformInt8(sbyte min, sbyte max)
+  {
+    return _inner.UniformInt8(min, max);
+  }
+
+  // ========================================================================
+  // Unsigned Integer Methods
+  // ========================================================================
+
+  /// <summary>
+  /// Generate a uniform random ulong in [min, max).
+  /// </summary>
+  /// <param name="min">Minimum value (inclusive).</param>
+  /// <param name="max">Maximum value (exclusive).</param>
+  /// <returns>A random ulong in [min, max). Returns min if min >= max.</returns>
+  [CLSCompliant(false)]
+  public ulong UniformUInt64(ulong min, ulong max)
+  {
+    return _inner.UniformUInt64(min, max);
+  }
+
+  /// <summary>
+  /// Generate a uniform random uint in [min, max).
+  /// </summary>
+  /// <param name="min">Minimum value (inclusive).</param>
+  /// <param name="max">Maximum value (exclusive).</param>
+  /// <returns>A random uint in [min, max). Returns min if min >= max.</returns>
+  [CLSCompliant(false)]
+  public uint UniformUInt32(uint min, uint max)
+  {
+    return _inner.UniformUInt32(min, max);
+  }
+
+  /// <summary>
+  /// Generate a uniform random ushort in [min, max).
+  /// </summary>
+  /// <param name="min">Minimum value (inclusive).</param>
+  /// <param name="max">Maximum value (exclusive).</param>
+  /// <returns>A random ushort in [min, max). Returns min if min >= max.</returns>
+  [CLSCompliant(false)]
+  public ushort UniformUInt16(ushort min, ushort max)
+  {
+    return _inner.UniformUInt16(min, max);
+  }
+
+  /// <summary>
+  /// Generate a uniform random byte in [min, max).
+  /// </summary>
+  /// <param name="min">Minimum value (inclusive).</param>
+  /// <param name="max">Maximum value (exclusive).</param>
+  /// <returns>A random byte in [min, max). Returns min if min >= max.</returns>
+  public byte UniformByte(byte min, byte max)
+  {
+    return _inner.UniformByte(min, max);
+  }
+
+  // ========================================================================
+  // Boolean Methods
+  // ========================================================================
+
+  /// <summary>
+  /// Generate a uniform random boolean with P(true) = 0.5.
+  /// </summary>
+  /// <returns>A random boolean.</returns>
+  public bool UniformBool()
+  {
+    return _inner.UniformBool();
+  }
+
+  // ========================================================================
+  // Deprecated Methods
+  // ========================================================================
 
   /// <summary>
   /// Generate a uniform random integer in [min, max).
@@ -66,10 +226,15 @@ public sealed class Rng
   /// <param name="min">Minimum value (inclusive).</param>
   /// <param name="max">Maximum value (exclusive).</param>
   /// <returns>A random integer in [min, max). Returns min if min >= max.</returns>
+  [Obsolete("Use UniformInt64 instead")]
   public long UniformInt(long min, long max)
   {
-    return _inner.UniformInt(min, max);
+    return _inner.UniformInt64(min, max);
   }
+
+  // ========================================================================
+  // Collection Methods
+  // ========================================================================
 
   /// <summary>
   /// Return a shuffled copy of the input list.
@@ -87,7 +252,7 @@ public sealed class Rng
     // Fisher-Yates shuffle (backwards)
     for (int i = n - 1; i > 0; i--)
     {
-      int j = (int)UniformInt(0, i + 1);
+      int j = (int)UniformInt64(0, i + 1);
       (result[i], result[j]) = (result[j], result[i]);
     }
 
