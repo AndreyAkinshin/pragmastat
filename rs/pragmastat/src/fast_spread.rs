@@ -232,7 +232,7 @@ pub(crate) fn fast_spread(values: &[f64]) -> Result<f64, &'static str> {
             );
         } else {
             // Weighted random row selection
-            let t = rng.uniform_int(0, active_size as i64) as usize;
+            let t = rng.uniform_i64(0, active_size as i64) as usize;
             let mut acc = 0;
             let mut row = 0;
             for r in 0..n - 1 {

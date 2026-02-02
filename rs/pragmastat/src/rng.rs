@@ -3,6 +3,8 @@
 //! The `Rng` struct provides a deterministic PRNG based on xoshiro256++ that
 //! produces identical sequences across all Pragmastat language implementations.
 
+#![allow(deprecated)]
+
 use crate::fnv1a::fnv1a_hash;
 use crate::xoshiro256::Xoshiro256PlusPlus;
 
@@ -97,7 +99,11 @@ impl Rng {
         }
     }
 
-    /// Generate a uniform random float in [0, 1)
+    // ========================================================================
+    // Floating Point Methods
+    // ========================================================================
+
+    /// Generate a uniform random f64 in [0, 1)
     ///
     /// Uses 53 bits of precision for the mantissa.
     ///
@@ -115,7 +121,65 @@ impl Rng {
         self.inner.uniform()
     }
 
-    /// Generate a uniform random integer in [min, max)
+    /// Generate a uniform random f64 in [min, max)
+    ///
+    /// Returns `min` if `min >= max`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use pragmastat::Rng;
+    ///
+    /// let mut rng = Rng::from_seed(1729);
+    /// let value = rng.uniform_range(-5.0, 5.0);
+    /// assert!(value >= -5.0 && value < 5.0);
+    /// ```
+    #[inline]
+    pub fn uniform_range(&mut self, min: f64, max: f64) -> f64 {
+        self.inner.uniform_range(min, max)
+    }
+
+    /// Generate a uniform random f32 in [0, 1)
+    ///
+    /// Uses 24 bits for f32 mantissa precision.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use pragmastat::Rng;
+    ///
+    /// let mut rng = Rng::from_seed(1729);
+    /// let value = rng.uniform_f32();
+    /// assert!(value >= 0.0 && value < 1.0);
+    /// ```
+    #[inline]
+    pub fn uniform_f32(&mut self) -> f32 {
+        self.inner.uniform_f32()
+    }
+
+    /// Generate a uniform random f32 in [min, max)
+    ///
+    /// Returns `min` if `min >= max`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use pragmastat::Rng;
+    ///
+    /// let mut rng = Rng::from_seed(1729);
+    /// let value = rng.uniform_f32_range(-5.0, 5.0);
+    /// assert!(value >= -5.0 && value < 5.0);
+    /// ```
+    #[inline]
+    pub fn uniform_f32_range(&mut self, min: f32, max: f32) -> f32 {
+        self.inner.uniform_f32_range(min, max)
+    }
+
+    // ========================================================================
+    // Signed Integer Methods
+    // ========================================================================
+
+    /// Generate a uniform random i64 in [min, max)
     ///
     /// Returns `min` if `min >= max`.
     ///
@@ -131,13 +195,125 @@ impl Rng {
     /// use pragmastat::Rng;
     ///
     /// let mut rng = Rng::from_seed(1729);
-    /// let value = rng.uniform_int(0, 100);
+    /// let value = rng.uniform_i64(0, 100);
     /// assert!(value >= 0 && value < 100);
     /// ```
     #[inline]
-    pub fn uniform_int(&mut self, min: i64, max: i64) -> i64 {
-        self.inner.uniform_int(min, max)
+    pub fn uniform_i64(&mut self, min: i64, max: i64) -> i64 {
+        self.inner.uniform_i64(min, max)
     }
+
+    /// Generate a uniform random i32 in [min, max)
+    ///
+    /// Returns `min` if `min >= max`.
+    #[inline]
+    pub fn uniform_i32(&mut self, min: i32, max: i32) -> i32 {
+        self.inner.uniform_i32(min, max)
+    }
+
+    /// Generate a uniform random i16 in [min, max)
+    ///
+    /// Returns `min` if `min >= max`.
+    #[inline]
+    pub fn uniform_i16(&mut self, min: i16, max: i16) -> i16 {
+        self.inner.uniform_i16(min, max)
+    }
+
+    /// Generate a uniform random i8 in [min, max)
+    ///
+    /// Returns `min` if `min >= max`.
+    #[inline]
+    pub fn uniform_i8(&mut self, min: i8, max: i8) -> i8 {
+        self.inner.uniform_i8(min, max)
+    }
+
+    /// Generate a uniform random isize in [min, max)
+    ///
+    /// Returns `min` if `min >= max`.
+    #[inline]
+    pub fn uniform_isize(&mut self, min: isize, max: isize) -> isize {
+        self.inner.uniform_isize(min, max)
+    }
+
+    // ========================================================================
+    // Unsigned Integer Methods
+    // ========================================================================
+
+    /// Generate a uniform random u64 in [min, max)
+    ///
+    /// Returns `min` if `min >= max`.
+    #[inline]
+    pub fn uniform_u64(&mut self, min: u64, max: u64) -> u64 {
+        self.inner.uniform_u64(min, max)
+    }
+
+    /// Generate a uniform random u32 in [min, max)
+    ///
+    /// Returns `min` if `min >= max`.
+    #[inline]
+    pub fn uniform_u32(&mut self, min: u32, max: u32) -> u32 {
+        self.inner.uniform_u32(min, max)
+    }
+
+    /// Generate a uniform random u16 in [min, max)
+    ///
+    /// Returns `min` if `min >= max`.
+    #[inline]
+    pub fn uniform_u16(&mut self, min: u16, max: u16) -> u16 {
+        self.inner.uniform_u16(min, max)
+    }
+
+    /// Generate a uniform random u8 in [min, max)
+    ///
+    /// Returns `min` if `min >= max`.
+    #[inline]
+    pub fn uniform_u8(&mut self, min: u8, max: u8) -> u8 {
+        self.inner.uniform_u8(min, max)
+    }
+
+    /// Generate a uniform random usize in [min, max)
+    ///
+    /// Returns `min` if `min >= max`.
+    #[inline]
+    pub fn uniform_usize(&mut self, min: usize, max: usize) -> usize {
+        self.inner.uniform_usize(min, max)
+    }
+
+    // ========================================================================
+    // Boolean Methods
+    // ========================================================================
+
+    /// Generate a uniform random boolean with P(true) = 0.5
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use pragmastat::Rng;
+    ///
+    /// let mut rng = Rng::from_seed(1729);
+    /// let coin_flip = rng.uniform_bool();
+    /// ```
+    #[inline]
+    pub fn uniform_bool(&mut self) -> bool {
+        self.inner.uniform_bool()
+    }
+
+    // ========================================================================
+    // Deprecated Methods
+    // ========================================================================
+
+    /// Generate a uniform random integer in [min, max)
+    ///
+    /// Returns `min` if `min >= max`.
+    #[deprecated(since = "5.2.0", note = "use uniform_i64 instead")]
+    #[inline]
+    pub fn uniform_int(&mut self, min: i64, max: i64) -> i64 {
+        self.inner.uniform_i64(min, max)
+    }
+
+    // ========================================================================
+    // Collection Methods
+    // ========================================================================
 
     /// Return a shuffled copy of the input slice
     ///
@@ -164,7 +340,7 @@ impl Rng {
 
         // Fisher-Yates shuffle (inside-out variant, backwards)
         for i in (1..n).rev() {
-            let j = self.uniform_int(0, (i + 1) as i64) as usize;
+            let j = self.uniform_i64(0, (i + 1) as i64) as usize;
             result.swap(i, j);
         }
 
@@ -237,7 +413,7 @@ mod tests {
     }
 
     #[test]
-    fn uniform_range() {
+    fn uniform_in_range() {
         let mut rng = Rng::from_seed(1729);
 
         for _ in 0..10000 {
@@ -247,13 +423,121 @@ mod tests {
     }
 
     #[test]
-    fn uniform_int_range() {
+    fn uniform_range_bounds() {
         let mut rng = Rng::from_seed(1729);
 
         for _ in 0..10000 {
-            let v = rng.uniform_int(0, 100);
+            let v = rng.uniform_range(-10.0, 10.0);
+            assert!(v >= -10.0 && v < 10.0);
+        }
+    }
+
+    #[test]
+    fn uniform_f32_in_range() {
+        let mut rng = Rng::from_seed(1729);
+
+        for _ in 0..10000 {
+            let v = rng.uniform_f32();
+            assert!(v >= 0.0 && v < 1.0);
+        }
+    }
+
+    #[test]
+    fn uniform_f32_range_bounds() {
+        let mut rng = Rng::from_seed(1729);
+
+        for _ in 0..10000 {
+            let v = rng.uniform_f32_range(-10.0, 10.0);
+            assert!(v >= -10.0 && v < 10.0);
+        }
+    }
+
+    #[test]
+    fn uniform_i64_bounds() {
+        let mut rng = Rng::from_seed(1729);
+
+        for _ in 0..10000 {
+            let v = rng.uniform_i64(0, 100);
             assert!(v >= 0 && v < 100);
         }
+    }
+
+    #[test]
+    fn uniform_i32_bounds() {
+        let mut rng = Rng::from_seed(1729);
+
+        for _ in 0..10000 {
+            let v = rng.uniform_i32(-500, 500);
+            assert!(v >= -500 && v < 500);
+        }
+    }
+
+    #[test]
+    fn uniform_i16_bounds() {
+        let mut rng = Rng::from_seed(1729);
+
+        for _ in 0..10000 {
+            let v = rng.uniform_i16(-100, 100);
+            assert!(v >= -100 && v < 100);
+        }
+    }
+
+    #[test]
+    fn uniform_i8_bounds() {
+        let mut rng = Rng::from_seed(1729);
+
+        for _ in 0..10000 {
+            let v = rng.uniform_i8(-50, 50);
+            assert!(v >= -50 && v < 50);
+        }
+    }
+
+    #[test]
+    fn uniform_u64_bounds() {
+        let mut rng = Rng::from_seed(1729);
+
+        for _ in 0..10000 {
+            let v = rng.uniform_u64(10, 1000);
+            assert!(v >= 10 && v < 1000);
+        }
+    }
+
+    #[test]
+    fn uniform_u32_bounds() {
+        let mut rng = Rng::from_seed(1729);
+
+        for _ in 0..10000 {
+            let v = rng.uniform_u32(10, 1000);
+            assert!(v >= 10 && v < 1000);
+        }
+    }
+
+    #[test]
+    fn uniform_u16_bounds() {
+        let mut rng = Rng::from_seed(1729);
+
+        for _ in 0..10000 {
+            let v = rng.uniform_u16(10, 100);
+            assert!(v >= 10 && v < 100);
+        }
+    }
+
+    #[test]
+    fn uniform_u8_bounds() {
+        let mut rng = Rng::from_seed(1729);
+
+        for _ in 0..10000 {
+            let v = rng.uniform_u8(10, 100);
+            assert!(v >= 10 && v < 100);
+        }
+    }
+
+    #[test]
+    fn uniform_bool_distribution() {
+        let mut rng = Rng::from_seed(1729);
+        let count: usize = (0..10000).filter(|_| rng.uniform_bool()).count();
+        // Should be approximately 50% true
+        assert!(count > 4500 && count < 5500);
     }
 
     #[test]

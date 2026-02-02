@@ -5,6 +5,8 @@
 //! This generates JSON test files in the tests/ directory that all language
 //! implementations must pass to ensure cross-language consistency.
 
+#![allow(deprecated)]
+
 use pragmastat::distributions::{Additive, Distribution, Exp, Multiplic, Power, Uniform};
 use pragmastat::Rng;
 use serde::Serialize;
@@ -24,6 +26,32 @@ struct UniformTestCase {
 }
 
 #[derive(Serialize)]
+struct UniformRangeTestInput {
+    seed: i64,
+    min: f64,
+    max: f64,
+    count: usize,
+}
+
+#[derive(Serialize)]
+struct UniformRangeTestCase {
+    input: UniformRangeTestInput,
+    output: Vec<f64>,
+}
+
+#[derive(Serialize)]
+struct UniformF32TestInput {
+    seed: i64,
+    count: usize,
+}
+
+#[derive(Serialize)]
+struct UniformF32TestCase {
+    input: UniformF32TestInput,
+    output: Vec<f32>,
+}
+
+#[derive(Serialize)]
 struct UniformIntTestInput {
     seed: i64,
     min: i64,
@@ -35,6 +63,32 @@ struct UniformIntTestInput {
 struct UniformIntTestCase {
     input: UniformIntTestInput,
     output: Vec<i64>,
+}
+
+#[derive(Serialize)]
+struct UniformI32TestInput {
+    seed: i64,
+    min: i32,
+    max: i32,
+    count: usize,
+}
+
+#[derive(Serialize)]
+struct UniformI32TestCase {
+    input: UniformI32TestInput,
+    output: Vec<i32>,
+}
+
+#[derive(Serialize)]
+struct UniformBoolTestInput {
+    seed: i64,
+    count: usize,
+}
+
+#[derive(Serialize)]
+struct UniformBoolTestCase {
+    input: UniformBoolTestInput,
+    output: Vec<bool>,
 }
 
 #[derive(Serialize)]
@@ -215,6 +269,114 @@ fn generate_uniform_tests(tests_dir: &PathBuf) {
         };
 
         let filename = format!("uniform-seed-{}.json", seed);
+        write_json(&rng_dir.join(filename), &test_case);
+    }
+}
+
+fn generate_uniform_range_tests(tests_dir: &PathBuf) {
+    let rng_dir = tests_dir.join("rng");
+    fs::create_dir_all(&rng_dir).expect("Failed to create rng test dir");
+
+    let test_configs: Vec<(i64, f64, f64, usize)> = vec![
+        // (seed, min, max, count)
+        (1729, 0.0, 1.0, 20),
+        (1729, -1.0, 1.0, 20),
+        (1729, 0.0, 100.0, 20),
+        (1729, -50.0, 50.0, 20),
+        (123, 0.0, 1.0, 20),
+        (0, -1.0, 1.0, 20),
+        (999, 0.0, 100.0, 20),
+    ];
+
+    for (seed, min, max, count) in test_configs {
+        let mut rng = Rng::from_seed(seed);
+        let values: Vec<f64> = (0..count).map(|_| rng.uniform_range(min, max)).collect();
+
+        let test_case = UniformRangeTestCase {
+            input: UniformRangeTestInput {
+                seed,
+                min,
+                max,
+                count,
+            },
+            output: values,
+        };
+
+        let filename = format!("uniform-range-seed-{}-{}-{}.json", seed, min, max);
+        write_json(&rng_dir.join(filename), &test_case);
+    }
+}
+
+fn generate_uniform_f32_tests(tests_dir: &PathBuf) {
+    let rng_dir = tests_dir.join("rng");
+    fs::create_dir_all(&rng_dir).expect("Failed to create rng test dir");
+
+    let seeds: Vec<i64> = vec![0, 1, 1729, 123, 999, -1, -42];
+    let count = 20;
+
+    for seed in &seeds {
+        let mut rng = Rng::from_seed(*seed);
+        let values: Vec<f32> = (0..count).map(|_| rng.uniform_f32()).collect();
+
+        let test_case = UniformF32TestCase {
+            input: UniformF32TestInput { seed: *seed, count },
+            output: values,
+        };
+
+        let filename = format!("uniform-f32-seed-{}.json", seed);
+        write_json(&rng_dir.join(filename), &test_case);
+    }
+}
+
+fn generate_uniform_i32_tests(tests_dir: &PathBuf) {
+    let rng_dir = tests_dir.join("rng");
+    fs::create_dir_all(&rng_dir).expect("Failed to create rng test dir");
+
+    let test_configs: Vec<(i64, i32, i32, usize)> = vec![
+        // (seed, min, max, count)
+        (1729, 0, 1000, 20),
+        (1729, -500, 500, 20),
+        (123, 0, 1000, 20),
+        (0, -500, 500, 20),
+        (999, 0, 100, 20),
+    ];
+
+    for (seed, min, max, count) in test_configs {
+        let mut rng = Rng::from_seed(seed);
+        let values: Vec<i32> = (0..count).map(|_| rng.uniform_i32(min, max)).collect();
+
+        let test_case = UniformI32TestCase {
+            input: UniformI32TestInput {
+                seed,
+                min,
+                max,
+                count,
+            },
+            output: values,
+        };
+
+        let filename = format!("uniform-i32-seed-{}-{}-{}.json", seed, min, max);
+        write_json(&rng_dir.join(filename), &test_case);
+    }
+}
+
+fn generate_uniform_bool_tests(tests_dir: &PathBuf) {
+    let rng_dir = tests_dir.join("rng");
+    fs::create_dir_all(&rng_dir).expect("Failed to create rng test dir");
+
+    let seeds: Vec<i64> = vec![0, 1, 1729, 123, 999, -1, -42];
+    let count = 100;
+
+    for seed in &seeds {
+        let mut rng = Rng::from_seed(*seed);
+        let values: Vec<bool> = (0..count).map(|_| rng.uniform_bool()).collect();
+
+        let test_case = UniformBoolTestCase {
+            input: UniformBoolTestInput { seed: *seed, count },
+            output: values,
+        };
+
+        let filename = format!("uniform-bool-seed-{}.json", seed);
         write_json(&rng_dir.join(filename), &test_case);
     }
 }
@@ -507,8 +669,24 @@ fn main() {
     generate_uniform_tests(&tests_dir);
     println!();
 
+    println!("Generating uniform_range tests...");
+    generate_uniform_range_tests(&tests_dir);
+    println!();
+
+    println!("Generating uniform_f32 tests...");
+    generate_uniform_f32_tests(&tests_dir);
+    println!();
+
     println!("Generating uniform_int tests...");
     generate_uniform_int_tests(&tests_dir);
+    println!();
+
+    println!("Generating uniform_i32 tests...");
+    generate_uniform_i32_tests(&tests_dir);
+    println!();
+
+    println!("Generating uniform_bool tests...");
+    generate_uniform_bool_tests(&tests_dir);
     println!();
 
     println!("Generating string seed tests...");

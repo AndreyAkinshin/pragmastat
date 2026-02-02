@@ -370,6 +370,58 @@ struct StringSeedTestCase {
 }
 
 #[derive(Debug, Deserialize)]
+struct UniformRangeInput {
+    seed: i64,
+    min: f64,
+    max: f64,
+    count: usize,
+}
+
+#[derive(Debug, Deserialize)]
+struct UniformRangeTestCase {
+    input: UniformRangeInput,
+    output: Vec<f64>,
+}
+
+#[derive(Debug, Deserialize)]
+struct UniformF32Input {
+    seed: i64,
+    count: usize,
+}
+
+#[derive(Debug, Deserialize)]
+struct UniformF32TestCase {
+    input: UniformF32Input,
+    output: Vec<f32>,
+}
+
+#[derive(Debug, Deserialize)]
+struct UniformI32Input {
+    seed: i64,
+    min: i32,
+    max: i32,
+    count: usize,
+}
+
+#[derive(Debug, Deserialize)]
+struct UniformI32TestCase {
+    input: UniformI32Input,
+    output: Vec<i32>,
+}
+
+#[derive(Debug, Deserialize)]
+struct UniformBoolInput {
+    seed: i64,
+    count: usize,
+}
+
+#[derive(Debug, Deserialize)]
+struct UniformBoolTestCase {
+    input: UniformBoolInput,
+    output: Vec<bool>,
+}
+
+#[derive(Debug, Deserialize)]
 struct ShuffleInput {
     seed: i64,
     x: Vec<f64>,
@@ -589,6 +641,170 @@ fn run_rng_string_seed_tests() {
                 actual_val
             );
         }
+    }
+}
+
+fn run_rng_uniform_range_tests() {
+    let repo_root = find_repo_root();
+    let test_data_dir = repo_root.join("tests").join("rng");
+
+    let json_files: Vec<_> = fs::read_dir(&test_data_dir)
+        .unwrap()
+        .filter_map(|entry| {
+            let entry = entry.unwrap();
+            let path = entry.path();
+            let name = path.file_name()?.to_str()?;
+            if name.starts_with("uniform-range-") && name.ends_with(".json") {
+                Some(path)
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    assert!(!json_files.is_empty(), "No uniform range test files found");
+
+    for json_file in json_files {
+        let content = fs::read_to_string(&json_file).unwrap();
+        let test_case: UniformRangeTestCase = serde_json::from_str(&content).unwrap();
+
+        let mut rng = Rng::from_seed(test_case.input.seed);
+        let actual: Vec<f64> = (0..test_case.input.count)
+            .map(|_| rng.uniform_range(test_case.input.min, test_case.input.max))
+            .collect();
+
+        for (i, (actual_val, expected_val)) in
+            actual.iter().zip(test_case.output.iter()).enumerate()
+        {
+            assert!(
+                approx_eq!(f64, *actual_val, *expected_val, epsilon = 1e-12),
+                "Failed for test file: {:?}, index {}, expected: {}, got: {}",
+                json_file.file_name().unwrap(),
+                i,
+                expected_val,
+                actual_val
+            );
+        }
+    }
+}
+
+fn run_rng_uniform_f32_tests() {
+    let repo_root = find_repo_root();
+    let test_data_dir = repo_root.join("tests").join("rng");
+
+    let json_files: Vec<_> = fs::read_dir(&test_data_dir)
+        .unwrap()
+        .filter_map(|entry| {
+            let entry = entry.unwrap();
+            let path = entry.path();
+            let name = path.file_name()?.to_str()?;
+            if name.starts_with("uniform-f32-") && name.ends_with(".json") {
+                Some(path)
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    assert!(!json_files.is_empty(), "No uniform f32 test files found");
+
+    for json_file in json_files {
+        let content = fs::read_to_string(&json_file).unwrap();
+        let test_case: UniformF32TestCase = serde_json::from_str(&content).unwrap();
+
+        let mut rng = Rng::from_seed(test_case.input.seed);
+        let actual: Vec<f32> = (0..test_case.input.count)
+            .map(|_| rng.uniform_f32())
+            .collect();
+
+        for (i, (actual_val, expected_val)) in
+            actual.iter().zip(test_case.output.iter()).enumerate()
+        {
+            assert!(
+                approx_eq!(f32, *actual_val, *expected_val, epsilon = 1e-7),
+                "Failed for test file: {:?}, index {}, expected: {}, got: {}",
+                json_file.file_name().unwrap(),
+                i,
+                expected_val,
+                actual_val
+            );
+        }
+    }
+}
+
+fn run_rng_uniform_i32_tests() {
+    let repo_root = find_repo_root();
+    let test_data_dir = repo_root.join("tests").join("rng");
+
+    let json_files: Vec<_> = fs::read_dir(&test_data_dir)
+        .unwrap()
+        .filter_map(|entry| {
+            let entry = entry.unwrap();
+            let path = entry.path();
+            let name = path.file_name()?.to_str()?;
+            if name.starts_with("uniform-i32-") && name.ends_with(".json") {
+                Some(path)
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    assert!(!json_files.is_empty(), "No uniform i32 test files found");
+
+    for json_file in json_files {
+        let content = fs::read_to_string(&json_file).unwrap();
+        let test_case: UniformI32TestCase = serde_json::from_str(&content).unwrap();
+
+        let mut rng = Rng::from_seed(test_case.input.seed);
+        let actual: Vec<i32> = (0..test_case.input.count)
+            .map(|_| rng.uniform_i32(test_case.input.min, test_case.input.max))
+            .collect();
+
+        assert_eq!(
+            actual,
+            test_case.output,
+            "Failed for test file: {:?}",
+            json_file.file_name().unwrap()
+        );
+    }
+}
+
+fn run_rng_uniform_bool_tests() {
+    let repo_root = find_repo_root();
+    let test_data_dir = repo_root.join("tests").join("rng");
+
+    let json_files: Vec<_> = fs::read_dir(&test_data_dir)
+        .unwrap()
+        .filter_map(|entry| {
+            let entry = entry.unwrap();
+            let path = entry.path();
+            let name = path.file_name()?.to_str()?;
+            if name.starts_with("uniform-bool-seed-") && name.ends_with(".json") {
+                Some(path)
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    assert!(!json_files.is_empty(), "No uniform bool test files found");
+
+    for json_file in json_files {
+        let content = fs::read_to_string(&json_file).unwrap();
+        let test_case: UniformBoolTestCase = serde_json::from_str(&content).unwrap();
+
+        let mut rng = Rng::from_seed(test_case.input.seed);
+        let actual: Vec<bool> = (0..test_case.input.count)
+            .map(|_| rng.uniform_bool())
+            .collect();
+
+        assert_eq!(
+            actual,
+            test_case.output,
+            "Failed for test file: {:?}",
+            json_file.file_name().unwrap()
+        );
     }
 }
 
@@ -931,6 +1147,26 @@ fn test_rng_uniform_int() {
 #[test]
 fn test_rng_string_seed() {
     run_rng_string_seed_tests();
+}
+
+#[test]
+fn test_rng_uniform_range() {
+    run_rng_uniform_range_tests();
+}
+
+#[test]
+fn test_rng_uniform_f32() {
+    run_rng_uniform_f32_tests();
+}
+
+#[test]
+fn test_rng_uniform_i32() {
+    run_rng_uniform_i32_tests();
+}
+
+#[test]
+fn test_rng_uniform_bool() {
+    run_rng_uniform_bool_tests();
 }
 
 #[test]

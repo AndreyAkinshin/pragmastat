@@ -183,7 +183,7 @@ pub(crate) fn fast_center(values: &[f64]) -> Result<f64, &'static str> {
         // Choose next pivot
         if active_set_size > 2 {
             // Use randomized row median strategy
-            let target_index = rng.uniform_int(0, active_set_size as i64) as usize;
+            let target_index = rng.uniform_i64(0, active_set_size as i64) as usize;
             let mut cumulative_size = 0;
             let mut selected_row = 0;
 
