@@ -1,0 +1,59 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#67e8f9;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#c4b5fd;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="fillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#67e8f9;stop-opacity:0.5" />
+      <stop offset="100%" style="stop-color:#c4b5fd;stop-opacity:0.2" />
+    </linearGradient>
+
+    <!-- Clipping mask for rounded rect -->
+    <clipPath id="roundedClip">
+      <rect width="200" height="200" rx="40" />
+    </clipPath>
+  </defs>
+
+  <!-- Background -->
+  <rect width="200" height="200" rx="40" fill="#0f172a"/>
+
+  <!-- Chart group clipped by mask -->
+  <g clip-path="url(#roundedClip)">
+
+    <!-- Filled area under curve -->
+    <path d="M 0,180
+          C 10,170 20,150 30,120
+          C 35,105 40,95 45,100
+          C 50,105 55,120 60,140
+          C 70,145 80,130 90,100
+          C 95,85 100,75 105,80
+          C 110,85 115,100 120,120
+          C 130,125 140,105 150,70
+          C 155,50 160,35 165,30
+          C 170,25 175,35 180,55
+          C 185,75 190,95 195,110
+          C 197,118 199,125 200,130
+          L 200,200 L 0,200 Z"
+        fill="url(#fillGrad)"/>
+
+    <!-- Three-peak distribution curve -->
+    <path d="M 0,180
+          C 10,170 20,150 30,120
+          C 35,105 40,95 45,100
+          C 50,105 55,120 60,140
+          C 70,145 80,130 90,100
+          C 95,85 100,75 105,80
+          C 110,85 115,100 120,120
+          C 130,125 140,105 150,70
+          C 155,50 160,35 165,30
+          C 170,25 175,35 180,55
+          C 185,75 190,95 195,110
+          C 197,118 199,125 200,130"
+        stroke="url(#grad)"
+        stroke-width="5"
+        fill="none"
+        stroke-linecap="round"
+        stroke-linejoin="round"/>
+  </g>
+</svg>
