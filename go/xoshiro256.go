@@ -2,6 +2,7 @@
 package pragmastat
 
 import (
+	"math"
 	"math/bits"
 )
 
@@ -51,12 +52,39 @@ func (x *xoshiro256PlusPlus) nextU64() uint64 {
 	return result
 }
 
+// ========================================================================
+// Floating Point Methods
+// ========================================================================
+
 func (x *xoshiro256PlusPlus) uniform() float64 {
 	// Use upper 53 bits for maximum precision
 	return float64(x.nextU64()>>11) * (1.0 / float64(uint64(1)<<53))
 }
 
-func (x *xoshiro256PlusPlus) uniformInt(min, max int64) int64 {
+func (x *xoshiro256PlusPlus) uniformRange(min, max float64) float64 {
+	if min >= max {
+		return min
+	}
+	return min + (max-min)*x.uniform()
+}
+
+func (x *xoshiro256PlusPlus) uniformFloat32() float32 {
+	// Use 24 bits for float32 mantissa precision
+	return float32(x.nextU64()>>40) * (1.0 / float32(uint64(1)<<24))
+}
+
+func (x *xoshiro256PlusPlus) uniformFloat32Range(min, max float32) float32 {
+	if min >= max {
+		return min
+	}
+	return min + (max-min)*x.uniformFloat32()
+}
+
+// ========================================================================
+// Signed Integer Methods
+// ========================================================================
+
+func (x *xoshiro256PlusPlus) uniformInt64(min, max int64) int64 {
 	if min >= max {
 		return min
 	}
@@ -70,10 +98,94 @@ func (x *xoshiro256PlusPlus) uniformInt(min, max int64) int64 {
 		// min < 0 < max: check for overflow
 		rangeSize = uint64(max) + uint64(-min)
 		if rangeSize < uint64(max) {
-			panic("uniform_int: range overflow")
+			panic("uniform_int64: range overflow")
 		}
 	}
 	return min + int64(x.nextU64()%rangeSize)
+}
+
+func (x *xoshiro256PlusPlus) uniformInt32(min, max int32) int32 {
+	if min >= max {
+		return min
+	}
+	rangeSize := uint64(int64(max) - int64(min))
+	return min + int32(x.nextU64()%rangeSize)
+}
+
+func (x *xoshiro256PlusPlus) uniformInt16(min, max int16) int16 {
+	if min >= max {
+		return min
+	}
+	rangeSize := uint64(int32(max) - int32(min))
+	return min + int16(x.nextU64()%rangeSize)
+}
+
+func (x *xoshiro256PlusPlus) uniformInt8(min, max int8) int8 {
+	if min >= max {
+		return min
+	}
+	rangeSize := uint64(int16(max) - int16(min))
+	return min + int8(x.nextU64()%rangeSize)
+}
+
+func (x *xoshiro256PlusPlus) uniformInt(min, max int) int {
+	if min >= max {
+		return min
+	}
+	rangeSize := uint64(int64(max) - int64(min))
+	return min + int(x.nextU64()%rangeSize)
+}
+
+// ========================================================================
+// Unsigned Integer Methods
+// ========================================================================
+
+func (x *xoshiro256PlusPlus) uniformUint64(min, max uint64) uint64 {
+	if min >= max {
+		return min
+	}
+	rangeSize := max - min
+	return min + x.nextU64()%rangeSize
+}
+
+func (x *xoshiro256PlusPlus) uniformUint32(min, max uint32) uint32 {
+	if min >= max {
+		return min
+	}
+	rangeSize := uint64(max - min)
+	return min + uint32(x.nextU64()%rangeSize)
+}
+
+func (x *xoshiro256PlusPlus) uniformUint16(min, max uint16) uint16 {
+	if min >= max {
+		return min
+	}
+	rangeSize := uint64(max - min)
+	return min + uint16(x.nextU64()%rangeSize)
+}
+
+func (x *xoshiro256PlusPlus) uniformUint8(min, max uint8) uint8 {
+	if min >= max {
+		return min
+	}
+	rangeSize := uint64(max - min)
+	return min + uint8(x.nextU64()%rangeSize)
+}
+
+func (x *xoshiro256PlusPlus) uniformUint(min, max uint) uint {
+	if min >= max {
+		return min
+	}
+	rangeSize := uint64(max - min)
+	return min + uint(x.nextU64()%rangeSize)
+}
+
+// ========================================================================
+// Boolean Methods
+// ========================================================================
+
+func (x *xoshiro256PlusPlus) uniformBool() bool {
+	return x.uniform() < 0.5
 }
 
 // FNV-1a hash constants
@@ -91,3 +203,6 @@ func fnv1aHash(s string) uint64 {
 	}
 	return hash
 }
+
+// Suppress unused import warning for math
+var _ = math.MaxFloat64

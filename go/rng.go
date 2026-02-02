@@ -32,21 +32,129 @@ func NewRngFromString(seed string) *Rng {
 	}
 }
 
+// ========================================================================
+// Floating Point Methods
+// ========================================================================
+
 // Uniform generates a uniform random float in [0, 1).
 // Uses 53 bits of precision for the mantissa.
 func (r *Rng) Uniform() float64 {
 	return r.inner.uniform()
 }
 
-// UniformInt generates a uniform random integer in [min, max).
+// UniformRange generates a uniform random float in [min, max).
+// Returns min if min >= max.
+func (r *Rng) UniformRange(min, max float64) float64 {
+	return r.inner.uniformRange(min, max)
+}
+
+// UniformFloat32 generates a uniform random float32 in [0, 1).
+// Uses 24 bits for float32 mantissa precision.
+func (r *Rng) UniformFloat32() float32 {
+	return r.inner.uniformFloat32()
+}
+
+// UniformFloat32Range generates a uniform random float32 in [min, max).
+// Returns min if min >= max.
+func (r *Rng) UniformFloat32Range(min, max float32) float32 {
+	return r.inner.uniformFloat32Range(min, max)
+}
+
+// ========================================================================
+// Signed Integer Methods
+// ========================================================================
+
+// UniformInt64 generates a uniform random int64 in [min, max).
 // Returns min if min >= max.
 //
 // Uses modulo reduction which introduces slight bias for ranges that don't
 // evenly divide 2^64. This bias is negligible for statistical simulations
 // but not suitable for cryptographic applications.
-func (r *Rng) UniformInt(min, max int64) int64 {
+func (r *Rng) UniformInt64(min, max int64) int64 {
+	return r.inner.uniformInt64(min, max)
+}
+
+// UniformInt32 generates a uniform random int32 in [min, max).
+// Returns min if min >= max.
+func (r *Rng) UniformInt32(min, max int32) int32 {
+	return r.inner.uniformInt32(min, max)
+}
+
+// UniformInt16 generates a uniform random int16 in [min, max).
+// Returns min if min >= max.
+func (r *Rng) UniformInt16(min, max int16) int16 {
+	return r.inner.uniformInt16(min, max)
+}
+
+// UniformInt8 generates a uniform random int8 in [min, max).
+// Returns min if min >= max.
+func (r *Rng) UniformInt8(min, max int8) int8 {
+	return r.inner.uniformInt8(min, max)
+}
+
+// UniformIntN generates a uniform random int in [min, max).
+// Returns min if min >= max. This uses the platform-specific int type.
+func (r *Rng) UniformIntN(min, max int) int {
 	return r.inner.uniformInt(min, max)
 }
+
+// ========================================================================
+// Unsigned Integer Methods
+// ========================================================================
+
+// UniformUint64 generates a uniform random uint64 in [min, max).
+// Returns min if min >= max.
+func (r *Rng) UniformUint64(min, max uint64) uint64 {
+	return r.inner.uniformUint64(min, max)
+}
+
+// UniformUint32 generates a uniform random uint32 in [min, max).
+// Returns min if min >= max.
+func (r *Rng) UniformUint32(min, max uint32) uint32 {
+	return r.inner.uniformUint32(min, max)
+}
+
+// UniformUint16 generates a uniform random uint16 in [min, max).
+// Returns min if min >= max.
+func (r *Rng) UniformUint16(min, max uint16) uint16 {
+	return r.inner.uniformUint16(min, max)
+}
+
+// UniformUint8 generates a uniform random uint8 in [min, max).
+// Returns min if min >= max.
+func (r *Rng) UniformUint8(min, max uint8) uint8 {
+	return r.inner.uniformUint8(min, max)
+}
+
+// UniformUintN generates a uniform random uint in [min, max).
+// Returns min if min >= max. This uses the platform-specific uint type.
+func (r *Rng) UniformUintN(min, max uint) uint {
+	return r.inner.uniformUint(min, max)
+}
+
+// ========================================================================
+// Boolean Methods
+// ========================================================================
+
+// UniformBool generates a uniform random boolean with P(true) = 0.5.
+func (r *Rng) UniformBool() bool {
+	return r.inner.uniformBool()
+}
+
+// ========================================================================
+// Deprecated Methods
+// ========================================================================
+
+// Deprecated: Use UniformInt64 instead.
+// UniformInt generates a uniform random integer in [min, max).
+// Returns min if min >= max.
+func (r *Rng) UniformInt(min, max int64) int64 {
+	return r.inner.uniformInt64(min, max)
+}
+
+// ========================================================================
+// Collection Methods
+// ========================================================================
 
 // Shuffle returns a shuffled copy of the input slice.
 // Uses the Fisher-Yates shuffle algorithm for uniform distribution.
@@ -58,7 +166,7 @@ func Shuffle[T any](rng *Rng, x []T) []T {
 
 	// Fisher-Yates shuffle (backwards)
 	for i := n - 1; i > 0; i-- {
-		j := int(rng.UniformInt(0, int64(i+1)))
+		j := int(rng.UniformInt64(0, int64(i+1)))
 		result[i], result[j] = result[j], result[i]
 	}
 

@@ -324,6 +324,34 @@ type SampleInput struct {
 	K    int       `json:"k"`
 }
 
+// UniformRangeInput represents input for uniform range tests
+type UniformRangeInput struct {
+	Seed  int64   `json:"seed"`
+	Min   float64 `json:"min"`
+	Max   float64 `json:"max"`
+	Count int     `json:"count"`
+}
+
+// UniformF32Input represents input for uniform f32 tests
+type UniformF32Input struct {
+	Seed  int64 `json:"seed"`
+	Count int   `json:"count"`
+}
+
+// UniformI32Input represents input for uniform i32 tests
+type UniformI32Input struct {
+	Seed  int64 `json:"seed"`
+	Min   int32 `json:"min"`
+	Max   int32 `json:"max"`
+	Count int   `json:"count"`
+}
+
+// UniformBoolInput represents input for uniform bool tests
+type UniformBoolInput struct {
+	Seed  int64 `json:"seed"`
+	Count int   `json:"count"`
+}
+
 // Distribution reference tests
 
 type UniformDistInput struct {
@@ -509,6 +537,180 @@ func TestRngStringSeedReference(t *testing.T) {
 				expected := testData.Output[i]
 				if !floatEquals(actual, expected, 1e-15) {
 					t.Errorf("Uniform() at index %d = %v, want %v", i, actual, expected)
+				}
+			}
+		})
+	}
+}
+
+func TestRngUniformRangeReference(t *testing.T) {
+	dirPath := "../tests/rng"
+	files, err := os.ReadDir(dirPath)
+	if err != nil {
+		t.Fatalf("Failed to read directory: %v", err)
+	}
+
+	for _, file := range files {
+		if !strings.HasPrefix(file.Name(), "uniform-range-") || !strings.HasSuffix(file.Name(), ".json") {
+			continue
+		}
+
+		testName := strings.TrimSuffix(file.Name(), ".json")
+		t.Run(testName, func(t *testing.T) {
+			filePath := filepath.Join(dirPath, file.Name())
+			data, err := os.ReadFile(filePath)
+			if err != nil {
+				t.Fatalf("Failed to read test file: %v", err)
+			}
+
+			var testData struct {
+				Input  UniformRangeInput `json:"input"`
+				Output []float64         `json:"output"`
+			}
+			if err := json.Unmarshal(data, &testData); err != nil {
+				t.Fatalf("Failed to parse test data: %v", err)
+			}
+
+			rng := NewRngFromSeed(testData.Input.Seed)
+			if len(testData.Output) != testData.Input.Count {
+				t.Fatalf("Output length %d != count %d", len(testData.Output), testData.Input.Count)
+			}
+			for i := 0; i < testData.Input.Count; i++ {
+				actual := rng.UniformRange(testData.Input.Min, testData.Input.Max)
+				expected := testData.Output[i]
+				if !floatEquals(actual, expected, 1e-12) {
+					t.Errorf("UniformRange(%v, %v) at index %d = %v, want %v",
+						testData.Input.Min, testData.Input.Max, i, actual, expected)
+				}
+			}
+		})
+	}
+}
+
+func TestRngUniformFloat32Reference(t *testing.T) {
+	dirPath := "../tests/rng"
+	files, err := os.ReadDir(dirPath)
+	if err != nil {
+		t.Fatalf("Failed to read directory: %v", err)
+	}
+
+	for _, file := range files {
+		if !strings.HasPrefix(file.Name(), "uniform-f32-") || !strings.HasSuffix(file.Name(), ".json") {
+			continue
+		}
+
+		testName := strings.TrimSuffix(file.Name(), ".json")
+		t.Run(testName, func(t *testing.T) {
+			filePath := filepath.Join(dirPath, file.Name())
+			data, err := os.ReadFile(filePath)
+			if err != nil {
+				t.Fatalf("Failed to read test file: %v", err)
+			}
+
+			var testData struct {
+				Input  UniformF32Input `json:"input"`
+				Output []float32       `json:"output"`
+			}
+			if err := json.Unmarshal(data, &testData); err != nil {
+				t.Fatalf("Failed to parse test data: %v", err)
+			}
+
+			rng := NewRngFromSeed(testData.Input.Seed)
+			if len(testData.Output) != testData.Input.Count {
+				t.Fatalf("Output length %d != count %d", len(testData.Output), testData.Input.Count)
+			}
+			for i := 0; i < testData.Input.Count; i++ {
+				actual := rng.UniformFloat32()
+				expected := testData.Output[i]
+				if actual != expected {
+					t.Errorf("UniformFloat32() at index %d = %v, want %v", i, actual, expected)
+				}
+			}
+		})
+	}
+}
+
+func TestRngUniformInt32Reference(t *testing.T) {
+	dirPath := "../tests/rng"
+	files, err := os.ReadDir(dirPath)
+	if err != nil {
+		t.Fatalf("Failed to read directory: %v", err)
+	}
+
+	for _, file := range files {
+		if !strings.HasPrefix(file.Name(), "uniform-i32-") || !strings.HasSuffix(file.Name(), ".json") {
+			continue
+		}
+
+		testName := strings.TrimSuffix(file.Name(), ".json")
+		t.Run(testName, func(t *testing.T) {
+			filePath := filepath.Join(dirPath, file.Name())
+			data, err := os.ReadFile(filePath)
+			if err != nil {
+				t.Fatalf("Failed to read test file: %v", err)
+			}
+
+			var testData struct {
+				Input  UniformI32Input `json:"input"`
+				Output []int32         `json:"output"`
+			}
+			if err := json.Unmarshal(data, &testData); err != nil {
+				t.Fatalf("Failed to parse test data: %v", err)
+			}
+
+			rng := NewRngFromSeed(testData.Input.Seed)
+			if len(testData.Output) != testData.Input.Count {
+				t.Fatalf("Output length %d != count %d", len(testData.Output), testData.Input.Count)
+			}
+			for i := 0; i < testData.Input.Count; i++ {
+				actual := rng.UniformInt32(testData.Input.Min, testData.Input.Max)
+				expected := testData.Output[i]
+				if actual != expected {
+					t.Errorf("UniformInt32(%d, %d) at index %d = %d, want %d",
+						testData.Input.Min, testData.Input.Max, i, actual, expected)
+				}
+			}
+		})
+	}
+}
+
+func TestRngUniformBoolReference(t *testing.T) {
+	dirPath := "../tests/rng"
+	files, err := os.ReadDir(dirPath)
+	if err != nil {
+		t.Fatalf("Failed to read directory: %v", err)
+	}
+
+	for _, file := range files {
+		if !strings.HasPrefix(file.Name(), "uniform-bool-seed-") || !strings.HasSuffix(file.Name(), ".json") {
+			continue
+		}
+
+		testName := strings.TrimSuffix(file.Name(), ".json")
+		t.Run(testName, func(t *testing.T) {
+			filePath := filepath.Join(dirPath, file.Name())
+			data, err := os.ReadFile(filePath)
+			if err != nil {
+				t.Fatalf("Failed to read test file: %v", err)
+			}
+
+			var testData struct {
+				Input  UniformBoolInput `json:"input"`
+				Output []bool           `json:"output"`
+			}
+			if err := json.Unmarshal(data, &testData); err != nil {
+				t.Fatalf("Failed to parse test data: %v", err)
+			}
+
+			rng := NewRngFromSeed(testData.Input.Seed)
+			if len(testData.Output) != testData.Input.Count {
+				t.Fatalf("Output length %d != count %d", len(testData.Output), testData.Input.Count)
+			}
+			for i := 0; i < testData.Input.Count; i++ {
+				actual := rng.UniformBool()
+				expected := testData.Output[i]
+				if actual != expected {
+					t.Errorf("UniformBool() at index %d = %v, want %v", i, actual, expected)
 				}
 			}
 		})
