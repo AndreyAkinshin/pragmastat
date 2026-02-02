@@ -2,7 +2,6 @@
 package pragmastat
 
 import (
-	"math"
 	"math/bits"
 )
 
@@ -203,6 +202,3 @@ func fnv1aHash(s string) uint64 {
 	}
 	return hash
 }
-
-// Suppress unused import warning for math
-var _ = math.MaxFloat64
