@@ -60,9 +60,23 @@ class Xoshiro256PlusPlus:
 
         return result
 
+    # ========================================================================
+    # Floating Point Methods
+    # ========================================================================
+
     def uniform(self) -> float:
         """Generate a uniform float in [0, 1)."""
         return (self.next_u64() >> 11) * (1.0 / (1 << 53))
+
+    def uniform_range(self, min_val: float, max_val: float) -> float:
+        """Generate a uniform float in [min, max)."""
+        if min_val >= max_val:
+            return min_val
+        return min_val + (max_val - min_val) * self.uniform()
+
+    # ========================================================================
+    # Integer Methods
+    # ========================================================================
 
     def uniform_int(self, min_val: int, max_val: int) -> int:
         """Generate a uniform integer in [min, max).
@@ -77,6 +91,14 @@ class Xoshiro256PlusPlus:
         if range_size > 0x7FFFFFFFFFFFFFFF:
             raise OverflowError("uniform_int: range overflow (max - min exceeds i64)")
         return min_val + (self.next_u64() % range_size)
+
+    # ========================================================================
+    # Boolean Methods
+    # ========================================================================
+
+    def uniform_bool(self) -> bool:
+        """Generate a uniform bool with P(True) = 0.5."""
+        return self.uniform() < 0.5
 
 
 # FNV-1a hash constants

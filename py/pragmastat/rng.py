@@ -57,6 +57,10 @@ class Rng:
 
         self._inner = Xoshiro256PlusPlus(seed_int)
 
+    # ========================================================================
+    # Floating Point Methods
+    # ========================================================================
+
     def uniform(self) -> float:
         """
         Generate a uniform random float in [0, 1).
@@ -75,6 +79,29 @@ class Rng:
         0.3943034703296536
         """
         return self._inner.uniform()
+
+    def uniform_range(self, min_val: float, max_val: float) -> float:
+        """
+        Generate a uniform random float in [min, max).
+
+        Parameters
+        ----------
+        min_val : float
+            Minimum value (inclusive).
+        max_val : float
+            Maximum value (exclusive).
+
+        Returns
+        -------
+        float
+            Random value in [min, max).
+            Returns min_val if min_val >= max_val.
+        """
+        return self._inner.uniform_range(min_val, max_val)
+
+    # ========================================================================
+    # Integer Methods
+    # ========================================================================
 
     def uniform_int(self, min_val: int, max_val: int) -> int:
         """
@@ -104,6 +131,21 @@ class Rng:
         81
         """
         return self._inner.uniform_int(min_val, max_val)
+
+    # ========================================================================
+    # Boolean Methods
+    # ========================================================================
+
+    def uniform_bool(self) -> bool:
+        """
+        Generate a uniform random boolean with P(True) = 0.5.
+
+        Returns
+        -------
+        bool
+            Random boolean value.
+        """
+        return self._inner.uniform_bool()
 
     def shuffle(self, x: Sequence[T]) -> List[T]:
         """

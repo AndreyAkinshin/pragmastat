@@ -265,6 +265,70 @@ class TestReference:
                     f"Failed for {json_file.name}, index {i}: expected {exp}, got {act}"
                 )
 
+    def test_rng_uniform_range_reference(self):
+        """Test Rng uniform_range() against reference data."""
+        repo_root = find_repo_root()
+        test_data_dir = repo_root / "tests" / "rng"
+
+        json_files = [
+            f
+            for f in test_data_dir.glob("*.json")
+            if f.name.startswith("uniform-range-")
+        ]
+        assert len(json_files) > 0, (
+            f"No uniform range test files found in {test_data_dir}"
+        )
+
+        for json_file in json_files:
+            with open(json_file, "r") as f:
+                test_case = json.load(f)
+
+            seed = test_case["input"]["seed"]
+            min_val = test_case["input"]["min"]
+            max_val = test_case["input"]["max"]
+            count = test_case["input"]["count"]
+            expected = test_case["output"]
+
+            rng = Rng(seed)
+            actual = [rng.uniform_range(min_val, max_val) for _ in range(count)]
+
+            assert len(actual) == len(expected), (
+                f"Length mismatch for {json_file.name}: {len(actual)} vs {len(expected)}"
+            )
+            for i, (act, exp) in enumerate(zip(actual, expected)):
+                assert abs(act - exp) < 1e-12, (
+                    f"Failed for {json_file.name}, index {i}: expected {exp}, got {act}"
+                )
+
+    def test_rng_uniform_bool_reference(self):
+        """Test Rng uniform_bool() against reference data."""
+        repo_root = find_repo_root()
+        test_data_dir = repo_root / "tests" / "rng"
+
+        json_files = [
+            f
+            for f in test_data_dir.glob("*.json")
+            if f.name.startswith("uniform-bool-seed-")
+        ]
+        assert len(json_files) > 0, (
+            f"No uniform bool test files found in {test_data_dir}"
+        )
+
+        for json_file in json_files:
+            with open(json_file, "r") as f:
+                test_case = json.load(f)
+
+            seed = test_case["input"]["seed"]
+            count = test_case["input"]["count"]
+            expected = test_case["output"]
+
+            rng = Rng(seed)
+            actual = [rng.uniform_bool() for _ in range(count)]
+
+            assert actual == expected, (
+                f"Failed for {json_file.name}: expected {expected}, got {actual}"
+            )
+
     def test_shuffle_reference(self):
         """Test Rng shuffle() against reference data."""
         repo_root = find_repo_root()
