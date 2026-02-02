@@ -94,6 +94,70 @@ test_that("rng string seed satisfies reference tests", {
   }
 })
 
+test_that("rng uniform_range satisfies reference tests", {
+  current_dir <- getwd()
+  repo_root <- current_dir
+  while (!file.exists(file.path(repo_root, "mise.toml"))) {
+    parent_dir <- dirname(repo_root)
+    if (parent_dir == repo_root) {
+      stop(paste0("Could not find repository root; current dir is ", getwd()))
+    }
+    repo_root <- parent_dir
+  }
+
+  rng_dir <- file.path(repo_root, "tests", "rng")
+  json_files <- list.files(rng_dir, pattern = "^uniform-range-.*\\.json$", full.names = TRUE)
+
+  expect_true(length(json_files) > 0, "No uniform range test files found")
+
+  for (json_file in json_files) {
+    test_case <- jsonlite::fromJSON(json_file)
+    seed <- test_case$input$seed
+    min_val <- test_case$input$min
+    max_val <- test_case$input$max
+    count <- test_case$input$count
+    expected <- test_case$output
+
+    r <- rng(seed)
+    for (i in seq_len(count)) {
+      actual <- r$uniform_range(min_val, max_val)
+      expect_equal(actual, expected[i], tolerance = 1e-12,
+        info = paste("Failed for", basename(json_file), "at index", i))
+    }
+  }
+})
+
+test_that("rng uniform_bool satisfies reference tests", {
+  current_dir <- getwd()
+  repo_root <- current_dir
+  while (!file.exists(file.path(repo_root, "mise.toml"))) {
+    parent_dir <- dirname(repo_root)
+    if (parent_dir == repo_root) {
+      stop(paste0("Could not find repository root; current dir is ", getwd()))
+    }
+    repo_root <- parent_dir
+  }
+
+  rng_dir <- file.path(repo_root, "tests", "rng")
+  json_files <- list.files(rng_dir, pattern = "^uniform-bool-seed-.*\\.json$", full.names = TRUE)
+
+  expect_true(length(json_files) > 0, "No uniform bool test files found")
+
+  for (json_file in json_files) {
+    test_case <- jsonlite::fromJSON(json_file)
+    seed <- test_case$input$seed
+    count <- test_case$input$count
+    expected <- test_case$output
+
+    r <- rng(seed)
+    for (i in seq_len(count)) {
+      actual <- r$uniform_bool()
+      expect_equal(actual, expected[i],
+        info = paste("Failed for", basename(json_file), "at index", i))
+    }
+  }
+})
+
 test_that("shuffle satisfies reference tests", {
   current_dir <- getwd()
   repo_root <- current_dir

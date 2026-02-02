@@ -266,6 +266,10 @@ xoshiro256_next_u64 <- function(xo) {
   result
 }
 
+# ========================================================================
+# Floating Point Methods
+# ========================================================================
+
 xoshiro256_uniform <- function(xo) {
   # Use upper 53 bits for maximum precision
   u64_val <- xoshiro256_next_u64(xo)
@@ -274,6 +278,15 @@ xoshiro256_uniform <- function(xo) {
   # Convert to numeric and scale
   u64_to_numeric(shifted) * (1.0 / 2^53)
 }
+
+xoshiro256_uniform_range <- function(xo, min_val, max_val) {
+  if (min_val >= max_val) return(min_val)
+  min_val + (max_val - min_val) * xoshiro256_uniform(xo)
+}
+
+# ========================================================================
+# Integer Methods
+# ========================================================================
 
 xoshiro256_uniform_int <- function(xo, min_val, max_val) {
   if (min_val >= max_val) return(min_val)
@@ -286,6 +299,14 @@ xoshiro256_uniform_int <- function(xo, min_val, max_val) {
   # Return as numeric to avoid as.integer() truncation for values > 2^31-1
   # R's numeric (double) can represent integers exactly up to 2^53
   min_val + u64_mod(u64_val, range_size)
+}
+
+# ========================================================================
+# Boolean Methods
+# ========================================================================
+
+xoshiro256_uniform_bool <- function(xo) {
+  xoshiro256_uniform(xo) < 0.5
 }
 
 # FNV-1a hash

@@ -48,11 +48,27 @@ Rng <- R6::R6Class(
       private$inner <- xoshiro256_new(seed_val)
     },
 
+    # ========================================================================
+    # Floating Point Methods
+    # ========================================================================
+
     #' @description Generate a uniform random float in [0, 1)
     #' @return A random value in [0, 1)
     uniform = function() {
       xoshiro256_uniform(private$inner)
     },
+
+    #' @description Generate a uniform random float in [min, max)
+    #' @param min_val Minimum value (inclusive)
+    #' @param max_val Maximum value (exclusive)
+    #' @return A random value in [min, max). Returns min_val if min_val >= max_val.
+    uniform_range = function(min_val, max_val) {
+      xoshiro256_uniform_range(private$inner, min_val, max_val)
+    },
+
+    # ========================================================================
+    # Integer Methods
+    # ========================================================================
 
     #' @description Generate a uniform random integer in [min, max)
     #'
@@ -66,6 +82,20 @@ Rng <- R6::R6Class(
     uniform_int = function(min_val, max_val) {
       xoshiro256_uniform_int(private$inner, min_val, max_val)
     },
+
+    # ========================================================================
+    # Boolean Methods
+    # ========================================================================
+
+    #' @description Generate a uniform random boolean with P(TRUE) = 0.5
+    #' @return A random boolean value
+    uniform_bool = function() {
+      xoshiro256_uniform_bool(private$inner)
+    },
+
+    # ========================================================================
+    # Collection Methods
+    # ========================================================================
 
     #' @description Return a shuffled copy of the input vector
     #' @param x Input vector to shuffle
