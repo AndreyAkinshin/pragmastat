@@ -52,19 +52,96 @@ internal class Xoshiro256PlusPlus(seed: ULong) {
         return result
     }
 
+    // ========================================================================
+    // Floating Point Methods
+    // ========================================================================
+
     fun uniform(): Double {
         // Use upper 53 bits for maximum precision
         return (nextU64() shr 11).toDouble() * (1.0 / (1UL shl 53).toDouble())
     }
 
+    fun uniform(min: Double, max: Double): Double {
+        if (min >= max) return min
+        return min + (max - min) * uniform()
+    }
+
+    fun uniformFloat(): Float {
+        // Use 24 bits for float mantissa precision
+        return (nextU64() shr 40).toFloat() * (1.0f / (1UL shl 24).toFloat())
+    }
+
+    fun uniformFloat(min: Float, max: Float): Float {
+        if (min >= max) return min
+        return min + (max - min) * uniformFloat()
+    }
+
+    // ========================================================================
+    // Signed Integer Methods
+    // ========================================================================
+
     /**
-     * Generate a uniform integer in [min, max).
+     * Generate a uniform Long in [min, max).
      * @throws ArithmeticException if max - min overflows.
      */
-    fun uniformInt(min: Long, max: Long): Long {
+    fun uniformLong(min: Long, max: Long): Long {
         if (min >= max) return min
         val range = Math.subtractExact(max, min).toULong()
         return min + (nextU64() % range).toLong()
+    }
+
+    fun uniformInt(min: Int, max: Int): Int {
+        if (min >= max) return min
+        val range = (max.toLong() - min.toLong()).toULong()
+        return min + (nextU64() % range).toInt()
+    }
+
+    fun uniformShort(min: Short, max: Short): Short {
+        if (min >= max) return min
+        val range = (max.toInt() - min.toInt()).toULong()
+        return (min + (nextU64() % range).toInt()).toShort()
+    }
+
+    fun uniformByte(min: Byte, max: Byte): Byte {
+        if (min >= max) return min
+        val range = (max.toInt() - min.toInt()).toULong()
+        return (min + (nextU64() % range).toInt()).toByte()
+    }
+
+    // ========================================================================
+    // Unsigned Integer Methods
+    // ========================================================================
+
+    fun uniformULong(min: ULong, max: ULong): ULong {
+        if (min >= max) return min
+        val range = max - min
+        return min + nextU64() % range
+    }
+
+    fun uniformUInt(min: UInt, max: UInt): UInt {
+        if (min >= max) return min
+        val range = (max - min).toULong()
+        return min + (nextU64() % range).toUInt()
+    }
+
+    fun uniformUShort(min: UShort, max: UShort): UShort {
+        if (min >= max) return min
+        val range = (max - min).toULong()
+        return (min + (nextU64() % range).toUInt()).toUShort()
+    }
+
+    fun uniformUByte(min: UByte, max: UByte): UByte {
+        if (min >= max) return min
+        val range = (max - min).toULong()
+        return (min + (nextU64() % range).toUInt()).toUByte()
+    }
+
+    // ========================================================================
+    // Boolean Methods
+    // ========================================================================
+
+    fun uniformBool(): Boolean {
+        return uniform() < 0.5
     }
 }
 

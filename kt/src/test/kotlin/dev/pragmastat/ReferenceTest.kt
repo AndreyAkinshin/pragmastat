@@ -263,6 +263,19 @@ class ReferenceTest {
     data class PowerDistInput(val seed: Long, val min: Double, val shape: Double, val count: Int)
     data class PowerDistTestData(val input: PowerDistInput, val output: List<Double>)
 
+    // New Rng test data classes
+    data class UniformRangeInput(val seed: Long, val min: Double, val max: Double, val count: Int)
+    data class UniformRangeTestData(val input: UniformRangeInput, val output: List<Double>)
+
+    data class UniformF32Input(val seed: Long, val count: Int)
+    data class UniformF32TestData(val input: UniformF32Input, val output: List<Float>)
+
+    data class UniformI32Input(val seed: Long, val min: Int, val max: Int, val count: Int)
+    data class UniformI32TestData(val input: UniformI32Input, val output: List<Int>)
+
+    data class UniformBoolInput(val seed: Long, val count: Int)
+    data class UniformBoolTestData(val input: UniformBoolInput, val output: List<Boolean>)
+
     @TestFactory
     fun testRngUniform(): List<DynamicTest> {
         val tests = mutableListOf<DynamicTest>()
@@ -305,7 +318,7 @@ class ReferenceTest {
                 val testData = mapper.readValue<UniformIntTestData>(file)
                 val rng = Rng(testData.input.seed)
                 for (i in 0 until testData.input.count) {
-                    val actual = rng.uniformInt(testData.input.min, testData.input.max)
+                    val actual = rng.uniformLong(testData.input.min, testData.input.max)
                     val expected = testData.output[i]
                     assertTrue(actual == expected, "Expected $expected but got $actual at index $i")
                 }
@@ -334,6 +347,110 @@ class ReferenceTest {
                     val actual = rng.uniform()
                     val expected = testData.output[i]
                     assertClose(expected, actual, 1e-15)
+                }
+            })
+        }
+
+        return tests
+    }
+
+    @TestFactory
+    fun testRngUniformRange(): List<DynamicTest> {
+        val tests = mutableListOf<DynamicTest>()
+        val testDir = File("../tests/rng")
+
+        if (!testDir.exists() || !testDir.isDirectory) {
+            println("Skipping rng uniform range tests: directory not found")
+            return tests
+        }
+
+        testDir.listFiles { _, name -> name.startsWith("uniform-range-") && name.endsWith(".json") }?.forEach { file ->
+            val testName = "rng/${file.nameWithoutExtension}"
+            tests.add(DynamicTest.dynamicTest(testName) {
+                val testData = mapper.readValue<UniformRangeTestData>(file)
+                val rng = Rng(testData.input.seed)
+                for (i in 0 until testData.input.count) {
+                    val actual = rng.uniform(testData.input.min, testData.input.max)
+                    val expected = testData.output[i]
+                    assertClose(expected, actual, 1e-12)
+                }
+            })
+        }
+
+        return tests
+    }
+
+    @TestFactory
+    fun testRngUniformFloat(): List<DynamicTest> {
+        val tests = mutableListOf<DynamicTest>()
+        val testDir = File("../tests/rng")
+
+        if (!testDir.exists() || !testDir.isDirectory) {
+            println("Skipping rng uniform float tests: directory not found")
+            return tests
+        }
+
+        testDir.listFiles { _, name -> name.startsWith("uniform-f32-") && name.endsWith(".json") }?.forEach { file ->
+            val testName = "rng/${file.nameWithoutExtension}"
+            tests.add(DynamicTest.dynamicTest(testName) {
+                val testData = mapper.readValue<UniformF32TestData>(file)
+                val rng = Rng(testData.input.seed)
+                for (i in 0 until testData.input.count) {
+                    val actual = rng.uniformFloat()
+                    val expected = testData.output[i]
+                    assertTrue(actual == expected, "Expected $expected but got $actual at index $i")
+                }
+            })
+        }
+
+        return tests
+    }
+
+    @TestFactory
+    fun testRngUniformI32(): List<DynamicTest> {
+        val tests = mutableListOf<DynamicTest>()
+        val testDir = File("../tests/rng")
+
+        if (!testDir.exists() || !testDir.isDirectory) {
+            println("Skipping rng uniform i32 tests: directory not found")
+            return tests
+        }
+
+        testDir.listFiles { _, name -> name.startsWith("uniform-i32-") && name.endsWith(".json") }?.forEach { file ->
+            val testName = "rng/${file.nameWithoutExtension}"
+            tests.add(DynamicTest.dynamicTest(testName) {
+                val testData = mapper.readValue<UniformI32TestData>(file)
+                val rng = Rng(testData.input.seed)
+                for (i in 0 until testData.input.count) {
+                    val actual = rng.uniformInt(testData.input.min, testData.input.max)
+                    val expected = testData.output[i]
+                    assertTrue(actual == expected, "Expected $expected but got $actual at index $i")
+                }
+            })
+        }
+
+        return tests
+    }
+
+    @TestFactory
+    fun testRngUniformBool(): List<DynamicTest> {
+        val tests = mutableListOf<DynamicTest>()
+        val testDir = File("../tests/rng")
+
+        if (!testDir.exists() || !testDir.isDirectory) {
+            println("Skipping rng uniform bool tests: directory not found")
+            return tests
+        }
+
+        testDir.listFiles { _, name -> name.startsWith("uniform-bool-seed-") && name.endsWith(".json") }?.forEach { file ->
+            val testName = "rng/${file.nameWithoutExtension}"
+            tests.add(DynamicTest.dynamicTest(testName) {
+                val testData = mapper.readValue<UniformBoolTestData>(file)
+                val rng = Rng(testData.input.seed)
+                for (i in 0 until testData.input.count) {
+                    val actual = rng.uniformBool()
+                    val expected = testData.output[i]
+                    assertTrue(actual == expected, "Expected $expected but got $actual at index $i")
                 }
             })
         }

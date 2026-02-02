@@ -41,21 +41,106 @@ class Rng private constructor(private val inner: Xoshiro256PlusPlus) {
      */
     constructor(seed: String) : this(Xoshiro256PlusPlus(Fnv1a.hash(seed)))
 
+    // ========================================================================
+    // Floating Point Methods
+    // ========================================================================
+
     /**
-     * Generate a uniform random float in [0, 1).
+     * Generate a uniform random Double in [0, 1).
      * Uses 53 bits of precision for the mantissa.
      */
     fun uniform(): Double = inner.uniform()
 
     /**
-     * Generate a uniform random integer in [min, max).
+     * Generate a uniform random Double in [min, max).
+     * Returns min if min >= max.
+     */
+    fun uniform(min: Double, max: Double): Double = inner.uniform(min, max)
+
+    /**
+     * Generate a uniform random Float in [0, 1).
+     * Uses 24 bits for Float mantissa precision.
+     */
+    fun uniformFloat(): Float = inner.uniformFloat()
+
+    /**
+     * Generate a uniform random Float in [min, max).
+     * Returns min if min >= max.
+     */
+    fun uniformFloat(min: Float, max: Float): Float = inner.uniformFloat(min, max)
+
+    // ========================================================================
+    // Signed Integer Methods
+    // ========================================================================
+
+    /**
+     * Generate a uniform random Long in [min, max).
      * Returns min if min >= max.
      *
      * Uses modulo reduction which introduces slight bias for ranges that don't
      * evenly divide 2^64. This bias is negligible for statistical simulations
      * but not suitable for cryptographic applications.
      */
-    fun uniformInt(min: Long, max: Long): Long = inner.uniformInt(min, max)
+    fun uniformLong(min: Long, max: Long): Long = inner.uniformLong(min, max)
+
+    /**
+     * Generate a uniform random Int in [min, max).
+     * Returns min if min >= max.
+     */
+    fun uniformInt(min: Int, max: Int): Int = inner.uniformInt(min, max)
+
+    /**
+     * Generate a uniform random Short in [min, max).
+     * Returns min if min >= max.
+     */
+    fun uniformShort(min: Short, max: Short): Short = inner.uniformShort(min, max)
+
+    /**
+     * Generate a uniform random Byte in [min, max).
+     * Returns min if min >= max.
+     */
+    fun uniformByte(min: Byte, max: Byte): Byte = inner.uniformByte(min, max)
+
+    // ========================================================================
+    // Unsigned Integer Methods
+    // ========================================================================
+
+    /**
+     * Generate a uniform random ULong in [min, max).
+     * Returns min if min >= max.
+     */
+    fun uniformULong(min: ULong, max: ULong): ULong = inner.uniformULong(min, max)
+
+    /**
+     * Generate a uniform random UInt in [min, max).
+     * Returns min if min >= max.
+     */
+    fun uniformUInt(min: UInt, max: UInt): UInt = inner.uniformUInt(min, max)
+
+    /**
+     * Generate a uniform random UShort in [min, max).
+     * Returns min if min >= max.
+     */
+    fun uniformUShort(min: UShort, max: UShort): UShort = inner.uniformUShort(min, max)
+
+    /**
+     * Generate a uniform random UByte in [min, max).
+     * Returns min if min >= max.
+     */
+    fun uniformUByte(min: UByte, max: UByte): UByte = inner.uniformUByte(min, max)
+
+    // ========================================================================
+    // Boolean Methods
+    // ========================================================================
+
+    /**
+     * Generate a uniform random Boolean with P(true) = 0.5.
+     */
+    fun uniformBool(): Boolean = inner.uniformBool()
+
+    // ========================================================================
+    // Collection Methods
+    // ========================================================================
 
     /**
      * Return a shuffled copy of the input list.
@@ -68,7 +153,7 @@ class Rng private constructor(private val inner: Xoshiro256PlusPlus) {
 
         // Fisher-Yates shuffle (backwards)
         for (i in n - 1 downTo 1) {
-            val j = uniformInt(0, (i + 1).toLong()).toInt()
+            val j = uniformLong(0, (i + 1).toLong()).toInt()
             val temp = result[i]
             result[i] = result[j]
             result[j] = temp
