@@ -80,9 +80,8 @@ public static class TwoSampleTestCases
         .AddUnsorted("asymmetric-unsorted-2-3", new Sample(2, 1), new Sample(3, 1, 2))  // Asymmetric, both unsorted
         .AddUnsorted("power-unsorted-5", new Sample(16, 2, 8, 1, 4), new Sample(32, 4, 16, 2, 8)));  // Powers of 2 unsorted
 
-    // AvgSpread: 49 test cases (35 original + 14 unsorted)
-    // Important: AvgSpread computes Spread(x) and Spread(y) independently, so unsorted tests
-    // verify that both samples are sorted independently before computing their spreads
+    // AvgSpread: 38 test cases (requires sparity: spread > 0 for both samples)
+    // Excluded: single-element samples, constant samples, zero samples
     GenerateTests("avg-spread", input => input.GetSampleX().AvgSpread(input.GetSampleY()),
       new TwoSampleInputBuilder()
         // Demo examples (n = m = 5) - 5 tests
@@ -91,21 +90,18 @@ public static class TwoSampleTestCases
         .Add("demo-3", new Sample(0, 6, 12, 18, 24), new Sample(0, 9, 18, 27, 36))
         .Add("demo-4", new Sample(0, 2, 4, 6, 8), new Sample(0, 3, 6, 9, 12))
         .Add("demo-5", new Sample(0, 6, 12, 18, 24), new Sample(0, 4, 8, 12, 16))
-        // Natural sequences (9 combinations) - 9 tests
-        .AddNatural([1, 2, 3], [1, 2, 3])
+        // Natural sequences (4 combinations: [2,3] x [2,3]) - 4 tests (n=1 excluded: spread=0)
+        .AddNatural([2, 3], [2, 3])
         // Negative values (n = m = 2) - 1 test
         .Add("negative-2-2", new Sample(-2, -1), new Sample(-2, -1))
-        // Zero values (4 combinations) - 4 tests
-        .AddZero([1, 2], [1, 2])
+        // Note: Zero samples excluded (spread=0 violates sparity)
         // Additive distribution (9 combinations) - 9 tests
         .AddAdditive([5, 10, 30], [5, 10, 30], count: 1)
         // Uniform distribution (4 combinations) - 4 tests
         .AddUniform([5, 100], [5, 100], count: 1)
-        // Composite estimator stress tests - 3 tests
+        // Composite estimator stress tests - 1 test (excluded: single-element and constant samples)
         .Add("composite-asymmetric-weights", new Sample(1, 2), new Sample(3, 4, 5, 6, 7, 8, 9, 10))
-        .Add("composite-zero-spread-one", new Sample(5, 5, 5), new Sample(1, 2, 3, 4, 5))
-        .Add("composite-extreme-sizes", new Sample(10), new Sample(1, 2, 3, 4, 5, 6, 7, 8, 9, 10))
-        // Unsorted tests - 14 tests (critical for verifying independent sorting)
+        // Unsorted tests - 10 tests (excluded: zeros and constant samples)
         .AddUnsortedVariants("natural", 3, 3)  // 3 tests
         .AddUnsortedVariants("natural", 4, 4)  // 3 tests
         .AddUnsorted("demo-unsorted-x", new Sample(12, 0, 6, 3, 9), new Sample(0, 2, 4, 6, 8))  // Demo-1 with X unsorted
@@ -113,12 +109,10 @@ public static class TwoSampleTestCases
         .AddUnsorted("demo-both-unsorted", new Sample(9, 0, 12, 3, 6), new Sample(6, 0, 8, 2, 4))  // Demo-1 both unsorted
         .AddUnsorted("identity-unsorted", new Sample(6, 0, 12, 3, 9), new Sample(9, 0, 12, 6, 3))  // Demo-2 unsorted
         .AddUnsorted("negative-unsorted", new Sample(-1, -2), new Sample(-1, -2))  // Negative unsorted
-        .AddUnsorted("zero-unsorted-2-2", new Sample(0, 0), new Sample(0, 0))  // Zeros (any order)
-        .AddUnsorted("asymmetric-weights-unsorted", new Sample(2, 1), new Sample(8, 3, 6, 4, 10, 5, 9, 7))  // Asymmetric unsorted
-        .AddUnsorted("zero-spread-x-unsorted", new Sample(5, 5, 5), new Sample(5, 1, 4, 2, 3)));
+        .AddUnsorted("asymmetric-weights-unsorted", new Sample(2, 1), new Sample(8, 3, 6, 4, 10, 5, 9, 7)));  // Asymmetric unsorted
 
     // Disparity: 28 test cases (16 original + 12 unsorted)
-    // Important: Disparity = Shift / AvgSpread, so unsorted tests verify both components
+    // Important: Disparity = Shift / AvgSpread, so requires sparity for both samples
     GenerateTests("disparity", input => input.GetSampleX().Disparity(input.GetSampleY()),
       new TwoSampleInputBuilder()
         // Demo examples (n = m = 5) - 4 tests
@@ -158,4 +152,3 @@ public static class TwoSampleTestCases
     AnsiConsole.MarkupLine($"  [green]✓[/] Generated [bold]{testData.Count}[/] test cases");
   }
 }
-

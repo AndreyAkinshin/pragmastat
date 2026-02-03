@@ -30,6 +30,7 @@ DistributionTestCases.Generate();
 ApproximationTestCases.Generate();
 PairwiseMarginTestCases.Generate();
 ShiftBoundsTestCases.Generate();
+RatioBoundsTestCases.Generate();
 
 AnsiConsole.MarkupLine("");
 AnsiConsole.Write(new Rule("[bold green]Generation Completed Successfully![/]").RuleStyle("green"));
