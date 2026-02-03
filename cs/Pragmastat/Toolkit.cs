@@ -17,4 +17,7 @@ public static class Toolkit
 
   public static Bounds ShiftBounds(Sample x, Sample y, Probability misrate) =>
     ShiftBoundsEstimator.Instance.Estimate(x, y, misrate);
+
+  public static Bounds RatioBounds(Sample x, Sample y, Probability misrate) =>
+    RatioBoundsEstimator.Instance.Estimate(x, y, misrate);
 }
