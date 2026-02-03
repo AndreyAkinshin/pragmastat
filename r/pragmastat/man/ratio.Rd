@@ -5,12 +5,13 @@
 ratio(x, y)
 }
 \arguments{
-\item{x}{A numeric vector representing the first sample (numerator).}
-\item{y}{A numeric vector representing the second sample (denominator).}
+\item{x}{A numeric vector representing the first sample (must be strictly positive).}
+\item{y}{A numeric vector representing the second sample (must be strictly positive).}
 }
 \description{
-Computes the Ratio estimator - the median of all pairwise ratios (xi / yj)
-where xi comes from the first sample and yj from the second sample.
+Computes the Ratio estimator - the geometric median of pairwise ratios via log-space
+aggregation: exp(Shift(log(x), log(y))). This is the multiplicative dual of Shift,
+providing exact multiplicative antisymmetry: Ratio(x,y) * Ratio(y,x) = 1.
 This measure estimates how many times larger x is compared to y and provides
 a robust alternative to the ratio of means.
 }

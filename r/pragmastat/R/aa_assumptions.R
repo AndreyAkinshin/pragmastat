@@ -53,3 +53,12 @@ check_sparity <- function(values, subject, function_name) {
 is_assumption_error <- function(e) {
   inherits(e, "assumption_error")
 }
+
+# Log-transform values with positivity check.
+# Throws assumption_error if any value is non-positive.
+log_transform <- function(values, subject, function_name) {
+  if (any(values <= 0)) {
+    stop(assumption_error(function_name, ASSUMPTION_IDS$POSITIVITY, subject))
+  }
+  log(values)
+}
