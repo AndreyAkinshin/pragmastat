@@ -3,17 +3,17 @@
 Install from crates.io via cargo:
 
 ```bash
-cargo add pragmastat@5.2.1
+cargo add pragmastat@6.0.0
 ```
 
 Install from crates.io via `Cargo.toml`:
 
 ```toml
 [dependencies]
-pragmastat = "5.2.1"
+pragmastat = "6.0.0"
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v5.2.1/rs
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v6.0.0/rs
 
 Pragmastat on crates.io: https://crates.io/crates/pragmastat
 
