@@ -90,8 +90,10 @@ fun shift(x: List<Double>, y: List<Double>): Double {
 /**
  * Measures how many times larger x is compared to y (Ratio)
  *
- * Calculates the median of all pairwise ratios (x[i] / y[j]).
+ * Calculates the median of all pairwise ratios (x[i] / y[j]) via log-transformation.
+ * Equivalent to: exp(Shift(log(x), log(y)))
  * For example, ratio = 1.2 means x is typically 20% larger than y.
+ * Uses fast O((m + n) * log(precision)) algorithm.
  *
  * Assumptions:
  *   - positivity(x) - all values in x must be strictly positive
@@ -107,14 +109,7 @@ fun ratio(x: List<Double>, y: List<Double>): Double {
     // Check positivity for y (priority 1, subject y)
     checkPositivity(y, Subject.Y, "Ratio")
 
-    val pairwiseRatios = mutableListOf<Double>()
-    for (xi in x) {
-        for (yj in y) {
-            pairwiseRatios.add(xi / yj)
-        }
-    }
-
-    return median(pairwiseRatios)
+    return fastRatio(x, y)[0]
 }
 
 /**
@@ -229,4 +224,37 @@ fun shiftBounds(x: List<Double>, y: List<Double>, misrate: Double): Bounds {
     val upper = maxOf(bounds[0], bounds[1])
 
     return Bounds(lower, upper)
+}
+
+/**
+ * Provides bounds on the Ratio estimator with specified misclassification rate (RatioBounds)
+ *
+ * Computes bounds via log-transformation and shiftBounds delegation:
+ * ratioBounds(x, y, misrate) = exp(shiftBounds(log(x), log(y), misrate))
+ *
+ * Assumptions:
+ *   - positivity(x) - all values in x must be strictly positive
+ *   - positivity(y) - all values in y must be strictly positive
+ *
+ * @param x First sample (must be strictly positive)
+ * @param y Second sample (must be strictly positive)
+ * @param misrate Misclassification rate (probability that true ratio falls outside bounds)
+ * @return A Bounds object containing the lower and upper bounds
+ */
+fun ratioBounds(x: List<Double>, y: List<Double>, misrate: Double): Bounds {
+    checkValidity(x, Subject.X, "RatioBounds")
+    checkValidity(y, Subject.Y, "RatioBounds")
+
+    // Log-transform samples (includes positivity check)
+    val logX = log(x, Subject.X, "RatioBounds")
+    val logY = log(y, Subject.Y, "RatioBounds")
+
+    // Delegate to shiftBounds in log-space
+    val logBounds = shiftBounds(logX, logY, misrate)
+
+    // Exp-transform back to ratio-space
+    return Bounds(
+        kotlin.math.exp(logBounds.lower),
+        kotlin.math.exp(logBounds.upper)
+    )
 }

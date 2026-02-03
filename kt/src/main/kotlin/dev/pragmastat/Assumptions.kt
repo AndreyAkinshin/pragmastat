@@ -50,3 +50,15 @@ internal fun checkSparity(values: List<Double>, subject: Subject, functionName: 
         throw AssumptionException(Violation(AssumptionId.SPARITY, subject))
     }
 }
+
+/**
+ * Log-transforms a list. Throws AssumptionException if any value is non-positive.
+ */
+internal fun log(values: List<Double>, subject: Subject, functionName: String): List<Double> {
+    return values.map { v ->
+        if (v <= 0.0) {
+            throw AssumptionException(Violation(AssumptionId.POSITIVITY, subject))
+        }
+        kotlin.math.ln(v)
+    }
+}

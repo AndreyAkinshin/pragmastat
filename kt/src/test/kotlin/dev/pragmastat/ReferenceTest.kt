@@ -53,6 +53,17 @@ data class ShiftBoundsTestData(
     val output: BoundsOutput
 )
 
+data class RatioBoundsInput(
+    val x: List<Double>,
+    val y: List<Double>,
+    val misrate: Double
+)
+
+data class RatioBoundsTestData(
+    val input: RatioBoundsInput,
+    val output: BoundsOutput
+)
+
 class ReferenceTest {
     
     private val mapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
@@ -207,6 +218,33 @@ class ReferenceTest {
             tests.add(DynamicTest.dynamicTest(testName) {
                 val testData = mapper.readValue<ShiftBoundsTestData>(file)
                 val result = shiftBounds(
+                    testData.input.x,
+                    testData.input.y,
+                    testData.input.misrate
+                )
+                assertClose(testData.output.lower, result.lower)
+                assertClose(testData.output.upper, result.upper)
+            })
+        }
+
+        return tests
+    }
+
+    @TestFactory
+    fun testRatioBounds(): List<DynamicTest> {
+        val tests = mutableListOf<DynamicTest>()
+        val testDir = File("../tests/ratio-bounds")
+
+        if (!testDir.exists() || !testDir.isDirectory) {
+            println("Skipping ratio-bounds tests: directory not found")
+            return tests
+        }
+
+        testDir.listFiles { _, name -> name.endsWith(".json") }?.forEach { file ->
+            val testName = "ratio-bounds/${file.nameWithoutExtension}"
+            tests.add(DynamicTest.dynamicTest(testName) {
+                val testData = mapper.readValue<RatioBoundsTestData>(file)
+                val result = ratioBounds(
                     testData.input.x,
                     testData.input.y,
                     testData.input.misrate

@@ -167,3 +167,28 @@ private fun countAndNeighbors(
 }
 
 private fun midpoint(a: Double, b: Double): Double = a + (b - a) * 0.5
+
+/**
+ * Fast O((m + n) * log(precision)) implementation of the Ratio estimator via log-transformation.
+ * Computes quantiles of all pairwise ratios { x_i / y_j } as exp(fastShift(log x, log y)).
+ *
+ * Internal implementation - not part of public API.
+ */
+internal fun fastRatio(
+    x: List<Double>,
+    y: List<Double>,
+    probabilities: DoubleArray = doubleArrayOf(0.5),
+    assumeSorted: Boolean = false
+): DoubleArray {
+    require(x.isNotEmpty() && y.isNotEmpty()) { "Input lists cannot be empty" }
+
+    // Log-transform both samples (includes positivity check)
+    val logX = log(x, Subject.X, "Ratio")
+    val logY = log(y, Subject.Y, "Ratio")
+
+    // Delegate to fastShift in log-space
+    val logResult = fastShift(logX, logY, probabilities, assumeSorted)
+
+    // Exp-transform back to ratio-space
+    return DoubleArray(logResult.size) { i -> kotlin.math.exp(logResult[i]) }
+}
