@@ -40,6 +40,13 @@ type ShiftBoundsInput struct {
 	Misrate float64   `json:"misrate"`
 }
 
+// RatioBoundsInput represents input for ratio-bounds tests
+type RatioBoundsInput struct {
+	X       []float64 `json:"x"`
+	Y       []float64 `json:"y"`
+	Misrate float64   `json:"misrate"`
+}
+
 // BoundsOutput represents output for bounds tests
 type BoundsOutput struct {
 	Lower float64 `json:"lower"`
@@ -155,6 +162,59 @@ func TestReferenceData(t *testing.T) {
 				if !floatEquals(actual.Lower, expected.Lower, 1e-9) ||
 					!floatEquals(actual.Upper, expected.Upper, 1e-9) {
 					t.Errorf("ShiftBounds(%v, %v, %v) = [%v, %v], want [%v, %v]",
+						input.X, input.Y, input.Misrate,
+						actual.Lower, actual.Upper,
+						expected.Lower, expected.Upper)
+				}
+			})
+		}
+	})
+
+	// Special test for ratio-bounds
+	t.Run("ratio-bounds", func(t *testing.T) {
+		dirPath := filepath.Join("../tests", "ratio-bounds")
+		files, err := os.ReadDir(dirPath)
+		if err != nil {
+			t.Logf("Skipping ratio-bounds tests: %v", err)
+			return
+		}
+
+		for _, file := range files {
+			if !strings.HasSuffix(file.Name(), ".json") {
+				continue
+			}
+
+			testName := strings.TrimSuffix(file.Name(), ".json")
+			t.Run(testName, func(t *testing.T) {
+				filePath := filepath.Join(dirPath, file.Name())
+				data, err := os.ReadFile(filePath)
+				if err != nil {
+					t.Fatalf("Failed to read test file: %v", err)
+				}
+
+				var testData TestData
+				if err := json.Unmarshal(data, &testData); err != nil {
+					t.Fatalf("Failed to parse test data: %v", err)
+				}
+
+				var input RatioBoundsInput
+				if err := json.Unmarshal(testData.Input, &input); err != nil {
+					t.Fatalf("Failed to parse input data: %v", err)
+				}
+
+				var expected BoundsOutput
+				if err := json.Unmarshal(testData.Output, &expected); err != nil {
+					t.Fatalf("Failed to parse output data: %v", err)
+				}
+
+				actual, err := RatioBounds(input.X, input.Y, input.Misrate)
+				if err != nil {
+					t.Fatalf("RatioBounds(%v, %v, %v) error: %v",
+						input.X, input.Y, input.Misrate, err)
+				}
+				if !floatEquals(actual.Lower, expected.Lower, 1e-9) ||
+					!floatEquals(actual.Upper, expected.Upper, 1e-9) {
+					t.Errorf("RatioBounds(%v, %v, %v) = [%v, %v], want [%v, %v]",
 						input.X, input.Y, input.Misrate,
 						actual.Lower, actual.Upper,
 						expected.Lower, expected.Upper)

@@ -89,3 +89,16 @@ func checkSparity[T Number](values []T, subject Subject, functionName string) er
 	}
 	return nil
 }
+
+// Log log-transforms a slice. Returns error if any value is non-positive.
+func Log[T Number](values []T, subject Subject, functionName string) ([]float64, error) {
+	result := make([]float64, len(values))
+	for i, v := range values {
+		fv := float64(v)
+		if fv <= 0 {
+			return nil, NewPositivityError(functionName, subject)
+		}
+		result[i] = math.Log(fv)
+	}
+	return result, nil
+}

@@ -112,8 +112,10 @@ func Shift[T Number](x, y []T) (float64, error) {
 }
 
 // Ratio measures how many times larger x is compared to y.
-// Calculates the median of all pairwise ratios (x[i] / y[j]).
+// Calculates the median of all pairwise ratios (x[i] / y[j]) via log-transformation.
+// Equivalent to: exp(Shift(log(x), log(y)))
 // For example, Ratio = 1.2 means x is typically 20% larger than y.
+// Uses fast O((m + n) * log(precision)) algorithm.
 //
 // Assumptions:
 //   - positivity(x) - all values in x must be strictly positive
@@ -136,14 +138,11 @@ func Ratio[T Number](x, y []T) (float64, error) {
 		return 0, err
 	}
 
-	var pairwiseRatios []float64
-	for _, xi := range x {
-		for _, yj := range y {
-			pairwiseRatios = append(pairwiseRatios, float64(xi)/float64(yj))
-		}
+	result, err := fastRatioQuantiles(x, y, []float64{0.5}, false)
+	if err != nil {
+		return 0, err
 	}
-
-	return Median(pairwiseRatios)
+	return result[0], nil
 }
 
 // AvgSpread measures the typical variability when considering both samples together.
@@ -301,4 +300,43 @@ func ShiftBounds[T Number](x, y []T, misrate float64) (Bounds, error) {
 	}
 
 	return Bounds{Lower: lower, Upper: upper}, nil
+}
+
+// RatioBounds provides bounds on the Ratio estimator with specified misclassification rate.
+//
+// Computes bounds via log-transformation and ShiftBounds delegation:
+// RatioBounds(x, y, misrate) = exp(ShiftBounds(log(x), log(y), misrate))
+//
+// Assumptions:
+//   - positivity(x) - all values in x must be strictly positive
+//   - positivity(y) - all values in y must be strictly positive
+func RatioBounds[T Number](x, y []T, misrate float64) (Bounds, error) {
+	if err := checkValidity(x, SubjectX, "RatioBounds"); err != nil {
+		return Bounds{}, err
+	}
+	if err := checkValidity(y, SubjectY, "RatioBounds"); err != nil {
+		return Bounds{}, err
+	}
+
+	// Log-transform samples (includes positivity check)
+	logX, err := Log(x, SubjectX, "RatioBounds")
+	if err != nil {
+		return Bounds{}, err
+	}
+	logY, err := Log(y, SubjectY, "RatioBounds")
+	if err != nil {
+		return Bounds{}, err
+	}
+
+	// Delegate to ShiftBounds in log-space
+	logBounds, err := ShiftBounds(logX, logY, misrate)
+	if err != nil {
+		return Bounds{}, err
+	}
+
+	// Exp-transform back to ratio-space
+	return Bounds{
+		Lower: math.Exp(logBounds.Lower),
+		Upper: math.Exp(logBounds.Upper),
+	}, nil
 }
