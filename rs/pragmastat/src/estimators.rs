@@ -1,7 +1,7 @@
 //! Statistical estimators for one-sample and two-sample analysis
 
 use crate::assumptions::{
-    check_positivity, check_sparity, check_validity, AssumptionError, EstimatorError, Subject,
+    check_positivity, check_sparity, check_validity, log, AssumptionError, EstimatorError, Subject,
 };
 
 /// Calculates the median of a sorted slice
@@ -113,8 +113,10 @@ pub fn shift(x: &[f64], y: &[f64]) -> Result<f64, AssumptionError> {
 
 /// Measures how many times larger x is compared to y (Ratio)
 ///
-/// Calculates the median of all pairwise ratios (x[i] / y[j]).
+/// Calculates the median of all pairwise ratios (x[i] / y[j]) via log-transformation.
+/// Equivalent to: exp(Shift(log(x), log(y)))
 /// For example, ratio = 1.2 means x is typically 20% larger than y.
+/// Uses fast O((m+n) log precision) algorithm.
 ///
 /// # Assumptions
 ///
@@ -139,16 +141,7 @@ pub fn ratio(x: &[f64], y: &[f64]) -> Result<f64, AssumptionError> {
     // Check positivity for y (priority 1, subject y)
     check_positivity(y, Subject::Y, "Ratio")?;
 
-    // Calculate pairwise ratios
-    let mut pairwise_ratios = Vec::new();
-    for &xi in x {
-        for &yj in y {
-            pairwise_ratios.push(xi / yj);
-        }
-    }
-
-    // Compute median (we know inputs are valid)
-    median(&pairwise_ratios).map_err(|_| AssumptionError::validity("Ratio", Subject::X))
+    crate::fast_shift::fast_ratio(x, y).map_err(|_| AssumptionError::validity("Ratio", Subject::X))
 }
 
 /// Measures the typical variability when considering both samples together (AvgSpread)
@@ -302,4 +295,41 @@ pub fn shift_bounds(x: &[f64], y: &[f64], misrate: f64) -> Result<Bounds, Estima
     let upper = bounds[0].max(bounds[1]);
 
     Ok(Bounds { lower, upper })
+}
+
+/// Provides bounds on the Ratio estimator with specified misclassification rate (RatioBounds)
+///
+/// Computes bounds via log-transformation and shift_bounds delegation:
+/// `ratio_bounds(x, y, misrate) = exp(shift_bounds(log(x), log(y), misrate))`
+///
+/// # Arguments
+///
+/// * `x` - First sample slice (must be positive)
+/// * `y` - Second sample slice (must be positive)
+/// * `misrate` - Misclassification rate (probability that true ratio falls outside bounds)
+///
+/// # Assumptions
+///
+/// - `positivity(x)` - all values in x must be strictly positive
+/// - `positivity(y)` - all values in y must be strictly positive
+///
+/// # Returns
+///
+/// A `Bounds` struct containing the lower and upper bounds, or an error if inputs are invalid.
+pub fn ratio_bounds(x: &[f64], y: &[f64], misrate: f64) -> Result<Bounds, EstimatorError> {
+    check_validity(x, Subject::X, "RatioBounds")?;
+    check_validity(y, Subject::Y, "RatioBounds")?;
+
+    // Log-transform samples (includes positivity check)
+    let log_x = log(x, Subject::X, "RatioBounds")?;
+    let log_y = log(y, Subject::Y, "RatioBounds")?;
+
+    // Delegate to shift_bounds in log-space
+    let log_bounds = shift_bounds(&log_x, &log_y, misrate)?;
+
+    // Exp-transform back to ratio-space
+    Ok(Bounds {
+        lower: log_bounds.lower.exp(),
+        upper: log_bounds.upper.exp(),
+    })
 }

@@ -218,3 +218,19 @@ pub fn check_sparity(
     }
     Ok(())
 }
+
+/// Log-transforms a slice. Returns error if any value is non-positive.
+pub fn log(
+    values: &[f64],
+    subject: Subject,
+    function: &'static str,
+) -> Result<Vec<f64>, AssumptionError> {
+    let mut result = Vec::with_capacity(values.len());
+    for &v in values {
+        if v <= 0.0 {
+            return Err(AssumptionError::positivity(function, subject));
+        }
+        result.push(v.ln());
+    }
+    Ok(result)
+}

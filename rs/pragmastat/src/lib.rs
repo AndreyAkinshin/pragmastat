@@ -24,7 +24,8 @@ mod xoshiro256;
 pub use assumptions::{AssumptionError, AssumptionId, EstimatorError, Subject, Violation};
 pub use distributions::{Additive, Distribution, Exp, Multiplic, Power, Uniform};
 pub use estimators::{
-    avg_spread, center, disparity, median, ratio, rel_spread, shift, shift_bounds, spread, Bounds,
+    avg_spread, center, disparity, median, ratio, ratio_bounds, rel_spread, shift, shift_bounds,
+    spread, Bounds,
 };
 pub use pairwise_margin::pairwise_margin;
 pub use rng::Rng;

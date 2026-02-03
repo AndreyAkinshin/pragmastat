@@ -1,5 +1,7 @@
 use std::collections::BTreeSet;
 
+use crate::assumptions::{log, Subject};
+
 /// Fast O((m+n) log precision) implementation of the Shift estimator.
 /// Computes the median of all pairwise differences {x[i] - y[j]}.
 ///
@@ -220,4 +222,43 @@ fn count_and_neighbors(x: &[f64], y: &[f64], threshold: f64) -> (i64, f64, f64) 
 /// Computes the midpoint of two numbers, avoiding overflow
 fn midpoint(a: f64, b: f64) -> f64 {
     a + (b - a) * 0.5
+}
+
+/// Fast O((m+n) log precision) implementation of the Ratio estimator via log-transformation.
+/// Computes the median of all pairwise ratios {x[i] / y[j]} as exp(Shift(log x, log y)).
+///
+/// Internal implementation - not part of public API.
+pub(crate) fn fast_ratio(x: &[f64], y: &[f64]) -> Result<f64, &'static str> {
+    let result = fast_ratio_quantiles(x, y, &[0.5], false)?;
+    Ok(result[0])
+}
+
+/// Computes quantiles of all pairwise ratios {x[i] / y[j]} via log-transformation.
+/// Time complexity: O((m+n) log precision) per unique rank.
+/// Space complexity: O(m+n) for log-transformed arrays.
+///
+/// # Arguments
+/// * `x` - First sample (must be positive; will be sorted if assume_sorted is false)
+/// * `y` - Second sample (must be positive; will be sorted if assume_sorted is false)
+/// * `p` - Slice of probabilities in [0, 1]
+/// * `assume_sorted` - If true, assumes inputs are already sorted
+pub(crate) fn fast_ratio_quantiles(
+    x: &[f64],
+    y: &[f64],
+    p: &[f64],
+    assume_sorted: bool,
+) -> Result<Vec<f64>, &'static str> {
+    if x.is_empty() || y.is_empty() {
+        return Err("Input slices cannot be empty");
+    }
+
+    // Log-transform both samples (includes positivity check)
+    let log_x = log(x, Subject::X, "Ratio").map_err(|_| "x must contain only positive values")?;
+    let log_y = log(y, Subject::Y, "Ratio").map_err(|_| "y must contain only positive values")?;
+
+    // Delegate to fast_shift_quantiles in log-space
+    let log_result = fast_shift_quantiles(&log_x, &log_y, p, assume_sorted)?;
+
+    // Exp-transform back to ratio-space
+    Ok(log_result.iter().map(|&v| v.exp()).collect())
 }

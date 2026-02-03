@@ -59,6 +59,19 @@ struct ShiftBoundsTestCase {
     output: BoundsOutput,
 }
 
+#[derive(Debug, Deserialize, Serialize)]
+struct RatioBoundsInput {
+    x: Vec<f64>,
+    y: Vec<f64>,
+    misrate: f64,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+struct RatioBoundsTestCase {
+    input: RatioBoundsInput,
+    output: BoundsOutput,
+}
+
 fn find_repo_root() -> PathBuf {
     let mut current_dir = std::env::current_dir().unwrap();
     loop {
@@ -319,6 +332,63 @@ fn run_shift_bounds_tests() {
     }
 }
 
+fn run_ratio_bounds_tests() {
+    let repo_root = find_repo_root();
+    let test_data_dir = repo_root.join("tests").join("ratio-bounds");
+
+    if !test_data_dir.exists() {
+        // Skip if test data directory doesn't exist yet
+        return;
+    }
+
+    let json_files: Vec<_> = fs::read_dir(&test_data_dir)
+        .unwrap()
+        .filter_map(|entry| {
+            let entry = entry.unwrap();
+            let path = entry.path();
+            if path.extension()?.to_str()? == "json" {
+                Some(path)
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    if json_files.is_empty() {
+        return;
+    }
+
+    for json_file in json_files {
+        let content = fs::read_to_string(&json_file).unwrap();
+        let test_case: RatioBoundsTestCase = serde_json::from_str(&content).unwrap();
+
+        let actual_output = ratio_bounds(
+            &test_case.input.x,
+            &test_case.input.y,
+            test_case.input.misrate,
+        )
+        .unwrap();
+        let expected_lower = test_case.output.lower;
+        let expected_upper = test_case.output.upper;
+
+        assert!(
+            approx_eq!(f64, actual_output.lower, expected_lower, epsilon = 1e-10),
+            "Failed for test file: {:?}, expected lower: {}, got: {}",
+            json_file.file_name().unwrap(),
+            expected_lower,
+            actual_output.lower
+        );
+
+        assert!(
+            approx_eq!(f64, actual_output.upper, expected_upper, epsilon = 1e-10),
+            "Failed for test file: {:?}, expected upper: {}, got: {}",
+            json_file.file_name().unwrap(),
+            expected_upper,
+            actual_output.upper
+        );
+    }
+}
+
 #[test]
 fn test_pairwise_margin() {
     run_pairwise_margin_tests();
@@ -327,6 +397,11 @@ fn test_pairwise_margin() {
 #[test]
 fn test_shift_bounds() {
     run_shift_bounds_tests();
+}
+
+#[test]
+fn test_ratio_bounds() {
+    run_ratio_bounds_tests();
 }
 
 // Rng reference tests
