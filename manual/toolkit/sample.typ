@@ -38,7 +38,7 @@ Select $k$ elements from sample $vx$ without replacement using generator $r$.
 - `Sample(x, n, r) = x` — selecting all elements returns original order
 
 #v(0.5em)
-Use $Sample$ when you need to pick a random subset of your data without replacement.
+$Sample$ picks a random subset of data without replacement.
 Common uses include bootstrap resampling, creating cross-validation splits, or reducing a large dataset to a manageable size.
 Every possible subset of size $k$ has equal probability of being selected, and the selected elements keep their original order.
 To make your subsampling reproducible, combine it with a seeded generator: `Sample(data, 100, Rng("training-set"))` will always select the same 100 elements.

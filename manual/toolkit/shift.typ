@@ -38,8 +38,8 @@ Robust measure of location difference between two samples.
 - @sidak1999
 
 #v(0.5em)
-Use $Shift$ when you have two groups and want to know how much one differs from the other.
-If you are comparing response times between version A and version B, $Shift$ tells you by how many milliseconds A is faster or slower than B.
+$Shift$ measures how much one group differs from another.
+When comparing response times between version A and version B, $Shift$ tells by how many milliseconds A is faster or slower than B.
 A negative result means the first group tends to be lower; positive means it tends to be higher.
 Unlike comparing means, $Shift$ handles outliers gracefully and works well with skewed data.
 The result comes in the same units as your measurements, making it easy to interpret.

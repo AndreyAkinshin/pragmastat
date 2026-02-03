@@ -40,8 +40,8 @@ The value splitting a sorted sample into two equal parts.
 - `Median([1, 2, 3, 4]) = 2.5`
 
 #v(0.5em)
-Use $Median$ when you need maximum protection against outliers and corrupted data.
-It achieves a 50% breakdown point, meaning that up to half of your data can be arbitrarily bad before the estimate becomes meaningless.
-However, this extreme robustness comes at a cost: the median is less precise than $Center$ when your data is clean.
+$Median$ provides maximum protection against outliers and corrupted data.
+It achieves a 50% breakdown point, meaning that up to half of the data can be arbitrarily bad before the estimate becomes meaningless.
+However, this extreme robustness comes at a cost: the median is less precise than $Center$ when data is clean.
 For most practical applications, $Center$ offers a better tradeoff (29% breakdown with 95% efficiency).
-Reserve $Median$ for situations where you suspect contamination levels above 29% or need the strongest possible robustness guarantee.
+Reserve $Median$ for situations with suspected contamination levels above 29% or when the strongest possible robustness guarantee is needed.

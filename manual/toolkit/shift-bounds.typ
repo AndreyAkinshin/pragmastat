@@ -34,8 +34,8 @@ Robust bounds on $Shift(vx, vy)$ with specified coverage.
 - Bounds fail to cover true shift with probability $approx misrate$
 
 #v(0.5em)
-Use $ShiftBounds$ when you want to know not just the estimated shift but also how uncertain that estimate is.
-The function returns an interval of plausible shift values given your data.
+$ShiftBounds$ provides not just the estimated shift but also the uncertainty of that estimate.
+The function returns an interval of plausible shift values given the data.
 Set $misrate$ to control how often the bounds might fail to contain the true shift: use $10^(-6)$ for critical decisions where errors are costly, or $10^(-3)$ for everyday analysis.
 These bounds require no assumptions about your data distribution, so they remain valid for any continuous measurements.
 If the bounds exclude zero, that suggests a reliable difference between the two groups.

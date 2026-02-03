@@ -202,10 +202,10 @@ Names in this toolkit encode operational knowledge rather than historical proven
 )
 
 #v(0.5em)
-When you read "$Additive$", your mind activates a generative model:
+Reading "$Additive$" activates a generative model:
 this distribution arises when many independent factors add together.
-When you read "Gaussian", you must recall an association with Carl Friedrich Gauss,
-then remember what properties that name implies.
+Reading "Gaussian" requires recalling an association with Carl Friedrich Gauss,
+then remembering what properties that name implies.
 
 Generative names create immediate intuition about when a model applies.
 $Additive$ distributions arise from additive processes.

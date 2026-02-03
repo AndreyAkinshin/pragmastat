@@ -28,8 +28,8 @@ Uniformly random permutation of sample $vx$ using generator $r$.
 - `Shuffle(x, r)` preserves multiset (same elements, different order)
 
 #v(0.5em)
-Use $Shuffle$ when you need a random reordering of your data.
-This is essential for permutation tests and useful whenever you want to eliminate any bias that might come from the original ordering.
+$Shuffle$ produces a random reordering of data.
+This is essential for permutation tests and useful for eliminating any bias from the original ordering.
 Every possible arrangement has exactly equal probability, which is required for valid statistical inference.
-The function returns a new shuffled array and leaves your original data unchanged.
+The function returns a new shuffled array and leaves the original data unchanged.
 For reproducible results, pass a seeded generator: `Shuffle(data, Rng("experiment-1"))` will always produce the same permutation.

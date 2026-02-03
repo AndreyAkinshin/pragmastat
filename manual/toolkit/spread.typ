@@ -37,8 +37,8 @@ Robust measure of dispersion (variability, scatter).
 - @shamos1976
 
 #v(0.5em)
-Use $Spread$ when you want to know how much your measurements vary from each other.
-It serves the same purpose as standard deviation but does not explode when you have outliers or heavy-tailed data.
-The result comes in the same units as your measurements, so if $Spread$ is 5 milliseconds, that tells you how much your values typically differ.
+$Spread$ measures how much measurements vary from each other.
+It serves the same purpose as standard deviation but does not explode with outliers or heavy-tailed data.
+The result comes in the same units as the measurements, so if $Spread$ is 5 milliseconds, that indicates how much values typically differ.
 Like $Center$, it tolerates up to 29% corrupted data.
-When comparing variability across datasets, $Spread$ gives you a reliable answer even when standard deviation would be misleading or infinite.
+When comparing variability across datasets, $Spread$ gives a reliable answer even when standard deviation would be misleading or infinite.

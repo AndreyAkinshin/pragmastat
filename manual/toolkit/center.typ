@@ -36,8 +36,8 @@ Robust measure of location (central tendency).
 - @sen1963
 
 #v(0.5em)
-Use $Center$ as your default choice when you need a single number to represent "where the data is."
-It works like the familiar mean but does not break when your data contains a few bad measurements or outliers.
-You can have up to 29% of your data corrupted before $Center$ becomes unreliable.
-At the same time, when your data is clean, $Center$ is nearly as precise as the mean (95% efficiency), so you pay almost no cost for the added protection.
-If you are unsure whether to use mean, median, or something else, start with $Center$.
+$Center$ is the recommended default for representing "where the data is."
+It works like the familiar mean but does not break when the data contains a few bad measurements or outliers.
+Up to 29% of data can be corrupted before $Center$ becomes unreliable.
+When data is clean, $Center$ is nearly as precise as the mean (95% efficiency), so the added protection comes at almost no cost.
+When uncertain whether to use mean, median, or something else, start with $Center$.

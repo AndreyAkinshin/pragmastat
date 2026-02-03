@@ -45,8 +45,8 @@ The log-transformation converts multiplicative relationships to additive ones,
 The exp-transformation converts back to the ratio scale.
 
 #v(0.5em)
-Use $Ratio$ when you care about multiplicative relationships rather than additive differences.
-If one system is "twice as fast" or prices are "30% lower," you are thinking in ratios.
+$Ratio$ is appropriate for multiplicative relationships rather than additive differences.
+If one system is "twice as fast" or prices are "30% lower," the underlying thinking is in ratios.
 A result of 0.5 means the first group is typically half the size of the second; 2.0 means twice as large.
 This estimator is appropriate for quantities like prices, response times, and concentrations where relative comparisons make more sense than absolute ones.
 Both samples must contain strictly positive values.

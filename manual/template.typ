@@ -78,11 +78,11 @@
 
   #v(0.5em)
   This manual is licensed under the *Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License* (#link("https://creativecommons.org/licenses/by-nc-sa/4.0/")[CC BY-NC-SA 4.0]).
-  You are free to share and adapt this material for non-commercial purposes, provided you give appropriate credit, indicate if changes were made, and distribute your contributions under the same license.
+  Sharing and adapting this material for non-commercial purposes is permitted, provided appropriate credit is given, changes are indicated, and contributions are distributed under the same license.
 
   #v(0.5em)
   The accompanying source code and software implementations are licensed under the *MIT License*.
-  You are free to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the software, subject to the conditions stated in the license.
+  Use, copying, modification, merging, publishing, distribution, sublicensing, and/or selling copies of the software is permitted, subject to the conditions stated in the license.
   For complete license terms, see the LICENSE file in the source repository.
 
   #v(0.5em)

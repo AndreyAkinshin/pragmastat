@@ -32,7 +32,7 @@ Weighted average of dispersions (pooled scale).
 - `AvgSpread(x, y) = AvgSpread(y, x)`
 
 #v(0.5em)
-Use $AvgSpread$ when you need a single number representing the typical variability across two groups.
+$AvgSpread$ provides a single number representing the typical variability across two groups.
 It combines the spread of both samples, giving more weight to larger samples since they provide more reliable estimates.
-This pooled spread serves as a common reference scale, which is essential when you want to express a difference in relative terms.
+This pooled spread serves as a common reference scale, essential for expressing a difference in relative terms.
 $Disparity$ uses $AvgSpread$ internally to normalize the shift into a scale-free effect size.

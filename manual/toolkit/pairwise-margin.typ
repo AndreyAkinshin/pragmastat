@@ -36,5 +36,5 @@ Exclusion count for dominance-based bounds.
 #v(0.5em)
 This is a supporting function that $ShiftBounds$ uses internally, so most users do not need to call it directly.
 It calculates how many extreme pairwise differences should be excluded when constructing bounds, based on sample sizes and the desired error rate.
-When you request a lower misrate (higher confidence), the margin becomes smaller, which produces wider bounds.
+A lower misrate (higher confidence) results in a smaller margin, which produces wider bounds.
 The function automatically chooses between exact computation for small samples and a fast approximation for large samples.

@@ -29,7 +29,7 @@ Relative dispersion normalized by location.
 - `RelSpread(5x) = 0.8`
 
 #v(0.5em)
-Use $RelSpread$ when you want to compare how "noisy" different datasets are, even if they have completely different scales or units.
+$RelSpread$ compares how "noisy" different datasets are, even if they have completely different scales or units.
 A dataset centered around 100 with spread of 10 has the same relative variability as one centered around 1000 with spread of 100.
 Both show 10% relative variation, and $RelSpread$ captures exactly this.
 This makes it useful for comparing measurement quality across different experiments, instruments, or physical quantities where absolute numbers are not directly comparable.
