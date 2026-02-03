@@ -26,6 +26,7 @@ r/pragmastat/
 │   ├── rel_spread.R        # Relative spread
 │   ├── shift.R             # Shift estimator
 │   ├── ratio.R             # Ratio estimator
+│   ├── ratio_bounds.R      # Ratio confidence bounds
 │   ├── avg_spread.R        # Average spread
 │   ├── disparity.R         # Disparity (effect size)
 │   ├── shift_bounds.R      # Shift confidence bounds
@@ -66,10 +67,11 @@ center(x)                    # Hodges-Lehmann estimator
 spread(x)                    # Shamos estimator
 rel_spread(x)                # Spread / |Center|
 shift(x, y)                  # Median of pairwise differences
-ratio(x, y)                  # Median of pairwise ratios
+ratio(x, y)                  # Geometric median of pairwise ratios (via log-space)
 avg_spread(x, y)             # Weighted average of spreads
 disparity(x, y)              # Shift / AvgSpread
 shift_bounds(x, y, misrate)  # Confidence bounds on shift
+ratio_bounds(x, y, misrate)  # Confidence bounds on ratio
 pairwise_margin(n, m, misrate) # Margin for bounds calculation
 ```
 

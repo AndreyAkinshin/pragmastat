@@ -67,6 +67,8 @@ All public functions return `Result<T, &'static str>`:
 ```rust
 pub fn center(x: &[f64]) -> Result<f64, &'static str>
 pub fn shift(x: &[f64], y: &[f64]) -> Result<f64, &'static str>
+pub fn shift_bounds(x: &[f64], y: &[f64], misrate: f64) -> Result<Bounds, &'static str>
+pub fn ratio_bounds(x: &[f64], y: &[f64], misrate: f64) -> Result<Bounds, &'static str>
 pub fn pairwise_margin(n: usize, m: usize, misrate: f64) -> Result<usize, &'static str>
 ```
 

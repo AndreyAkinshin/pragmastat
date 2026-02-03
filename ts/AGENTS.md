@@ -59,6 +59,7 @@ function ratio(x: number[], y: number[]): number
 function avgSpread(x: number[], y: number[]): number
 function disparity(x: number[], y: number[]): number
 function shiftBounds(x: number[], y: number[], misrate: number): Bounds
+function ratioBounds(x: number[], y: number[], misrate: number): Bounds
 function pairwiseMargin(n: number, m: number, misrate: number): number
 ```
 

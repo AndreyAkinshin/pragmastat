@@ -65,6 +65,7 @@ Toolkit.Ratio(x, y)
 Toolkit.AvgSpread(x, y)
 Toolkit.Disparity(x, y)
 Toolkit.ShiftBounds(x, y, misrate)
+Toolkit.RatioBounds(x, y, misrate)
 
 // PairwiseMargin
 PairwiseMargin.Instance.Calc(n, m, misrate)

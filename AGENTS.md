@@ -40,7 +40,7 @@ pragmastat/
 
 ## Key APIs
 
-All implementations expose: `center`, `spread`, `relSpread`, `shift`, `ratio`, `avgSpread`, `disparity`, `shiftBounds`, `pairwiseMargin`
+All implementations expose: `center`, `spread`, `relSpread`, `shift`, `ratio`, `avgSpread`, `disparity`, `shiftBounds`, `ratioBounds`, `pairwiseMargin`
 
 See individual language READMEs for API details.
 

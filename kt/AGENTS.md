@@ -58,6 +58,7 @@ fun ratio(x: List<Double>, y: List<Double>): Double
 fun avgSpread(x: List<Double>, y: List<Double>): Double
 fun disparity(x: List<Double>, y: List<Double>): Double
 fun shiftBounds(x: List<Double>, y: List<Double>, misrate: Double): Bounds
+fun ratioBounds(x: List<Double>, y: List<Double>, misrate: Double): Bounds
 fun pairwiseMargin(n: Int, m: Int, misrate: Double): Int
 ```
 

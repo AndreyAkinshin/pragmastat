@@ -56,6 +56,7 @@ def ratio(x: Sequence[float] | NDArray, y: Sequence[float] | NDArray) -> float
 def avg_spread(x: Sequence[float] | NDArray, y: Sequence[float] | NDArray) -> float
 def disparity(x: Sequence[float] | NDArray, y: Sequence[float] | NDArray) -> float
 def shift_bounds(x, y, misrate: float) -> Bounds
+def ratio_bounds(x, y, misrate: float) -> Bounds
 def pairwise_margin(n: int, m: int, misrate: float) -> int
 ```
 

@@ -56,6 +56,7 @@ func Ratio(x, y []float64) (float64, error)
 func AvgSpread(x, y []float64) (float64, error)
 func Disparity(x, y []float64) (float64, error)
 func ShiftBounds(x, y []float64, misrate float64) (Bounds, error)
+func RatioBounds(x, y []float64, misrate float64) (Bounds, error)
 func PairwiseMargin(n, m int, misrate float64) (int, error)
 ```
 
