@@ -10,6 +10,7 @@ from pragmastat import (
     disparity,
     pairwise_margin,
     shift_bounds,
+    ratio_bounds,
 )
 from pragmastat.distributions import Additive, Exp, Multiplic, Power, Uniform
 
@@ -77,6 +78,7 @@ def main():
     x = [1, 2, 4, 8, 16]
     y = [2, 4, 8, 16, 32]
     print(ratio(x, y))  # 0.5
+    print(ratio(y, x))  # 2
 
     # --- Confidence Bounds ---
 
@@ -85,7 +87,12 @@ def main():
 
     print(pairwise_margin(30, 30, 1e-4))  # 390
     print(shift(x, y))  # -20
-    bounds = shift_bounds(x, y, 1e-4)  # [-30, -10]
+    bounds = shift_bounds(x, y, 1e-4)  # Bounds(lower=-30, upper=-10)
+    print(f"Bounds(lower={bounds.lower}, upper={bounds.upper})")
+
+    x = [1, 2, 3, 4, 5]
+    y = [2, 3, 4, 5, 6]
+    bounds = ratio_bounds(x, y, 0.05)  # Bounds(lower=0.333..., upper=1.5)
     print(f"Bounds(lower={bounds.lower}, upper={bounds.upper})")
 
 

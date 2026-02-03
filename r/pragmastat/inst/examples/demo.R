@@ -62,6 +62,7 @@ print(disparity(y, x)) # -0.4
 x <- c(1, 2, 4, 8, 16)
 y <- c(2, 4, 8, 16, 32)
 print(ratio(x, y)) # 0.5
+print(ratio(y, x)) # 2
 
 # --- Confidence Bounds ---
 
@@ -70,5 +71,10 @@ y <- 21:50
 
 print(pairwise_margin(30, 30, 1e-4)) # 390
 print(shift(x, y)) # -20
-bounds <- shift_bounds(x, y, 1e-4) # [-30, -10]
+bounds <- shift_bounds(x, y, 1e-4) # [lower=-30, upper=-10]
+print(paste("[", bounds$lower, ", ", bounds$upper, "]", sep=""))
+
+x <- c(1, 2, 3, 4, 5)
+y <- c(2, 3, 4, 5, 6)
+bounds <- ratio_bounds(x, y, 0.05) # [lower=0.333..., upper=1.5]
 print(paste("[", bounds$lower, ", ", bounds$upper, "]", sep=""))

@@ -97,6 +97,7 @@ func main() {
 	x = []float64{1, 2, 4, 8, 16}
 	y = []float64{2, 4, 8, 16, 32}
 	print(pragmastat.Ratio(x, y)) // 0.5
+	print(pragmastat.Ratio(y, x)) // 2
 
 	// --- Confidence Bounds ---
 
@@ -110,5 +111,9 @@ func main() {
 	margin, _ := pragmastat.PairwiseMargin(30, 30, 1e-4)
 	fmt.Println(margin)                                   // 390
 	print(pragmastat.Shift(x, y))                         // -20
-	fmt.Println(must(pragmastat.ShiftBounds(x, y, 1e-4))) // [-30, -10]
+	fmt.Println(must(pragmastat.ShiftBounds(x, y, 1e-4))) // {Lower: -30, Upper: -10}
+
+	x = []float64{1, 2, 3, 4, 5}
+	y = []float64{2, 3, 4, 5, 6}
+	fmt.Println(must(pragmastat.RatioBounds(x, y, 0.05))) // {Lower: 0.333..., Upper: 1.5}
 }
