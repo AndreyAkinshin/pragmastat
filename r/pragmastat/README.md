@@ -18,40 +18,37 @@ library(pragmastat)
 
 # --- Randomization ---
 
-r <- rng(1729)
-print(r$uniform()) # 0.3943034703296536
-print(r$uniform()) # 0.5730893757071377
+r <- rng("demo-uniform")
+print(r$uniform()) # 0.2640554428629759
+print(r$uniform()) # 0.9348534835582796
 
-r <- rng("experiment-1")
-print(r$uniform()) # 0.9535207726895857
+r <- rng("demo-sample")
+print(r$sample(0:9, 3)) # [3, 8, 9]
 
-r <- rng(1729)
-print(r$sample(0:9, 3)) # [6, 8, 9]
-
-r <- rng(1729)
+r <- rng("demo-shuffle")
 print(r$shuffle(c(1, 2, 3, 4, 5))) # [4, 2, 3, 5, 1]
 
 # --- Distribution Sampling ---
 
-r <- rng(1729)
+r <- rng("demo-dist-uniform")
 dist <- dist_uniform(0, 10)
-print(dist$sample(r)) # 3.9430347032965365
+print(dist$sample(r)) # 6.54043657816832
 
-r <- rng(1729)
+r <- rng("demo-dist-additive")
 dist <- dist_additive(0, 1)
-print(dist$sample(r)) # -1.222932972163442
+print(dist$sample(r)) # 0.17410448679568188
 
-r <- rng(1729)
+r <- rng("demo-dist-exp")
 dist <- dist_exp(1)
-print(dist$sample(r)) # 0.5013761944646019
+print(dist$sample(r)) # 0.6589065267276553
 
-r <- rng(1729)
+r <- rng("demo-dist-power")
 dist <- dist_power(1, 2)
-print(dist$sample(r)) # 1.284909255071668
+print(dist$sample(r)) # 1.023677535537084
 
-r <- rng(1729)
+r <- rng("demo-dist-multiplic")
 dist <- dist_multiplic(0, 1)
-print(dist$sample(r)) # 0.2943655336550937
+print(dist$sample(r)) # 1.1273244602673853
 
 # --- Single-Sample Statistics ---
 

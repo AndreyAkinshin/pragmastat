@@ -38,43 +38,40 @@ fn multiply(x: &[f64], val: f64) -> Vec<f64> {
 fn main() {
     // --- Randomization ---
 
-    let mut rng = Rng::from_seed(1729);
-    println!("{}", rng.uniform()); // 0.3943034703296536
-    println!("{}", rng.uniform()); // 0.5730893757071377
+    let mut rng = Rng::from_string("demo-uniform");
+    println!("{}", rng.uniform()); // 0.2640554428629759
+    println!("{}", rng.uniform()); // 0.9348534835582796
 
-    let mut rng = Rng::from_string("experiment-1");
-    println!("{}", rng.uniform()); // 0.9535207726895857
-
-    let mut rng = Rng::from_seed(1729);
+    let mut rng = Rng::from_string("demo-sample");
     println!(
         "{:?}",
         rng.sample(&[0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0], 3)
-    ); // [6, 8, 9]
+    ); // [3, 8, 9]
 
-    let mut rng = Rng::from_seed(1729);
+    let mut rng = Rng::from_string("demo-shuffle");
     println!("{:?}", rng.shuffle(&[1.0, 2.0, 3.0, 4.0, 5.0])); // [4, 2, 3, 5, 1]
 
     // --- Distribution Sampling ---
 
-    let mut rng = Rng::from_seed(1729);
+    let mut rng = Rng::from_string("demo-dist-uniform");
     let dist = Uniform::new(0.0, 10.0);
-    println!("{}", dist.sample(&mut rng)); // 3.9430347032965365
+    println!("{}", dist.sample(&mut rng)); // 6.54043657816832
 
-    let mut rng = Rng::from_seed(1729);
+    let mut rng = Rng::from_string("demo-dist-additive");
     let dist = Additive::new(0.0, 1.0);
-    println!("{}", dist.sample(&mut rng)); // -1.222932972163442
+    println!("{}", dist.sample(&mut rng)); // 0.17410448679568188
 
-    let mut rng = Rng::from_seed(1729);
+    let mut rng = Rng::from_string("demo-dist-exp");
     let dist = Exp::new(1.0);
-    println!("{}", dist.sample(&mut rng)); // 0.5013761944646019
+    println!("{}", dist.sample(&mut rng)); // 0.6589065267276553
 
-    let mut rng = Rng::from_seed(1729);
+    let mut rng = Rng::from_string("demo-dist-power");
     let dist = Power::new(1.0, 2.0);
-    println!("{}", dist.sample(&mut rng)); // 1.284909255071668
+    println!("{}", dist.sample(&mut rng)); // 1.023677535537084
 
-    let mut rng = Rng::from_seed(1729);
+    let mut rng = Rng::from_string("demo-dist-multiplic");
     let dist = Multiplic::new(0.0, 1.0);
-    println!("{}", dist.sample(&mut rng)); // 0.2943655336550937
+    println!("{}", dist.sample(&mut rng)); // 1.1273244602673853
 
     // --- Single-Sample Statistics ---
 

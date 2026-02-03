@@ -33,40 +33,37 @@ from pragmastat.distributions import Additive, Exp, Multiplic, Power, Uniform
 def main():
     # --- Randomization ---
 
-    rng = Rng(1729)
-    print(rng.uniform())  # 0.3943034703296536
-    print(rng.uniform())  # 0.5730893757071377
+    rng = Rng("demo-uniform")
+    print(rng.uniform())  # 0.2640554428629759
+    print(rng.uniform())  # 0.9348534835582796
 
-    rng = Rng("experiment-1")
-    print(rng.uniform())  # 0.9535207726895857
+    rng = Rng("demo-sample")
+    print(rng.sample([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], 3))  # [3, 8, 9]
 
-    rng = Rng(1729)
-    print(rng.sample([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], 3))  # [6, 8, 9]
-
-    rng = Rng(1729)
+    rng = Rng("demo-shuffle")
     print(rng.shuffle([1, 2, 3, 4, 5]))  # [4, 2, 3, 5, 1]
 
     # --- Distribution Sampling ---
 
-    rng = Rng(1729)
+    rng = Rng("demo-dist-uniform")
     dist = Uniform(0, 10)
-    print(dist.sample(rng))  # 3.9430347032965365
+    print(dist.sample(rng))  # 6.54043657816832
 
-    rng = Rng(1729)
+    rng = Rng("demo-dist-additive")
     dist = Additive(0, 1)
-    print(dist.sample(rng))  # -1.222932972163442
+    print(dist.sample(rng))  # 0.17410448679568188
 
-    rng = Rng(1729)
+    rng = Rng("demo-dist-exp")
     dist = Exp(1)
-    print(dist.sample(rng))  # 0.5013761944646019
+    print(dist.sample(rng))  # 0.6589065267276553
 
-    rng = Rng(1729)
+    rng = Rng("demo-dist-power")
     dist = Power(1, 2)
-    print(dist.sample(rng))  # 1.284909255071668
+    print(dist.sample(rng))  # 1.023677535537084
 
-    rng = Rng(1729)
+    rng = Rng("demo-dist-multiplic")
     dist = Multiplic(0, 1)
-    print(dist.sample(rng))  # 0.2943655336550937
+    print(dist.sample(rng))  # 1.1273244602673853
 
     # --- Single-Sample Statistics ---
 

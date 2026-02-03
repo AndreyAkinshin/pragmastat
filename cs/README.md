@@ -32,40 +32,37 @@ class Program
   {
     // --- Randomization ---
 
-    var rng = new Rng(1729);
-    WriteLine(rng.Uniform()); // 0.3943034703296536
-    WriteLine(rng.Uniform()); // 0.5730893757071377
+    var rng = new Rng("demo-uniform");
+    WriteLine(rng.Uniform()); // 0.2640554428629759
+    WriteLine(rng.Uniform()); // 0.9348534835582796
 
-    rng = new Rng("experiment-1");
-    WriteLine(rng.Uniform()); // 0.9535207726895857
+    rng = new Rng("demo-sample");
+    WriteLine(string.Join(", ", rng.Sample([0.0, 1, 2, 3, 4, 5, 6, 7, 8, 9], 3))); // 3, 8, 9
 
-    rng = new Rng(1729);
-    WriteLine(string.Join(", ", rng.Sample([0.0, 1, 2, 3, 4, 5, 6, 7, 8, 9], 3))); // 6, 8, 9
-
-    rng = new Rng(1729);
+    rng = new Rng("demo-shuffle");
     WriteLine(string.Join(", ", rng.Shuffle([1.0, 2, 3, 4, 5]))); // 4, 2, 3, 5, 1
 
     // --- Distribution Sampling ---
 
-    rng = new Rng(1729);
+    rng = new Rng("demo-dist-uniform");
     IDistribution dist = new Uniform(0, 10);
-    WriteLine(dist.Sample(rng)); // 3.9430347032965365
+    WriteLine(dist.Sample(rng)); // 6.54043657816832
 
-    rng = new Rng(1729);
+    rng = new Rng("demo-dist-additive");
     dist = new Additive(0, 1);
-    WriteLine(dist.Sample(rng)); // -1.222932972163442
+    WriteLine(dist.Sample(rng)); // 0.17410448679568188
 
-    rng = new Rng(1729);
+    rng = new Rng("demo-dist-exp");
     dist = new Exp(1);
-    WriteLine(dist.Sample(rng)); // 0.5013761944646019
+    WriteLine(dist.Sample(rng)); // 0.6589065267276553
 
-    rng = new Rng(1729);
+    rng = new Rng("demo-dist-power");
     dist = new Power(1, 2);
-    WriteLine(dist.Sample(rng)); // 1.284909255071668
+    WriteLine(dist.Sample(rng)); // 1.023677535537084
 
-    rng = new Rng(1729);
+    rng = new Rng("demo-dist-multiplic");
     dist = new Multiplic(0, 1);
-    WriteLine(dist.Sample(rng)); // 0.2943655336550937
+    WriteLine(dist.Sample(rng)); // 1.1273244602673853
 
     // --- Single-Sample Statistics ---
 
