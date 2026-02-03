@@ -6,40 +6,37 @@ import {
 function main() {
     // --- Randomization ---
 
-    let rng = new Rng(1729);
-    console.log(rng.uniform()); // 0.3943034703296536
-    console.log(rng.uniform()); // 0.5730893757071377
+    let rng = new Rng("demo-uniform");
+    console.log(rng.uniform()); // 0.2640554428629759
+    console.log(rng.uniform()); // 0.9348534835582796
 
-    rng = new Rng("experiment-1");
-    console.log(rng.uniform()); // 0.9535207726895857
+    rng = new Rng("demo-sample");
+    console.log(rng.sample([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], 3)); // [3, 8, 9]
 
-    rng = new Rng(1729);
-    console.log(rng.sample([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], 3)); // [6, 8, 9]
-
-    rng = new Rng(1729);
+    rng = new Rng("demo-shuffle");
     console.log(rng.shuffle([1, 2, 3, 4, 5])); // [4, 2, 3, 5, 1]
 
     // --- Distribution Sampling ---
 
-    rng = new Rng(1729);
+    rng = new Rng("demo-dist-uniform");
     let dist = new Uniform(0, 10);
-    console.log(dist.sample(rng)); // 3.9430347032965365
+    console.log(dist.sample(rng)); // 6.54043657816832
 
-    rng = new Rng(1729);
+    rng = new Rng("demo-dist-additive");
     let addDist = new Additive(0, 1);
-    console.log(addDist.sample(rng)); // -1.222932972163442
+    console.log(addDist.sample(rng)); // 0.17410448679568188
 
-    rng = new Rng(1729);
+    rng = new Rng("demo-dist-exp");
     let expDist = new Exp(1);
-    console.log(expDist.sample(rng)); // 0.5013761944646019
+    console.log(expDist.sample(rng)); // 0.6589065267276553
 
-    rng = new Rng(1729);
+    rng = new Rng("demo-dist-power");
     let powDist = new Power(1, 2);
-    console.log(powDist.sample(rng)); // 1.284909255071668
+    console.log(powDist.sample(rng)); // 1.023677535537084
 
-    rng = new Rng(1729);
+    rng = new Rng("demo-dist-multiplic");
     let mulDist = new Multiplic(0, 1);
-    console.log(mulDist.sample(rng)); // 0.2943655336550937
+    console.log(mulDist.sample(rng)); // 1.1273244602673853
 
     // --- Single-Sample Statistics ---
 

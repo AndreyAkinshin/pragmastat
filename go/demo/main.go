@@ -37,40 +37,37 @@ func multiply(x []float64, val float64) []float64 {
 func main() {
 	// --- Randomization ---
 
-	rng := pragmastat.NewRngFromSeed(1729)
-	fmt.Println(rng.Uniform()) // 0.3943034703296536
-	fmt.Println(rng.Uniform()) // 0.5730893757071377
+	rng := pragmastat.NewRngFromString("demo-uniform")
+	fmt.Println(rng.Uniform()) // 0.2640554428629759
+	fmt.Println(rng.Uniform()) // 0.9348534835582796
 
-	rng = pragmastat.NewRngFromString("experiment-1")
-	fmt.Println(rng.Uniform()) // 0.9535207726895857
+	rng = pragmastat.NewRngFromString("demo-sample")
+	fmt.Println(pragmastat.Sample(rng, []float64{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, 3)) // [3 8 9]
 
-	rng = pragmastat.NewRngFromSeed(1729)
-	fmt.Println(pragmastat.Sample(rng, []float64{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, 3)) // [6 8 9]
-
-	rng = pragmastat.NewRngFromSeed(1729)
+	rng = pragmastat.NewRngFromString("demo-shuffle")
 	fmt.Println(pragmastat.Shuffle(rng, []float64{1, 2, 3, 4, 5})) // [4 2 3 5 1]
 
 	// --- Distribution Sampling ---
 
-	rng = pragmastat.NewRngFromSeed(1729)
+	rng = pragmastat.NewRngFromString("demo-dist-uniform")
 	dist := pragmastat.NewUniform(0, 10)
-	fmt.Println(dist.Sample(rng)) // 3.9430347032965365
+	fmt.Println(dist.Sample(rng)) // 6.54043657816832
 
-	rng = pragmastat.NewRngFromSeed(1729)
+	rng = pragmastat.NewRngFromString("demo-dist-additive")
 	addDist := pragmastat.NewAdditive(0, 1)
-	fmt.Println(addDist.Sample(rng)) // -1.222932972163442
+	fmt.Println(addDist.Sample(rng)) // 0.17410448679568188
 
-	rng = pragmastat.NewRngFromSeed(1729)
+	rng = pragmastat.NewRngFromString("demo-dist-exp")
 	expDist := pragmastat.NewExp(1)
-	fmt.Println(expDist.Sample(rng)) // 0.5013761944646019
+	fmt.Println(expDist.Sample(rng)) // 0.6589065267276553
 
-	rng = pragmastat.NewRngFromSeed(1729)
+	rng = pragmastat.NewRngFromString("demo-dist-power")
 	powDist := pragmastat.NewPower(1, 2)
-	fmt.Println(powDist.Sample(rng)) // 1.284909255071668
+	fmt.Println(powDist.Sample(rng)) // 1.023677535537084
 
-	rng = pragmastat.NewRngFromSeed(1729)
+	rng = pragmastat.NewRngFromString("demo-dist-multiplic")
 	mulDist := pragmastat.NewMultiplic(0, 1)
-	fmt.Println(mulDist.Sample(rng)) // 0.2943655336550937
+	fmt.Println(mulDist.Sample(rng)) // 1.1273244602673853
 
 	// --- Single-Sample Statistics ---
 

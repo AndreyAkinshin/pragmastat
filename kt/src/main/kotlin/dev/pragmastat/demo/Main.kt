@@ -6,40 +6,37 @@ import dev.pragmastat.distributions.*
 fun main() {
     // --- Randomization ---
 
-    var rng = Rng(1729)
-    println(rng.uniform()) // 0.3943034703296536
-    println(rng.uniform()) // 0.5730893757071377
+    var rng = Rng("demo-uniform")
+    println(rng.uniform()) // 0.2640554428629759
+    println(rng.uniform()) // 0.9348534835582796
 
-    rng = Rng("experiment-1")
-    println(rng.uniform()) // 0.9535207726895857
+    rng = Rng("demo-sample")
+    println(rng.sample(listOf(0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0), 3)) // [3, 8, 9]
 
-    rng = Rng(1729)
-    println(rng.sample(listOf(0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0), 3)) // [6, 8, 9]
-
-    rng = Rng(1729)
+    rng = Rng("demo-shuffle")
     println(rng.shuffle(listOf(1.0, 2.0, 3.0, 4.0, 5.0))) // [4, 2, 3, 5, 1]
 
     // --- Distribution Sampling ---
 
-    rng = Rng(1729)
+    rng = Rng("demo-dist-uniform")
     var dist: Distribution = Uniform(0.0, 10.0)
-    println(dist.sample(rng)) // 3.9430347032965365
+    println(dist.sample(rng)) // 6.54043657816832
 
-    rng = Rng(1729)
+    rng = Rng("demo-dist-additive")
     dist = Additive(0.0, 1.0)
-    println(dist.sample(rng)) // -1.222932972163442
+    println(dist.sample(rng)) // 0.17410448679568188
 
-    rng = Rng(1729)
+    rng = Rng("demo-dist-exp")
     dist = Exp(1.0)
-    println(dist.sample(rng)) // 0.5013761944646019
+    println(dist.sample(rng)) // 0.6589065267276553
 
-    rng = Rng(1729)
+    rng = Rng("demo-dist-power")
     dist = Power(1.0, 2.0)
-    println(dist.sample(rng)) // 1.284909255071668
+    println(dist.sample(rng)) // 1.023677535537084
 
-    rng = Rng(1729)
+    rng = Rng("demo-dist-multiplic")
     dist = Multiplic(0.0, 1.0)
-    println(dist.sample(rng)) // 0.2943655336550937
+    println(dist.sample(rng)) // 1.1273244602673853
 
     // --- Single-Sample Statistics ---
 
