@@ -18,7 +18,7 @@ class Additive(Distribution):
     Example:
         >>> from pragmastat import Rng
         >>> from pragmastat.distributions import Additive
-        >>> rng = Rng(1729)
+        >>> rng = Rng("demo-dist-additive")
         >>> dist = Additive(0.0, 1.0)  # Standard normal
         >>> sample = dist.sample(rng)
     """

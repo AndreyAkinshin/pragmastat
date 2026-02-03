@@ -7,7 +7,7 @@
 #' @return A Distribution object
 #'
 #' @examples
-#' r <- rng(1729)
+#' r <- rng("demo-dist-exp")
 #' dist <- dist_exp(1)  # rate=1, mean=1
 #' dist$sample(r)
 #'

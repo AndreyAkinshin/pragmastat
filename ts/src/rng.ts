@@ -14,22 +14,18 @@ import { Xoshiro256PlusPlus, fnv1aHash } from './xoshiro256';
  * across all Pragmastat language implementations when initialized with the same seed.
  *
  * @example
- * // Create from integer seed
- * const rng = new Rng(1729);
+ * // Create from string seed
+ * const rng = new Rng("demo-uniform");
  * const value = rng.uniform();
  *
  * @example
- * // Create from string seed
- * const rng = new Rng("experiment-1");
- *
- * @example
  * // Shuffle an array
- * const rng = new Rng(1729);
+ * const rng = new Rng("demo-shuffle");
  * const shuffled = rng.shuffle([1, 2, 3, 4, 5]);
  *
  * @example
  * // Sample k elements
- * const rng = new Rng(1729);
+ * const rng = new Rng("demo-sample");
  * const sampled = rng.sample([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], 3);
  */
 export class Rng {

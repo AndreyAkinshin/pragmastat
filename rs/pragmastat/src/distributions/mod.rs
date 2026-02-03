@@ -56,7 +56,7 @@ mod tests {
 
     #[test]
     fn uniform_bounds() {
-        let mut rng = Rng::from_seed(1729);
+        let mut rng = Rng::from_string("test-dist-uniform");
         let dist = Uniform::new(5.0, 10.0);
         for _ in 0..100 {
             let x = dist.sample(&mut rng);
@@ -66,7 +66,7 @@ mod tests {
 
     #[test]
     fn additive_basic() {
-        let mut rng = Rng::from_seed(1729);
+        let mut rng = Rng::from_string("test-dist-additive");
         let dist = Additive::new(100.0, 10.0);
         let samples: Vec<f64> = (0..1000).map(|_| dist.sample(&mut rng)).collect();
         let mean: f64 = samples.iter().sum::<f64>() / samples.len() as f64;
@@ -76,7 +76,7 @@ mod tests {
 
     #[test]
     fn multiplic_positive() {
-        let mut rng = Rng::from_seed(1729);
+        let mut rng = Rng::from_string("test-dist-multiplic");
         let dist = Multiplic::new(0.0, 1.0);
         for _ in 0..100 {
             let x = dist.sample(&mut rng);
@@ -86,7 +86,7 @@ mod tests {
 
     #[test]
     fn exp_positive() {
-        let mut rng = Rng::from_seed(1729);
+        let mut rng = Rng::from_string("test-dist-exp");
         let dist = Exp::new(1.0);
         for _ in 0..100 {
             let x = dist.sample(&mut rng);
@@ -96,7 +96,7 @@ mod tests {
 
     #[test]
     fn power_bounds() {
-        let mut rng = Rng::from_seed(1729);
+        let mut rng = Rng::from_string("test-dist-power");
         let dist = Power::new(5.0, 2.0);
         for _ in 0..100 {
             let x = dist.sample(&mut rng);

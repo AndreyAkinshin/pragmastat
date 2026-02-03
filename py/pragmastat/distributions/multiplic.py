@@ -18,7 +18,7 @@ class Multiplic(Distribution):
     Example:
         >>> from pragmastat import Rng
         >>> from pragmastat.distributions import Multiplic
-        >>> rng = Rng(1729)
+        >>> rng = Rng("demo-dist-multiplic")
         >>> dist = Multiplic(0.0, 1.0)
         >>> sample = dist.sample(rng)
     """

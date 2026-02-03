@@ -10,7 +10,7 @@ use super::Distribution;
 /// ```
 /// use pragmastat::{Rng, distributions::{Distribution, Uniform}};
 ///
-/// let mut rng = Rng::from_seed(1729);
+/// let mut rng = Rng::from_string("demo-dist-uniform");
 /// let dist = Uniform::new(0.0, 10.0);
 /// let sample = dist.sample(&mut rng);
 /// assert!(sample >= 0.0 && sample < 10.0);

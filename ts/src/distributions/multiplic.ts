@@ -12,7 +12,7 @@ import { Additive } from './additive';
  * The logarithm of samples follows an Additive (Normal) distribution.
  *
  * @example
- * const rng = new Rng(1729);
+ * const rng = new Rng("demo-dist-multiplic");
  * const dist = new Multiplic(0, 1);
  * const sample = dist.sample(rng);
  */

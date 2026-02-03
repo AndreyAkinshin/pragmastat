@@ -9,7 +9,7 @@ import { Distribution } from './distribution';
  * Uniform distribution on [min, max).
  *
  * @example
- * const rng = new Rng(1729);
+ * const rng = new Rng("demo-dist-uniform");
  * const dist = new Uniform(0, 10);
  * const sample = dist.sample(rng);
  */

@@ -19,7 +19,7 @@ A Distribution object with the following methods:
 }
 }
 \examples{
-r <- rng(1729)
+r <- rng("demo-dist-power")
 dist <- dist_power(1, 2)
 dist$sample(r)
 }

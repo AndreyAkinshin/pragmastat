@@ -20,7 +20,7 @@ A Distribution object with the following methods:
 }
 }
 \examples{
-r <- rng(1729)
+r <- rng("demo-dist-additive")
 dist <- dist_additive(0, 1)  # Standard normal
 dist$sample(r)
 }

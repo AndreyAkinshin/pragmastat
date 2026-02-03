@@ -12,7 +12,7 @@ import { Distribution } from './distribution';
  * Follows a power-law distribution where large values are rare but possible.
  *
  * @example
- * const rng = new Rng(1729);
+ * const rng = new Rng("demo-dist-power");
  * const dist = new Power(1, 2); // min=1, shape=2
  * const sample = dist.sample(rng);
  */

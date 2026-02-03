@@ -12,7 +12,7 @@ use super::{Distribution, SMALLEST_POSITIVE_SUBNORMAL};
 /// ```
 /// use pragmastat::{Rng, distributions::{Distribution, Additive}};
 ///
-/// let mut rng = Rng::from_seed(1729);
+/// let mut rng = Rng::from_string("demo-dist-additive");
 /// let dist = Additive::new(0.0, 1.0);  // Standard normal
 /// let sample = dist.sample(&mut rng);
 /// ```

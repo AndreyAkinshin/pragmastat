@@ -12,7 +12,7 @@ import { Distribution } from './distribution';
  * Uses the Box-Muller transform to generate samples.
  *
  * @example
- * const rng = new Rng(1729);
+ * const rng = new Rng("demo-dist-additive");
  * const dist = new Additive(0, 1); // Standard normal
  * const sample = dist.sample(rng);
  */

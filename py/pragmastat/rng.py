@@ -22,19 +22,17 @@ class Rng:
 
     Examples
     --------
-    >>> rng = Rng(1729)  # Create from integer seed
+    >>> rng = Rng("demo-uniform")  # Create from string seed
     >>> rng.uniform()
-    0.3943034703296536
+    0.2640554428629759
 
-    >>> rng = Rng("experiment-1")  # Create from string seed
-
-    >>> rng = Rng(1729)
+    >>> rng = Rng("demo-shuffle")
     >>> rng.shuffle([1.0, 2.0, 3.0, 4.0, 5.0])
     [4.0, 2.0, 3.0, 5.0, 1.0]
 
-    >>> rng = Rng(1729)
+    >>> rng = Rng("demo-sample")
     >>> rng.sample([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], 3)
-    [6, 8, 9]
+    [3, 8, 9]
     """
 
     def __init__(self, seed: Optional[Union[int, str]] = None) -> None:
@@ -74,9 +72,9 @@ class Rng:
 
         Examples
         --------
-        >>> rng = Rng(1729)
+        >>> rng = Rng("demo-uniform")
         >>> rng.uniform()
-        0.3943034703296536
+        0.2640554428629759
         """
         return self._inner.uniform()
 
@@ -126,9 +124,9 @@ class Rng:
 
         Examples
         --------
-        >>> rng = Rng(1729)
+        >>> rng = Rng("demo-uniform")
         >>> rng.uniform_int(0, 100)
-        81
+        26
         """
         return self._inner.uniform_int(min_val, max_val)
 
@@ -166,7 +164,7 @@ class Rng:
 
         Examples
         --------
-        >>> rng = Rng(1729)
+        >>> rng = Rng("demo-shuffle")
         >>> rng.shuffle([1.0, 2.0, 3.0, 4.0, 5.0])
         [4.0, 2.0, 3.0, 5.0, 1.0]
         """
@@ -201,9 +199,9 @@ class Rng:
 
         Examples
         --------
-        >>> rng = Rng(1729)
+        >>> rng = Rng("demo-sample")
         >>> rng.sample([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], 3)
-        [6, 8, 9]
+        [3, 8, 9]
 
         Raises
         ------

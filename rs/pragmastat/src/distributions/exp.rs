@@ -12,7 +12,7 @@ use super::{Distribution, MACHINE_EPSILON};
 /// ```
 /// use pragmastat::{Rng, distributions::{Distribution, Exp}};
 ///
-/// let mut rng = Rng::from_seed(1729);
+/// let mut rng = Rng::from_string("demo-dist-exp");
 /// let dist = Exp::new(1.0);  // rate = 1, mean = 1
 /// let sample = dist.sample(&mut rng);
 /// assert!(sample >= 0.0);

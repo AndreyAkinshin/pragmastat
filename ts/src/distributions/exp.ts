@@ -12,7 +12,7 @@ import { Distribution } from './distribution';
  * The mean of this distribution is 1/rate.
  *
  * @example
- * const rng = new Rng(1729);
+ * const rng = new Rng("demo-dist-exp");
  * const dist = new Exp(1); // rate=1, mean=1
  * const sample = dist.sample(rng);
  */

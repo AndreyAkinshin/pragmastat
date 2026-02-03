@@ -19,7 +19,7 @@ A Distribution object with the following methods:
 }
 }
 \examples{
-r <- rng(1729)
+r <- rng("demo-dist-uniform")
 dist <- dist_uniform(0, 10)
 dist$sample(r)
 }

@@ -8,18 +8,17 @@ package dev.pragmastat
  *
  * @example
  * ```kotlin
- * // Create from integer seed
- * val rng = Rng(1729)
+ * // Create from string seed
+ * val rng = Rng("demo-uniform")
  * val value = rng.uniform()
  *
- * // Create from string seed
- * val rng2 = Rng("experiment-1")
- *
  * // Shuffle a list
- * val shuffled = rng.shuffle(listOf(1.0, 2.0, 3.0, 4.0, 5.0))
+ * val rng2 = Rng("demo-shuffle")
+ * val shuffled = rng2.shuffle(listOf(1.0, 2.0, 3.0, 4.0, 5.0))
  *
  * // Sample k elements
- * val sampled = rng.sample(listOf(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), 3)
+ * val rng3 = Rng("demo-sample")
+ * val sampled = rng3.sample(listOf(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), 3)
  * ```
  */
 class Rng private constructor(private val inner: Xoshiro256PlusPlus) {

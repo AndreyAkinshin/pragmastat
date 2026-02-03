@@ -18,7 +18,7 @@ class Exp(Distribution):
     Example:
         >>> from pragmastat import Rng
         >>> from pragmastat.distributions import Exp
-        >>> rng = Rng(1729)
+        >>> rng = Rng("demo-dist-exp")
         >>> dist = Exp(1.0)  # rate=1, mean=1
         >>> sample = dist.sample(rng)
     """

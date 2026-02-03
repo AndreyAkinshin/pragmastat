@@ -14,7 +14,7 @@ class Uniform(Distribution):
     Example:
         >>> from pragmastat import Rng
         >>> from pragmastat.distributions import Uniform
-        >>> rng = Rng(1729)
+        >>> rng = Rng("demo-dist-uniform")
         >>> dist = Uniform(0.0, 10.0)
         >>> sample = dist.sample(rng)
     """

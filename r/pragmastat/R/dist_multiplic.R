@@ -8,7 +8,7 @@
 #' @return A Distribution object
 #'
 #' @examples
-#' r <- rng(1729)
+#' r <- rng("demo-dist-multiplic")
 #' dist <- dist_multiplic(0, 1)
 #' dist$sample(r)
 #'

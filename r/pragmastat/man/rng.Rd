@@ -22,18 +22,15 @@ An Rng object (R6 class) with the following methods:
 }
 }
 \examples{
-# Create from integer seed
-r <- rng(1729)
+# Create from string seed
+r <- rng("demo-uniform")
 r$uniform()
 
-# Create from string seed
-r <- rng("experiment-1")
-
 # Shuffle a vector
-r <- rng(1729)
+r <- rng("demo-shuffle")
 r$shuffle(1:5)
 
 # Sample k elements
-r <- rng(1729)
+r <- rng("demo-sample")
 r$sample(0:9, 3)
 }

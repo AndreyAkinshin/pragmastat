@@ -18,7 +18,7 @@ class Power(Distribution):
     Example:
         >>> from pragmastat import Rng
         >>> from pragmastat.distributions import Power
-        >>> rng = Rng(1729)
+        >>> rng = Rng("demo-dist-power")
         >>> dist = Power(1.0, 2.0)  # min=1, shape=2
         >>> sample = dist.sample(rng)
     """

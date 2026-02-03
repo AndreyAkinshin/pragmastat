@@ -12,7 +12,7 @@ use super::{Additive, Distribution};
 /// ```
 /// use pragmastat::{Rng, distributions::{Distribution, Multiplic}};
 ///
-/// let mut rng = Rng::from_seed(1729);
+/// let mut rng = Rng::from_string("demo-dist-multiplic");
 /// let dist = Multiplic::new(0.0, 1.0);
 /// let sample = dist.sample(&mut rng);
 /// assert!(sample > 0.0);

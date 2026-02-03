@@ -18,18 +18,17 @@ use crate::xoshiro256::Xoshiro256PlusPlus;
 /// ```
 /// use pragmastat::Rng;
 ///
-/// // Create from integer seed
-/// let mut rng = Rng::from_seed(1729);
+/// // Create from string seed
+/// let mut rng = Rng::from_string("demo-uniform");
 /// let value = rng.uniform();
 ///
-/// // Create from string seed
-/// let mut rng = Rng::from_string("experiment-1");
-///
 /// // Shuffle a vector
+/// let mut rng = Rng::from_string("demo-shuffle");
 /// let data = vec![1.0, 2.0, 3.0, 4.0, 5.0];
 /// let shuffled = rng.shuffle(&data);
 ///
 /// // Sample k elements
+/// let mut rng = Rng::from_string("demo-sample");
 /// let sampled = rng.sample(&data, 3);
 /// ```
 pub struct Rng {
@@ -112,7 +111,7 @@ impl Rng {
     /// ```
     /// use pragmastat::Rng;
     ///
-    /// let mut rng = Rng::from_seed(1729);
+    /// let mut rng = Rng::from_string("demo-uniform");
     /// let value = rng.uniform();
     /// assert!(value >= 0.0 && value < 1.0);
     /// ```
@@ -130,7 +129,7 @@ impl Rng {
     /// ```
     /// use pragmastat::Rng;
     ///
-    /// let mut rng = Rng::from_seed(1729);
+    /// let mut rng = Rng::from_string("demo-uniform");
     /// let value = rng.uniform_range(-5.0, 5.0);
     /// assert!(value >= -5.0 && value < 5.0);
     /// ```
@@ -148,7 +147,7 @@ impl Rng {
     /// ```
     /// use pragmastat::Rng;
     ///
-    /// let mut rng = Rng::from_seed(1729);
+    /// let mut rng = Rng::from_string("demo-uniform");
     /// let value = rng.uniform_f32();
     /// assert!(value >= 0.0 && value < 1.0);
     /// ```
@@ -166,7 +165,7 @@ impl Rng {
     /// ```
     /// use pragmastat::Rng;
     ///
-    /// let mut rng = Rng::from_seed(1729);
+    /// let mut rng = Rng::from_string("demo-uniform");
     /// let value = rng.uniform_f32_range(-5.0, 5.0);
     /// assert!(value >= -5.0 && value < 5.0);
     /// ```
@@ -194,7 +193,7 @@ impl Rng {
     /// ```
     /// use pragmastat::Rng;
     ///
-    /// let mut rng = Rng::from_seed(1729);
+    /// let mut rng = Rng::from_string("demo-uniform");
     /// let value = rng.uniform_i64(0, 100);
     /// assert!(value >= 0 && value < 100);
     /// ```
@@ -290,7 +289,7 @@ impl Rng {
     /// ```
     /// use pragmastat::Rng;
     ///
-    /// let mut rng = Rng::from_seed(1729);
+    /// let mut rng = Rng::from_string("demo-uniform");
     /// let coin_flip = rng.uniform_bool();
     /// ```
     #[inline]
@@ -325,7 +324,7 @@ impl Rng {
     /// ```
     /// use pragmastat::Rng;
     ///
-    /// let mut rng = Rng::from_seed(1729);
+    /// let mut rng = Rng::from_string("demo-shuffle");
     /// let data = vec![1.0, 2.0, 3.0, 4.0, 5.0];
     /// let shuffled = rng.shuffle(&data);
     ///
@@ -357,7 +356,7 @@ impl Rng {
     /// ```
     /// use pragmastat::Rng;
     ///
-    /// let mut rng = Rng::from_seed(1729);
+    /// let mut rng = Rng::from_string("demo-sample");
     /// let data = vec![0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0];
     /// let sampled = rng.sample(&data, 3);
     ///
@@ -414,7 +413,7 @@ mod tests {
 
     #[test]
     fn uniform_in_range() {
-        let mut rng = Rng::from_seed(1729);
+        let mut rng = Rng::from_string("test-uniform");
 
         for _ in 0..10000 {
             let v = rng.uniform();
@@ -424,7 +423,7 @@ mod tests {
 
     #[test]
     fn uniform_range_bounds() {
-        let mut rng = Rng::from_seed(1729);
+        let mut rng = Rng::from_string("test-uniform-range");
 
         for _ in 0..10000 {
             let v = rng.uniform_range(-10.0, 10.0);
@@ -434,7 +433,7 @@ mod tests {
 
     #[test]
     fn uniform_f32_in_range() {
-        let mut rng = Rng::from_seed(1729);
+        let mut rng = Rng::from_string("test-uniform-f32");
 
         for _ in 0..10000 {
             let v = rng.uniform_f32();
@@ -444,7 +443,7 @@ mod tests {
 
     #[test]
     fn uniform_f32_range_bounds() {
-        let mut rng = Rng::from_seed(1729);
+        let mut rng = Rng::from_string("test-uniform-f32-range");
 
         for _ in 0..10000 {
             let v = rng.uniform_f32_range(-10.0, 10.0);
@@ -454,7 +453,7 @@ mod tests {
 
     #[test]
     fn uniform_i64_bounds() {
-        let mut rng = Rng::from_seed(1729);
+        let mut rng = Rng::from_string("test-uniform-i64");
 
         for _ in 0..10000 {
             let v = rng.uniform_i64(0, 100);
@@ -464,7 +463,7 @@ mod tests {
 
     #[test]
     fn uniform_i32_bounds() {
-        let mut rng = Rng::from_seed(1729);
+        let mut rng = Rng::from_string("test-uniform-i32");
 
         for _ in 0..10000 {
             let v = rng.uniform_i32(-500, 500);
@@ -474,7 +473,7 @@ mod tests {
 
     #[test]
     fn uniform_i16_bounds() {
-        let mut rng = Rng::from_seed(1729);
+        let mut rng = Rng::from_string("test-uniform-i16");
 
         for _ in 0..10000 {
             let v = rng.uniform_i16(-100, 100);
@@ -484,7 +483,7 @@ mod tests {
 
     #[test]
     fn uniform_i8_bounds() {
-        let mut rng = Rng::from_seed(1729);
+        let mut rng = Rng::from_string("test-uniform-i8");
 
         for _ in 0..10000 {
             let v = rng.uniform_i8(-50, 50);
@@ -494,7 +493,7 @@ mod tests {
 
     #[test]
     fn uniform_u64_bounds() {
-        let mut rng = Rng::from_seed(1729);
+        let mut rng = Rng::from_string("test-uniform-u64");
 
         for _ in 0..10000 {
             let v = rng.uniform_u64(10, 1000);
@@ -504,7 +503,7 @@ mod tests {
 
     #[test]
     fn uniform_u32_bounds() {
-        let mut rng = Rng::from_seed(1729);
+        let mut rng = Rng::from_string("test-uniform-u32");
 
         for _ in 0..10000 {
             let v = rng.uniform_u32(10, 1000);
@@ -514,7 +513,7 @@ mod tests {
 
     #[test]
     fn uniform_u16_bounds() {
-        let mut rng = Rng::from_seed(1729);
+        let mut rng = Rng::from_string("test-uniform-u16");
 
         for _ in 0..10000 {
             let v = rng.uniform_u16(10, 100);
@@ -524,7 +523,7 @@ mod tests {
 
     #[test]
     fn uniform_u8_bounds() {
-        let mut rng = Rng::from_seed(1729);
+        let mut rng = Rng::from_string("test-uniform-u8");
 
         for _ in 0..10000 {
             let v = rng.uniform_u8(10, 100);
@@ -534,7 +533,7 @@ mod tests {
 
     #[test]
     fn uniform_bool_distribution() {
-        let mut rng = Rng::from_seed(1729);
+        let mut rng = Rng::from_string("test-uniform-bool");
         let count: usize = (0..10000).filter(|_| rng.uniform_bool()).count();
         // Should be approximately 50% true
         assert!(count > 4500 && count < 5500);
@@ -542,7 +541,7 @@ mod tests {
 
     #[test]
     fn shuffle_preserves_elements() {
-        let mut rng = Rng::from_seed(1729);
+        let mut rng = Rng::from_string("test-shuffle");
         let data: Vec<i32> = (0..10).collect();
         let shuffled = rng.shuffle(&data);
 
@@ -567,7 +566,7 @@ mod tests {
 
     #[test]
     fn sample_correct_size() {
-        let mut rng = Rng::from_seed(1729);
+        let mut rng = Rng::from_string("test-sample");
         let data: Vec<f64> = (0..10).map(|i| i as f64).collect();
         let sampled = rng.sample(&data, 3);
 
@@ -589,7 +588,7 @@ mod tests {
 
     #[test]
     fn sample_k_greater_than_n() {
-        let mut rng = Rng::from_seed(1729);
+        let mut rng = Rng::from_string("test-sample-edge");
         let data: Vec<f64> = vec![1.0, 2.0, 3.0];
         let sampled = rng.sample(&data, 10);
 
