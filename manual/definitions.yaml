@@ -12,6 +12,7 @@ AvgSpread: \operatorname{AvgSpread}
 Disparity: \operatorname{Disparity}
 PairwiseMargin: \operatorname{PairwiseMargin}
 ShiftBounds: \operatorname{ShiftBounds}
+RatioBounds: \operatorname{RatioBounds}
 Dominance: \operatorname{Dominance}
 
 # Traditional Estimators
