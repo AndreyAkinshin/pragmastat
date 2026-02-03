@@ -4,7 +4,7 @@
 
 $ AvgSpread(vx, vy) = (n dot Spread(vx) + m dot Spread(vy)) / (n + m) $
 
-The $AvgSpread$ test suite contains 49 test cases (35 original + 14 unsorted).
+The $AvgSpread$ test suite contains 36 test cases (24 original + 12 unsorted).
 Since $AvgSpread$ computes $Spread(vx)$ and $Spread(vy)$ independently, unsorted tests are critical to verify that both samples are sorted independently before computing their spreads.
 
 *Demo examples* ($n = m = 5$) — from manual introduction, validating properties:
@@ -15,17 +15,13 @@ Since $AvgSpread$ computes $Spread(vx)$ and $Spread(vy)$ independently, unsorted
 - `demo-4`: $vx = (0, 2, 4, 6, 8)$, $vy = (0, 3, 6, 9, 12)$ (= reversed demo-1), expected output: $5$ (symmetry)
 - `demo-5`: $vx = (0, 6, 12, 18, 24)$, $vy = (0, 4, 8, 12, 16)$ (= 2 × demo-1), expected output: $10$ (uniform scaling)
 
-*Natural sequences* ($[n, m] in {1, 2, 3} times {1, 2, 3}$) — 9 combinations:
+*Natural sequences* ($[n, m] in {2, 3} times {2, 3}$) — 4 combinations:
 
-- All combinations from single-element to three-element samples, validating the weighted average calculation
+- All combinations for two- and three-element samples, validating the weighted average calculation
 
 *Negative values* ($[n, m] = [2, 2]$) — validates spread calculation with negative values:
 
 - `negative-2-2`: $vx = (-2, -1)$, $vy = (-2, -1)$, expected output: $1$
-
-*Zero values* ($[n, m] in {1, 2} times {1, 2}$) — 4 combinations:
-
-- All produce output $0$ since $Spread$ of constant samples is zero
 
 *Additive distribution* ($[n, m] in {5, 10, 30} times {5, 10, 30}$) — 9 combinations with $Additive(10, 1)$:
 
@@ -42,10 +38,8 @@ The asymmetric size combinations are particularly important for $AvgSpread$ beca
 *Composite estimator stress tests* — edge cases for weighted averaging:
 
 - `composite-asymmetric-weights`: $vx = (1, 2)$, $vy = (3, 4, 5, 6, 7, 8, 9, 10)$ (2 vs 8, tests weighting formula)
-- `composite-zero-spread-one`: $vx = (5, 5, 5)$, $vy = (1, 2, 3, 4, 5)$ (one zero spread, tests edge case)
-- `composite-extreme-sizes`: $vx = (10)$, $vy = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10)$ (1 vs 10, extreme weighting)
 
-*Unsorted tests* — critical for verifying independent sorting (14 tests):
+*Unsorted tests* — critical for verifying independent sorting (12 tests):
 
 - `unsorted-x-natural-{n}-{m}` for $(n,m) in {(3,3), (4,4)}$: X unsorted (reversed), Y sorted (2 tests)
 - `unsorted-y-natural-{n}-{m}` for $(n,m) in {(3,3), (4,4)}$: X sorted, Y unsorted (reversed) (2 tests)
@@ -55,8 +49,6 @@ The asymmetric size combinations are particularly important for $AvgSpread$ beca
 - `unsorted-demo-both-unsorted`: $vx = (9, 0, 12, 3, 6)$, $vy = (6, 0, 8, 2, 4)$ (demo-1 both unsorted)
 - `unsorted-identity-unsorted`: $vx = (6, 0, 12, 3, 9)$, $vy = (9, 0, 12, 6, 3)$ (demo-2 unsorted)
 - `unsorted-negative-unsorted`: $vx = (-1, -2)$, $vy = (-1, -2)$ (negative unsorted)
-- `unsorted-zero-unsorted-2-2`: $vx = (0, 0)$, $vy = (0, 0)$ (zeros, any order)
 - `unsorted-asymmetric-weights-unsorted`: $vx = (2, 1)$, $vy = (8, 3, 6, 4, 10, 5, 9, 7)$ (asymmetric unsorted)
-- `unsorted-zero-spread-x-unsorted`: $vx = (5, 5, 5)$, $vy = (5, 1, 4, 2, 3)$ (zero spread X, Y unsorted)
 
 These tests verify that implementations compute $Spread(vx)$ and $Spread(vy)$ with properly sorted samples.
