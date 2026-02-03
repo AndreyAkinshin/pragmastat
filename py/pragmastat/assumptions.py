@@ -87,3 +87,10 @@ def check_sparity(values: np.ndarray, subject: Subject, function: str) -> None:
     spread_val = _fast_spread(values.tolist())
     if spread_val <= 0:
         raise AssumptionError.sparity(function, subject)
+
+
+def log(values: np.ndarray, subject: Subject, function: str) -> np.ndarray:
+    """Log-transforms an array. Raises AssumptionError if any value is non-positive."""
+    if np.any(values <= 0):
+        raise AssumptionError.positivity(function, subject)
+    return np.log(values)

@@ -14,6 +14,7 @@ from .estimators import (
     avg_spread,
     disparity,
     shift_bounds,
+    ratio_bounds,
     Bounds,
 )
 from .pairwise_margin import pairwise_margin
@@ -43,6 +44,7 @@ __all__ = [
     "avg_spread",
     "disparity",
     "shift_bounds",
+    "ratio_bounds",
     "Bounds",
     "pairwise_margin",
     # Random

@@ -9,6 +9,7 @@ from .assumptions import (
     check_validity,
     check_positivity,
     check_sparity,
+    log,
 )
 
 
@@ -154,8 +155,10 @@ def ratio(
     """
     Measure how many times larger x is compared to y.
 
-    Calculates the median of all pairwise ratios (x[i] / y[j]).
+    Calculates the median of all pairwise ratios (x[i] / y[j]) via log-transformation.
+    Equivalent to: exp(Shift(log(x), log(y)))
     For example, ratio = 1.2 means x is typically 20% larger than y.
+    Uses fast O((m+n) log L) algorithm.
 
     Assumptions:
         positivity(x) - all values in x must be strictly positive
@@ -182,8 +185,11 @@ def ratio(
     check_positivity(x, "x", "Ratio")
     # Check positivity for y (priority 1, subject y)
     check_positivity(y, "y", "Ratio")
-    pairwise_ratios = np.divide.outer(x, y)
-    return float(np.median(pairwise_ratios))
+    # Log-transform, compute shift, exp-transform back
+    log_x = np.log(x)
+    log_y = np.log(y)
+    log_result = _fast_shift(log_x, log_y, p=0.5)
+    return float(np.exp(log_result))
 
 
 def avg_spread(
@@ -332,3 +338,48 @@ def shift_bounds(
     lower = min(bounds)
     upper = max(bounds)
     return Bounds(lower, upper)
+
+
+def ratio_bounds(
+    x: Union[Sequence[float], NDArray],
+    y: Union[Sequence[float], NDArray],
+    misrate: float,
+) -> Bounds:
+    """
+    Provides bounds on the Ratio estimator with specified misclassification rate.
+
+    Computes bounds via log-transformation and shift_bounds delegation:
+    ratio_bounds(x, y, misrate) = exp(shift_bounds(log(x), log(y), misrate))
+
+    Assumptions:
+        positivity(x) - all values in x must be strictly positive
+        positivity(y) - all values in y must be strictly positive
+
+    Args:
+        x: First sample (must be strictly positive)
+        y: Second sample (must be strictly positive)
+        misrate: Misclassification rate (probability that true ratio falls outside bounds)
+
+    Returns:
+        A Bounds object containing the lower and upper bounds
+
+    Raises:
+        AssumptionError: If either sample is empty, contains NaN/Inf,
+            or contains non-positive values.
+        ValueError: If misrate is out of range.
+    """
+    x = np.asarray(x)
+    y = np.asarray(y)
+
+    check_validity(x, "x", "RatioBounds")
+    check_validity(y, "y", "RatioBounds")
+
+    # Log-transform samples (includes positivity check)
+    log_x = log(x, "x", "RatioBounds")
+    log_y = log(y, "y", "RatioBounds")
+
+    # Delegate to shift_bounds in log-space
+    log_bounds = shift_bounds(log_x, log_y, misrate)
+
+    # Exp-transform back to ratio-space
+    return Bounds(np.exp(log_bounds.lower), np.exp(log_bounds.upper))
