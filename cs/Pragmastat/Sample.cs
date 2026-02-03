@@ -223,7 +223,11 @@ public class Sample
   {
     double[] logValues = new double[Size];
     for (int i = 0; i < Size; i++)
+    {
+      if (Values[i] <= 0)
+        throw AssumptionException.Positivity("Log", ValidationSubject ?? Subject.X);
       logValues[i] = Math.Log(Values[i]);
+    }
     return new Sample(logValues, Weights);
   }
 }

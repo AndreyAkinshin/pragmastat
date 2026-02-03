@@ -1,3 +1,5 @@
+using Pragmastat.Exceptions;
+
 namespace Pragmastat.Internal;
 
 internal static class MathExtensions
@@ -25,4 +27,19 @@ internal static class MathExtensions
 
   public static IEnumerable<double> Clamp(this IEnumerable<double> values, double min, double max)
     => values.Select(x => Clamp(x, min, max));
+
+  /// <summary>
+  /// Log-transforms a collection. Throws AssumptionException if any value is non-positive.
+  /// </summary>
+  public static double[] Log(IReadOnlyList<double> values, Subject subject, string functionName)
+  {
+    var result = new double[values.Count];
+    for (int i = 0; i < values.Count; i++)
+    {
+      if (values[i] <= 0)
+        throw AssumptionException.Positivity(functionName, subject);
+      result[i] = Math.Log(values[i]);
+    }
+    return result;
+  }
 }

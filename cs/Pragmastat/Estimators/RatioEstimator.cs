@@ -1,5 +1,5 @@
+using Pragmastat.Algorithms;
 using Pragmastat.Exceptions;
-using Pragmastat.Functions;
 using Pragmastat.Internal;
 using Pragmastat.Metrology;
 
@@ -20,7 +20,9 @@ public class RatioEstimator : ITwoSampleEstimator
     Assertion.PositivityAssumption(x, Subject.X, "Ratio");
     // Check positivity for y (priority 1, subject y)
     Assertion.PositivityAssumption(y, Subject.Y, "Ratio");
-    var pairwise = PairwiseSampleTransformer.Transform(x, y, (xi, yj) => xi / yj);
-    return MedianEstimator.Instance.Estimate(pairwise).NominalValue.WithUnit(RatioUnit.Instance);
+    return FastRatio
+      .Estimate(x.SortedValues, y.SortedValues, [0.5], assumeSorted: true)
+      .Single()
+      .WithUnit(RatioUnit.Instance);
   }
 }
