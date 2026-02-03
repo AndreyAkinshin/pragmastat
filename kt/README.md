@@ -97,6 +97,7 @@ fun main() {
     x = listOf(1.0, 2.0, 4.0, 8.0, 16.0)
     y = listOf(2.0, 4.0, 8.0, 16.0, 32.0)
     println(ratio(x, y)) // 0.5
+    println(ratio(y, x)) // 2
 
     // --- Confidence Bounds ---
 
@@ -105,6 +106,10 @@ fun main() {
 
     println(pairwiseMargin(30, 30, 1e-4)) // 390
     println(shift(x, y)) // -20
-    println(shiftBounds(x, y, 1e-4)) // [-30, -10]
+    println(shiftBounds(x, y, 1e-4)) // Bounds(lower=-30.0, upper=-10.0)
+
+    x = listOf(1.0, 2.0, 3.0, 4.0, 5.0)
+    y = listOf(2.0, 3.0, 4.0, 5.0, 6.0)
+    println(ratioBounds(x, y, 0.05)) // Bounds(lower=0.333..., upper=1.5)
 }
 ```

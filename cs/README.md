@@ -92,6 +92,7 @@ class Program
     x = new Sample(1, 2, 4, 8, 16);
     y = new Sample(2, 4, 8, 16, 32);
     WriteLine(Toolkit.Ratio(x, y)); // 0.5
+    WriteLine(Toolkit.Ratio(y, x)); // 2
 
     // --- Confidence Bounds ---
 
@@ -105,6 +106,10 @@ class Program
     WriteLine(PairwiseMargin.Instance.Calc(30, 30, 1e-4)); // 390
     WriteLine(Toolkit.Shift(x, y)); // -20
     WriteLine(Toolkit.ShiftBounds(x, y, 1e-4)); // [-30, -10]
+
+    x = new Sample(1, 2, 3, 4, 5);
+    y = new Sample(2, 3, 4, 5, 6);
+    WriteLine(Toolkit.RatioBounds(x, y, 0.05)); // [0.333..., 1.5]
   }
 }
 ```

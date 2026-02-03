@@ -101,6 +101,7 @@ fn main() {
     let x = vec![1.0, 2.0, 4.0, 8.0, 16.0];
     let y = vec![2.0, 4.0, 8.0, 16.0, 32.0];
     print(ratio(&x, &y)); // 0.5
+    print(ratio(&y, &x)); // 2
 
     // --- Confidence Bounds ---
 
@@ -110,7 +111,12 @@ fn main() {
     println!("{}", pairwise_margin(30, 30, 1e-4).unwrap()); // 390
     print(shift(&x, &y)); // -20
 
-    let bounds = shift_bounds(&x, &y, 1e-4).unwrap(); // [-30, -10]
+    let bounds = shift_bounds(&x, &y, 1e-4).unwrap(); // {lower: -30, upper: -10}
+    println!("{{lower: {}, upper: {}}}", bounds.lower, bounds.upper);
+
+    let x = vec![1.0, 2.0, 3.0, 4.0, 5.0];
+    let y = vec![2.0, 3.0, 4.0, 5.0, 6.0];
+    let bounds = ratio_bounds(&x, &y, 0.05).unwrap(); // {lower: 0.333..., upper: 1.5}
     println!("{{lower: {}, upper: {}}}", bounds.lower, bounds.upper);
 }
 ```

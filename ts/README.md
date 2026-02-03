@@ -14,7 +14,7 @@ Pragmastat on npm: https://www.npmjs.com/package/pragmastat
 
 ```typescript
 import {
-    median, center, spread, relSpread, shift, ratio, avgSpread, disparity, shiftBounds, pairwiseMargin,
+    median, center, spread, relSpread, shift, ratio, avgSpread, disparity, shiftBounds, ratioBounds, pairwiseMargin,
     Rng, Uniform, Additive, Exp, Power, Multiplic
 } from '../src';
 
@@ -81,6 +81,7 @@ function main() {
     x = [1, 2, 4, 8, 16];
     y = [2, 4, 8, 16, 32];
     console.log(ratio(x, y)); // 0.5
+    console.log(ratio(y, x)); // 2
 
     // --- Confidence Bounds ---
 
@@ -89,7 +90,11 @@ function main() {
 
     console.log(pairwiseMargin(30, 30, 1e-4)); // 390
     console.log(shift(x, y)); // -20
-    console.log(shiftBounds(x, y, 1e-4)); // [-30, -10]
+    console.log(shiftBounds(x, y, 1e-4)); // { lower: -30, upper: -10 }
+
+    x = [1, 2, 3, 4, 5];
+    y = [2, 3, 4, 5, 6];
+    console.log(ratioBounds(x, y, 0.05)); // { lower: 0.333..., upper: 1.5 }
 }
 
 main();
