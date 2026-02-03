@@ -107,7 +107,6 @@ jobs:
       uses: softprops/action-gh-release@v2.4.1
       with:
         name: ${{ github.ref_name }}
-        discussion_category_name: Releases
         generate_release_notes: true
         token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
         files: |
@@ -279,3 +278,4 @@ jobs:
       with:
         name: kt-build-reports
         path: kt/build/reports/
+        retention-days: 1

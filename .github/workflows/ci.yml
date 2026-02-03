@@ -87,6 +87,7 @@ jobs:
       with:
         name: web
         path: web/dist
+        retention-days: 1
 
     - name: Upload pdf artifacts
       if: inputs.release
@@ -94,6 +95,7 @@ jobs:
       with:
         name: pdf
         path: manual/pragmastat.pdf
+        retention-days: 1
 
   # ==========================================================================
   # Language Builds (all run in parallel)
@@ -135,6 +137,7 @@ jobs:
       with:
         name: r
         path: 'r/*.tar.gz'
+        retention-days: 1
 
   ci-cs:
     runs-on: ubuntu-24.04
@@ -167,6 +170,7 @@ jobs:
       with:
         name: cs
         path: cs/artifacts
+        retention-days: 1
 
   ci-py:
     runs-on: ubuntu-24.04
@@ -199,6 +203,7 @@ jobs:
       with:
         name: py
         path: py/dist/
+        retention-days: 1
 
   ci-rs:
     runs-on: ubuntu-24.04
@@ -236,6 +241,7 @@ jobs:
       with:
         name: rs
         path: rs/pragmastat/target/package/*.crate
+        retention-days: 1
 
   ci-ts:
     runs-on: ubuntu-24.04
@@ -273,6 +279,7 @@ jobs:
       with:
         name: ts
         path: ts/*.tgz
+        retention-days: 1
 
   ci-go:
     runs-on: ubuntu-24.04
@@ -306,6 +313,7 @@ jobs:
       with:
         name: go
         path: go/
+        retention-days: 1
 
   ci-kt:
     runs-on: ubuntu-24.04
@@ -356,3 +364,4 @@ jobs:
         path: |
           kt/build/libs/
           kt/build/staging-deploy/
+        retention-days: 1
