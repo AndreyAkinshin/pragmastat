@@ -51,6 +51,10 @@ impl XRefMap {
             "/algorithms#fast-shift".into(),
         );
         mappings.insert(
+            "sec-fast-ratio".into(),
+            "/algorithms#fast-ratio".into(),
+        );
+        mappings.insert(
             "sec-fast-pairwise-margin".into(),
             "/algorithms#fast-pairwisemargin".into(),
         );
