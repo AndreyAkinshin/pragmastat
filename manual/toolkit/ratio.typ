@@ -2,17 +2,17 @@
 
 == Ratio
 
-$ Ratio(vx, vy) = attach(Median, b: 1 <= i <= n\, 1 <= j <= m) (x_i / y_j) $
+$ Ratio(vx, vy) = exp(Shift(log vx, log vy)) $
 
-Robust measure of scale ratio between two samples.
+Robust measure of scale ratio between two samples — the multiplicative dual of $Shift$.
 
 #v(0.3em)
 #list(marker: none, tight: true,
-  [*Asymptotic* — median of the ratio of random measurements from $X$ and $Y$],
+  [*Asymptotic* — geometric median of pairwise ratios $x_i / y_j$ (via log-space aggregation)],
   [*Domain* — $x_i > 0$, $y_j > 0$],
   [*Assumptions* — #link(<sec-positivity>)[`positivity(x)`], #link(<sec-positivity>)[`positivity(y)`]],
   [*Unit* — dimensionless],
-  [*Caveat* — $Ratio(vx, vy) != 1 / Ratio(vy, vx)$ in general],
+  [*Complexity* — naive $O(m n log(m n))$, fast $O((m + n) log L)$ via #link(<sec-fast-ratio>)[FastRatio]],
 )
 
 #v(0.5em)
@@ -21,6 +21,7 @@ Robust measure of scale ratio between two samples.
 #list(marker: none, tight: true,
   [*Self-ratio* #h(2em) $Ratio(vx, vx) = 1$],
   [*Scale equivariance* #h(2em) $Ratio(k_x dot vx, k_y dot vy) = (k_x / k_y) dot Ratio(vx, vy)$],
+  [*Multiplicative antisymmetry* #h(2em) $Ratio(vx, vy) = 1 / Ratio(vy, vx)$],
 )
 
 #v(0.3em)
@@ -28,6 +29,20 @@ Robust measure of scale ratio between two samples.
 
 - `Ratio([1, 2, 4, 8, 16], [2, 4, 8, 16, 32]) = 0.5`
 - `Ratio(x, x) = 1` #h(1em) `Ratio(2x, 5y) = 0.4 · Ratio(x, y)`
+
+#v(0.5em)
+*Relationship to Shift*
+
+$Ratio$ is the multiplicative analog of $Shift$.
+While $Shift$ computes the median of pairwise differences $x_i - y_j$,
+$Ratio$ computes the median of pairwise ratios $x_i / y_j$ via log-transformation.
+This relationship is expressed formally as:
+
+$ Ratio(vx, vy) = exp(Shift(log vx, log vy)) $
+
+The log-transformation converts multiplicative relationships to additive ones,
+  allowing the fast $Shift$ algorithm to compute the result efficiently.
+The exp-transformation converts back to the ratio scale.
 
 #v(0.5em)
 Use $Ratio$ when you care about multiplicative relationships rather than additive differences.

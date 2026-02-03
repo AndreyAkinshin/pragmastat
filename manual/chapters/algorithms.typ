@@ -10,4 +10,6 @@ This chapter describes the core algorithms that power the toolkit.
 
 #include "../algorithms/fast-shift.typ"
 
+#include "../algorithms/fast-ratio.typ"
+
 #include "../algorithms/fast-pairwise-margin.typ"
