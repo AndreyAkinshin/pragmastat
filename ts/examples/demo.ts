@@ -43,14 +43,14 @@ function main() {
 
     // --- Single-Sample Statistics ---
 
-    let x = [0, 2, 4, 6, 8];
+    let x = [1, 3, 5, 7, 9];
 
-    console.log(median(x)); // 4
-    console.log(center(x)); // 4
+    console.log(median(x)); // 5
+    console.log(center(x)); // 5
     console.log(spread(x)); // 4
     console.log(spread(x.map(v => v + 10))); // 4
     console.log(spread(x.map(v => v * 2))); // 8
-    console.log(relSpread(x)); // 1
+    console.log(relSpread(x)); // 0.8
 
     // --- Two-Sample Comparison ---
 

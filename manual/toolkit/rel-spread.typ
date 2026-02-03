@@ -25,8 +25,8 @@ Relative dispersion normalized by location.
 #v(0.3em)
 *Example*
 
-- `RelSpread([0, 2, 4, 6, 8]) = 1`
-- `RelSpread(5x) = 1`
+- `RelSpread([1, 3, 5, 7, 9]) = 0.8`
+- `RelSpread(5x) = 0.8`
 
 #v(0.5em)
 Use $RelSpread$ when you want to compare how "noisy" different datasets are, even if they have completely different scales or units.

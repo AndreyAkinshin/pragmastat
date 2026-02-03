@@ -89,8 +89,8 @@ public static class OneSampleTestCases
     GenerateTests("rel-spread", input => input.ToSample().RelSpread(),
       new OneSampleInputBuilder()
         // Demo examples (n = 5) - 2 tests (positive only)
-        .Add("demo-1", new Sample(1, 2, 4, 6, 8))
-        .Add("demo-2", new Sample(1, 10, 20, 30, 40))
+        .Add("demo-1", new Sample(1, 3, 5, 7, 9))
+        .Add("demo-2", new Sample(5, 15, 25, 35, 45))
         // Natural sequences (n = 2, 3, 4) - 3 tests (n=1 excluded: spread=0)
         .AddNatural([2, 3, 4])
         // Note: Negative values excluded (violates positivity)

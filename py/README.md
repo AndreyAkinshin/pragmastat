@@ -70,14 +70,14 @@ def main():
 
     # --- Single-Sample Statistics ---
 
-    x = [0, 2, 4, 6, 8]
+    x = [1, 3, 5, 7, 9]
 
-    print(median(x))  # 4
-    print(center(x))  # 4
+    print(median(x))  # 5
+    print(center(x))  # 5
     print(spread(x))  # 4
     print(spread([v + 10 for v in x]))  # 4
     print(spread([v * 2 for v in x]))  # 8
-    print(rel_spread(x))  # 1
+    print(rel_spread(x))  # 0.8
 
     # --- Two-Sample Comparison ---
 

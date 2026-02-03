@@ -56,14 +56,14 @@ fn main() {
 
     // --- Single-Sample Statistics ---
 
-    let x = vec![0.0, 2.0, 4.0, 6.0, 8.0];
+    let x = vec![1.0, 3.0, 5.0, 7.0, 9.0];
 
-    print(median(&x)); // 4
-    print(center(&x)); // 4
+    print(median(&x)); // 5
+    print(center(&x)); // 5
     print(spread(&x)); // 4
     print(spread(&add(&x, 10.0))); // 4
     print(spread(&multiply(&x, 2.0))); // 8
-    print(rel_spread(&x)); // 1
+    print(rel_spread(&x)); // 0.8
 
     // --- Two-Sample Comparison ---
 

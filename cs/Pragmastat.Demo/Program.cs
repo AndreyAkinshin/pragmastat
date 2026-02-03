@@ -48,14 +48,14 @@ class Program
 
     // --- Single-Sample Statistics ---
 
-    var x = new Sample(0, 2, 4, 6, 8);
+    var x = new Sample(1, 3, 5, 7, 9);
 
-    WriteLine(Toolkit.Median(x)); // 4
-    WriteLine(x.Center()); // 4
+    WriteLine(Toolkit.Median(x)); // 5
+    WriteLine(x.Center()); // 5
     WriteLine(x.Spread()); // 4
     WriteLine((x + 10).Spread()); // 4
     WriteLine((x * 2).Spread()); // 8
-    WriteLine(x.RelSpread()); // 1
+    WriteLine(x.RelSpread()); // 0.8
 
     // --- Two-Sample Comparison ---
 

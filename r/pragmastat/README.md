@@ -55,14 +55,14 @@ print(dist$sample(r)) # 0.2943655336550937
 
 # --- Single-Sample Statistics ---
 
-x <- c(0, 2, 4, 6, 8)
+x <- c(1, 3, 5, 7, 9)
 
-print(median(x)) # 4
-print(center(x)) # 4
+print(median(x)) # 5
+print(center(x)) # 5
 print(spread(x)) # 4
 print(spread(x + 10)) # 4
 print(spread(x * 2)) # 8
-print(rel_spread(x)) # 1
+print(rel_spread(x)) # 0.8
 
 # --- Two-Sample Comparison ---
 

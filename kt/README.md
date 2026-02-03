@@ -74,14 +74,14 @@ fun main() {
 
     // --- Single-Sample Statistics ---
 
-    var x = listOf(0.0, 2.0, 4.0, 6.0, 8.0)
+    var x = listOf(1.0, 3.0, 5.0, 7.0, 9.0)
 
-    println(median(x)) // 4
-    println(center(x)) // 4
+    println(median(x)) // 5
+    println(center(x)) // 5
     println(spread(x)) // 4
     println(spread(x.map { it + 10 })) // 4
     println(spread(x.map { it * 2 })) // 8
-    println(relSpread(x)) // 1
+    println(relSpread(x)) // 0.8
 
     // --- Two-Sample Comparison ---
 
