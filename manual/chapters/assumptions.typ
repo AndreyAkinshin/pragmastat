@@ -92,6 +92,7 @@ It motivates ratio-based and log-space estimators that respect multiplicative sc
 
 #list(marker: none, tight: true,
   [`Ratio(x, y)` — both samples must be strictly positive.],
+  [`RatioBounds(x, y, misrate)` — both samples must be strictly positive.],
   [`RelSpread(x)` — sample must be strictly positive (ensures $Center > 0$).],
 )
 

@@ -81,8 +81,15 @@ they are medians of pairwise operations.
   [$Center$], [$(x_i + x_j) \/ 2$], [Median of pairwise averages],
   [$Spread$], [$abs(x_i - x_j)$], [Median of pairwise differences],
   [$Shift$], [$x_i - y_j$], [Median of cross-sample differences],
+  [$Ratio$], [$log(x_i) - log(y_j)$], [exp(median of log-differences)],
   [$Dominance$], [$bold(1)(x_i > y_j)$], [Proportion of pairwise comparisons],
 )
+
+#v(0.5em)
+For multiplicative quantities like $Ratio$, the pairwise operation is defined in log-space,
+aggregated with the median, then mapped back with exp.
+This canonical-scale approach preserves the "median of pairwise operations" principle
+while ensuring exact multiplicative antisymmetry: $Ratio(vx, vy) times Ratio(vy, vx) = 1$.
 
 #v(0.5em)
 This pairwise structure provides three benefits:
@@ -159,7 +166,10 @@ burdening the common case with unnecessary generality.
 
 All robust estimators in this toolkit share a common mathematical structure:
 
-$ "Estimator" = Median("Pairwise Operations") $
+$ "Estimator" = "InvTransform"(Median("PairwiseOperation"("Transform"(x), "Transform"(y)))) $
+
+For additive estimators ($Center$, $Spread$, $Shift$), $"Transform"$ is identity.
+For multiplicative estimators ($Ratio$), $"Transform" = log$ and $"InvTransform" = exp$.
 
 This structural unity is not merely aesthetic — it enables unified algorithmic optimization.
 

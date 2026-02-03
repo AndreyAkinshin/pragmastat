@@ -72,6 +72,7 @@
 #let Disparity = math.op("Disparity")
 #let PairwiseMargin = math.op("PairwiseMargin")
 #let ShiftBounds = math.op("ShiftBounds")
+#let RatioBounds = math.op("RatioBounds")
 #let Dominance = math.op("Dominance")
 
 // ==========================================================================
