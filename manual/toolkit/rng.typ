@@ -32,12 +32,12 @@ Deterministic pseudorandom number generator from seed $s$.
 #v(0.3em)
 *Example*
 
-- `Rng(1729)` — numeric seed
+- `Rng("demo-uniform")` — string seed for reproducible demos
 - `Rng("experiment-1")` — string seed for named experiments
 
 #v(0.5em)
 Use $Rng$ whenever you need random numbers that can be reproduced later.
 The same seed will produce exactly the same sequence of random values, and this works identically across Python, TypeScript, R, C\#, Kotlin, Rust, and Go.
-You can pass a simple integer like 42, or a descriptive string like `"experiment-1"` to make your code self-documenting.
+You can pass a descriptive string like `"experiment-1"` to make your code self-documenting.
 Each time you draw from the generator, its internal state advances, so if you need independent random streams, create separate generators with different seeds.
 

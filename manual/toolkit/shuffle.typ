@@ -24,7 +24,7 @@ Uniformly random permutation of sample $vx$ using generator $r$.
 #v(0.3em)
 *Example*
 
-- `Shuffle([1, 2, 3, 4, 5], Rng(1729))` — shuffled copy
+- `Shuffle([1, 2, 3, 4, 5], Rng("demo-shuffle"))` — shuffled copy
 - `Shuffle(x, r)` preserves multiset (same elements, different order)
 
 #v(0.5em)
@@ -32,4 +32,4 @@ Use $Shuffle$ when you need a random reordering of your data.
 This is essential for permutation tests and useful whenever you want to eliminate any bias that might come from the original ordering.
 Every possible arrangement has exactly equal probability, which is required for valid statistical inference.
 The function returns a new shuffled array and leaves your original data unchanged.
-For reproducible results, pass a seeded generator: `Shuffle(data, Rng(1729))` will always produce the same permutation.
+For reproducible results, pass a seeded generator: `Shuffle(data, Rng("experiment-1"))` will always produce the same permutation.

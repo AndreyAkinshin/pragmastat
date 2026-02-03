@@ -34,7 +34,7 @@ Select $k$ elements from sample $vx$ without replacement using generator $r$.
 #v(0.3em)
 *Example*
 
-- `Sample([1, 2, 3, 4, 5], 3, Rng(1729))` — select 3 elements
+- `Sample([1, 2, 3, 4, 5], 3, Rng("demo-sample"))` — select 3 elements
 - `Sample(x, n, r) = x` — selecting all elements returns original order
 
 #v(0.5em)
