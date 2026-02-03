@@ -39,7 +39,8 @@ Assertions verify that outputs match expected values within a given numerical to
 *Test data format* — Each test case is a JSON file containing `input` and `output` fields.
 For one-sample estimators, the input contains array `x` and optional `parameters`.
 For two-sample estimators, input contains arrays `x` and `y`.
-Output is a single numeric value.
+For bounds estimators ($ShiftBounds$, $RatioBounds$), input additionally contains `misrate`.
+Output is a single numeric value for point estimators, or an object with `lower` and `upper` fields for bounds estimators.
 
 *Performance testing* — The toolkit provides $O(n log n)$ fast algorithms for $Center$, $Spread$, and $Shift$ estimators,
 dramatically more efficient than naive implementations that materialize all pairwise combinations.

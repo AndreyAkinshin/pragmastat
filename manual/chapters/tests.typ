@@ -18,4 +18,6 @@
 
 #include "../tests/shift-bounds-tests.typ"
 
+#include "../tests/ratio-bounds-tests.typ"
+
 #include "../tests/_framework.typ"

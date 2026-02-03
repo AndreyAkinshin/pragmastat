@@ -2,26 +2,27 @@
 
 == Ratio Tests
 
-$ Ratio(vx, vy) = median_(1 <= i <= n, 1 <= j <= m) (x_i / y_j) $
+$ Ratio(vx, vy) = exp(Shift(log vx, log vy)) $
 
 The $Ratio$ test suite contains 37 test cases (25 original + 12 unsorted), excluding zero values due to division constraints.
+The new definition uses geometric interpolation (via log-space), which affects expected values for even $m times n$ cases.
 
 *Demo examples* ($n = m = 5$) — from manual introduction, validating properties:
 
-- `demo-1`: $vx = (1, 2, 4, 8, 16)$, $vy = (2, 4, 8, 16, 32)$, expected output: $0.5$ (base case)
+- `demo-1`: $vx = (1, 2, 4, 8, 16)$, $vy = (2, 4, 8, 16, 32)$, expected output: $0.5$ (base case, odd $m times n$)
 - `demo-2`: $vx = (1, 2, 4, 8, 16)$, $vy = (1, 2, 4, 8, 16)$, expected output: $1$ (identity property)
 - `demo-3`: $vx = (2, 4, 8, 16, 32)$, $vy = (10, 20, 40, 80, 160)$ (= [2×demo-1.x, 5×demo-1.y]), expected output: $0.2$ (scale property)
 
 *Natural sequences* ($[n, m] in {1, 2, 3} times {1, 2, 3}$) — 9 combinations:
 
 - `natural-1-1`: $vx = (1)$, $vy = (1)$, expected output: $1$
-- `natural-1-2`: $vx = (1)$, $vy = (1, 2)$, expected output: $approx 0.667$
+- `natural-1-2`: $vx = (1)$, $vy = (1, 2)$, expected output: $approx 0.707$ ($= sqrt(0.5)$, geometric interpolation)
 - `natural-1-3`: $vx = (1)$, $vy = (1, 2, 3)$, expected output: $0.5$
-- `natural-2-1`: $vx = (1, 2)$, $vy = (1)$, expected output: $1.5$
+- `natural-2-1`: $vx = (1, 2)$, $vy = (1)$, expected output: $approx 1.414$ ($= sqrt(2)$, geometric interpolation)
 - `natural-2-2`: $vx = (1, 2)$, $vy = (1, 2)$, expected output: $1$
-- `natural-2-3`: $vx = (1, 2)$, $vy = (1, 2, 3)$, expected output: $approx 0.833$
+- `natural-2-3`: $vx = (1, 2)$, $vy = (1, 2, 3)$, expected output: $approx 0.816$ (geometric interpolation)
 - `natural-3-1`: $vx = (1, 2, 3)$, $vy = (1)$, expected output: $2$
-- `natural-3-2`: $vx = (1, 2, 3)$, $vy = (1, 2)$, expected output: $1.5$
+- `natural-3-2`: $vx = (1, 2, 3)$, $vy = (1, 2)$, expected output: $approx 1.225$ (geometric interpolation)
 - `natural-3-3`: $vx = (1, 2, 3)$, $vy = (1, 2, 3)$, expected output: $1$
 
 *Additive distribution* ($[n, m] in {5, 10, 30} times {5, 10, 30}$) — 9 combinations with $Additive(10, 1)$:
@@ -35,6 +36,7 @@ The $Ratio$ test suite contains 37 test cases (25 original + 12 unsorted), exclu
 
 - `uniform-5-5`, `uniform-5-100`, `uniform-100-5`, `uniform-100-100`
 - Random generation: $vx$ uses seed 2, $vy$ uses seed 3
+- Note: all generated values are strictly positive (no zeros); values near zero test numerical stability of log-transformation
 
 The natural sequences verify the identity property ($Ratio(vx, vx) = 1$) and validate ratio calculations with simple integer inputs.
 Note that implementations should handle the practical constraint of avoiding division by values near zero.
