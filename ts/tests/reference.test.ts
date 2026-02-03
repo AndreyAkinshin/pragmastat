@@ -476,7 +476,7 @@ describe('Reference Tests', () => {
 
   describe('sample validation', () => {
     it('should throw error for negative k', () => {
-      const rng = new Rng(42);
+      const rng = new Rng('test-sample-validation');
       expect(() => rng.sample([1, 2, 3], -1)).toThrow('k must be non-negative');
     });
   });

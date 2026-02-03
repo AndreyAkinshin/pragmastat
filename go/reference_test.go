@@ -1064,6 +1064,6 @@ func TestSampleNegativeKPanics(t *testing.T) {
 			t.Errorf("Sample with negative k should panic")
 		}
 	}()
-	rng := NewRngFromSeed(42)
+	rng := NewRngFromString("test-sample-validation")
 	Sample(rng, []float64{1, 2, 3}, -1)
 }

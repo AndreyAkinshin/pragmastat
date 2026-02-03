@@ -227,14 +227,14 @@ test_that("sample satisfies reference tests", {
 })
 
 test_that("sample with negative k throws error", {
-  r <- rng(42)
+  r <- rng("test-sample-validation")
   expect_error(r$sample(1:10, -1), "k must be non-negative")
 })
 
 test_that("uniform_int with large range uses correct modulo", {
   # This test documents the behavior for ranges approaching 2^32
   # R's double precision may lose precision for very large moduli
-  r <- rng(42)
+  r <- rng("test-uniform-int-large-range")
 
   # Range of 2^30 (well within precision)
   range_size <- 2^30
@@ -242,7 +242,7 @@ test_that("uniform_int with large range uses correct modulo", {
   expect_true(result >= 0 && result < range_size)
 
   # Range of 2^31 (still within i32 precision)
-  r2 <- rng(42)
+  r2 <- rng("test-uniform-int-large-range-2")
   range_size2 <- 2^31
   result2 <- r2$uniform_int(0, range_size2)
   expect_true(result2 >= 0 && result2 < range_size2)

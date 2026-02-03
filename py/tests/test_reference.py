@@ -453,6 +453,6 @@ class TestReference:
         """Test that sample with negative k raises ValueError."""
         import pytest
 
-        rng = Rng(42)
+        rng = Rng("test-sample-validation")
         with pytest.raises(ValueError):
             rng.sample([1, 2, 3], -1)

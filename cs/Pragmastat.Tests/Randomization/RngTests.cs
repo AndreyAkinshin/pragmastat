@@ -172,7 +172,7 @@ public class RngTests
   [Fact]
   public void SampleNegativeKThrows()
   {
-    var rng = new Rng(42);
+    var rng = new Rng("test-sample-validation");
     var data = new List<double> { 1, 2, 3 };
     Assert.Throws<ArgumentOutOfRangeException>(() => rng.Sample(data, -1));
   }

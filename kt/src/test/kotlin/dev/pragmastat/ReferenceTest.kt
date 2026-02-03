@@ -683,7 +683,7 @@ class ReferenceTest {
 
     @Test
     fun `sample with negative k throws IllegalArgumentException`() {
-        val rng = Rng(42)
+        val rng = Rng("test-sample-validation")
         assertThrows<IllegalArgumentException> {
             rng.sample(listOf(1, 2, 3), -1)
         }
