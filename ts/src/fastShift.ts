@@ -6,6 +6,8 @@
  * Internal implementation - not part of public API.
  */
 
+import { log } from './assumptions';
+
 /**
  * Computes quantiles of all pairwise differences { x_i - y_j }.
  * Time: O((m + n) * log(precision)) per quantile. Space: O(1).
@@ -207,4 +209,39 @@ function countAndNeighbors(
  */
 function midpoint(a: number, b: number): number {
   return a + (b - a) * 0.5;
+}
+
+/**
+ * Computes quantiles of all pairwise ratios { x_i / y_j } via log-transformation.
+ * Time: O((m + n) * log(precision)) per quantile. Space: O(m + n).
+ *
+ * @param x First array of positive numeric values
+ * @param y Second array of positive numeric values
+ * @param p Probabilities in [0, 1]
+ * @param assumeSorted If false, arrays will be sorted
+ * @returns Array of quantile values corresponding to probabilities in p
+ * @internal
+ */
+export function fastRatio(
+  x: number[],
+  y: number[],
+  p: number[],
+  assumeSorted: boolean = false,
+): number[] {
+  if (!x || !y || !p) {
+    throw new Error('All inputs must be non-null');
+  }
+  if (x.length === 0 || y.length === 0) {
+    throw new Error('x and y must be non-empty');
+  }
+
+  // Log-transform both samples (includes positivity check)
+  const logX = log(x, 'x', 'Ratio');
+  const logY = log(y, 'y', 'Ratio');
+
+  // Delegate to fastShift in log-space
+  const logResult = fastShift(logX, logY, p, assumeSorted);
+
+  // Exp-transform back to ratio-space
+  return logResult.map((v) => Math.exp(v));
 }

@@ -9,6 +9,7 @@ import {
   avgSpread,
   disparity,
   shiftBounds,
+  ratioBounds,
 } from '../src/estimators';
 import { AssumptionError } from '../src/assumptions';
 import { pairwiseMargin } from '../src/pairwiseMargin';
@@ -130,6 +131,29 @@ describe('Reference Tests', () => {
         it(`should pass ${testName}`, () => {
           const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
           const result = shiftBounds(data.input.x, data.input.y, data.input.misrate);
+          expect(result.lower).toBeCloseTo(data.output.lower, 9);
+          expect(result.upper).toBeCloseTo(data.output.upper, 9);
+        });
+      });
+    }
+  });
+
+  // RatioBounds tests
+  describe('ratio-bounds', () => {
+    const dirPath = path.join(testDataPath, 'ratio-bounds');
+    if (fs.existsSync(dirPath)) {
+      const testFiles = fs
+        .readdirSync(dirPath)
+        .filter((file) => file.endsWith('.json'))
+        .sort();
+
+      testFiles.forEach((fileName) => {
+        const filePath = path.join(dirPath, fileName);
+        const testName = fileName.replace('.json', '');
+
+        it(`should pass ${testName}`, () => {
+          const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+          const result = ratioBounds(data.input.x, data.input.y, data.input.misrate);
           expect(result.lower).toBeCloseTo(data.output.lower, 9);
           expect(result.upper).toBeCloseTo(data.output.upper, 9);
         });

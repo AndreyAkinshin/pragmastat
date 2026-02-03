@@ -17,6 +17,7 @@ export {
   avgSpread,
   disparity,
   shiftBounds,
+  ratioBounds,
   type Bounds,
 } from './estimators';
 

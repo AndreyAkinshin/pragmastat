@@ -2,12 +2,11 @@
  * Pragmastat estimators implementation
  */
 
-import { median } from './utils';
 import { fastCenter } from './fastCenter';
 import { fastSpread } from './fastSpread';
-import { fastShift } from './fastShift';
+import { fastShift, fastRatio } from './fastShift';
 import { pairwiseMargin } from './pairwiseMargin';
-import { checkValidity, checkPositivity, checkSparity } from './assumptions';
+import { checkValidity, checkPositivity, checkSparity, log } from './assumptions';
 
 /**
  * Calculate the Center - median of all pairwise averages (x[i] + x[j])/2
@@ -79,7 +78,9 @@ export function shift(x: number[], y: number[]): number {
 }
 
 /**
- * Calculate the Ratio - median of all pairwise ratios (x[i] / y[j])
+ * Calculate the Ratio - median of all pairwise ratios (x[i] / y[j]) via log-transformation
+ * Equivalent to: exp(Shift(log(x), log(y)))
+ * Uses fast O((m + n) * log(precision)) algorithm.
  *
  * Assumptions:
  *   positivity(x) - all values in x must be strictly positive
@@ -100,16 +101,7 @@ export function ratio(x: number[], y: number[]): number {
   // Check positivity for y (priority 1, subject y)
   checkPositivity(y, 'y', 'Ratio');
 
-  const nx = x.length;
-  const ny = y.length;
-  const pairwiseRatios: number[] = [];
-  for (let i = 0; i < nx; i++) {
-    for (let j = 0; j < ny; j++) {
-      pairwiseRatios.push(x[i] / y[j]);
-    }
-  }
-
-  return median(pairwiseRatios);
+  return fastRatio(x, y, [0.5], false)[0];
 }
 
 /**
@@ -236,4 +228,38 @@ export function shiftBounds(x: number[], y: number[], misrate: number): Bounds {
   const upper = Math.max(left, right);
 
   return { lower, upper };
+}
+
+/**
+ * Provides bounds on the Ratio estimator with specified misclassification rate (RatioBounds)
+ *
+ * Computes bounds via log-transformation and ShiftBounds delegation:
+ * RatioBounds(x, y, misrate) = exp(ShiftBounds(log(x), log(y), misrate))
+ *
+ * Assumptions:
+ *   positivity(x) - all values in x must be strictly positive
+ *   positivity(y) - all values in y must be strictly positive
+ *
+ * @param x First sample
+ * @param y Second sample
+ * @param misrate Misclassification rate (probability that true ratio falls outside bounds)
+ * @returns An object containing the lower and upper bounds
+ * @throws AssumptionError if either sample is empty, contains NaN/Inf, or contains non-positive values
+ */
+export function ratioBounds(x: number[], y: number[], misrate: number): Bounds {
+  checkValidity(x, 'x', 'RatioBounds');
+  checkValidity(y, 'y', 'RatioBounds');
+
+  // Log-transform samples (includes positivity check)
+  const logX = log(x, 'x', 'RatioBounds');
+  const logY = log(y, 'y', 'RatioBounds');
+
+  // Delegate to shiftBounds in log-space
+  const logBounds = shiftBounds(logX, logY, misrate);
+
+  // Exp-transform back to ratio-space
+  return {
+    lower: Math.exp(logBounds.lower),
+    upper: Math.exp(logBounds.upper),
+  };
 }

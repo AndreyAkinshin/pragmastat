@@ -73,3 +73,17 @@ export function checkSparity(values: number[], subject: Subject, functionName: s
     throw AssumptionError.sparity(functionName, subject);
   }
 }
+
+/**
+ * Log-transforms an array. Throws AssumptionError if any value is non-positive.
+ */
+export function log(values: number[], subject: Subject, functionName: string): number[] {
+  const result = new Array<number>(values.length);
+  for (let i = 0; i < values.length; i++) {
+    if (values[i] <= 0) {
+      throw AssumptionError.positivity(functionName, subject);
+    }
+    result[i] = Math.log(values[i]);
+  }
+  return result;
+}
