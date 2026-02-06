@@ -9,6 +9,7 @@
 pub mod assumptions;
 pub mod distributions;
 pub mod estimators;
+pub(crate) mod gauss_cdf;
 pub mod pairwise_margin;
 pub mod rng;
 
