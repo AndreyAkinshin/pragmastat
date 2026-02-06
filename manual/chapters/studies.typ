@@ -24,4 +24,6 @@ The studies provide detailed analyses of estimator properties for practitioners
 
 #include "../studies/mw-margin.typ"
 
+#include "../studies/bootstrap-center.typ"
+
 #include "../studies/additive.typ"
