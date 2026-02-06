@@ -1,5 +1,6 @@
 using System;
 using JetBrains.Annotations;
+using Pragmastat.Exceptions;
 using Pragmastat.Internal;
 
 namespace Pragmastat.Functions;
@@ -17,24 +18,25 @@ public class PairwiseMargin(int threshold = PairwiseMargin.MaxExactSize)
   [PublicAPI]
   public int Calc(int n, int m, double misrate)
   {
-    Assertion.MoreThan(nameof(n), n, 0);
-    Assertion.MoreThan(nameof(m), m, 0);
-    Assertion.InRangeInclusive(nameof(misrate), misrate, 0, 1);
+    if (n <= 0)
+      throw AssumptionException.Domain(Subject.X);
+    if (m <= 0)
+      throw AssumptionException.Domain(Subject.Y);
+    if (double.IsNaN(misrate) || misrate < 0 || misrate > 1)
+      throw AssumptionException.Domain(Subject.Misrate);
 
     return n + m <= threshold
       ? CalcExact(n, m, misrate)
       : CalcApprox(n, m, misrate);
   }
 
-  [PublicAPI]
-  public int CalcExact(int n, int m, double misrate)
+  internal int CalcExact(int n, int m, double misrate)
   {
     int raw = CalcExactRaw(n, m, misrate / 2);
     return checked(raw * 2);
   }
 
-  [PublicAPI]
-  public int CalcApprox(int n, int m, double misrate)
+  internal int CalcApprox(int n, int m, double misrate)
   {
     long raw = CalcApproxRaw(n, m, misrate / 2);
     long margin = raw * 2;
@@ -115,21 +117,22 @@ public class PairwiseMargin(int threshold = PairwiseMargin.MaxExactSize)
     double nm = (double)n * m;
     double mu = nm / 2.0;
     double su = Sqrt(nm * (n + m + 1) / 12.0);
+    // -0.5 continuity correction: computing P(U ≥ u) for a right-tail discrete CDF
     double z = (u - mu - 0.5) / su;
     double phi = Exp(-z.Sqr() / 2) / Sqrt(2 * PI);
     double Phi = AcmAlgorithm209.Gauss(z);
 
     // Pre-compute powers of n and m for efficiency
-    double n2 = n * n;
+    double n2 = (double)n * n;
     double n3 = n2 * n;
     double n4 = n2 * n2;
-    double m2 = m * m;
+    double m2 = (double)m * m;
     double m3 = m2 * m;
     double m4 = m2 * m2;
 
-    double mu2 = n * m * (n + m + 1) / 12.0;
+    double mu2 = (double)n * m * (n + m + 1) / 12.0;
     double mu4 =
-      n * m * (n + m + 1) *
+      (double)n * m * (n + m + 1) *
       (0
        + 5 * m * n * (m + n)
        - 2 * (m2 + n2)
@@ -138,7 +141,7 @@ public class PairwiseMargin(int threshold = PairwiseMargin.MaxExactSize)
       ) / 240.0;
 
     double mu6 =
-      n * m * (n + m + 1) *
+      (double)n * m * (n + m + 1) *
       (0
        + 35 * m2 * n2 * (m2 + n2)
        + 70 * m3 * n3

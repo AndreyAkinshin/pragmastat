@@ -17,7 +17,8 @@ public class AssumptionTests
 
   public record TestInputs(
     [property: JsonPropertyName("x")] JsonElement[]? X,
-    [property: JsonPropertyName("y")] JsonElement[]? Y);
+    [property: JsonPropertyName("y")] JsonElement[]? Y,
+    [property: JsonPropertyName("misrate")] JsonElement? Misrate);
 
   public record AssumptionTestCase(
     [property: JsonPropertyName("name")] string Name,
@@ -77,20 +78,22 @@ public class AssumptionTests
     return arr.Select(ParseValue).ToArray();
   }
 
-  private static double CallFunction(string funcName, double[] x, double[] y)
+  private static void CallFunction(string funcName, TestInputs inputs)
   {
-    var sampleX = new Sample(x);
-    return funcName switch
+    var x = ParseArray(inputs.X);
+    var y = ParseArray(inputs.Y);
+
+    switch (funcName)
     {
-      "Center" => sampleX.Center(),
-      "Ratio" => sampleX.Ratio(new Sample(y)),
-      "RelSpread" => sampleX.RelSpread(),
-      "Spread" => sampleX.Spread(),
-      "Shift" => sampleX.Shift(new Sample(y)),
-      "AvgSpread" => sampleX.AvgSpread(new Sample(y)),
-      "Disparity" => sampleX.Disparity(new Sample(y)),
-      _ => throw new ArgumentException($"Unknown function: {funcName}")
-    };
+      case "Center": new Sample(x).Center(); break;
+      case "Ratio": new Sample(x).Ratio(new Sample(y)); break;
+      case "RelSpread": new Sample(x).RelSpread(); break;
+      case "Spread": new Sample(x).Spread(); break;
+      case "Shift": new Sample(x).Shift(new Sample(y)); break;
+      case "AvgSpread": new Sample(x).AvgSpread(new Sample(y)); break;
+      case "Disparity": new Sample(x).Disparity(new Sample(y)); break;
+      default: throw new ArgumentException($"Unknown function: {funcName}");
+    }
   }
 
   public static IEnumerable<object[]> GetTestCases()
@@ -133,12 +136,9 @@ public class AssumptionTests
   {
     _ = suiteName; // Used for test display name
 
-    var x = ParseArray(testCase.Inputs.X);
-    var y = ParseArray(testCase.Inputs.Y);
-
     var expectedId = testCase.ExpectedViolation.Id;
 
-    var ex = Assert.Throws<AssumptionException>(() => CallFunction(testCase.Function, x, y));
+    var ex = Assert.Throws<AssumptionException>(() => CallFunction(testCase.Function, testCase.Inputs));
 
     Assert.Equal(expectedId, ex.Violation.IdString);
   }

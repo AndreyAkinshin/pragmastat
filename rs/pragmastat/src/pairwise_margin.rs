@@ -3,6 +3,8 @@
 //! Determines how many extreme pairwise differences to exclude when constructing bounds
 //! based on the distribution of dominance statistics.
 
+use crate::assumptions::{AssumptionError, Subject};
+
 const MAX_EXACT_SIZE: usize = 400;
 const MAX_ACCEPTABLE_BINOM_N: usize = 65;
 
@@ -25,15 +27,15 @@ const MAX_ACCEPTABLE_BINOM_N: usize = 65;
 /// # Errors
 ///
 /// Returns an error if n == 0, m == 0, or misrate is outside [0, 1] or is NaN.
-pub fn pairwise_margin(n: usize, m: usize, misrate: f64) -> Result<usize, &'static str> {
+pub fn pairwise_margin(n: usize, m: usize, misrate: f64) -> Result<usize, AssumptionError> {
     if n == 0 {
-        return Err("n must be positive");
+        return Err(AssumptionError::domain(Subject::X));
     }
     if m == 0 {
-        return Err("m must be positive");
+        return Err(AssumptionError::domain(Subject::Y));
     }
     if misrate.is_nan() || !(0.0..=1.0).contains(&misrate) {
-        return Err("misrate must be in range [0, 1]");
+        return Err(AssumptionError::domain(Subject::Misrate));
     }
 
     if n + m <= MAX_EXACT_SIZE {
@@ -140,6 +142,7 @@ fn edgeworth_cdf(n: usize, m: usize, u: usize) -> f64 {
 
     let mu = (n_f64 * m_f64) / 2.0;
     let su = ((n_f64 * m_f64 * (n_f64 + m_f64 + 1.0)) / 12.0).sqrt();
+    // -0.5 continuity correction: computing P(U ≥ u) for a right-tail discrete CDF
     let z = (u_f64 - mu - 0.5) / su;
 
     // Standard normal PDF and CDF

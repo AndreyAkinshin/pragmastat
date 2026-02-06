@@ -12,6 +12,10 @@ shift_bounds <- function(x, y, misrate) {
   # Check validity for y
   check_validity(y, SUBJECTS$Y)
 
+  if (is.nan(misrate) || misrate < 0 || misrate > 1) {
+    stop(assumption_error(ASSUMPTION_IDS$DOMAIN, SUBJECTS$MISRATE))
+  }
+
   n <- length(x)
   m <- length(y)
 

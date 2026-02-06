@@ -84,6 +84,7 @@ describe('Reference Tests', () => {
           } catch (e) {
             // Skip cases that violate assumptions - tested separately
             if (e instanceof AssumptionError) {
+              console.log(`Skipping ${fileName}: assumption violation`);
               return;
             }
             throw e;
@@ -108,6 +109,25 @@ describe('Reference Tests', () => {
 
         it(`should pass ${testName}`, () => {
           const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+
+          // Handle error test cases
+          if (data.expected_error) {
+            let thrownError: AssumptionError | null = null;
+            try {
+              pairwiseMargin(data.input.n, data.input.m, data.input.misrate);
+            } catch (e) {
+              if (e instanceof AssumptionError) {
+                thrownError = e;
+              } else {
+                throw e;
+              }
+            }
+            expect(thrownError).not.toBeNull();
+            expect(thrownError!.violation.id).toBe(data.expected_error.id);
+
+            return;
+          }
+
           const result = pairwiseMargin(data.input.n, data.input.m, data.input.misrate);
           expect(result).toBe(data.output);
         });

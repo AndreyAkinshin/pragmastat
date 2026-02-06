@@ -1,6 +1,7 @@
 package pragmastat
 
 import (
+	"errors"
 	"math"
 )
 
@@ -17,20 +18,20 @@ const (
 // Returns an error if n <= 0, m <= 0, or misrate is outside [0, 1] or NaN.
 func PairwiseMargin(n, m int, misrate float64) (int, error) {
 	if n <= 0 {
-		return 0, errNMustBePositive
+		return 0, NewDomainError(SubjectX)
 	}
 	if m <= 0 {
-		return 0, errMMustBePositive
+		return 0, NewDomainError(SubjectY)
 	}
 	if math.IsNaN(misrate) || misrate < 0 || misrate > 1 {
-		return 0, errMisrateOutOfRange
+		return 0, NewDomainError(SubjectMisrate)
 	}
 
 	// Use exact method for small to medium samples
 	if n+m <= maxExactSize {
 		return pairwiseMarginExact(n, m, misrate), nil
 	}
-	return pairwiseMarginApprox(n, m, misrate), nil
+	return pairwiseMarginApprox(n, m, misrate)
 }
 
 // pairwiseMarginExact uses the exact distribution based on Loeffler's recurrence.
@@ -39,8 +40,12 @@ func pairwiseMarginExact(n, m int, misrate float64) int {
 }
 
 // pairwiseMarginApprox uses Edgeworth approximation for large samples.
-func pairwiseMarginApprox(n, m int, misrate float64) int {
-	return pairwiseMarginApproxRaw(n, m, misrate/2) * 2
+func pairwiseMarginApprox(n, m int, misrate float64) (int, error) {
+	raw, err := pairwiseMarginApproxRaw(n, m, misrate/2)
+	if err != nil {
+		return 0, err
+	}
+	return raw * 2, nil
 }
 
 // pairwiseMarginExactRaw implements the inversed Loeffler (1982) algorithm.
@@ -102,7 +107,7 @@ func pairwiseMarginExactRaw(n, m int, p float64) int {
 }
 
 // pairwiseMarginApproxRaw uses inverse Edgeworth approximation.
-func pairwiseMarginApproxRaw(n, m int, misrate float64) int {
+func pairwiseMarginApproxRaw(n, m int, misrate float64) (int, error) {
 	a := int64(0)
 	b := int64(n) * int64(m)
 	for a < b-1 {
@@ -123,9 +128,9 @@ func pairwiseMarginApproxRaw(n, m int, misrate float64) int {
 	}
 
 	if result > int64(^uint(0)>>1) {
-		panic("pairwise margin exceeds int range")
+		return 0, errors.New("pairwise margin exceeds int range")
 	}
-	return int(result)
+	return int(result), nil
 }
 
 // edgeworthCdf computes the CDF using Edgeworth expansion.
@@ -133,39 +138,42 @@ func edgeworthCdf(n, m int, u int64) float64 {
 	nm := float64(n) * float64(m)
 	mu := nm / 2.0
 	su := math.Sqrt(nm * float64(n+m+1) / 12.0)
+	// -0.5 continuity correction: computing P(U ≥ u) for a right-tail discrete CDF
 	z := (float64(u) - mu - 0.5) / su
 	phi := math.Exp(-z*z/2) / math.Sqrt(2*math.Pi)
 	Phi := gaussCdf(z)
 
-	// Pre-compute powers of n and m for efficiency (as integers for precision)
-	n2 := n * n
-	n3 := n2 * n
+	// Pre-compute powers of n and m as float64 (avoids int64 overflow for large n, m)
+	nf := float64(n)
+	mf := float64(m)
+	n2 := nf * nf
+	n3 := n2 * nf
 	n4 := n2 * n2
-	m2 := m * m
-	m3 := m2 * m
+	m2 := mf * mf
+	m3 := m2 * mf
 	m4 := m2 * m2
 
-	// Use integer arithmetic first for precision, then convert to float
-	mu2 := float64(n*m*(n+m+1)) / 12.0
-	mu4 := float64(n*m*(n+m+1)) *
-		float64(5*m*n*(m+n)-
-			2*(m2+n2)+
-			3*m*n-
-			2*(n+m)) / 240.0
+	// Compute moments using float64 arithmetic
+	mu2 := (nf * mf * (nf + mf + 1)) / 12.0
+	mu4 := (nf * mf * (nf + mf + 1) *
+		(5*mf*nf*(mf+nf) -
+			2*(m2+n2) +
+			3*mf*nf -
+			2*(nf+mf))) / 240.0
 
-	mu6 := float64(n*m*(n+m+1)) *
-		float64(35*m2*n2*(m2+n2)+
-			70*m3*n3-
-			42*m*n*(m3+n3)-
-			14*m2*n2*(n+m)+
-			16*(n4+m4)-
-			52*n*m*(n2+m2)-
-			43*n2*m2+
-			32*(m3+n3)+
-			14*m*n*(n+m)+
-			8*(n2+m2)+
-			16*n*m-
-			8*(n+m)) / 4032.0
+	mu6 := (nf * mf * (nf + mf + 1) *
+		(35*m2*n2*(m2+n2) +
+			70*m3*n3 -
+			42*mf*nf*(m3+n3) -
+			14*m2*n2*(nf+mf) +
+			16*(n4+m4) -
+			52*nf*mf*(n2+m2) -
+			43*n2*m2 +
+			32*(m3+n3) +
+			14*mf*nf*(nf+mf) +
+			8*(n2+m2) +
+			16*nf*mf -
+			8*(nf+mf))) / 4032.0
 
 	// Pre-compute powers of mu2 and related terms
 	mu2_2 := mu2 * mu2
@@ -227,10 +235,10 @@ func logFactorial(n float64) float64 {
 	// n! = Gamma(n+1), so work with x = n+1
 	x := n + 1
 
-	// DONT TOUCH: Stirling's approximation is inaccurate for small x.
+	// Numerical stability note: Stirling's approximation is inaccurate for small x.
 	// Use Gamma recurrence: Gamma(x) = Gamma(x+k) / (x*(x+1)*...*(x+k-1))
-	// These branches appear unreachable in current usage (n+m >= 65), but
-	// are retained for correctness if the function is used in other contexts.
+	// These branches handle small arguments to maintain precision.
+	// Currently unreachable (n+m >= 65), but retained for standalone correctness.
 	if x < 1 {
 		return stirlingApproxLog(x+3) - math.Log(x*(x+1)*(x+2))
 	}

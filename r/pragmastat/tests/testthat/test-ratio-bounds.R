@@ -1,15 +1,5 @@
 test_that("ratio_bounds satisfies reference tests", {
-  # Find repository root by looking for testthat.R
-  current_dir <- getwd()
-  repo_root <- current_dir
-  while (!file.exists(file.path(repo_root, "testthat.R"))) {
-    parent_dir <- dirname(repo_root)
-    if (parent_dir == repo_root) {
-      stop(paste0("Could not find repository root (testthat.R not found); current dir is ", getwd()))
-    }
-    repo_root <- parent_dir
-  }
-
+  repo_root <- find_repo_root()
   test_data_dir <- file.path(repo_root, "tests", "ratio-bounds")
 
   json_files <- list.files(test_data_dir, pattern = "\\.json$", full.names = TRUE)

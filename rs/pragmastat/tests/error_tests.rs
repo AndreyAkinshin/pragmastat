@@ -174,27 +174,49 @@ fn unwrap_assumption(err: pragmastat::assumptions::AssumptionError) -> (Assumpti
     (err.violation().id, err.violation().subject)
 }
 
+// --- pairwise_margin ---
+
 #[test]
 fn pairwise_margin_zero_n() {
-    assert!(pairwise_margin(0, 10, 0.05).is_err());
+    let result = pairwise_margin(0, 10, 0.05);
+    assert!(result.is_err());
+    let (id, subject) = unwrap_assumption(result.unwrap_err());
+    assert_eq!(id, AssumptionId::Domain);
+    assert_eq!(subject, Subject::X);
 }
 
 #[test]
 fn pairwise_margin_zero_m() {
-    assert!(pairwise_margin(10, 0, 0.05).is_err());
+    let result = pairwise_margin(10, 0, 0.05);
+    assert!(result.is_err());
+    let (id, subject) = unwrap_assumption(result.unwrap_err());
+    assert_eq!(id, AssumptionId::Domain);
+    assert_eq!(subject, Subject::Y);
 }
 
 #[test]
 fn pairwise_margin_negative_misrate() {
-    assert!(pairwise_margin(10, 10, -0.1).is_err());
+    let result = pairwise_margin(10, 10, -0.1);
+    assert!(result.is_err());
+    let (id, subject) = unwrap_assumption(result.unwrap_err());
+    assert_eq!(id, AssumptionId::Domain);
+    assert_eq!(subject, Subject::Misrate);
 }
 
 #[test]
 fn pairwise_margin_misrate_greater_than_one() {
-    assert!(pairwise_margin(10, 10, 1.5).is_err());
+    let result = pairwise_margin(10, 10, 1.5);
+    assert!(result.is_err());
+    let (id, subject) = unwrap_assumption(result.unwrap_err());
+    assert_eq!(id, AssumptionId::Domain);
+    assert_eq!(subject, Subject::Misrate);
 }
 
 #[test]
 fn pairwise_margin_nan_misrate() {
-    assert!(pairwise_margin(10, 10, f64::NAN).is_err());
+    let result = pairwise_margin(10, 10, f64::NAN);
+    assert!(result.is_err());
+    let (id, subject) = unwrap_assumption(result.unwrap_err());
+    assert_eq!(id, AssumptionId::Domain);
+    assert_eq!(subject, Subject::Misrate);
 }

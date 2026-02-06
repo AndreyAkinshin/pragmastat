@@ -1,16 +1,3 @@
-find_repo_root <- function() {
-  current_dir <- getwd()
-  repo_root <- current_dir
-  while (!file.exists(file.path(repo_root, "testthat.R"))) {
-    parent_dir <- dirname(repo_root)
-    if (parent_dir == repo_root) {
-      stop(paste0("Could not find repository root; current dir is ", getwd()))
-    }
-    repo_root <- parent_dir
-  }
-  repo_root
-}
-
 run_distribution_tests <- function(dist_name, dist_factory) {
   repo_root <- find_repo_root()
   dist_dir <- file.path(repo_root, "tests", "distributions", dist_name)

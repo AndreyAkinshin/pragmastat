@@ -1,5 +1,7 @@
 package dev.pragmastat
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -8,8 +10,10 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.Assumptions
 import java.io.File
 import kotlin.test.assertTrue
+import kotlin.test.assertEquals
 import kotlin.math.abs
 
 data class TestData(
@@ -32,9 +36,11 @@ data class PairwiseMarginInput(
     val misrate: Double
 )
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 data class PairwiseMarginTestData(
     val input: PairwiseMarginInput,
-    val output: Int
+    val output: Int? = null,
+    @JsonProperty("expected_error") val expectedError: Map<String, String>? = null
 )
 
 data class ShiftBoundsInput(
@@ -87,7 +93,9 @@ class ReferenceTest {
         for ((estimatorName, estimatorFunc) in estimators) {
             val testDir = File("../tests/$estimatorName")
             if (!testDir.exists() || !testDir.isDirectory) {
-                println("Skipping $estimatorName tests: directory not found")
+                tests.add(DynamicTest.dynamicTest("$estimatorName/skip-missing-directory") {
+                    Assumptions.assumeTrue(false, "Skipping $estimatorName tests: directory not found")
+                })
                 continue
             }
             
@@ -118,6 +126,7 @@ class ReferenceTest {
                         assertClose(testData.output, result)
                     } catch (e: AssumptionException) {
                         // Skip cases that violate assumptions - tested separately
+                        Assumptions.assumeTrue(false, "skipping due to assumption violation: ${e.message}")
                     }
                 })
             }
@@ -140,7 +149,9 @@ class ReferenceTest {
         for ((estimatorName, estimatorFunc) in estimators) {
             val testDir = File("../tests/$estimatorName")
             if (!testDir.exists() || !testDir.isDirectory) {
-                println("Skipping $estimatorName tests: directory not found")
+                tests.add(DynamicTest.dynamicTest("$estimatorName/skip-missing-directory") {
+                    Assumptions.assumeTrue(false, "Skipping $estimatorName tests: directory not found")
+                })
                 continue
             }
             
@@ -168,6 +179,7 @@ class ReferenceTest {
                         assertClose(testData.output, result)
                     } catch (e: AssumptionException) {
                         // Skip cases that violate assumptions - tested separately
+                        Assumptions.assumeTrue(false, "skipping due to assumption violation: ${e.message}")
                     }
                 })
             }
@@ -182,7 +194,7 @@ class ReferenceTest {
         val testDir = File("../tests/pairwise-margin")
 
         if (!testDir.exists() || !testDir.isDirectory) {
-            println("Skipping pairwise-margin tests: directory not found")
+            Assumptions.assumeTrue(false, "Skipping pairwise-margin tests: directory not found")
             return tests
         }
 
@@ -190,6 +202,17 @@ class ReferenceTest {
             val testName = "pairwise-margin/${file.nameWithoutExtension}"
             tests.add(DynamicTest.dynamicTest(testName) {
                 val testData = mapper.readValue<PairwiseMarginTestData>(file)
+
+                // Handle error test cases
+                if (testData.expectedError != null) {
+                    val exception = assertThrows<AssumptionException> {
+                        pairwiseMargin(testData.input.n, testData.input.m, testData.input.misrate)
+                    }
+                    kotlin.test.assertEquals(testData.expectedError["id"], exception.violation.id.id,
+                        "Expected error id ${testData.expectedError["id"]}, got ${exception.violation.id.id}")
+                    return@dynamicTest
+                }
+
                 val result = pairwiseMargin(
                     testData.input.n,
                     testData.input.m,
@@ -209,7 +232,7 @@ class ReferenceTest {
         val testDir = File("../tests/shift-bounds")
 
         if (!testDir.exists() || !testDir.isDirectory) {
-            println("Skipping shift-bounds tests: directory not found")
+            Assumptions.assumeTrue(false, "Skipping shift-bounds tests: directory not found")
             return tests
         }
 
@@ -236,7 +259,7 @@ class ReferenceTest {
         val testDir = File("../tests/ratio-bounds")
 
         if (!testDir.exists() || !testDir.isDirectory) {
-            println("Skipping ratio-bounds tests: directory not found")
+            Assumptions.assumeTrue(false, "Skipping ratio-bounds tests: directory not found")
             return tests
         }
 
@@ -320,7 +343,7 @@ class ReferenceTest {
         val testDir = File("../tests/rng")
 
         if (!testDir.exists() || !testDir.isDirectory) {
-            println("Skipping rng uniform tests: directory not found")
+            Assumptions.assumeTrue(false, "Skipping rng uniform tests: directory not found")
             return tests
         }
 
@@ -346,7 +369,7 @@ class ReferenceTest {
         val testDir = File("../tests/rng")
 
         if (!testDir.exists() || !testDir.isDirectory) {
-            println("Skipping rng uniform int tests: directory not found")
+            Assumptions.assumeTrue(false, "Skipping rng uniform int tests: directory not found")
             return tests
         }
 
@@ -372,7 +395,7 @@ class ReferenceTest {
         val testDir = File("../tests/rng")
 
         if (!testDir.exists() || !testDir.isDirectory) {
-            println("Skipping rng string seed tests: directory not found")
+            Assumptions.assumeTrue(false, "Skipping rng string seed tests: directory not found")
             return tests
         }
 
@@ -398,7 +421,7 @@ class ReferenceTest {
         val testDir = File("../tests/rng")
 
         if (!testDir.exists() || !testDir.isDirectory) {
-            println("Skipping rng uniform range tests: directory not found")
+            Assumptions.assumeTrue(false, "Skipping rng uniform range tests: directory not found")
             return tests
         }
 
@@ -424,7 +447,7 @@ class ReferenceTest {
         val testDir = File("../tests/rng")
 
         if (!testDir.exists() || !testDir.isDirectory) {
-            println("Skipping rng uniform float tests: directory not found")
+            Assumptions.assumeTrue(false, "Skipping rng uniform float tests: directory not found")
             return tests
         }
 
@@ -450,7 +473,7 @@ class ReferenceTest {
         val testDir = File("../tests/rng")
 
         if (!testDir.exists() || !testDir.isDirectory) {
-            println("Skipping rng uniform i32 tests: directory not found")
+            Assumptions.assumeTrue(false, "Skipping rng uniform i32 tests: directory not found")
             return tests
         }
 
@@ -476,7 +499,7 @@ class ReferenceTest {
         val testDir = File("../tests/rng")
 
         if (!testDir.exists() || !testDir.isDirectory) {
-            println("Skipping rng uniform bool tests: directory not found")
+            Assumptions.assumeTrue(false, "Skipping rng uniform bool tests: directory not found")
             return tests
         }
 
@@ -502,7 +525,7 @@ class ReferenceTest {
         val testDir = File("../tests/shuffle")
 
         if (!testDir.exists() || !testDir.isDirectory) {
-            println("Skipping shuffle tests: directory not found")
+            Assumptions.assumeTrue(false, "Skipping shuffle tests: directory not found")
             return tests
         }
 
@@ -527,7 +550,7 @@ class ReferenceTest {
         val testDir = File("../tests/sample")
 
         if (!testDir.exists() || !testDir.isDirectory) {
-            println("Skipping sample tests: directory not found")
+            Assumptions.assumeTrue(false, "Skipping sample tests: directory not found")
             return tests
         }
 
@@ -552,7 +575,7 @@ class ReferenceTest {
         val testDir = File("../tests/distributions/uniform")
 
         if (!testDir.exists() || !testDir.isDirectory) {
-            println("Skipping uniform distribution tests: directory not found")
+            Assumptions.assumeTrue(false, "Skipping uniform distribution tests: directory not found")
             return tests
         }
 
@@ -579,7 +602,7 @@ class ReferenceTest {
         val testDir = File("../tests/distributions/additive")
 
         if (!testDir.exists() || !testDir.isDirectory) {
-            println("Skipping additive distribution tests: directory not found")
+            Assumptions.assumeTrue(false, "Skipping additive distribution tests: directory not found")
             return tests
         }
 
@@ -606,7 +629,7 @@ class ReferenceTest {
         val testDir = File("../tests/distributions/multiplic")
 
         if (!testDir.exists() || !testDir.isDirectory) {
-            println("Skipping multiplic distribution tests: directory not found")
+            Assumptions.assumeTrue(false, "Skipping multiplic distribution tests: directory not found")
             return tests
         }
 
@@ -633,7 +656,7 @@ class ReferenceTest {
         val testDir = File("../tests/distributions/exp")
 
         if (!testDir.exists() || !testDir.isDirectory) {
-            println("Skipping exp distribution tests: directory not found")
+            Assumptions.assumeTrue(false, "Skipping exp distribution tests: directory not found")
             return tests
         }
 
@@ -660,7 +683,7 @@ class ReferenceTest {
         val testDir = File("../tests/distributions/power")
 
         if (!testDir.exists() || !testDir.isDirectory) {
-            println("Skipping power distribution tests: directory not found")
+            Assumptions.assumeTrue(false, "Skipping power distribution tests: directory not found")
             return tests
         }
 

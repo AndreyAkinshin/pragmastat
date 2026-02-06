@@ -11,8 +11,9 @@ import (
 
 // TestData represents the structure of test JSON files
 type TestData struct {
-	Input  json.RawMessage `json:"input"`
-	Output json.RawMessage `json:"output"`
+	Input         json.RawMessage `json:"input"`
+	Output        json.RawMessage `json:"output,omitempty"`
+	ExpectedError json.RawMessage `json:"expected_error,omitempty"`
 }
 
 // OneSampleInput represents input for one-sample tests
@@ -73,8 +74,7 @@ func TestReferenceData(t *testing.T) {
 		dirPath := filepath.Join("../tests", "pairwise-margin")
 		files, err := os.ReadDir(dirPath)
 		if err != nil {
-			t.Logf("Skipping pairwise-margin tests: %v", err)
-			return
+			t.Skipf("Skipping pairwise-margin tests: %v", err)
 		}
 
 		for _, file := range files {
@@ -100,6 +100,25 @@ func TestReferenceData(t *testing.T) {
 					t.Fatalf("Failed to parse input data: %v", err)
 				}
 
+				// Handle error test cases
+				if len(testData.ExpectedError) > 0 {
+					_, err := PairwiseMargin(input.N, input.M, input.Misrate)
+					if err == nil {
+						t.Errorf("Expected error for PairwiseMargin(%d, %d, %v), but got none", input.N, input.M, input.Misrate)
+						return
+					}
+					// Verify error details match expected
+					var expectedError map[string]string
+					if jsonErr := json.Unmarshal(testData.ExpectedError, &expectedError); jsonErr == nil {
+						if ae, ok := err.(*AssumptionError); ok {
+							if string(ae.Violation.ID) != expectedError["id"] {
+								t.Errorf("Expected error id %q, got %q", expectedError["id"], ae.Violation.ID)
+							}
+						}
+					}
+					return
+				}
+
 				var expected int
 				if err := json.Unmarshal(testData.Output, &expected); err != nil {
 					t.Fatalf("Failed to parse output data: %v", err)
@@ -122,8 +141,7 @@ func TestReferenceData(t *testing.T) {
 		dirPath := filepath.Join("../tests", "shift-bounds")
 		files, err := os.ReadDir(dirPath)
 		if err != nil {
-			t.Logf("Skipping shift-bounds tests: %v", err)
-			return
+			t.Skipf("Skipping shift-bounds tests: %v", err)
 		}
 
 		for _, file := range files {
@@ -175,8 +193,7 @@ func TestReferenceData(t *testing.T) {
 		dirPath := filepath.Join("../tests", "ratio-bounds")
 		files, err := os.ReadDir(dirPath)
 		if err != nil {
-			t.Logf("Skipping ratio-bounds tests: %v", err)
-			return
+			t.Skipf("Skipping ratio-bounds tests: %v", err)
 		}
 
 		for _, file := range files {
@@ -230,7 +247,18 @@ func TestReferenceData(t *testing.T) {
 		dirPath := filepath.Join(testDataPath, estimatorName)
 		files, err := os.ReadDir(dirPath)
 		if err != nil {
-			t.Logf("Skipping %s tests: %v", estimatorName, err)
+			t.Skipf("Test directory not found for %s: %v", estimatorName, err)
+			continue
+		}
+
+		jsonFileCount := 0
+		for _, file := range files {
+			if strings.HasSuffix(file.Name(), ".json") {
+				jsonFileCount++
+			}
+		}
+		if jsonFileCount == 0 {
+			t.Errorf("No JSON test files found for %s in %s", estimatorName, dirPath)
 			continue
 		}
 
@@ -264,7 +292,7 @@ func TestReferenceData(t *testing.T) {
 					if err != nil {
 						// Skip cases that violate assumptions - tested separately
 						if _, ok := err.(*AssumptionError); ok {
-							return
+							t.Skipf("skipping due to assumption violation: %v", err)
 						}
 						t.Fatalf("%s(%v) error: %v", estimatorName, input.X, err)
 					}
@@ -281,7 +309,7 @@ func TestReferenceData(t *testing.T) {
 					if err != nil {
 						// Skip cases that violate assumptions - tested separately
 						if _, ok := err.(*AssumptionError); ok {
-							return
+							t.Skipf("skipping due to assumption violation: %v", err)
 						}
 						t.Fatalf("%s(%v) error: %v", estimatorName, directInput, err)
 					}
@@ -301,7 +329,18 @@ func TestReferenceData(t *testing.T) {
 		dirPath := filepath.Join(testDataPath, estimatorName)
 		files, err := os.ReadDir(dirPath)
 		if err != nil {
-			t.Logf("Skipping %s tests: %v", estimatorName, err)
+			t.Skipf("Test directory not found for %s: %v", estimatorName, err)
+			continue
+		}
+
+		jsonFileCount := 0
+		for _, file := range files {
+			if strings.HasSuffix(file.Name(), ".json") {
+				jsonFileCount++
+			}
+		}
+		if jsonFileCount == 0 {
+			t.Errorf("No JSON test files found for %s in %s", estimatorName, dirPath)
 			continue
 		}
 
@@ -337,7 +376,7 @@ func TestReferenceData(t *testing.T) {
 				if err != nil {
 					// Skip cases that violate assumptions - tested separately
 					if _, ok := err.(*AssumptionError); ok {
-						return
+						t.Skipf("skipping due to assumption violation: %v", err)
 					}
 					t.Fatalf("%s(%v, %v) error: %v", estimatorName, input.X, input.Y, err)
 				}

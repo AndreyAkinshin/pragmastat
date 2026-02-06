@@ -5,6 +5,7 @@
  * based on the distribution of dominance statistics.
  */
 
+import { AssumptionError } from './assumptions';
 import { gaussCdf } from './gaussCdf';
 
 const MAX_EXACT_SIZE = 400;
@@ -20,17 +21,17 @@ const MAX_ACCEPTABLE_BINOM_N = 65;
  * @param m Sample size of second sample (must be positive)
  * @param misrate Misclassification rate (must be in [0, 1])
  * @returns Integer representing the total margin split between lower and upper tails
- * @throws Error if n <= 0, m <= 0, or misrate is outside [0, 1]
+ * @throws AssumptionError if n <= 0, m <= 0, or misrate is outside [0, 1]
  */
 export function pairwiseMargin(n: number, m: number, misrate: number): number {
   if (n <= 0) {
-    throw new Error('n must be positive');
+    throw AssumptionError.domain('x');
   }
   if (m <= 0) {
-    throw new Error('m must be positive');
+    throw AssumptionError.domain('y');
   }
-  if (misrate < 0 || misrate > 1) {
-    throw new Error('misrate must be in range [0, 1]');
+  if (misrate < 0 || misrate > 1 || Number.isNaN(misrate)) {
+    throw AssumptionError.domain('misrate');
   }
 
   if (n + m <= MAX_EXACT_SIZE) {
@@ -138,6 +139,7 @@ function pairwiseMarginApproxRaw(n: number, m: number, misrate: number): number 
 function edgeworthCdf(n: number, m: number, u: number): number {
   const mu = (n * m) / 2.0;
   const su = Math.sqrt((n * m * (n + m + 1)) / 12.0);
+  // -0.5 continuity correction: computing P(U ≥ u) for a right-tail discrete CDF
   const z = (u - mu - 0.5) / su;
 
   // Standard normal PDF and CDF

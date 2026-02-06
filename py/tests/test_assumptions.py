@@ -47,15 +47,23 @@ def parse_array(arr: list | None) -> np.ndarray:
     return np.array([parse_value(v) for v in arr])
 
 
-FUNCTION_MAP = {
-    "Center": lambda x, _y: center(x),
-    "Ratio": lambda x, y: ratio(x, y),
-    "RelSpread": lambda x, _y: rel_spread(x),
-    "Spread": lambda x, _y: spread(x),
-    "Shift": lambda x, y: shift(x, y),
-    "AvgSpread": lambda x, y: avg_spread(x, y),
-    "Disparity": lambda x, y: disparity(x, y),
-}
+def call_function(func_name: str, inputs: dict) -> None:
+    """Dispatches to the appropriate estimator function."""
+    x = parse_array(inputs.get("x"))
+    y = parse_array(inputs.get("y"))
+
+    dispatch = {
+        "Center": lambda: center(x),
+        "Ratio": lambda: ratio(x, y),
+        "RelSpread": lambda: rel_spread(x),
+        "Spread": lambda: spread(x),
+        "Shift": lambda: shift(x, y),
+        "AvgSpread": lambda: avg_spread(x, y),
+        "Disparity": lambda: disparity(x, y),
+    }
+    if func_name not in dispatch:
+        raise ValueError(f"Unknown function: {func_name}")
+    dispatch[func_name]()
 
 
 def load_assumption_test_cases():
@@ -93,15 +101,8 @@ def load_assumption_test_cases():
 )
 def test_assumption_violation(func_name, inputs, expected_id):
     """Tests that the correct assumption violation is raised."""
-    x = parse_array(inputs.get("x"))
-    y = parse_array(inputs.get("y"))
-
-    func = FUNCTION_MAP.get(func_name)
-    if func is None:
-        pytest.fail(f"Unknown function: {func_name}")
-
     with pytest.raises(AssumptionError) as exc_info:
-        func(x, y)
+        call_function(func_name, inputs)
 
     err = exc_info.value
     assert err.violation.id.value == expected_id, (

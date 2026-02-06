@@ -20,6 +20,9 @@ public class ShiftBoundsEstimator : ITwoSampleBoundsEstimator
     int n = x.Size, m = y.Size;
     long total = (long)n * m;
 
+    if (double.IsNaN(misrate) || misrate < 0 || misrate > 1)
+      throw AssumptionException.Domain(Subject.Misrate);
+
     // Special case: when there's only one pairwise difference, bounds collapse to a single value
     if (total == 1)
     {

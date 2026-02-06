@@ -30,7 +30,8 @@ class AssumptionTest {
 
     data class TestInputs(
         val x: List<JsonNode>? = null,
-        val y: List<JsonNode>? = null
+        val y: List<JsonNode>? = null,
+        val misrate: JsonNode? = null
     )
 
     data class AssumptionTestCase(
@@ -86,8 +87,10 @@ class AssumptionTest {
         return arr?.map { parseValue(it) } ?: emptyList()
     }
 
-    private fun callFunction(funcName: String, x: List<Double>, y: List<Double>): Double {
-        return when (funcName) {
+    private fun callFunction(funcName: String, inputs: TestInputs) {
+        val x = parseArray(inputs.x)
+        val y = parseArray(inputs.y)
+        when (funcName) {
             "Center" -> center(x)
             "Ratio" -> ratio(x, y)
             "RelSpread" -> relSpread(x)
@@ -116,14 +119,11 @@ class AssumptionTest {
             for (testCase in suite.cases) {
                 val testName = "${suite.suite}/${testCase.name}"
                 tests.add(DynamicTest.dynamicTest(testName) {
-                    val x = parseArray(testCase.inputs.x)
-                    val y = parseArray(testCase.inputs.y)
-
                     val expectedId = AssumptionId.entries.find { it.id == testCase.expectedViolation.id }
                         ?: throw IllegalArgumentException("Unknown assumption ID: ${testCase.expectedViolation.id}")
 
                     val exception = assertFailsWith<AssumptionException> {
-                        callFunction(testCase.function, x, y)
+                        callFunction(testCase.function, testCase.inputs)
                     }
 
                     assertEquals(expectedId, exception.violation.id,

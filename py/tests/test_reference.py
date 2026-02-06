@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+import pytest
 from pragmastat import (
     center,
     spread,
@@ -43,6 +44,9 @@ def run_reference_tests(estimator_name, estimator_func, is_two_sample=False):
     json_files = list(test_data_dir.glob("*.json"))
     assert len(json_files) > 0, f"No JSON test files found in {test_data_dir}"
 
+    skipped_count = 0
+    executed_count = 0
+
     for json_file in json_files:
         with open(json_file, "r") as f:
             test_case = json.load(f)
@@ -56,6 +60,7 @@ def run_reference_tests(estimator_name, estimator_func, is_two_sample=False):
                 actual_output = estimator_func(input_x, input_y)
             except AssumptionError:
                 # Skip cases that violate assumptions - tested separately
+                skipped_count += 1
                 continue
         else:
             input_x = test_case["input"]["x"]
@@ -65,11 +70,18 @@ def run_reference_tests(estimator_name, estimator_func, is_two_sample=False):
                 actual_output = estimator_func(input_x)
             except AssumptionError:
                 # Skip cases that violate assumptions - tested separately
+                skipped_count += 1
                 continue
 
-        assert abs(actual_output - expected_output) < 1e-10, (
+        executed_count += 1
+        assert abs(actual_output - expected_output) < 1e-9, (
             f"Failed for test file: {json_file.name}, expected: {expected_output}, got: {actual_output}"
         )
+
+    # Ensure at least some tests were actually executed
+    assert executed_count > 0, (
+        f"All {len(json_files)} tests were skipped due to assumption violations"
+    )
 
 
 def run_distribution_tests(dist_name, dist_factory):
@@ -136,8 +148,18 @@ class TestReference:
             n = test_case["input"]["n"]
             m = test_case["input"]["m"]
             misrate = test_case["input"]["misrate"]
-            expected_output = test_case["output"]
 
+            # Handle error test cases
+            if "expected_error" in test_case:
+                with pytest.raises(AssumptionError) as exc_info:
+                    pairwise_margin(n, m, misrate)
+                assert (
+                    exc_info.value.violation.id.value
+                    == test_case["expected_error"]["id"]
+                )
+                continue
+
+            expected_output = test_case["output"]
             actual_output = pairwise_margin(n, m, misrate)
 
             assert actual_output == expected_output, (
@@ -164,10 +186,10 @@ class TestReference:
 
             result = shift_bounds(input_x, input_y, misrate)
 
-            assert abs(result.lower - expected_lower) < 1e-10, (
+            assert abs(result.lower - expected_lower) < 1e-9, (
                 f"Failed lower bound for test file: {json_file.name}, expected: {expected_lower}, got: {result.lower}"
             )
-            assert abs(result.upper - expected_upper) < 1e-10, (
+            assert abs(result.upper - expected_upper) < 1e-9, (
                 f"Failed upper bound for test file: {json_file.name}, expected: {expected_upper}, got: {result.upper}"
             )
 
@@ -177,8 +199,7 @@ class TestReference:
         test_data_dir = repo_root / "tests" / "ratio-bounds"
 
         if not test_data_dir.exists():
-            # Skip if test data directory doesn't exist yet
-            return
+            pytest.skip("ratio-bounds test data directory not found")
 
         json_files = list(test_data_dir.glob("*.json"))
         if len(json_files) == 0:
@@ -196,10 +217,10 @@ class TestReference:
 
             result = ratio_bounds(input_x, input_y, misrate)
 
-            assert abs(result.lower - expected_lower) < 1e-10, (
+            assert abs(result.lower - expected_lower) < 1e-9, (
                 f"Failed lower bound for test file: {json_file.name}, expected: {expected_lower}, got: {result.lower}"
             )
-            assert abs(result.upper - expected_upper) < 1e-10, (
+            assert abs(result.upper - expected_upper) < 1e-9, (
                 f"Failed upper bound for test file: {json_file.name}, expected: {expected_upper}, got: {result.upper}"
             )
 

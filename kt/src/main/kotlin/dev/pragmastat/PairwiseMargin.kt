@@ -15,12 +15,18 @@ private const val MAX_ACCEPTABLE_BINOM_N = 65
  * @param m Sample size of second sample (must be positive)
  * @param misrate Misclassification rate (must be in [0, 1])
  * @return Integer representing the total margin split between lower and upper tails
- * @throws IllegalArgumentException if n <= 0, m <= 0, or misrate is outside [0, 1]
+ * @throws AssumptionException if n <= 0, m <= 0, or misrate is outside [0, 1]
  */
 fun pairwiseMargin(n: Int, m: Int, misrate: Double): Int {
-    require(n > 0) { "n must be positive" }
-    require(m > 0) { "m must be positive" }
-    require(misrate in 0.0..1.0) { "misrate must be in range [0, 1]" }
+    if (n <= 0) {
+        throw AssumptionException(Violation(AssumptionId.DOMAIN, Subject.X))
+    }
+    if (m <= 0) {
+        throw AssumptionException(Violation(AssumptionId.DOMAIN, Subject.Y))
+    }
+    if (misrate < 0.0 || misrate > 1.0 || misrate.isNaN()) {
+        throw AssumptionException(Violation(AssumptionId.DOMAIN, Subject.MISRATE))
+    }
 
     return if (n + m <= MAX_EXACT_SIZE) {
         pairwiseMarginExact(n, m, misrate)
@@ -134,6 +140,7 @@ private fun edgeworthCdf(n: Int, m: Int, u: Long): Double {
 
     val mu = (nf * mf) / 2.0
     val su = sqrt((nf * mf * (nf + mf + 1.0)) / 12.0)
+    // -0.5 continuity correction: computing P(U ≥ u) for a right-tail discrete CDF
     val z = (uf - mu - 0.5) / su
 
     // Standard normal PDF and CDF

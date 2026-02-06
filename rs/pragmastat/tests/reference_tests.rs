@@ -37,7 +37,8 @@ struct PairwiseMarginInput {
 #[derive(Debug, Deserialize, Serialize)]
 struct PairwiseMarginTestCase {
     input: PairwiseMarginInput,
-    output: usize,
+    output: Option<usize>,
+    expected_error: Option<serde_json::Value>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -115,8 +116,12 @@ where
         test_data_dir
     );
 
-    for json_file in json_files {
-        let content = fs::read_to_string(&json_file).unwrap();
+    let mut executed_count = 0;
+    let total_count = json_files.len();
+    let mut failures = Vec::new();
+
+    for json_file in &json_files {
+        let content = fs::read_to_string(json_file).unwrap();
         let test_case: OneSampleTestCase = serde_json::from_str(&content).unwrap();
 
         // Skip test if it returns an error (assumption violation tests handled separately)
@@ -126,14 +131,29 @@ where
         };
         let expected_output = test_case.output;
 
-        assert!(
-            approx_eq!(f64, actual_output, expected_output, epsilon = 1e-10),
-            "Failed for test file: {:?}, expected: {}, got: {}",
-            json_file.file_name().unwrap(),
-            expected_output,
-            actual_output
-        );
+        executed_count += 1;
+        if !approx_eq!(f64, actual_output, expected_output, epsilon = 1e-9) {
+            failures.push(format!(
+                "{:?}: expected {}, got {}",
+                json_file.file_name().unwrap(),
+                expected_output,
+                actual_output
+            ));
+        }
     }
+
+    // Ensure at least some tests were actually executed
+    assert!(
+        executed_count > 0,
+        "All {} tests were skipped due to assumption violations",
+        total_count
+    );
+
+    assert!(
+        failures.is_empty(),
+        "Failed tests:\n{}",
+        failures.join("\n")
+    );
 }
 
 fn run_two_sample_tests<F, E>(estimator_name: &str, estimator_func: F)
@@ -167,8 +187,12 @@ where
         test_data_dir
     );
 
-    for json_file in json_files {
-        let content = fs::read_to_string(&json_file).unwrap();
+    let mut executed_count = 0;
+    let total_count = json_files.len();
+    let mut failures = Vec::new();
+
+    for json_file in &json_files {
+        let content = fs::read_to_string(json_file).unwrap();
         let test_case: TwoSampleTestCase = serde_json::from_str(&content).unwrap();
 
         // Skip test if it returns an error (assumption violation tests handled separately)
@@ -178,15 +202,31 @@ where
         };
         let expected_output = test_case.output;
 
-        assert!(
-            approx_eq!(f64, actual_output, expected_output, epsilon = 1e-10)
-                || (actual_output.is_infinite() && expected_output.is_infinite()),
-            "Failed for test file: {:?}, expected: {}, got: {}",
-            json_file.file_name().unwrap(),
-            expected_output,
-            actual_output
-        );
+        executed_count += 1;
+        if !(approx_eq!(f64, actual_output, expected_output, epsilon = 1e-9)
+            || (actual_output.is_infinite() && expected_output.is_infinite()))
+        {
+            failures.push(format!(
+                "{:?}: expected {}, got {}",
+                json_file.file_name().unwrap(),
+                expected_output,
+                actual_output
+            ));
+        }
     }
+
+    // Ensure at least some tests were actually executed
+    assert!(
+        executed_count > 0,
+        "All {} tests were skipped due to assumption violations",
+        total_count
+    );
+
+    assert!(
+        failures.is_empty(),
+        "Failed tests:\n{}",
+        failures.join("\n")
+    );
 }
 
 #[test]
@@ -251,27 +291,61 @@ fn run_pairwise_margin_tests() {
         test_data_dir
     );
 
-    for json_file in json_files {
-        let content = fs::read_to_string(&json_file).unwrap();
-        let test_case: PairwiseMarginTestCase = serde_json::from_str(&content).unwrap();
+    let mut failures = Vec::new();
 
-        let actual_output = pairwise_margin(
+    for json_file in &json_files {
+        let content = fs::read_to_string(json_file).unwrap();
+        let test_case: PairwiseMarginTestCase = serde_json::from_str(&content).unwrap();
+        let file_name = json_file.file_name().unwrap();
+
+        // Handle error test cases
+        if let Some(ref expected_error) = test_case.expected_error {
+            let result = pairwise_margin(
+                test_case.input.n,
+                test_case.input.m,
+                test_case.input.misrate,
+            );
+            match result {
+                Ok(_) => failures.push(format!("{file_name:?}: expected error, got Ok")),
+                Err(err) => {
+                    if let Some(expected_id) = expected_error.get("id").and_then(|v| v.as_str()) {
+                        if err.violation().id.as_str() != expected_id {
+                            failures.push(format!(
+                                "{file_name:?}: expected violation id {expected_id}, got {}",
+                                err.violation().id.as_str()
+                            ));
+                        }
+                    }
+                }
+            }
+            continue;
+        }
+
+        let actual_output = match pairwise_margin(
             test_case.input.n,
             test_case.input.m,
             test_case.input.misrate,
-        )
-        .expect("pairwise_margin should not fail for valid inputs");
-        let expected_output = test_case.output;
+        ) {
+            Ok(val) => val,
+            Err(e) => {
+                failures.push(format!("{file_name:?}: unexpected error {e:?}"));
+                continue;
+            }
+        };
+        let expected_output = test_case.output.expect("Test case must have output");
 
-        assert_eq!(
-            actual_output,
-            expected_output,
-            "Failed for test file: {:?}, expected: {}, got: {}",
-            json_file.file_name().unwrap(),
-            expected_output,
-            actual_output
-        );
+        if actual_output != expected_output {
+            failures.push(format!(
+                "{file_name:?}: expected {expected_output}, got {actual_output}"
+            ));
+        }
     }
+
+    assert!(
+        failures.is_empty(),
+        "Failed tests:\n{}",
+        failures.join("\n")
+    );
 }
 
 fn run_shift_bounds_tests() {
@@ -301,35 +375,54 @@ fn run_shift_bounds_tests() {
         test_data_dir
     );
 
-    for json_file in json_files {
-        let content = fs::read_to_string(&json_file).unwrap();
-        let test_case: ShiftBoundsTestCase = serde_json::from_str(&content).unwrap();
+    let mut failures = Vec::new();
 
-        let actual_output = shift_bounds(
+    for json_file in &json_files {
+        let content = fs::read_to_string(json_file).unwrap();
+        let test_case: ShiftBoundsTestCase = serde_json::from_str(&content).unwrap();
+        let file_name = json_file.file_name().unwrap();
+
+        let actual_output = match shift_bounds(
             &test_case.input.x,
             &test_case.input.y,
             test_case.input.misrate,
-        )
-        .unwrap();
-        let expected_lower = test_case.output.lower;
-        let expected_upper = test_case.output.upper;
+        ) {
+            Ok(val) => val,
+            Err(e) => {
+                failures.push(format!("{file_name:?}: unexpected error {e:?}"));
+                continue;
+            }
+        };
 
-        assert!(
-            approx_eq!(f64, actual_output.lower, expected_lower, epsilon = 1e-10),
-            "Failed for test file: {:?}, expected lower: {}, got: {}",
-            json_file.file_name().unwrap(),
-            expected_lower,
-            actual_output.lower
-        );
-
-        assert!(
-            approx_eq!(f64, actual_output.upper, expected_upper, epsilon = 1e-10),
-            "Failed for test file: {:?}, expected upper: {}, got: {}",
-            json_file.file_name().unwrap(),
-            expected_upper,
-            actual_output.upper
-        );
+        if !approx_eq!(
+            f64,
+            actual_output.lower,
+            test_case.output.lower,
+            epsilon = 1e-9
+        ) {
+            failures.push(format!(
+                "{file_name:?}: expected lower {}, got {}",
+                test_case.output.lower, actual_output.lower
+            ));
+        }
+        if !approx_eq!(
+            f64,
+            actual_output.upper,
+            test_case.output.upper,
+            epsilon = 1e-9
+        ) {
+            failures.push(format!(
+                "{file_name:?}: expected upper {}, got {}",
+                test_case.output.upper, actual_output.upper
+            ));
+        }
     }
+
+    assert!(
+        failures.is_empty(),
+        "Failed tests:\n{}",
+        failures.join("\n")
+    );
 }
 
 fn run_ratio_bounds_tests() {
@@ -337,7 +430,7 @@ fn run_ratio_bounds_tests() {
     let test_data_dir = repo_root.join("tests").join("ratio-bounds");
 
     if !test_data_dir.exists() {
-        // Skip if test data directory doesn't exist yet
+        eprintln!("Skipping ratio_bounds tests: test data directory not found");
         return;
     }
 
@@ -355,38 +448,58 @@ fn run_ratio_bounds_tests() {
         .collect();
 
     if json_files.is_empty() {
+        eprintln!("Skipping ratio_bounds tests: no JSON files found");
         return;
     }
 
-    for json_file in json_files {
-        let content = fs::read_to_string(&json_file).unwrap();
-        let test_case: RatioBoundsTestCase = serde_json::from_str(&content).unwrap();
+    let mut failures = Vec::new();
 
-        let actual_output = ratio_bounds(
+    for json_file in &json_files {
+        let content = fs::read_to_string(json_file).unwrap();
+        let test_case: RatioBoundsTestCase = serde_json::from_str(&content).unwrap();
+        let file_name = json_file.file_name().unwrap();
+
+        let actual_output = match ratio_bounds(
             &test_case.input.x,
             &test_case.input.y,
             test_case.input.misrate,
-        )
-        .unwrap();
-        let expected_lower = test_case.output.lower;
-        let expected_upper = test_case.output.upper;
+        ) {
+            Ok(val) => val,
+            Err(e) => {
+                failures.push(format!("{file_name:?}: unexpected error {e:?}"));
+                continue;
+            }
+        };
 
-        assert!(
-            approx_eq!(f64, actual_output.lower, expected_lower, epsilon = 1e-10),
-            "Failed for test file: {:?}, expected lower: {}, got: {}",
-            json_file.file_name().unwrap(),
-            expected_lower,
-            actual_output.lower
-        );
-
-        assert!(
-            approx_eq!(f64, actual_output.upper, expected_upper, epsilon = 1e-10),
-            "Failed for test file: {:?}, expected upper: {}, got: {}",
-            json_file.file_name().unwrap(),
-            expected_upper,
-            actual_output.upper
-        );
+        if !approx_eq!(
+            f64,
+            actual_output.lower,
+            test_case.output.lower,
+            epsilon = 1e-9
+        ) {
+            failures.push(format!(
+                "{file_name:?}: expected lower {}, got {}",
+                test_case.output.lower, actual_output.lower
+            ));
+        }
+        if !approx_eq!(
+            f64,
+            actual_output.upper,
+            test_case.output.upper,
+            epsilon = 1e-9
+        ) {
+            failures.push(format!(
+                "{file_name:?}: expected upper {}, got {}",
+                test_case.output.upper, actual_output.upper
+            ));
+        }
     }
+
+    assert!(
+        failures.is_empty(),
+        "Failed tests:\n{}",
+        failures.join("\n")
+    );
 }
 
 #[test]

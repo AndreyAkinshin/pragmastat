@@ -10,13 +10,13 @@
 # @throws Error if n <= 0, m <= 0, or misrate is outside [0, 1]
 pairwise_margin <- function(n, m, misrate) {
   if (n <= 0) {
-    stop("n must be positive")
+    stop(assumption_error(ASSUMPTION_IDS$DOMAIN, SUBJECTS$X))
   }
   if (m <= 0) {
-    stop("m must be positive")
+    stop(assumption_error(ASSUMPTION_IDS$DOMAIN, SUBJECTS$Y))
   }
-  if (misrate < 0 || misrate > 1) {
-    stop("misrate must be in range [0, 1]")
+  if (is.nan(misrate) || misrate < 0 || misrate > 1) {
+    stop(assumption_error(ASSUMPTION_IDS$DOMAIN, SUBJECTS$MISRATE))
   }
 
   # Use exact method for small to medium samples
@@ -121,9 +121,11 @@ pairwise_margin_approx_raw <- function(n, m, misrate) {
 edgeworth_cdf <- function(n, m, u) {
   mu <- (n * m) / 2.0
   su <- sqrt((n * m * (n + m + 1)) / 12.0)
+  # -0.5 continuity correction: computing P(U >= u) for a right-tail discrete CDF
   z <- (u - mu - 0.5) / su
 
-  # Use R's built-in normal distribution functions
+  # Note: uses R's built-in pnorm/dnorm (more accurate than ACM Algorithm 209 used by other languages).
+  # Results may differ at the last few bits of floating-point precision.
   phi <- dnorm(z) # Standard normal PDF
   Phi <- pnorm(z) # Standard normal CDF
 

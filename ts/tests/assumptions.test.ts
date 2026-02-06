@@ -8,7 +8,15 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { center, ratio, relSpread, spread, shift, avgSpread, disparity } from '../src/estimators';
+import {
+  center,
+  ratio,
+  relSpread,
+  spread,
+  shift,
+  avgSpread,
+  disparity,
+} from '../src/estimators';
 import { AssumptionError } from '../src/assumptions';
 
 interface ExpectedViolation {
@@ -18,6 +26,7 @@ interface ExpectedViolation {
 interface TestInputs {
   x?: (number | string)[];
   y?: (number | string)[];
+  misrate?: number | string;
 }
 
 interface AssumptionTestCase {
@@ -74,20 +83,39 @@ function parseArray(arr: (number | string)[] | undefined): number[] {
   return arr.map(parseValue);
 }
 
-type EstimatorFn = (x: number[], y: number[]) => number;
-
 /**
- * Function dispatch: maps function names to actual implementations.
+ * Dispatches to the appropriate estimator function.
  */
-const FUNCTION_MAP: Record<string, EstimatorFn> = {
-  Center: (x, _y) => center(x),
-  Ratio: (x, y) => ratio(x, y),
-  RelSpread: (x, _y) => relSpread(x),
-  Spread: (x, _y) => spread(x),
-  Shift: (x, y) => shift(x, y),
-  AvgSpread: (x, y) => avgSpread(x, y),
-  Disparity: (x, y) => disparity(x, y),
-};
+function callFunction(funcName: string, inputs: TestInputs): void {
+  const x = parseArray(inputs.x);
+  const y = parseArray(inputs.y);
+
+  switch (funcName) {
+    case 'Center':
+      center(x);
+      break;
+    case 'Ratio':
+      ratio(x, y);
+      break;
+    case 'RelSpread':
+      relSpread(x);
+      break;
+    case 'Spread':
+      spread(x);
+      break;
+    case 'Shift':
+      shift(x, y);
+      break;
+    case 'AvgSpread':
+      avgSpread(x, y);
+      break;
+    case 'Disparity':
+      disparity(x, y);
+      break;
+    default:
+      throw new Error(`Unknown function: ${funcName}`);
+  }
+}
 
 /**
  * Loads all assumption test cases from the shared test data.
@@ -117,26 +145,19 @@ describe('Assumption Violation Tests', () => {
   const testCases = loadAssumptionTestCases();
 
   test.each(testCases)('$suiteName/$testCase.name', ({ testCase }) => {
-    const x = parseArray(testCase.inputs.x);
-    const y = parseArray(testCase.inputs.y);
-
-    const func = FUNCTION_MAP[testCase.function];
-    if (!func) {
-      throw new Error(`Unknown function: ${testCase.function}`);
-    }
-
     const expectedId = testCase.expected_violation.id;
 
-    expect(() => func(x, y)).toThrow(AssumptionError);
-
+    let thrownError: AssumptionError | null = null;
     try {
-      func(x, y);
+      callFunction(testCase.function, testCase.inputs);
     } catch (e) {
       if (e instanceof AssumptionError) {
-        expect(e.violation.id).toBe(expectedId);
+        thrownError = e;
       } else {
         throw e;
       }
     }
+    expect(thrownError).not.toBeNull();
+    expect(thrownError!.violation.id).toBe(expectedId);
   });
 });

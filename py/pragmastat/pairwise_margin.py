@@ -8,6 +8,7 @@ for small samples (n+m <= 400) and Edgeworth approximation for larger samples.
 import math
 from typing import List
 
+from .assumptions import AssumptionError
 from .gauss_cdf import gauss_cdf as _gauss_cdf
 
 MAX_EXACT_SIZE = 400
@@ -31,14 +32,14 @@ def pairwise_margin(n: int, m: int, misrate: float) -> int:
         Integer representing the total margin split between lower and upper tails
 
     Raises:
-        ValueError: If n <= 0, m <= 0, or misrate is outside [0, 1]
+        AssumptionError: If n <= 0, m <= 0, or misrate is outside [0, 1]
     """
     if n <= 0:
-        raise ValueError("n must be positive")
+        raise AssumptionError.domain("x")
     if m <= 0:
-        raise ValueError("m must be positive")
-    if misrate < 0 or misrate > 1:
-        raise ValueError("misrate must be in range [0, 1]")
+        raise AssumptionError.domain("y")
+    if misrate < 0 or misrate > 1 or math.isnan(misrate):
+        raise AssumptionError.domain("misrate")
 
     if n + m <= MAX_EXACT_SIZE:
         return _pairwise_margin_exact(n, m, misrate)
@@ -128,6 +129,7 @@ def _edgeworth_cdf(n: int, m: int, u: int) -> float:
 
     mu = (nf * mf) / 2.0
     su = math.sqrt((nf * mf * (nf + mf + 1.0)) / 12.0)
+    # -0.5 continuity correction: computing P(U ≥ u) for a right-tail discrete CDF
     z = (uf - mu - 0.5) / su
 
     # Standard normal PDF and CDF

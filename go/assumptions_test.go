@@ -10,8 +10,11 @@ import (
 
 // AssumptionTestInputs represents input data for assumption tests.
 type AssumptionTestInputs struct {
-	X []interface{} `json:"x,omitempty"`
-	Y []interface{} `json:"y,omitempty"`
+	X       []interface{} `json:"x,omitempty"`
+	Y       []interface{} `json:"y,omitempty"`
+	Misrate any           `json:"misrate,omitempty"`
+	N       *int          `json:"n,omitempty"`
+	Seed    *string       `json:"seed,omitempty"`
 }
 
 // ExpectedViolation represents the expected violation.
@@ -83,23 +86,33 @@ func parseArray(arr []interface{}) []float64 {
 	return result
 }
 
-// callFunction dispatches to the appropriate estimator function.
-func callFunction(funcName string, x, y []float64) (float64, error) {
+// callAssumptionFunction dispatches to the appropriate estimator function.
+func callAssumptionFunction(funcName string, inputs AssumptionTestInputs) error {
+	x := parseArray(inputs.X)
+	y := parseArray(inputs.Y)
+
 	switch funcName {
 	case "Center":
-		return Center(x)
+		_, err := Center(x)
+		return err
 	case "Ratio":
-		return Ratio(x, y)
+		_, err := Ratio(x, y)
+		return err
 	case "RelSpread":
-		return RelSpread(x)
+		_, err := RelSpread(x)
+		return err
 	case "Spread":
-		return Spread(x)
+		_, err := Spread(x)
+		return err
 	case "Shift":
-		return Shift(x, y)
+		_, err := Shift(x, y)
+		return err
 	case "AvgSpread":
-		return AvgSpread(x, y)
+		_, err := AvgSpread(x, y)
+		return err
 	case "Disparity":
-		return Disparity(x, y)
+		_, err := Disparity(x, y)
+		return err
 	default:
 		panic("Unknown function: " + funcName)
 	}
@@ -120,9 +133,6 @@ func TestAssumptionViolations(t *testing.T) {
 		t.Fatalf("Failed to parse manifest: %v", err)
 	}
 
-	totalTests := 0
-	passedTests := 0
-
 	// Run each suite
 	for _, suiteEntry := range manifest.Suites {
 		suitePath := filepath.Join(assumptionsDir, suiteEntry.File)
@@ -138,15 +148,11 @@ func TestAssumptionViolations(t *testing.T) {
 
 		for _, testCase := range suite.Cases {
 			testName := suite.Suite + "/" + testCase.Name
-			totalTests++
 
 			t.Run(testName, func(t *testing.T) {
-				x := parseArray(testCase.Inputs.X)
-				y := parseArray(testCase.Inputs.Y)
-
 				expectedID := AssumptionID(testCase.ExpectedViolation.ID)
 
-				_, err := callFunction(testCase.Function, x, y)
+				err := callAssumptionFunction(testCase.Function, testCase.Inputs)
 
 				if err == nil {
 					t.Errorf("Expected violation %s but got success", expectedID)
@@ -164,11 +170,7 @@ func TestAssumptionViolations(t *testing.T) {
 						expectedID, assumptionErr.Violation.ID)
 					return
 				}
-
-				passedTests++
 			})
 		}
 	}
-
-	t.Logf("Assumption Tests: %d/%d passed", passedTests, totalTests)
 }
