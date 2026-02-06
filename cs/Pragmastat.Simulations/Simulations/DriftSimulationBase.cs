@@ -4,6 +4,7 @@ using JetBrains.Annotations;
 using Pragmastat.Distributions;
 using Pragmastat.Estimators;
 using Pragmastat.Internal;
+using Pragmastat.Randomization;
 using Pragmastat.Simulations.Misc;
 using Spectre.Console.Cli;
 
@@ -126,7 +127,11 @@ public abstract class DriftSimulationBase : SimulationBase<DriftSimulationBase.S
   private static double EstimateAsymptoticSpread(IContinuousDistribution distribution)
   {
     const int samplingSize = 10_000_000;
-    return MedianEstimator.Instance.Estimate(distribution.Random().Next(samplingSize).ToSample());
+    var rng = new Rng("asymptotic-spread");
+    var values = new double[samplingSize];
+    for (int i = 0; i < samplingSize; i++)
+      values[i] = distribution.Quantile(rng.Uniform());
+    return MedianEstimator.Instance.Estimate(new Sample(values));
   }
 
   protected double GetAsymptoticSpread(IContinuousDistribution distribution)
