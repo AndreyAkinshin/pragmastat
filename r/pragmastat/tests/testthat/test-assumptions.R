@@ -49,6 +49,7 @@ call_assumption_function <- function(func_name, inputs) {
     "Shift" = shift(x, y),
     "AvgSpread" = avg_spread(x, y),
     "Disparity" = disparity(x, y),
+    "MedianBounds" = median_bounds(x, misrate),
     "SignedRankMargin" = signed_rank_margin(n, misrate),
     stop(paste("Unknown function:", func_name))
   )

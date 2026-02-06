@@ -15,6 +15,7 @@ from pragmastat import (
     avg_spread,
     center,
     disparity,
+    median_bounds,
     ratio,
     rel_spread,
     shift,
@@ -73,6 +74,7 @@ def call_function(func_name: str, inputs: dict) -> None:
         "Shift": lambda: shift(x, y),
         "AvgSpread": lambda: avg_spread(x, y),
         "Disparity": lambda: disparity(x, y),
+        "MedianBounds": lambda: median_bounds(x, misrate),
         "SignedRankMargin": lambda: signed_rank_margin(n, misrate),
     }
     if func_name not in dispatch:

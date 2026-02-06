@@ -15,6 +15,7 @@ from .estimators import (
     disparity,
     shift_bounds,
     ratio_bounds,
+    median_bounds,
     Bounds,
 )
 from .pairwise_margin import pairwise_margin
@@ -51,6 +52,7 @@ __all__ = [
     "disparity",
     "shift_bounds",
     "ratio_bounds",
+    "median_bounds",
     "Bounds",
     "pairwise_margin",
     "signed_rank_margin",

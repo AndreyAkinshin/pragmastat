@@ -1,15 +1,19 @@
 from typing import Sequence, Union, NamedTuple
+import math
 import numpy as np
 from numpy.typing import NDArray
 from .fast_center import _fast_center
 from .fast_spread import _fast_spread
 from .fast_shift import _fast_shift
 from .pairwise_margin import pairwise_margin
+from .min_misrate import min_achievable_misrate_one_sample
+from .gauss_cdf import gauss_cdf
 from .assumptions import (
     check_validity,
     check_positivity,
     check_sparity,
     log,
+    AssumptionError,
 )
 
 
@@ -300,7 +304,7 @@ def shift_bounds(
 
     Raises:
         AssumptionError: If either sample is empty or contains NaN/Inf.
-        ValueError: If misrate is out of range.
+        AssumptionError: If misrate is out of range.
     """
     x = np.asarray(x)
     y = np.asarray(y)
@@ -309,6 +313,9 @@ def shift_bounds(
     check_validity(x, "x")
     # Check validity for y
     check_validity(y, "y")
+
+    if math.isnan(misrate) or misrate < 0 or misrate > 1:
+        raise AssumptionError.domain("misrate")
 
     n = len(x)
     m = len(y)
@@ -366,7 +373,7 @@ def ratio_bounds(
     Raises:
         AssumptionError: If either sample is empty, contains NaN/Inf,
             or contains non-positive values.
-        ValueError: If misrate is out of range.
+        AssumptionError: If misrate is out of range.
     """
     x = np.asarray(x)
     y = np.asarray(y)
@@ -383,3 +390,95 @@ def ratio_bounds(
 
     # Exp-transform back to ratio-space
     return Bounds(np.exp(log_bounds.lower), np.exp(log_bounds.upper))
+
+
+def _binomial_tail_probability(n: int, k: int) -> float:
+    """Computes binomial tail probability: P(Bin(n, 0.5) <= k).
+
+    Note: 2**n overflows float for n > 1024.
+    """
+    if k < 0:
+        return 0.0
+    if k >= n:
+        return 1.0
+
+    # Normal approximation with continuity correction for large n
+    # (2**n overflows float for n > 1024)
+    if n > 1023:
+        mean = n / 2.0
+        std = (n / 4.0) ** 0.5
+        z = (k + 0.5 - mean) / std
+        return gauss_cdf(z)
+
+    sum_ = 0.0
+    coef = 1.0  # C(n, i) starting with C(n, 0) = 1
+    total = 2.0**n
+
+    for i in range(k + 1):
+        sum_ += coef
+        coef = coef * (n - i) / (i + 1)
+
+    return sum_ / total
+
+
+def median_bounds(
+    x: Union[Sequence[float], NDArray],
+    misrate: float,
+) -> Bounds:
+    """
+    Provides bounds on the Median with specified misclassification rate (median_bounds).
+
+    Uses order statistics based on the binomial distribution to determine
+    which sample values form the bounds.
+
+    Args:
+        x: Sample array
+        misrate: Misclassification rate (probability that true median falls outside bounds)
+
+    Returns:
+        A Bounds object containing the lower and upper bounds
+
+    Raises:
+        AssumptionError: If sample is empty or contains NaN/Inf.
+        AssumptionError: If misrate is below minimum achievable.
+    """
+    x = np.asarray(x)
+    check_validity(x, "x")
+
+    if math.isnan(misrate) or misrate < 0 or misrate > 1:
+        raise AssumptionError.domain("misrate")
+
+    n = len(x)
+
+    if n < 2:
+        raise AssumptionError.domain("x")
+
+    sorted_x = sorted(x.tolist())
+
+    # Validate misrate
+    min_misrate = min_achievable_misrate_one_sample(n)
+    if misrate < min_misrate:
+        raise AssumptionError.domain("misrate")
+
+    alpha = misrate / 2.0
+
+    # Find the largest k where P(Bin(n,0.5) <= k) <= alpha
+    lo = 0
+    for k in range((n + 1) // 2):
+        tail_prob = _binomial_tail_probability(n, k)
+        if tail_prob <= alpha:
+            lo = k
+        else:
+            break
+
+    # Symmetric interval: hi = n - 1 - lo
+    hi = n - 1 - lo
+
+    if hi < lo:
+        hi = lo
+    if hi >= n:
+        hi = n - 1
+
+    return Bounds(sorted_x[lo], sorted_x[hi])
+
+

@@ -5,7 +5,8 @@
 //! JSON files in tests/assumptions/.
 
 use pragmastat::{
-    avg_spread, center, disparity, ratio, rel_spread, shift, spread, AssumptionError, AssumptionId,
+    avg_spread, center, disparity, median_bounds, ratio, rel_spread, shift, spread,
+    AssumptionError, AssumptionId, EstimatorError,
 };
 use serde::Deserialize;
 use std::fs;
@@ -23,6 +24,9 @@ struct ExpectedViolation {
 struct TestInputs {
     x: Option<Vec<serde_json::Value>>,
     y: Option<Vec<serde_json::Value>>,
+    misrate: Option<serde_json::Value>,
+    n: Option<usize>,
+    seed: Option<String>,
 }
 
 /// A single test case for assumption violation testing.
@@ -102,22 +106,39 @@ fn assumption_id_from_str(s: &str) -> AssumptionId {
         "validity" => AssumptionId::Validity,
         "positivity" => AssumptionId::Positivity,
         "sparity" => AssumptionId::Sparity,
+        "domain" => AssumptionId::Domain,
         _ => panic!("Unknown assumption ID: {}", s),
     }
 }
 
-/// Function dispatch: maps function names to actual implementations.
-fn call_function(func_name: &str, x: &[f64], y: &[f64]) -> Result<f64, AssumptionError> {
+/// Dispatches to the appropriate estimator function.
+/// Returns Ok(()) on success, Err with the assumption error on violation.
+fn call_function(func_name: &str, inputs: &TestInputs) -> Result<(), AssumptionError> {
+    let x = parse_array(&inputs.x);
+    let y = parse_array(&inputs.y);
+
+    let extract = |r: Result<_, EstimatorError>| -> Result<(), AssumptionError> {
+        match r {
+            Ok(_) => Ok(()),
+            Err(EstimatorError::Assumption(a)) => Err(a),
+            Err(e) => panic!("Unexpected error: {e}"),
+        }
+    };
+
     match func_name {
-        "Center" => center(x),
-        "Ratio" => ratio(x, y),
-        "RelSpread" => rel_spread(x),
-        "Spread" => spread(x),
-        "Shift" => shift(x, y),
-        "AvgSpread" => avg_spread(x, y),
-        "Disparity" => disparity(x, y),
+        "Center" => extract(center(&x).map(|_| ()))?,
+        "Ratio" => extract(ratio(&x, &y).map(|_| ()))?,
+        "RelSpread" => extract(rel_spread(&x).map(|_| ()))?,
+        "Spread" => extract(spread(&x).map(|_| ()))?,
+        "Shift" => extract(shift(&x, &y).map(|_| ()))?,
+        "AvgSpread" => extract(avg_spread(&x, &y).map(|_| ()))?,
+        "Disparity" => extract(disparity(&x, &y).map(|_| ()))?,
+        "MedianBounds" => {
+            extract(median_bounds(&x, parse_value(inputs.misrate.as_ref().unwrap())).map(|_| ()))?
+        }
         _ => panic!("Unknown function: {}", func_name),
     }
+    Ok(())
 }
 
 /// Loads and runs all assumption test suites.
@@ -147,12 +168,10 @@ fn run_assumption_tests() {
 
         for test_case in &suite.cases {
             total_tests += 1;
-            let x = parse_array(&test_case.inputs.x);
-            let y = parse_array(&test_case.inputs.y);
 
             let expected_id = assumption_id_from_str(&test_case.expected_violation.id);
 
-            let result = call_function(&test_case.function, &x, &y);
+            let result = call_function(&test_case.function, &test_case.inputs);
 
             match result {
                 Ok(_) => {

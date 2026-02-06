@@ -1,0 +1,17 @@
+{
+  "input": {
+    "x": [
+      0,
+      4,
+      8,
+      12,
+      16
+    ],
+    "misrate": 0.1
+  },
+  "output": {
+    "lower": 0,
+    "upper": 16
+  },
+  "comment": "Property test: scale 2x - scaled by 2 from identity case"
+}

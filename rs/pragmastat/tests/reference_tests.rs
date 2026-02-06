@@ -1407,6 +1407,19 @@ struct SignedRankMarginTestCase {
     expected_error: Option<serde_json::Value>,
 }
 
+#[derive(Debug, Deserialize)]
+struct MedianBoundsInput {
+    x: Vec<f64>,
+    misrate: f64,
+}
+
+#[derive(Debug, Deserialize)]
+struct MedianBoundsTestCase {
+    input: MedianBoundsInput,
+    output: Option<BoundsOutput>,
+    expected_error: Option<serde_json::Value>,
+}
+
 fn run_signed_rank_margin_tests() {
     let repo_root = find_repo_root();
     let test_data_dir = repo_root.join("tests").join("signed-rank-margin");
@@ -1483,7 +1496,111 @@ fn run_signed_rank_margin_tests() {
     );
 }
 
+fn run_median_bounds_tests() {
+    let repo_root = find_repo_root();
+    let test_data_dir = repo_root.join("tests").join("median-bounds");
+
+    if !test_data_dir.exists() {
+        panic!("Test data directory not found: {:?}", test_data_dir);
+    }
+
+    let json_files: Vec<_> = fs::read_dir(&test_data_dir)
+        .unwrap()
+        .filter_map(|entry| {
+            let entry = entry.unwrap();
+            let path = entry.path();
+            if path.extension()?.to_str()? == "json" {
+                Some(path)
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    assert!(
+        !json_files.is_empty(),
+        "No JSON test files found in {:?}",
+        test_data_dir
+    );
+
+    let mut failures = Vec::new();
+
+    for json_file in &json_files {
+        let content = fs::read_to_string(json_file).unwrap();
+        let test_case: MedianBoundsTestCase = serde_json::from_str(&content).unwrap();
+        let file_name = json_file.file_name().unwrap();
+
+        // Handle error test cases
+        if let Some(ref expected_error) = test_case.expected_error {
+            let result = median_bounds(&test_case.input.x, test_case.input.misrate);
+            match result {
+                Ok(_) => failures.push(format!("{file_name:?}: expected error, got Ok")),
+                Err(err) => {
+                    if let Some(expected_id) = expected_error.get("id").and_then(|v| v.as_str()) {
+                        if let EstimatorError::Assumption(ref ae) = err {
+                            if ae.violation().id.as_str() != expected_id {
+                                failures.push(format!(
+                                    "{file_name:?}: expected violation id {expected_id}, got {}",
+                                    ae.violation().id.as_str()
+                                ));
+                            }
+                        } else {
+                            failures.push(format!(
+                                "{file_name:?}: expected AssumptionError, got {err:?}"
+                            ));
+                        }
+                    }
+                }
+            }
+            continue;
+        }
+
+        let actual_output = match median_bounds(&test_case.input.x, test_case.input.misrate) {
+            Ok(val) => val,
+            Err(e) => {
+                failures.push(format!("{file_name:?}: unexpected error {e:?}"));
+                continue;
+            }
+        };
+        let expected_output = test_case.output.expect("Test case must have output");
+
+        if !approx_eq!(
+            f64,
+            actual_output.lower,
+            expected_output.lower,
+            epsilon = 1e-9
+        ) {
+            failures.push(format!(
+                "{file_name:?}: expected lower {}, got {}",
+                expected_output.lower, actual_output.lower
+            ));
+        }
+        if !approx_eq!(
+            f64,
+            actual_output.upper,
+            expected_output.upper,
+            epsilon = 1e-9
+        ) {
+            failures.push(format!(
+                "{file_name:?}: expected upper {}, got {}",
+                expected_output.upper, actual_output.upper
+            ));
+        }
+    }
+
+    assert!(
+        failures.is_empty(),
+        "Failed tests:\n{}",
+        failures.join("\n")
+    );
+}
+
 #[test]
 fn test_signed_rank_margin() {
     run_signed_rank_margin_tests();
+}
+
+#[test]
+fn test_median_bounds() {
+    run_median_bounds_tests();
 }

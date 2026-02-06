@@ -1,0 +1,10 @@
+{
+  "input": {
+    "x": [1],
+    "misrate": 0.5
+  },
+  "expected_error": {
+    "id": "domain"
+  },
+  "comment": "MedianBounds requires at least 2 elements"
+}

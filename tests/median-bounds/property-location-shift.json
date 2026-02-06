@@ -1,0 +1,17 @@
+{
+  "input": {
+    "x": [
+      10,
+      12,
+      14,
+      16,
+      18
+    ],
+    "misrate": 0.1
+  },
+  "output": {
+    "lower": 10,
+    "upper": 18
+  },
+  "comment": "Property test: location shift - shifted by 10 from identity case"
+}

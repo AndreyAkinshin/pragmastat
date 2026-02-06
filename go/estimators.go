@@ -7,15 +7,14 @@ import (
 	"sort"
 )
 
-// Number is a constraint that permits signed integer or floating-point type.
+// Number is a constraint that permits signed/unsigned integer or floating-point type.
 type Number interface {
-	~int | ~int8 | ~int16 | ~int32 | ~int64 | ~float32 | ~float64
+	~int | ~int8 | ~int16 | ~int32 | ~int64 |
+		~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 |
+		~float32 | ~float64
 }
 
 var errEmptyInput = errors.New("input slice cannot be empty")
-var errNMustBePositive = errors.New("n must be positive")
-var errMMustBePositive = errors.New("m must be positive")
-var errMisrateOutOfRange = errors.New("misrate must be in range [0, 1]")
 
 // Median calculates the median of a slice of numeric values.
 func Median[T Number](values []T) (float64, error) {
@@ -31,7 +30,7 @@ func Median[T Number](values []T) (float64, error) {
 	sort.Slice(sorted, func(i, j int) bool { return sorted[i] < sorted[j] })
 
 	if n%2 == 0 {
-		return (float64(sorted[n/2-1] + sorted[n/2])) / 2.0, nil
+		return (float64(sorted[n/2-1]) + float64(sorted[n/2])) / 2.0, nil
 	}
 	return float64(sorted[n/2]), nil
 }
@@ -250,6 +249,10 @@ func ShiftBounds[T Number](x, y []T, misrate float64) (Bounds, error) {
 		return Bounds{}, err
 	}
 
+	if math.IsNaN(misrate) || misrate < 0 || misrate > 1 {
+		return Bounds{}, NewDomainError(SubjectMisrate)
+	}
+
 	n := len(x)
 	m := len(y)
 
@@ -340,3 +343,104 @@ func RatioBounds[T Number](x, y []T, misrate float64) (Bounds, error) {
 		Upper: math.Exp(logBounds.Upper),
 	}, nil
 }
+
+// MedianBounds provides exact distribution-free bounds for the population median.
+// No symmetry requirement. Uses order statistics with binomial distribution for exact coverage.
+func MedianBounds[T Number](x []T, misrate float64) (Bounds, error) {
+	if err := checkValidity(x, SubjectX); err != nil {
+		return Bounds{}, err
+	}
+
+	if math.IsNaN(misrate) || misrate < 0 || misrate > 1 {
+		return Bounds{}, NewDomainError(SubjectMisrate)
+	}
+
+	n := len(x)
+	if n < 2 {
+		return Bounds{}, NewDomainError(SubjectX)
+	}
+
+	minMisrate, err := MinAchievableMisrateOneSample(n)
+	if err != nil {
+		return Bounds{}, err
+	}
+	if misrate < minMisrate {
+		return Bounds{}, NewDomainError(SubjectMisrate)
+	}
+
+	// Sort the input
+	sorted := make([]float64, n)
+	for i, v := range x {
+		sorted[i] = float64(v)
+	}
+	sort.Float64s(sorted)
+
+	// Compute order statistic indices
+	lo, hi := computeMedianBoundsIndices(n, misrate)
+
+	return Bounds{Lower: sorted[lo], Upper: sorted[hi]}, nil
+}
+
+// computeMedianBoundsIndices finds order statistic indices that achieve the specified coverage.
+// Uses binomial distribution: the interval [X_{(lo+1)}, X_{(hi+1)}] (1-based)
+// has coverage 1 - 2*P(Bin(n,0.5) <= lo).
+func computeMedianBoundsIndices(n int, misrate float64) (lo, hi int) {
+	alpha := misrate / 2
+
+	// Find the largest k where P(Bin(n,0.5) <= k) <= alpha
+	lo = 0
+	for k := 0; k < (n+1)/2; k++ {
+		tailProb := binomialTailProbability(n, k)
+		if tailProb <= alpha {
+			lo = k
+		} else {
+			break
+		}
+	}
+
+	// Symmetric interval: hi = n - 1 - lo
+	hi = n - 1 - lo
+
+	if hi < lo {
+		hi = lo
+	}
+	if hi >= n {
+		hi = n - 1
+	}
+
+	return lo, hi
+}
+
+// binomialTailProbability computes P(X <= k) for X ~ Binomial(n, 0.5).
+// Uses incremental binomial coefficient computation for efficiency.
+// Note: 2^n overflows float64 for n > 1024.
+func binomialTailProbability(n, k int) float64 {
+	if k < 0 {
+		return 0
+	}
+	if k >= n {
+		return 1
+	}
+
+	// Normal approximation with continuity correction for large n
+	// (2^n overflows float64 for n > 1024)
+	if n > 1023 {
+		mean := float64(n) / 2.0
+		std := math.Sqrt(float64(n) / 4.0)
+		z := (float64(k) + 0.5 - mean) / std
+		return gaussCdf(z)
+	}
+
+	total := math.Pow(2, float64(n))
+	sum := 0.0
+	coef := 1.0 // C(n, 0) = 1
+
+	for i := 0; i <= k; i++ {
+		sum += coef
+		// C(n, i+1) = C(n, i) * (n-i) / (i+1)
+		coef = coef * float64(n-i) / float64(i+1)
+	}
+
+	return sum / total
+}
+

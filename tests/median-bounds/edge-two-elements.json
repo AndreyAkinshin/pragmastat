@@ -1,0 +1,13 @@
+{
+  "input": {
+    "x": [
+      1,
+      3
+    ],
+    "misrate": 0.5
+  },
+  "output": {
+    "lower": 1,
+    "upper": 3
+  }
+}

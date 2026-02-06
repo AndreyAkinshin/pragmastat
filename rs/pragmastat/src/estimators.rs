@@ -18,26 +18,27 @@ fn median_sorted(sorted: &[f64]) -> Result<f64, &'static str> {
 }
 
 /// Calculates the median of a slice
-pub fn median(values: &[f64]) -> Result<f64, AssumptionError> {
+pub fn median(values: &[f64]) -> Result<f64, EstimatorError> {
     // Check validity (priority 0)
     check_validity(values, Subject::X)?;
     let mut sorted = values.to_vec();
     sorted.sort_by(|a, b| a.total_cmp(b));
-    median_sorted(&sorted).map_err(|_| AssumptionError::validity("Median", Subject::X))
+    median_sorted(&sorted).map_err(|_| EstimatorError::from(AssumptionError::validity(Subject::X)))
 }
 
-/// Estimates the central value of the data (Center)
+/// Estimates the central value of the data (center)
 ///
 /// Calculates the median of all pairwise averages (x[i] + x[j])/2.
 /// More robust than the mean and more efficient than the median.
 /// Uses fast O(n log n) algorithm.
-pub fn center(x: &[f64]) -> Result<f64, AssumptionError> {
+pub fn center(x: &[f64]) -> Result<f64, EstimatorError> {
     // Check validity (priority 0)
     check_validity(x, Subject::X)?;
-    crate::fast_center::fast_center(x).map_err(|_| AssumptionError::validity("Center", Subject::X))
+    crate::fast_center::fast_center(x)
+        .map_err(|_| EstimatorError::from(AssumptionError::validity(Subject::X)))
 }
 
-/// Estimates data dispersion (Spread)
+/// Estimates data dispersion (spread)
 ///
 /// Calculates the median of all pairwise absolute differences |x[i] - x[j]|.
 /// More robust than standard deviation and more efficient than MAD.
@@ -45,14 +46,14 @@ pub fn center(x: &[f64]) -> Result<f64, AssumptionError> {
 ///
 /// # Assumptions
 ///
-/// - `sparity(x)` - sample must be non tie-dominant (Spread > 0)
+/// - `sparity(x)` - sample must be non tie-dominant (spread > 0)
 ///
 /// # Errors
 ///
 /// Returns `AssumptionError` if:
 /// - Input is empty, contains NaN, or contains infinite values (validity)
 /// - Sample is tie-dominant or has fewer than two elements (sparity)
-pub fn spread(x: &[f64]) -> Result<f64, AssumptionError> {
+pub fn spread(x: &[f64]) -> Result<f64, EstimatorError> {
     // Check validity first (priority 0)
     check_validity(x, Subject::X)?;
 
@@ -61,24 +62,25 @@ pub fn spread(x: &[f64]) -> Result<f64, AssumptionError> {
 
     // Use the internal fast implementation
     // We know at this point the input is valid, so unwrap is safe for internal errors
-    crate::fast_spread::fast_spread(x).map_err(|_| AssumptionError::validity("Spread", Subject::X))
+    crate::fast_spread::fast_spread(x)
+        .map_err(|_| EstimatorError::from(AssumptionError::validity(Subject::X)))
 }
 
-/// Measures the relative dispersion of a sample (RelSpread)
+/// Measures the relative dispersion of a sample (rel_spread)
 ///
-/// Calculates the ratio of Spread to absolute Center.
+/// Calculates the ratio of spread to absolute center.
 /// Robust alternative to the coefficient of variation.
 ///
 /// # Assumptions
 ///
-/// - `positivity(x)` - all values must be strictly positive (ensures Center > 0)
+/// - `positivity(x)` - all values must be strictly positive (ensures center > 0)
 ///
 /// # Errors
 ///
 /// Returns `AssumptionError` if:
 /// - Input is empty, contains NaN, or contains infinite values (validity)
 /// - Any value is zero or negative (positivity)
-pub fn rel_spread(x: &[f64]) -> Result<f64, AssumptionError> {
+pub fn rel_spread(x: &[f64]) -> Result<f64, EstimatorError> {
     // Check validity (priority 0)
     check_validity(x, Subject::X)?;
 
@@ -87,34 +89,35 @@ pub fn rel_spread(x: &[f64]) -> Result<f64, AssumptionError> {
 
     // Calculate center (we know x is valid, center should succeed)
     let center_val = crate::fast_center::fast_center(x)
-        .map_err(|_| AssumptionError::validity("RelSpread", Subject::X))?;
+        .map_err(|_| EstimatorError::from(AssumptionError::validity(Subject::X)))?;
 
     // Calculate spread (we know x is valid)
-    // Note: spread now requires sparity, but for RelSpread we require positivity
+    // Note: spread now requires sparity, but for rel_spread we require positivity
     // which is checked above. We use the internal implementation directly.
     let spread_val = crate::fast_spread::fast_spread(x)
-        .map_err(|_| AssumptionError::validity("RelSpread", Subject::X))?;
+        .map_err(|_| EstimatorError::from(AssumptionError::validity(Subject::X)))?;
 
     // center_val is guaranteed positive because all values are positive
     Ok(spread_val / center_val.abs())
 }
 
-/// Measures the typical difference between elements of x and y (Shift)
+/// Measures the typical difference between elements of x and y (shift)
 ///
 /// Calculates the median of all pairwise differences (x[i] - y[j]).
 /// Positive values mean x is typically larger, negative means y is typically larger.
 /// Uses fast O((m+n) log precision) algorithm.
-pub fn shift(x: &[f64], y: &[f64]) -> Result<f64, AssumptionError> {
+pub fn shift(x: &[f64], y: &[f64]) -> Result<f64, EstimatorError> {
     // Check validity (priority 0)
     check_validity(x, Subject::X)?;
     check_validity(y, Subject::Y)?;
-    crate::fast_shift::fast_shift(x, y).map_err(|_| AssumptionError::validity("Shift", Subject::X))
+    crate::fast_shift::fast_shift(x, y)
+        .map_err(|_| EstimatorError::from(AssumptionError::validity(Subject::X)))
 }
 
-/// Measures how many times larger x is compared to y (Ratio)
+/// Measures how many times larger x is compared to y (ratio)
 ///
 /// Calculates the median of all pairwise ratios (x[i] / y[j]) via log-transformation.
-/// Equivalent to: exp(Shift(log(x), log(y)))
+/// Equivalent to: exp(shift(log(x), log(y)))
 /// For example, ratio = 1.2 means x is typically 20% larger than y.
 /// Uses fast O((m+n) log precision) algorithm.
 ///
@@ -128,7 +131,7 @@ pub fn shift(x: &[f64], y: &[f64]) -> Result<f64, AssumptionError> {
 /// Returns `AssumptionError` if:
 /// - Either input is empty, contains NaN, or contains infinite values (validity)
 /// - Either sample contains zero or negative values (positivity)
-pub fn ratio(x: &[f64], y: &[f64]) -> Result<f64, AssumptionError> {
+pub fn ratio(x: &[f64], y: &[f64]) -> Result<f64, EstimatorError> {
     // Check validity for x (priority 0, subject x)
     check_validity(x, Subject::X)?;
 
@@ -141,24 +144,25 @@ pub fn ratio(x: &[f64], y: &[f64]) -> Result<f64, AssumptionError> {
     // Check positivity for y (priority 1, subject y)
     check_positivity(y, Subject::Y)?;
 
-    crate::fast_shift::fast_ratio(x, y).map_err(|_| AssumptionError::validity("Ratio", Subject::X))
+    crate::fast_shift::fast_ratio(x, y)
+        .map_err(|_| EstimatorError::from(AssumptionError::validity(Subject::X)))
 }
 
-/// Measures the typical variability when considering both samples together (AvgSpread)
+/// Measures the typical variability when considering both samples together (avg_spread)
 ///
-/// Computes the weighted average of individual spreads: (n*Spread(x) + m*Spread(y))/(n+m).
+/// Computes the weighted average of individual spreads: (n*spread(x) + m*spread(y))/(n+m).
 ///
 /// # Assumptions
 ///
-/// - `sparity(x)` - first sample must be non tie-dominant (Spread > 0)
-/// - `sparity(y)` - second sample must be non tie-dominant (Spread > 0)
+/// - `sparity(x)` - first sample must be non tie-dominant (spread > 0)
+/// - `sparity(y)` - second sample must be non tie-dominant (spread > 0)
 ///
 /// # Errors
 ///
 /// Returns `AssumptionError` if:
 /// - Either input is empty, contains NaN, or contains infinite values (validity)
 /// - Either sample is tie-dominant or has fewer than two elements (sparity)
-pub fn avg_spread(x: &[f64], y: &[f64]) -> Result<f64, AssumptionError> {
+pub fn avg_spread(x: &[f64], y: &[f64]) -> Result<f64, EstimatorError> {
     // Check validity for x (priority 0, subject x)
     check_validity(x, Subject::X)?;
 
@@ -176,28 +180,28 @@ pub fn avg_spread(x: &[f64], y: &[f64]) -> Result<f64, AssumptionError> {
 
     // Calculate spreads (we know inputs are valid and non-degenerate)
     let spread_x = crate::fast_spread::fast_spread(x)
-        .map_err(|_| AssumptionError::validity("AvgSpread", Subject::X))?;
+        .map_err(|_| EstimatorError::from(AssumptionError::validity(Subject::X)))?;
     let spread_y = crate::fast_spread::fast_spread(y)
-        .map_err(|_| AssumptionError::validity("AvgSpread", Subject::Y))?;
+        .map_err(|_| EstimatorError::from(AssumptionError::validity(Subject::Y)))?;
 
     Ok((n as f64 * spread_x + m as f64 * spread_y) / (n + m) as f64)
 }
 
-/// Measures effect size: a normalized difference between x and y (Disparity)
+/// Measures effect size: a normalized difference between x and y (disparity)
 ///
-/// Calculated as Shift / AvgSpread. Robust alternative to Cohen's d.
+/// Calculated as shift / avg_spread. Robust alternative to Cohen's d.
 ///
 /// # Assumptions
 ///
-/// - `sparity(x)` - first sample must be non tie-dominant (Spread > 0)
-/// - `sparity(y)` - second sample must be non tie-dominant (Spread > 0)
+/// - `sparity(x)` - first sample must be non tie-dominant (spread > 0)
+/// - `sparity(y)` - second sample must be non tie-dominant (spread > 0)
 ///
 /// # Errors
 ///
 /// Returns `AssumptionError` if:
 /// - Either input is empty, contains NaN, or contains infinite values (validity)
 /// - Either sample is tie-dominant or has fewer than two elements (sparity)
-pub fn disparity(x: &[f64], y: &[f64]) -> Result<f64, AssumptionError> {
+pub fn disparity(x: &[f64], y: &[f64]) -> Result<f64, EstimatorError> {
     // Check validity for x (priority 0, subject x)
     check_validity(x, Subject::X)?;
 
@@ -212,15 +216,15 @@ pub fn disparity(x: &[f64], y: &[f64]) -> Result<f64, AssumptionError> {
 
     // Calculate shift (we know inputs are valid)
     let shift_val = crate::fast_shift::fast_shift(x, y)
-        .map_err(|_| AssumptionError::validity("Disparity", Subject::X))?;
+        .map_err(|_| EstimatorError::from(AssumptionError::validity(Subject::X)))?;
 
     // Calculate avg_spread (we know inputs are valid and non-degenerate)
     let n = x.len();
     let m = y.len();
     let spread_x = crate::fast_spread::fast_spread(x)
-        .map_err(|_| AssumptionError::validity("Disparity", Subject::X))?;
+        .map_err(|_| EstimatorError::from(AssumptionError::validity(Subject::X)))?;
     let spread_y = crate::fast_spread::fast_spread(y)
-        .map_err(|_| AssumptionError::validity("Disparity", Subject::Y))?;
+        .map_err(|_| EstimatorError::from(AssumptionError::validity(Subject::Y)))?;
     let avg_spread_val = (n as f64 * spread_x + m as f64 * spread_y) / (n + m) as f64;
 
     Ok(shift_val / avg_spread_val)
@@ -233,7 +237,7 @@ pub struct Bounds {
     pub upper: f64,
 }
 
-/// Provides bounds on the Shift estimator with specified misclassification rate (ShiftBounds)
+/// Provides bounds on the shift estimator with specified misclassification rate (shift_bounds)
 ///
 /// The misrate represents the probability that the true shift falls outside the computed bounds.
 /// This is a pragmatic alternative to traditional confidence intervals for the Hodges-Lehmann estimator.
@@ -253,6 +257,12 @@ pub fn shift_bounds(x: &[f64], y: &[f64], misrate: f64) -> Result<Bounds, Estima
 
     // Check validity for y
     check_validity(y, Subject::Y)?;
+
+    if misrate.is_nan() || !(0.0..=1.0).contains(&misrate) {
+        return Err(EstimatorError::from(AssumptionError::domain(
+            Subject::Misrate,
+        )));
+    }
 
     let n = x.len();
     let m = y.len();
@@ -297,7 +307,7 @@ pub fn shift_bounds(x: &[f64], y: &[f64], misrate: f64) -> Result<Bounds, Estima
     Ok(Bounds { lower, upper })
 }
 
-/// Provides bounds on the Ratio estimator with specified misclassification rate (RatioBounds)
+/// Provides bounds on the ratio estimator with specified misclassification rate (ratio_bounds)
 ///
 /// Computes bounds via log-transformation and shift_bounds delegation:
 /// `ratio_bounds(x, y, misrate) = exp(shift_bounds(log(x), log(y), misrate))`
@@ -333,3 +343,106 @@ pub fn ratio_bounds(x: &[f64], y: &[f64], misrate: f64) -> Result<Bounds, Estima
         upper: log_bounds.upper.exp(),
     })
 }
+
+/// Provides exact distribution-free bounds for the population median (median_bounds)
+///
+/// No symmetry requirement. Uses order statistics with binomial distribution for exact coverage.
+///
+/// # Arguments
+///
+/// * `x` - Sample slice
+/// * `misrate` - Misclassification rate (probability that true median falls outside bounds)
+///
+/// # Returns
+///
+/// A `Bounds` struct containing the lower and upper bounds, or an error if inputs are invalid.
+pub fn median_bounds(x: &[f64], misrate: f64) -> Result<Bounds, EstimatorError> {
+    check_validity(x, Subject::X)?;
+
+    if misrate.is_nan() || !(0.0..=1.0).contains(&misrate) {
+        return Err(EstimatorError::from(AssumptionError::domain(
+            Subject::Misrate,
+        )));
+    }
+
+    let n = x.len();
+    if n < 2 {
+        return Err(EstimatorError::from(AssumptionError::domain(Subject::X)));
+    }
+
+    let min_misrate = crate::min_misrate::min_achievable_misrate_one_sample(n)?;
+    if misrate < min_misrate {
+        return Err(EstimatorError::from(AssumptionError::domain(
+            Subject::Misrate,
+        )));
+    }
+
+    // Sort the input
+    let mut sorted = x.to_vec();
+    sorted.sort_by(|a, b| a.total_cmp(b));
+
+    // Compute order statistic indices
+    let (lo, hi) = compute_median_bounds_indices(n, misrate);
+
+    Ok(Bounds {
+        lower: sorted[lo],
+        upper: sorted[hi],
+    })
+}
+
+/// Find order statistic indices that achieve the specified coverage.
+fn compute_median_bounds_indices(n: usize, misrate: f64) -> (usize, usize) {
+    let alpha = misrate / 2.0;
+
+    // Find the largest k where P(Bin(n,0.5) <= k) <= alpha
+    let mut lo = 0;
+    for k in 0..n.div_ceil(2) {
+        let tail_prob = binomial_tail_probability(n, k);
+        if tail_prob <= alpha {
+            lo = k;
+        } else {
+            break;
+        }
+    }
+
+    // Symmetric interval: hi = n - 1 - lo
+    let mut hi = n - 1 - lo;
+
+    if hi < lo {
+        hi = lo;
+    }
+    if hi >= n {
+        hi = n - 1;
+    }
+
+    (lo, hi)
+}
+
+/// Compute P(X <= k) for X ~ Binomial(n, 0.5).
+/// Note: 2^n overflows f64 for n > 1024.
+fn binomial_tail_probability(n: usize, k: usize) -> f64 {
+    if k >= n {
+        return 1.0;
+    }
+
+    // Normal approximation with continuity correction for large n
+    // (2^n overflows f64 for n > 1024)
+    if n > 1023 {
+        let mean = n as f64 / 2.0;
+        let std = (n as f64 / 4.0).sqrt();
+        let z = (k as f64 + 0.5 - mean) / std;
+        return crate::gauss_cdf::gauss_cdf(z);
+    }
+
+    let total = 2.0_f64.powf(n as f64);
+    let mut sum = 0.0;
+    let mut coef = 1.0;
+
+    for i in 0..=k {
+        sum += coef;
+        coef = coef * (n - i) as f64 / (i + 1) as f64;
+    }
+
+    sum / total
+}
+

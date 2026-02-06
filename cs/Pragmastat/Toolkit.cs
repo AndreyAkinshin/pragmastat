@@ -20,4 +20,7 @@ public static class Toolkit
 
   public static Bounds RatioBounds(Sample x, Sample y, Probability misrate) =>
     RatioBoundsEstimator.Instance.Estimate(x, y, misrate);
+
+  public static Bounds MedianBounds(Sample x, Probability misrate) =>
+    MedianBoundsEstimator.Instance.Estimate(x, misrate);
 }

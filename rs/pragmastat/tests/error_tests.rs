@@ -2,7 +2,8 @@
 
 use pragmastat::assumptions::{AssumptionId, EstimatorError, Subject};
 use pragmastat::estimators::{
-    avg_spread, center, disparity, median, ratio, rel_spread, shift, shift_bounds, spread,
+    avg_spread, center, disparity, median, median_bounds, ratio, rel_spread, shift, shift_bounds,
+    spread,
 };
 use pragmastat::pairwise_margin::pairwise_margin;
 use pragmastat::signed_rank_margin::signed_rank_margin;
@@ -247,6 +248,26 @@ fn signed_rank_margin_misrate_below_min() {
     let result = signed_rank_margin(5, 1e-20);
     assert!(result.is_err());
     let (id, subject) = unwrap_assumption(result.unwrap_err());
+    assert_eq!(id, AssumptionId::Domain);
+    assert_eq!(subject, Subject::Misrate);
+}
+
+// --- median_bounds ---
+
+#[test]
+fn median_bounds_single_element() {
+    let result = median_bounds(&[1.0], 0.05);
+    assert!(result.is_err());
+    let (id, subject) = unwrap_estimator_error(result.unwrap_err());
+    assert_eq!(id, AssumptionId::Domain);
+    assert_eq!(subject, Subject::X);
+}
+
+#[test]
+fn median_bounds_invalid_misrate() {
+    let result = median_bounds(&[1.0, 2.0, 3.0, 4.0, 5.0], 1e-20);
+    assert!(result.is_err());
+    let (id, subject) = unwrap_estimator_error(result.unwrap_err());
     assert_eq!(id, AssumptionId::Domain);
     assert_eq!(subject, Subject::Misrate);
 }
