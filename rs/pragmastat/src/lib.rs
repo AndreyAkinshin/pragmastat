@@ -17,6 +17,7 @@ pub mod signed_rank_margin;
 
 // Internal fast algorithm implementations
 mod fast_center;
+mod fast_center_quantiles;
 mod fast_shift;
 mod fast_spread;
 
