@@ -17,6 +17,7 @@ import {
   avgSpread,
   disparity,
 } from '../src/estimators';
+import { signedRankMargin } from '../src/signedRankMargin';
 import { AssumptionError } from '../src/assumptions';
 
 interface ExpectedViolation {
@@ -27,6 +28,8 @@ interface TestInputs {
   x?: (number | string)[];
   y?: (number | string)[];
   misrate?: number | string;
+  n?: number;
+  seed?: string;
 }
 
 interface AssumptionTestCase {
@@ -111,6 +114,9 @@ function callFunction(funcName: string, inputs: TestInputs): void {
       break;
     case 'Disparity':
       disparity(x, y);
+      break;
+    case 'SignedRankMargin':
+      signedRankMargin(inputs.n!, parseValue(inputs.misrate!));
       break;
     default:
       throw new Error(`Unknown function: ${funcName}`);

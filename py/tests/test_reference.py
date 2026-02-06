@@ -10,6 +10,7 @@ from pragmastat import (
     avg_spread,
     disparity,
     pairwise_margin,
+    signed_rank_margin,
     shift_bounds,
     ratio_bounds,
     Rng,
@@ -477,3 +478,37 @@ class TestReference:
         rng = Rng("test-sample-validation")
         with pytest.raises(ValueError):
             rng.sample([1, 2, 3], -1)
+
+    def test_signed_rank_margin_reference(self):
+        """Test signed_rank_margin against reference data."""
+        repo_root = find_repo_root()
+        test_data_dir = repo_root / "tests" / "signed-rank-margin"
+
+        json_files = list(test_data_dir.glob("*.json"))
+        assert len(json_files) > 0, f"No JSON test files found in {test_data_dir}"
+
+        for json_file in json_files:
+            with open(json_file, "r") as f:
+                test_case = json.load(f)
+
+            n = test_case["input"]["n"]
+            misrate = test_case["input"]["misrate"]
+
+            # Handle error test cases
+            if "expected_error" in test_case:
+                expected_error = test_case["expected_error"]
+                with pytest.raises(AssumptionError) as exc_info:
+                    signed_rank_margin(n, misrate)
+                assert exc_info.value.violation.id.value == expected_error["id"], (
+                    f"Expected error id {expected_error['id']}, got {exc_info.value.violation.id.value}"
+                )
+                continue
+
+            expected_output = test_case["output"]
+
+            actual_output = signed_rank_margin(n, misrate)
+
+            assert actual_output == expected_output, (
+                f"Failed for test file: {json_file.name}, expected: {expected_output}, got: {actual_output}"
+            )
+

@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Pragmastat.Exceptions;
 using Pragmastat.Estimators;
+using Pragmastat.Functions;
 
 namespace Pragmastat.Tests.Estimators;
 
@@ -18,7 +19,9 @@ public class AssumptionTests
   public record TestInputs(
     [property: JsonPropertyName("x")] JsonElement[]? X,
     [property: JsonPropertyName("y")] JsonElement[]? Y,
-    [property: JsonPropertyName("misrate")] JsonElement? Misrate);
+    [property: JsonPropertyName("misrate")] JsonElement? Misrate,
+    [property: JsonPropertyName("n")] int? N,
+    [property: JsonPropertyName("seed")] string? Seed);
 
   public record AssumptionTestCase(
     [property: JsonPropertyName("name")] string Name,
@@ -92,6 +95,7 @@ public class AssumptionTests
       case "Shift": new Sample(x).Shift(new Sample(y)); break;
       case "AvgSpread": new Sample(x).AvgSpread(new Sample(y)); break;
       case "Disparity": new Sample(x).Disparity(new Sample(y)); break;
+      case "SignedRankMargin": SignedRankMargin.Instance.Calc(inputs.N!.Value, ParseValue(inputs.Misrate!.Value)); break;
       default: throw new ArgumentException($"Unknown function: {funcName}");
     }
   }

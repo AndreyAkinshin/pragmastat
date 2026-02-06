@@ -1106,3 +1106,78 @@ func TestSampleNegativeKPanics(t *testing.T) {
 	rng := NewRngFromString("test-sample-validation")
 	Sample(rng, []float64{1, 2, 3}, -1)
 }
+
+// SignedRankMarginInput represents input for signed-rank-margin tests
+type SignedRankMarginInput struct {
+	N       int     `json:"n"`
+	Misrate float64 `json:"misrate"`
+}
+
+func TestSignedRankMarginReference(t *testing.T) {
+	dirPath := filepath.Join("../tests", "signed-rank-margin")
+	files, err := os.ReadDir(dirPath)
+	if err != nil {
+		t.Skipf("Skipping signed-rank-margin tests: %v", err)
+	}
+
+	for _, file := range files {
+		if !strings.HasSuffix(file.Name(), ".json") {
+			continue
+		}
+
+		testName := strings.TrimSuffix(file.Name(), ".json")
+		t.Run(testName, func(t *testing.T) {
+			filePath := filepath.Join(dirPath, file.Name())
+			data, err := os.ReadFile(filePath)
+			if err != nil {
+				t.Fatalf("Failed to read test file: %v", err)
+			}
+
+			var testData TestData
+			if err := json.Unmarshal(data, &testData); err != nil {
+				t.Fatalf("Failed to parse test data: %v", err)
+			}
+
+			var input SignedRankMarginInput
+			if err := json.Unmarshal(testData.Input, &input); err != nil {
+				t.Fatalf("Failed to parse input data: %v", err)
+			}
+
+			// Handle error test cases
+			if len(testData.ExpectedError) > 0 {
+				_, err := SignedRankMargin(input.N, input.Misrate)
+				if err == nil {
+					t.Errorf("Expected error for SignedRankMargin(%d, %v), but got none",
+						input.N, input.Misrate)
+					return
+				}
+				// Verify error details match expected
+				var expectedError map[string]string
+				if jsonErr := json.Unmarshal(testData.ExpectedError, &expectedError); jsonErr == nil {
+					if ae, ok := err.(*AssumptionError); ok {
+						if string(ae.Violation.ID) != expectedError["id"] {
+							t.Errorf("Expected error id %q, got %q", expectedError["id"], ae.Violation.ID)
+						}
+					} else {
+						t.Errorf("Expected *AssumptionError but got %T: %v", err, err)
+					}
+				}
+				return
+			}
+
+			var expected int
+			if err := json.Unmarshal(testData.Output, &expected); err != nil {
+				t.Fatalf("Failed to parse output data: %v", err)
+			}
+
+			actual, err := SignedRankMargin(input.N, input.Misrate)
+			if err != nil {
+				t.Fatalf("SignedRankMargin returned unexpected error: %v", err)
+			}
+			if actual != expected {
+				t.Errorf("SignedRankMargin(%d, %v) = %d, want %d",
+					input.N, input.Misrate, actual, expected)
+			}
+		})
+	}
+}

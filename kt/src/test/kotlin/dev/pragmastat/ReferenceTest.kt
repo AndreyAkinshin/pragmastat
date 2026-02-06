@@ -711,4 +711,52 @@ class ReferenceTest {
             rng.sample(listOf(1, 2, 3), -1)
         }
     }
+
+    // One-sample bounds reference tests
+
+    data class SignedRankMarginInput(val n: Int, val misrate: Double)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    data class SignedRankMarginTestData(
+        val input: SignedRankMarginInput,
+        val output: Int? = null,
+        @JsonProperty("expected_error") val expectedError: Map<String, String>? = null
+    )
+
+    @TestFactory
+    fun testSignedRankMargin(): List<DynamicTest> {
+        val tests = mutableListOf<DynamicTest>()
+        val testDir = File("../tests/signed-rank-margin")
+
+        if (!testDir.exists() || !testDir.isDirectory) {
+            Assumptions.assumeTrue(false, "Skipping signed-rank-margin tests: directory not found")
+            return tests
+        }
+
+        testDir.listFiles { _, name -> name.endsWith(".json") }?.forEach { file ->
+            val testName = "signed-rank-margin/${file.nameWithoutExtension}"
+            tests.add(DynamicTest.dynamicTest(testName) {
+                val testData = mapper.readValue<SignedRankMarginTestData>(file)
+
+                // Handle error test cases
+                if (testData.expectedError != null) {
+                    val exception = assertThrows<AssumptionException> {
+                        signedRankMargin(testData.input.n, testData.input.misrate)
+                    }
+                    kotlin.test.assertEquals(testData.expectedError["id"], exception.violation.id.id,
+                        "Expected error id ${testData.expectedError["id"]}, got ${exception.violation.id.id}")
+                    return@dynamicTest
+                }
+
+                val result = signedRankMargin(
+                    testData.input.n,
+                    testData.input.misrate
+                )
+                assertTrue(result == testData.output,
+                    "Expected ${testData.output} but got $result")
+            })
+        }
+
+        return tests
+    }
+
 }

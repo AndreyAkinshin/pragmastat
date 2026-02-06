@@ -1,0 +1,7 @@
+{
+  "input": {
+    "n": 5,
+    "misrate": 0.9
+  },
+  "output": 14
+}

@@ -13,6 +13,7 @@ pub(crate) mod gauss_cdf;
 pub mod min_misrate;
 pub mod pairwise_margin;
 pub mod rng;
+pub mod signed_rank_margin;
 
 // Internal fast algorithm implementations
 mod fast_center;
@@ -33,3 +34,4 @@ pub use estimators::{
 pub use min_misrate::{min_achievable_misrate_one_sample, min_achievable_misrate_two_sample};
 pub use pairwise_margin::pairwise_margin;
 pub use rng::Rng;
+pub use signed_rank_margin::signed_rank_margin;

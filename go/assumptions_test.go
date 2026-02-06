@@ -113,6 +113,9 @@ func callAssumptionFunction(funcName string, inputs AssumptionTestInputs) error 
 	case "Disparity":
 		_, err := Disparity(x, y)
 		return err
+	case "SignedRankMargin":
+		_, err := SignedRankMargin(*inputs.N, parseValue(inputs.Misrate))
+		return err
 	default:
 		panic("Unknown function: " + funcName)
 	}

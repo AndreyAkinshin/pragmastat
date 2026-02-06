@@ -31,7 +31,9 @@ class AssumptionTest {
     data class TestInputs(
         val x: List<JsonNode>? = null,
         val y: List<JsonNode>? = null,
-        val misrate: JsonNode? = null
+        val misrate: JsonNode? = null,
+        val n: Int? = null,
+        val seed: String? = null
     )
 
     data class AssumptionTestCase(
@@ -98,6 +100,7 @@ class AssumptionTest {
             "Shift" -> shift(x, y)
             "AvgSpread" -> avgSpread(x, y)
             "Disparity" -> disparity(x, y)
+            "SignedRankMargin" -> signedRankMargin(inputs.n!!, parseValue(inputs.misrate!!))
             else -> throw IllegalArgumentException("Unknown function: $funcName")
         }
     }

@@ -18,6 +18,7 @@ from .estimators import (
     Bounds,
 )
 from .pairwise_margin import pairwise_margin
+from .signed_rank_margin import signed_rank_margin
 from .min_misrate import (
     min_achievable_misrate_one_sample,
     min_achievable_misrate_two_sample,
@@ -52,6 +53,7 @@ __all__ = [
     "ratio_bounds",
     "Bounds",
     "pairwise_margin",
+    "signed_rank_margin",
     "min_achievable_misrate_one_sample",
     "min_achievable_misrate_two_sample",
     # Random

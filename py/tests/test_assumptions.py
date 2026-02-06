@@ -11,7 +11,16 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from pragmastat import avg_spread, center, disparity, ratio, rel_spread, shift, spread
+from pragmastat import (
+    avg_spread,
+    center,
+    disparity,
+    ratio,
+    rel_spread,
+    shift,
+    signed_rank_margin,
+    spread,
+)
 from pragmastat.assumptions import AssumptionError
 
 
@@ -51,6 +60,10 @@ def call_function(func_name: str, inputs: dict) -> None:
     """Dispatches to the appropriate estimator function."""
     x = parse_array(inputs.get("x"))
     y = parse_array(inputs.get("y"))
+    misrate_raw = inputs.get("misrate")
+    misrate = parse_value(misrate_raw) if misrate_raw is not None else None
+    n = inputs.get("n")
+    seed = inputs.get("seed")
 
     dispatch = {
         "Center": lambda: center(x),
@@ -60,6 +73,7 @@ def call_function(func_name: str, inputs: dict) -> None:
         "Shift": lambda: shift(x, y),
         "AvgSpread": lambda: avg_spread(x, y),
         "Disparity": lambda: disparity(x, y),
+        "SignedRankMargin": lambda: signed_rank_margin(n, misrate),
     }
     if func_name not in dispatch:
         raise ValueError(f"Unknown function: {func_name}")

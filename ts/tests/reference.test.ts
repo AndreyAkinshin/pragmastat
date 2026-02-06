@@ -11,6 +11,7 @@ import {
   shiftBounds,
   ratioBounds,
 } from '../src/estimators';
+import { signedRankMargin } from '../src/signedRankMargin';
 import { AssumptionError } from '../src/assumptions';
 import { pairwiseMargin } from '../src/pairwiseMargin';
 import { Rng } from '../src/rng';
@@ -500,4 +501,46 @@ describe('Reference Tests', () => {
       expect(() => rng.sample([1, 2, 3], -1)).toThrow('k must be non-negative');
     });
   });
+
+  // SignedRankMargin tests
+  describe('signed-rank-margin', () => {
+    const dirPath = path.join(testDataPath, 'signed-rank-margin');
+    if (fs.existsSync(dirPath)) {
+      const testFiles = fs
+        .readdirSync(dirPath)
+        .filter((file) => file.endsWith('.json'))
+        .sort();
+
+      testFiles.forEach((fileName) => {
+        const filePath = path.join(dirPath, fileName);
+        const testName = fileName.replace('.json', '');
+
+        it(`should pass ${testName}`, () => {
+          const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+
+          // Handle error test cases
+          if (data.expected_error) {
+            let thrownError: AssumptionError | null = null;
+            try {
+              signedRankMargin(data.input.n, data.input.misrate);
+            } catch (e) {
+              if (e instanceof AssumptionError) {
+                thrownError = e;
+              } else {
+                throw e;
+              }
+            }
+            expect(thrownError).not.toBeNull();
+            expect(thrownError!.violation.id).toBe(data.expected_error.id);
+
+            return;
+          }
+
+          const result = signedRankMargin(data.input.n, data.input.misrate);
+          expect(result).toBe(data.output);
+        });
+      });
+    }
+  });
+
 });
