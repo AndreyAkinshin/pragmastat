@@ -119,9 +119,6 @@ func callAssumptionFunction(funcName string, inputs AssumptionTestInputs) error 
 	case "CenterBounds":
 		_, err := CenterBounds(x, parseValue(inputs.Misrate))
 		return err
-	case "CenterBoundsApprox":
-		_, err := CenterBoundsApproxWithSeed(x, parseValue(inputs.Misrate), inputs.Seed)
-		return err
 	case "SignedRankMargin":
 		_, err := SignedRankMargin(*inputs.N, parseValue(inputs.Misrate))
 		return err

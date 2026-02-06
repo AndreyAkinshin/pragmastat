@@ -90,8 +90,6 @@ bounds <- center_bounds(x, 0.05) # [lower=3.5, upper=7.5]
 print(paste("[", bounds$lower, ", ", bounds$upper, "]", sep=""))
 bounds <- median_bounds(x, 0.05) # [lower=2, upper=9]
 print(paste("[", bounds$lower, ", ", bounds$upper, "]", sep=""))
-bounds <- center_bounds_approx(x, 0.05) # [lower=3.5, upper=7.5] (approximate)
-print(paste("[", bounds$lower, ", ", bounds$upper, "]", sep=""))
 
 # --- Two-Sample Bounds ---
 

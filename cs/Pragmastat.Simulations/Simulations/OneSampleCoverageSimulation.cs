@@ -36,8 +36,8 @@ public class OneSampleCoverageSimulation : SimulationBase<OneSampleCoverageSimul
     public override int SampleCount { get; set; }
 
     [CommandOption("-e|--estimators")]
-    [Description("List of estimators: center, median, center-approx")]
-    [DefaultValue("center,median,center-approx")]
+    [Description("List of estimators: center, median")]
+    [DefaultValue("center,median")]
     public string? Estimators { get; set; }
 
     [CommandOption("-d|--distributions")]
@@ -114,15 +114,6 @@ public class OneSampleCoverageSimulation : SimulationBase<OneSampleCoverageSimul
         return false;
     }
 
-    // CenterBoundsApprox has its own minimum misrate based on iterations and sample size
-    if (estimator == "center-approx")
-    {
-      const int iterations = 10000;
-      double minMisrate = Math.Max(2.0 / iterations, MinAchievableMisrate.OneSample(sampleSize));
-      if (misrate < minMisrate)
-        return false;
-    }
-
     return true;
   }
 
@@ -157,10 +148,6 @@ public class OneSampleCoverageSimulation : SimulationBase<OneSampleCoverageSimul
     {
       ("center", "additive") => 0.0,        // Additive(0,1) center = 0
       ("center", "uniform") => 0.0,         // Uniform(-1,1) center = 0
-      ("center-approx", "additive") => 0.0,
-      ("center-approx", "uniform") => 0.0,
-      ("center-approx", "exp") => 0.8392,   // Exp(1) Hodges-Lehmann pseudomedian: (1+2m)e^(-2m) = 0.5
-      ("center-approx", "multiplic") => 1.0, // Multiplic center (approximately)
       ("median", "additive") => 0.0,        // Additive(0,1) median = 0
       ("median", "uniform") => 0.0,         // Uniform(-1,1) median = 0
       ("median", "exp") => Math.Log(2),     // Exp(1) median = ln(2)
@@ -231,7 +218,6 @@ public class OneSampleCoverageSimulation : SimulationBase<OneSampleCoverageSimul
     {
       "center" => Toolkit.CenterBounds(sample, new Probability(misrate)),
       "median" => Toolkit.MedianBounds(sample, new Probability(misrate)),
-      "center-approx" => Toolkit.CenterBoundsApprox(sample, new Probability(misrate), seed),
       _ => throw new ArgumentException($"Unknown estimator: {estimator}")
     };
   }
@@ -261,7 +247,7 @@ public class OneSampleCoverageSimulation : SimulationBase<OneSampleCoverageSimul
     if (string.IsNullOrWhiteSpace(estimatorsString))
       throw new ArgumentException("No estimators provided");
 
-    var valid = new HashSet<string> { "center", "median", "center-approx" };
+    var valid = new HashSet<string> { "center", "median" };
     var estimators = estimatorsString.Split(',', StringSplitOptions.RemoveEmptyEntries)
       .Select(s => s.Trim().ToLowerInvariant())
       .Where(s => valid.Contains(s))

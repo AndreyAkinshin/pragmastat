@@ -91,8 +91,6 @@ fn main() {
     println!("{{lower: {}, upper: {}}}", bounds.lower, bounds.upper);
     let bounds = median_bounds(&x, 0.05).unwrap(); // {lower: 2, upper: 9}
     println!("{{lower: {}, upper: {}}}", bounds.lower, bounds.upper);
-    let bounds = center_bounds_approx(&x, 0.05).unwrap(); // {lower: 3.5, upper: 7.5} (approximate)
-    println!("{{lower: {}, upper: {}}}", bounds.lower, bounds.upper);
 
     // --- Two-Sample Bounds ---
 

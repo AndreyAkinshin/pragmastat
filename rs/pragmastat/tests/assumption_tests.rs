@@ -5,9 +5,8 @@
 //! JSON files in tests/assumptions/.
 
 use pragmastat::{
-    avg_spread, center, center_bounds, center_bounds_approx_with_seed, disparity, median_bounds,
-    ratio, rel_spread, shift, signed_rank_margin, spread, AssumptionError, AssumptionId,
-    EstimatorError,
+    avg_spread, center, center_bounds, disparity, median_bounds, ratio, rel_spread, shift,
+    signed_rank_margin, spread, AssumptionError, AssumptionId, EstimatorError,
 };
 use serde::Deserialize;
 use std::fs;
@@ -140,14 +139,6 @@ fn call_function(func_name: &str, inputs: &TestInputs) -> Result<(), AssumptionE
         "CenterBounds" => {
             extract(center_bounds(&x, parse_value(inputs.misrate.as_ref().unwrap())).map(|_| ()))?
         }
-        "CenterBoundsApprox" => extract(
-            center_bounds_approx_with_seed(
-                &x,
-                parse_value(inputs.misrate.as_ref().unwrap()),
-                inputs.seed.as_deref(),
-            )
-            .map(|_| ()),
-        )?,
         "SignedRankMargin" => {
             signed_rank_margin(
                 inputs.n.unwrap(),

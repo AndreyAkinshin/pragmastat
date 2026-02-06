@@ -28,9 +28,8 @@ mod xoshiro256;
 pub use assumptions::{AssumptionError, AssumptionId, EstimatorError, Subject, Violation};
 pub use distributions::{Additive, Distribution, Exp, Multiplic, Power, Uniform};
 pub use estimators::{
-    avg_spread, center, center_bounds, center_bounds_approx, center_bounds_approx_with_seed,
-    disparity, median, median_bounds, ratio, ratio_bounds, rel_spread, shift, shift_bounds, spread,
-    Bounds,
+    avg_spread, center, center_bounds, disparity, median, median_bounds, ratio, ratio_bounds,
+    rel_spread, shift, shift_bounds, spread, Bounds,
 };
 
 pub use pairwise_margin::pairwise_margin;

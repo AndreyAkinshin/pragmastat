@@ -26,6 +26,4 @@
 
 #include "../tests/median-bounds-tests.typ"
 
-#include "../tests/center-bounds-approx-tests.typ"
-
 #include "../tests/_framework.typ"

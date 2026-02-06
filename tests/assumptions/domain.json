@@ -27,18 +27,6 @@
       "expected_violation": { "id": "domain" }
     },
     {
-      "name": "center_bounds_approx_single_element",
-      "function": "CenterBoundsApprox",
-      "inputs": { "x": [1], "misrate": 0.5, "seed": "test" },
-      "expected_violation": { "id": "domain" }
-    },
-    {
-      "name": "center_bounds_approx_misrate_below_min",
-      "function": "CenterBoundsApprox",
-      "inputs": { "x": [1, 2, 3, 4, 5], "misrate": 0.00001, "seed": "test" },
-      "expected_violation": { "id": "domain" }
-    },
-    {
       "name": "signed_rank_margin_misrate_below_min",
       "function": "SignedRankMargin",
       "inputs": { "n": 1, "misrate": 0.5 },

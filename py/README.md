@@ -27,7 +27,6 @@ from pragmastat import (
     pairwise_margin,
     median_bounds,
     center_bounds,
-    center_bounds_approx,
     shift_bounds,
     ratio_bounds,
 )
@@ -108,8 +107,6 @@ def main():
     bounds = center_bounds(x, 0.05)  # Bounds(lower=3.5, upper=7.5)
     print(f"Bounds(lower={bounds.lower}, upper={bounds.upper})")
     bounds = median_bounds(x, 0.05)  # Bounds(lower=2, upper=9)
-    print(f"Bounds(lower={bounds.lower}, upper={bounds.upper})")
-    bounds = center_bounds_approx(x, 0.05)  # Bounds(lower=3.5, upper=7.5) (approximate)
     print(f"Bounds(lower={bounds.lower}, upper={bounds.upper})")
 
     # --- Two-Sample Bounds ---

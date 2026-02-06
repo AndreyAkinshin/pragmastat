@@ -46,7 +46,7 @@ All implementations expose:
 
 **Two-sample estimators:** `shift`, `ratio`, `avgSpread`, `disparity`
 
-**Bounds estimators:** `shiftBounds`, `ratioBounds`, `medianBounds`, `centerBounds`, `centerBoundsApprox`
+**Bounds estimators:** `shiftBounds`, `ratioBounds`, `medianBounds`, `centerBounds`
 
 **Margin functions:** `pairwiseMargin`, `signedRankMargin`
 

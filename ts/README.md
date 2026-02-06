@@ -16,7 +16,7 @@ Pragmastat on npm: https://www.npmjs.com/package/pragmastat
 import {
     median, center, spread, relSpread, shift, ratio, avgSpread, disparity,
     signedRankMargin, pairwiseMargin,
-    medianBounds, centerBounds, centerBoundsApprox, shiftBounds, ratioBounds,
+    medianBounds, centerBounds, shiftBounds, ratioBounds,
     Rng, Uniform, Additive, Exp, Power, Multiplic
 } from '../src';
 
@@ -93,7 +93,6 @@ function main() {
     console.log(center(x)); // 5.5
     console.log(centerBounds(x, 0.05)); // { lower: 3.5, upper: 7.5 }
     console.log(medianBounds(x, 0.05)); // { lower: 2, upper: 9 }
-    console.log(centerBoundsApprox(x, 0.05)); // { lower: 3.5, upper: 7.5 } (approximate)
 
     // --- Two-Sample Bounds ---
 

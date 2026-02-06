@@ -16,7 +16,6 @@ ShiftBounds: \operatorname{ShiftBounds}
 RatioBounds: \operatorname{RatioBounds}
 CenterBounds: \operatorname{CenterBounds}
 MedianBounds: \operatorname{MedianBounds}
-CenterBoundsApprox: \operatorname{CenterBoundsApprox}
 Dominance: \operatorname{Dominance}
 
 # Traditional Estimators

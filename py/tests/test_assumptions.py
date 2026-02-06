@@ -15,7 +15,6 @@ from pragmastat import (
     avg_spread,
     center,
     center_bounds,
-    center_bounds_approx,
     disparity,
     median_bounds,
     ratio,
@@ -66,7 +65,6 @@ def call_function(func_name: str, inputs: dict) -> None:
     misrate_raw = inputs.get("misrate")
     misrate = parse_value(misrate_raw) if misrate_raw is not None else None
     n = inputs.get("n")
-    seed = inputs.get("seed")
 
     dispatch = {
         "Center": lambda: center(x),
@@ -78,7 +76,6 @@ def call_function(func_name: str, inputs: dict) -> None:
         "Disparity": lambda: disparity(x, y),
         "MedianBounds": lambda: median_bounds(x, misrate),
         "CenterBounds": lambda: center_bounds(x, misrate),
-        "CenterBoundsApprox": lambda: center_bounds_approx(x, misrate, seed),
         "SignedRankMargin": lambda: signed_rank_margin(n, misrate),
     }
     if func_name not in dispatch:

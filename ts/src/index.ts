@@ -21,7 +21,6 @@ export {
   ratioBounds,
   medianBounds,
   centerBounds,
-  centerBoundsApprox,
   type Bounds,
 } from './estimators';
 

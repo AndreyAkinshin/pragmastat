@@ -107,7 +107,6 @@ fun main() {
     println(center(x)) // 5.5
     println(centerBounds(x, 0.05)) // Bounds(lower=3.5, upper=7.5)
     println(medianBounds(x, 0.05)) // Bounds(lower=2.0, upper=9.0)
-    println(centerBoundsApprox(x, 0.05)) // Bounds(lower=3.5, upper=7.5) (approximate)
 
     // --- Two-Sample Bounds ---
 

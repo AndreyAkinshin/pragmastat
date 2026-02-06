@@ -11,7 +11,6 @@ import { fastCenterQuantileBounds } from './fastCenterQuantiles';
 import { minAchievableMisrateOneSample } from './minMisrate';
 import { checkValidity, checkPositivity, checkSparity, log, AssumptionError } from './assumptions';
 import { gaussCdf } from './gaussCdf';
-import { Rng } from './rng';
 
 /**
  * Calculate the median of an array of numbers
@@ -429,85 +428,4 @@ export function centerBounds(x: number[], misrate: number): Bounds {
 
   const [lo, hi] = fastCenterQuantileBounds(sorted, kLeft, kRight);
   return { lower: lo, upper: hi };
-}
-
-const CENTER_BOUNDS_APPROX_ITERATIONS = 10000;
-const CENTER_BOUNDS_APPROX_MAX_SUBSAMPLE = 5000;
-const CENTER_BOUNDS_APPROX_DEFAULT_SEED = 'center-bounds-approx';
-
-/**
- * Provides bootstrap-based nominal bounds for Center (Hodges-Lehmann pseudomedian)
- *
- * IMPORTANT: The misrate parameter specifies the NOMINAL (requested) coverage,
- * not the actual coverage. The actual coverage of bootstrap percentile intervals
- * can differ significantly from the nominal coverage.
- *
- * When requesting 95% confidence (misrate = 0.05), actual coverage is typically 85-92% for n < 30.
- * Users requiring exact coverage should use centerBounds (if symmetry holds) or medianBounds.
- *
- * @param x Sample array
- * @param misrate Misclassification rate (probability that true center falls outside bounds)
- * @param seed Optional seed for deterministic results
- * @returns An object containing the lower and upper bounds
- * @throws AssumptionError if sample is empty or contains NaN/Inf
- */
-export function centerBoundsApprox(x: number[], misrate: number, seed?: string): Bounds {
-  checkValidity(x, 'x');
-
-  if (isNaN(misrate) || misrate < 0 || misrate > 1) {
-    throw AssumptionError.domain('misrate');
-  }
-
-  const n = x.length;
-  if (n < 2) {
-    throw AssumptionError.domain('x');
-  }
-
-  const minMisrate = Math.max(
-    2 / CENTER_BOUNDS_APPROX_ITERATIONS,
-    minAchievableMisrateOneSample(n),
-  );
-  if (misrate < minMisrate) {
-    throw AssumptionError.domain('misrate');
-  }
-
-  // Subsample if necessary
-  const m = Math.min(n, CENTER_BOUNDS_APPROX_MAX_SUBSAMPLE);
-
-  // Sort the input
-  const sorted = [...x].sort((a, b) => a - b);
-
-  // Initialize RNG
-  const rng = new Rng(seed ?? CENTER_BOUNDS_APPROX_DEFAULT_SEED);
-
-  // Bootstrap iterations
-  const centers: number[] = [];
-  for (let i = 0; i < CENTER_BOUNDS_APPROX_ITERATIONS; i++) {
-    const sample = rng.resample(sorted, m);
-    const c = fastCenter(sample);
-    centers.push(c);
-  }
-
-  // Sort bootstrap centers
-  centers.sort((a, b) => a - b);
-
-  // Extract percentile bounds
-  const alpha = misrate / 2;
-  let loIdx = Math.floor(alpha * CENTER_BOUNDS_APPROX_ITERATIONS);
-  const hiIdx = Math.ceil((1 - alpha) * CENTER_BOUNDS_APPROX_ITERATIONS) - 1;
-  loIdx = Math.min(Math.max(0, loIdx), hiIdx);
-
-  const bootstrapLo = centers[loIdx];
-  const bootstrapHi = centers[Math.min(CENTER_BOUNDS_APPROX_ITERATIONS - 1, hiIdx)];
-
-  // Scale bounds to full n using asymptotic sqrt(n) rate
-  if (m < n) {
-    const centerVal = fastCenter(sorted);
-    const scaleFactor = Math.sqrt(m / n);
-    const lo = centerVal + (bootstrapLo - centerVal) / scaleFactor;
-    const hi = centerVal + (bootstrapHi - centerVal) / scaleFactor;
-    return { lower: lo, upper: hi };
-  }
-
-  return { lower: bootstrapLo, upper: bootstrapHi };
 }

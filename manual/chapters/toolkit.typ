@@ -57,5 +57,3 @@ This chapter provides formal definitions and properties of each toolkit function
 #pagebreak()
 #include "../toolkit/median-bounds.typ"
 
-#pagebreak()
-#include "../toolkit/center-bounds-approx.typ"

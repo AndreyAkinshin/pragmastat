@@ -117,11 +117,10 @@ func main() {
 	x = []float64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
 
 	srMargin, _ := pragmastat.SignedRankMargin(10, 0.05)
-	fmt.Println(srMargin)                                     // 18
-	print(pragmastat.Center(x))                               // 5.5
-	fmt.Println(must(pragmastat.CenterBounds(x, 0.05)))       // {Lower: 3.5, Upper: 7.5}
-	fmt.Println(must(pragmastat.MedianBounds(x, 0.05)))       // {Lower: 2, Upper: 9}
-	fmt.Println(must(pragmastat.CenterBoundsApprox(x, 0.05))) // {Lower: 3.5, Upper: 7.5} (approximate)
+	fmt.Println(srMargin)                               // 18
+	print(pragmastat.Center(x))                         // 5.5
+	fmt.Println(must(pragmastat.CenterBounds(x, 0.05))) // {Lower: 3.5, Upper: 7.5}
+	fmt.Println(must(pragmastat.MedianBounds(x, 0.05))) // {Lower: 2, Upper: 9}
 
 	// --- Two-Sample Bounds ---
 

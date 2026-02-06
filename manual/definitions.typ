@@ -74,7 +74,6 @@
 #let ShiftBounds = math.op("ShiftBounds")
 #let RatioBounds = math.op("RatioBounds")
 #let CenterBounds = math.op("CenterBounds")
-#let CenterBoundsApprox = math.op("CenterBoundsApprox")
 #let MedianBounds = math.op("MedianBounds")
 #let SignedRankMargin = math.op("SignedRankMargin")
 #let Dominance = math.op("Dominance")

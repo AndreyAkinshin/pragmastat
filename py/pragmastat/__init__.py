@@ -17,7 +17,6 @@ from .estimators import (
     ratio_bounds,
     median_bounds,
     center_bounds,
-    center_bounds_approx,
     Bounds,
 )
 from .pairwise_margin import pairwise_margin
@@ -51,7 +50,6 @@ __all__ = [
     "ratio_bounds",
     "median_bounds",
     "center_bounds",
-    "center_bounds_approx",
     "Bounds",
     "pairwise_margin",
     "signed_rank_margin",

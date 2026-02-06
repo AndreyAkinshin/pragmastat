@@ -11,7 +11,6 @@ tests/
 ├── avg-spread/          # AvgSpread estimator tests
 ├── center/              # Center estimator tests
 ├── center-bounds/       # CenterBounds estimator tests
-├── center-bounds-approx/# CenterBoundsApprox estimator tests
 ├── disparity/           # Disparity estimator tests
 ├── distributions/       # Distribution sampling tests
 ├── median-bounds/       # MedianBounds estimator tests
@@ -81,17 +80,6 @@ Each test file is a JSON object with `input` and `output` fields:
 ```json
 {
   "input": { "x": [1, 2, 3, 4, 5], "misrate": 0.1 },
-  "output": { "lower": 1.5, "upper": 4.5 }
-}
-```
-
-### center-bounds-approx
-
-Same as bounds estimators, but includes a `seed` field for deterministic bootstrap:
-
-```json
-{
-  "input": { "x": [1, 2, 3, 4, 5], "misrate": 0.05, "seed": "demo-seed-1" },
   "output": { "lower": 1.5, "upper": 4.5 }
 }
 ```

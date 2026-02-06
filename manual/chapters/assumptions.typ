@@ -171,7 +171,6 @@ Weak symmetry is a performance expectation, not an enforced constraint:
 *Rule of thumb*
 
 If skewness is the primary concern, use $MedianBounds$ (exact, no symmetry).
-If you must target $Center$ despite asymmetry, use $CenterBoundsApprox$ (nominal).
 
 #v(0.5em)
 *Functions requiring weak symmetry*
@@ -184,7 +183,7 @@ If you must target $Center$ despite asymmetry, use $CenterBoundsApprox$ (nominal
 *Relationship to weak continuity*
 
 $CenterBounds$ requires BOTH weak continuity AND weak symmetry for exact coverage.
-$MedianBounds$ and $CenterBoundsApprox$ require only weak continuity.
+$MedianBounds$ requires only weak continuity.
 
 #pagebreak()
 == Sparity Assumption <sec-sparity>

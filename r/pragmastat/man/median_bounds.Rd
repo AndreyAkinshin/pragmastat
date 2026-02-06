@@ -17,7 +17,7 @@ Requires only weak continuity assumption (no symmetry required).
 A list with components \code{lower} and \code{upper}.
 }
 \seealso{
-\code{\link{center_bounds}}, \code{\link{center_bounds_approx}}
+\code{\link{center_bounds}}
 }
 \examples{
 median_bounds(c(1, 2, 3, 4, 5), 0.1)

@@ -81,7 +81,6 @@ class Program
     WriteLine(Toolkit.Center(x)); // 5.5
     WriteLine(Toolkit.CenterBounds(x, 0.05)); // [3.5, 7.5]
     WriteLine(Toolkit.MedianBounds(x, 0.05)); // [2, 9]
-    WriteLine(Toolkit.CenterBoundsApprox(x, 0.05)); // [3.5, 7.5] (approximate)
 
     // --- Two-Sample Bounds ---
 
