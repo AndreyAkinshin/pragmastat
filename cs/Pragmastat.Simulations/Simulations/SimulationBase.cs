@@ -144,7 +144,11 @@ public abstract class SimulationBase<TSettings, TInput, TRow> : AsyncCommand<TSe
           ctx.Spinner(spinners[spinnerIndex]);
 
           var (totalProgress, completedTasks) = progress.GetStatus();
-          ctx.Status($"Progress: {totalProgress:0.00}%, Completed: {completedTasks}/{totalTasks}");
+          var elapsed = stopwatch.Elapsed;
+          string elapsedStr = elapsed.TotalMinutes >= 1
+            ? $"{(int)elapsed.TotalMinutes}m {elapsed.Seconds:D2}s"
+            : $"{elapsed.Seconds}s";
+          ctx.Status($"Progress: {totalProgress:0.00}%, Completed: {completedTasks}/{totalTasks}, Elapsed: {elapsedStr}");
           ctx.Refresh();
 
           Thread.Sleep(100);

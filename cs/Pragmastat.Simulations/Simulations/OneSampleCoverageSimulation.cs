@@ -143,7 +143,7 @@ public class OneSampleCoverageSimulation : SimulationBase<OneSampleCoverageSimul
       if (bounds.Lower <= trueValue && trueValue <= bounds.Upper)
         coverage++;
 
-      if (i % 10000 == 0)
+      if (i % 1000 == 0)
         progressCallback((i + 1.0) / sampleCount);
     }
 
