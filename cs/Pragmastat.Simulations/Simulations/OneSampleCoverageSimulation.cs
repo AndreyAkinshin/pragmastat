@@ -32,7 +32,7 @@ public class OneSampleCoverageSimulation : SimulationBase<OneSampleCoverageSimul
 
     [CommandOption("-m|--sample-count")]
     [Description("Number of samples for building sampling distribution")]
-    [DefaultValue(10_000)]
+    [DefaultValue(100_000)]
     public override int SampleCount { get; set; }
 
     [CommandOption("-e|--estimators")]
