@@ -32,7 +32,7 @@ public class OneSampleCoverageSimulation : SimulationBase<OneSampleCoverageSimul
 
     [CommandOption("-m|--sample-count")]
     [Description("Number of samples for building sampling distribution")]
-    [DefaultValue(100_000)]
+    [DefaultValue(10_000)]
     public override int SampleCount { get; set; }
 
     [CommandOption("-e|--estimators")]
@@ -47,7 +47,7 @@ public class OneSampleCoverageSimulation : SimulationBase<OneSampleCoverageSimul
 
     [CommandOption("-r|--misrates")]
     [Description("Comma-separated list of misrates")]
-    [DefaultValue("1e-1,5e-2,1e-2,5e-3,1e-3,1e-4")]
+    [DefaultValue("1e-1,5e-2,1e-2,5e-3,1e-3")]
     public string? Misrates { get; set; }
 
     [CommandOption("-s|--seed")]

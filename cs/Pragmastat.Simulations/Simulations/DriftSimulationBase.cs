@@ -26,7 +26,7 @@ public abstract class DriftSimulationBase : SimulationBase<DriftSimulationBase.S
 
     [CommandOption("-m|--sample-count")]
     [Description("How much samples will be used for building sampling distribution")]
-    [DefaultValue(10_000_000)]
+    [DefaultValue(1_000_000)]
     public override int SampleCount { get; set; }
 
     [CommandOption("-e|--estimators")]
