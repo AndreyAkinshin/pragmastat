@@ -15,8 +15,10 @@ public static class Program
       {
         config.AddCommand<AvgDriftSimulation>(AvgDriftSimulation.Name);
         config.AddCommand<DispDriftSimulation>(DispDriftSimulation.Name);
-        config.AddCommand<CoverageSimulation>(CoverageSimulation.Name);
-        config.AddCommand<OneSampleCoverageSimulation>(OneSampleCoverageSimulation.Name);
+        config.AddCommand<CenterBoundsSimulation>(CenterBoundsSimulation.Name);
+        config.AddCommand<MedianBoundsSimulation>(MedianBoundsSimulation.Name);
+        config.AddCommand<ShiftBoundsSimulation>(ShiftBoundsSimulation.Name);
+        config.AddCommand<RatioBoundsSimulation>(RatioBoundsSimulation.Name);
       });
       return await app.RunAsync(args);
     }
