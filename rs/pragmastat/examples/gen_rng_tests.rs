@@ -127,6 +127,19 @@ struct SampleTestCase {
 }
 
 #[derive(Serialize)]
+struct ResampleTestInput {
+    seed: i64,
+    x: Vec<f64>,
+    k: usize,
+}
+
+#[derive(Serialize)]
+struct ResampleTestCase {
+    input: ResampleTestInput,
+    output: Vec<f64>,
+}
+
+#[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 struct UniformDistInput {
     seed: i64,
@@ -526,6 +539,48 @@ fn generate_sample_tests(tests_dir: &PathBuf) {
     }
 }
 
+fn generate_resample_tests(tests_dir: &PathBuf) {
+    let resample_dir = tests_dir.join("resample");
+    fs::create_dir_all(&resample_dir).expect("Failed to create resample test dir");
+
+    let test_configs: Vec<(i64, Vec<f64>, usize)> = vec![
+        // (seed, x, k)
+        (1729, (0..10).map(|i| i as f64).collect(), 3),
+        (1729, (0..10).map(|i| i as f64).collect(), 5),
+        (1729, (0..10).map(|i| i as f64).collect(), 10),
+        (1729, (0..10).map(|i| i as f64).collect(), 15),
+        (1729, (0..10).map(|i| i as f64).collect(), 1),
+        (1729, vec![0.0, 1.0, 2.0, 3.0, 4.0], 3),
+        (1729, vec![0.0, 1.0, 2.0, 3.0, 4.0], 7),
+        (1729, vec![0.0], 1),
+        (1729, vec![0.0, 1.0], 1),
+        (1729, (0..20).map(|i| i as f64).collect(), 5),
+        (1729, (0..20).map(|i| i as f64).collect(), 10),
+        (1729, (0..100).map(|i| i as f64).collect(), 10),
+        (1729, (0..100).map(|i| i as f64).collect(), 25),
+        (123, (0..10).map(|i| i as f64).collect(), 3),
+        (0, (0..10).map(|i| i as f64).collect(), 3),
+        (999, (0..10).map(|i| i as f64).collect(), 3),
+    ];
+
+    for (seed, x, k) in test_configs {
+        let mut rng = Rng::from_seed(seed);
+        let resampled = rng.resample(&x, k);
+
+        let test_case = ResampleTestCase {
+            input: ResampleTestInput {
+                seed,
+                x: x.clone(),
+                k,
+            },
+            output: resampled,
+        };
+
+        let filename = format!("seed-{}-n{}-k{}.json", seed, x.len(), k);
+        write_json(&resample_dir.join(filename), &test_case);
+    }
+}
+
 fn generate_uniform_distribution_tests(tests_dir: &PathBuf) {
     let dist_dir = tests_dir.join("distributions").join("uniform");
     fs::create_dir_all(&dist_dir).expect("Failed to create uniform distribution test dir");
@@ -697,6 +752,10 @@ fn main() {
 
     println!("Generating sample tests...");
     generate_sample_tests(&tests_dir);
+    println!();
+
+    println!("Generating resample tests...");
+    generate_resample_tests(&tests_dir);
     println!();
 
     println!("Generating distribution tests...");

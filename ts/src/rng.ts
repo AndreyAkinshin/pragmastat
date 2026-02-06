@@ -183,4 +183,31 @@ export class Rng {
 
     return result;
   }
+
+  /**
+   * Resample k elements from the input array with replacement.
+   *
+   * Each element in the result is independently drawn from the input array.
+   *
+   * @param x - Input array to sample from.
+   * @param k - Number of elements to sample. Must be non-negative.
+   * @returns Array of k sampled elements with replacement.
+   * @throws Error if k is negative.
+   */
+  resample<T>(x: T[], k: number): T[] {
+    if (k < 0) {
+      throw new Error('resample: k must be non-negative');
+    }
+    const n = x.length;
+    if (n === 0) {
+      throw new Error('resample: cannot resample from empty array');
+    }
+
+    const result: T[] = [];
+    for (let i = 0; i < k; i++) {
+      const idx = this.uniformInt(0, n);
+      result.push(x[idx]);
+    }
+    return result;
+  }
 }

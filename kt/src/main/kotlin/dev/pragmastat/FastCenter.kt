@@ -1,8 +1,5 @@
 package dev.pragmastat
 
-import kotlin.math.floor
-import kotlin.random.Random
-
 /**
  * Fast O(n log n) implementation of the Center (Hodges-Lehmann) estimator.
  * Based on Monahan's Algorithm 616 (1984).
@@ -14,6 +11,9 @@ internal fun fastCenter(values: List<Double>): Double {
     require(n > 0) { "Input list cannot be empty" }
     if (n == 1) return values[0]
     if (n == 2) return (values[0] + values[1]) / 2.0
+
+    // Create deterministic RNG from input values
+    val rng = Rng(deriveSeed(values))
 
     val sortedValues = values.sorted()
     val totalPairs = (n.toLong() * (n + 1)) / 2
@@ -99,7 +99,7 @@ internal fun fastCenter(values: List<Double>): Double {
         activeSetSize = (0 until n).sumOf { maxOf(0, rightBounds[it] - leftBounds[it] + 1).toLong() }
 
         if (activeSetSize > 2) {
-            val targetIndex = Random.nextLong(activeSetSize)
+            val targetIndex = rng.uniformLong(0, activeSetSize)
             var cumulativeSize = 0L
             var selectedRow = 0
 

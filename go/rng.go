@@ -214,3 +214,28 @@ func (r *Rng) ShuffleFloat64(x []float64) []float64 {
 func (r *Rng) SampleFloat64(x []float64, k int) []float64 {
 	return Sample(r, x, k)
 }
+
+// Resample returns k elements from the input slice with replacement (bootstrap sampling).
+// Each element is independently selected with equal probability.
+// The original slice is not modified.
+// Panics if k is negative or if x is empty.
+func Resample[T any](rng *Rng, x []T, k int) []T {
+	if k < 0 {
+		panic("resample: k must be non-negative")
+	}
+	if len(x) == 0 {
+		panic("resample: cannot resample from empty slice")
+	}
+
+	result := make([]T, k)
+	n := len(x)
+	for i := 0; i < k; i++ {
+		result[i] = x[rng.UniformIntN(0, n)]
+	}
+	return result
+}
+
+// ResampleFloat64 returns k float64 elements from the slice with replacement.
+func (r *Rng) ResampleFloat64(x []float64, k int) []float64 {
+	return Resample(r, x, k)
+}

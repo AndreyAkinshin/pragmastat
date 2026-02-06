@@ -385,6 +385,39 @@ impl Rng {
 
         result
     }
+
+    /// Resample k elements from the input slice with replacement (bootstrap sampling)
+    ///
+    /// Each element is independently selected with equal probability from the input.
+    /// The original slice is not modified.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `x` is empty.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use pragmastat::Rng;
+    ///
+    /// let mut rng = Rng::from_string("demo-resample");
+    /// let data = vec![1.0, 2.0, 3.0, 4.0, 5.0];
+    /// let resampled = rng.resample(&data, 10);
+    ///
+    /// assert_eq!(resampled.len(), 10);
+    /// ```
+    pub fn resample<T: Clone>(&mut self, x: &[T], k: usize) -> Vec<T> {
+        assert!(!x.is_empty(), "Cannot resample from empty slice");
+
+        let n = x.len();
+        let mut result = Vec::with_capacity(k);
+
+        for _ in 0..k {
+            result.push(x[self.uniform_usize(0, n)].clone());
+        }
+
+        result
+    }
 }
 
 #[cfg(test)]

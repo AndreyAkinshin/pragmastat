@@ -163,4 +163,27 @@ internal object Fnv1a {
         }
         return hash
     }
+
+    /**
+     * Compute FNV-1a 64-bit hash of double values.
+     */
+    fun hashDoubles(values: List<Double>): ULong {
+        var hash = OFFSET_BASIS
+        for (v in values) {
+            val bits = v.toRawBits().toULong()
+            for (i in 0 until 8) {
+                hash = hash xor ((bits shr (i * 8)) and 0xffUL)
+                hash *= PRIME
+            }
+        }
+        return hash
+    }
+}
+
+/**
+ * Derive a deterministic seed from input values using FNV-1a hash.
+ * Ensures same input always produces same random sequence.
+ */
+internal fun deriveSeed(values: List<Double>): Long {
+    return Fnv1a.hashDoubles(values).toLong()
 }

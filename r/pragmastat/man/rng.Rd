@@ -19,6 +19,7 @@ An Rng object (R6 class) with the following methods:
   \item \code{uniform_int(min_val, max_val)}: Generate a uniform random integer in [min, max)
   \item \code{shuffle(x)}: Return a shuffled copy of the input vector
   \item \code{sample(x, k)}: Sample k elements from the input vector without replacement
+  \item \code{resample(x, k)}: Resample k elements with replacement (bootstrap sampling)
 }
 }
 \examples{
@@ -33,4 +34,8 @@ r$shuffle(1:5)
 # Sample k elements
 r <- rng("demo-sample")
 r$sample(0:9, 3)
+
+# Bootstrap resample
+r <- rng("demo-resample")
+r$resample(1:5, 5)
 }

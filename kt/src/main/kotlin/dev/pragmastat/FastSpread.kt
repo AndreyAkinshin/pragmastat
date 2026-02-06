@@ -1,7 +1,6 @@
 package dev.pragmastat
 
 import kotlin.math.abs
-import kotlin.random.Random
 
 /**
  * Fast O(n log n) implementation of the Spread (Shamos) estimator.
@@ -14,6 +13,9 @@ internal fun fastSpread(values: List<Double>): Double {
     require(n > 0) { "Input list cannot be empty" }
     if (n == 1) return 0.0
     if (n == 2) return abs(values[1] - values[0])
+
+    // Create deterministic RNG from input values
+    val rng = Rng(deriveSeed(values))
 
     val a = values.sorted()
     val N = (n.toLong() * (n - 1)) / 2
@@ -137,7 +139,7 @@ internal fun fastSpread(values: List<Double>): Double {
                 if (abs((kLow - 1) - countBelow) <= abs(countBelow - kLow)) minRem else maxRem
             }
         } else {
-            val t = Random.nextLong(activeSize)
+            val t = rng.uniformLong(0, activeSize)
             var acc = 0L
             var row = 0
             for (r in 0 until n - 1) {

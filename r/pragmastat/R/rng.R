@@ -141,6 +141,23 @@ Rng <- R6::R6Class(
       }
 
       result
+    },
+
+    #' @description Resample k elements from the input vector with replacement
+    #' @param x Input vector to resample from (must be non-empty)
+    #' @param k Number of elements to resample (must be non-negative)
+    #' @return Vector of k resampled elements (may contain duplicates)
+    resample = function(x, k) {
+      if (k < 0) stop("resample: k must be non-negative")
+      n <- length(x)
+      if (n == 0) stop("resample: cannot resample from empty vector")
+
+      result <- vector(mode = typeof(x), length = k)
+      for (i in seq_len(k)) {
+        idx <- self$uniform_int(1L, n + 1L)
+        result[i] <- x[idx]
+      }
+      result
     }
   )
 )

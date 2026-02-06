@@ -227,3 +227,38 @@ class Rng:
                     break
 
         return result
+
+    def resample(self, x: Sequence[T], k: int) -> List[T]:
+        """
+        Resample k elements from the input sequence with replacement.
+
+        Each element in the result is independently drawn from the input sequence.
+
+        Parameters
+        ----------
+        x : Sequence[T]
+            Input sequence to sample from.
+        k : int
+            Number of elements to sample.
+
+        Returns
+        -------
+        List[T]
+            List of k sampled elements with replacement.
+
+        Raises
+        ------
+        ValueError
+            If k is negative.
+        """
+        if k < 0:
+            raise ValueError("k must be non-negative")
+        n = len(x)
+        if n == 0:
+            raise ValueError("resample: cannot resample from empty sequence")
+
+        result: List[T] = []
+        for _ in range(k):
+            idx = self.uniform_int(0, n)
+            result.append(x[idx])
+        return result

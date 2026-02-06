@@ -231,6 +231,42 @@ test_that("sample with negative k throws error", {
   expect_error(r$sample(1:10, -1), "k must be non-negative")
 })
 
+test_that("resample satisfies reference tests", {
+  current_dir <- getwd()
+  repo_root <- current_dir
+  while (!file.exists(file.path(repo_root, "mise.toml"))) {
+    parent_dir <- dirname(repo_root)
+    if (parent_dir == repo_root) {
+      stop(paste0("Could not find repository root; current dir is ", getwd()))
+    }
+    repo_root <- parent_dir
+  }
+
+  resample_dir <- file.path(repo_root, "tests", "resample")
+  json_files <- list.files(resample_dir, pattern = "\\.json$", full.names = TRUE)
+
+  expect_true(length(json_files) > 0, "No resample test files found")
+
+  for (json_file in json_files) {
+    test_case <- jsonlite::fromJSON(json_file)
+    seed <- test_case$input$seed
+    x <- test_case$input$x
+    k <- test_case$input$k
+    expected <- test_case$output
+
+    r <- rng(seed)
+    actual <- r$resample(x, k)
+
+    expect_equal(length(actual), length(expected),
+      info = paste("Wrong length for", basename(json_file)))
+
+    for (i in seq_along(actual)) {
+      expect_equal(actual[i], expected[i], tolerance = 1e-15,
+        info = paste("Failed for", basename(json_file), "at index", i))
+    }
+  }
+})
+
 test_that("uniform_int with large range uses correct modulo", {
   # This test documents the behavior for ranges approaching 2^32
   # R's double precision may lose precision for very large moduli

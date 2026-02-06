@@ -188,6 +188,25 @@ class Rng private constructor(private val inner: Xoshiro256PlusPlus) {
 
         return result
     }
+
+    /**
+     * Resample k elements from the input list with replacement.
+     * Each element in the result is independently drawn from the input list.
+     *
+     * @throws IllegalArgumentException if k is negative.
+     */
+    fun <T> resample(x: List<T>, k: Int): List<T> {
+        require(k >= 0) { "k must be non-negative" }
+        val n = x.size
+        require(n > 0) { "Cannot resample from empty list" }
+
+        val result = mutableListOf<T>()
+        for (i in 0 until k) {
+            val idx = uniformInt(0, n)
+            result.add(x[idx])
+        }
+        return result
+    }
 }
 
 /**
@@ -199,3 +218,8 @@ fun <T> List<T>.shuffle(rng: Rng): List<T> = rng.shuffle(this)
  * Extension function: sample k elements from a list using the given Rng.
  */
 fun <T> List<T>.sample(k: Int, rng: Rng): List<T> = rng.sample(this, k)
+
+/**
+ * Extension function: resample k elements from a list using the given Rng.
+ */
+fun <T> List<T>.resample(k: Int, rng: Rng): List<T> = rng.resample(this, k)

@@ -344,4 +344,52 @@ public sealed class Rng
 
     return new Sample(values, sample.Unit);
   }
+
+  // ========================================================================
+  // Bootstrap (With-Replacement) Methods
+  // ========================================================================
+
+  /// <summary>
+  /// Resample k elements from the input list with replacement (bootstrap sampling).
+  /// </summary>
+  /// <typeparam name="T">Element type.</typeparam>
+  /// <param name="x">Input list to sample from.</param>
+  /// <param name="k">Number of elements to sample. Must be non-negative.</param>
+  /// <returns>List of k sampled elements (may contain duplicates).</returns>
+  /// <exception cref="ArgumentOutOfRangeException">Thrown if k is negative.</exception>
+  /// <exception cref="ArgumentException">Thrown if input list is empty.</exception>
+  public List<T> Resample<T>(IReadOnlyList<T> x, int k)
+  {
+    if (k < 0)
+      throw new ArgumentOutOfRangeException(nameof(k), k, "k must be non-negative");
+    if (x.Count == 0)
+      throw new ArgumentException("Cannot resample from empty list", nameof(x));
+
+    var result = new List<T>(k);
+    for (int i = 0; i < k; i++)
+      result.Add(x[UniformInt32(0, x.Count)]);
+    return result;
+  }
+
+  /// <summary>
+  /// Resample k elements from the sample values with replacement (bootstrap sampling).
+  /// </summary>
+  /// <param name="sample">Input sample to resample from.</param>
+  /// <param name="k">Number of elements to sample. Must be non-negative.</param>
+  /// <returns>New sample with k resampled values (may contain duplicates).</returns>
+  /// <exception cref="ArgumentOutOfRangeException">Thrown if k is negative.</exception>
+  public Sample Resample(Sample sample, int k)
+  {
+    if (k < 0)
+      throw new ArgumentOutOfRangeException(nameof(k), k, "k must be non-negative");
+    if (sample.IsWeighted)
+      throw new NotSupportedException("Weighted samples are not supported by Rng.Resample");
+    if (sample.Size == 0)
+      throw new ArgumentException("Cannot resample from empty sample", nameof(sample));
+
+    var values = new List<double>(k);
+    for (int i = 0; i < k; i++)
+      values.Add(sample.Values[UniformInt32(0, sample.Size)]);
+    return new Sample(values, sample.Unit);
+  }
 }

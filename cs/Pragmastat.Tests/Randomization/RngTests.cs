@@ -170,6 +170,43 @@ public class RngTests
   }
 
   [Fact]
+  public void ResampleTests()
+  {
+    string resampleDir = Path.Combine(TestsDir, "resample");
+    var files = Directory.GetFiles(resampleDir, "*.json");
+    Assert.True(files.Length > 0, "No resample test files found");
+
+    foreach (string filePath in files)
+    {
+      string json = File.ReadAllText(filePath);
+      using JsonDocument doc = JsonDocument.Parse(json);
+      JsonElement root = doc.RootElement;
+
+      long seed = root.GetProperty("input").GetProperty("seed").GetInt64();
+      JsonElement x = root.GetProperty("input").GetProperty("x");
+      int k = root.GetProperty("input").GetProperty("k").GetInt32();
+      JsonElement output = root.GetProperty("output");
+
+      var input = new List<double>();
+      foreach (JsonElement e in x.EnumerateArray())
+        input.Add(e.GetDouble());
+
+      var rng = new Rng(seed);
+      List<double> actual = rng.Resample(input, k);
+
+      Assert.Equal(output.GetArrayLength(), actual.Count);
+      int i = 0;
+      foreach (JsonElement e in output.EnumerateArray())
+      {
+        double expected = e.GetDouble();
+        Assert.True(Math.Abs(actual[i] - expected) < 1e-15,
+            $"File: {Path.GetFileName(filePath)}, index {i}: expected {expected}, got {actual[i]}");
+        i++;
+      }
+    }
+  }
+
+  [Fact]
   public void SampleNegativeKThrows()
   {
     var rng = new Rng("test-sample-validation");
