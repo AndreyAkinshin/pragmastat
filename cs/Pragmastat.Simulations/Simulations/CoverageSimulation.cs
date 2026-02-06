@@ -2,7 +2,9 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Text.Json.Serialization;
 using JetBrains.Annotations;
+using Pragmastat.Algorithms;
 using Pragmastat.Distributions;
+using Pragmastat.Functions;
 using Pragmastat.Internal;
 using Pragmastat.Simulations.Misc;
 using Spectre.Console.Cli;
@@ -112,16 +114,50 @@ public class CoverageSimulation : SimulationBase<CoverageSimulation.Settings, Co
     var random = distribution.Value.Random(baseSeed + sampleSize);
 
     // True value: Shift of identical distributions is 0, Ratio is 1
-    double trueValue = estimator == "ratio" ? 1.0 : 0.0;
+    bool isRatio = estimator == "ratio";
+    double trueValue = isRatio ? 1.0 : 0.0;
+
+    int n = sampleSize, m = sampleSize;
+    long total = (long)n * m;
+
+    // Precompute margin and quantile positions once (avoids redundant O(u^2) recurrence per iteration)
+    int margin = PairwiseMargin.Instance.Calc(n, m, misrate);
+    long halfMargin = Math.Min(margin / 2L, (total - 1) / 2);
+    long kLeft = halfMargin;
+    long kRight = total - 1 - halfMargin;
+    double denominator = total - 1 > 0 ? total - 1 : 1;
+    double[] p = [kLeft / denominator, kRight / denominator];
 
     int coverage = 0;
     for (int i = 0; i < sampleCount; i++)
     {
       var x = random.NextSample(sampleSize);
       var y = random.NextSample(sampleSize);
-      var bounds = ComputeBounds(estimator, x, y, misrate);
 
-      if (bounds.Lower <= trueValue && trueValue <= bounds.Upper)
+      double lower, upper;
+      if (total == 1)
+      {
+        double value = isRatio
+          ? Math.Exp(Math.Log(x.Values[0]) - Math.Log(y.Values[0]))
+          : x.Values[0] - y.Values[0];
+        lower = upper = value;
+      }
+      else if (isRatio)
+      {
+        var logX = x.Log();
+        var logY = y.Log();
+        double[] bounds = FastShift.Estimate(logX.SortedValues, logY.SortedValues, p, assumeSorted: true);
+        lower = Math.Exp(Math.Min(bounds[0], bounds[1]));
+        upper = Math.Exp(Math.Max(bounds[0], bounds[1]));
+      }
+      else
+      {
+        double[] bounds = FastShift.Estimate(x.SortedValues, y.SortedValues, p, assumeSorted: true);
+        lower = Math.Min(bounds[0], bounds[1]);
+        upper = Math.Max(bounds[0], bounds[1]);
+      }
+
+      if (lower <= trueValue && trueValue <= upper)
         coverage++;
 
       if (i % 1000 == 0)
@@ -130,16 +166,6 @@ public class CoverageSimulation : SimulationBase<CoverageSimulation.Settings, Co
 
     double observedMisrate = 1.0 - (double)coverage / sampleCount;
     return new SimulationRow(estimator, distribution.Name, sampleSize, misrate, observedMisrate);
-  }
-
-  private static Bounds ComputeBounds(string estimator, Sample x, Sample y, double misrate)
-  {
-    return estimator switch
-    {
-      "shift" => Toolkit.ShiftBounds(x, y, misrate),
-      "ratio" => Toolkit.RatioBounds(x, y, misrate),
-      _ => throw new ArgumentException($"Unknown estimator: {estimator}")
-    };
   }
 
   protected override string FormatRowStats(SimulationRow row)
