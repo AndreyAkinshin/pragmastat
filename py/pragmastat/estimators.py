@@ -6,7 +6,9 @@ from .fast_center import _fast_center
 from .fast_spread import _fast_spread
 from .fast_shift import _fast_shift
 from .pairwise_margin import pairwise_margin
+from .signed_rank_margin import signed_rank_margin
 from .min_misrate import min_achievable_misrate_one_sample
+from ._fast_center_quantiles import fast_center_quantile_bounds
 from .gauss_cdf import gauss_cdf
 from .assumptions import (
     check_validity,
@@ -482,3 +484,55 @@ def median_bounds(
     return Bounds(sorted_x[lo], sorted_x[hi])
 
 
+def center_bounds(
+    x: Union[Sequence[float], NDArray],
+    misrate: float,
+) -> Bounds:
+    """
+    Provides exact bounds on the Center (Hodges-Lehmann pseudomedian) with specified misrate.
+
+    Uses SignedRankMargin to determine which pairwise averages form the bounds.
+
+    Args:
+        x: Sample array
+        misrate: Misclassification rate (probability that true center falls outside bounds)
+
+    Returns:
+        A Bounds object containing the lower and upper bounds
+
+    Raises:
+        AssumptionError: If sample is empty or contains NaN/Inf.
+        AssumptionError: If misrate is below minimum achievable.
+    """
+    x = np.asarray(x)
+    check_validity(x, "x")
+
+    if math.isnan(misrate) or misrate < 0 or misrate > 1:
+        raise AssumptionError.domain("misrate")
+
+    n = len(x)
+
+    if n < 2:
+        raise AssumptionError.domain("x")
+
+    # Validate misrate
+    min_misrate = min_achievable_misrate_one_sample(n)
+    if misrate < min_misrate:
+        raise AssumptionError.domain("misrate")
+
+    # Total number of pairwise averages (including self-pairs)
+    total_pairs = n * (n + 1) // 2
+
+    # Get signed-rank margin
+    margin = signed_rank_margin(n, misrate)
+    half_margin = min(margin // 2, (total_pairs - 1) // 2)
+
+    # k_left and k_right are 1-based ranks
+    k_left = half_margin + 1
+    k_right = total_pairs - half_margin
+
+    # Sort the input
+    sorted_x = sorted(x.tolist())
+
+    lo, hi = fast_center_quantile_bounds(sorted_x, k_left, k_right)
+    return Bounds(lo, hi)

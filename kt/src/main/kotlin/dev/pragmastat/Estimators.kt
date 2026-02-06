@@ -363,3 +363,66 @@ private fun binomialTailProbability(n: Int, k: Int): Double {
     return sum / total
 }
 
+/**
+ * Compute binomial coefficient C(n, k).
+ */
+private fun binomialCoefficient(n: Int, k: Int): Double {
+    if (k < 0 || k > n) return 0.0
+    if (k == 0 || k == n) return 1.0
+
+    // Use the smaller k for efficiency
+    val k2 = if (k > n - k) n - k else k
+
+    var result = 1.0
+    for (i in 0 until k2) {
+        result *= (n - i).toDouble() / (i + 1).toDouble()
+    }
+    return result
+}
+
+/**
+ * Provides exact distribution-free bounds on the center (Hodges-Lehmann pseudomedian)
+ * with specified misclassification rate.
+ *
+ * Uses Wilcoxon signed-rank distribution for exact coverage.
+ * Requires weak symmetry assumption: distribution symmetric around unknown center.
+ *
+ * @param x Sample data
+ * @param misrate Misclassification rate (probability that true center falls outside bounds)
+ * @return A Bounds object containing the lower and upper bounds
+ * @throws AssumptionException if sample size < 2 or misrate is below minimum achievable
+ */
+fun centerBounds(x: List<Double>, misrate: Double): Bounds {
+    checkValidity(x, Subject.X)
+
+    if (misrate.isNaN() || misrate < 0.0 || misrate > 1.0) {
+        throw AssumptionException(Violation(AssumptionId.DOMAIN, Subject.MISRATE))
+    }
+
+    val n = x.size
+    if (n < 2) {
+        throw AssumptionException(Violation(AssumptionId.DOMAIN, Subject.X))
+    }
+
+    val minMisrate = minAchievableMisrateOneSample(n)
+    if (misrate < minMisrate) {
+        throw AssumptionException(Violation(AssumptionId.DOMAIN, Subject.MISRATE))
+    }
+
+    val margin = signedRankMargin(n, misrate)
+    val totalPairs = n.toLong() * (n + 1) / 2
+
+    var halfMargin: Long = (margin / 2).toLong()
+    val maxHalfMargin = (totalPairs - 1) / 2
+    if (halfMargin > maxHalfMargin) {
+        halfMargin = maxHalfMargin
+    }
+
+    val kLeft = halfMargin + 1L
+    val kRight = totalPairs - halfMargin
+
+    val sorted = x.sorted()
+    val (lo, hi) = FastCenterQuantiles.bounds(sorted, kLeft, kRight)
+
+    return Bounds(lo, hi)
+}

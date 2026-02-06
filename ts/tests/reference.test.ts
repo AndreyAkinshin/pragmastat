@@ -11,6 +11,7 @@ import {
   shiftBounds,
   ratioBounds,
   medianBounds,
+  centerBounds,
 } from '../src/estimators';
 import { signedRankMargin } from '../src/signedRankMargin';
 import { AssumptionError } from '../src/assumptions';
@@ -586,4 +587,45 @@ describe('Reference Tests', () => {
     }
   });
 
+  // CenterBounds tests
+  describe('center-bounds', () => {
+    const dirPath = path.join(testDataPath, 'center-bounds');
+    if (fs.existsSync(dirPath)) {
+      const testFiles = fs
+        .readdirSync(dirPath)
+        .filter((file) => file.endsWith('.json'))
+        .sort();
+
+      testFiles.forEach((fileName) => {
+        const filePath = path.join(dirPath, fileName);
+        const testName = fileName.replace('.json', '');
+
+        it(`should pass ${testName}`, () => {
+          const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+
+          // Handle error test cases
+          if (data.expected_error) {
+            let thrownError: AssumptionError | null = null;
+            try {
+              centerBounds(data.input.x, data.input.misrate);
+            } catch (e) {
+              if (e instanceof AssumptionError) {
+                thrownError = e;
+              } else {
+                throw e;
+              }
+            }
+            expect(thrownError).not.toBeNull();
+            expect(thrownError!.violation.id).toBe(data.expected_error.id);
+
+            return;
+          }
+
+          const result = centerBounds(data.input.x, data.input.misrate);
+          expect(result.lower).toBeCloseTo(data.output.lower, 9);
+          expect(result.upper).toBeCloseTo(data.output.upper, 9);
+        });
+      });
+    }
+  });
 });

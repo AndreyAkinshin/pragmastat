@@ -730,6 +730,14 @@ class ReferenceTest {
         @JsonProperty("expected_error") val expectedError: Map<String, String>? = null
     )
 
+    data class CenterBoundsInput(val x: List<Double>, val misrate: Double)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    data class CenterBoundsTestData(
+        val input: CenterBoundsInput,
+        val output: BoundsOutput? = null,
+        @JsonProperty("expected_error") val expectedError: Map<String, String>? = null
+    )
+
     @TestFactory
     fun testSignedRankMargin(): List<DynamicTest> {
         val tests = mutableListOf<DynamicTest>()
@@ -803,4 +811,39 @@ class ReferenceTest {
         return tests
     }
 
+    @TestFactory
+    fun testCenterBounds(): List<DynamicTest> {
+        val tests = mutableListOf<DynamicTest>()
+        val testDir = File("../tests/center-bounds")
+
+        if (!testDir.exists() || !testDir.isDirectory) {
+            Assumptions.assumeTrue(false, "Skipping center-bounds tests: directory not found")
+            return tests
+        }
+
+        testDir.listFiles { _, name -> name.endsWith(".json") }?.forEach { file ->
+            val testName = "center-bounds/${file.nameWithoutExtension}"
+            tests.add(DynamicTest.dynamicTest(testName) {
+                val testData = mapper.readValue<CenterBoundsTestData>(file)
+
+                // Handle error test cases
+                if (testData.expectedError != null) {
+                    val exception = assertThrows<AssumptionException> {
+                        centerBounds(testData.input.x, testData.input.misrate)
+                    }
+                    assertEquals(testData.expectedError!!["id"], exception.violation.id.id)
+                    return@dynamicTest
+                }
+
+                val result = centerBounds(
+                    testData.input.x,
+                    testData.input.misrate
+                )
+                assertClose(testData.output!!.lower, result.lower)
+                assertClose(testData.output!!.upper, result.upper)
+            })
+        }
+
+        return tests
+    }
 }

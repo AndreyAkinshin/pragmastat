@@ -6,6 +6,8 @@ import { fastCenter } from './fastCenter';
 import { fastSpread } from './fastSpread';
 import { fastShift, fastRatio } from './fastShift';
 import { pairwiseMargin } from './pairwiseMargin';
+import { signedRankMargin } from './signedRankMargin';
+import { fastCenterQuantileBounds } from './fastCenterQuantiles';
 import { minAchievableMisrateOneSample } from './minMisrate';
 import { checkValidity, checkPositivity, checkSparity, log, AssumptionError } from './assumptions';
 import { gaussCdf } from './gaussCdf';
@@ -381,3 +383,49 @@ export function medianBounds(x: number[], misrate: number): Bounds {
   };
 }
 
+/**
+ * Provides exact bounds on the Center (Hodges-Lehmann pseudomedian) with specified misclassification rate
+ *
+ * Uses SignedRankMargin to determine which pairwise averages form the bounds.
+ *
+ * @param x Sample array
+ * @param misrate Misclassification rate (probability that true center falls outside bounds)
+ * @returns An object containing the lower and upper bounds
+ * @throws AssumptionError if sample is empty or contains NaN/Inf
+ */
+export function centerBounds(x: number[], misrate: number): Bounds {
+  checkValidity(x, 'x');
+
+  if (isNaN(misrate) || misrate < 0 || misrate > 1) {
+    throw AssumptionError.domain('misrate');
+  }
+
+  const n = x.length;
+
+  if (n < 2) {
+    throw AssumptionError.domain('x');
+  }
+
+  // Validate misrate
+  const minMisrate = minAchievableMisrateOneSample(n);
+  if (misrate < minMisrate) {
+    throw AssumptionError.domain('misrate');
+  }
+
+  // Total number of pairwise averages (including self-pairs)
+  const totalPairs = (n * (n + 1)) / 2;
+
+  // Get signed-rank margin
+  const margin = signedRankMargin(n, misrate);
+  const halfMargin = Math.min(Math.floor(margin / 2), Math.floor((totalPairs - 1) / 2));
+
+  // k_left and k_right are 1-based ranks
+  const kLeft = halfMargin + 1;
+  const kRight = totalPairs - halfMargin;
+
+  // Sort the input
+  const sorted = [...x].sort((a, b) => a - b);
+
+  const [lo, hi] = fastCenterQuantileBounds(sorted, kLeft, kRight);
+  return { lower: lo, upper: hi };
+}

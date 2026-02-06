@@ -5,8 +5,8 @@
 //! JSON files in tests/assumptions/.
 
 use pragmastat::{
-    avg_spread, center, disparity, median_bounds, ratio, rel_spread, shift, spread,
-    AssumptionError, AssumptionId, EstimatorError,
+    avg_spread, center, center_bounds, disparity, median_bounds, ratio, rel_spread, shift,
+    signed_rank_margin, spread, AssumptionError, AssumptionId, EstimatorError,
 };
 use serde::Deserialize;
 use std::fs;
@@ -135,6 +135,15 @@ fn call_function(func_name: &str, inputs: &TestInputs) -> Result<(), AssumptionE
         "Disparity" => extract(disparity(&x, &y).map(|_| ()))?,
         "MedianBounds" => {
             extract(median_bounds(&x, parse_value(inputs.misrate.as_ref().unwrap())).map(|_| ()))?
+        }
+        "CenterBounds" => {
+            extract(center_bounds(&x, parse_value(inputs.misrate.as_ref().unwrap())).map(|_| ()))?
+        }
+        "SignedRankMargin" => {
+            signed_rank_margin(
+                inputs.n.unwrap(),
+                parse_value(inputs.misrate.as_ref().unwrap()),
+            )?;
         }
         _ => panic!("Unknown function: {}", func_name),
     }

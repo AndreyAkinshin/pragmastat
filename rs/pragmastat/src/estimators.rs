@@ -446,3 +446,60 @@ fn binomial_tail_probability(n: usize, k: usize) -> f64 {
     sum / total
 }
 
+/// Provides exact distribution-free bounds for center (Hodges-Lehmann pseudomedian)
+///
+/// Requires weak symmetry assumption: distribution symmetric around unknown center.
+///
+/// # Arguments
+///
+/// * `x` - Sample slice
+/// * `misrate` - Misclassification rate (probability that true center falls outside bounds)
+///
+/// # Returns
+///
+/// A `Bounds` struct containing the lower and upper bounds, or an error if inputs are invalid.
+pub fn center_bounds(x: &[f64], misrate: f64) -> Result<Bounds, EstimatorError> {
+    check_validity(x, Subject::X)?;
+
+    if misrate.is_nan() || !(0.0..=1.0).contains(&misrate) {
+        return Err(EstimatorError::from(AssumptionError::domain(
+            Subject::Misrate,
+        )));
+    }
+
+    let n = x.len();
+    if n < 2 {
+        return Err(EstimatorError::from(AssumptionError::domain(Subject::X)));
+    }
+
+    let min_misrate = crate::min_misrate::min_achievable_misrate_one_sample(n)?;
+    if misrate < min_misrate {
+        return Err(EstimatorError::from(AssumptionError::domain(
+            Subject::Misrate,
+        )));
+    }
+
+    let margin = crate::signed_rank_margin::signed_rank_margin(n, misrate)?;
+
+    let total_pairs = (n * (n + 1) / 2) as i64;
+
+    let mut half_margin = (margin / 2) as i64;
+    let max_half_margin = (total_pairs - 1) / 2;
+    if half_margin > max_half_margin {
+        half_margin = max_half_margin;
+    }
+
+    let k_left = half_margin + 1;
+    let k_right = total_pairs - half_margin;
+
+    // Sort the input
+    let mut sorted = x.to_vec();
+    sorted.sort_by(|a, b| a.total_cmp(b));
+
+    let (lo, hi) =
+        crate::fast_center_quantiles::fast_center_quantile_bounds(&sorted, k_left, k_right);
+    Ok(Bounds {
+        lower: lo,
+        upper: hi,
+    })
+}

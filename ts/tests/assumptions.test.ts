@@ -17,6 +17,7 @@ import {
   avgSpread,
   disparity,
   medianBounds,
+  centerBounds,
 } from '../src/estimators';
 import { signedRankMargin } from '../src/signedRankMargin';
 import { AssumptionError } from '../src/assumptions';
@@ -118,6 +119,9 @@ function callFunction(funcName: string, inputs: TestInputs): void {
       break;
     case 'MedianBounds':
       medianBounds(x, parseValue(inputs.misrate!));
+      break;
+    case 'CenterBounds':
+      centerBounds(x, parseValue(inputs.misrate!));
       break;
     case 'SignedRankMargin':
       signedRankMargin(inputs.n!, parseValue(inputs.misrate!));

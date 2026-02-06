@@ -444,3 +444,54 @@ func binomialTailProbability(n, k int) float64 {
 	return sum / total
 }
 
+// CenterBounds provides exact distribution-free bounds for Center (Hodges-Lehmann pseudomedian).
+// Requires weak symmetry assumption: distribution symmetric around unknown center.
+func CenterBounds[T Number](x []T, misrate float64) (Bounds, error) {
+	if err := checkValidity(x, SubjectX); err != nil {
+		return Bounds{}, err
+	}
+
+	if math.IsNaN(misrate) || misrate < 0 || misrate > 1 {
+		return Bounds{}, NewDomainError(SubjectMisrate)
+	}
+
+	n := len(x)
+	if n < 2 {
+		return Bounds{}, NewDomainError(SubjectX)
+	}
+
+	minMisrate, err := MinAchievableMisrateOneSample(n)
+	if err != nil {
+		return Bounds{}, err
+	}
+	if misrate < minMisrate {
+		return Bounds{}, NewDomainError(SubjectMisrate)
+	}
+
+	margin, err := SignedRankMargin(n, misrate)
+	if err != nil {
+		return Bounds{}, err
+	}
+
+	totalPairs := int64(n) * int64(n+1) / 2
+
+	halfMargin := int64(margin / 2)
+	maxHalfMargin := (totalPairs - 1) / 2
+	if halfMargin > maxHalfMargin {
+		halfMargin = maxHalfMargin
+	}
+
+	// kLeft and kRight are 1-based ranks (fastCenterQuantileBounds uses 1-based rank semantics)
+	kLeft := halfMargin + 1
+	kRight := totalPairs - halfMargin
+
+	// Sort the input
+	sorted := make([]float64, n)
+	for i, v := range x {
+		sorted[i] = float64(v)
+	}
+	sort.Float64s(sorted)
+
+	lo, hi := fastCenterQuantileBounds(sorted, kLeft, kRight)
+	return Bounds{Lower: lo, Upper: hi}, nil
+}

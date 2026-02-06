@@ -28,8 +28,8 @@ mod xoshiro256;
 pub use assumptions::{AssumptionError, AssumptionId, EstimatorError, Subject, Violation};
 pub use distributions::{Additive, Distribution, Exp, Multiplic, Power, Uniform};
 pub use estimators::{
-    avg_spread, center, disparity, median, median_bounds, ratio, ratio_bounds, rel_spread, shift,
-    shift_bounds, spread, Bounds,
+    avg_spread, center, center_bounds, disparity, median, median_bounds, ratio, ratio_bounds,
+    rel_spread, shift, shift_bounds, spread, Bounds,
 };
 
 pub use min_misrate::{min_achievable_misrate_one_sample, min_achievable_misrate_two_sample};

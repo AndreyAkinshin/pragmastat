@@ -101,6 +101,7 @@ class AssumptionTest {
             "AvgSpread" -> avgSpread(x, y)
             "Disparity" -> disparity(x, y)
             "MedianBounds" -> medianBounds(x, parseValue(inputs.misrate!!))
+            "CenterBounds" -> centerBounds(x, parseValue(inputs.misrate!!))
             "SignedRankMargin" -> signedRankMargin(inputs.n!!, parseValue(inputs.misrate!!))
             else -> throw IllegalArgumentException("Unknown function: $funcName")
         }

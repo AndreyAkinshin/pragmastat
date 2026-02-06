@@ -1261,3 +1261,75 @@ func TestMedianBoundsReference(t *testing.T) {
 	}
 }
 
+func TestCenterBoundsReference(t *testing.T) {
+	dirPath := filepath.Join("../tests", "center-bounds")
+	files, err := os.ReadDir(dirPath)
+	if err != nil {
+		t.Skipf("Skipping center-bounds tests: %v", err)
+	}
+
+	for _, file := range files {
+		if !strings.HasSuffix(file.Name(), ".json") {
+			continue
+		}
+
+		testName := strings.TrimSuffix(file.Name(), ".json")
+		t.Run(testName, func(t *testing.T) {
+			filePath := filepath.Join(dirPath, file.Name())
+			data, err := os.ReadFile(filePath)
+			if err != nil {
+				t.Fatalf("Failed to read test file: %v", err)
+			}
+
+			var testData TestData
+			if err := json.Unmarshal(data, &testData); err != nil {
+				t.Fatalf("Failed to parse test data: %v", err)
+			}
+
+			var input OneSampleBoundsInput
+			if err := json.Unmarshal(testData.Input, &input); err != nil {
+				t.Fatalf("Failed to parse input data: %v", err)
+			}
+
+			// Handle error test cases
+			if len(testData.ExpectedError) > 0 {
+				_, err := CenterBounds(input.X, input.Misrate)
+				if err == nil {
+					t.Errorf("CenterBounds(%v, %v) expected error but got nil",
+						input.X, input.Misrate)
+					return
+				}
+				// Verify error details match expected
+				var expectedError map[string]string
+				if jsonErr := json.Unmarshal(testData.ExpectedError, &expectedError); jsonErr == nil {
+					if ae, ok := err.(*AssumptionError); ok {
+						if string(ae.Violation.ID) != expectedError["id"] {
+							t.Errorf("Expected error id %q, got %q", expectedError["id"], ae.Violation.ID)
+						}
+					} else {
+						t.Errorf("Expected *AssumptionError but got %T: %v", err, err)
+					}
+				}
+				return
+			}
+
+			var expected BoundsOutput
+			if err := json.Unmarshal(testData.Output, &expected); err != nil {
+				t.Fatalf("Failed to parse output data: %v", err)
+			}
+
+			actual, err := CenterBounds(input.X, input.Misrate)
+			if err != nil {
+				t.Fatalf("CenterBounds(%v, %v) error: %v",
+					input.X, input.Misrate, err)
+			}
+			if !floatEquals(actual.Lower, expected.Lower, 1e-9) ||
+				!floatEquals(actual.Upper, expected.Upper, 1e-9) {
+				t.Errorf("CenterBounds(%v, %v) = [%v, %v], want [%v, %v]",
+					input.X, input.Misrate,
+					actual.Lower, actual.Upper,
+					expected.Lower, expected.Upper)
+			}
+		})
+	}
+}
