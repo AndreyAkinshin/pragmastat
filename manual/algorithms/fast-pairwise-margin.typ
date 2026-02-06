@@ -132,9 +132,9 @@ These corrections use Hermite polynomials to adjust the baseline curve
 The first few correction terms typically achieve the practical balance between accuracy and computational cost,
   substantially improving tail probability estimates compared to the basic approximation.
 
-The standardized comparison count:
+The standardized comparison count (with continuity correction):
 
-$ z = (c - n m\/2) / sqrt(n m(n+m+1)\/12) $
+$ z = (c - n m\/2 - 0.5) / sqrt(n m(n+m+1)\/12) $
 
 produces the approximated cumulative distribution:
 
@@ -196,7 +196,7 @@ The exact method counts orderings without assuming continuity.
 The approximate method's moment-based corrections capture the actual distribution shape
   regardless of discreteness.
 
-*Minimum reasonable misrate*
+*Minimum achievable misrate*
 
 The $misrate$ parameter controls how many extreme pairwise differences the bounds exclude.
 Lower misrate produces narrower bounds with higher confidence but requires excluding fewer extreme values.
@@ -208,7 +208,7 @@ Under equivalent populations, this arrangement occurs purely by chance.
 The probability equals the chance of having all $n$ elements from $vx$
   occupy the top $n$ positions among $n+m$ total measurements:
 
-$ misrate_min = 1 / binom(n+m, n) = (n! dot m!) / (n+m)! $
+$ misrate_min = 2 / binom(n+m, n) = (2 dot n! dot m!) / (n+m)! $
 
 This represents the minimum probability of the most extreme ordering under random sampling.
 Setting $misrate < misrate_min$ makes bounds construction problematic.
@@ -221,9 +221,9 @@ The resulting bounds span all $n m$ pairwise differences,
 These bounds convey no useful information beyond the range of observed pairwise differences.
 
 For small samples, $misrate_min$ can exceed commonly used values.
-With $n = m = 6$, the minimum misrate equals $1\/binom(12, 6) approx 0.00108$,
+With $n = m = 6$, the minimum misrate equals $2\/binom(12, 6) approx 0.00217$,
   making the typical choice of $misrate = 10^(-3)$ impossible.
-With $n = m = 4$, the minimum becomes $1\/binom(8, 4) approx 0.0143$,
+With $n = m = 4$, the minimum becomes $2\/binom(8, 4) approx 0.0286$,
   exceeding even $misrate = 0.01$.
 
 The table below shows $misrate_min$ for small sample sizes:
@@ -235,16 +235,16 @@ The table below shows $misrate_min$ for small sample sizes:
   table.hline(),
   [], [1], [2], [3], [4], [5], [6], [7], [8], [9], [10],
   table.hline(),
-  [1], [0.500000], [0.333333], [0.250000], [0.200000], [0.166667], [0.142857], [0.125000], [0.111111], [0.100000], [0.090909],
-  [2], [0.333333], [0.166667], [0.100000], [0.066667], [0.047619], [0.035714], [0.027778], [0.022222], [0.018182], [0.015152],
-  [3], [0.250000], [0.100000], [0.050000], [0.028571], [0.017857], [0.011905], [0.008333], [0.006061], [0.004545], [0.003497],
-  [4], [0.200000], [0.066667], [0.028571], [0.014286], [0.007937], [0.004762], [0.003030], [0.002020], [0.001399], [0.000999],
-  [5], [0.166667], [0.047619], [0.017857], [0.007937], [0.003968], [0.002165], [0.001263], [0.000777], [0.000500], [0.000333],
-  [6], [0.142857], [0.035714], [0.011905], [0.004762], [0.002165], [0.001082], [0.000583], [0.000333], [0.000200], [0.000125],
-  [7], [0.125000], [0.027778], [0.008333], [0.003030], [0.001263], [0.000583], [0.000291], [0.000155], [0.000087], [0.000051],
-  [8], [0.111111], [0.022222], [0.006061], [0.002020], [0.000777], [0.000333], [0.000155], [0.000078], [0.000041], [0.000023],
-  [9], [0.100000], [0.018182], [0.004545], [0.001399], [0.000500], [0.000200], [0.000087], [0.000041], [0.000021], [0.000011],
-  [10], [0.090909], [0.015152], [0.003497], [0.000999], [0.000333], [0.000125], [0.000051], [0.000023], [0.000011], [0.000005],
+  [1], [1.000000], [0.666667], [0.500000], [0.400000], [0.333333], [0.285714], [0.250000], [0.222222], [0.200000], [0.181818],
+  [2], [0.666667], [0.333333], [0.200000], [0.133333], [0.095238], [0.071429], [0.055556], [0.044444], [0.036364], [0.030303],
+  [3], [0.500000], [0.200000], [0.100000], [0.057143], [0.035714], [0.023810], [0.016667], [0.012121], [0.009091], [0.006993],
+  [4], [0.400000], [0.133333], [0.057143], [0.028571], [0.015873], [0.009524], [0.006061], [0.004040], [0.002797], [0.001998],
+  [5], [0.333333], [0.095238], [0.035714], [0.015873], [0.007937], [0.004329], [0.002525], [0.001554], [0.000999], [0.000666],
+  [6], [0.285714], [0.071429], [0.023810], [0.009524], [0.004329], [0.002165], [0.001166], [0.000666], [0.000400], [0.000250],
+  [7], [0.250000], [0.055556], [0.016667], [0.006061], [0.002525], [0.001166], [0.000583], [0.000311], [0.000175], [0.000103],
+  [8], [0.222222], [0.044444], [0.012121], [0.004040], [0.001554], [0.000666], [0.000311], [0.000155], [0.000082], [0.000046],
+  [9], [0.200000], [0.036364], [0.009091], [0.002797], [0.000999], [0.000400], [0.000175], [0.000082], [0.000041], [0.000022],
+  [10], [0.181818], [0.030303], [0.006993], [0.001998], [0.000666], [0.000250], [0.000103], [0.000046], [0.000022], [0.000011],
   table.hline(),
 )
 

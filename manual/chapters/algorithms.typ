@@ -13,3 +13,7 @@ This chapter describes the core algorithms that power the toolkit.
 #include "../algorithms/fast-ratio.typ"
 
 #include "../algorithms/fast-pairwise-margin.typ"
+
+#include "../algorithms/fast-signed-rank-margin.typ"
+
+#include "../algorithms/fast-center-quantiles.typ"

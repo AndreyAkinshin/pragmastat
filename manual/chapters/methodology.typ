@@ -2,7 +2,7 @@
 
 = Methodology
 
-This chapter examines the methodological principles that guide the pragmastat's design and application.
+This chapter examines the methodological principles that guide Pragmastat's design and application.
 
 == Pragmatic Philosophy
 
@@ -410,3 +410,68 @@ The methodology of this toolkit can be distilled into twelve guiding principles:
 + *Reproducibility requires portable determinism* — Same seeds, same results, any language
 + *Structural unity enables unified optimization* — "Median of pairwise" admits fast algorithms
 + *Utility is the ultimate criterion* — Methods that solve real problems are correct methods
+
+#pagebreak()
+== Strict Domains Principle
+
+For each function parameter, Pragmastat enforces the strictest domain that:
+
+#v(0.3em)
+#list(marker: none, tight: true,
+  [1. Supports virtually all legitimate real-world use cases],
+  [2. Rejects pathological cases that would produce misleading results],
+  [3. Fails immediately with actionable guidance rather than silently degrading],
+)
+
+#v(0.5em)
+*Rationale: Learning from NHST Problems*
+
+Traditional tools accept arbitrary confidence levels without warning when the
+requested precision exceeds data resolution. This leads to misleading results:
+a practitioner requests 99.99% confidence with $n=5$ and receives bounds that
+look like valid statistical inference but actually have much lower coverage.
+
+#v(0.5em)
+*Strict validation approach*
+
+#v(0.3em)
+#list(marker: none, tight: true,
+  [*Making impossible requests impossible* — If $n=5$ cannot achieve 99% confidence,
+  the function rejects $misrate=0.01$ rather than returning meaningless bounds.],
+  [*Actionable errors* — Messages explain WHY the request failed and HOW to fix it.],
+  [*Explicit tradeoffs* — Practitioners learn their data's actual resolution limits.],
+)
+
+#v(0.5em)
+*Minimum achievable misrate*
+
+For one-sample bounds, minimum achievable misrate $= 2^(1-n)$:
+
+#v(0.3em)
+#table(
+  columns: 4,
+  align: (center, center, center, center),
+  stroke: none,
+  table.hline(),
+  [*$n$*], [*$misrate_min$*], [*max confidence*], [*notes*],
+  table.hline(),
+  [2], [0.5], [50%], [only trivial bounds possible],
+  [5], [0.0625], [93.75%], [cannot achieve 95%],
+  [7], [0.0156], [98.4%], [cannot achieve 99%],
+  [10], [0.00195], [99.8%], [most practical misrates achievable],
+  [20], [$1.9 times 10^(-6)$], [99.9998%], [$misrate = 10^(-6)$ is achievable],
+  table.hline(),
+)
+
+#v(0.5em)
+*Practical implications*
+
+#list(marker: none, tight: true,
+  [$n < 5$: Cannot achieve 95% confidence ($misrate = 0.05$)],
+  [$n < 7$: Cannot achieve 99% confidence ($misrate = 0.01$)],
+  [$n >= 20$: $misrate = 10^(-6)$ is achievable],
+)
+
+#v(0.5em)
+This principle ensures that Pragmastat functions never silently produce
+misleading results when the requested precision exceeds what the data can support.

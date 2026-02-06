@@ -4,7 +4,7 @@
 
 $ PairwiseMargin(n, m, misrate) $
 
-The $PairwiseMargin$ test suite contains 346 correctness test cases (4 demo + 32 natural + 10 edge + 300 comprehensive grid).
+The $PairwiseMargin$ test suite contains 349 test cases (4 demo + 32 natural + 10 edge + 300 comprehensive grid + 3 error cases).
 
 *Demo examples* ($n = m = 30$) — from manual introduction:
 
@@ -64,3 +64,9 @@ Large sample combinations ($[n, m] in {10, 20, 30, 50, 100} times {10, 20, 30, 5
   - `n100_m100_r6`: $n=100$, $m=100$, $misrate=10^(-6)$, expected output: $6060$
 
 The comprehensive grid validates both symmetric ($n = m$) and asymmetric sample size combinations across six orders of magnitude in misrate, ensuring robust coverage of the parameter space.
+
+*Error cases* — 3 tests validating input validation:
+
+- `error-n0`: $n=0$, $m=5$, $misrate=0.05$ (n outside valid domain)
+- `error-m0`: $n=5$, $m=0$, $misrate=0.05$ (m outside valid domain)
+- `error-misrate-negative`: $n=5$, $m=5$, $misrate=-0.1$ (misrate outside valid domain)

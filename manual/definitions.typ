@@ -73,6 +73,10 @@
 #let PairwiseMargin = math.op("PairwiseMargin")
 #let ShiftBounds = math.op("ShiftBounds")
 #let RatioBounds = math.op("RatioBounds")
+#let CenterBounds = math.op("CenterBounds")
+#let CenterBoundsApprox = math.op("CenterBoundsApprox")
+#let MedianBounds = math.op("MedianBounds")
+#let SignedRankMargin = math.op("SignedRankMargin")
 #let Dominance = math.op("Dominance")
 
 // ==========================================================================
@@ -103,6 +107,7 @@
 #let Rng = math.op("Rng")
 #let Shuffle = math.op("Shuffle")
 #let Sample = math.op("Sample")
+#let Resample = math.op("Resample")
 
 // ==========================================================================
 // Vectors (bold)
@@ -110,6 +115,7 @@
 #let vx = math.bold("x")
 #let vy = math.bold("y")
 #let vz = math.bold("z")
+#let vw = math.bold("w")
 
 // ==========================================================================
 // Drift and Efficiency

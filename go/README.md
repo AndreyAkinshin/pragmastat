@@ -60,6 +60,9 @@ func main() {
 	rng = pragmastat.NewRngFromString("demo-shuffle")
 	fmt.Println(pragmastat.Shuffle(rng, []float64{1, 2, 3, 4, 5})) // [4 2 3 5 1]
 
+	rng = pragmastat.NewRngFromString("demo-resample")
+	fmt.Println(pragmastat.Resample(rng, []float64{1, 2, 3, 4, 5}, 7)) // [5 1 1 3 3 4 5]
+
 	// --- Distribution Sampling ---
 
 	rng = pragmastat.NewRngFromString("demo-dist-uniform")
@@ -109,7 +112,18 @@ func main() {
 	print(pragmastat.Ratio(x, y)) // 0.5
 	print(pragmastat.Ratio(y, x)) // 2
 
-	// --- Confidence Bounds ---
+	// --- One-Sample Bounds ---
+
+	x = []float64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
+
+	srMargin, _ := pragmastat.SignedRankMargin(10, 0.05)
+	fmt.Println(srMargin)                                     // 18
+	print(pragmastat.Center(x))                               // 5.5
+	fmt.Println(must(pragmastat.CenterBounds(x, 0.05)))       // {Lower: 3.5, Upper: 7.5}
+	fmt.Println(must(pragmastat.MedianBounds(x, 0.05)))       // {Lower: 2, Upper: 9}
+	fmt.Println(must(pragmastat.CenterBoundsApprox(x, 0.05))) // {Lower: 3.5, Upper: 7.5} (approximate)
+
+	// --- Two-Sample Bounds ---
 
 	x = []float64{
 		1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
@@ -118,8 +132,8 @@ func main() {
 		21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35,
 		36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50}
 
-	margin, _ := pragmastat.PairwiseMargin(30, 30, 1e-4)
-	fmt.Println(margin)                                   // 390
+	pwMargin, _ := pragmastat.PairwiseMargin(30, 30, 1e-4)
+	fmt.Println(pwMargin)                                 // 390
 	print(pragmastat.Shift(x, y))                         // -20
 	fmt.Println(must(pragmastat.ShiftBounds(x, y, 1e-4))) // {Lower: -30, Upper: -10}
 

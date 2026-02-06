@@ -21,6 +21,9 @@ class Program
     rng = new Rng("demo-shuffle");
     WriteLine(string.Join(", ", rng.Shuffle([1.0, 2, 3, 4, 5]))); // 4, 2, 3, 5, 1
 
+    rng = new Rng("demo-resample");
+    WriteLine(string.Join(", ", rng.Resample([1.0, 2, 3, 4, 5], 7))); // 5, 1, 1, 3, 3, 4, 5
+
     // --- Distribution Sampling ---
 
     rng = new Rng("demo-dist-uniform");

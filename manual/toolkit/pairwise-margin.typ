@@ -13,7 +13,7 @@ Exclusion count for dominance-based bounds.
   [*Returns* — total margin split evenly between lower and upper tails],
   [*Used by* — $ShiftBounds$ to select appropriate order statistics],
   [*Complexity* — exact for small samples, approximated for large (see #link(<sec-fast-pairwise-margin>)[Fast PairwiseMargin])],
-  [*Domain* — $n, m >= 1$, $misrate in (0, 1)$],
+  [*Domain* — $n, m >= 1$, $misrate > 2 / binom(n+m, n)$ (minimum achievable)],
   [*Unit* — count],
   [*Note* — assumes weak continuity (ties from measurement resolution are tolerated)],
 )

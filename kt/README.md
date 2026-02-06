@@ -47,6 +47,9 @@ fun main() {
     rng = Rng("demo-shuffle")
     println(rng.shuffle(listOf(1.0, 2.0, 3.0, 4.0, 5.0))) // [4, 2, 3, 5, 1]
 
+    rng = Rng("demo-resample")
+    println(rng.resample(listOf(1.0, 2.0, 3.0, 4.0, 5.0), 7)) // [5, 1, 1, 3, 3, 4, 5]
+
     // --- Distribution Sampling ---
 
     rng = Rng("demo-dist-uniform")
@@ -96,7 +99,17 @@ fun main() {
     println(ratio(x, y)) // 0.5
     println(ratio(y, x)) // 2
 
-    // --- Confidence Bounds ---
+    // --- One-Sample Bounds ---
+
+    x = (1..10).map { it.toDouble() }
+
+    println(signedRankMargin(10, 0.05)) // 18
+    println(center(x)) // 5.5
+    println(centerBounds(x, 0.05)) // Bounds(lower=3.5, upper=7.5)
+    println(medianBounds(x, 0.05)) // Bounds(lower=2.0, upper=9.0)
+    println(centerBoundsApprox(x, 0.05)) // Bounds(lower=3.5, upper=7.5) (approximate)
+
+    // --- Two-Sample Bounds ---
 
     x = (1..30).map { it.toDouble() }
     y = (21..50).map { it.toDouble() }

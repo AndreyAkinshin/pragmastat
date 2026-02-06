@@ -1,5 +1,7 @@
 import {
-    median, center, spread, relSpread, shift, ratio, avgSpread, disparity, shiftBounds, ratioBounds, pairwiseMargin,
+    median, center, spread, relSpread, shift, ratio, avgSpread, disparity,
+    signedRankMargin, pairwiseMargin,
+    medianBounds, centerBounds, centerBoundsApprox, shiftBounds, ratioBounds,
     Rng, Uniform, Additive, Exp, Power, Multiplic
 } from '../src';
 
@@ -15,6 +17,9 @@ function main() {
 
     rng = new Rng("demo-shuffle");
     console.log(rng.shuffle([1, 2, 3, 4, 5])); // [4, 2, 3, 5, 1]
+
+    rng = new Rng("demo-resample");
+    console.log(rng.resample([1, 2, 3, 4, 5], 7)); // [5, 1, 1, 3, 3, 4, 5]
 
     // --- Distribution Sampling ---
 
@@ -65,7 +70,17 @@ function main() {
     console.log(ratio(x, y)); // 0.5
     console.log(ratio(y, x)); // 2
 
-    // --- Confidence Bounds ---
+    // --- One-Sample Bounds ---
+
+    x = Array.from({ length: 10 }, (_, i) => i + 1);
+
+    console.log(signedRankMargin(10, 0.05)); // 18
+    console.log(center(x)); // 5.5
+    console.log(centerBounds(x, 0.05)); // { lower: 3.5, upper: 7.5 }
+    console.log(medianBounds(x, 0.05)); // { lower: 2, upper: 9 }
+    console.log(centerBoundsApprox(x, 0.05)); // { lower: 3.5, upper: 7.5 } (approximate)
+
+    // --- Two-Sample Bounds ---
 
     x = Array.from({ length: 30 }, (_, i) => i + 1);
     y = Array.from({ length: 30 }, (_, i) => i + 21);

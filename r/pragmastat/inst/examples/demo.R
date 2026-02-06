@@ -12,6 +12,9 @@ print(r$sample(0:9, 3)) # [3, 8, 9]
 r <- rng("demo-shuffle")
 print(r$shuffle(c(1, 2, 3, 4, 5))) # [4, 2, 3, 5, 1]
 
+r <- rng("demo-resample")
+print(r$resample(c(1, 2, 3, 4, 5), 7)) # [5, 1, 1, 3, 3, 4, 5]
+
 # --- Distribution Sampling ---
 
 r <- rng("demo-dist-uniform")
@@ -61,7 +64,20 @@ y <- c(2, 4, 8, 16, 32)
 print(ratio(x, y)) # 0.5
 print(ratio(y, x)) # 2
 
-# --- Confidence Bounds ---
+# --- One-Sample Bounds ---
+
+x <- 1:10
+
+print(signed_rank_margin(10, 0.05)) # 18
+print(center(x)) # 5.5
+bounds <- center_bounds(x, 0.05) # [lower=3.5, upper=7.5]
+print(paste("[", bounds$lower, ", ", bounds$upper, "]", sep=""))
+bounds <- median_bounds(x, 0.05) # [lower=2, upper=9]
+print(paste("[", bounds$lower, ", ", bounds$upper, "]", sep=""))
+bounds <- center_bounds_approx(x, 0.05) # [lower=3.5, upper=7.5] (approximate)
+print(paste("[", bounds$lower, ", ", bounds$upper, "]", sep=""))
+
+# --- Two-Sample Bounds ---
 
 x <- 1:30
 y <- 21:50

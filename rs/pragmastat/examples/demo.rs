@@ -29,6 +29,9 @@ fn main() {
     let mut rng = Rng::from_string("demo-shuffle");
     println!("{:?}", rng.shuffle(&[1.0, 2.0, 3.0, 4.0, 5.0])); // [4, 2, 3, 5, 1]
 
+    let mut rng = Rng::from_string("demo-resample");
+    println!("{:?}", rng.resample(&[1.0, 2.0, 3.0, 4.0, 5.0], 7)); // [5, 1, 1, 3, 3, 4, 5]
+
     // --- Distribution Sampling ---
 
     let mut rng = Rng::from_string("demo-dist-uniform");
@@ -78,7 +81,20 @@ fn main() {
     print(ratio(&x, &y)); // 0.5
     print(ratio(&y, &x)); // 2
 
-    // --- Confidence Bounds ---
+    // --- One-Sample Bounds ---
+
+    let x: Vec<f64> = (1..=10).map(|i| i as f64).collect();
+
+    println!("{}", signed_rank_margin(10, 0.05).unwrap()); // 18
+    print(center(&x)); // 5.5
+    let bounds = center_bounds(&x, 0.05).unwrap(); // {lower: 3.5, upper: 7.5}
+    println!("{{lower: {}, upper: {}}}", bounds.lower, bounds.upper);
+    let bounds = median_bounds(&x, 0.05).unwrap(); // {lower: 2, upper: 9}
+    println!("{{lower: {}, upper: {}}}", bounds.lower, bounds.upper);
+    let bounds = center_bounds_approx(&x, 0.05).unwrap(); // {lower: 3.5, upper: 7.5} (approximate)
+    println!("{{lower: {}, upper: {}}}", bounds.lower, bounds.upper);
+
+    // --- Two-Sample Bounds ---
 
     let x: Vec<f64> = (1..=30).map(|i| i as f64).collect();
     let y: Vec<f64> = (21..=50).map(|i| i as f64).collect();

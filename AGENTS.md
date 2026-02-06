@@ -40,7 +40,19 @@ pragmastat/
 
 ## Key APIs
 
-All implementations expose: `center`, `spread`, `relSpread`, `shift`, `ratio`, `avgSpread`, `disparity`, `shiftBounds`, `ratioBounds`, `pairwiseMargin`
+All implementations expose:
+
+**One-sample estimators:** `median`, `center`, `spread`, `relSpread`
+
+**Two-sample estimators:** `shift`, `ratio`, `avgSpread`, `disparity`
+
+**Bounds estimators:** `shiftBounds`, `ratioBounds`, `medianBounds`, `centerBounds`, `centerBoundsApprox`
+
+**Margin functions:** `pairwiseMargin`, `signedRankMargin`
+
+**Randomization:** `resample` (bootstrap resampling via Rng)
+
+**Note:** Function names follow language conventions: camelCase for TypeScript/Kotlin/Go, snake_case for Python/Rust/R, PascalCase for C#.
 
 See individual language READMEs for API details.
 

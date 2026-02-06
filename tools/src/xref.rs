@@ -58,6 +58,14 @@ impl XRefMap {
             "sec-fast-pairwise-margin".into(),
             "/algorithms#fast-pairwisemargin".into(),
         );
+        mappings.insert(
+            "sec-fast-signed-rank-margin".into(),
+            "/algorithms#fast-signedrankmargin".into(),
+        );
+        mappings.insert(
+            "sec-fast-center-quantiles".into(),
+            "/algorithms#fast-centerquantiles".into(),
+        );
 
         Self { mappings }
     }

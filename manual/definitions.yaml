@@ -11,8 +11,12 @@ RelSpread: \operatorname{RelSpread}
 AvgSpread: \operatorname{AvgSpread}
 Disparity: \operatorname{Disparity}
 PairwiseMargin: \operatorname{PairwiseMargin}
+SignedRankMargin: \operatorname{SignedRankMargin}
 ShiftBounds: \operatorname{ShiftBounds}
 RatioBounds: \operatorname{RatioBounds}
+CenterBounds: \operatorname{CenterBounds}
+MedianBounds: \operatorname{MedianBounds}
+CenterBoundsApprox: \operatorname{CenterBoundsApprox}
 Dominance: \operatorname{Dominance}
 
 # Traditional Estimators
@@ -37,11 +41,13 @@ Uniform: \underline{\operatorname{Uniform}}
 Rng: \operatorname{Rng}
 Shuffle: \operatorname{Shuffle}
 Sample: \operatorname{Sample}
+Resample: \operatorname{Resample}
 
 # Vectors (bold)
 vx: \mathbf{x}
 vy: \mathbf{y}
 vz: \mathbf{z}
+vw: \mathbf{w}
 
 # Drift and Efficiency
 Drift: \operatorname{Drift}

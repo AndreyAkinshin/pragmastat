@@ -42,6 +42,9 @@ class Program
     rng = new Rng("demo-shuffle");
     WriteLine(string.Join(", ", rng.Shuffle([1.0, 2, 3, 4, 5]))); // 4, 2, 3, 5, 1
 
+    rng = new Rng("demo-resample");
+    WriteLine(string.Join(", ", rng.Resample([1.0, 2, 3, 4, 5], 7))); // 5, 1, 1, 3, 3, 4, 5
+
     // --- Distribution Sampling ---
 
     rng = new Rng("demo-dist-uniform");
@@ -91,7 +94,17 @@ class Program
     WriteLine(Toolkit.Ratio(x, y)); // 0.5
     WriteLine(Toolkit.Ratio(y, x)); // 2
 
-    // --- Confidence Bounds ---
+    // --- One-Sample Bounds ---
+
+    x = new Sample(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+
+    WriteLine(SignedRankMargin.Instance.Calc(10, 0.05)); // 18
+    WriteLine(Toolkit.Center(x)); // 5.5
+    WriteLine(Toolkit.CenterBounds(x, 0.05)); // [3.5, 7.5]
+    WriteLine(Toolkit.MedianBounds(x, 0.05)); // [2, 9]
+    WriteLine(Toolkit.CenterBoundsApprox(x, 0.05)); // [3.5, 7.5] (approximate)
+
+    // --- Two-Sample Bounds ---
 
     x = new Sample(
       1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,

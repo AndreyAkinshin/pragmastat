@@ -1,3 +1,5 @@
+#import "/manual/definitions.typ": *
+
 = Toolkit
 
 This chapter provides formal definitions and properties of each toolkit function.
@@ -9,6 +11,9 @@ This chapter provides formal definitions and properties of each toolkit function
 
 #pagebreak()
 #include "../toolkit/shuffle.typ"
+
+#pagebreak()
+#include "../toolkit/resample.typ"
 
 #pagebreak()
 #include "../toolkit/median.typ"
@@ -38,7 +43,19 @@ This chapter provides formal definitions and properties of each toolkit function
 #include "../toolkit/pairwise-margin.typ"
 
 #pagebreak()
+#include "../toolkit/signed-rank-margin.typ"
+
+#pagebreak()
 #include "../toolkit/shift-bounds.typ"
 
 #pagebreak()
 #include "../toolkit/ratio-bounds.typ"
+
+#pagebreak()
+#include "../toolkit/center-bounds.typ"
+
+#pagebreak()
+#include "../toolkit/median-bounds.typ"
+
+#pagebreak()
+#include "../toolkit/center-bounds-approx.typ"

@@ -22,7 +22,7 @@ All functions implicitly require *valid samples*: non-empty, with finite defined
 #v(0.5em)
 *Hard vs. Weak Assumptions*
 
-Hard assumptions (`validity`, `positivity`, `sparity`) are enforced constraints —
+Hard assumptions (`validity`, `domain`, `positivity`, `sparity`) are enforced constraints —
 violating them makes the function inapplicable and triggers a structured error.
 
 Weak assumptions (e.g., weak continuity, weak distribution) are performance expectations —
@@ -127,6 +127,66 @@ If ties dominate pairwise differences, the median pairwise distance collapses to
 and spread-based estimators are no longer meaningful. This is enforced by the sparity assumption.
 
 #pagebreak()
+== Weak Symmetry Assumption <sec-weak-symmetry>
+
+*Definition*
+
+The data-generating distribution is assumed to be approximately symmetric
+around its unknown center. This means deviations above and below the center
+are equally likely in magnitude.
+
+*Properties*
+
+Weak symmetry is a performance expectation, not an enforced constraint:
+
+#v(0.3em)
+#list(marker: none, tight: true,
+  [*Approximate symmetry* — The distribution need not be exactly symmetric;
+  mild asymmetry produces mild coverage drift.],
+  [*Ties tolerated* — Symmetry refers to the underlying process, not observed ties.],
+  [*Not validated* — This is a modeling assumption, never checked computationally.],
+  [*Violation behavior* — Asymmetric distributions cause coverage to drift from
+  nominal; bounds remain valid but may be wider or narrower than requested.],
+)
+
+#v(0.5em)
+*When symmetry is plausible*
+
+#list(marker: none, tight: true,
+  [Measurement error around a true value (additive errors)],
+  [Physical quantities that can deviate equally in both directions],
+  [Log-transformed multiplicative data (often more symmetric than raw)],
+)
+
+#v(0.5em)
+*When symmetry is doubtful*
+
+#list(marker: none, tight: true,
+  [Durations, latencies, response times (right-skewed)],
+  [Counts, concentrations, monetary values (often right-skewed)],
+  [Data with natural lower bounds but no upper bounds],
+)
+
+#v(0.5em)
+*Rule of thumb*
+
+If skewness is the primary concern, use $MedianBounds$ (exact, no symmetry).
+If you must target $Center$ despite asymmetry, use $CenterBoundsApprox$ (nominal).
+
+#v(0.5em)
+*Functions requiring weak symmetry*
+
+#list(marker: none, tight: true,
+  [$CenterBounds(vx, misrate)$ — requires weak symmetry for exact coverage.],
+)
+
+#v(0.5em)
+*Relationship to weak continuity*
+
+$CenterBounds$ requires BOTH weak continuity AND weak symmetry for exact coverage.
+$MedianBounds$ and $CenterBoundsApprox$ require only weak continuity.
+
+#pagebreak()
 == Sparity Assumption <sec-sparity>
 
 *Definition*
@@ -181,14 +241,16 @@ and for two-sample functions the first failing sample (`x` before `y`) is report
 
 #list(marker: none, tight: true,
   [1. `validity`],
-  [2. `positivity`],
-  [3. `sparity`],
+  [2. `domain`],
+  [3. `positivity`],
+  [4. `sparity`],
 )
 
 *Assumption ID registry*
 
 #list(marker: none, tight: true,
   [*validity* — non-empty input with finite defined real values.],
+  [*domain* — parameter value outside achievable range (e.g., misrate below minimum for given sample size).],
   [*positivity* — values must be strictly positive.],
   [*sparity* — requires `Spread(x) > 0`; sample must be non tie-dominant.],
 )
@@ -205,10 +267,18 @@ Weak assumptions (e.g., weak continuity) are documented in the chapter but are n
 }
 ```
 
+```json
+{
+  "id": "domain",
+  "subject": "misrate"
+}
+```
+
 *Recommendations (generated from IDs)*
 
 #list(marker: none, tight: true,
   [*validity* — provide at least one finite real value; remove NaN/Inf before analysis.],
+  [*domain* — parameter value exceeds data resolution; for misrate violations, increase sample size or use a larger misrate value (see minimum achievable misrate tables).],
   [*positivity* — if all values are strictly negative, multiply by $-1$; if mixed-sign, use sign-agnostic estimators or split by sign.],
   [*sparity* — tie-dominant samples have no usable spread; increase measurement resolution, use a discrete/ordinal framework, or preprocess before applying spread-based tools.],
 )

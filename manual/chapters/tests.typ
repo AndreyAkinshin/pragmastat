@@ -16,8 +16,16 @@
 
 #include "../tests/pairwise-margin-tests.typ"
 
+#include "../tests/signed-rank-margin-tests.typ"
+
 #include "../tests/shift-bounds-tests.typ"
 
 #include "../tests/ratio-bounds-tests.typ"
+
+#include "../tests/center-bounds-tests.typ"
+
+#include "../tests/median-bounds-tests.typ"
+
+#include "../tests/center-bounds-approx-tests.typ"
 
 #include "../tests/_framework.typ"

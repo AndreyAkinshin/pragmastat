@@ -8,7 +8,11 @@ from pragmastat import (
     ratio,
     avg_spread,
     disparity,
+    signed_rank_margin,
     pairwise_margin,
+    median_bounds,
+    center_bounds,
+    center_bounds_approx,
     shift_bounds,
     ratio_bounds,
 )
@@ -27,6 +31,9 @@ def main():
 
     rng = Rng("demo-shuffle")
     print(rng.shuffle([1, 2, 3, 4, 5]))  # [4, 2, 3, 5, 1]
+
+    rng = Rng("demo-resample")
+    print(rng.resample([1, 2, 3, 4, 5], 7))  # [5, 1, 1, 3, 3, 4, 5]
 
     # --- Distribution Sampling ---
 
@@ -77,7 +84,20 @@ def main():
     print(ratio(x, y))  # 0.5
     print(ratio(y, x))  # 2
 
-    # --- Confidence Bounds ---
+    # --- One-Sample Bounds ---
+
+    x = list(range(1, 11))
+
+    print(signed_rank_margin(10, 0.05))  # 18
+    print(center(x))  # 5.5
+    bounds = center_bounds(x, 0.05)  # Bounds(lower=3.5, upper=7.5)
+    print(f"Bounds(lower={bounds.lower}, upper={bounds.upper})")
+    bounds = median_bounds(x, 0.05)  # Bounds(lower=2, upper=9)
+    print(f"Bounds(lower={bounds.lower}, upper={bounds.upper})")
+    bounds = center_bounds_approx(x, 0.05)  # Bounds(lower=3.5, upper=7.5) (approximate)
+    print(f"Bounds(lower={bounds.lower}, upper={bounds.upper})")
+
+    # --- Two-Sample Bounds ---
 
     x = list(range(1, 31))
     y = list(range(21, 51))
