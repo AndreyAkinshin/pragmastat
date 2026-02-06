@@ -9,6 +9,7 @@ export { AssumptionId, AssumptionError, type Subject, type Violation } from './a
 
 // Estimators
 export {
+  median,
   center,
   spread,
   relSpread,
@@ -18,11 +19,11 @@ export {
   disparity,
   shiftBounds,
   ratioBounds,
-  median,
   type Bounds,
 } from './estimators';
 
 export { pairwiseMargin } from './pairwiseMargin';
+export { minAchievableMisrateOneSample, minAchievableMisrateTwoSample } from './minMisrate';
 
 export { Rng } from './rng';
 

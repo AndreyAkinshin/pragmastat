@@ -18,6 +18,11 @@ from .estimators import (
     Bounds,
 )
 from .pairwise_margin import pairwise_margin
+from .min_misrate import (
+    min_achievable_misrate_one_sample,
+    min_achievable_misrate_two_sample,
+)
+
 from .rng import Rng
 from .distributions import (
     Distribution,
@@ -47,6 +52,8 @@ __all__ = [
     "ratio_bounds",
     "Bounds",
     "pairwise_margin",
+    "min_achievable_misrate_one_sample",
+    "min_achievable_misrate_two_sample",
     # Random
     "Rng",
     # Distributions

@@ -10,6 +10,7 @@ pub mod assumptions;
 pub mod distributions;
 pub mod estimators;
 pub(crate) mod gauss_cdf;
+pub mod min_misrate;
 pub mod pairwise_margin;
 pub mod rng;
 
@@ -28,5 +29,7 @@ pub use estimators::{
     avg_spread, center, disparity, median, ratio, ratio_bounds, rel_spread, shift, shift_bounds,
     spread, Bounds,
 };
+
+pub use min_misrate::{min_achievable_misrate_one_sample, min_achievable_misrate_two_sample};
 pub use pairwise_margin::pairwise_margin;
 pub use rng::Rng;
