@@ -297,6 +297,8 @@ class ReferenceTest {
     data class SampleInput(val seed: Long, val x: List<Double>, val k: Int)
     data class SampleTestData(val input: SampleInput, val output: List<Double>)
 
+    data class ResampleTestData(val input: SampleInput, val output: List<Double>)
+
     // Distribution reference tests
 
     data class UniformDistInput(val seed: Long, val min: Double, val max: Double, val count: Int)
@@ -560,6 +562,31 @@ class ReferenceTest {
                 val testData = mapper.readValue<SampleTestData>(file)
                 val rng = Rng(testData.input.seed)
                 val actual = rng.sample(testData.input.x, testData.input.k)
+                for (i in actual.indices) {
+                    assertClose(testData.output[i], actual[i], 1e-15)
+                }
+            })
+        }
+
+        return tests
+    }
+
+    @TestFactory
+    fun testResample(): List<DynamicTest> {
+        val tests = mutableListOf<DynamicTest>()
+        val testDir = File("../tests/resample")
+
+        if (!testDir.exists() || !testDir.isDirectory) {
+            Assumptions.assumeTrue(false, "Skipping resample tests: directory not found")
+            return tests
+        }
+
+        testDir.listFiles { _, name -> name.endsWith(".json") }?.forEach { file ->
+            val testName = "resample/${file.nameWithoutExtension}"
+            tests.add(DynamicTest.dynamicTest(testName) {
+                val testData = mapper.readValue<ResampleTestData>(file)
+                val rng = Rng(testData.input.seed)
+                val actual = rng.resample(testData.input.x, testData.input.k)
                 for (i in actual.indices) {
                     assertClose(testData.output[i], actual[i], 1e-15)
                 }

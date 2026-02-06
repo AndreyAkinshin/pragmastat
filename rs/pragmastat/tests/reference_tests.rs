@@ -1078,6 +1078,47 @@ fn run_sample_tests() {
     }
 }
 
+fn run_resample_tests() {
+    let repo_root = find_repo_root();
+    let test_data_dir = repo_root.join("tests").join("resample");
+
+    let json_files: Vec<_> = fs::read_dir(&test_data_dir)
+        .unwrap()
+        .filter_map(|entry| {
+            let entry = entry.unwrap();
+            let path = entry.path();
+            if path.extension()?.to_str()? == "json" {
+                Some(path)
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    assert!(!json_files.is_empty(), "No resample test files found");
+
+    for json_file in json_files {
+        let content = fs::read_to_string(&json_file).unwrap();
+        let test_case: SampleTestCase = serde_json::from_str(&content).unwrap();
+
+        let mut rng = Rng::from_seed(test_case.input.seed);
+        let actual = rng.resample(&test_case.input.x, test_case.input.k);
+
+        for (i, (actual_val, expected_val)) in
+            actual.iter().zip(test_case.output.iter()).enumerate()
+        {
+            assert!(
+                approx_eq!(f64, *actual_val, *expected_val, epsilon = 1e-15),
+                "Failed for test file: {:?}, index {}, expected: {}, got: {}",
+                json_file.file_name().unwrap(),
+                i,
+                expected_val,
+                actual_val
+            );
+        }
+    }
+}
+
 fn run_uniform_distribution_tests() {
     let repo_root = find_repo_root();
     let test_data_dir = repo_root
@@ -1365,6 +1406,11 @@ fn test_shuffle() {
 #[test]
 fn test_sample() {
     run_sample_tests();
+}
+
+#[test]
+fn test_resample() {
+    run_resample_tests();
 }
 
 #[test]

@@ -360,7 +360,7 @@ func MedianBounds[T Number](x []T, misrate float64) (Bounds, error) {
 		return Bounds{}, NewDomainError(SubjectX)
 	}
 
-	minMisrate, err := MinAchievableMisrateOneSample(n)
+	minMisrate, err := minAchievableMisrateOneSample(n)
 	if err != nil {
 		return Bounds{}, err
 	}
@@ -460,7 +460,7 @@ func CenterBounds[T Number](x []T, misrate float64) (Bounds, error) {
 		return Bounds{}, NewDomainError(SubjectX)
 	}
 
-	minMisrate, err := MinAchievableMisrateOneSample(n)
+	minMisrate, err := minAchievableMisrateOneSample(n)
 	if err != nil {
 		return Bounds{}, err
 	}
@@ -527,7 +527,7 @@ func CenterBoundsApproxWithSeed[T Number](x []T, misrate float64, seed *string) 
 		return Bounds{}, NewDomainError(SubjectX)
 	}
 
-	oneSampleMinMisrate, err := MinAchievableMisrateOneSample(n)
+	oneSampleMinMisrate, err := minAchievableMisrateOneSample(n)
 	if err != nil {
 		return Bounds{}, err
 	}

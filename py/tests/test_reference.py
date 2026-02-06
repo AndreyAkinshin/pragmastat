@@ -442,6 +442,34 @@ class TestReference:
                     f"Failed for {json_file.name}, index {i}: expected {exp}, got {act}"
                 )
 
+    def test_resample_reference(self):
+        """Test Rng resample() against reference data."""
+        repo_root = find_repo_root()
+        test_data_dir = repo_root / "tests" / "resample"
+
+        json_files = list(test_data_dir.glob("*.json"))
+        assert len(json_files) > 0, f"No resample test files found in {test_data_dir}"
+
+        for json_file in json_files:
+            with open(json_file, "r") as f:
+                test_case = json.load(f)
+
+            seed = test_case["input"]["seed"]
+            x = test_case["input"]["x"]
+            k = test_case["input"]["k"]
+            expected = test_case["output"]
+
+            rng = Rng(seed)
+            actual = rng.resample(x, k)
+
+            assert len(actual) == len(expected), (
+                f"Length mismatch for {json_file.name}: {len(actual)} vs {len(expected)}"
+            )
+            for i, (act, exp) in enumerate(zip(actual, expected)):
+                assert abs(act - exp) < 1e-15, (
+                    f"Failed for {json_file.name}, index {i}: expected {exp}, got {act}"
+                )
+
     def test_uniform_distribution_reference(self):
         run_distribution_tests(
             "uniform",

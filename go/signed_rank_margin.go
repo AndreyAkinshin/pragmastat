@@ -21,7 +21,7 @@ func SignedRankMargin(n int, misrate float64) (int, error) {
 		return 0, NewDomainError(SubjectMisrate)
 	}
 
-	minMisrate, err := MinAchievableMisrateOneSample(n)
+	minMisrate, err := minAchievableMisrateOneSample(n)
 	if err != nil {
 		return 0, err
 	}

@@ -367,6 +367,32 @@ describe('Reference Tests', () => {
     }
   });
 
+  // Resample tests
+  describe('resample', () => {
+    const dirPath = path.join(testDataPath, 'resample');
+    if (fs.existsSync(dirPath)) {
+      const testFiles = fs
+        .readdirSync(dirPath)
+        .filter((file) => file.endsWith('.json'))
+        .sort();
+
+      testFiles.forEach((fileName) => {
+        const filePath = path.join(dirPath, fileName);
+        const testName = fileName.replace('.json', '');
+
+        it(`should pass ${testName}`, () => {
+          const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+          const rng = new Rng(data.input.seed);
+          const actual = rng.resample(data.input.x, data.input.k);
+
+          for (let i = 0; i < actual.length; i++) {
+            expect(actual[i]).toBeCloseTo(data.output[i], 15);
+          }
+        });
+      });
+    }
+  });
+
   // Distribution tests
   describe('distributions/uniform', () => {
     const dirPath = path.join(testDataPath, 'distributions', 'uniform');

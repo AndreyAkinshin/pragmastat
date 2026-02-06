@@ -902,6 +902,49 @@ func TestSampleReference(t *testing.T) {
 	}
 }
 
+func TestResampleReference(t *testing.T) {
+	dirPath := "../tests/resample"
+	files, err := os.ReadDir(dirPath)
+	if err != nil {
+		t.Fatalf("Failed to read directory: %v", err)
+	}
+
+	for _, file := range files {
+		if !strings.HasSuffix(file.Name(), ".json") {
+			continue
+		}
+
+		testName := strings.TrimSuffix(file.Name(), ".json")
+		t.Run(testName, func(t *testing.T) {
+			filePath := filepath.Join(dirPath, file.Name())
+			data, err := os.ReadFile(filePath)
+			if err != nil {
+				t.Fatalf("Failed to read test file: %v", err)
+			}
+
+			var testData struct {
+				Input  SampleInput `json:"input"`
+				Output []float64   `json:"output"`
+			}
+			if err := json.Unmarshal(data, &testData); err != nil {
+				t.Fatalf("Failed to parse test data: %v", err)
+			}
+
+			rng := NewRngFromSeed(testData.Input.Seed)
+			actual := Resample(rng, testData.Input.X, testData.Input.K)
+
+			if len(actual) != len(testData.Output) {
+				t.Fatalf("Resample() length = %d, want %d", len(actual), len(testData.Output))
+			}
+			for i, v := range actual {
+				if !floatEquals(v, testData.Output[i], 1e-15) {
+					t.Errorf("Resample() at index %d = %v, want %v", i, v, testData.Output[i])
+				}
+			}
+		})
+	}
+}
+
 func TestUniformDistributionReference(t *testing.T) {
 	dirPath := filepath.Join("../tests", "distributions", "uniform")
 	files, err := os.ReadDir(dirPath)
