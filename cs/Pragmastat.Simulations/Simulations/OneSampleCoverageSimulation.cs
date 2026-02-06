@@ -3,27 +3,30 @@ using System.Globalization;
 using System.Text.Json.Serialization;
 using JetBrains.Annotations;
 using Pragmastat.Distributions;
+using Pragmastat.Estimators;
+using Pragmastat.Functions;
 using Pragmastat.Internal;
+using Pragmastat.Randomization;
 using Pragmastat.Simulations.Misc;
 using Spectre.Console.Cli;
 
 namespace Pragmastat.Simulations.Simulations;
 
 [UsedImplicitly]
-public class CoverageSimulation : SimulationBase<CoverageSimulation.Settings, CoverageSimulation.Input,
-  CoverageSimulation.SimulationRow>
+public class OneSampleCoverageSimulation : SimulationBase<OneSampleCoverageSimulation.Settings,
+  OneSampleCoverageSimulation.Input, OneSampleCoverageSimulation.SimulationRow>
 {
-  public const string Name = "bounds-2s-coverage";
+  public const string Name = "bounds-1s-coverage";
 
-  // Distributions that produce only positive values (required for RatioBounds)
-  private static readonly HashSet<string> PositiveDistributions =
-    new(["Multiplic", "Exp", "Uniform"], StringComparer.OrdinalIgnoreCase);
+  // Distributions that are symmetric (required for CenterBounds exact coverage)
+  private static readonly HashSet<string> SymmetricDistributions =
+    new(["Additive", "Uniform"], StringComparer.OrdinalIgnoreCase);
 
   [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
   public sealed class Settings : BaseSettings
   {
     [CommandOption("-n|--sample-sizes")]
-    [Description("List of sample size (example: `2,3,4,5,10..20,50..100`)")]
+    [Description("List of sample sizes (example: `5,10,20,30,50,100`)")]
     [DefaultValue("2..50,60,70,80,90,100")]
     public override string? SampleSizes { get; set; }
 
@@ -33,22 +36,22 @@ public class CoverageSimulation : SimulationBase<CoverageSimulation.Settings, Co
     public override int SampleCount { get; set; }
 
     [CommandOption("-e|--estimators")]
-    [Description("List of estimators: shift, ratio")]
-    [DefaultValue("shift,ratio")]
+    [Description("List of estimators: center, median, center-approx")]
+    [DefaultValue("center,median,center-approx")]
     public string? Estimators { get; set; }
 
     [CommandOption("-d|--distributions")]
-    [Description("List of distribution conditions")]
-    [DefaultValue("additive,multiplic,exp,uniform")]
+    [Description("List of distributions: additive, uniform, exp, multiplic")]
+    [DefaultValue("additive,uniform,exp,multiplic")]
     public string? Distributions { get; set; }
 
     [CommandOption("-r|--misrates")]
-    [Description("Comma-separated list of misrates for bounds estimation")]
+    [Description("Comma-separated list of misrates")]
     [DefaultValue("1e-1,5e-2,1e-2,5e-3,1e-3,1e-4")]
     public string? Misrates { get; set; }
 
     [CommandOption("-s|--seed")]
-    [Description("Seed for generation random numbers")]
+    [Description("Seed for random number generation")]
     [DefaultValue(1729)]
     public override int Seed { get; set; }
 
@@ -79,15 +82,15 @@ public class CoverageSimulation : SimulationBase<CoverageSimulation.Settings, Co
 
     var inputs = new List<Input>();
     foreach (string estimator in estimators)
-      foreach (var distribution in distributions)
+      foreach (string distribution in distributions)
         foreach (int sampleSize in sampleSizes)
           foreach (double misrate in misrates)
           {
-            // Skip invalid combinations: ratio requires positive distributions
-            if (!IsValidCombination(estimator, distribution.Name))
+            // Skip invalid combinations
+            if (!IsValidCombination(estimator, distribution, sampleSize, misrate))
               continue;
 
-            var key = $"{estimator}-{distribution.Name}-{sampleSize}-{misrate}";
+            var key = $"{estimator}-{distribution}-{sampleSize}-{misrate}";
             if (settings.Overwrite || !existingRows.ContainsKey(key))
             {
               inputs.Add(new Input(estimator, distribution, settings.SampleCount, sampleSize, misrate, settings.Seed));
@@ -97,29 +100,45 @@ public class CoverageSimulation : SimulationBase<CoverageSimulation.Settings, Co
     return inputs;
   }
 
-  private static bool IsValidCombination(string estimator, string distribution)
+  private bool IsValidCombination(string estimator, string distribution, int sampleSize, double misrate)
   {
-    // RatioBounds requires positive distributions
-    if (estimator == "ratio" && !PositiveDistributions.Contains(distribution))
+    // CenterBounds requires weak symmetry - only test symmetric distributions
+    if (estimator == "center" && !SymmetricDistributions.Contains(distribution))
       return false;
+
+    // Check minimum achievable misrate for exact methods
+    if (estimator is "center" or "median")
+    {
+      double minMisrate = MinAchievableMisrate.OneSample(sampleSize);
+      if (misrate < minMisrate)
+        return false;
+    }
+
+    // CenterBoundsApprox has its own minimum misrate based on iterations
+    if (estimator == "center-approx")
+    {
+      const int iterations = 10000;
+      double minMisrate = 2.0 / iterations;
+      if (misrate < minMisrate)
+        return false;
+    }
 
     return true;
   }
 
   protected override SimulationRow SimulateRow(Input input, Action<double> progressCallback)
   {
-    (string estimator, var distribution, int sampleCount, int sampleSize, double misrate, int baseSeed) = input;
-    var random = distribution.Value.Random(baseSeed + sampleSize);
+    (string estimator, string distribution, int sampleCount, int sampleSize, double misrate, int baseSeed) = input;
 
-    // True value: Shift of identical distributions is 0, Ratio is 1
-    double trueValue = estimator == "ratio" ? 1.0 : 0.0;
+    var rng = new Rng($"{estimator}-{distribution}-{sampleSize}-{misrate}-{baseSeed}");
+    double trueValue = GetTrueValue(estimator, distribution);
 
     int coverage = 0;
     for (int i = 0; i < sampleCount; i++)
     {
-      var x = random.NextSample(sampleSize);
-      var y = random.NextSample(sampleSize);
-      var bounds = ComputeBounds(estimator, x, y, misrate);
+      var values = GenerateSample(rng, distribution, sampleSize);
+      var sample = new Sample(values);
+      var bounds = ComputeBounds(estimator, sample, misrate, $"sim-{i}");
 
       if (bounds.Lower <= trueValue && trueValue <= bounds.Upper)
         coverage++;
@@ -129,22 +148,97 @@ public class CoverageSimulation : SimulationBase<CoverageSimulation.Settings, Co
     }
 
     double observedMisrate = 1.0 - (double)coverage / sampleCount;
-    return new SimulationRow(estimator, distribution.Name, sampleSize, misrate, observedMisrate);
+    return new SimulationRow(estimator, distribution, sampleSize, misrate, observedMisrate);
   }
 
-  private static Bounds ComputeBounds(string estimator, Sample x, Sample y, double misrate)
+  private double GetTrueValue(string estimator, string distribution)
+  {
+    return (estimator, distribution.ToLowerInvariant()) switch
+    {
+      ("center", "additive") => 0.0,        // Additive(0,1) center = 0
+      ("center", "uniform") => 0.0,         // Uniform(-1,1) center = 0
+      ("center-approx", "additive") => 0.0,
+      ("center-approx", "uniform") => 0.0,
+      ("center-approx", "exp") => 0.8392,   // Exp(1) Hodges-Lehmann pseudomedian: (1+2m)e^(-2m) = 0.5
+      ("center-approx", "multiplic") => 1.0, // Multiplic center (approximately)
+      ("median", "additive") => 0.0,        // Additive(0,1) median = 0
+      ("median", "uniform") => 0.0,         // Uniform(-1,1) median = 0
+      ("median", "exp") => Math.Log(2),     // Exp(1) median = ln(2)
+      ("median", "multiplic") => 1.0,       // Multiplic median = 1
+      _ => throw new ArgumentException($"Unknown estimator/distribution: {estimator}/{distribution}")
+    };
+  }
+
+  private double[] GenerateSample(Rng rng, string distribution, int n)
+  {
+    return distribution.ToLowerInvariant() switch
+    {
+      "additive" => GenerateAdditive(rng, n),
+      "uniform" => GenerateUniformSymmetric(rng, n),
+      "exp" => GenerateExponential(rng, n),
+      "multiplic" => GenerateMultiplic(rng, n),
+      _ => throw new ArgumentException($"Unknown distribution: {distribution}")
+    };
+  }
+
+  private double[] GenerateAdditive(Rng rng, int n)
+  {
+    const int components = 12;
+    var values = new double[n];
+    for (int i = 0; i < n; i++)
+    {
+      double sum = 0;
+      for (int j = 0; j < components; j++)
+        sum += rng.Uniform(-0.5, 0.5);
+      values[i] = sum / Math.Sqrt(components / 12.0);
+    }
+    return values;
+  }
+
+  private double[] GenerateUniformSymmetric(Rng rng, int n)
+  {
+    var values = new double[n];
+    for (int i = 0; i < n; i++)
+      values[i] = rng.Uniform(-1, 1);
+    return values;
+  }
+
+  private double[] GenerateExponential(Rng rng, int n)
+  {
+    var values = new double[n];
+    for (int i = 0; i < n; i++)
+      values[i] = -Math.Log(1 - rng.Uniform());
+    return values;
+  }
+
+  private double[] GenerateMultiplic(Rng rng, int n)
+  {
+    const int components = 12;
+    var values = new double[n];
+    for (int i = 0; i < n; i++)
+    {
+      double product = 1.0;
+      for (int j = 0; j < components; j++)
+        product *= rng.Uniform(0.5, 2.0);
+      values[i] = product;
+    }
+    return values;
+  }
+
+  private Bounds ComputeBounds(string estimator, Sample sample, double misrate, string seed)
   {
     return estimator switch
     {
-      "shift" => Toolkit.ShiftBounds(x, y, misrate),
-      "ratio" => Toolkit.RatioBounds(x, y, misrate),
+      "center" => Toolkit.CenterBounds(sample, new Probability(misrate)),
+      "median" => Toolkit.MedianBounds(sample, new Probability(misrate)),
+      "center-approx" => Toolkit.CenterBoundsApprox(sample, new Probability(misrate), seed),
       _ => throw new ArgumentException($"Unknown estimator: {estimator}")
     };
   }
 
   protected override string FormatRowStats(SimulationRow row)
   {
-    string est = row.Estimator.PadRight(6);
+    string est = row.Estimator.PadRight(12);
     string dist = row.Distribution.PadRight(9);
     string n = row.SampleSize.ToString().PadRight(3);
     string requested = row.RequestedMisrate.ToString("G4").PadRight(8);
@@ -162,12 +256,12 @@ public class CoverageSimulation : SimulationBase<CoverageSimulation.Settings, Co
     };
   }
 
-  private static string[] ValidateAndParseEstimators(string? estimatorsString)
+  private string[] ValidateAndParseEstimators(string? estimatorsString)
   {
     if (string.IsNullOrWhiteSpace(estimatorsString))
       throw new ArgumentException("No estimators provided");
 
-    var valid = new HashSet<string> { "shift", "ratio" };
+    var valid = new HashSet<string> { "center", "median", "center-approx" };
     var estimators = estimatorsString.Split(',', StringSplitOptions.RemoveEmptyEntries)
       .Select(s => s.Trim().ToLowerInvariant())
       .Where(s => valid.Contains(s))
@@ -179,11 +273,20 @@ public class CoverageSimulation : SimulationBase<CoverageSimulation.Settings, Co
     return estimators;
   }
 
-  private IReadOnlyList<Named<IContinuousDistribution>> ValidateAndParseDistributions(string? distributionsString)
+  private string[] ValidateAndParseDistributions(string? distributionsString)
   {
-    var distributions = Registries.Distributions.ParseCommandSeparatedNames(distributionsString);
-    if (distributions.IsEmpty())
+    if (string.IsNullOrWhiteSpace(distributionsString))
       throw new ArgumentException("No distributions provided");
+
+    var valid = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "additive", "uniform", "exp", "multiplic" };
+    var distributions = distributionsString.Split(',', StringSplitOptions.RemoveEmptyEntries)
+      .Select(s => s.Trim())
+      .Where(s => valid.Contains(s))
+      .ToArray();
+
+    if (distributions.Length == 0)
+      throw new ArgumentException($"No valid distributions in '{distributionsString}'");
+
     return distributions;
   }
 
@@ -211,7 +314,7 @@ public class CoverageSimulation : SimulationBase<CoverageSimulation.Settings, Co
       }
     }
 
-    if (misrates.IsEmpty())
+    if (misrates.Count == 0)
       throw new ArgumentException($"Failed to parse misrates from '{misratesString}'");
 
     return misrates.ToArray();
@@ -219,7 +322,7 @@ public class CoverageSimulation : SimulationBase<CoverageSimulation.Settings, Co
 
   public record Input(
     string Estimator,
-    Named<IContinuousDistribution> Distribution,
+    string Distribution,
     int SampleCount,
     int SampleSize,
     double Misrate,

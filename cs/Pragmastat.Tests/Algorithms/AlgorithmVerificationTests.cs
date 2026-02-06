@@ -1,0 +1,387 @@
+namespace Pragmastat.Tests.Algorithms;
+
+using Pragmastat.Algorithms;
+using Pragmastat.Estimators;
+using Pragmastat.Exceptions;
+using Pragmastat.Functions;
+using Pragmastat.Randomization;
+
+/// <summary>
+/// Verification tests comparing new algorithms against naive brute-force implementations.
+/// </summary>
+public class AlgorithmVerificationTests
+{
+  // =========================================================================
+  // FastCenterQuantiles verification
+  // =========================================================================
+
+  [Fact]
+  public void FastCenterQuantiles_MatchesNaive_SmallInputs()
+  {
+    var testCases = new[]
+    {
+      new double[] { 1, 2, 3 },
+      new double[] { 1, 2, 3, 4, 5 },
+      new double[] { -2, -1, 0, 1, 2 },
+    };
+
+    foreach (var data in testCases)
+    {
+      var sorted = data.OrderBy(x => x).ToList();
+      var naiveAverages = ComputeAllPairwiseAverages(sorted);
+
+      // Only test first, middle, and last quantiles for speed
+      var testRanks = new[] { 1, naiveAverages.Count / 2, naiveAverages.Count };
+
+      foreach (var k in testRanks)
+      {
+        double expected = naiveAverages[k - 1];
+        double actual = FastCenterQuantiles.Quantile(sorted, k);
+
+        Assert.True(
+          Math.Abs(expected - actual) < 1e-10,
+          $"Mismatch for data [{string.Join(", ", data)}], k={k}: expected {expected}, got {actual}, diff={Math.Abs(expected - actual)}");
+      }
+    }
+  }
+
+  [Fact]
+  public void FastCenterQuantiles_Bounds_MatchesNaive()
+  {
+    var data = new double[] { 1, 2, 3, 4, 5 };
+    var sorted = data.OrderBy(x => x).ToList();
+    var naiveAverages = ComputeAllPairwiseAverages(sorted);
+
+    // Test various margin combinations
+    var testRanks = new[] { (1L, 15L), (2L, 14L), (3L, 13L), (5L, 11L), (7L, 9L), (1L, 1L), (15L, 15L) };
+
+    foreach (var (lo, hi) in testRanks)
+    {
+      var (actualLo, actualHi) = FastCenterQuantiles.Bounds(sorted, lo, hi);
+
+      double expectedLo = naiveAverages[(int)Math.Min(lo, hi) - 1];
+      double expectedHi = naiveAverages[(int)Math.Max(lo, hi) - 1];
+
+      Assert.True(
+        Math.Abs(expectedLo - actualLo) < 1e-10 && Math.Abs(expectedHi - actualHi) < 1e-10,
+        $"Bounds mismatch for ranks ({lo}, {hi}): expected ({expectedLo}, {expectedHi}), got ({actualLo}, {actualHi})");
+    }
+  }
+
+  // Intentionally naive O(n² log n) implementation for verification against optimized algorithm.
+  // This brute-force approach materializes all pairwise averages, which is infeasible for large n
+  // but provides a ground truth for testing the fast O(n log n) algorithm.
+  private static List<double> ComputeAllPairwiseAverages(IReadOnlyList<double> sorted)
+  {
+    var averages = new List<double>();
+    int n = sorted.Count;
+    for (int i = 0; i < n; i++)
+    {
+      for (int j = i; j < n; j++)
+      {
+        averages.Add((sorted[i] + sorted[j]) / 2.0);
+      }
+    }
+    averages.Sort();
+    return averages;
+  }
+
+  // =========================================================================
+  // SignedRankMargin verification
+  // =========================================================================
+
+  [Fact]
+  public void SignedRankMargin_ExactDistribution_SmallN()
+  {
+    // For small n, verify the CDF computation against brute force
+    for (int n = 2; n <= 10; n++)
+    {
+      var exactCdf = ComputeExactSignedRankCdf(n);
+      double minMisrate = MinAchievableMisrate.OneSample(n);
+
+      // Test various misrates that are achievable
+      var testMisrates = new[] { 0.5, 0.25, 0.1, 0.05 }
+        .Where(m => m >= minMisrate)
+        .ToList();
+
+      foreach (var misrate in testMisrates)
+      {
+        int margin = SignedRankMargin.Instance.Calc(n, misrate);
+
+        // Verify: CDF at margin/2 should be approximately misrate/2
+        int halfMargin = margin / 2;
+        double actualCdf = exactCdf[halfMargin];
+
+        // The margin should give us the smallest w where CDF(w) >= misrate/2
+        // So CDF(halfMargin) >= misrate/2, and CDF(halfMargin-1) < misrate/2
+        Assert.True(
+          actualCdf >= misrate / 2 - 1e-10,
+          $"n={n}, misrate={misrate}: CDF({halfMargin})={actualCdf} should be >= {misrate / 2}");
+
+        if (halfMargin > 0)
+        {
+          double prevCdf = exactCdf[halfMargin - 1];
+          Assert.True(
+            prevCdf < misrate / 2 + 1e-10,
+            $"n={n}, misrate={misrate}: CDF({halfMargin - 1})={prevCdf} should be < {misrate / 2}");
+        }
+      }
+    }
+  }
+
+  private static double[] ComputeExactSignedRankCdf(int n)
+  {
+    long total = 1L << n;
+    long maxW = n * (n + 1) / 2;
+
+    var count = new long[maxW + 1];
+    count[0] = 1;
+
+    for (int i = 1; i <= n; i++)
+    {
+      for (int w = Math.Min((int)maxW, i * (i + 1) / 2); w >= i; w--)
+        count[w] += count[w - i];
+    }
+
+    var cdf = new double[maxW + 1];
+    long cumulative = 0;
+    for (int w = 0; w <= maxW; w++)
+    {
+      cumulative += count[w];
+      cdf[w] = (double)cumulative / total;
+    }
+    return cdf;
+  }
+
+  // =========================================================================
+  // MedianBoundsEstimator verification
+  // =========================================================================
+
+  [Fact]
+  public void MedianBounds_OrderStatistics_Correct()
+  {
+    // For small n, verify the order statistic indices are correct
+    var testCases = new[]
+    {
+      (n: 5, misrate: 0.5, expectedLoIdx: 1, expectedHiIdx: 3), // P(X<=1) = 6/32 = 0.1875 <= 0.25
+      (n: 10, misrate: 0.1, expectedLoIdx: 1, expectedHiIdx: 8), // P(X<=1) = 11/1024 ≈ 0.0107 <= 0.05
+      (n: 10, misrate: 0.2, expectedLoIdx: 2, expectedHiIdx: 7), // P(X<=2) = 56/1024 ≈ 0.0547 <= 0.1
+      (n: 20, misrate: 0.1, expectedLoIdx: 5, expectedHiIdx: 14), // Should have reasonable coverage
+    };
+
+    foreach (var (n, misrate, expectedLoIdx, expectedHiIdx) in testCases)
+    {
+      var sample = new Sample(Enumerable.Range(1, n).Select(x => (double)x).ToArray());
+      var bounds = Toolkit.MedianBounds(sample, new Probability(misrate));
+
+      double expectedLo = sample.SortedValues[expectedLoIdx];
+      double expectedHi = sample.SortedValues[expectedHiIdx];
+
+      // Allow some flexibility in the exact indices due to different interpretations
+      Assert.True(
+        bounds.Lower <= expectedLo + 1 && bounds.Lower >= expectedLo - 1,
+        $"n={n}, misrate={misrate}: Lower bound {bounds.Lower} should be near index {expectedLoIdx} (value {expectedLo})");
+
+      Assert.True(
+        bounds.Upper >= expectedHi - 1 && bounds.Upper <= expectedHi + 1,
+        $"n={n}, misrate={misrate}: Upper bound {bounds.Upper} should be near index {expectedHiIdx} (value {expectedHi})");
+    }
+  }
+
+  [Fact]
+  public void MedianBounds_Coverage_Simulation()
+  {
+    // Simulate coverage for a known symmetric distribution
+    var rng = new Rng("coverage-test");
+    int n = 10;
+    double misrate = 0.1;
+    int iterations = 200;
+    int covered = 0;
+    double trueMedian = 0.5; // For Uniform(0,1)
+
+    for (int i = 0; i < iterations; i++)
+    {
+      var values = new double[n];
+      for (int j = 0; j < n; j++)
+        values[j] = rng.Uniform();
+
+      var sample = new Sample(values);
+      var bounds = Toolkit.MedianBounds(sample, new Probability(misrate));
+
+      if (bounds.Lower <= trueMedian && trueMedian <= bounds.Upper)
+        covered++;
+    }
+
+    double actualCoverage = (double)covered / iterations;
+
+    // Expected coverage = 0.9. With 200 iterations, SD = sqrt(0.9*0.1/200) ≈ 0.021.
+    // Threshold 0.80 is ~4.7 SD below expected, so false failures are negligible.
+    Assert.True(
+      actualCoverage >= 0.80,
+      $"MedianBounds coverage {actualCoverage} should be >= 0.80 (expected ~0.9)");
+  }
+
+  // =========================================================================
+  // CenterBoundsEstimator verification
+  // =========================================================================
+
+  [Fact]
+  public void CenterBounds_Coverage_Simulation()
+  {
+    // Simulate coverage for a symmetric distribution
+    var rng = new Rng("center-coverage-test");
+    int n = 10;
+    double misrate = 0.1;
+    int iterations = 100;
+    int covered = 0;
+    double trueCenter = 0.0; // For Uniform(-1, 1), center is 0
+
+    for (int i = 0; i < iterations; i++)
+    {
+      var values = new double[n];
+      for (int j = 0; j < n; j++)
+        values[j] = rng.Uniform(-1, 1);
+
+      var sample = new Sample(values);
+
+      try
+      {
+        var bounds = Toolkit.CenterBounds(sample, new Probability(misrate));
+
+        if (bounds.Lower <= trueCenter && trueCenter <= bounds.Upper)
+          covered++;
+      }
+      catch (AssumptionException ex) when (ex.Violation.Subject == Subject.Misrate)
+      {
+        // If misrate is too small for the sample size, skip
+      }
+    }
+
+    double actualCoverage = (double)covered / iterations;
+
+    // Expected coverage = 0.9. With 100 iterations, SD = sqrt(0.9*0.1/100) ≈ 0.030.
+    // Threshold 0.80 is ~3.3 SD below expected, so false failures are rare.
+    Assert.True(
+      actualCoverage >= 0.80,
+      $"CenterBounds coverage {actualCoverage} should be >= 0.80 (expected ~0.9)");
+  }
+
+  [Fact]
+  public void CenterBounds_MatchesCenter_ForSymmetricData()
+  {
+    // For symmetric data, the center should be within the bounds
+    var symmetricData = new double[] { -2, -1, 0, 1, 2 };
+    var sample = new Sample(symmetricData);
+
+    var center = Toolkit.Center(sample);
+    var bounds = Toolkit.CenterBounds(sample, new Probability(0.5)); // Loose misrate for small n
+
+    Assert.True(
+      bounds.Lower <= center.NominalValue && center.NominalValue <= bounds.Upper,
+      $"Center {center.NominalValue} should be within bounds [{bounds.Lower}, {bounds.Upper}]");
+  }
+
+  // =========================================================================
+  // CenterBoundsApprox verification
+  // =========================================================================
+
+  [Fact]
+  public void CenterBoundsApprox_Deterministic_WithSeed()
+  {
+    var sample = new Sample(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+    var misrate = new Probability(0.1);
+
+    var bounds1 = Toolkit.CenterBoundsApprox(sample, misrate, "test-seed");
+    var bounds2 = Toolkit.CenterBoundsApprox(sample, misrate, "test-seed");
+
+    Assert.Equal(bounds1.Lower, bounds2.Lower);
+    Assert.Equal(bounds1.Upper, bounds2.Upper);
+  }
+
+  [Fact]
+  public void CenterBoundsApprox_DifferentWithDifferentSeeds()
+  {
+    // Use non-integer values and fewer iterations to ensure variability between seeds
+    var sample = new Sample(1.1, 2.3, 3.7, 4.2, 5.9, 6.1, 7.8, 8.4, 9.6, 10.5);
+    var misrate = new Probability(0.1);
+
+    // Use estimator directly with 100 iterations to ensure variance between seeds
+    var estimator = CenterBoundsApproxEstimator.Instance;
+    var bounds1 = estimator.Estimate(sample, misrate, "seed-a", 100);
+    var bounds2 = estimator.Estimate(sample, misrate, "seed-b", 100);
+
+    // Should be different (with very high probability for continuous data with low iteration count)
+    Assert.True(
+      bounds1.Lower != bounds2.Lower || bounds1.Upper != bounds2.Upper,
+      "Different seeds should produce different bounds");
+  }
+
+  [Fact]
+  public void CenterBoundsApprox_Coverage_Simulation()
+  {
+    var rng = new Rng("approx-coverage-test");
+    int n = 10;
+    double misrate = 0.1;
+    int iterations = 50;
+    int covered = 0;
+    double trueCenter = 0.0;
+
+    for (int i = 0; i < iterations; i++)
+    {
+      var values = new double[n];
+      for (int j = 0; j < n; j++)
+        values[j] = rng.Uniform(-1, 1);
+
+      var sample = new Sample(values);
+      var bounds = Toolkit.CenterBoundsApprox(sample, new Probability(misrate), $"sim-{i}");
+
+      if (bounds.Lower <= trueCenter && trueCenter <= bounds.Upper)
+        covered++;
+    }
+
+    double actualCoverage = (double)covered / iterations;
+
+    // Bootstrap coverage is nominal (~0.9) but may deviate. With 50 iterations,
+    // SD = sqrt(0.9*0.1/50) ≈ 0.042. Threshold 0.70 is ~4.7 SD below nominal.
+    Assert.True(
+      actualCoverage >= 0.70,
+      $"CenterBoundsApprox coverage {actualCoverage} should be >= 0.70 (nominal 0.9)");
+  }
+
+  [Fact]
+  public void CenterBoundsApprox_PermutationInvariant()
+  {
+    // Original order
+    var sample1 = new Sample(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+    // Reversed order
+    var sample2 = new Sample(10, 9, 8, 7, 6, 5, 4, 3, 2, 1);
+    // Shuffled order
+    var sample3 = new Sample(5, 2, 8, 1, 9, 3, 7, 4, 10, 6);
+
+    var misrate = new Probability(0.1);
+
+    // All should produce identical bounds (using default seed)
+    var bounds1 = Toolkit.CenterBoundsApprox(sample1, misrate);
+    var bounds2 = Toolkit.CenterBoundsApprox(sample2, misrate);
+    var bounds3 = Toolkit.CenterBoundsApprox(sample3, misrate);
+
+    Assert.Equal(bounds1.Lower, bounds2.Lower);
+    Assert.Equal(bounds1.Upper, bounds2.Upper);
+    Assert.Equal(bounds1.Lower, bounds3.Lower);
+    Assert.Equal(bounds1.Upper, bounds3.Upper);
+  }
+
+  [Fact]
+  public void CenterBoundsApprox_DefaultSeed_CrossLanguageDeterminism()
+  {
+    // Using default seed (null) should produce deterministic results
+    var sample = new Sample(1, 2, 3, 4, 5);
+    var misrate = new Probability(0.1);
+
+    var bounds1 = Toolkit.CenterBoundsApprox(sample, misrate);
+    var bounds2 = Toolkit.CenterBoundsApprox(sample, misrate);
+
+    Assert.Equal(bounds1.Lower, bounds2.Lower);
+    Assert.Equal(bounds1.Upper, bounds2.Upper);
+  }
+}

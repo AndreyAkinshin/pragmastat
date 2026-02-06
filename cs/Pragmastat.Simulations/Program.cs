@@ -16,6 +16,7 @@ public static class Program
         config.AddCommand<AvgDriftSimulation>(AvgDriftSimulation.Name);
         config.AddCommand<DispDriftSimulation>(DispDriftSimulation.Name);
         config.AddCommand<CoverageSimulation>(CoverageSimulation.Name);
+        config.AddCommand<OneSampleCoverageSimulation>(OneSampleCoverageSimulation.Name);
       });
       return await app.RunAsync(args);
     }
