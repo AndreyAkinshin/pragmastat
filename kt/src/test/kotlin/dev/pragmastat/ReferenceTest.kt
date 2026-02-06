@@ -738,6 +738,14 @@ class ReferenceTest {
         @JsonProperty("expected_error") val expectedError: Map<String, String>? = null
     )
 
+    data class CenterBoundsApproxInput(val x: List<Double>, val misrate: Double, val seed: String?)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    data class CenterBoundsApproxTestData(
+        val input: CenterBoundsApproxInput,
+        val output: BoundsOutput? = null,
+        @JsonProperty("expected_error") val expectedError: Map<String, String>? = null
+    )
+
     @TestFactory
     fun testSignedRankMargin(): List<DynamicTest> {
         val tests = mutableListOf<DynamicTest>()
@@ -838,6 +846,43 @@ class ReferenceTest {
                 val result = centerBounds(
                     testData.input.x,
                     testData.input.misrate
+                )
+                assertClose(testData.output!!.lower, result.lower)
+                assertClose(testData.output!!.upper, result.upper)
+            })
+        }
+
+        return tests
+    }
+
+    @TestFactory
+    fun testCenterBoundsApprox(): List<DynamicTest> {
+        val tests = mutableListOf<DynamicTest>()
+        val testDir = File("../tests/center-bounds-approx")
+
+        if (!testDir.exists() || !testDir.isDirectory) {
+            Assumptions.assumeTrue(false, "Skipping center-bounds-approx tests: directory not found")
+            return tests
+        }
+
+        testDir.listFiles { _, name -> name.endsWith(".json") }?.forEach { file ->
+            val testName = "center-bounds-approx/${file.nameWithoutExtension}"
+            tests.add(DynamicTest.dynamicTest(testName) {
+                val testData = mapper.readValue<CenterBoundsApproxTestData>(file)
+
+                // Handle error test cases
+                if (testData.expectedError != null) {
+                    val exception = assertThrows<AssumptionException> {
+                        centerBoundsApprox(testData.input.x, testData.input.misrate, testData.input.seed)
+                    }
+                    assertEquals(testData.expectedError!!["id"], exception.violation.id.id)
+                    return@dynamicTest
+                }
+
+                val result = centerBoundsApprox(
+                    testData.input.x,
+                    testData.input.misrate,
+                    testData.input.seed
                 )
                 assertClose(testData.output!!.lower, result.lower)
                 assertClose(testData.output!!.upper, result.upper)

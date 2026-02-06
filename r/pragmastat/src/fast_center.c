@@ -2,87 +2,86 @@
 #include <Rinternals.h>
 #include <math.h>
 #include <stdlib.h>
+#include <string.h>
+#include "fast_center_impl.h"
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
+static int cmp_double_fc(const void *a, const void *b) {
+    double da = *(const double *)a;
+    double db = *(const double *)b;
+    if (da < db) return -1;
+    if (da > db) return 1;
+    return 0;
+}
+
 /*
- * Fast O(n log n) implementation of the Center (Hodges-Lehmann) estimator
- * Based on Monahan's Algorithm 616 (1984)
- * Computes the median of all pairwise averages efficiently
+ * Core computation: Center (Hodges-Lehmann) estimator.
+ * Uses Monahan's Algorithm 616 with deterministic pivot selection.
+ * Allocates and frees its own working memory.
  */
-SEXP fast_center_c(SEXP values_sexp) {
-    // Input validation
-    if (!isReal(values_sexp)) {
-        error("Input must be a numeric vector");
+double fast_center_compute(const double *values, int n) {
+    if (n == 1) return values[0];
+    if (n == 2) return (values[0] + values[1]) / 2.0;
+
+    /* Sort a copy */
+    double *sorted_values = (double *)malloc(n * sizeof(double));
+    if (!sorted_values) {
+        error("fast_center: memory allocation failed");
     }
+    memcpy(sorted_values, values, n * sizeof(double));
+    qsort(sorted_values, n, sizeof(double), cmp_double_fc);
 
-    int n = length(values_sexp);
-    if (n == 0) {
-        error("Input vector cannot be empty");
-    }
-
-    // Handle trivial cases
-    if (n == 1) {
-        return values_sexp;
-    }
-
-    if (n == 2) {
-        double *values = REAL(values_sexp);
-        SEXP result = PROTECT(allocVector(REALSXP, 1));
-        REAL(result)[0] = (values[0] + values[1]) / 2.0;
-        UNPROTECT(1);
-        return result;
-    }
-
-    // Allocate working memory (sorted copy)
-    double *sorted_values = (double *) R_alloc(n, sizeof(double));
-    double *values = REAL(values_sexp);
-    for (int i = 0; i < n; i++) {
-        sorted_values[i] = values[i];
-    }
-
-    // Sort the values
-    R_rsort(sorted_values, n);
-
-    // Calculate target median rank(s)
+    /* Calculate target median rank(s) */
     long long total_pairs = ((long long)n * (n + 1)) / 2;
     long long median_rank_low = (total_pairs + 1) / 2;
     long long median_rank_high = (total_pairs + 2) / 2;
 
-    // Initialize search bounds (using 0-based indexing internally)
-    long long *left_bounds = (long long *) R_alloc(n, sizeof(long long));
-    long long *right_bounds = (long long *) R_alloc(n, sizeof(long long));
-    long long *partition_counts = (long long *) R_alloc(n, sizeof(long long));
-
-    for (int i = 0; i < n; i++) {
-        left_bounds[i] = i;      // Row i can pair with columns [i..n-1]
-        right_bounds[i] = n - 1; // Initially all columns available
+    /* Initialize search bounds */
+    long long *left_bounds = (long long *)malloc(n * sizeof(long long));
+    if (!left_bounds) {
+        free(sorted_values);
+        error("fast_center: memory allocation failed");
+    }
+    long long *right_bounds = (long long *)malloc(n * sizeof(long long));
+    if (!right_bounds) {
+        free(sorted_values);
+        free(left_bounds);
+        error("fast_center: memory allocation failed");
+    }
+    long long *partition_counts = (long long *)malloc(n * sizeof(long long));
+    if (!partition_counts) {
+        free(sorted_values);
+        free(left_bounds);
+        free(right_bounds);
+        error("fast_center: memory allocation failed");
     }
 
-    // Initial pivot: sum of middle elements
+    for (int i = 0; i < n; i++) {
+        left_bounds[i] = i;
+        right_bounds[i] = n - 1;
+    }
+
     double pivot = sorted_values[(n - 1) / 2] + sorted_values[n / 2];
     long long active_set_size = total_pairs;
     long long previous_count = 0;
 
-    // Random number generator for pivot selection
-    GetRNGstate();
+    double result = 0.0;
 
     while (1) {
-        // === PARTITION STEP ===
+        /* === PARTITION STEP === */
         long long count_below_pivot = 0;
         long long current_column = n - 1;
 
         for (int row = 0; row < n; row++) {
             partition_counts[row] = 0;
 
-            // Move left from current column until we find sums < pivot
             while (current_column >= row &&
                    sorted_values[row] + sorted_values[current_column] >= pivot) {
                 current_column--;
             }
 
-            // Count elements in this row that are < pivot
             if (current_column >= row) {
                 long long elements_below = current_column - row + 1;
                 partition_counts[row] = elements_below;
@@ -90,10 +89,10 @@ SEXP fast_center_c(SEXP values_sexp) {
             }
         }
 
-        // === CONVERGENCE CHECK ===
+        /* === CONVERGENCE CHECK === */
         if (count_below_pivot == previous_count) {
-            double min_active_sum = R_PosInf;
-            double max_active_sum = R_NegInf;
+            double min_active_sum = INFINITY;
+            double max_active_sum = -INFINITY;
 
             for (int i = 0; i < n; i++) {
                 if (left_bounds[i] > right_bounds[i]) continue;
@@ -102,8 +101,8 @@ SEXP fast_center_c(SEXP values_sexp) {
                 double smallest_in_row = sorted_values[left_bounds[i]] + row_value;
                 double largest_in_row = sorted_values[right_bounds[i]] + row_value;
 
-                min_active_sum = MIN(min_active_sum, smallest_in_row);
-                max_active_sum = MAX(max_active_sum, largest_in_row);
+                if (smallest_in_row < min_active_sum) min_active_sum = smallest_in_row;
+                if (largest_in_row > max_active_sum) max_active_sum = largest_in_row;
             }
 
             pivot = (min_active_sum + max_active_sum) / 2.0;
@@ -112,88 +111,74 @@ SEXP fast_center_c(SEXP values_sexp) {
             }
 
             if (min_active_sum == max_active_sum || active_set_size <= 2) {
-                PutRNGstate();
-                SEXP result = PROTECT(allocVector(REALSXP, 1));
-                REAL(result)[0] = pivot / 2.0;
-                UNPROTECT(1);
-                return result;
+                result = pivot / 2.0;
+                goto cleanup;
             }
 
             continue;
         }
 
-        // === TARGET CHECK ===
+        /* === TARGET CHECK === */
         int at_target_rank = (count_below_pivot == median_rank_low) ||
                              (count_below_pivot == median_rank_high - 1);
 
         if (at_target_rank) {
-            double largest_below_pivot = R_NegInf;
-            double smallest_at_or_above_pivot = R_PosInf;
+            double largest_below_pivot = -INFINITY;
+            double smallest_at_or_above_pivot = INFINITY;
 
             for (int i = 0; i < n; i++) {
                 long long count_in_row = partition_counts[i];
                 double row_value = sorted_values[i];
                 long long total_in_row = n - i;
 
-                // Find largest sum in this row that's < pivot
                 if (count_in_row > 0) {
                     long long last_below_index = i + count_in_row - 1;
                     double last_below_value = row_value + sorted_values[last_below_index];
-                    largest_below_pivot = MAX(largest_below_pivot, last_below_value);
+                    if (last_below_value > largest_below_pivot)
+                        largest_below_pivot = last_below_value;
                 }
 
-                // Find smallest sum in this row that's >= pivot
                 if (count_in_row < total_in_row) {
                     long long first_at_or_above_index = i + count_in_row;
                     double first_at_or_above_value = row_value + sorted_values[first_at_or_above_index];
-                    smallest_at_or_above_pivot = MIN(smallest_at_or_above_pivot, first_at_or_above_value);
+                    if (first_at_or_above_value < smallest_at_or_above_pivot)
+                        smallest_at_or_above_pivot = first_at_or_above_value;
                 }
             }
 
-            PutRNGstate();
-            SEXP result = PROTECT(allocVector(REALSXP, 1));
-
             if (median_rank_low < median_rank_high) {
-                // Even total: average the two middle values
-                REAL(result)[0] = (smallest_at_or_above_pivot + largest_below_pivot) / 4.0;
+                result = (smallest_at_or_above_pivot + largest_below_pivot) / 4.0;
             } else {
-                // Odd total: return the single middle value
                 int need_largest = (count_below_pivot == median_rank_low);
-                REAL(result)[0] = (need_largest ? largest_below_pivot : smallest_at_or_above_pivot) / 2.0;
+                result = (need_largest ? largest_below_pivot : smallest_at_or_above_pivot) / 2.0;
             }
-
-            UNPROTECT(1);
-            return result;
+            goto cleanup;
         }
 
-        // === UPDATE BOUNDS ===
+        /* === UPDATE BOUNDS === */
         if (count_below_pivot < median_rank_low) {
-            // Too few values below pivot - search higher
             for (int i = 0; i < n; i++) {
                 left_bounds[i] = i + partition_counts[i];
             }
         } else {
-            // Too many values below pivot - search lower
             for (int i = 0; i < n; i++) {
                 right_bounds[i] = i + partition_counts[i] - 1;
             }
         }
 
-        // === PREPARE NEXT ITERATION ===
+        /* === PREPARE NEXT ITERATION === */
         previous_count = count_below_pivot;
 
-        // Recalculate active set size
         active_set_size = 0;
         for (int i = 0; i < n; i++) {
             long long row_size = right_bounds[i] - left_bounds[i] + 1;
             active_set_size += MAX(0, row_size);
         }
 
-        // Choose next pivot
+        /* Choose next pivot */
         if (active_set_size > 2) {
-            // Use randomized row median strategy
-            double random_fraction = unif_rand();
-            long long target_index = (long long)(random_fraction * active_set_size);
+            /* Deterministic pivot: pick middle element of active set */
+            long long target_index = active_set_size / 2;
             int selected_row = 0;
 
             long long cumulative_size = 0;
@@ -206,14 +191,11 @@ SEXP fast_center_c(SEXP values_sexp) {
                 cumulative_size += row_size;
             }
 
-            // Use median element of the selected row as pivot
             long long median_column_in_row = (left_bounds[selected_row] + right_bounds[selected_row]) / 2;
             pivot = sorted_values[selected_row] + sorted_values[median_column_in_row];
-
         } else {
-            // Few elements remain - use midrange strategy
-            double min_remaining_sum = R_PosInf;
-            double max_remaining_sum = R_NegInf;
+            double min_remaining_sum = INFINITY;
+            double max_remaining_sum = -INFINITY;
 
             for (int i = 0; i < n; i++) {
                 if (left_bounds[i] > right_bounds[i]) continue;
@@ -222,8 +204,8 @@ SEXP fast_center_c(SEXP values_sexp) {
                 double min_in_row = sorted_values[left_bounds[i]] + row_value;
                 double max_in_row = sorted_values[right_bounds[i]] + row_value;
 
-                min_remaining_sum = MIN(min_remaining_sum, min_in_row);
-                max_remaining_sum = MAX(max_remaining_sum, max_in_row);
+                if (min_in_row < min_remaining_sum) min_remaining_sum = min_in_row;
+                if (max_in_row > max_remaining_sum) max_remaining_sum = max_in_row;
             }
 
             pivot = (min_remaining_sum + max_remaining_sum) / 2.0;
@@ -232,17 +214,37 @@ SEXP fast_center_c(SEXP values_sexp) {
             }
 
             if (min_remaining_sum == max_remaining_sum) {
-                PutRNGstate();
-                SEXP result = PROTECT(allocVector(REALSXP, 1));
-                REAL(result)[0] = pivot / 2.0;
-                UNPROTECT(1);
-                return result;
+                result = pivot / 2.0;
+                goto cleanup;
             }
         }
     }
 
-    // Should never reach here
-    PutRNGstate();
-    error("Algorithm failed to converge");
-    return R_NilValue;
+cleanup:
+    free(sorted_values);
+    free(left_bounds);
+    free(right_bounds);
+    free(partition_counts);
+    return result;
+}
+
+/*
+ * R-callable wrapper for fast_center_compute.
+ */
+SEXP fast_center_c(SEXP values_sexp) {
+    if (!isReal(values_sexp)) {
+        error("Input must be a numeric vector");
+    }
+
+    int n = length(values_sexp);
+    if (n == 0) {
+        error("Input vector cannot be empty");
+    }
+
+    double result = fast_center_compute(REAL(values_sexp), n);
+
+    SEXP result_sexp = PROTECT(allocVector(REALSXP, 1));
+    REAL(result_sexp)[0] = result;
+    UNPROTECT(1);
+    return result_sexp;
 }

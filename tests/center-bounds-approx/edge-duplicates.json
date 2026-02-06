@@ -1,0 +1,17 @@
+{
+  "input": {
+    "x": [
+      5,
+      5,
+      5,
+      5,
+      5
+    ],
+    "misrate": 0.1,
+    "seed": "edge-dup"
+  },
+  "output": {
+    "lower": 5,
+    "upper": 5
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "input": {
+    "x": [1, 2, 3, 4, 5],
+    "misrate": 0.00001,
+    "seed": "test"
+  },
+  "expected_error": {
+    "id": "domain"
+  },
+  "comment": "For n=5, min_achievable_misrate = max(2/10000, 2^(1-5)) = 0.0625; misrate=0.00001 is below minimum"
+}

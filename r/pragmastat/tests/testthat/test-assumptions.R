@@ -51,6 +51,7 @@ call_assumption_function <- function(func_name, inputs) {
     "Disparity" = disparity(x, y),
     "MedianBounds" = median_bounds(x, misrate),
     "CenterBounds" = center_bounds(x, misrate),
+    "CenterBoundsApprox" = center_bounds_approx(x, misrate, seed),
     "SignedRankMargin" = signed_rank_margin(n, misrate),
     stop(paste("Unknown function:", func_name))
   )

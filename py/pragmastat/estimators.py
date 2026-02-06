@@ -10,6 +10,7 @@ from .signed_rank_margin import signed_rank_margin
 from .min_misrate import min_achievable_misrate_one_sample
 from ._fast_center_quantiles import fast_center_quantile_bounds
 from .gauss_cdf import gauss_cdf
+from .rng import Rng
 from .assumptions import (
     check_validity,
     check_positivity,
@@ -536,3 +537,90 @@ def center_bounds(
 
     lo, hi = fast_center_quantile_bounds(sorted_x, k_left, k_right)
     return Bounds(lo, hi)
+
+
+CENTER_BOUNDS_APPROX_ITERATIONS = 10000
+CENTER_BOUNDS_APPROX_MAX_SUBSAMPLE = 5000
+CENTER_BOUNDS_APPROX_DEFAULT_SEED = "center-bounds-approx"
+
+
+def center_bounds_approx(
+    x: Union[Sequence[float], NDArray],
+    misrate: float,
+    seed: str | None = None,
+) -> Bounds:
+    """
+    Provides bootstrap-based nominal bounds for Center (Hodges-Lehmann pseudomedian).
+
+    IMPORTANT: The misrate parameter specifies the NOMINAL (requested) coverage,
+    not the actual coverage. The actual coverage of bootstrap percentile intervals
+    can differ significantly from the nominal coverage.
+
+    When requesting 95% confidence (misrate = 0.05), actual coverage is typically 85-92% for n < 30.
+    Users requiring exact coverage should use center_bounds (if symmetry holds) or median_bounds.
+
+    Args:
+        x: Sample array
+        misrate: Misclassification rate (probability that true center falls outside bounds)
+        seed: Optional seed for deterministic results
+
+    Returns:
+        A Bounds object containing the lower and upper bounds
+
+    Raises:
+        AssumptionError: If sample is empty or contains NaN/Inf.
+        AssumptionError: If n < 2 or misrate is below minimum achievable.
+    """
+    x = np.asarray(x)
+    check_validity(x, "x")
+
+    if math.isnan(misrate) or misrate < 0 or misrate > 1:
+        raise AssumptionError.domain("misrate")
+
+    n = len(x)
+    if n < 2:
+        raise AssumptionError.domain("x")
+
+    min_misrate = max(
+        2.0 / CENTER_BOUNDS_APPROX_ITERATIONS, min_achievable_misrate_one_sample(n)
+    )
+    if misrate < min_misrate:
+        raise AssumptionError.domain("misrate")
+
+    # Subsample if necessary
+    m = min(n, CENTER_BOUNDS_APPROX_MAX_SUBSAMPLE)
+
+    # Sort the input
+    sorted_x = sorted(x.tolist())
+
+    # Initialize RNG
+    rng = Rng(seed if seed is not None else CENTER_BOUNDS_APPROX_DEFAULT_SEED)
+
+    # Bootstrap iterations
+    centers = []
+    for _ in range(CENTER_BOUNDS_APPROX_ITERATIONS):
+        sample = rng.resample(sorted_x, m)
+        c = _fast_center(sample)
+        centers.append(c)
+
+    # Sort bootstrap centers
+    centers.sort()
+
+    # Extract percentile bounds
+    alpha = misrate / 2.0
+    lo_idx = int(math.floor(alpha * CENTER_BOUNDS_APPROX_ITERATIONS))
+    hi_idx = int(math.ceil((1.0 - alpha) * CENTER_BOUNDS_APPROX_ITERATIONS)) - 1
+    lo_idx = min(max(0, lo_idx), hi_idx)
+
+    bootstrap_lo = centers[lo_idx]
+    bootstrap_hi = centers[min(CENTER_BOUNDS_APPROX_ITERATIONS - 1, hi_idx)]
+
+    # Scale bounds to full n using asymptotic sqrt(n) rate
+    if m < n:
+        center_val = _fast_center(sorted_x)
+        scale_factor = (m / n) ** 0.5
+        lo = center_val + (bootstrap_lo - center_val) / scale_factor
+        hi = center_val + (bootstrap_hi - center_val) / scale_factor
+        return Bounds(lo, hi)
+
+    return Bounds(bootstrap_lo, bootstrap_hi)

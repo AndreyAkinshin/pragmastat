@@ -1,0 +1,17 @@
+{
+  "input": {
+    "x": [
+      1,
+      2,
+      3,
+      4,
+      10
+    ],
+    "misrate": 0.1,
+    "seed": "asym-right"
+  },
+  "output": {
+    "lower": 2,
+    "upper": 6.5
+  }
+}

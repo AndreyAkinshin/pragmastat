@@ -97,6 +97,7 @@ public class AssumptionTests
       case "Disparity": new Sample(x).Disparity(new Sample(y)); break;
       case "MedianBounds": Toolkit.MedianBounds(new Sample(x), new Probability(ParseValue(inputs.Misrate!.Value))); break;
       case "CenterBounds": Toolkit.CenterBounds(new Sample(x), new Probability(ParseValue(inputs.Misrate!.Value))); break;
+      case "CenterBoundsApprox": Toolkit.CenterBoundsApprox(new Sample(x), new Probability(ParseValue(inputs.Misrate!.Value)), inputs.Seed); break;
       case "SignedRankMargin": SignedRankMargin.Instance.Calc(inputs.N!.Value, ParseValue(inputs.Misrate!.Value)); break;
       default: throw new ArgumentException($"Unknown function: {funcName}");
     }

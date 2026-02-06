@@ -1,0 +1,22 @@
+{
+  "input": {
+    "x": [
+      7,
+      3,
+      10,
+      1,
+      5,
+      9,
+      2,
+      6,
+      4,
+      8
+    ],
+    "misrate": 0.05,
+    "seed": "determinism-test"
+  },
+  "output": {
+    "lower": 3.5,
+    "upper": 7.5
+  }
+}

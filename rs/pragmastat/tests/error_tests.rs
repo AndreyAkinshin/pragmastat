@@ -2,8 +2,8 @@
 
 use pragmastat::assumptions::{AssumptionId, EstimatorError, Subject};
 use pragmastat::estimators::{
-    avg_spread, center, center_bounds, disparity, median, median_bounds, ratio, rel_spread, shift,
-    shift_bounds, spread,
+    avg_spread, center, center_bounds, center_bounds_approx, disparity, median, median_bounds,
+    ratio, rel_spread, shift, shift_bounds, spread,
 };
 use pragmastat::pairwise_margin::pairwise_margin;
 use pragmastat::signed_rank_margin::signed_rank_margin;
@@ -286,6 +286,26 @@ fn center_bounds_single_element() {
 #[test]
 fn center_bounds_invalid_misrate() {
     let result = center_bounds(&[1.0, 2.0, 3.0, 4.0, 5.0], 1e-20);
+    assert!(result.is_err());
+    let (id, subject) = unwrap_estimator_error(result.unwrap_err());
+    assert_eq!(id, AssumptionId::Domain);
+    assert_eq!(subject, Subject::Misrate);
+}
+
+// --- center_bounds_approx ---
+
+#[test]
+fn center_bounds_approx_single_element() {
+    let result = center_bounds_approx(&[1.0], 0.05);
+    assert!(result.is_err());
+    let (id, subject) = unwrap_estimator_error(result.unwrap_err());
+    assert_eq!(id, AssumptionId::Domain);
+    assert_eq!(subject, Subject::X);
+}
+
+#[test]
+fn center_bounds_approx_invalid_misrate() {
+    let result = center_bounds_approx(&[1.0, 2.0, 3.0, 4.0, 5.0], 0.00001);
     assert!(result.is_err());
     let (id, subject) = unwrap_estimator_error(result.unwrap_err());
     assert_eq!(id, AssumptionId::Domain);

@@ -1,6 +1,7 @@
 package dev.pragmastat
 
 import kotlin.math.abs
+import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
 
@@ -425,4 +426,99 @@ fun centerBounds(x: List<Double>, misrate: Double): Bounds {
     val (lo, hi) = FastCenterQuantiles.bounds(sorted, kLeft, kRight)
 
     return Bounds(lo, hi)
+}
+
+private const val DEFAULT_ITERATIONS = 10000
+private const val MAX_SUBSAMPLE_SIZE = 5000
+private const val DEFAULT_SEED = "center-bounds-approx"
+
+/**
+ * Provides bootstrap-based nominal bounds on the center (Hodges-Lehmann pseudomedian)
+ * with specified misclassification rate.
+ *
+ * Uses bootstrap percentile method. No symmetry requirement, but provides only
+ * nominal (not exact) coverage.
+ *
+ * WARNING: Bootstrap percentile method has known undercoverage for small samples.
+ * When requesting 95% confidence (misrate = 0.05), actual coverage is typically 85-92% for n < 30.
+ *
+ * @param x Sample data
+ * @param misrate Misclassification rate (probability that true center falls outside bounds)
+ * @return A Bounds object containing the lower and upper bounds
+ * @throws AssumptionException if sample size < 2 or misrate is below minimum achievable
+ */
+fun centerBoundsApprox(x: List<Double>, misrate: Double): Bounds =
+    centerBoundsApprox(x, misrate, null, DEFAULT_ITERATIONS)
+
+/**
+ * Provides bootstrap-based nominal bounds on the center with specified seed.
+ *
+ * @param x Sample data
+ * @param misrate Misclassification rate
+ * @param seed Optional seed for reproducibility (null uses default seed)
+ * @return A Bounds object containing the lower and upper bounds
+ */
+fun centerBoundsApprox(x: List<Double>, misrate: Double, seed: String?): Bounds =
+    centerBoundsApprox(x, misrate, seed, DEFAULT_ITERATIONS)
+
+/**
+ * Provides bootstrap-based nominal bounds on the center with specified seed and iterations.
+ *
+ * @param x Sample data
+ * @param misrate Misclassification rate
+ * @param seed Optional seed for reproducibility (null uses default seed)
+ * @param iterations Number of bootstrap iterations
+ * @return A Bounds object containing the lower and upper bounds
+ */
+internal fun centerBoundsApprox(x: List<Double>, misrate: Double, seed: String?, iterations: Int): Bounds {
+    checkValidity(x, Subject.X)
+    require(iterations > 0) { "iterations must be positive" }
+
+    if (misrate.isNaN() || misrate < 0.0 || misrate > 1.0) {
+        throw AssumptionException(Violation(AssumptionId.DOMAIN, Subject.MISRATE))
+    }
+
+    val n = x.size
+    if (n < 2) {
+        throw AssumptionException(Violation(AssumptionId.DOMAIN, Subject.X))
+    }
+
+    val minMisrate = maxOf(2.0 / iterations, minAchievableMisrateOneSample(n))
+    if (misrate < minMisrate) {
+        throw AssumptionException(Violation(AssumptionId.DOMAIN, Subject.MISRATE))
+    }
+
+    // Sort for permutation invariance
+    val sorted = x.sorted()
+
+    // Use default seed for cross-language determinism when no seed provided
+    val rng = Rng(seed ?: DEFAULT_SEED)
+
+    // m-out-of-n subsampling: cap at MAX_SUBSAMPLE_SIZE for performance
+    val m = min(n, MAX_SUBSAMPLE_SIZE)
+    val centers = DoubleArray(iterations)
+
+    for (i in 0 until iterations) {
+        val resample = rng.resample(sorted, m)
+        centers[i] = fastCenter(resample)
+    }
+
+    centers.sort()
+
+    val alpha = misrate / 2
+    val hiIdx = min(iterations - 1, kotlin.math.ceil((1 - alpha) * iterations).toInt() - 1)
+    val loIdx = min(max(0, kotlin.math.floor(alpha * iterations).toInt()), hiIdx)
+
+    var bootstrapLo = centers[loIdx]
+    var bootstrapHi = centers[hiIdx]
+
+    // Scale bounds to full n using asymptotic sqrt(n) rate
+    if (m < n) {
+        val centerVal = fastCenter(sorted)
+        val scaleFactor = kotlin.math.sqrt(m.toDouble() / n)
+        bootstrapLo = centerVal + (bootstrapLo - centerVal) / scaleFactor
+        bootstrapHi = centerVal + (bootstrapHi - centerVal) / scaleFactor
+    }
+
+    return Bounds(bootstrapLo, bootstrapHi)
 }

@@ -1,0 +1,18 @@
+{
+  "input": {
+    "x": [
+      0,
+      2,
+      4,
+      6,
+      8,
+      10
+    ],
+    "misrate": 0.01,
+    "seed": "misrate-3"
+  },
+  "expected_error": {
+    "id": "domain"
+  },
+  "comment": "For n=6, min_achievable_misrate_one_sample = 2^(1-6) = 0.03125; misrate=0.01 is below minimum"
+}

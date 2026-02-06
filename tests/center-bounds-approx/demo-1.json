@@ -1,0 +1,17 @@
+{
+  "input": {
+    "x": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "misrate": 0.1,
+    "seed": "demo-seed-1"
+  },
+  "output": {
+    "lower": 2,
+    "upper": 4
+  }
+}

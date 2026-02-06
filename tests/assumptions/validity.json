@@ -252,6 +252,18 @@
       "expected_violation": { "id": "validity" }
     },
     {
+      "name": "center_bounds_approx_nan",
+      "function": "CenterBoundsApprox",
+      "inputs": { "x": [1.0, "NaN", 3.0], "misrate": 0.1, "seed": "test" },
+      "expected_violation": { "id": "validity" }
+    },
+    {
+      "name": "center_bounds_approx_inf",
+      "function": "CenterBoundsApprox",
+      "inputs": { "x": [1.0, "Infinity", 3.0], "misrate": 0.1, "seed": "test" },
+      "expected_violation": { "id": "validity" }
+    },
+    {
       "name": "median_bounds_inf",
       "function": "MedianBounds",
       "inputs": { "x": [1.0, "Infinity", 3.0], "misrate": 0.1 },
@@ -261,6 +273,12 @@
       "name": "center_bounds_inf",
       "function": "CenterBounds",
       "inputs": { "x": [1.0, "Infinity", 3.0], "misrate": 0.1 },
+      "expected_violation": { "id": "validity" }
+    },
+    {
+      "name": "center_bounds_approx_empty",
+      "function": "CenterBoundsApprox",
+      "inputs": { "x": [], "misrate": 0.1, "seed": "test" },
       "expected_violation": { "id": "validity" }
     }
   ]
