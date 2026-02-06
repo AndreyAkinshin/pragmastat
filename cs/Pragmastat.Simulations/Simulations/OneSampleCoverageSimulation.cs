@@ -114,11 +114,11 @@ public class OneSampleCoverageSimulation : SimulationBase<OneSampleCoverageSimul
         return false;
     }
 
-    // CenterBoundsApprox has its own minimum misrate based on iterations
+    // CenterBoundsApprox has its own minimum misrate based on iterations and sample size
     if (estimator == "center-approx")
     {
       const int iterations = 10000;
-      double minMisrate = 2.0 / iterations;
+      double minMisrate = Math.Max(2.0 / iterations, MinAchievableMisrate.OneSample(sampleSize));
       if (misrate < minMisrate)
         return false;
     }
