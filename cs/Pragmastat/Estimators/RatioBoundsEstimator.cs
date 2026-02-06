@@ -15,10 +15,10 @@ public class RatioBoundsEstimator : ITwoSampleBoundsEstimator
   public Bounds Estimate(Sample x, Sample y, Probability misrate)
   {
     Assertion.MatchedUnit(x, y);
-    Assertion.Validity(x, Subject.X, "RatioBounds");
-    Assertion.Validity(y, Subject.Y, "RatioBounds");
-    Assertion.PositivityAssumption(x, Subject.X, "RatioBounds");
-    Assertion.PositivityAssumption(y, Subject.Y, "RatioBounds");
+    Assertion.Validity(x, Subject.X);
+    Assertion.Validity(y, Subject.Y);
+    Assertion.PositivityAssumption(x, Subject.X);
+    Assertion.PositivityAssumption(y, Subject.Y);
 
     // Log-transform samples
     var logX = x.Log();

@@ -2,16 +2,18 @@
 
 ASSUMPTION_IDS <- list(
   VALIDITY = "validity",
+  DOMAIN = "domain",
   POSITIVITY = "positivity",
   SPARITY = "sparity"
 )
 
 SUBJECTS <- list(
   X = "x",
-  Y = "y"
+  Y = "y",
+  MISRATE = "misrate"
 )
 
-assumption_error <- function(function_name, id, subject) {
+assumption_error <- function(id, subject) {
   violation <- list(id = id, subject = subject)
   message <- paste0(id, "(", subject, ")")
   cond <- structure(
@@ -25,28 +27,28 @@ assumption_error <- function(function_name, id, subject) {
   cond
 }
 
-check_validity <- function(values, subject, function_name) {
+check_validity <- function(values, subject) {
   if (length(values) == 0) {
-    stop(assumption_error(function_name, ASSUMPTION_IDS$VALIDITY, subject))
+    stop(assumption_error(ASSUMPTION_IDS$VALIDITY, subject))
   }
   if (any(is.na(values) | is.nan(values) | is.infinite(values))) {
-    stop(assumption_error(function_name, ASSUMPTION_IDS$VALIDITY, subject))
+    stop(assumption_error(ASSUMPTION_IDS$VALIDITY, subject))
   }
 }
 
-check_positivity <- function(values, subject, function_name) {
+check_positivity <- function(values, subject) {
   if (any(values <= 0)) {
-    stop(assumption_error(function_name, ASSUMPTION_IDS$POSITIVITY, subject))
+    stop(assumption_error(ASSUMPTION_IDS$POSITIVITY, subject))
   }
 }
 
-check_sparity <- function(values, subject, function_name) {
+check_sparity <- function(values, subject) {
   if (length(values) < 2) {
-    stop(assumption_error(function_name, ASSUMPTION_IDS$SPARITY, subject))
+    stop(assumption_error(ASSUMPTION_IDS$SPARITY, subject))
   }
   spread_val <- fast_spread(values)
   if (spread_val <= 0) {
-    stop(assumption_error(function_name, ASSUMPTION_IDS$SPARITY, subject))
+    stop(assumption_error(ASSUMPTION_IDS$SPARITY, subject))
   }
 }
 
@@ -56,9 +58,9 @@ is_assumption_error <- function(e) {
 
 # Log-transform values with positivity check.
 # Throws assumption_error if any value is non-positive.
-log_transform <- function(values, subject, function_name) {
+log_transform <- function(values, subject) {
   if (any(values <= 0)) {
-    stop(assumption_error(function_name, ASSUMPTION_IDS$POSITIVITY, subject))
+    stop(assumption_error(ASSUMPTION_IDS$POSITIVITY, subject))
   }
   log(values)
 }

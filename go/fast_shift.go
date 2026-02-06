@@ -15,11 +15,11 @@ func fastRatioQuantiles[T Number](x, y []T, p []float64, assumeSorted bool) ([]f
 	}
 
 	// Log-transform both samples (includes positivity check)
-	logX, err := Log(x, SubjectX, "Ratio")
+	logX, err := Log(x, SubjectX)
 	if err != nil {
 		return nil, err
 	}
-	logY, err := Log(y, SubjectY, "Ratio")
+	logY, err := Log(y, SubjectY)
 	if err != nil {
 		return nil, err
 	}

@@ -16,7 +16,7 @@ import { checkValidity, checkPositivity, checkSparity, log } from './assumptions
  */
 export function center(x: number[]): number {
   // Check validity (priority 0)
-  checkValidity(x, 'x', 'Center');
+  checkValidity(x, 'x');
   return fastCenter(x);
 }
 
@@ -33,9 +33,9 @@ export function center(x: number[]): number {
  */
 export function spread(x: number[]): number {
   // Check validity (priority 0)
-  checkValidity(x, 'x', 'Spread');
+  checkValidity(x, 'x');
   // Check sparity (priority 2)
-  checkSparity(x, 'x', 'Spread');
+  checkSparity(x, 'x');
   return fastSpread(x);
 }
 
@@ -51,9 +51,9 @@ export function spread(x: number[]): number {
  */
 export function relSpread(x: number[]): number {
   // Check validity (priority 0)
-  checkValidity(x, 'x', 'RelSpread');
+  checkValidity(x, 'x');
   // Check positivity (priority 1)
-  checkPositivity(x, 'x', 'RelSpread');
+  checkPositivity(x, 'x');
   // Calculate center (we know x is valid, center should succeed)
   const c = fastCenter(x);
   // Calculate spread (using internal implementation since we already validated)
@@ -71,8 +71,8 @@ export function relSpread(x: number[]): number {
  */
 export function shift(x: number[], y: number[]): number {
   // Check validity (priority 0)
-  checkValidity(x, 'x', 'Shift');
-  checkValidity(y, 'y', 'Shift');
+  checkValidity(x, 'x');
+  checkValidity(y, 'y');
 
   return fastShift(x, y, [0.5], false)[0];
 }
@@ -93,13 +93,13 @@ export function shift(x: number[], y: number[]): number {
  */
 export function ratio(x: number[], y: number[]): number {
   // Check validity for x (priority 0, subject x)
-  checkValidity(x, 'x', 'Ratio');
+  checkValidity(x, 'x');
   // Check validity for y (priority 0, subject y)
-  checkValidity(y, 'y', 'Ratio');
+  checkValidity(y, 'y');
   // Check positivity for x (priority 1, subject x)
-  checkPositivity(x, 'x', 'Ratio');
+  checkPositivity(x, 'x');
   // Check positivity for y (priority 1, subject y)
-  checkPositivity(y, 'y', 'Ratio');
+  checkPositivity(y, 'y');
 
   return fastRatio(x, y, [0.5], false)[0];
 }
@@ -118,13 +118,13 @@ export function ratio(x: number[], y: number[]): number {
  */
 export function avgSpread(x: number[], y: number[]): number {
   // Check validity for x (priority 0, subject x)
-  checkValidity(x, 'x', 'AvgSpread');
+  checkValidity(x, 'x');
   // Check validity for y (priority 0, subject y)
-  checkValidity(y, 'y', 'AvgSpread');
+  checkValidity(y, 'y');
   // Check sparity for x (priority 2, subject x)
-  checkSparity(x, 'x', 'AvgSpread');
+  checkSparity(x, 'x');
   // Check sparity for y (priority 2, subject y)
-  checkSparity(y, 'y', 'AvgSpread');
+  checkSparity(y, 'y');
 
   const nx = x.length;
   const ny = y.length;
@@ -150,13 +150,13 @@ export function avgSpread(x: number[], y: number[]): number {
  */
 export function disparity(x: number[], y: number[]): number {
   // Check validity for x (priority 0, subject x)
-  checkValidity(x, 'x', 'Disparity');
+  checkValidity(x, 'x');
   // Check validity for y (priority 0, subject y)
-  checkValidity(y, 'y', 'Disparity');
+  checkValidity(y, 'y');
   // Check sparity for x (priority 2, subject x)
-  checkSparity(x, 'x', 'Disparity');
+  checkSparity(x, 'x');
   // Check sparity for y (priority 2, subject y)
-  checkSparity(y, 'y', 'Disparity');
+  checkSparity(y, 'y');
 
   const nx = x.length;
   const ny = y.length;
@@ -193,9 +193,9 @@ export interface Bounds {
  */
 export function shiftBounds(x: number[], y: number[], misrate: number): Bounds {
   // Check validity for x
-  checkValidity(x, 'x', 'ShiftBounds');
+  checkValidity(x, 'x');
   // Check validity for y
-  checkValidity(y, 'y', 'ShiftBounds');
+  checkValidity(y, 'y');
 
   const n = x.length;
   const m = y.length;
@@ -247,12 +247,12 @@ export function shiftBounds(x: number[], y: number[], misrate: number): Bounds {
  * @throws AssumptionError if either sample is empty, contains NaN/Inf, or contains non-positive values
  */
 export function ratioBounds(x: number[], y: number[], misrate: number): Bounds {
-  checkValidity(x, 'x', 'RatioBounds');
-  checkValidity(y, 'y', 'RatioBounds');
+  checkValidity(x, 'x');
+  checkValidity(y, 'y');
 
   // Log-transform samples (includes positivity check)
-  const logX = log(x, 'x', 'RatioBounds');
-  const logY = log(y, 'y', 'RatioBounds');
+  const logX = log(x, 'x');
+  const logY = log(y, 'y');
 
   // Delegate to shiftBounds in log-space
   const logBounds = shiftBounds(logX, logY, misrate);
@@ -262,4 +262,23 @@ export function ratioBounds(x: number[], y: number[], misrate: number): Bounds {
     lower: Math.exp(logBounds.lower),
     upper: Math.exp(logBounds.upper),
   };
+}
+
+/**
+ * Calculate the median of an array of numbers
+ * @param values Array of numbers
+ * @returns The median value
+ */
+export function median(values: number[]): number {
+  // Check validity (priority 0)
+  checkValidity(values, 'x');
+
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+
+  if (sorted.length % 2 === 0) {
+    return (sorted[mid - 1] + sorted[mid]) / 2;
+  } else {
+    return sorted[mid];
+  }
 }

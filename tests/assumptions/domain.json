@@ -1,0 +1,72 @@
+{
+  "suite": "domain",
+  "description": "Tests for domain assumption violations in bounds and margin functions",
+  "cases": [
+    {
+      "name": "median_bounds_single_element",
+      "function": "MedianBounds",
+      "inputs": { "x": [1], "misrate": 0.5 },
+      "expected_violation": { "id": "domain" }
+    },
+    {
+      "name": "median_bounds_misrate_below_min",
+      "function": "MedianBounds",
+      "inputs": { "x": [1, 2, 3, 4, 5], "misrate": 0.001 },
+      "expected_violation": { "id": "domain" }
+    },
+    {
+      "name": "center_bounds_single_element",
+      "function": "CenterBounds",
+      "inputs": { "x": [1], "misrate": 0.5 },
+      "expected_violation": { "id": "domain" }
+    },
+    {
+      "name": "center_bounds_misrate_below_min",
+      "function": "CenterBounds",
+      "inputs": { "x": [1, 2, 3, 4, 5], "misrate": 0.001 },
+      "expected_violation": { "id": "domain" }
+    },
+    {
+      "name": "center_bounds_approx_single_element",
+      "function": "CenterBoundsApprox",
+      "inputs": { "x": [1], "misrate": 0.5, "seed": "test" },
+      "expected_violation": { "id": "domain" }
+    },
+    {
+      "name": "center_bounds_approx_misrate_below_min",
+      "function": "CenterBoundsApprox",
+      "inputs": { "x": [1, 2, 3, 4, 5], "misrate": 0.00001, "seed": "test" },
+      "expected_violation": { "id": "domain" }
+    },
+    {
+      "name": "signed_rank_margin_misrate_below_min",
+      "function": "SignedRankMargin",
+      "inputs": { "n": 1, "misrate": 0.5 },
+      "expected_violation": { "id": "domain" }
+    },
+    {
+      "name": "signed_rank_margin_n0",
+      "function": "SignedRankMargin",
+      "inputs": { "n": 0, "misrate": 0.05 },
+      "expected_violation": { "id": "domain" }
+    },
+    {
+      "name": "signed_rank_margin_nan_misrate",
+      "function": "SignedRankMargin",
+      "inputs": { "n": 5, "misrate": "NaN" },
+      "expected_violation": { "id": "domain" }
+    },
+    {
+      "name": "signed_rank_margin_negative_misrate",
+      "function": "SignedRankMargin",
+      "inputs": { "n": 5, "misrate": -0.1 },
+      "expected_violation": { "id": "domain" }
+    },
+    {
+      "name": "signed_rank_margin_gt1_misrate",
+      "function": "SignedRankMargin",
+      "inputs": { "n": 5, "misrate": 1.5 },
+      "expected_violation": { "id": "domain" }
+    }
+  ]
+}

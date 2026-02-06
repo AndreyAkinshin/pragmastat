@@ -5,8 +5,9 @@ for each estimator. Assumptions are domain constraints, not statistical models.
 
 Assumption IDs (canonical priority order):
     1. validity - non-empty input with finite defined real values
-    2. positivity - values must be strictly positive
-    3. sparity - sample must be non tie-dominant (Spread > 0)
+    2. domain - input parameters within valid domain
+    3. positivity - values must be strictly positive
+    4. sparity - sample must be non tie-dominant (Spread > 0)
 
 When multiple assumptions are violated, the violation with highest priority
 is reported. For two-sample functions, subject X is checked before Y.
@@ -25,11 +26,12 @@ class AssumptionId(str, Enum):
     """Assumption identifiers in canonical priority order."""
 
     VALIDITY = "validity"
+    DOMAIN = "domain"
     POSITIVITY = "positivity"
     SPARITY = "sparity"
 
 
-Subject = Literal["x", "y"]
+Subject = Literal["x", "y", "misrate"]
 
 
 @dataclass(frozen=True)
@@ -51,46 +53,51 @@ class AssumptionError(Exception):
         super().__init__(str(violation))
 
     @classmethod
-    def validity(cls, _function: str, subject: Subject) -> "AssumptionError":
+    def validity(cls, subject: Subject) -> "AssumptionError":
         """Creates an error for the validity assumption."""
         return cls(Violation(AssumptionId.VALIDITY, subject))
 
     @classmethod
-    def positivity(cls, _function: str, subject: Subject) -> "AssumptionError":
+    def positivity(cls, subject: Subject) -> "AssumptionError":
         """Creates an error for the positivity assumption."""
         return cls(Violation(AssumptionId.POSITIVITY, subject))
 
     @classmethod
-    def sparity(cls, _function: str, subject: Subject) -> "AssumptionError":
+    def sparity(cls, subject: Subject) -> "AssumptionError":
         """Creates an error for the sparity assumption."""
         return cls(Violation(AssumptionId.SPARITY, subject))
 
+    @classmethod
+    def domain(cls, subject: Subject) -> "AssumptionError":
+        """Creates an error for the domain assumption."""
+        return cls(Violation(AssumptionId.DOMAIN, subject))
 
-def check_validity(values: np.ndarray, subject: Subject, function: str) -> None:
+
+def check_validity(values: np.ndarray, subject: Subject) -> None:
     """Checks that a sample is valid (non-empty with finite values)."""
     if len(values) == 0:
-        raise AssumptionError.validity(function, subject)
+        raise AssumptionError.validity(subject)
     if not np.all(np.isfinite(values)):
-        raise AssumptionError.validity(function, subject)
+        raise AssumptionError.validity(subject)
 
 
-def check_positivity(values: np.ndarray, subject: Subject, function: str) -> None:
+def check_positivity(values: np.ndarray, subject: Subject) -> None:
     """Checks that all values are strictly positive."""
     if np.any(values <= 0):
-        raise AssumptionError.positivity(function, subject)
+        raise AssumptionError.positivity(subject)
 
 
-def check_sparity(values: np.ndarray, subject: Subject, function: str) -> None:
+def check_sparity(values: np.ndarray, subject: Subject) -> None:
     """Checks that a sample is non tie-dominant (Spread > 0)."""
     if len(values) < 2:
-        raise AssumptionError.sparity(function, subject)
+        raise AssumptionError.sparity(subject)
     spread_val = _fast_spread(values.tolist())
     if spread_val <= 0:
-        raise AssumptionError.sparity(function, subject)
+        raise AssumptionError.sparity(subject)
 
 
-def log(values: np.ndarray, subject: Subject, function: str) -> np.ndarray:
+def log(values: np.ndarray, subject: Subject) -> np.ndarray:
     """Log-transforms an array. Raises AssumptionError if any value is non-positive."""
     if np.any(values <= 0):
-        raise AssumptionError.positivity(function, subject)
+        raise AssumptionError.positivity(subject)
     return np.log(values)

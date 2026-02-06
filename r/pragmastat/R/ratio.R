@@ -14,13 +14,13 @@
 # @return The ratio estimate
 ratio <- function(x, y) {
   # Check validity for x (priority 0, subject x)
-  check_validity(x, SUBJECTS$X, "Ratio")
+  check_validity(x, SUBJECTS$X)
   # Check validity for y (priority 0, subject y)
-  check_validity(y, SUBJECTS$Y, "Ratio")
+  check_validity(y, SUBJECTS$Y)
 
   # Log-transform (includes positivity check)
-  log_x <- log_transform(x, SUBJECTS$X, "Ratio")
-  log_y <- log_transform(y, SUBJECTS$Y, "Ratio")
+  log_x <- log_transform(x, SUBJECTS$X)
+  log_y <- log_transform(y, SUBJECTS$Y)
 
   # Compute shift, exp-transform back
   log_result <- fast_shift(log_x, log_y, p = 0.5, assume_sorted = FALSE)

@@ -253,8 +253,8 @@ pub(crate) fn fast_ratio_quantiles(
     }
 
     // Log-transform both samples (includes positivity check)
-    let log_x = log(x, Subject::X, "Ratio").map_err(|_| "x must contain only positive values")?;
-    let log_y = log(y, Subject::Y, "Ratio").map_err(|_| "y must contain only positive values")?;
+    let log_x = log(x, Subject::X).map_err(|_| "x must contain only positive values")?;
+    let log_y = log(y, Subject::Y).map_err(|_| "y must contain only positive values")?;
 
     // Delegate to fast_shift_quantiles in log-space
     let log_result = fast_shift_quantiles(&log_x, &log_y, p, assume_sorted)?;

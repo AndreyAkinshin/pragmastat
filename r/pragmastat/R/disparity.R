@@ -11,13 +11,13 @@
 # @return The disparity estimate
 disparity <- function(x, y) {
   # Check validity for x (priority 0, subject x)
-  check_validity(x, SUBJECTS$X, "Disparity")
+  check_validity(x, SUBJECTS$X)
   # Check validity for y (priority 0, subject y)
-  check_validity(y, SUBJECTS$Y, "Disparity")
+  check_validity(y, SUBJECTS$Y)
   # Check sparity for x (priority 2, subject x)
-  check_sparity(x, SUBJECTS$X, "Disparity")
+  check_sparity(x, SUBJECTS$X)
   # Check sparity for y (priority 2, subject y)
-  check_sparity(y, SUBJECTS$Y, "Disparity")
+  check_sparity(y, SUBJECTS$Y)
 
   n <- length(x)
   m <- length(y)

@@ -13,13 +13,13 @@ public class DisparityEstimator : ITwoSampleEstimator
   {
     Assertion.MatchedUnit(x, y);
     // Check validity for x (priority 0, subject x)
-    Assertion.Validity(x, Subject.X, "Disparity");
+    Assertion.Validity(x, Subject.X);
     // Check validity for y (priority 0, subject y)
-    Assertion.Validity(y, Subject.Y, "Disparity");
+    Assertion.Validity(y, Subject.Y);
     // Check sparity for x (priority 2, subject x)
-    Assertion.Sparity(x, Subject.X, "Disparity");
+    Assertion.Sparity(x, Subject.X);
     // Check sparity for y (priority 2, subject y)
-    Assertion.Sparity(y, Subject.Y, "Disparity");
+    Assertion.Sparity(y, Subject.Y);
 
     // Calculate shift (we know inputs are valid)
     var shiftVal = FastShift.Estimate(x.SortedValues, y.SortedValues, [0.5], true)[0];

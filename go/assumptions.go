@@ -11,6 +11,7 @@ type AssumptionID string
 
 const (
 	Validity   AssumptionID = "validity"
+	Domain     AssumptionID = "domain"
 	Positivity AssumptionID = "positivity"
 	Sparity    AssumptionID = "sparity"
 )
@@ -19,8 +20,9 @@ const (
 type Subject string
 
 const (
-	SubjectX Subject = "x"
-	SubjectY Subject = "y"
+	SubjectX       Subject = "x"
+	SubjectY       Subject = "y"
+	SubjectMisrate Subject = "misrate"
 )
 
 // Violation represents a specific assumption violation.
@@ -42,61 +44,65 @@ func (e *AssumptionError) Error() string {
 	return e.Violation.String()
 }
 
-func NewValidityError(functionName string, subject Subject) *AssumptionError {
+func NewValidityError(subject Subject) *AssumptionError {
 	return &AssumptionError{Violation: Violation{ID: Validity, Subject: subject}}
 }
 
-func NewPositivityError(functionName string, subject Subject) *AssumptionError {
+func NewPositivityError(subject Subject) *AssumptionError {
 	return &AssumptionError{Violation: Violation{ID: Positivity, Subject: subject}}
 }
 
-func NewSparityError(functionName string, subject Subject) *AssumptionError {
+func NewSparityError(subject Subject) *AssumptionError {
 	return &AssumptionError{Violation: Violation{ID: Sparity, Subject: subject}}
 }
 
-func checkValidity[T Number](values []T, subject Subject, functionName string) error {
+func NewDomainError(subject Subject) *AssumptionError {
+	return &AssumptionError{Violation: Violation{ID: Domain, Subject: subject}}
+}
+
+func checkValidity[T Number](values []T, subject Subject) error {
 	if len(values) == 0 {
-		return NewValidityError(functionName, subject)
+		return NewValidityError(subject)
 	}
 	for _, v := range values {
 		fv := float64(v)
 		if math.IsNaN(fv) || math.IsInf(fv, 0) {
-			return NewValidityError(functionName, subject)
+			return NewValidityError(subject)
 		}
 	}
 	return nil
 }
 
-func checkPositivity[T Number](values []T, subject Subject, functionName string) error {
+func checkPositivity[T Number](values []T, subject Subject) error {
 	for _, v := range values {
 		if float64(v) <= 0 {
-			return NewPositivityError(functionName, subject)
+			return NewPositivityError(subject)
 		}
 	}
 	return nil
 }
 
-func checkSparity[T Number](values []T, subject Subject, functionName string) error {
+func checkSparity[T Number](values []T, subject Subject) error {
 	if len(values) < 2 {
-		return NewSparityError(functionName, subject)
+		return NewSparityError(subject)
 	}
 	spread, err := fastSpread(values)
 	if err != nil {
-		return NewValidityError(functionName, subject)
+		return NewValidityError(subject)
 	}
 	if spread <= 0 {
-		return NewSparityError(functionName, subject)
+		return NewSparityError(subject)
 	}
 	return nil
 }
 
 // Log log-transforms a slice. Returns error if any value is non-positive.
-func Log[T Number](values []T, subject Subject, functionName string) ([]float64, error) {
+func Log[T Number](values []T, subject Subject) ([]float64, error) {
 	result := make([]float64, len(values))
 	for i, v := range values {
 		fv := float64(v)
 		if fv <= 0 {
-			return nil, NewPositivityError(functionName, subject)
+			return nil, NewPositivityError(subject)
 		}
 		result[i] = math.Log(fv)
 	}

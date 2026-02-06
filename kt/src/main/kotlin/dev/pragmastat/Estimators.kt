@@ -8,7 +8,7 @@ import kotlin.math.min
  */
 fun median(values: List<Double>): Double {
     // Check validity (priority 0)
-    checkValidity(values, Subject.X, "Median")
+    checkValidity(values, Subject.X)
     
     val sorted = values.sorted()
     val n = sorted.size
@@ -29,7 +29,7 @@ fun median(values: List<Double>): Double {
  */
 fun center(x: List<Double>): Double {
     // Check validity (priority 0)
-    checkValidity(x, Subject.X, "Center")
+    checkValidity(x, Subject.X)
     return fastCenter(x)
 }
 
@@ -45,9 +45,9 @@ fun center(x: List<Double>): Double {
  */
 fun spread(x: List<Double>): Double {
     // Check validity (priority 0)
-    checkValidity(x, Subject.X, "Spread")
+    checkValidity(x, Subject.X)
     // Check sparity (priority 2)
-    checkSparity(x, Subject.X, "Spread")
+    checkSparity(x, Subject.X)
     return fastSpread(x)
 }
 
@@ -62,9 +62,9 @@ fun spread(x: List<Double>): Double {
  */
 fun relSpread(x: List<Double>): Double {
     // Check validity (priority 0)
-    checkValidity(x, Subject.X, "RelSpread")
+    checkValidity(x, Subject.X)
     // Check positivity (priority 1)
-    checkPositivity(x, Subject.X, "RelSpread")
+    checkPositivity(x, Subject.X)
 
     val centerVal = fastCenter(x)
     // Calculate spread (using internal implementation since we already validated)
@@ -82,8 +82,8 @@ fun relSpread(x: List<Double>): Double {
  */
 fun shift(x: List<Double>, y: List<Double>): Double {
     // Check validity (priority 0)
-    checkValidity(x, Subject.X, "Shift")
-    checkValidity(y, Subject.Y, "Shift")
+    checkValidity(x, Subject.X)
+    checkValidity(y, Subject.Y)
     return fastShift(x, y)[0]
 }
 
@@ -101,13 +101,13 @@ fun shift(x: List<Double>, y: List<Double>): Double {
  */
 fun ratio(x: List<Double>, y: List<Double>): Double {
     // Check validity for x (priority 0, subject x)
-    checkValidity(x, Subject.X, "Ratio")
+    checkValidity(x, Subject.X)
     // Check validity for y (priority 0, subject y)
-    checkValidity(y, Subject.Y, "Ratio")
+    checkValidity(y, Subject.Y)
     // Check positivity for x (priority 1, subject x)
-    checkPositivity(x, Subject.X, "Ratio")
+    checkPositivity(x, Subject.X)
     // Check positivity for y (priority 1, subject y)
-    checkPositivity(y, Subject.Y, "Ratio")
+    checkPositivity(y, Subject.Y)
 
     return fastRatio(x, y)[0]
 }
@@ -123,13 +123,13 @@ fun ratio(x: List<Double>, y: List<Double>): Double {
  */
 fun avgSpread(x: List<Double>, y: List<Double>): Double {
     // Check validity for x (priority 0, subject x)
-    checkValidity(x, Subject.X, "AvgSpread")
+    checkValidity(x, Subject.X)
     // Check validity for y (priority 0, subject y)
-    checkValidity(y, Subject.Y, "AvgSpread")
+    checkValidity(y, Subject.Y)
     // Check sparity for x (priority 2, subject x)
-    checkSparity(x, Subject.X, "AvgSpread")
+    checkSparity(x, Subject.X)
     // Check sparity for y (priority 2, subject y)
-    checkSparity(y, Subject.Y, "AvgSpread")
+    checkSparity(y, Subject.Y)
 
     val n = x.size
     val m = y.size
@@ -151,13 +151,13 @@ fun avgSpread(x: List<Double>, y: List<Double>): Double {
  */
 fun disparity(x: List<Double>, y: List<Double>): Double {
     // Check validity for x (priority 0, subject x)
-    checkValidity(x, Subject.X, "Disparity")
+    checkValidity(x, Subject.X)
     // Check validity for y (priority 0, subject y)
-    checkValidity(y, Subject.Y, "Disparity")
+    checkValidity(y, Subject.Y)
     // Check sparity for x (priority 2, subject x)
-    checkSparity(x, Subject.X, "Disparity")
+    checkSparity(x, Subject.X)
     // Check sparity for y (priority 2, subject y)
-    checkSparity(y, Subject.Y, "Disparity")
+    checkSparity(y, Subject.Y)
 
     val n = x.size
     val m = y.size
@@ -190,9 +190,9 @@ data class Bounds(val lower: Double, val upper: Double)
  */
 fun shiftBounds(x: List<Double>, y: List<Double>, misrate: Double): Bounds {
     // Check validity for x
-    checkValidity(x, Subject.X, "ShiftBounds")
+    checkValidity(x, Subject.X)
     // Check validity for y
-    checkValidity(y, Subject.Y, "ShiftBounds")
+    checkValidity(y, Subject.Y)
 
     val n = x.size
     val m = y.size
@@ -242,12 +242,12 @@ fun shiftBounds(x: List<Double>, y: List<Double>, misrate: Double): Bounds {
  * @return A Bounds object containing the lower and upper bounds
  */
 fun ratioBounds(x: List<Double>, y: List<Double>, misrate: Double): Bounds {
-    checkValidity(x, Subject.X, "RatioBounds")
-    checkValidity(y, Subject.Y, "RatioBounds")
+    checkValidity(x, Subject.X)
+    checkValidity(y, Subject.Y)
 
     // Log-transform samples (includes positivity check)
-    val logX = log(x, Subject.X, "RatioBounds")
-    val logY = log(y, Subject.Y, "RatioBounds")
+    val logX = log(x, Subject.X)
+    val logY = log(y, Subject.Y)
 
     // Delegate to shiftBounds in log-space
     val logBounds = shiftBounds(logX, logY, misrate)

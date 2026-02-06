@@ -45,11 +45,11 @@ public class Sample
       throw new ArgumentNullException(nameof(values), "values can't be null");
     ValidationSubject = validationSubject ?? Subject.X;
     if (values.Count == 0)
-      throw AssumptionException.Validity("Sample", ValidationSubject.Value);
+      throw AssumptionException.Validity(ValidationSubject.Value);
     foreach (var value in values)
     {
       if (!value.IsFinite())
-        throw AssumptionException.Validity("Sample", ValidationSubject.Value);
+        throw AssumptionException.Validity(ValidationSubject.Value);
     }
 
     Values = values;
@@ -75,11 +75,11 @@ public class Sample
       throw new ArgumentNullException(nameof(values), "values can't be null");
     ValidationSubject = validationSubject ?? Subject.X;
     if (values.Count == 0)
-      throw AssumptionException.Validity("Sample", ValidationSubject.Value);
+      throw AssumptionException.Validity(ValidationSubject.Value);
     foreach (var value in values)
     {
       if (!value.IsFinite())
-        throw AssumptionException.Validity("Sample", ValidationSubject.Value);
+        throw AssumptionException.Validity(ValidationSubject.Value);
     }
 
     Assertion.NotNullOrEmpty(nameof(weights), weights);
@@ -225,7 +225,7 @@ public class Sample
     for (int i = 0; i < Size; i++)
     {
       if (Values[i] <= 0)
-        throw AssumptionException.Positivity("Log", ValidationSubject ?? Subject.X);
+        throw AssumptionException.Positivity(ValidationSubject ?? Subject.X);
       logValues[i] = Math.Log(Values[i]);
     }
     return new Sample(logValues, Weights);

@@ -183,8 +183,8 @@ internal fun fastRatio(
     require(x.isNotEmpty() && y.isNotEmpty()) { "Input lists cannot be empty" }
 
     // Log-transform both samples (includes positivity check)
-    val logX = log(x, Subject.X, "Ratio")
-    val logY = log(y, Subject.Y, "Ratio")
+    val logX = log(x, Subject.X)
+    val logY = log(y, Subject.Y)
 
     // Delegate to fastShift in log-space
     val logResult = fastShift(logX, logY, probabilities, assumeSorted)

@@ -9,8 +9,7 @@
         "x": [5.0, 5.0, 5.0]
       },
       "expected_violation": {
-        "id": "sparity",
-        "subject": "x"
+        "id": "sparity"
       }
     },
     {
@@ -20,8 +19,7 @@
         "x": [5.0]
       },
       "expected_violation": {
-        "id": "sparity",
-        "subject": "x"
+        "id": "sparity"
       }
     },
     {
@@ -31,8 +29,7 @@
         "x": [0.0, 0.0, 0.0, 0.0, 1.0]
       },
       "expected_violation": {
-        "id": "sparity",
-        "subject": "x"
+        "id": "sparity"
       }
     },
     {
@@ -43,8 +40,7 @@
         "y": [1.0, 2.0, 3.0]
       },
       "expected_violation": {
-        "id": "sparity",
-        "subject": "x"
+        "id": "sparity"
       }
     },
     {
@@ -55,8 +51,7 @@
         "y": [5.0, 5.0, 5.0]
       },
       "expected_violation": {
-        "id": "sparity",
-        "subject": "y"
+        "id": "sparity"
       }
     },
     {
@@ -67,8 +62,7 @@
         "y": [1.0, 2.0, 3.0]
       },
       "expected_violation": {
-        "id": "sparity",
-        "subject": "x"
+        "id": "sparity"
       }
     },
     {
@@ -79,8 +73,7 @@
         "y": [5.0]
       },
       "expected_violation": {
-        "id": "sparity",
-        "subject": "y"
+        "id": "sparity"
       }
     },
     {
@@ -91,8 +84,7 @@
         "y": [1.0, 2.0, 3.0]
       },
       "expected_violation": {
-        "id": "sparity",
-        "subject": "x"
+        "id": "sparity"
       }
     },
     {
@@ -103,8 +95,7 @@
         "y": [7.0, 7.0, 7.0, 7.0, 9.0]
       },
       "expected_violation": {
-        "id": "sparity",
-        "subject": "y"
+        "id": "sparity"
       }
     },
     {
@@ -115,8 +106,7 @@
         "y": [1.0, 2.0, 3.0]
       },
       "expected_violation": {
-        "id": "sparity",
-        "subject": "x"
+        "id": "sparity"
       }
     },
     {
@@ -127,8 +117,7 @@
         "y": [5.0, 5.0, 5.0]
       },
       "expected_violation": {
-        "id": "sparity",
-        "subject": "y"
+        "id": "sparity"
       }
     },
     {
@@ -139,8 +128,7 @@
         "y": [1.0, 2.0, 3.0]
       },
       "expected_violation": {
-        "id": "sparity",
-        "subject": "x"
+        "id": "sparity"
       }
     },
     {
@@ -151,8 +139,7 @@
         "y": [5.0]
       },
       "expected_violation": {
-        "id": "sparity",
-        "subject": "y"
+        "id": "sparity"
       }
     },
     {
@@ -163,8 +150,7 @@
         "y": [1.0, 2.0, 3.0]
       },
       "expected_violation": {
-        "id": "sparity",
-        "subject": "x"
+        "id": "sparity"
       }
     },
     {
@@ -175,8 +161,7 @@
         "y": [7.0, 7.0, 7.0, 7.0, 9.0]
       },
       "expected_violation": {
-        "id": "sparity",
-        "subject": "y"
+        "id": "sparity"
       }
     }
   ]

@@ -8,9 +8,9 @@
 # @return List with 'lower' and 'upper' components
 shift_bounds <- function(x, y, misrate) {
   # Check validity for x
-  check_validity(x, SUBJECTS$X, "ShiftBounds")
+  check_validity(x, SUBJECTS$X)
   # Check validity for y
-  check_validity(y, SUBJECTS$Y, "ShiftBounds")
+  check_validity(y, SUBJECTS$Y)
 
   n <- length(x)
   m <- length(y)

@@ -13,9 +13,9 @@ public class ShiftBoundsEstimator : ITwoSampleBoundsEstimator
   {
     Assertion.MatchedUnit(x, y);
     // Check validity for x
-    Assertion.Validity(x, Subject.X, "ShiftBounds");
+    Assertion.Validity(x, Subject.X);
     // Check validity for y
-    Assertion.Validity(y, Subject.Y, "ShiftBounds");
+    Assertion.Validity(y, Subject.Y);
 
     int n = x.Size, m = y.Size;
     long total = (long)n * m;

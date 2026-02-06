@@ -5,8 +5,9 @@ import { fastSpread } from './fastSpread';
  *
  * Assumption IDs (canonical priority order):
  *   1. validity - non-empty input with finite defined real values
- *   2. positivity - values must be strictly positive
- *   3. sparity - sample must be non tie-dominant (Spread > 0)
+ *   2. domain - parameter is outside its valid domain
+ *   3. positivity - values must be strictly positive
+ *   4. sparity - sample must be non tie-dominant (Spread > 0)
  *
  * When multiple assumptions are violated, the violation with highest priority
  * is reported. For two-sample functions, subject X is checked before Y.
@@ -14,13 +15,14 @@ import { fastSpread } from './fastSpread';
 
 export const AssumptionId = {
   VALIDITY: 'validity',
+  DOMAIN: 'domain',
   POSITIVITY: 'positivity',
   SPARITY: 'sparity',
 } as const;
 
 export type AssumptionId = (typeof AssumptionId)[keyof typeof AssumptionId];
 
-export type Subject = 'x' | 'y';
+export type Subject = 'x' | 'y' | 'misrate';
 
 export interface Violation {
   id: AssumptionId;
@@ -31,57 +33,62 @@ export class AssumptionError extends Error {
   readonly violation: Violation;
 
   constructor(violation: Violation) {
-    super(`${violation.id}(${violation.subject})`);
+    const violationStr = `${violation.id}(${violation.subject})`;
+    super(violationStr);
     this.name = 'AssumptionError';
     this.violation = violation;
   }
 
-  static validity(_functionName: string, subject: Subject): AssumptionError {
+  static validity(subject: Subject): AssumptionError {
     return new AssumptionError({ id: AssumptionId.VALIDITY, subject });
   }
 
-  static positivity(_functionName: string, subject: Subject): AssumptionError {
+  static positivity(subject: Subject): AssumptionError {
     return new AssumptionError({ id: AssumptionId.POSITIVITY, subject });
   }
 
-  static sparity(_functionName: string, subject: Subject): AssumptionError {
+  static sparity(subject: Subject): AssumptionError {
     return new AssumptionError({ id: AssumptionId.SPARITY, subject });
   }
+
+  static domain(subject: Subject): AssumptionError {
+    return new AssumptionError({ id: AssumptionId.DOMAIN, subject });
+  }
 }
 
-export function checkValidity(values: number[], subject: Subject, functionName: string): void {
+export function checkValidity(values: number[], subject: Subject): void {
   if (values.length === 0) {
-    throw AssumptionError.validity(functionName, subject);
+    throw AssumptionError.validity(subject);
   }
   if (!values.every((v) => Number.isFinite(v))) {
-    throw AssumptionError.validity(functionName, subject);
+    throw AssumptionError.validity(subject);
   }
 }
 
-export function checkPositivity(values: number[], subject: Subject, functionName: string): void {
+export function checkPositivity(values: number[], subject: Subject): void {
   if (values.some((v) => v <= 0)) {
-    throw AssumptionError.positivity(functionName, subject);
+    throw AssumptionError.positivity(subject);
   }
 }
 
-export function checkSparity(values: number[], subject: Subject, functionName: string): void {
+export function checkSparity(values: number[], subject: Subject): void {
   if (values.length < 2) {
-    throw AssumptionError.sparity(functionName, subject);
+    throw AssumptionError.sparity(subject);
   }
   const spread = fastSpread(values);
   if (spread <= 0) {
-    throw AssumptionError.sparity(functionName, subject);
+    throw AssumptionError.sparity(subject);
   }
 }
 
 /**
  * Log-transforms an array. Throws AssumptionError if any value is non-positive.
  */
-export function log(values: number[], subject: Subject, functionName: string): number[] {
+export function log(values: number[], subject: Subject): number[] {
   const result = new Array<number>(values.length);
   for (let i = 0; i < values.length; i++) {
     if (values[i] <= 0) {
-      throw AssumptionError.positivity(functionName, subject);
+      throw AssumptionError.positivity(subject);
     }
     result[i] = Math.log(values[i]);
   }

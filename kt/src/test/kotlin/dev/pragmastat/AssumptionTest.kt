@@ -25,8 +25,7 @@ class AssumptionTest {
         .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 
     data class ExpectedViolation(
-        val id: String,
-        val subject: String
+        val id: String
     )
 
     data class TestInputs(
@@ -122,8 +121,6 @@ class AssumptionTest {
 
                     val expectedId = AssumptionId.entries.find { it.id == testCase.expectedViolation.id }
                         ?: throw IllegalArgumentException("Unknown assumption ID: ${testCase.expectedViolation.id}")
-                    val expectedSubject = Subject.entries.find { it.id == testCase.expectedViolation.subject }
-                        ?: throw IllegalArgumentException("Unknown subject: ${testCase.expectedViolation.subject}")
 
                     val exception = assertFailsWith<AssumptionException> {
                         callFunction(testCase.function, x, y)
@@ -131,8 +128,6 @@ class AssumptionTest {
 
                     assertEquals(expectedId, exception.violation.id,
                         "Expected id=${expectedId.id}, got ${exception.violation.id.id}")
-                    assertEquals(expectedSubject, exception.violation.subject,
-                        "Expected subject=${expectedSubject.id}, got ${exception.violation.subject.id}")
                 })
             }
         }

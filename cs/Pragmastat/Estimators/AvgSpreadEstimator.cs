@@ -13,13 +13,13 @@ public class AvgSpreadEstimator : ITwoSampleEstimator
   {
     Assertion.MatchedUnit(x, y);
     // Check validity for x (priority 0, subject x)
-    Assertion.Validity(x, Subject.X, "AvgSpread");
+    Assertion.Validity(x, Subject.X);
     // Check validity for y (priority 0, subject y)
-    Assertion.Validity(y, Subject.Y, "AvgSpread");
+    Assertion.Validity(y, Subject.Y);
     // Check sparity for x (priority 2, subject x)
-    Assertion.Sparity(x, Subject.X, "AvgSpread");
+    Assertion.Sparity(x, Subject.X);
     // Check sparity for y (priority 2, subject y)
-    Assertion.Sparity(y, Subject.Y, "AvgSpread");
+    Assertion.Sparity(y, Subject.Y);
 
     // Calculate spreads (using internal implementation since we already validated)
     var spreadX = FastSpread.Estimate(x.SortedValues, isSorted: true);

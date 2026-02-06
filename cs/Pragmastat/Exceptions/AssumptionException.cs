@@ -9,6 +9,9 @@ public enum AssumptionId
   /// <summary>Non-empty input with finite defined real values.</summary>
   Validity,
 
+  /// <summary>Parameter value is outside the achievable domain.</summary>
+  Domain,
+
   /// <summary>Values must be strictly positive.</summary>
   Positivity,
 
@@ -17,7 +20,7 @@ public enum AssumptionId
 }
 
 /// <summary>
-/// Subject type for two-sample functions.
+/// Identifies which input caused an assumption violation.
 /// </summary>
 public enum Subject
 {
@@ -25,7 +28,10 @@ public enum Subject
   X,
 
   /// <summary>Second sample (y).</summary>
-  Y
+  Y,
+
+  /// <summary>Misrate parameter.</summary>
+  Misrate
 }
 
 /// <summary>
@@ -47,6 +53,7 @@ public readonly struct Violation
     AssumptionId.Validity => "validity",
     AssumptionId.Positivity => "positivity",
     AssumptionId.Sparity => "sparity",
+    AssumptionId.Domain => "domain",
     _ => throw new ArgumentOutOfRangeException()
   };
 
@@ -54,6 +61,7 @@ public readonly struct Violation
   {
     Subject.X => "x",
     Subject.Y => "y",
+    Subject.Misrate => "misrate",
     _ => throw new ArgumentOutOfRangeException()
   };
 
@@ -81,12 +89,18 @@ public class AssumptionException : ArgumentException
     Violation = violation;
   }
 
-  public static AssumptionException Validity(string functionName, Subject subject) =>
+  private static string FormatMessage(Violation violation) =>
+    violation.ToString();
+
+  public static AssumptionException Validity(Subject subject) =>
     new(new Violation(AssumptionId.Validity, subject));
 
-  public static AssumptionException Positivity(string functionName, Subject subject) =>
+  public static AssumptionException Positivity(Subject subject) =>
     new(new Violation(AssumptionId.Positivity, subject));
 
-  public static AssumptionException Sparity(string functionName, Subject subject) =>
+  public static AssumptionException Sparity(Subject subject) =>
     new(new Violation(AssumptionId.Sparity, subject));
+
+  public static AssumptionException Domain(Subject subject) =>
+    new(new Violation(AssumptionId.Domain, subject));
 }

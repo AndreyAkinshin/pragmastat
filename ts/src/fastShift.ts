@@ -236,8 +236,8 @@ export function fastRatio(
   }
 
   // Log-transform both samples (includes positivity check)
-  const logX = log(x, 'x', 'Ratio');
-  const logY = log(y, 'y', 'Ratio');
+  const logX = log(x, 'x');
+  const logY = log(y, 'y');
 
   // Delegate to fastShift in log-space
   const logResult = fastShift(logX, logY, p, assumeSorted);

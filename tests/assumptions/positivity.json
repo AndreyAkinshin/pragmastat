@@ -10,8 +10,7 @@
         "y": [1.0, 2.0, 3.0]
       },
       "expected_violation": {
-        "id": "positivity",
-        "subject": "x"
+        "id": "positivity"
       }
     },
     {
@@ -22,8 +21,7 @@
         "y": [1.0, 2.0, 3.0]
       },
       "expected_violation": {
-        "id": "positivity",
-        "subject": "x"
+        "id": "positivity"
       }
     },
     {
@@ -34,8 +32,7 @@
         "y": [-1.0, -2.0, -3.0]
       },
       "expected_violation": {
-        "id": "positivity",
-        "subject": "y"
+        "id": "positivity"
       }
     },
     {
@@ -46,8 +43,7 @@
         "y": [0.0, 1.0, 2.0]
       },
       "expected_violation": {
-        "id": "positivity",
-        "subject": "y"
+        "id": "positivity"
       }
     },
     {
@@ -58,8 +54,7 @@
         "y": [1.0, 2.0, 3.0]
       },
       "expected_violation": {
-        "id": "positivity",
-        "subject": "x"
+        "id": "positivity"
       }
     },
     {
@@ -69,8 +64,7 @@
         "x": [-1.0, -2.0, -3.0]
       },
       "expected_violation": {
-        "id": "positivity",
-        "subject": "x"
+        "id": "positivity"
       }
     },
     {
@@ -80,8 +74,7 @@
         "x": [0.0, 1.0, 2.0]
       },
       "expected_violation": {
-        "id": "positivity",
-        "subject": "x"
+        "id": "positivity"
       }
     },
     {
@@ -91,8 +84,7 @@
         "x": [-1.0, 0.0, 1.0]
       },
       "expected_violation": {
-        "id": "positivity",
-        "subject": "x"
+        "id": "positivity"
       }
     }
   ]

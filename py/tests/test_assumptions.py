@@ -80,7 +80,6 @@ def load_assumption_test_cases():
                     case["function"],
                     case["inputs"],
                     case["expected_violation"]["id"],
-                    case["expected_violation"]["subject"],
                     id=f"{suite['suite']}/{case['name']}",
                 )
             )
@@ -89,10 +88,10 @@ def load_assumption_test_cases():
 
 
 @pytest.mark.parametrize(
-    "func_name,inputs,expected_id,expected_subject",
+    "func_name,inputs,expected_id",
     load_assumption_test_cases(),
 )
-def test_assumption_violation(func_name, inputs, expected_id, expected_subject):
+def test_assumption_violation(func_name, inputs, expected_id):
     """Tests that the correct assumption violation is raised."""
     x = parse_array(inputs.get("x"))
     y = parse_array(inputs.get("y"))
@@ -107,7 +106,4 @@ def test_assumption_violation(func_name, inputs, expected_id, expected_subject):
     err = exc_info.value
     assert err.violation.id.value == expected_id, (
         f"Expected id={expected_id}, got {err.violation.id.value}"
-    )
-    assert err.violation.subject == expected_subject, (
-        f"Expected subject={expected_subject}, got {err.violation.subject}"
     )

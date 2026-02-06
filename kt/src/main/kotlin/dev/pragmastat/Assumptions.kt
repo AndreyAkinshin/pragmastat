@@ -2,13 +2,15 @@ package dev.pragmastat
 
 enum class AssumptionId(val id: String) {
     VALIDITY("validity"),
+    DOMAIN("domain"),
     POSITIVITY("positivity"),
     SPARITY("sparity")
 }
 
 enum class Subject(val id: String) {
     X("x"),
-    Y("y")
+    Y("y"),
+    MISRATE("misrate")
 }
 
 data class Violation(
@@ -22,7 +24,7 @@ class AssumptionException(
     val violation: Violation
 ) : IllegalArgumentException(violation.toString())
 
-internal fun checkValidity(values: List<Double>, subject: Subject, functionName: String) {
+internal fun checkValidity(values: List<Double>, subject: Subject) {
     if (values.isEmpty()) {
         throw AssumptionException(Violation(AssumptionId.VALIDITY, subject))
     }
@@ -33,7 +35,7 @@ internal fun checkValidity(values: List<Double>, subject: Subject, functionName:
     }
 }
 
-internal fun checkPositivity(values: List<Double>, subject: Subject, functionName: String) {
+internal fun checkPositivity(values: List<Double>, subject: Subject) {
     for (v in values) {
         if (v <= 0.0) {
             throw AssumptionException(Violation(AssumptionId.POSITIVITY, subject))
@@ -41,7 +43,7 @@ internal fun checkPositivity(values: List<Double>, subject: Subject, functionNam
     }
 }
 
-internal fun checkSparity(values: List<Double>, subject: Subject, functionName: String) {
+internal fun checkSparity(values: List<Double>, subject: Subject) {
     if (values.size < 2) {
         throw AssumptionException(Violation(AssumptionId.SPARITY, subject))
     }
@@ -54,7 +56,7 @@ internal fun checkSparity(values: List<Double>, subject: Subject, functionName: 
 /**
  * Log-transforms a list. Throws AssumptionException if any value is non-positive.
  */
-internal fun log(values: List<Double>, subject: Subject, functionName: String): List<Double> {
+internal fun log(values: List<Double>, subject: Subject): List<Double> {
     return values.map { v ->
         if (v <= 0.0) {
             throw AssumptionException(Violation(AssumptionId.POSITIVITY, subject))

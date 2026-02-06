@@ -12,12 +12,12 @@
 # @param misrate Misclassification rate (probability that true ratio falls outside bounds)
 # @return List with 'lower' and 'upper' components
 ratio_bounds <- function(x, y, misrate) {
-  check_validity(x, SUBJECTS$X, "RatioBounds")
-  check_validity(y, SUBJECTS$Y, "RatioBounds")
+  check_validity(x, SUBJECTS$X)
+  check_validity(y, SUBJECTS$Y)
 
   # Log-transform samples (includes positivity check)
-  log_x <- log_transform(x, SUBJECTS$X, "RatioBounds")
-  log_y <- log_transform(y, SUBJECTS$Y, "RatioBounds")
+  log_x <- log_transform(x, SUBJECTS$X)
+  log_y <- log_transform(y, SUBJECTS$Y)
 
   # Delegate to shift_bounds in log-space
   log_bounds <- shift_bounds(log_x, log_y, misrate)

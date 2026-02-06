@@ -34,7 +34,7 @@ def median(x: Union[Sequence[float], NDArray]) -> float:
         AssumptionError: If input is empty or contains NaN/Inf.
     """
     x = np.asarray(x)
-    check_validity(x, "x", "Median")
+    check_validity(x, "x")
     return float(np.median(x))
 
 
@@ -55,7 +55,7 @@ def center(x: Union[Sequence[float], NDArray]) -> float:
         AssumptionError: If input is empty or contains NaN/Inf.
     """
     x = np.asarray(x)
-    check_validity(x, "x", "Center")
+    check_validity(x, "x")
     # Use fast O(n log n) algorithm
     return _fast_center(x.tolist())
 
@@ -82,9 +82,9 @@ def spread(x: Union[Sequence[float], NDArray]) -> float:
     """
     x = np.asarray(x)
     # Check validity (priority 0)
-    check_validity(x, "x", "Spread")
+    check_validity(x, "x")
     # Check sparity (priority 2)
-    check_sparity(x, "x", "Spread")
+    check_sparity(x, "x")
     # Use fast O(n log n) algorithm
     return _fast_spread(x.tolist())
 
@@ -111,9 +111,9 @@ def rel_spread(x: Union[Sequence[float], NDArray]) -> float:
     """
     x = np.asarray(x)
     # Check validity (priority 0)
-    check_validity(x, "x", "RelSpread")
+    check_validity(x, "x")
     # Check positivity (priority 1)
-    check_positivity(x, "x", "RelSpread")
+    check_positivity(x, "x")
     # Calculate center (we know x is valid, center should succeed)
     center_val = _fast_center(x.tolist())
     # Calculate spread (using internal implementation since we already validated)
@@ -143,8 +143,8 @@ def shift(
     """
     x = np.asarray(x)
     y = np.asarray(y)
-    check_validity(x, "x", "Shift")
-    check_validity(y, "y", "Shift")
+    check_validity(x, "x")
+    check_validity(y, "y")
     # Use fast O((m+n) log L) algorithm instead of materializing all m*n differences
     return float(_fast_shift(x, y, p=0.5))
 
@@ -178,13 +178,13 @@ def ratio(
     x = np.asarray(x)
     y = np.asarray(y)
     # Check validity for x (priority 0, subject x)
-    check_validity(x, "x", "Ratio")
+    check_validity(x, "x")
     # Check validity for y (priority 0, subject y)
-    check_validity(y, "y", "Ratio")
+    check_validity(y, "y")
     # Check positivity for x (priority 1, subject x)
-    check_positivity(x, "x", "Ratio")
+    check_positivity(x, "x")
     # Check positivity for y (priority 1, subject y)
-    check_positivity(y, "y", "Ratio")
+    check_positivity(y, "y")
     # Log-transform, compute shift, exp-transform back
     log_x = np.log(x)
     log_y = np.log(y)
@@ -219,13 +219,13 @@ def avg_spread(
     x = np.asarray(x)
     y = np.asarray(y)
     # Check validity for x (priority 0, subject x)
-    check_validity(x, "x", "AvgSpread")
+    check_validity(x, "x")
     # Check validity for y (priority 0, subject y)
-    check_validity(y, "y", "AvgSpread")
+    check_validity(y, "y")
     # Check sparity for x (priority 2, subject x)
-    check_sparity(x, "x", "AvgSpread")
+    check_sparity(x, "x")
     # Check sparity for y (priority 2, subject y)
-    check_sparity(y, "y", "AvgSpread")
+    check_sparity(y, "y")
     n = len(x)
     m = len(y)
     # Calculate spreads (using internal implementation since we already validated)
@@ -260,13 +260,13 @@ def disparity(
     x = np.asarray(x)
     y = np.asarray(y)
     # Check validity for x (priority 0, subject x)
-    check_validity(x, "x", "Disparity")
+    check_validity(x, "x")
     # Check validity for y (priority 0, subject y)
-    check_validity(y, "y", "Disparity")
+    check_validity(y, "y")
     # Check sparity for x (priority 2, subject x)
-    check_sparity(x, "x", "Disparity")
+    check_sparity(x, "x")
     # Check sparity for y (priority 2, subject y)
-    check_sparity(y, "y", "Disparity")
+    check_sparity(y, "y")
     n = len(x)
     m = len(y)
     # Calculate shift (we know inputs are valid)
@@ -306,9 +306,9 @@ def shift_bounds(
     y = np.asarray(y)
 
     # Check validity for x
-    check_validity(x, "x", "ShiftBounds")
+    check_validity(x, "x")
     # Check validity for y
-    check_validity(y, "y", "ShiftBounds")
+    check_validity(y, "y")
 
     n = len(x)
     m = len(y)
@@ -371,12 +371,12 @@ def ratio_bounds(
     x = np.asarray(x)
     y = np.asarray(y)
 
-    check_validity(x, "x", "RatioBounds")
-    check_validity(y, "y", "RatioBounds")
+    check_validity(x, "x")
+    check_validity(y, "y")
 
     # Log-transform samples (includes positivity check)
-    log_x = log(x, "x", "RatioBounds")
-    log_y = log(y, "y", "RatioBounds")
+    log_x = log(x, "x")
+    log_y = log(y, "y")
 
     # Delegate to shift_bounds in log-space
     log_bounds = shift_bounds(log_x, log_y, misrate)

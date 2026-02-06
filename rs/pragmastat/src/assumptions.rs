@@ -6,8 +6,9 @@
 //! # Assumption IDs (canonical priority order)
 //!
 //! 1. `Validity` - non-empty input with finite defined real values
-//! 2. `Positivity` - values must be strictly positive
-//! 3. `Sparity` - sample must be non tie-dominant (Spread > 0)
+//! 2. `Domain` - parameter is outside its valid domain
+//! 3. `Positivity` - values must be strictly positive
+//! 4. `Sparity` - sample must be non tie-dominant (Spread > 0)
 //!
 //! When multiple assumptions are violated, the violation with highest priority
 //! is reported. For two-sample functions, subject `X` is checked before `Y`.
@@ -26,10 +27,12 @@ pub enum AssumptionId {
     /// Sample must be non-empty with finite, defined real values.
     /// This is the implicit assumption for all functions.
     Validity = 0,
+    /// Parameter is outside its valid domain.
+    Domain = 1,
     /// All values must be strictly positive (> 0).
-    Positivity = 1,
+    Positivity = 2,
     /// Sample must be non tie-dominant: Spread(x) > 0.
-    Sparity = 2,
+    Sparity = 3,
 }
 
 impl AssumptionId {
@@ -39,6 +42,7 @@ impl AssumptionId {
             AssumptionId::Validity => "validity",
             AssumptionId::Positivity => "positivity",
             AssumptionId::Sparity => "sparity",
+            AssumptionId::Domain => "domain",
         }
     }
 }
@@ -58,6 +62,8 @@ pub enum Subject {
     X,
     /// The second sample (y).
     Y,
+    /// The misrate parameter.
+    Misrate,
 }
 
 impl Subject {
@@ -66,6 +72,7 @@ impl Subject {
         match self {
             Subject::X => "x",
             Subject::Y => "y",
+            Subject::Misrate => "misrate",
         }
     }
 }
@@ -111,18 +118,23 @@ impl AssumptionError {
     }
 
     /// Creates an error for the `validity` assumption.
-    pub fn validity(_function: &'static str, subject: Subject) -> Self {
+    pub fn validity(subject: Subject) -> Self {
         Self::new(Violation::new(AssumptionId::Validity, subject))
     }
 
     /// Creates an error for the `positivity` assumption.
-    pub fn positivity(_function: &'static str, subject: Subject) -> Self {
+    pub fn positivity(subject: Subject) -> Self {
         Self::new(Violation::new(AssumptionId::Positivity, subject))
     }
 
     /// Creates an error for the `sparity` assumption.
-    pub fn sparity(_function: &'static str, subject: Subject) -> Self {
+    pub fn sparity(subject: Subject) -> Self {
         Self::new(Violation::new(AssumptionId::Sparity, subject))
+    }
+
+    /// Creates an error for a domain violation (e.g., misrate below minimum).
+    pub fn domain(subject: Subject) -> Self {
+        Self::new(Violation::new(AssumptionId::Domain, subject))
     }
 
     /// Returns the violation contained in this error.
@@ -176,59 +188,42 @@ impl From<&'static str> for EstimatorError {
 // =============================================================================
 
 /// Checks that a sample is valid (non-empty with finite values).
-pub fn check_validity(
-    values: &[f64],
-    subject: Subject,
-    function: &'static str,
-) -> Result<(), AssumptionError> {
+pub fn check_validity(values: &[f64], subject: Subject) -> Result<(), AssumptionError> {
     if values.is_empty() {
-        return Err(AssumptionError::validity(function, subject));
+        return Err(AssumptionError::validity(subject));
     }
     if values.iter().any(|v| !v.is_finite()) {
-        return Err(AssumptionError::validity(function, subject));
+        return Err(AssumptionError::validity(subject));
     }
     Ok(())
 }
 
 /// Checks that all values are strictly positive.
-pub fn check_positivity(
-    values: &[f64],
-    subject: Subject,
-    function: &'static str,
-) -> Result<(), AssumptionError> {
+pub fn check_positivity(values: &[f64], subject: Subject) -> Result<(), AssumptionError> {
     if values.iter().any(|&v| v <= 0.0) {
-        return Err(AssumptionError::positivity(function, subject));
+        return Err(AssumptionError::positivity(subject));
     }
     Ok(())
 }
 
 /// Checks that a sample is non tie-dominant (Spread > 0).
-pub fn check_sparity(
-    values: &[f64],
-    subject: Subject,
-    function: &'static str,
-) -> Result<(), AssumptionError> {
+pub fn check_sparity(values: &[f64], subject: Subject) -> Result<(), AssumptionError> {
     if values.len() < 2 {
-        return Err(AssumptionError::sparity(function, subject));
+        return Err(AssumptionError::sparity(subject));
     }
-    let spread_val =
-        fast_spread(values).map_err(|_| AssumptionError::validity(function, subject))?;
+    let spread_val = fast_spread(values).map_err(|_| AssumptionError::validity(subject))?;
     if spread_val <= 0.0 {
-        return Err(AssumptionError::sparity(function, subject));
+        return Err(AssumptionError::sparity(subject));
     }
     Ok(())
 }
 
 /// Log-transforms a slice. Returns error if any value is non-positive.
-pub fn log(
-    values: &[f64],
-    subject: Subject,
-    function: &'static str,
-) -> Result<Vec<f64>, AssumptionError> {
+pub fn log(values: &[f64], subject: Subject) -> Result<Vec<f64>, AssumptionError> {
     let mut result = Vec::with_capacity(values.len());
     for &v in values {
         if v <= 0.0 {
-            return Err(AssumptionError::positivity(function, subject));
+            return Err(AssumptionError::positivity(subject));
         }
         result.push(v.ln());
     }

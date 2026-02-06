@@ -10,9 +10,9 @@
 # @return The relative spread estimate
 rel_spread <- function(x) {
   # Check validity (priority 0)
-  check_validity(x, SUBJECTS$X, "RelSpread")
+  check_validity(x, SUBJECTS$X)
   # Check positivity (priority 1)
-  check_positivity(x, SUBJECTS$X, "RelSpread")
+  check_positivity(x, SUBJECTS$X)
 
   center_val <- fast_center(x)
   # Calculate spread (using internal implementation since we already validated)

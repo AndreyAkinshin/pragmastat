@@ -18,10 +18,9 @@ export {
   disparity,
   shiftBounds,
   ratioBounds,
+  median,
   type Bounds,
 } from './estimators';
-
-export { median } from './utils';
 
 export { pairwiseMargin } from './pairwiseMargin';
 

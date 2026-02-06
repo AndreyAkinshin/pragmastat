@@ -27,8 +27,8 @@ public static class FastRatio
   public static double[] Estimate(IReadOnlyList<double> x, IReadOnlyList<double> y, double[] p, bool assumeSorted = false)
   {
     // Log-transform both samples (includes positivity check)
-    var logX = MathExtensions.Log(x, Subject.X, "Ratio");
-    var logY = MathExtensions.Log(y, Subject.Y, "Ratio");
+    var logX = MathExtensions.Log(x, Subject.X);
+    var logY = MathExtensions.Log(y, Subject.Y);
 
     // Delegate to FastShift in log-space
     var logResult = FastShift.Estimate(logX, logY, p, assumeSorted);

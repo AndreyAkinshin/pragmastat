@@ -20,7 +20,12 @@
     {
       "name": "priority",
       "file": "priority.json",
-      "description": "Tests for priority order and subject order (x before y)"
+      "description": "Tests for priority order (validity > domain > positivity > sparity)"
+    },
+    {
+      "name": "domain",
+      "file": "domain.json",
+      "description": "Tests for domain assumption violations in bounds and margin functions"
     }
   ]
 }

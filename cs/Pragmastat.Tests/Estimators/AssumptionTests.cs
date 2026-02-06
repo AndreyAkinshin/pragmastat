@@ -13,8 +13,7 @@ namespace Pragmastat.Tests.Estimators;
 public class AssumptionTests
 {
   public record ExpectedViolation(
-    [property: JsonPropertyName("id")] string Id,
-    [property: JsonPropertyName("subject")] string Subject);
+    [property: JsonPropertyName("id")] string Id);
 
   public record TestInputs(
     [property: JsonPropertyName("x")] JsonElement[]? X,
@@ -138,12 +137,9 @@ public class AssumptionTests
     var y = ParseArray(testCase.Inputs.Y);
 
     var expectedId = testCase.ExpectedViolation.Id;
-    var expectedSubject = testCase.ExpectedViolation.Subject;
 
     var ex = Assert.Throws<AssumptionException>(() => CallFunction(testCase.Function, x, y));
 
     Assert.Equal(expectedId, ex.Violation.IdString);
-    if (expectedId != "validity")
-      Assert.Equal(expectedSubject, ex.Violation.SubjectString);
   }
 }

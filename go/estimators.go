@@ -20,7 +20,7 @@ var errMisrateOutOfRange = errors.New("misrate must be in range [0, 1]")
 // Median calculates the median of a slice of numeric values.
 func Median[T Number](values []T) (float64, error) {
 	// Check validity (priority 0)
-	if err := checkValidity(values, SubjectX, "Median"); err != nil {
+	if err := checkValidity(values, SubjectX); err != nil {
 		return 0, err
 	}
 	n := len(values)
@@ -42,7 +42,7 @@ func Median[T Number](values []T) (float64, error) {
 // Uses fast O(n log n) algorithm.
 func Center[T Number](x []T) (float64, error) {
 	// Check validity (priority 0)
-	if err := checkValidity(x, SubjectX, "Center"); err != nil {
+	if err := checkValidity(x, SubjectX); err != nil {
 		return 0, err
 	}
 	return fastCenter(x)
@@ -57,11 +57,11 @@ func Center[T Number](x []T) (float64, error) {
 //   - sparity(x) - sample must be non tie-dominant (Spread > 0)
 func Spread[T Number](x []T) (float64, error) {
 	// Check validity (priority 0)
-	if err := checkValidity(x, SubjectX, "Spread"); err != nil {
+	if err := checkValidity(x, SubjectX); err != nil {
 		return 0, err
 	}
 	// Check sparity (priority 2)
-	if err := checkSparity(x, SubjectX, "Spread"); err != nil {
+	if err := checkSparity(x, SubjectX); err != nil {
 		return 0, err
 	}
 	return fastSpread(x)
@@ -75,11 +75,11 @@ func Spread[T Number](x []T) (float64, error) {
 //   - positivity(x) - all values must be strictly positive (ensures Center > 0)
 func RelSpread[T Number](x []T) (float64, error) {
 	// Check validity (priority 0)
-	if err := checkValidity(x, SubjectX, "RelSpread"); err != nil {
+	if err := checkValidity(x, SubjectX); err != nil {
 		return 0, err
 	}
 	// Check positivity (priority 1)
-	if err := checkPositivity(x, SubjectX, "RelSpread"); err != nil {
+	if err := checkPositivity(x, SubjectX); err != nil {
 		return 0, err
 	}
 	// Calculate center (we know x is valid)
@@ -102,10 +102,10 @@ func RelSpread[T Number](x []T) (float64, error) {
 // Uses fast O((m + n) * log(precision)) algorithm.
 func Shift[T Number](x, y []T) (float64, error) {
 	// Check validity (priority 0)
-	if err := checkValidity(x, SubjectX, "Shift"); err != nil {
+	if err := checkValidity(x, SubjectX); err != nil {
 		return 0, err
 	}
-	if err := checkValidity(y, SubjectY, "Shift"); err != nil {
+	if err := checkValidity(y, SubjectY); err != nil {
 		return 0, err
 	}
 	return fastShift(x, y)
@@ -122,19 +122,19 @@ func Shift[T Number](x, y []T) (float64, error) {
 //   - positivity(y) - all values in y must be strictly positive
 func Ratio[T Number](x, y []T) (float64, error) {
 	// Check validity for x (priority 0, subject x)
-	if err := checkValidity(x, SubjectX, "Ratio"); err != nil {
+	if err := checkValidity(x, SubjectX); err != nil {
 		return 0, err
 	}
 	// Check validity for y (priority 0, subject y)
-	if err := checkValidity(y, SubjectY, "Ratio"); err != nil {
+	if err := checkValidity(y, SubjectY); err != nil {
 		return 0, err
 	}
 	// Check positivity for x (priority 1, subject x)
-	if err := checkPositivity(x, SubjectX, "Ratio"); err != nil {
+	if err := checkPositivity(x, SubjectX); err != nil {
 		return 0, err
 	}
 	// Check positivity for y (priority 1, subject y)
-	if err := checkPositivity(y, SubjectY, "Ratio"); err != nil {
+	if err := checkPositivity(y, SubjectY); err != nil {
 		return 0, err
 	}
 
@@ -153,19 +153,19 @@ func Ratio[T Number](x, y []T) (float64, error) {
 //   - sparity(y) - second sample must be non tie-dominant (Spread > 0)
 func AvgSpread[T Number](x, y []T) (float64, error) {
 	// Check validity for x (priority 0, subject x)
-	if err := checkValidity(x, SubjectX, "AvgSpread"); err != nil {
+	if err := checkValidity(x, SubjectX); err != nil {
 		return 0, err
 	}
 	// Check validity for y (priority 0, subject y)
-	if err := checkValidity(y, SubjectY, "AvgSpread"); err != nil {
+	if err := checkValidity(y, SubjectY); err != nil {
 		return 0, err
 	}
 	// Check sparity for x (priority 2, subject x)
-	if err := checkSparity(x, SubjectX, "AvgSpread"); err != nil {
+	if err := checkSparity(x, SubjectX); err != nil {
 		return 0, err
 	}
 	// Check sparity for y (priority 2, subject y)
-	if err := checkSparity(y, SubjectY, "AvgSpread"); err != nil {
+	if err := checkSparity(y, SubjectY); err != nil {
 		return 0, err
 	}
 
@@ -193,19 +193,19 @@ func AvgSpread[T Number](x, y []T) (float64, error) {
 //   - sparity(y) - second sample must be non tie-dominant (Spread > 0)
 func Disparity[T Number](x, y []T) (float64, error) {
 	// Check validity for x (priority 0, subject x)
-	if err := checkValidity(x, SubjectX, "Disparity"); err != nil {
+	if err := checkValidity(x, SubjectX); err != nil {
 		return 0, err
 	}
 	// Check validity for y (priority 0, subject y)
-	if err := checkValidity(y, SubjectY, "Disparity"); err != nil {
+	if err := checkValidity(y, SubjectY); err != nil {
 		return 0, err
 	}
 	// Check sparity for x (priority 2, subject x)
-	if err := checkSparity(x, SubjectX, "Disparity"); err != nil {
+	if err := checkSparity(x, SubjectX); err != nil {
 		return 0, err
 	}
 	// Check sparity for y (priority 2, subject y)
-	if err := checkSparity(y, SubjectY, "Disparity"); err != nil {
+	if err := checkSparity(y, SubjectY); err != nil {
 		return 0, err
 	}
 
@@ -242,11 +242,11 @@ type Bounds struct {
 // This is a pragmatic alternative to traditional confidence intervals for the Hodges-Lehmann estimator.
 func ShiftBounds[T Number](x, y []T, misrate float64) (Bounds, error) {
 	// Check validity for x
-	if err := checkValidity(x, SubjectX, "ShiftBounds"); err != nil {
+	if err := checkValidity(x, SubjectX); err != nil {
 		return Bounds{}, err
 	}
 	// Check validity for y
-	if err := checkValidity(y, SubjectY, "ShiftBounds"); err != nil {
+	if err := checkValidity(y, SubjectY); err != nil {
 		return Bounds{}, err
 	}
 
@@ -311,19 +311,19 @@ func ShiftBounds[T Number](x, y []T, misrate float64) (Bounds, error) {
 //   - positivity(x) - all values in x must be strictly positive
 //   - positivity(y) - all values in y must be strictly positive
 func RatioBounds[T Number](x, y []T, misrate float64) (Bounds, error) {
-	if err := checkValidity(x, SubjectX, "RatioBounds"); err != nil {
+	if err := checkValidity(x, SubjectX); err != nil {
 		return Bounds{}, err
 	}
-	if err := checkValidity(y, SubjectY, "RatioBounds"); err != nil {
+	if err := checkValidity(y, SubjectY); err != nil {
 		return Bounds{}, err
 	}
 
 	// Log-transform samples (includes positivity check)
-	logX, err := Log(x, SubjectX, "RatioBounds")
+	logX, err := Log(x, SubjectX)
 	if err != nil {
 		return Bounds{}, err
 	}
-	logY, err := Log(y, SubjectY, "RatioBounds")
+	logY, err := Log(y, SubjectY)
 	if err != nil {
 		return Bounds{}, err
 	}

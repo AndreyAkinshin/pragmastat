@@ -1,5 +1,6 @@
 //! Tests for error handling and input validation
 
+use pragmastat::assumptions::{AssumptionId, EstimatorError, Subject};
 use pragmastat::estimators::{
     avg_spread, center, disparity, median, ratio, rel_spread, shift, shift_bounds, spread,
 };
@@ -7,7 +8,11 @@ use pragmastat::pairwise_margin::pairwise_margin;
 
 #[test]
 fn median_empty_input() {
-    assert!(median(&[]).is_err());
+    let result = median(&[]);
+    assert!(result.is_err());
+    let (id, subject) = unwrap_estimator_error(result.unwrap_err());
+    assert_eq!(id, AssumptionId::Validity);
+    assert_eq!(subject, Subject::X);
 }
 
 #[test]
@@ -154,6 +159,19 @@ fn shift_bounds_negative_misrate() {
 #[test]
 fn shift_bounds_misrate_greater_than_one() {
     assert!(shift_bounds(&[1.0, 2.0], &[3.0, 4.0], 1.5).is_err());
+}
+
+// --- Helper functions for error testing ---
+
+fn unwrap_estimator_error(err: EstimatorError) -> (AssumptionId, Subject) {
+    match err {
+        EstimatorError::Assumption(ae) => (ae.violation().id, ae.violation().subject),
+        EstimatorError::Other(msg) => panic!("Expected AssumptionError, got Other: {}", msg),
+    }
+}
+
+fn unwrap_assumption(err: pragmastat::assumptions::AssumptionError) -> (AssumptionId, Subject) {
+    (err.violation().id, err.violation().subject)
 }
 
 #[test]

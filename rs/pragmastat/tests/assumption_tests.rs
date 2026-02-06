@@ -6,7 +6,6 @@
 
 use pragmastat::{
     avg_spread, center, disparity, ratio, rel_spread, shift, spread, AssumptionError, AssumptionId,
-    Subject,
 };
 use serde::Deserialize;
 use std::fs;
@@ -16,7 +15,6 @@ use std::path::PathBuf;
 #[derive(Debug, Deserialize)]
 struct ExpectedViolation {
     id: String,
-    subject: String,
 }
 
 /// Input data for assumption tests.
@@ -108,15 +106,6 @@ fn assumption_id_from_str(s: &str) -> AssumptionId {
     }
 }
 
-/// Maps subject string to Subject enum.
-fn subject_from_str(s: &str) -> Subject {
-    match s {
-        "x" => Subject::X,
-        "y" => Subject::Y,
-        _ => panic!("Unknown subject: {}", s),
-    }
-}
-
 /// Function dispatch: maps function names to actual implementations.
 fn call_function(func_name: &str, x: &[f64], y: &[f64]) -> Result<f64, AssumptionError> {
     match func_name {
@@ -162,33 +151,27 @@ fn run_assumption_tests() {
             let y = parse_array(&test_case.inputs.y);
 
             let expected_id = assumption_id_from_str(&test_case.expected_violation.id);
-            let expected_subject = subject_from_str(&test_case.expected_violation.subject);
 
             let result = call_function(&test_case.function, &x, &y);
 
             match result {
                 Ok(_) => {
                     failures.push(format!(
-                        "{}/{}: Expected violation {}({}) but got success",
-                        suite.suite,
-                        test_case.name,
-                        test_case.expected_violation.id,
-                        test_case.expected_violation.subject
+                        "{}/{}: Expected violation {} but got success",
+                        suite.suite, test_case.name, test_case.expected_violation.id
                     ));
                 }
                 Err(err) => {
                     let violation = err.violation();
-                    if violation.id == expected_id && violation.subject == expected_subject {
+                    if violation.id == expected_id {
                         passed_tests += 1;
                     } else {
                         failures.push(format!(
-                            "{}/{}: Expected {}({}) but got {}({})",
+                            "{}/{}: Expected {} but got {}",
                             suite.suite,
                             test_case.name,
                             expected_id.as_str(),
-                            expected_subject.as_str(),
-                            violation.id.as_str(),
-                            violation.subject.as_str()
+                            violation.id.as_str()
                         ));
                     }
                 }

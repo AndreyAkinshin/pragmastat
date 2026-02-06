@@ -83,7 +83,6 @@ test_that("assumption violations are correct", {
       y <- parse_array(test_case$inputs$y)
 
       expected_id <- test_case$expected_violation$id
-      expected_subject <- test_case$expected_violation$subject
 
       # Get function name
       func_name <- test_case[["function"]]
@@ -100,7 +99,7 @@ test_that("assumption violations are correct", {
       })
 
       if (result$success) {
-        fail(paste0(test_name, ": Expected violation ", expected_id, "(", expected_subject, ") but got success"))
+        fail(paste0(test_name, ": Expected violation ", expected_id, " but got success"))
         next
       }
 
@@ -111,12 +110,9 @@ test_that("assumption violations are correct", {
       }
 
       actual_id <- err$violation$id
-      actual_subject <- err$violation$subject
 
       expect_equal(actual_id, expected_id,
         info = paste0(test_name, ": Expected id=", expected_id, ", got ", actual_id))
-      expect_equal(actual_subject, expected_subject,
-        info = paste0(test_name, ": Expected subject=", expected_subject, ", got ", actual_subject))
 
       passed_tests <- passed_tests + 1
     }

@@ -20,7 +20,7 @@ fn median_sorted(sorted: &[f64]) -> Result<f64, &'static str> {
 /// Calculates the median of a slice
 pub fn median(values: &[f64]) -> Result<f64, AssumptionError> {
     // Check validity (priority 0)
-    check_validity(values, Subject::X, "Median")?;
+    check_validity(values, Subject::X)?;
     let mut sorted = values.to_vec();
     sorted.sort_by(|a, b| a.total_cmp(b));
     median_sorted(&sorted).map_err(|_| AssumptionError::validity("Median", Subject::X))
@@ -33,7 +33,7 @@ pub fn median(values: &[f64]) -> Result<f64, AssumptionError> {
 /// Uses fast O(n log n) algorithm.
 pub fn center(x: &[f64]) -> Result<f64, AssumptionError> {
     // Check validity (priority 0)
-    check_validity(x, Subject::X, "Center")?;
+    check_validity(x, Subject::X)?;
     crate::fast_center::fast_center(x).map_err(|_| AssumptionError::validity("Center", Subject::X))
 }
 
@@ -54,10 +54,10 @@ pub fn center(x: &[f64]) -> Result<f64, AssumptionError> {
 /// - Sample is tie-dominant or has fewer than two elements (sparity)
 pub fn spread(x: &[f64]) -> Result<f64, AssumptionError> {
     // Check validity first (priority 0)
-    check_validity(x, Subject::X, "Spread")?;
+    check_validity(x, Subject::X)?;
 
     // Check sparity (priority 2)
-    check_sparity(x, Subject::X, "Spread")?;
+    check_sparity(x, Subject::X)?;
 
     // Use the internal fast implementation
     // We know at this point the input is valid, so unwrap is safe for internal errors
@@ -80,10 +80,10 @@ pub fn spread(x: &[f64]) -> Result<f64, AssumptionError> {
 /// - Any value is zero or negative (positivity)
 pub fn rel_spread(x: &[f64]) -> Result<f64, AssumptionError> {
     // Check validity (priority 0)
-    check_validity(x, Subject::X, "RelSpread")?;
+    check_validity(x, Subject::X)?;
 
     // Check positivity (priority 1)
-    check_positivity(x, Subject::X, "RelSpread")?;
+    check_positivity(x, Subject::X)?;
 
     // Calculate center (we know x is valid, center should succeed)
     let center_val = crate::fast_center::fast_center(x)
@@ -106,8 +106,8 @@ pub fn rel_spread(x: &[f64]) -> Result<f64, AssumptionError> {
 /// Uses fast O((m+n) log precision) algorithm.
 pub fn shift(x: &[f64], y: &[f64]) -> Result<f64, AssumptionError> {
     // Check validity (priority 0)
-    check_validity(x, Subject::X, "Shift")?;
-    check_validity(y, Subject::Y, "Shift")?;
+    check_validity(x, Subject::X)?;
+    check_validity(y, Subject::Y)?;
     crate::fast_shift::fast_shift(x, y).map_err(|_| AssumptionError::validity("Shift", Subject::X))
 }
 
@@ -130,16 +130,16 @@ pub fn shift(x: &[f64], y: &[f64]) -> Result<f64, AssumptionError> {
 /// - Either sample contains zero or negative values (positivity)
 pub fn ratio(x: &[f64], y: &[f64]) -> Result<f64, AssumptionError> {
     // Check validity for x (priority 0, subject x)
-    check_validity(x, Subject::X, "Ratio")?;
+    check_validity(x, Subject::X)?;
 
     // Check validity for y (priority 0, subject y)
-    check_validity(y, Subject::Y, "Ratio")?;
+    check_validity(y, Subject::Y)?;
 
     // Check positivity for x (priority 1, subject x)
-    check_positivity(x, Subject::X, "Ratio")?;
+    check_positivity(x, Subject::X)?;
 
     // Check positivity for y (priority 1, subject y)
-    check_positivity(y, Subject::Y, "Ratio")?;
+    check_positivity(y, Subject::Y)?;
 
     crate::fast_shift::fast_ratio(x, y).map_err(|_| AssumptionError::validity("Ratio", Subject::X))
 }
@@ -160,16 +160,16 @@ pub fn ratio(x: &[f64], y: &[f64]) -> Result<f64, AssumptionError> {
 /// - Either sample is tie-dominant or has fewer than two elements (sparity)
 pub fn avg_spread(x: &[f64], y: &[f64]) -> Result<f64, AssumptionError> {
     // Check validity for x (priority 0, subject x)
-    check_validity(x, Subject::X, "AvgSpread")?;
+    check_validity(x, Subject::X)?;
 
     // Check validity for y (priority 0, subject y)
-    check_validity(y, Subject::Y, "AvgSpread")?;
+    check_validity(y, Subject::Y)?;
 
     // Check sparity for x (priority 2, subject x)
-    check_sparity(x, Subject::X, "AvgSpread")?;
+    check_sparity(x, Subject::X)?;
 
     // Check sparity for y (priority 2, subject y)
-    check_sparity(y, Subject::Y, "AvgSpread")?;
+    check_sparity(y, Subject::Y)?;
 
     let n = x.len();
     let m = y.len();
@@ -199,16 +199,16 @@ pub fn avg_spread(x: &[f64], y: &[f64]) -> Result<f64, AssumptionError> {
 /// - Either sample is tie-dominant or has fewer than two elements (sparity)
 pub fn disparity(x: &[f64], y: &[f64]) -> Result<f64, AssumptionError> {
     // Check validity for x (priority 0, subject x)
-    check_validity(x, Subject::X, "Disparity")?;
+    check_validity(x, Subject::X)?;
 
     // Check validity for y (priority 0, subject y)
-    check_validity(y, Subject::Y, "Disparity")?;
+    check_validity(y, Subject::Y)?;
 
     // Check sparity for x (priority 2, subject x)
-    check_sparity(x, Subject::X, "Disparity")?;
+    check_sparity(x, Subject::X)?;
 
     // Check sparity for y (priority 2, subject y)
-    check_sparity(y, Subject::Y, "Disparity")?;
+    check_sparity(y, Subject::Y)?;
 
     // Calculate shift (we know inputs are valid)
     let shift_val = crate::fast_shift::fast_shift(x, y)
@@ -249,10 +249,10 @@ pub struct Bounds {
 /// A `Bounds` struct containing the lower and upper bounds, or an error if inputs are invalid.
 pub fn shift_bounds(x: &[f64], y: &[f64], misrate: f64) -> Result<Bounds, EstimatorError> {
     // Check validity for x
-    check_validity(x, Subject::X, "ShiftBounds")?;
+    check_validity(x, Subject::X)?;
 
     // Check validity for y
-    check_validity(y, Subject::Y, "ShiftBounds")?;
+    check_validity(y, Subject::Y)?;
 
     let n = x.len();
     let m = y.len();
@@ -317,12 +317,12 @@ pub fn shift_bounds(x: &[f64], y: &[f64], misrate: f64) -> Result<Bounds, Estima
 ///
 /// A `Bounds` struct containing the lower and upper bounds, or an error if inputs are invalid.
 pub fn ratio_bounds(x: &[f64], y: &[f64], misrate: f64) -> Result<Bounds, EstimatorError> {
-    check_validity(x, Subject::X, "RatioBounds")?;
-    check_validity(y, Subject::Y, "RatioBounds")?;
+    check_validity(x, Subject::X)?;
+    check_validity(y, Subject::Y)?;
 
     // Log-transform samples (includes positivity check)
-    let log_x = log(x, Subject::X, "RatioBounds")?;
-    let log_y = log(y, Subject::Y, "RatioBounds")?;
+    let log_x = log(x, Subject::X)?;
+    let log_y = log(y, Subject::Y)?;
 
     // Delegate to shift_bounds in log-space
     let log_bounds = shift_bounds(&log_x, &log_y, misrate)?;

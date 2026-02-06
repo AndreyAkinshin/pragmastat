@@ -222,14 +222,14 @@ internal static class Assertion
   /// This validates the implicit validity assumption that applies to all functions.
   /// </summary>
   [AssertionMethod]
-  public static void Validity(Sample sample, Subject subject, string functionName)
+  public static void Validity(Sample sample, Subject subject)
   {
     if (sample.Size == 0)
-      throw AssumptionException.Validity(functionName, subject);
+      throw AssumptionException.Validity(subject);
     foreach (var value in sample.Values)
     {
       if (!value.IsFinite())
-        throw AssumptionException.Validity(functionName, subject);
+        throw AssumptionException.Validity(subject);
     }
   }
 
@@ -237,12 +237,12 @@ internal static class Assertion
   /// Checks that all values in a sample are strictly positive.
   /// </summary>
   [AssertionMethod]
-  public static void PositivityAssumption(Sample sample, Subject subject, string functionName)
+  public static void PositivityAssumption(Sample sample, Subject subject)
   {
     foreach (var value in sample.Values)
     {
       if (value <= 0)
-        throw AssumptionException.Positivity(functionName, subject);
+        throw AssumptionException.Positivity(subject);
     }
   }
 
@@ -251,13 +251,13 @@ internal static class Assertion
   /// This also fails for samples with fewer than 2 elements.
   /// </summary>
   [AssertionMethod]
-  public static void Sparity(Sample sample, Subject subject, string functionName)
+  public static void Sparity(Sample sample, Subject subject)
   {
     if (sample.Size < 2)
-      throw AssumptionException.Sparity(functionName, subject);
+      throw AssumptionException.Sparity(subject);
     var spread = FastSpread.Estimate(sample.SortedValues, isSorted: true);
     if (spread <= 0)
-      throw AssumptionException.Sparity(functionName, subject);
+      throw AssumptionException.Sparity(subject);
   }
 
   [StringFormatMethod("format")]

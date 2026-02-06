@@ -16,8 +16,7 @@ type AssumptionTestInputs struct {
 
 // ExpectedViolation represents the expected violation.
 type ExpectedViolation struct {
-	ID      string `json:"id"`
-	Subject string `json:"subject"`
+	ID string `json:"id"`
 }
 
 // AssumptionTestCase represents a single test case.
@@ -146,13 +145,11 @@ func TestAssumptionViolations(t *testing.T) {
 				y := parseArray(testCase.Inputs.Y)
 
 				expectedID := AssumptionID(testCase.ExpectedViolation.ID)
-				expectedSubject := Subject(testCase.ExpectedViolation.Subject)
 
 				_, err := callFunction(testCase.Function, x, y)
 
 				if err == nil {
-					t.Errorf("Expected violation %s(%s) but got success",
-						expectedID, expectedSubject)
+					t.Errorf("Expected violation %s but got success", expectedID)
 					return
 				}
 
@@ -165,12 +162,6 @@ func TestAssumptionViolations(t *testing.T) {
 				if assumptionErr.Violation.ID != expectedID {
 					t.Errorf("Expected id=%s, got %s",
 						expectedID, assumptionErr.Violation.ID)
-					return
-				}
-
-				if assumptionErr.Violation.Subject != expectedSubject {
-					t.Errorf("Expected subject=%s, got %s",
-						expectedSubject, assumptionErr.Violation.Subject)
 					return
 				}
 

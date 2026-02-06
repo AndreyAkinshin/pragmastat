@@ -10,8 +10,7 @@
         "y": [1.0, 2.0, 3.0]
       },
       "expected_violation": {
-        "id": "validity",
-        "subject": "x"
+        "id": "validity"
       }
     },
     {
@@ -22,8 +21,7 @@
         "y": []
       },
       "expected_violation": {
-        "id": "validity",
-        "subject": "y"
+        "id": "validity"
       }
     },
     {
@@ -34,8 +32,7 @@
         "y": [1.0, 2.0, 3.0]
       },
       "expected_violation": {
-        "id": "validity",
-        "subject": "x"
+        "id": "validity"
       }
     },
     {
@@ -46,8 +43,7 @@
         "y": [1.0, "NaN", 3.0]
       },
       "expected_violation": {
-        "id": "validity",
-        "subject": "y"
+        "id": "validity"
       }
     },
     {
@@ -58,8 +54,7 @@
         "y": [1.0, 2.0, 3.0]
       },
       "expected_violation": {
-        "id": "validity",
-        "subject": "x"
+        "id": "validity"
       }
     },
     {
@@ -70,8 +65,7 @@
         "y": [1.0, "-Infinity", 3.0]
       },
       "expected_violation": {
-        "id": "validity",
-        "subject": "y"
+        "id": "validity"
       }
     },
     {
@@ -81,8 +75,7 @@
         "x": []
       },
       "expected_violation": {
-        "id": "validity",
-        "subject": "x"
+        "id": "validity"
       }
     },
     {
@@ -92,8 +85,7 @@
         "x": [1.0, "NaN", 3.0]
       },
       "expected_violation": {
-        "id": "validity",
-        "subject": "x"
+        "id": "validity"
       }
     },
     {
@@ -104,8 +96,7 @@
         "y": [1.0, 2.0, 3.0]
       },
       "expected_violation": {
-        "id": "validity",
-        "subject": "x"
+        "id": "validity"
       }
     },
     {
@@ -116,8 +107,7 @@
         "y": []
       },
       "expected_violation": {
-        "id": "validity",
-        "subject": "y"
+        "id": "validity"
       }
     },
     {
@@ -128,8 +118,7 @@
         "y": [1.0, 2.0, 3.0]
       },
       "expected_violation": {
-        "id": "validity",
-        "subject": "x"
+        "id": "validity"
       }
     },
     {
@@ -140,8 +129,7 @@
         "y": [1.0, "NaN", 3.0]
       },
       "expected_violation": {
-        "id": "validity",
-        "subject": "y"
+        "id": "validity"
       }
     },
     {
@@ -151,8 +139,7 @@
         "x": []
       },
       "expected_violation": {
-        "id": "validity",
-        "subject": "x"
+        "id": "validity"
       }
     },
     {
@@ -162,8 +149,7 @@
         "x": [1.0, "NaN", 3.0]
       },
       "expected_violation": {
-        "id": "validity",
-        "subject": "x"
+        "id": "validity"
       }
     },
     {
@@ -173,8 +159,7 @@
         "x": [1.0, "NaN", 3.0]
       },
       "expected_violation": {
-        "id": "validity",
-        "subject": "x"
+        "id": "validity"
       }
     },
     {
@@ -184,8 +169,7 @@
         "x": [1.0, "Infinity", 3.0]
       },
       "expected_violation": {
-        "id": "validity",
-        "subject": "x"
+        "id": "validity"
       }
     },
     {
@@ -196,8 +180,7 @@
         "y": [1.0, 2.0, 3.0]
       },
       "expected_violation": {
-        "id": "validity",
-        "subject": "x"
+        "id": "validity"
       }
     },
     {
@@ -208,8 +191,7 @@
         "y": []
       },
       "expected_violation": {
-        "id": "validity",
-        "subject": "y"
+        "id": "validity"
       }
     },
     {
@@ -220,8 +202,7 @@
         "y": [1.0, 2.0, 3.0]
       },
       "expected_violation": {
-        "id": "validity",
-        "subject": "x"
+        "id": "validity"
       }
     },
     {
@@ -232,8 +213,7 @@
         "y": [1.0, 2.0, 3.0]
       },
       "expected_violation": {
-        "id": "validity",
-        "subject": "x"
+        "id": "validity"
       }
     },
     {
@@ -244,8 +224,7 @@
         "y": ["Infinity"]
       },
       "expected_violation": {
-        "id": "validity",
-        "subject": "y"
+        "id": "validity"
       }
     }
   ]

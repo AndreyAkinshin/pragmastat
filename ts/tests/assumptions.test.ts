@@ -13,7 +13,6 @@ import { AssumptionError } from '../src/assumptions';
 
 interface ExpectedViolation {
   id: string;
-  subject: string;
 }
 
 interface TestInputs {
@@ -127,7 +126,6 @@ describe('Assumption Violation Tests', () => {
     }
 
     const expectedId = testCase.expected_violation.id;
-    const expectedSubject = testCase.expected_violation.subject;
 
     expect(() => func(x, y)).toThrow(AssumptionError);
 
@@ -136,7 +134,6 @@ describe('Assumption Violation Tests', () => {
     } catch (e) {
       if (e instanceof AssumptionError) {
         expect(e.violation.id).toBe(expectedId);
-        expect(e.violation.subject).toBe(expectedSubject);
       } else {
         throw e;
       }

@@ -12,9 +12,9 @@ public class SpreadEstimator : IOneSampleEstimator
   public Measurement Estimate(Sample x)
   {
     // Check validity first (priority 0)
-    Assertion.Validity(x, Subject.X, "Spread");
+    Assertion.Validity(x, Subject.X);
     // Check sparity (priority 2)
-    Assertion.Sparity(x, Subject.X, "Spread");
+    Assertion.Sparity(x, Subject.X);
     return FastSpread.Estimate(x.SortedValues, isSorted: true).WithUnitOf(x);
   }
 }
