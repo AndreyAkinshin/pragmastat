@@ -87,8 +87,8 @@ run = "dotnet run"
 description = "Run all C# simulations"
 dir = "cs/Pragmastat.Simulations"
 run = [
-    "dotnet run -- avg-drift",
-    "dotnet run -- disp-drift",
+    "dotnet run -- avg-drift -e Mean,Median,Center",
+    "dotnet run -- disp-drift -e StdDev,MAD,Spread",
     "dotnet run -- center-bounds",
     "dotnet run -- shift-bounds",
     "dotnet run -- ratio-bounds",
