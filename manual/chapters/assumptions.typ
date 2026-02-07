@@ -168,11 +168,6 @@ Weak symmetry is a performance expectation, not an enforced constraint:
 )
 
 #v(0.5em)
-*Rule of thumb*
-
-If skewness is the primary concern, use $MedianBounds$ (exact, no symmetry).
-
-#v(0.5em)
 *Functions requiring weak symmetry*
 
 #list(marker: none, tight: true,
@@ -182,8 +177,7 @@ If skewness is the primary concern, use $MedianBounds$ (exact, no symmetry).
 #v(0.5em)
 *Relationship to weak continuity*
 
-$CenterBounds$ requires BOTH weak continuity AND weak symmetry for exact coverage.
-$MedianBounds$ requires only weak continuity.
+$CenterBounds$ requires both weak continuity and weak symmetry for exact coverage.
 
 #pagebreak()
 == Sparity Assumption <sec-sparity>

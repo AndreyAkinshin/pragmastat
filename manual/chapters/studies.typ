@@ -26,4 +26,6 @@ The studies provide detailed analyses of estimator properties for practitioners
 
 #include "../studies/bootstrap-center.typ"
 
+#include "../studies/median-bounds-efficiency.typ"
+
 #include "../studies/additive.typ"

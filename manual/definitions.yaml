@@ -15,7 +15,6 @@ SignedRankMargin: \operatorname{SignedRankMargin}
 ShiftBounds: \operatorname{ShiftBounds}
 RatioBounds: \operatorname{RatioBounds}
 CenterBounds: \operatorname{CenterBounds}
-MedianBounds: \operatorname{MedianBounds}
 Dominance: \operatorname{Dominance}
 
 # Traditional Estimators

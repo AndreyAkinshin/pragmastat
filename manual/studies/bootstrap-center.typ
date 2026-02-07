@@ -80,16 +80,12 @@ But for the distributions practitioners encounter
   ($Multiplic$, $Exp$, and other moderate asymmetries),
   the coverage difference between the two approaches is small relative to the $10000 times$ cost difference.
 For extreme asymmetries where the signed-rank coverage genuinely breaks down,
-  $MedianBounds$ provides exact distribution-free bounds on the median
-  with no symmetry assumption at all.
+  the sign test provides an alternative foundation for median bounds
+  (see the study on misrate efficiency of MedianBounds),
+  but its $O(n^(-1\/2))$ efficiency convergence makes it impractical for moderate sample sizes.
 
-The toolkit's recommendation is therefore:
-
-- Use $CenterBounds$ when targeting the center.
-  The weak symmetry assumption means the method performs well under approximate symmetry
+The toolkit therefore provides $CenterBounds$ as the single bounds estimator.
+The weak symmetry assumption means the method performs well under approximate symmetry
   and degrades gracefully under moderate asymmetry.
-- Use $MedianBounds$ when symmetry is clearly absent.
-  It provides exact coverage for the median without any symmetry assumption.
-
 There is no useful middle ground that justifies a $10000 times$ computational penalty
   for marginally different approximate coverage.
