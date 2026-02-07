@@ -112,8 +112,8 @@ public class SignedRankMargin(int threshold = SignedRankMargin.MaxExactSize)
     double phi = Exp(-z * z / 2) / Sqrt(2 * PI);
     double Phi = AcmAlgorithm209.Gauss(z);
 
-    double mu4 = CentralMoment4(n);
-    double kappa4 = mu4 - 3 * sigma2 * sigma2;
+    double nd = n;
+    double kappa4 = -nd * (nd + 1) * (2 * nd + 1) * (3 * nd * nd + 3 * nd - 1) / 240.0;
 
     double e3 = kappa4 / (24 * sigma2 * sigma2);
 
@@ -125,18 +125,4 @@ public class SignedRankMargin(int threshold = SignedRankMargin.MaxExactSize)
     return Min(Max(edgeworth, 0), 1);
   }
 
-  /// <summary>
-  /// Compute 4th central moment of signed-rank distribution.
-  /// E[(W - mu)^4] where W is the Wilcoxon signed-rank statistic.
-  /// </summary>
-  private static double CentralMoment4(int n)
-  {
-    double nd = n;
-    double n2 = nd * nd;
-    double n3 = n2 * nd;
-    double n4 = n2 * n2;
-    double n5 = n4 * nd;
-
-    return (9 * n5 + 45 * n4 + 65 * n3 + 15 * n2 - 14 * nd) / 480.0;
-  }
 }

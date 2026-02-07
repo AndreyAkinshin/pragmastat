@@ -119,8 +119,9 @@ fn signed_rank_edgeworth_cdf(n: usize, w: usize) -> f64 {
     let phi = (-z * z / 2.0).exp() / (2.0 * std::f64::consts::PI).sqrt();
     let big_phi = gauss_cdf(z);
 
-    let mu4 = central_moment_4(n);
-    let kappa4 = mu4 - 3.0 * sigma2 * sigma2;
+    let kappa4 =
+        -n_f64 * (n_f64 + 1.0) * (2.0 * n_f64 + 1.0) * (3.0 * n_f64 * n_f64 + 3.0 * n_f64 - 1.0)
+            / 240.0;
 
     let e3 = kappa4 / (24.0 * sigma2 * sigma2);
 
@@ -130,16 +131,4 @@ fn signed_rank_edgeworth_cdf(n: usize, w: usize) -> f64 {
 
     let edgeworth = big_phi + e3 * f3;
     edgeworth.clamp(0.0, 1.0)
-}
-
-/// Computes the 4th central moment of signed-rank distribution.
-/// E[(W - mu)^4] where W is the Wilcoxon signed-rank statistic.
-fn central_moment_4(n: usize) -> f64 {
-    let n = n as f64;
-    let n2 = n * n;
-    let n3 = n2 * n;
-    let n4 = n2 * n2;
-    let n5 = n4 * n;
-
-    (9.0 * n5 + 45.0 * n4 + 65.0 * n3 + 15.0 * n2 - 14.0 * n) / 480.0
 }

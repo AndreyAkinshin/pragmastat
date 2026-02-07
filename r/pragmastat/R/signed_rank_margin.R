@@ -31,11 +31,11 @@ signed_rank_margin_exact <- function(n, misrate) {
 }
 
 signed_rank_margin_exact_raw <- function(n, p) {
-  total <- 2^n  # R handles big integers via double for n <= 63
+  total <- 2^n # R handles big integers via double for n <= 63
   max_w <- (n * (n + 1)) %/% 2
 
   count <- rep(0, max_w + 1)
-  count[1] <- 1  # count[1] corresponds to w=0 (1-based indexing)
+  count[1] <- 1 # count[1] corresponds to w=0 (1-based indexing)
 
   for (i in 1:n) {
     max_wi <- min((i * (i + 1)) %/% 2, max_w)
@@ -96,8 +96,8 @@ signed_rank_edgeworth_cdf <- function(n, w) {
   phi <- dnorm(z)
   big_phi <- pnorm(z)
 
-  mu4 <- signed_rank_central_moment_4(n)
-  kappa4 <- mu4 - 3 * sigma2 * sigma2
+  nf <- as.double(n)
+  kappa4 <- -nf * (nf + 1) * (2 * nf + 1) * (3 * nf * nf + 3 * nf - 1) / 240.0
 
   e3 <- kappa4 / (24 * sigma2 * sigma2)
 
@@ -107,17 +107,4 @@ signed_rank_edgeworth_cdf <- function(n, w) {
 
   edgeworth <- big_phi + e3 * f3
   return(max(0, min(1, edgeworth)))
-}
-
-# Computes the 4th central moment of signed-rank distribution.
-# E[(W - mu)^4] where W is the Wilcoxon signed-rank statistic.
-# Uses float64 arithmetic to avoid integer overflow for large n.
-signed_rank_central_moment_4 <- function(n) {
-  nf <- as.double(n)
-  n2 <- nf * nf
-  n3 <- n2 * nf
-  n4 <- n2 * n2
-  n5 <- n4 * nf
-
-  (9 * n5 + 45 * n4 + 65 * n3 + 15 * n2 - 14 * nf) / 480.0
 }

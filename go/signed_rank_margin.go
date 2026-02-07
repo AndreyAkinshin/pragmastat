@@ -113,8 +113,8 @@ func signedRankEdgeworthCdf(n int, w int64) float64 {
 	phi := math.Exp(-z*z/2) / math.Sqrt(2*math.Pi)
 	Phi := gaussCdf(z)
 
-	mu4 := centralMoment4(n)
-	kappa4 := mu4 - 3*sigma2*sigma2
+	nf := float64(n)
+	kappa4 := -nf * (nf + 1) * (2*nf + 1) * (3*nf*nf + 3*nf - 1) / 240.0
 
 	e3 := kappa4 / (24 * sigma2 * sigma2)
 
@@ -124,15 +124,4 @@ func signedRankEdgeworthCdf(n int, w int64) float64 {
 
 	edgeworth := Phi + e3*f3
 	return math.Min(math.Max(edgeworth, 0), 1)
-}
-
-// centralMoment4 computes the 4th central moment of signed-rank distribution.
-// E[(W - mu)^4] where W is the Wilcoxon signed-rank statistic.
-func centralMoment4(n int) float64 {
-	n2 := float64(n) * float64(n)
-	n3 := n2 * float64(n)
-	n4 := n2 * n2
-	n5 := n4 * float64(n)
-
-	return (9*n5 + 45*n4 + 65*n3 + 15*n2 - 14*float64(n)) / 480.0
 }

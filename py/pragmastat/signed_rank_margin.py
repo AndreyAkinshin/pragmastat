@@ -105,8 +105,13 @@ def _signed_rank_edgeworth_cdf(n: int, w: int) -> float:
     phi = math.exp(-z * z / 2.0) / math.sqrt(2.0 * math.pi)
     big_phi = gauss_cdf(z)
 
-    mu4 = _central_moment_4(n)
-    kappa4 = mu4 - 3.0 * sigma2 * sigma2
+    kappa4 = (
+        -n_f64
+        * (n_f64 + 1.0)
+        * (2.0 * n_f64 + 1.0)
+        * (3.0 * n_f64 * n_f64 + 3.0 * n_f64 - 1.0)
+        / 240.0
+    )
 
     e3 = kappa4 / (24.0 * sigma2 * sigma2)
 
@@ -116,17 +121,3 @@ def _signed_rank_edgeworth_cdf(n: int, w: int) -> float:
 
     edgeworth = big_phi + e3 * f3
     return max(0.0, min(1.0, edgeworth))
-
-
-def _central_moment_4(n: int) -> float:
-    """
-    Computes the 4th central moment of signed-rank distribution.
-    E[(W - mu)^4] where W is the Wilcoxon signed-rank statistic.
-    """
-    n_f64 = float(n)
-    n2 = n_f64 * n_f64
-    n3 = n2 * n_f64
-    n4 = n2 * n2
-    n5 = n4 * n_f64
-
-    return (9.0 * n5 + 45.0 * n4 + 65.0 * n3 + 15.0 * n2 - 14.0 * n_f64) / 480.0

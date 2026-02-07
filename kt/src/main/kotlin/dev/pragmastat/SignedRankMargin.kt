@@ -118,8 +118,8 @@ private fun edgeworthCdf(n: Int, w: Long): Double {
     val phi = exp(-z * z / 2) / sqrt(2 * PI)
     val bigPhi = gaussCdf(z)
 
-    val mu4 = centralMoment4(n)
-    val kappa4 = mu4 - 3 * sigma2 * sigma2
+    val nk = n.toDouble()
+    val kappa4 = -nk * (nk + 1) * (2 * nk + 1) * (3 * nk * nk + 3 * nk - 1) / 240.0
 
     val e3 = kappa4 / (24 * sigma2 * sigma2)
 
@@ -131,16 +131,3 @@ private fun edgeworthCdf(n: Int, w: Long): Double {
     return min(max(edgeworth, 0.0), 1.0)
 }
 
-/**
- * Compute 4th central moment of signed-rank distribution.
- * E[(W - mu)^4] where W is the Wilcoxon signed-rank statistic.
- */
-private fun centralMoment4(n: Int): Double {
-    val nd = n.toDouble()
-    val n2 = nd * nd
-    val n3 = n2 * nd
-    val n4 = n2 * n2
-    val n5 = n4 * nd
-
-    return (9 * n5 + 45 * n4 + 65 * n3 + 15 * n2 - 14 * nd) / 480.0
-}
