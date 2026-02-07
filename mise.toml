@@ -335,12 +335,13 @@ cd pragmastat && Rscript -e "devtools::test()"
 [tasks."r:check"]
 description = "Check R package"
 dir = "r"
+depends = ["r:restore"]
 run = """
 if [ ! -d "pragmastat/tests/tests" ]; then
     mkdir -p pragmastat/tests/tests
     cp -r ../tests/* pragmastat/tests/tests/
 fi
-R CMD check --no-tests --no-check-dependencies pragmastat
+_R_CHECK_FORCE_SUGGESTS_=false R CMD check --no-tests --no-manual pragmastat
 """
 
 [tasks."r:check:fix"]
@@ -360,7 +361,16 @@ rm -rf pragmastat/inst/testdata pragmastat/tests/tests
 [tasks."r:restore"]
 description = "Install R package locally"
 dir = "r/pragmastat"
-run = "Rscript -e \"if (!requireNamespace('devtools', quietly = TRUE)) install.packages('devtools', repos = 'https://cloud.r-project.org'); devtools::install()\""
+run = """
+Rscript -e "
+  lib <- Sys.getenv('R_LIBS_USER')
+  if (!dir.exists(lib)) dir.create(lib, recursive = TRUE)
+  .libPaths(c(lib, .libPaths()))
+  if (!requireNamespace('devtools', quietly = TRUE))
+    install.packages('devtools', lib = lib, repos = 'https://cloud.r-project.org')
+  devtools::install(upgrade = 'never')
+"
+"""
 
 [tasks."r:demo"]
 description = "Run R demo"
@@ -379,6 +389,7 @@ run = "Rscript -e \"if (!requireNamespace('devtools', quietly = TRUE)) install.p
 description = "Run R CI pipeline"
 run = [
     { task = "r:clean" },
+    { task = "r:restore" },
     { task = "r:check" },
     { task = "r:build" },
     { task = "r:test" },
@@ -470,14 +481,14 @@ dir = "rs/pragmastat-sim"
 run = "cargo run --release --"
 
 [tasks."rs:sim:all"]
-description = "Run all Rust simulations"
+description = "Run all Rust simulations (set PARALLELISM=N to override default 8)"
 dir = "rs/pragmastat-sim"
 run = [
-    "cargo run --release -- avg-drift -e Mean,Median,Center",
-    "cargo run --release -- disp-drift -e StdDev,MAD,Spread",
-    "cargo run --release -- center-bounds",
-    "cargo run --release -- shift-bounds",
-    "cargo run --release -- ratio-bounds",
+    "cargo run --release -- avg-drift -e Mean,Median,Center -p ${PARALLELISM:-8}",
+    "cargo run --release -- disp-drift -e StdDev,MAD,Spread -p ${PARALLELISM:-8}",
+    "cargo run --release -- center-bounds -p ${PARALLELISM:-8}",
+    "cargo run --release -- shift-bounds -p ${PARALLELISM:-8}",
+    "cargo run --release -- ratio-bounds -p ${PARALLELISM:-8}",
 ]
 
 [tasks."rs:sim:check"]
