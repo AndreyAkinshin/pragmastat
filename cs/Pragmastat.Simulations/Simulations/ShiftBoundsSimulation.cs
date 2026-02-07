@@ -2,6 +2,7 @@ using JetBrains.Annotations;
 using Pragmastat.Algorithms;
 using Pragmastat.Distributions;
 using Pragmastat.Functions;
+using Pragmastat.Randomization;
 
 namespace Pragmastat.Simulations.Simulations;
 
@@ -16,8 +17,8 @@ public class ShiftBoundsSimulation : CoverageBoundsSimulationBase
 
   protected override SimulationRow SimulateRow(Input input, Action<double> progressCallback)
   {
-    (var distribution, int sampleCount, int sampleSize, double misrate, int baseSeed) = input;
-    var random = distribution.Value.Random(baseSeed + sampleSize);
+    (var distribution, int sampleCount, int sampleSize, double misrate, string baseSeed) = input;
+    var rng = new Rng($"{baseSeed}-{distribution.Name}-{sampleSize}");
 
     const double trueValue = 0.0;
 
@@ -34,8 +35,14 @@ public class ShiftBoundsSimulation : CoverageBoundsSimulationBase
     int coverage = 0;
     for (int i = 0; i < sampleCount; i++)
     {
-      var x = random.NextSample(sampleSize);
-      var y = random.NextSample(sampleSize);
+      var xValues = new double[sampleSize];
+      for (int j = 0; j < sampleSize; j++)
+        xValues[j] = distribution.Value.Quantile(rng.Uniform());
+      var x = new Sample(xValues);
+      var yValues = new double[sampleSize];
+      for (int j = 0; j < sampleSize; j++)
+        yValues[j] = distribution.Value.Quantile(rng.Uniform());
+      var y = new Sample(yValues);
 
       double lower, upper;
       if (total == 1)

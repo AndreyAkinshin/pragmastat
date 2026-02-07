@@ -39,9 +39,8 @@ public abstract class DriftSimulationBase : SimulationBase<DriftSimulationBase.S
     public string? Distributions { get; set; }
 
     [CommandOption("-s|--seed")]
-    [Description("Seed for generation random numbers")]
-    [DefaultValue(1729)]
-    public override int Seed { get; set; }
+    [Description("Seed for random number generation (defaults to simulation name)")]
+    public override string? Seed { get; set; }
 
     [CommandOption("-p|--parallelism")]
     [Description("Max degree of parallelism")]
@@ -65,6 +64,8 @@ public abstract class DriftSimulationBase : SimulationBase<DriftSimulationBase.S
     var estimators = ValidateAndParseEstimators(settings.Estimators);
     var distributions = ValidateAndParseDistributions(settings.Distributions);
 
+    string baseSeed = settings.Seed ?? GetResultFileName();
+
     var inputs = new List<Input>();
     var reused = new List<SimulationRow>();
     foreach (var distribution in distributions)
@@ -72,7 +73,7 @@ public abstract class DriftSimulationBase : SimulationBase<DriftSimulationBase.S
       {
         var key = $"{distribution.Name}-{sampleSize}";
         if (settings.Overwrite || !existingRows.ContainsKey(key))
-          inputs.Add(new Input(distribution, estimators, settings.SampleCount, sampleSize, settings.Seed));
+          inputs.Add(new Input(distribution, estimators, settings.SampleCount, sampleSize, baseSeed));
         else
           reused.Add(existingRows[key]);
       }
@@ -82,8 +83,8 @@ public abstract class DriftSimulationBase : SimulationBase<DriftSimulationBase.S
 
   protected override SimulationRow SimulateRow(Input input, Action<double> progressCallback)
   {
-    (var distribution, var estimators, int sampleCount, int sampleSize, int baseSeed) = input;
-    var random = distribution.Value.Random(baseSeed + sampleSize);
+    (var distribution, var estimators, int sampleCount, int sampleSize, string baseSeed) = input;
+    var rng = new Rng($"{baseSeed}-{distribution.Name}-{sampleSize}");
 
     var samplingDistributions = new Dictionary<string, double[]>();
     foreach (var estimator in estimators)
@@ -91,7 +92,10 @@ public abstract class DriftSimulationBase : SimulationBase<DriftSimulationBase.S
 
     for (int i = 0; i < sampleCount; i++)
     {
-      var sample = new Sample(random.Next(sampleSize));
+      var values = new double[sampleSize];
+      for (int j = 0; j < sampleSize; j++)
+        values[j] = distribution.Value.Quantile(rng.Uniform());
+      var sample = new Sample(values);
       foreach ((string estimatorName, var estimator) in estimators)
         samplingDistributions[estimatorName][i] = estimator.Estimate(sample);
       progressCallback((i + 1.0) / sampleCount);
@@ -177,7 +181,7 @@ public abstract class DriftSimulationBase : SimulationBase<DriftSimulationBase.S
     IReadOnlyList<Named<IOneSampleEstimator>> Estimators,
     int SampleCount,
     int SampleSize,
-    int BaseSeed);
+    string BaseSeed);
 
   [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)] // Fields are used in serialization
   public record SimulationRow(

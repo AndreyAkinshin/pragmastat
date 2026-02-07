@@ -36,9 +36,8 @@ public abstract class CoverageBoundsSimulationBase : SimulationBase<CoverageBoun
     public string? Misrates { get; set; }
 
     [CommandOption("-s|--seed")]
-    [Description("Seed for random number generation")]
-    [DefaultValue(1729)]
-    public override int Seed { get; set; }
+    [Description("Seed for random number generation (defaults to simulation name)")]
+    public override string? Seed { get; set; }
 
     [CommandOption("-p|--parallelism")]
     [Description("Max degree of parallelism")]
@@ -65,6 +64,8 @@ public abstract class CoverageBoundsSimulationBase : SimulationBase<CoverageBoun
 
     double[] misrates = ParseMisrates(settings.Misrates);
 
+    string baseSeed = settings.Seed ?? GetResultFileName();
+
     var inputs = new List<Input>();
     var reused = new List<SimulationRow>();
     foreach (var distribution in distributions)
@@ -76,7 +77,7 @@ public abstract class CoverageBoundsSimulationBase : SimulationBase<CoverageBoun
 
           var key = $"{distribution.Name}-{sampleSize}-{misrate}";
           if (settings.Overwrite || !existingRows.ContainsKey(key))
-            inputs.Add(new Input(distribution, settings.SampleCount, sampleSize, misrate, settings.Seed));
+            inputs.Add(new Input(distribution, settings.SampleCount, sampleSize, misrate, baseSeed));
           else
             reused.Add(existingRows[key]);
         }
@@ -150,7 +151,7 @@ public abstract class CoverageBoundsSimulationBase : SimulationBase<CoverageBoun
     int SampleCount,
     int SampleSize,
     double Misrate,
-    int BaseSeed);
+    string BaseSeed);
 
   [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
   public record SimulationRow(

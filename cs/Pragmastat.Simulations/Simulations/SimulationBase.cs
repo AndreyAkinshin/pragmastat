@@ -22,7 +22,7 @@ public abstract class SimulationBase<TSettings, TInput, TRow> : AsyncCommand<TSe
   {
     public abstract string? SampleSizes { get; set; }
     public abstract int SampleCount { get; set; }
-    public abstract int Seed { get; set; }
+    public abstract string? Seed { get; set; }
     public abstract int Parallelism { get; set; }
     public abstract bool Overwrite { get; set; }
     public abstract bool Publish { get; set; }
