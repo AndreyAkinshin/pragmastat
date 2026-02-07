@@ -464,6 +464,35 @@ run = [
     { task = "rs:test" },
 ]
 
+[tasks."rs:sim"]
+description = "Run Rust simulations"
+dir = "rs/pragmastat-sim"
+run = "cargo run --release --"
+
+[tasks."rs:sim:all"]
+description = "Run all Rust simulations"
+dir = "rs/pragmastat-sim"
+run = [
+    "cargo run --release -- avg-drift -e Mean,Median,Center",
+    "cargo run --release -- disp-drift -e StdDev,MAD,Spread",
+    "cargo run --release -- center-bounds",
+    "cargo run --release -- shift-bounds",
+    "cargo run --release -- ratio-bounds",
+]
+
+[tasks."rs:sim:check"]
+description = "Check Rust simulation code (clippy, fmt)"
+dir = "rs/pragmastat-sim"
+run = """
+cargo clippy -- -D warnings
+cargo fmt -- --check
+"""
+
+[tasks."rs:sim:check:fix"]
+description = "Format Rust simulation code"
+dir = "rs/pragmastat-sim"
+run = "cargo fmt"
+
 # ==========================================================================
 # TypeScript Tasks (ts/)
 # ==========================================================================
