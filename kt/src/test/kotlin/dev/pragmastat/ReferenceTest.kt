@@ -749,14 +749,6 @@ class ReferenceTest {
         @JsonProperty("expected_error") val expectedError: Map<String, String>? = null
     )
 
-    data class MedianBoundsInput(val x: List<Double>, val misrate: Double)
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    data class MedianBoundsTestData(
-        val input: MedianBoundsInput,
-        val output: BoundsOutput? = null,
-        @JsonProperty("expected_error") val expectedError: Map<String, String>? = null
-    )
-
     data class CenterBoundsInput(val x: List<Double>, val misrate: Double)
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class CenterBoundsTestData(
@@ -796,42 +788,6 @@ class ReferenceTest {
                 )
                 assertTrue(result == testData.output,
                     "Expected ${testData.output} but got $result")
-            })
-        }
-
-        return tests
-    }
-
-    @TestFactory
-    fun testMedianBounds(): List<DynamicTest> {
-        val tests = mutableListOf<DynamicTest>()
-        val testDir = File("../tests/median-bounds")
-
-        if (!testDir.exists() || !testDir.isDirectory) {
-            Assumptions.assumeTrue(false, "Skipping median-bounds tests: directory not found")
-            return tests
-        }
-
-        testDir.listFiles { _, name -> name.endsWith(".json") }?.forEach { file ->
-            val testName = "median-bounds/${file.nameWithoutExtension}"
-            tests.add(DynamicTest.dynamicTest(testName) {
-                val testData = mapper.readValue<MedianBoundsTestData>(file)
-
-                // Handle error test cases
-                if (testData.expectedError != null) {
-                    val exception = assertThrows<AssumptionException> {
-                        medianBounds(testData.input.x, testData.input.misrate)
-                    }
-                    assertEquals(testData.expectedError!!["id"], exception.violation.id.id)
-                    return@dynamicTest
-                }
-
-                val result = medianBounds(
-                    testData.input.x,
-                    testData.input.misrate
-                )
-                assertClose(testData.output!!.lower, result.lower)
-                assertClose(testData.output!!.upper, result.upper)
             })
         }
 

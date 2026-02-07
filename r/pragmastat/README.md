@@ -88,8 +88,6 @@ print(signed_rank_margin(10, 0.05)) # 18
 print(center(x)) # 5.5
 bounds <- center_bounds(x, 0.05) # [lower=3.5, upper=7.5]
 print(paste("[", bounds$lower, ", ", bounds$upper, "]", sep=""))
-bounds <- median_bounds(x, 0.05) # [lower=2, upper=9]
-print(paste("[", bounds$lower, ", ", bounds$upper, "]", sep=""))
 
 # --- Two-Sample Bounds ---
 

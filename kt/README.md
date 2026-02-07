@@ -106,7 +106,6 @@ fun main() {
     println(signedRankMargin(10, 0.05)) // 18
     println(center(x)) // 5.5
     println(centerBounds(x, 0.05)) // Bounds(lower=3.5, upper=7.5)
-    println(medianBounds(x, 0.05)) // Bounds(lower=2.0, upper=9.0)
 
     // --- Two-Sample Bounds ---
 

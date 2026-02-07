@@ -19,7 +19,6 @@ export {
   disparity,
   shiftBounds,
   ratioBounds,
-  medianBounds,
   centerBounds,
   type Bounds,
 } from './estimators';

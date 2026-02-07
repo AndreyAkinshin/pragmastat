@@ -15,7 +15,6 @@ from .estimators import (
     disparity,
     shift_bounds,
     ratio_bounds,
-    median_bounds,
     center_bounds,
     Bounds,
 )
@@ -48,7 +47,6 @@ __all__ = [
     "disparity",
     "shift_bounds",
     "ratio_bounds",
-    "median_bounds",
     "center_bounds",
     "Bounds",
     "pairwise_margin",

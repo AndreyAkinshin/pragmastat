@@ -10,7 +10,6 @@ import { signedRankMargin } from './signedRankMargin';
 import { fastCenterQuantileBounds } from './fastCenterQuantiles';
 import { minAchievableMisrateOneSample } from './minMisrate';
 import { checkValidity, checkPositivity, checkSparity, log, AssumptionError } from './assumptions';
-import { gaussCdf } from './gaussCdf';
 
 /**
  * Calculate the median of an array of numbers
@@ -288,98 +287,6 @@ export function ratioBounds(x: number[], y: number[], misrate: number): Bounds {
   return {
     lower: Math.exp(logBounds.lower),
     upper: Math.exp(logBounds.upper),
-  };
-}
-
-/**
- * Computes binomial tail probability: P(Bin(n, 0.5) <= k)
- * Uses incremental binomial coefficient computation for efficiency.
- * Note: 2^n overflows number for n > 1024.
- */
-function binomialTailProbability(n: number, k: number): number {
-  if (k < 0) return 0;
-  if (k >= n) return 1;
-
-  // Normal approximation with continuity correction for large n
-  // (2^n overflows number for n > 1024)
-  if (n > 1023) {
-    const mean = n / 2;
-    const std = Math.sqrt(n / 4);
-    const z = (k + 0.5 - mean) / std;
-    return gaussCdf(z);
-  }
-
-  const total = Math.pow(2, n);
-  let sum = 0;
-  let coef = 1; // C(n, 0) = 1
-
-  for (let i = 0; i <= k; i++) {
-    sum += coef;
-    // C(n, i+1) = C(n, i) * (n-i) / (i+1)
-    coef = (coef * (n - i)) / (i + 1);
-  }
-
-  return sum / total;
-}
-
-/**
- * Provides bounds on the Median with specified misclassification rate (MedianBounds)
- *
- * Uses order statistics based on the binomial distribution to determine
- * which sample values form the bounds.
- *
- * @param x Sample array
- * @param misrate Misclassification rate (probability that true median falls outside bounds)
- * @returns An object containing the lower and upper bounds
- * @throws AssumptionError if sample is empty or contains NaN/Inf
- */
-export function medianBounds(x: number[], misrate: number): Bounds {
-  checkValidity(x, 'x');
-
-  if (isNaN(misrate) || misrate < 0 || misrate > 1) {
-    throw AssumptionError.domain('misrate');
-  }
-
-  const n = x.length;
-
-  if (n < 2) {
-    throw AssumptionError.domain('x');
-  }
-
-  const sorted = [...x].sort((a, b) => a - b);
-
-  // Validate misrate
-  const minMisrate = minAchievableMisrateOneSample(n);
-  if (misrate < minMisrate) {
-    throw AssumptionError.domain('misrate');
-  }
-
-  const alpha = misrate / 2;
-
-  // Find the largest k where P(Bin(n,0.5) <= k) <= alpha
-  let lo = 0;
-  for (let k = 0; k < Math.floor((n + 1) / 2); k++) {
-    const tailProb = binomialTailProbability(n, k);
-    if (tailProb <= alpha) {
-      lo = k;
-    } else {
-      break;
-    }
-  }
-
-  // Symmetric interval: hi = n - 1 - lo
-  let hi = n - 1 - lo;
-
-  if (hi < lo) {
-    hi = lo;
-  }
-  if (hi >= n) {
-    hi = n - 1;
-  }
-
-  return {
-    lower: sorted[lo],
-    upper: sorted[hi],
   };
 }
 

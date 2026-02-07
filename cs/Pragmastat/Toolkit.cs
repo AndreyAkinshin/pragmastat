@@ -24,9 +24,6 @@ public static class Toolkit
   public static Bounds CenterBounds(Sample x, Probability misrate) =>
     CenterBoundsEstimator.Instance.Estimate(x, misrate);
 
-  public static Bounds MedianBounds(Sample x, Probability misrate) =>
-    MedianBoundsEstimator.Instance.Estimate(x, misrate);
-
   public static int SignedRankMargin(int n, Probability misrate) =>
     Functions.SignedRankMargin.Instance.Calc(n, (double)misrate);
 

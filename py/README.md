@@ -25,7 +25,6 @@ from pragmastat import (
     disparity,
     signed_rank_margin,
     pairwise_margin,
-    median_bounds,
     center_bounds,
     shift_bounds,
     ratio_bounds,
@@ -105,8 +104,6 @@ def main():
     print(signed_rank_margin(10, 0.05))  # 18
     print(center(x))  # 5.5
     bounds = center_bounds(x, 0.05)  # Bounds(lower=3.5, upper=7.5)
-    print(f"Bounds(lower={bounds.lower}, upper={bounds.upper})")
-    bounds = median_bounds(x, 0.05)  # Bounds(lower=2, upper=9)
     print(f"Bounds(lower={bounds.lower}, upper={bounds.upper})")
 
     # --- Two-Sample Bounds ---

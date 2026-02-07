@@ -81,98 +81,6 @@ public class CoverageSimulationTests
   }
 
   // =========================================================================
-  // MedianBounds Coverage (all distributions - distribution-free)
-  // =========================================================================
-
-  [Theory]
-  [InlineData(10, 0.10)]
-  [InlineData(30, 0.05)]
-  public void MedianBounds_Coverage_AdditiveDistribution(int n, double misrate)
-  {
-    var rng = new Rng($"median-bounds-additive-{n}-{misrate}");
-    double trueMedian = 0.0; // Additive(0,1) has median = 0
-    int covered = 0;
-
-    for (int i = 0; i < SmokeTestIterations; i++)
-    {
-      var values = GenerateAdditive(rng, n);
-      var sample = new Sample(values);
-      var bounds = Toolkit.MedianBounds(sample, new Probability(misrate));
-
-      if (bounds.Lower <= trueMedian && trueMedian <= bounds.Upper)
-        covered++;
-    }
-
-    double actualCoverage = (double)covered / SmokeTestIterations;
-    double expectedCoverage = 1 - misrate;
-
-    Assert.True(
-      actualCoverage >= expectedCoverage - 0.10,
-      $"MedianBounds coverage {actualCoverage:F3} should be >= {expectedCoverage - 0.10:F3} " +
-      $"(n={n}, misrate={misrate}, expected={expectedCoverage})");
-  }
-
-  [Theory]
-  [InlineData(10, 0.10)]
-  [InlineData(30, 0.05)]
-  public void MedianBounds_Coverage_UniformDistribution(int n, double misrate)
-  {
-    var rng = new Rng($"median-bounds-uniform-{n}-{misrate}");
-    double trueMedian = 0.5; // Uniform(0,1) has median = 0.5
-    int covered = 0;
-
-    for (int i = 0; i < SmokeTestIterations; i++)
-    {
-      var values = new double[n];
-      for (int j = 0; j < n; j++)
-        values[j] = rng.Uniform();
-
-      var sample = new Sample(values);
-      var bounds = Toolkit.MedianBounds(sample, new Probability(misrate));
-
-      if (bounds.Lower <= trueMedian && trueMedian <= bounds.Upper)
-        covered++;
-    }
-
-    double actualCoverage = (double)covered / SmokeTestIterations;
-    double expectedCoverage = 1 - misrate;
-
-    Assert.True(
-      actualCoverage >= expectedCoverage - 0.10,
-      $"MedianBounds coverage {actualCoverage:F3} should be >= {expectedCoverage - 0.10:F3} " +
-      $"(n={n}, misrate={misrate}, expected={expectedCoverage})");
-  }
-
-  [Theory]
-  [InlineData(10, 0.10)]
-  [InlineData(30, 0.05)]
-  public void MedianBounds_Coverage_ExponentialDistribution(int n, double misrate)
-  {
-    var rng = new Rng($"median-bounds-exp-{n}-{misrate}");
-    double trueMedian = Math.Log(2); // Exp(1) has median = ln(2)
-    int covered = 0;
-
-    for (int i = 0; i < SmokeTestIterations; i++)
-    {
-      var values = GenerateExponential(rng, n);
-      var sample = new Sample(values);
-      var bounds = Toolkit.MedianBounds(sample, new Probability(misrate));
-
-      if (bounds.Lower <= trueMedian && trueMedian <= bounds.Upper)
-        covered++;
-    }
-
-    double actualCoverage = (double)covered / SmokeTestIterations;
-    double expectedCoverage = 1 - misrate;
-
-    // MedianBounds is distribution-free, should work for Exponential too
-    Assert.True(
-      actualCoverage >= expectedCoverage - 0.10,
-      $"MedianBounds coverage {actualCoverage:F3} should be >= {expectedCoverage - 0.10:F3} " +
-      $"(n={n}, misrate={misrate}, expected={expectedCoverage})");
-  }
-
-  // =========================================================================
   // Helper methods for generating distributions
   // =========================================================================
 
@@ -193,15 +101,4 @@ public class CoverageSimulationTests
     return values;
   }
 
-  /// <summary>
-  /// Generate samples from Exp(1) distribution using inverse transform.
-  /// This is right-skewed (asymmetric).
-  /// </summary>
-  private static double[] GenerateExponential(Rng rng, int n)
-  {
-    var values = new double[n];
-    for (int i = 0; i < n; i++)
-      values[i] = -Math.Log(1 - rng.Uniform()); // Inverse CDF of Exp(1)
-    return values;
-  }
 }

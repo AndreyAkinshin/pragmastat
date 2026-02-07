@@ -16,7 +16,6 @@ from pragmastat import (
     center,
     center_bounds,
     disparity,
-    median_bounds,
     ratio,
     rel_spread,
     shift,
@@ -74,7 +73,6 @@ def call_function(func_name: str, inputs: dict) -> None:
         "Shift": lambda: shift(x, y),
         "AvgSpread": lambda: avg_spread(x, y),
         "Disparity": lambda: disparity(x, y),
-        "MedianBounds": lambda: median_bounds(x, misrate),
         "CenterBounds": lambda: center_bounds(x, misrate),
         "SignedRankMargin": lambda: signed_rank_margin(n, misrate),
     }

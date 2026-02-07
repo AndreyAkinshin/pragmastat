@@ -120,7 +120,6 @@ func main() {
 	fmt.Println(srMargin)                               // 18
 	print(pragmastat.Center(x))                         // 5.5
 	fmt.Println(must(pragmastat.CenterBounds(x, 0.05))) // {Lower: 3.5, Upper: 7.5}
-	fmt.Println(must(pragmastat.MedianBounds(x, 0.05))) // {Lower: 2, Upper: 9}
 
 	// --- Two-Sample Bounds ---
 
