@@ -25,24 +25,27 @@ run_reference_tests <- function(estimator_name, estimator_func, is_two_sample = 
     test_case <- jsonlite::fromJSON(json_file)
 
     # Try to run the estimator, skip assumption violations
-    result <- tryCatch({
-      if (is_two_sample) {
-        input_x <- test_case$input$x
-        input_y <- test_case$input$y
-        expected_output <- test_case$output
+    result <- tryCatch(
+      {
+        if (is_two_sample) {
+          input_x <- test_case$input$x
+          input_y <- test_case$input$y
+          expected_output <- test_case$output
 
-        actual_output <- estimator_func(input_x, input_y)
-      } else {
-        input_x <- test_case$input$x
-        expected_output <- test_case$output
+          actual_output <- estimator_func(input_x, input_y)
+        } else {
+          input_x <- test_case$input$x
+          expected_output <- test_case$output
 
-        actual_output <- estimator_func(input_x)
+          actual_output <- estimator_func(input_x)
+        }
+        list(output = actual_output, expected = expected_output, skip = FALSE)
+      },
+      assumption_error = function(e) {
+        # Skip cases that violate assumptions - tested separately
+        list(skip = TRUE)
       }
-      list(output = actual_output, expected = expected_output, skip = FALSE)
-    }, assumption_error = function(e) {
-      # Skip cases that violate assumptions - tested separately
-      list(skip = TRUE)
-    })
+    )
 
     if (result$skip) {
       next

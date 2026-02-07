@@ -15,8 +15,10 @@ run_distribution_tests <- function(dist_name, dist_factory) {
     actual <- sapply(seq_len(input$count), function(i) dist$sample(r))
 
     for (i in seq_along(actual)) {
-      expect_equal(actual[i], expected[i], tolerance = 1e-12,
-        info = paste("Failed for", basename(json_file), "at index", i))
+      expect_equal(actual[i], expected[i],
+        tolerance = 1e-12,
+        info = paste("Failed for", basename(json_file), "at index", i)
+      )
     }
   }
 }

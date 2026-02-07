@@ -9,7 +9,7 @@
 #'
 #' @examples
 #' r <- rng("demo-dist-additive")
-#' dist <- dist_additive(0, 1)  # Standard normal
+#' dist <- dist_additive(0, 1) # Standard normal
 #' dist$sample(r)
 #'
 #' @export

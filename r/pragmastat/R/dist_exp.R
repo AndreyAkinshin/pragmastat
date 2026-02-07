@@ -8,7 +8,7 @@
 #'
 #' @examples
 #' r <- rng("demo-dist-exp")
-#' dist <- dist_exp(1)  # rate=1, mean=1
+#' dist <- dist_exp(1) # rate=1, mean=1
 #' dist$sample(r)
 #'
 #' @export

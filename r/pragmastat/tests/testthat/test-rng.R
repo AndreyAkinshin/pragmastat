@@ -24,8 +24,10 @@ test_that("rng uniform satisfies reference tests", {
     r <- rng(seed)
     for (i in seq_len(count)) {
       actual <- r$uniform()
-      expect_equal(actual, expected[i], tolerance = 1e-15,
-        info = paste("Failed for", basename(json_file), "at index", i))
+      expect_equal(actual, expected[i],
+        tolerance = 1e-15,
+        info = paste("Failed for", basename(json_file), "at index", i)
+      )
     }
   }
 })
@@ -58,7 +60,8 @@ test_that("rng uniform_int satisfies reference tests", {
     for (i in seq_len(count)) {
       actual <- r$uniform_int(min_val, max_val)
       expect_equal(actual, expected[i],
-        info = paste("Failed for", basename(json_file), "at index", i))
+        info = paste("Failed for", basename(json_file), "at index", i)
+      )
     }
   }
 })
@@ -88,8 +91,10 @@ test_that("rng string seed satisfies reference tests", {
     r <- rng(seed)
     for (i in seq_len(count)) {
       actual <- r$uniform()
-      expect_equal(actual, expected[i], tolerance = 1e-15,
-        info = paste("Failed for", basename(json_file), "at index", i))
+      expect_equal(actual, expected[i],
+        tolerance = 1e-15,
+        info = paste("Failed for", basename(json_file), "at index", i)
+      )
     }
   }
 })
@@ -121,8 +126,10 @@ test_that("rng uniform_range satisfies reference tests", {
     r <- rng(seed)
     for (i in seq_len(count)) {
       actual <- r$uniform_range(min_val, max_val)
-      expect_equal(actual, expected[i], tolerance = 1e-12,
-        info = paste("Failed for", basename(json_file), "at index", i))
+      expect_equal(actual, expected[i],
+        tolerance = 1e-12,
+        info = paste("Failed for", basename(json_file), "at index", i)
+      )
     }
   }
 })
@@ -153,7 +160,8 @@ test_that("rng uniform_bool satisfies reference tests", {
     for (i in seq_len(count)) {
       actual <- r$uniform_bool()
       expect_equal(actual, expected[i],
-        info = paste("Failed for", basename(json_file), "at index", i))
+        info = paste("Failed for", basename(json_file), "at index", i)
+      )
     }
   }
 })
@@ -184,8 +192,10 @@ test_that("shuffle satisfies reference tests", {
     actual <- r$shuffle(x)
 
     for (i in seq_along(actual)) {
-      expect_equal(actual[i], expected[i], tolerance = 1e-15,
-        info = paste("Failed for", basename(json_file), "at index", i))
+      expect_equal(actual[i], expected[i],
+        tolerance = 1e-15,
+        info = paste("Failed for", basename(json_file), "at index", i)
+      )
     }
   }
 })
@@ -217,11 +227,14 @@ test_that("sample satisfies reference tests", {
     actual <- r$sample(x, k)
 
     expect_equal(length(actual), length(expected),
-      info = paste("Wrong length for", basename(json_file)))
+      info = paste("Wrong length for", basename(json_file))
+    )
 
     for (i in seq_along(actual)) {
-      expect_equal(actual[i], expected[i], tolerance = 1e-15,
-        info = paste("Failed for", basename(json_file), "at index", i))
+      expect_equal(actual[i], expected[i],
+        tolerance = 1e-15,
+        info = paste("Failed for", basename(json_file), "at index", i)
+      )
     }
   }
 })
@@ -258,11 +271,14 @@ test_that("resample satisfies reference tests", {
     actual <- r$resample(x, k)
 
     expect_equal(length(actual), length(expected),
-      info = paste("Wrong length for", basename(json_file)))
+      info = paste("Wrong length for", basename(json_file))
+    )
 
     for (i in seq_along(actual)) {
-      expect_equal(actual[i], expected[i], tolerance = 1e-15,
-        info = paste("Failed for", basename(json_file), "at index", i))
+      expect_equal(actual[i], expected[i],
+        tolerance = 1e-15,
+        info = paste("Failed for", basename(json_file), "at index", i)
+      )
     }
   }
 })

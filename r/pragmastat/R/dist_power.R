@@ -9,7 +9,7 @@
 #'
 #' @examples
 #' r <- rng("demo-dist-power")
-#' dist <- dist_power(1, 2)  # min=1, shape=2
+#' dist <- dist_power(1, 2) # min=1, shape=2
 #' dist$sample(r)
 #'
 #' @export

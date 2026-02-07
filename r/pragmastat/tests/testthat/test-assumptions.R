@@ -83,15 +83,19 @@ test_that("assumption violations are correct", {
       func_name <- test_case[["function"]]
 
       # Try to call the function and catch assumption violations
-      result <- tryCatch({
-        call_assumption_function(func_name, test_case$inputs)
-        list(success = TRUE, error = NULL)
-      }, assumption_error = function(e) {
-        list(success = FALSE, error = e)
-      }, error = function(e) {
-        # Other errors
-        list(success = FALSE, error = e)
-      })
+      result <- tryCatch(
+        {
+          call_assumption_function(func_name, test_case$inputs)
+          list(success = TRUE, error = NULL)
+        },
+        assumption_error = function(e) {
+          list(success = FALSE, error = e)
+        },
+        error = function(e) {
+          # Other errors
+          list(success = FALSE, error = e)
+        }
+      )
 
       if (result$success) {
         fail(paste0(test_name, ": Expected violation ", expected_id, " but got success"))
@@ -107,7 +111,8 @@ test_that("assumption violations are correct", {
       actual_id <- err$violation$id
 
       expect_equal(actual_id, expected_id,
-        info = paste0(test_name, ": Expected id=", expected_id, ", got ", actual_id))
+        info = paste0(test_name, ": Expected id=", expected_id, ", got ", actual_id)
+      )
 
       passed_tests <- passed_tests + 1
     }

@@ -21,13 +21,13 @@ u64_from_numeric <- function(n) {
     # We compute this in parts to avoid precision loss
     # -1 -> 0xFFFFFFFFFFFFFFFF (hi=0xFFFFFFFF, lo=0xFFFFFFFF)
     # -2 -> 0xFFFFFFFFFFFFFFFE (hi=0xFFFFFFFF, lo=0xFFFFFFFE)
-    pos <- -n  # Make positive
+    pos <- -n # Make positive
     # Compute 2^64 - pos = (2^32 - 1) * 2^32 + (2^32 - pos) if pos <= 2^32
     # More generally: 2^64 - pos
     if (pos <= 4294967296) {
       # pos fits in lo part
       lo <- 4294967296 - pos
-      hi <- 4294967295  # 2^32 - 1
+      hi <- 4294967295 # 2^32 - 1
       if (lo == 4294967296) {
         # pos was 0, which shouldn't happen for negative n
         lo <- 0
@@ -38,9 +38,9 @@ u64_from_numeric <- function(n) {
       lo <- (4294967296 - (pos %% 4294967296)) %% 4294967296
       hi <- 4294967295 - floor(pos / 4294967296)
       if ((pos %% 4294967296) != 0) {
-        hi <- hi  # No adjustment needed
+        hi <- hi # No adjustment needed
       } else {
-        hi <- hi + 1  # Borrow from hi
+        hi <- hi + 1 # Borrow from hi
       }
       hi <- hi %% 4294967296
     }
@@ -106,8 +106,12 @@ u64_or <- function(a, b) {
 
 # Left shift (k < 64)
 u64_shl <- function(x, k) {
-  if (k == 0) return(x)
-  if (k >= 64) return(u64(0, 0))
+  if (k == 0) {
+    return(x)
+  }
+  if (k >= 64) {
+    return(u64(0, 0))
+  }
   if (k >= 32) {
     # Shift lo into hi, lo becomes 0
     hi <- (x$lo * (2^(k - 32))) %% 4294967296
@@ -125,8 +129,12 @@ u64_shl <- function(x, k) {
 
 # Right shift (logical, k < 64)
 u64_shr <- function(x, k) {
-  if (k == 0) return(x)
-  if (k >= 64) return(u64(0, 0))
+  if (k == 0) {
+    return(x)
+  }
+  if (k >= 64) {
+    return(u64(0, 0))
+  }
   if (k >= 32) {
     # Shift hi into lo, hi becomes 0
     lo <- floor(x$hi / (2^(k - 32)))
@@ -193,8 +201,12 @@ u64_mul <- function(a, b) {
 # Modulo (for uniform_int) - a is u64, b is a small positive numeric
 # Uses long division approach to avoid precision loss
 u64_mod <- function(a, b_numeric) {
-  if (b_numeric <= 0) return(0)
-  if (b_numeric == 1) return(0)
+  if (b_numeric <= 0) {
+    return(0)
+  }
+  if (b_numeric == 1) {
+    return(0)
+  }
 
   # For small moduli, we can compute using the formula:
   # (hi * 2^32 + lo) mod b = ((hi mod b) * (2^32 mod b) + (lo mod b)) mod b
@@ -280,7 +292,9 @@ xoshiro256_uniform <- function(xo) {
 }
 
 xoshiro256_uniform_range <- function(xo, min_val, max_val) {
-  if (min_val >= max_val) return(min_val)
+  if (min_val >= max_val) {
+    return(min_val)
+  }
   min_val + (max_val - min_val) * xoshiro256_uniform(xo)
 }
 
@@ -289,7 +303,9 @@ xoshiro256_uniform_range <- function(xo, min_val, max_val) {
 # ========================================================================
 
 xoshiro256_uniform_int <- function(xo, min_val, max_val) {
-  if (min_val >= max_val) return(min_val)
+  if (min_val >= max_val) {
+    return(min_val)
+  }
   range_size <- as.numeric(max_val - min_val)
   # Validate range fits in i64 (for cross-language consistency)
   if (range_size > 9223372036854775807) {

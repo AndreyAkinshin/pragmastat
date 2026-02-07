@@ -58,9 +58,15 @@ fast_center_find_exact_quantile <- function(sorted, k) {
   n <- length(sorted)
   total_pairs <- as.numeric(n) * as.numeric(n + 1) / 2
 
-  if (n == 1) return(sorted[1])
-  if (k == 1) return(sorted[1])
-  if (k == total_pairs) return(sorted[n])
+  if (n == 1) {
+    return(sorted[1])
+  }
+  if (k == 1) {
+    return(sorted[1])
+  }
+  if (k == total_pairs) {
+    return(sorted[n])
+  }
 
   lo <- sorted[1]
   hi <- sorted[n]

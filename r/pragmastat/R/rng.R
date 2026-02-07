@@ -123,7 +123,9 @@ Rng <- R6::R6Class(
     sample = function(x, k) {
       if (k < 0) stop("k must be non-negative")
       n <- length(x)
-      if (k >= n) return(x)
+      if (k >= n) {
+        return(x)
+      }
 
       result <- vector(mode = typeof(x), length = k)
       result_idx <- 0L

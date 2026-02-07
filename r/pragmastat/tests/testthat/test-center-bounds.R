@@ -19,7 +19,8 @@ test_that("center_bounds satisfies reference tests", {
         class = "assumption_error"
       )
       expect_equal(err$violation$id, test_case$expected_error$id,
-        info = paste("Failed for test file:", basename(json_file), "- violation id"))
+        info = paste("Failed for test file:", basename(json_file), "- violation id")
+      )
       next
     }
 
