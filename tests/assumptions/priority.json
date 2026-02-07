@@ -5,7 +5,7 @@
     {
       "name": "validity_over_domain",
       "description": "Empty x should report validity, not domain, even with invalid misrate",
-      "function": "MedianBounds",
+      "function": "CenterBounds",
       "inputs": {
         "x": [],
         "misrate": 0.001

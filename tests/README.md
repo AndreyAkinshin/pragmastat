@@ -13,7 +13,6 @@ tests/
 ├── center-bounds/       # CenterBounds estimator tests
 ├── disparity/           # Disparity estimator tests
 ├── distributions/       # Distribution sampling tests
-├── median-bounds/       # MedianBounds estimator tests
 ├── pairwise-margin/     # PairwiseMargin function tests
 ├── ratio/               # Ratio estimator tests
 ├── ratio-bounds/        # RatioBounds estimator tests
@@ -75,7 +74,7 @@ Each test file is a JSON object with `input` and `output` fields:
 }
 ```
 
-### Bounds estimators (shift-bounds, ratio-bounds, median-bounds, center-bounds)
+### Bounds estimators (shift-bounds, ratio-bounds, center-bounds)
 
 ```json
 {

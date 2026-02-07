@@ -228,18 +228,6 @@
       }
     },
     {
-      "name": "median_bounds_nan",
-      "function": "MedianBounds",
-      "inputs": { "x": [1.0, "NaN", 3.0], "misrate": 0.1 },
-      "expected_violation": { "id": "validity" }
-    },
-    {
-      "name": "median_bounds_empty",
-      "function": "MedianBounds",
-      "inputs": { "x": [], "misrate": 0.1 },
-      "expected_violation": { "id": "validity" }
-    },
-    {
       "name": "center_bounds_nan",
       "function": "CenterBounds",
       "inputs": { "x": [1.0, "NaN", 3.0], "misrate": 0.1 },
@@ -249,12 +237,6 @@
       "name": "center_bounds_empty",
       "function": "CenterBounds",
       "inputs": { "x": [], "misrate": 0.1 },
-      "expected_violation": { "id": "validity" }
-    },
-    {
-      "name": "median_bounds_inf",
-      "function": "MedianBounds",
-      "inputs": { "x": [1.0, "Infinity", 3.0], "misrate": 0.1 },
       "expected_violation": { "id": "validity" }
     },
     {

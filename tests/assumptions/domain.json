@@ -3,18 +3,6 @@
   "description": "Tests for domain assumption violations in bounds and margin functions",
   "cases": [
     {
-      "name": "median_bounds_single_element",
-      "function": "MedianBounds",
-      "inputs": { "x": [1], "misrate": 0.5 },
-      "expected_violation": { "id": "domain" }
-    },
-    {
-      "name": "median_bounds_misrate_below_min",
-      "function": "MedianBounds",
-      "inputs": { "x": [1, 2, 3, 4, 5], "misrate": 0.001 },
-      "expected_violation": { "id": "domain" }
-    },
-    {
       "name": "center_bounds_single_element",
       "function": "CenterBounds",
       "inputs": { "x": [1], "misrate": 0.5 },
