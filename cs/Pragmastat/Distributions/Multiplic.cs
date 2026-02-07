@@ -81,9 +81,12 @@ public sealed class Multiplic : IDistribution, IContinuousDistribution
 
   double IContinuousDistribution.Quantile(Probability p)
   {
-    if (p < 1e-9) return 0;
-    if (p > 1 - 1e-9) return double.PositiveInfinity;
-    return Math.Exp(LogMean + Constants.Sqrt2 * LogStdDev * ErrorFunction.InverseValue(2 * p - 1));
+    return p.Value switch
+    {
+      0 => 0,
+      1 => double.PositiveInfinity,
+      _ => Math.Exp(LogMean + Constants.Sqrt2 * LogStdDev * ErrorFunction.InverseValue(2 * p - 1))
+    };
   }
 
   // Log-normal distribution has finite spread but complex formula, mark as unknown for now
