@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Pragmastat.Exceptions;
 using Pragmastat.Internal;
 using Pragmastat.Simulations.Misc;
 using Spectre.Console;
@@ -31,6 +32,7 @@ public abstract class SimulationBase<TSettings, TInput, TRow> : AsyncCommand<TSe
   protected abstract List<TInput> CreateInputsToProcess(int[] sampleSizes, TSettings settings,
     Dictionary<string, TRow> existingRows);
   protected abstract TRow SimulateRow(TInput input, Action<double> progressCallback);
+  protected abstract TRow CreateErrorRow(TInput input, string error);
   protected abstract string FormatRowStats(TRow row);
   protected abstract TRow RoundRow(TRow row, int digits);
 
@@ -77,6 +79,12 @@ public abstract class SimulationBase<TSettings, TInput, TRow> : AsyncCommand<TSe
           var row = SimulateRow(input, progressValue => progress.Update(inputIndex, progressValue));
           progress.Complete(inputIndex, row, FormatRowStats(row));
           _ = Task.Run(async () => await resultWriter.WriteRowAsync(row));
+        }
+        catch (AssumptionException ex)
+        {
+          var errorRow = CreateErrorRow(input, ex.Violation.ToString());
+          progress.Complete(inputIndex, errorRow, FormatRowStats(errorRow));
+          _ = Task.Run(async () => await resultWriter.WriteRowAsync(errorRow));
         }
         catch (Exception e)
         {

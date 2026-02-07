@@ -83,22 +83,32 @@ public abstract class CoverageBoundsSimulationBase : SimulationBase<CoverageBoun
 
   protected abstract bool IsValidCombination(string distribution, int sampleSize, double misrate);
 
+  protected override SimulationRow CreateErrorRow(Input input, string error)
+  {
+    return new SimulationRow(input.Distribution.Name, input.SampleSize, input.Misrate, null, error);
+  }
+
   protected override string FormatRowStats(SimulationRow row)
   {
     string dist = row.Distribution.PadRight(9);
     string n = row.SampleSize.ToString().PadRight(3);
     string requested = row.RequestedMisrate.ToString("G4").PadRight(8);
-    string observed = row.ObservedMisrate.ToString("G4").PadRight(8);
-    string ratio = (row.ObservedMisrate / row.RequestedMisrate).ToString("F2");
+
+    if (row.Error != null)
+      return $"[yellow]{dist} N={n}[/] Req: {requested} Error: {row.Error}";
+
+    string observed = row.ObservedMisrate!.Value.ToString("G4").PadRight(8);
+    string ratio = (row.ObservedMisrate.Value / row.RequestedMisrate).ToString("F2");
     return $"[green]{dist} N={n}[/] Req: {requested} Obs: {observed} Ratio: {ratio}";
   }
 
   protected override SimulationRow RoundRow(SimulationRow row, int digits)
   {
+    if (row.Error != null) return row;
     return row with
     {
       RequestedMisrate = Math.Round(row.RequestedMisrate, digits),
-      ObservedMisrate = Math.Round(row.ObservedMisrate, digits)
+      ObservedMisrate = Math.Round(row.ObservedMisrate!.Value, digits)
     };
   }
 
@@ -144,7 +154,10 @@ public abstract class CoverageBoundsSimulationBase : SimulationBase<CoverageBoun
     string Distribution,
     int SampleSize,
     double RequestedMisrate,
-    double ObservedMisrate) : ISimulationRow, IComparable<SimulationRow>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    double? ObservedMisrate,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    string? Error = null) : ISimulationRow, IComparable<SimulationRow>
   {
     [JsonIgnore] public string Key => $"{Distribution}-{SampleSize}-{RequestedMisrate}";
 

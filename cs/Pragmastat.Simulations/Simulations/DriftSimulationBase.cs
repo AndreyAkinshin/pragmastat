@@ -106,16 +106,25 @@ public abstract class DriftSimulationBase : SimulationBase<DriftSimulationBase.S
     return new SimulationRow(distribution.Name, sampleSize, drifts);
   }
 
+  protected override SimulationRow CreateErrorRow(Input input, string error)
+  {
+    return new SimulationRow(input.Distribution.Name, input.SampleSize, null, error);
+  }
+
   protected override string FormatRowStats(SimulationRow row)
   {
-    var rowStats = row.Drifts.Select(kvp => $"{kvp.Key}: {kvp.Value:F4}").JoinToString("  ");
+    if (row.Error != null)
+      return $"[yellow]{row.Distribution} N={row.SampleSize}[/] Error: {row.Error}";
+
+    var rowStats = row.Drifts!.Select(kvp => $"{kvp.Key}: {kvp.Value:F4}").JoinToString("  ");
     return $"[green]{row.Distribution} N={row.SampleSize}[/] {rowStats}";
   }
 
   protected override SimulationRow RoundRow(SimulationRow row, int digits)
   {
+    if (row.Error != null) return row;
     var roundedDrifts = new OrderedDictionary<string, double>();
-    foreach ((string key, double value) in row.Drifts)
+    foreach ((string key, double value) in row.Drifts!)
       roundedDrifts[key] = Math.Round(value, digits);
     return row with { Drifts = roundedDrifts };
   }
@@ -170,7 +179,10 @@ public abstract class DriftSimulationBase : SimulationBase<DriftSimulationBase.S
   public record SimulationRow(
     string Distribution,
     int SampleSize,
-    IReadOnlyDictionary<string, double> Drifts) : ISimulationRow, IComparable<SimulationRow>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    IReadOnlyDictionary<string, double>? Drifts,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    string? Error = null) : ISimulationRow, IComparable<SimulationRow>
   {
     [JsonIgnore] public string Key => $"{Distribution}-{SampleSize}";
 
