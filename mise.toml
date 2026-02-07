@@ -83,6 +83,17 @@ description = "Run C# simulations"
 dir = "cs/Pragmastat.Simulations"
 run = "dotnet run"
 
+[tasks."cs:sim:all"]
+description = "Run all C# simulations"
+dir = "cs/Pragmastat.Simulations"
+run = [
+    "dotnet run -- avg-drift",
+    "dotnet run -- disp-drift",
+    "dotnet run -- center-bounds",
+    "dotnet run -- shift-bounds",
+    "dotnet run -- ratio-bounds",
+]
+
 [tasks."cs:ci"]
 description = "Run C# CI pipeline"
 run = [
