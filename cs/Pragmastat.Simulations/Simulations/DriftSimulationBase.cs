@@ -113,11 +113,14 @@ public abstract class DriftSimulationBase : SimulationBase<DriftSimulationBase.S
 
   protected override string FormatRowStats(SimulationRow row)
   {
+    string dist = row.Distribution.PadRight(9);
+    string n = row.SampleSize.ToString().PadRight(3);
+
     if (row.Error != null)
-      return $"[yellow]{row.Distribution} N={row.SampleSize}[/] Error: {row.Error}";
+      return $"[yellow]{dist} N={n}[/] Error: {row.Error}";
 
     var rowStats = row.Drifts!.Select(kvp => $"{kvp.Key}: {kvp.Value:F4}").JoinToString("  ");
-    return $"[green]{row.Distribution} N={row.SampleSize}[/] {rowStats}";
+    return $"[green]{dist} N={n}[/] {rowStats}";
   }
 
   protected override SimulationRow RoundRow(SimulationRow row, int digits)
