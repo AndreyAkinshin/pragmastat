@@ -59,24 +59,25 @@ public abstract class DriftSimulationBase : SimulationBase<DriftSimulationBase.S
     public override bool Publish { get; set; }
   }
 
-  protected override List<Input> CreateInputsToProcess(int[] sampleSizes, Settings settings,
-    Dictionary<string, SimulationRow> existingRows)
+  protected override (List<Input> NewInputs, List<SimulationRow> ReusedRows) CreateInputsToProcess(
+    int[] sampleSizes, Settings settings, Dictionary<string, SimulationRow> existingRows)
   {
     var estimators = ValidateAndParseEstimators(settings.Estimators);
     var distributions = ValidateAndParseDistributions(settings.Distributions);
 
     var inputs = new List<Input>();
+    var reused = new List<SimulationRow>();
     foreach (var distribution in distributions)
       foreach (int sampleSize in sampleSizes)
       {
         var key = $"{distribution.Name}-{sampleSize}";
         if (settings.Overwrite || !existingRows.ContainsKey(key))
-        {
           inputs.Add(new Input(distribution, estimators, settings.SampleCount, sampleSize, settings.Seed));
-        }
+        else
+          reused.Add(existingRows[key]);
       }
 
-    return inputs;
+    return (inputs, reused);
   }
 
   protected override SimulationRow SimulateRow(Input input, Action<double> progressCallback)

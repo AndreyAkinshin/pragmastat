@@ -56,8 +56,8 @@ public abstract class CoverageBoundsSimulationBase : SimulationBase<CoverageBoun
     public override bool Publish { get; set; }
   }
 
-  protected override List<Input> CreateInputsToProcess(int[] sampleSizes, Settings settings,
-    Dictionary<string, SimulationRow> existingRows)
+  protected override (List<Input> NewInputs, List<SimulationRow> ReusedRows) CreateInputsToProcess(
+    int[] sampleSizes, Settings settings, Dictionary<string, SimulationRow> existingRows)
   {
     var distributions = Registries.Distributions.ParseCommandSeparatedNames(settings.Distributions);
     if (distributions.IsEmpty())
@@ -66,6 +66,7 @@ public abstract class CoverageBoundsSimulationBase : SimulationBase<CoverageBoun
     double[] misrates = ParseMisrates(settings.Misrates);
 
     var inputs = new List<Input>();
+    var reused = new List<SimulationRow>();
     foreach (var distribution in distributions)
       foreach (int sampleSize in sampleSizes)
         foreach (double misrate in misrates)
@@ -76,9 +77,11 @@ public abstract class CoverageBoundsSimulationBase : SimulationBase<CoverageBoun
           var key = $"{distribution.Name}-{sampleSize}-{misrate}";
           if (settings.Overwrite || !existingRows.ContainsKey(key))
             inputs.Add(new Input(distribution, settings.SampleCount, sampleSize, misrate, settings.Seed));
+          else
+            reused.Add(existingRows[key]);
         }
 
-    return inputs;
+    return (inputs, reused);
   }
 
   protected abstract bool IsValidCombination(string distribution, int sampleSize, double misrate);

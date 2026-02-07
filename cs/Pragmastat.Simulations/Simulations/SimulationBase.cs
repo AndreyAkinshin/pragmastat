@@ -29,8 +29,8 @@ public abstract class SimulationBase<TSettings, TInput, TRow> : AsyncCommand<TSe
   }
 
   protected abstract string GetResultFileName();
-  protected abstract List<TInput> CreateInputsToProcess(int[] sampleSizes, TSettings settings,
-    Dictionary<string, TRow> existingRows);
+  protected abstract (List<TInput> NewInputs, List<TRow> ReusedRows) CreateInputsToProcess(
+    int[] sampleSizes, TSettings settings, Dictionary<string, TRow> existingRows);
   protected abstract TRow SimulateRow(TInput input, Action<double> progressCallback);
   protected abstract TRow CreateErrorRow(TInput input, string error);
   protected abstract string FormatRowStats(TRow row);
@@ -42,15 +42,15 @@ public abstract class SimulationBase<TSettings, TInput, TRow> : AsyncCommand<TSe
     {
       var sampleSizes = ValidateAndParseSampleSizes(settings.SampleSizes);
       var existingRows = await LoadExistingRows(settings);
-      var inputs = CreateInputsToProcess(sampleSizes, settings, existingRows);
+      var (inputs, reusedRows) = CreateInputsToProcess(sampleSizes, settings, existingRows);
 
-      if (inputs.IsEmpty())
+      if (inputs.IsEmpty() && reusedRows.IsEmpty())
       {
-        AnsiConsole.MarkupLine("[green]All simulations already exist, nothing to process.[/]");
+        AnsiConsole.MarkupLine("[green]No valid simulation combinations found.[/]");
         return 0;
       }
 
-      await RunAllSimulations(settings, inputs, existingRows);
+      await RunAllSimulations(settings, inputs, reusedRows, existingRows);
     }
     catch (Exception ex)
     {
@@ -62,38 +62,47 @@ public abstract class SimulationBase<TSettings, TInput, TRow> : AsyncCommand<TSe
   }
 
   private async Task RunAllSimulations(TSettings settings, List<TInput> inputs,
-    Dictionary<string, TRow> existingRows)
+    List<TRow> reusedRows, Dictionary<string, TRow> existingRows)
   {
     var globalStopwatch = Stopwatch.StartNew();
-    var options = new ParallelOptions { MaxDegreeOfParallelism = settings.Parallelism };
-    var progress = new SimulationProgress(inputs.Count);
+    int totalCount = inputs.Count + reusedRows.Count;
     var resultWriter = new ResultWriter(settings, GetResultFileName(), existingRows, RoundRow);
 
-    var simulationTask = Parallel.ForEachAsync(Enumerable.Range(0, inputs.Count), options, async (inputIndex, ct) =>
-    {
-      var input = inputs[inputIndex];
-      await Task.Run(() =>
-      {
-        try
-        {
-          var row = SimulateRow(input, progressValue => progress.Update(inputIndex, progressValue));
-          progress.Complete(inputIndex, row, FormatRowStats(row));
-          _ = Task.Run(async () => await resultWriter.WriteRowAsync(row));
-        }
-        catch (AssumptionException ex)
-        {
-          var errorRow = CreateErrorRow(input, ex.Violation.ToString());
-          progress.Complete(inputIndex, errorRow, FormatRowStats(errorRow));
-          _ = Task.Run(async () => await resultWriter.WriteRowAsync(errorRow));
-        }
-        catch (Exception e)
-        {
-          AnsiConsole.WriteException(e);
-        }
-      }, ct);
-    });
+    foreach (var row in reusedRows)
+      AnsiConsole.MarkupLine(FormatRowStats(row));
 
-    await RunWithProgressDisplay(simulationTask, progress, inputs.Count);
+    if (inputs.Count > 0)
+    {
+      var options = new ParallelOptions { MaxDegreeOfParallelism = settings.Parallelism };
+      var progress = new SimulationProgress(inputs.Count, reusedRows.Count);
+
+      var simulationTask = Parallel.ForEachAsync(Enumerable.Range(0, inputs.Count), options, async (inputIndex, ct) =>
+      {
+        var input = inputs[inputIndex];
+        await Task.Run(() =>
+        {
+          try
+          {
+            var row = SimulateRow(input, progressValue => progress.Update(inputIndex, progressValue));
+            progress.Complete(inputIndex, row, FormatRowStats(row));
+            _ = Task.Run(async () => await resultWriter.WriteRowAsync(row));
+          }
+          catch (AssumptionException ex)
+          {
+            var errorRow = CreateErrorRow(input, ex.Violation.ToString());
+            progress.Complete(inputIndex, errorRow, FormatRowStats(errorRow));
+            _ = Task.Run(async () => await resultWriter.WriteRowAsync(errorRow));
+          }
+          catch (Exception e)
+          {
+            AnsiConsole.WriteException(e);
+          }
+        }, ct);
+      });
+
+      await RunWithProgressDisplay(simulationTask, progress, totalCount, reusedRows.Count);
+    }
+
     await resultWriter.FinalizeAsync();
 
     var elapsedSeconds = globalStopwatch.Elapsed.TotalSeconds.RoundToInt();
@@ -129,7 +138,8 @@ public abstract class SimulationBase<TSettings, TInput, TRow> : AsyncCommand<TSe
     return Path.Combine(resultFileDirectory, $"{GetResultFileName()}.json");
   }
 
-  private async Task RunWithProgressDisplay(Task simulationTask, SimulationProgress progress, int totalTasks)
+  private async Task RunWithProgressDisplay(Task simulationTask, SimulationProgress progress,
+    int totalTasks, int reusedCount)
   {
     var spinners = new[]
     {
@@ -138,7 +148,8 @@ public abstract class SimulationBase<TSettings, TInput, TRow> : AsyncCommand<TSe
     };
     const int spinnerChangeIntervalInSeconds = 10;
 
-    AnsiConsole.MarkupLine($"[green]Started {totalTasks} simulations...[/]");
+    string reusedSuffix = reusedCount > 0 ? $" ({reusedCount} reused)" : "";
+    AnsiConsole.MarkupLine($"[green]Started {totalTasks} simulations{reusedSuffix}...[/]");
 
     AnsiConsole.Status()
       .Start("Thinking...", ctx =>
@@ -171,12 +182,15 @@ public abstract class SimulationBase<TSettings, TInput, TRow> : AsyncCommand<TSe
     private readonly object lockObject = new();
     private readonly double[] progresses;
     private readonly TRow?[] completedRows;
+    private readonly int reusedCount;
     private int completedCount;
 
-    public SimulationProgress(int totalTasks)
+    public SimulationProgress(int newTasks, int reusedCount)
     {
-      progresses = new double[totalTasks];
-      completedRows = new TRow[totalTasks];
+      progresses = new double[newTasks];
+      completedRows = new TRow[newTasks];
+      this.reusedCount = reusedCount;
+      completedCount = reusedCount;
     }
 
     public void Update(int index, double progress)
@@ -203,7 +217,9 @@ public abstract class SimulationBase<TSettings, TInput, TRow> : AsyncCommand<TSe
     {
       lock (lockObject)
       {
-        var totalProgress = progresses.Average() * 100;
+        int totalTasks = progresses.Length + reusedCount;
+        double newProgress = progresses.Length > 0 ? progresses.Sum() : 0;
+        double totalProgress = (reusedCount + newProgress) / totalTasks * 100;
         return (totalProgress, completedCount);
       }
     }
