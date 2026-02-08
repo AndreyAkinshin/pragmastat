@@ -481,15 +481,22 @@ dir = "rs/pragmastat-sim"
 run = "cargo run --release --"
 
 [tasks."rs:sim:all"]
-description = "Run all Rust simulations (set PARALLELISM=N to override default 8)"
+description = "Run all Rust simulations (-p N to set parallelism, default 8)"
 dir = "rs/pragmastat-sim"
-run = [
-    "cargo run --release -- avg-drift -e Mean,Median,Center -p ${PARALLELISM:-8}",
-    "cargo run --release -- disp-drift -e StdDev,MAD,Spread -p ${PARALLELISM:-8}",
-    "cargo run --release -- center-bounds -p ${PARALLELISM:-8}",
-    "cargo run --release -- shift-bounds -p ${PARALLELISM:-8}",
-    "cargo run --release -- ratio-bounds -p ${PARALLELISM:-8}",
-]
+run = """
+#!/usr/bin/env bash
+P=8
+while getopts "p:" opt; do
+  case $opt in
+    p) P=$OPTARG ;;
+  esac
+done
+cargo run --release -- avg-drift -e Mean,Median,Center -p "$P"
+cargo run --release -- disp-drift -e StdDev,MAD,Spread -p "$P"
+cargo run --release -- center-bounds -p "$P"
+cargo run --release -- shift-bounds -p "$P"
+cargo run --release -- ratio-bounds -p "$P"
+"""
 
 [tasks."rs:sim:check"]
 description = "Check Rust simulation code (clippy, fmt)"
