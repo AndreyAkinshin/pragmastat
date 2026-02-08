@@ -4,7 +4,9 @@
 
 $ PairwiseMargin(n, m, misrate) $
 
-The $PairwiseMargin$ test suite contains 349 test cases (4 demo + 32 natural + 10 edge + 300 comprehensive grid + 3 error cases).
+The $PairwiseMargin$ test suite contains 178 test cases (4 demo + 4 natural + 10 edge + 12 small grid + 148 large grid).
+The domain constraint $misrate >= 2 / binom(n+m, n)$ is enforced; inputs violating this return a domain error.
+Combinations where the requested misrate falls below the minimum achievable misrate are excluded from the grid.
 
 *Demo examples* ($n = m = 30$) — from manual introduction:
 
@@ -15,22 +17,19 @@ The $PairwiseMargin$ test suite contains 349 test cases (4 demo + 32 natural + 1
 
 These demo cases match the reference values used throughout the manual to illustrate $ShiftBounds$ construction.
 
-*Natural sequences* ($[n, m] in {1, 2, 3, 4} times {1, 2, 3, 4}$ × 2 misrates) — 32 tests:
+*Natural sequences* ($[n, m] in {1, 2, 3, 4} times {1, 2, 3, 4}$ × 2 misrates, filtered by min misrate) — 4 tests:
 
 - Misrate values: $misrate in {10^(-1), 10^(-2)}$
-- Test naming: `natural-{n}-{m}-mr{k}` where $k$ is the negative log10 of misrate
-- Examples:
-  - `natural-1-1-mr1`: $n=1$, $m=1$, $misrate=0.1$, expected output: $0$
-  - `natural-2-2-mr1`: $n=2$, $m=2$, $misrate=0.1$, expected output: $0$
-  - `natural-3-3-mr2`: $n=3$, $m=3$, $misrate=0.01$, expected output: $0$
-  - `natural-4-4-mr1`: $n=4$, $m=4$, $misrate=0.1$, expected output: $4$
+- After filtering by $misrate >= 2 / binom(n+m, n)$, only 4 combinations survive:
+  - `natural-3-3-mr1`: $n=3$, $m=3$, $misrate=0.1$, expected output: $0$
+  - `natural-3-4-mr1`: $n=3$, $m=4$, $misrate=0.1$
+  - `natural-4-3-mr1`: $n=4$, $m=3$, $misrate=0.1$
+  - `natural-4-4-mr1`: $n=4$, $m=4$, $misrate=0.1$
 
-The natural sequences provide canonical examples with small, easily verified parameter values.
+*Edge cases* — boundary condition validation (10 tests):
 
-*Edge cases* — boundary condition validation:
-
-- `boundary-min`: $n=1$, $m=1$, $misrate=0.5$ (minimum samples, expected output: $0$)
-- `boundary-zero-margin-small`: $n=2$, $m=2$, $misrate=10^(-6)$ (misrate too strict, expected output: $0$)
+- `boundary-min`: $n=1$, $m=1$, $misrate=1.0$ (minimum samples with maximum misrate, expected output: $0$)
+- `boundary-zero-margin-small`: $n=20$, $m=20$, $misrate=10^(-6)$ (strict misrate with sufficient samples)
 - `boundary-loose`: $n=5$, $m=5$, $misrate=0.9$ (very permissive misrate)
 - `symmetry-2-5`: $n=2$, $m=5$, $misrate=0.1$ (tests symmetry property)
 - `symmetry-5-2`: $n=5$, $m=2$, $misrate=0.1$ (symmetric counterpart, same output as above)
@@ -44,29 +43,23 @@ These edge cases validate correct handling of boundary conditions, the symmetry 
 
 *Comprehensive grid* — systematic coverage for thorough validation:
 
-Small sample combinations ($[n, m] in {1, 2, 3, 4, 5} times {1, 2, 3, 4, 5}$ × 6 misrates) — 150 tests:
+Small sample combinations ($[n, m] in {1, 2, 3, 4, 5} times {1, 2, 3, 4, 5}$ × 6 misrates, filtered) — 12 tests:
 
 - Misrate values: $misrate in {10^(-1), 10^(-2), 10^(-3), 10^(-4), 10^(-5), 10^(-6)}$
+- Combinations where $misrate < 2 / binom(n+m, n)$ are excluded
 - Test naming: `n{n}_m{m}_mr{k}` where $k$ is the negative log10 of misrate
 - Examples:
-  - `n1_m1_mr1`: $n=1$, $m=1$, $misrate=0.1$, expected output: $0$
   - `n5_m5_mr1`: $n=5$, $m=5$, $misrate=0.1$, expected output: $10$
-  - `n5_m5_mr3`: $n=5$, $m=5$, $misrate=0.001$, expected output: $0$
+  - `n5_m5_mr2`: $n=5$, $m=5$, $misrate=0.01$
 
-Large sample combinations ($[n, m] in {10, 20, 30, 50, 100} times {10, 20, 30, 50, 100}$ × 6 misrates) — 150 tests:
+Large sample combinations ($[n, m] in {10, 20, 30, 50, 100} times {10, 20, 30, 50, 100}$ × 6 misrates, filtered) — 148 tests:
 
 - Misrate values: same as small samples
+- Combinations where $misrate < 2 / binom(n+m, n)$ are excluded (affects $n = m = 10$ at misrates $10^(-5)$ and $10^(-6)$)
 - Test naming: `n{n}_m{m}_r{k}` where $k$ is the negative log10 of misrate
 - Examples:
   - `n10_m10_r1`: $n=10$, $m=10$, $misrate=0.1$, expected output: $56$
-  - `n10_m10_r6`: $n=10$, $m=10$, $misrate=10^(-6)$, expected output: $0$
   - `n50_m50_r3`: $n=50$, $m=50$, $misrate=0.001$, expected output: $1556$
   - `n100_m100_r6`: $n=100$, $m=100$, $misrate=10^(-6)$, expected output: $6060$
 
 The comprehensive grid validates both symmetric ($n = m$) and asymmetric sample size combinations across six orders of magnitude in misrate, ensuring robust coverage of the parameter space.
-
-*Error cases* — 3 tests validating input validation:
-
-- `error-n0`: $n=0$, $m=5$, $misrate=0.05$ (n outside valid domain)
-- `error-m0`: $n=5$, $m=0$, $misrate=0.05$ (m outside valid domain)
-- `error-misrate-negative`: $n=5$, $m=5$, $misrate=-0.1$ (misrate outside valid domain)

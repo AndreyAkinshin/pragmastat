@@ -14,7 +14,7 @@ Robust bounds on $Shift(vx, vy)$ with specified coverage.
 #list(marker: none, tight: true,
   [*Also known as* — distribution-free confidence interval for Hodges-Lehmann],
   [*Interpretation* — $misrate$ is probability that true shift falls outside bounds],
-  [*Domain* — any real numbers],
+  [*Domain* — any real numbers, $misrate >= 2 / binom(n+m, n)$],
   [*Unit* — same as measurements],
   [*Note* — assumes weak continuity (ties from measurement resolution are tolerated but may yield conservative bounds)],
 )

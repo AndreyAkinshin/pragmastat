@@ -10,7 +10,7 @@ Robust bounds on $Ratio(vx, vy)$ with specified coverage — the multiplicative 
 #list(marker: none, tight: true,
   [*Also known as* — distribution-free confidence interval for Hodges-Lehmann ratio],
   [*Interpretation* — $misrate$ is probability that true ratio falls outside bounds],
-  [*Domain* — $x_i > 0$, $y_j > 0$],
+  [*Domain* — $x_i > 0$, $y_j > 0$, $misrate >= 2 / binom(n+m, n)$],
   [*Assumptions* — #link(<sec-positivity>)[`positivity(x)`], #link(<sec-positivity>)[`positivity(y)`]],
   [*Unit* — dimensionless],
   [*Note* — assumes weak continuity (ties from measurement resolution are tolerated but may yield conservative bounds)],
