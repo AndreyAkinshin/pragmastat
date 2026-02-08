@@ -19,6 +19,11 @@ shift_bounds <- function(x, y, misrate) {
   n <- length(x)
   m <- length(y)
 
+  min_misrate <- min_achievable_misrate_two_sample(n, m)
+  if (misrate < min_misrate) {
+    stop(assumption_error(ASSUMPTION_IDS$DOMAIN, SUBJECTS$MISRATE))
+  }
+
   # Sort both arrays
   xs <- sort(x)
   ys <- sort(y)

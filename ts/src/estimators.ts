@@ -8,7 +8,7 @@ import { fastShift, fastRatio } from './fastShift';
 import { pairwiseMargin } from './pairwiseMargin';
 import { signedRankMargin } from './signedRankMargin';
 import { fastCenterQuantileBounds } from './fastCenterQuantiles';
-import { minAchievableMisrateOneSample } from './minMisrate';
+import { minAchievableMisrateOneSample, minAchievableMisrateTwoSample } from './minMisrate';
 import { checkValidity, checkPositivity, checkSparity, log, AssumptionError } from './assumptions';
 
 /**
@@ -223,6 +223,11 @@ export function shiftBounds(x: number[], y: number[], misrate: number): Bounds {
   const m = y.length;
 
   if (isNaN(misrate) || misrate < 0 || misrate > 1) {
+    throw AssumptionError.domain('misrate');
+  }
+
+  const minMisrate = minAchievableMisrateTwoSample(n, m);
+  if (misrate < minMisrate) {
     throw AssumptionError.domain('misrate');
   }
 

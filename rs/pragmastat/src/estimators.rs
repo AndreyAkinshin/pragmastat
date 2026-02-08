@@ -267,6 +267,14 @@ pub fn shift_bounds(x: &[f64], y: &[f64], misrate: f64) -> Result<Bounds, Estima
     let n = x.len();
     let m = y.len();
 
+    let min_misrate = crate::min_misrate::min_achievable_misrate_two_sample(n, m)
+        .map_err(EstimatorError::from)?;
+    if misrate < min_misrate {
+        return Err(EstimatorError::from(AssumptionError::domain(
+            Subject::Misrate,
+        )));
+    }
+
     // Sort both arrays
     let mut xs = x.to_vec();
     let mut ys = y.to_vec();

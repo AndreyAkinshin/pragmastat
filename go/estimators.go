@@ -256,6 +256,14 @@ func ShiftBounds[T Number](x, y []T, misrate float64) (Bounds, error) {
 	n := len(x)
 	m := len(y)
 
+	minMisrate, err := minAchievableMisrateTwoSample(n, m)
+	if err != nil {
+		return Bounds{}, err
+	}
+	if misrate < minMisrate {
+		return Bounds{}, NewDomainError(SubjectMisrate)
+	}
+
 	// Sort both arrays
 	xs := make([]T, n)
 	ys := make([]T, m)

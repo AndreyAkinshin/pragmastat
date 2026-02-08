@@ -7,7 +7,10 @@ from .fast_spread import _fast_spread
 from .fast_shift import _fast_shift
 from .pairwise_margin import pairwise_margin
 from .signed_rank_margin import signed_rank_margin
-from .min_misrate import min_achievable_misrate_one_sample
+from .min_misrate import (
+    min_achievable_misrate_one_sample,
+    min_achievable_misrate_two_sample,
+)
 from ._fast_center_quantiles import fast_center_quantile_bounds
 from .assumptions import (
     check_validity,
@@ -320,6 +323,10 @@ def shift_bounds(
 
     n = len(x)
     m = len(y)
+
+    min_misrate = min_achievable_misrate_two_sample(n, m)
+    if misrate < min_misrate:
+        raise AssumptionError.domain("misrate")
 
     # Sort both arrays
     xs = sorted(x.tolist())

@@ -14,10 +14,10 @@
       3,
       2
     ],
-    "misrate": 0.001
+    "misrate": 0.01
   },
   "output": {
     "lower": -2,
-    "upper": 2
+    "upper": 1
   }
 }

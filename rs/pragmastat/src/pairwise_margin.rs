@@ -38,6 +38,11 @@ pub fn pairwise_margin(n: usize, m: usize, misrate: f64) -> Result<usize, Assump
         return Err(AssumptionError::domain(Subject::Misrate));
     }
 
+    let min_misrate = crate::min_misrate::min_achievable_misrate_two_sample(n, m)?;
+    if misrate < min_misrate {
+        return Err(AssumptionError::domain(Subject::Misrate));
+    }
+
     if n + m <= MAX_EXACT_SIZE {
         Ok(pairwise_margin_exact(n, m, misrate))
     } else {

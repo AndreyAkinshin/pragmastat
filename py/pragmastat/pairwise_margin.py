@@ -10,6 +10,7 @@ from typing import List
 
 from .assumptions import AssumptionError
 from .gauss_cdf import gauss_cdf as _gauss_cdf
+from .min_misrate import min_achievable_misrate_two_sample
 
 MAX_EXACT_SIZE = 400
 MAX_ACCEPTABLE_BINOM_N = 65
@@ -39,6 +40,10 @@ def pairwise_margin(n: int, m: int, misrate: float) -> int:
     if m <= 0:
         raise AssumptionError.domain("y")
     if misrate < 0 or misrate > 1 or math.isnan(misrate):
+        raise AssumptionError.domain("misrate")
+
+    min_misrate = min_achievable_misrate_two_sample(n, m)
+    if misrate < min_misrate:
         raise AssumptionError.domain("misrate")
 
     if n + m <= MAX_EXACT_SIZE:

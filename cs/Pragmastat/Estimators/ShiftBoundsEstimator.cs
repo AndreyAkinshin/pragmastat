@@ -3,6 +3,8 @@ using Pragmastat.Exceptions;
 using Pragmastat.Functions;
 using Pragmastat.Internal;
 
+using static Pragmastat.Functions.MinAchievableMisrate;
+
 namespace Pragmastat.Estimators;
 
 public class ShiftBoundsEstimator : ITwoSampleBoundsEstimator
@@ -21,6 +23,10 @@ public class ShiftBoundsEstimator : ITwoSampleBoundsEstimator
     long total = (long)n * m;
 
     if (double.IsNaN(misrate) || misrate < 0 || misrate > 1)
+      throw AssumptionException.Domain(Subject.Misrate);
+
+    double minMisrate = TwoSample(n, m);
+    if (misrate < minMisrate)
       throw AssumptionException.Domain(Subject.Misrate);
 
     // Special case: when there's only one pairwise difference, bounds collapse to a single value

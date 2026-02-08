@@ -1,8 +1,4 @@
 //! Minimum achievable misrate functions
-//!
-//! Two-sample functions and their helpers are not yet used internally,
-//! but are kept for parity with other language implementations.
-#![allow(dead_code)]
 
 use crate::assumptions::{AssumptionError, AssumptionId, Subject, Violation};
 

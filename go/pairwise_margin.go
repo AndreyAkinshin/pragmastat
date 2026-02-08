@@ -27,6 +27,14 @@ func PairwiseMargin(n, m int, misrate float64) (int, error) {
 		return 0, NewDomainError(SubjectMisrate)
 	}
 
+	minMisrate, err := minAchievableMisrateTwoSample(n, m)
+	if err != nil {
+		return 0, err
+	}
+	if misrate < minMisrate {
+		return 0, NewDomainError(SubjectMisrate)
+	}
+
 	// Use exact method for small to medium samples
 	if n+m <= maxExactSize {
 		return pairwiseMarginExact(n, m, misrate), nil

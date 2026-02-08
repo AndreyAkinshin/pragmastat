@@ -19,6 +19,11 @@ pairwise_margin <- function(n, m, misrate) {
     stop(assumption_error(ASSUMPTION_IDS$DOMAIN, SUBJECTS$MISRATE))
   }
 
+  min_misrate <- min_achievable_misrate_two_sample(n, m)
+  if (misrate < min_misrate) {
+    stop(assumption_error(ASSUMPTION_IDS$DOMAIN, SUBJECTS$MISRATE))
+  }
+
   # Use exact method for small to medium samples
   if (n + m <= 400) {
     return(pairwise_margin_exact(n, m, misrate))

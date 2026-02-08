@@ -202,6 +202,11 @@ fun shiftBounds(x: List<Double>, y: List<Double>, misrate: Double): Bounds {
     val n = x.size
     val m = y.size
 
+    val minMisrate = minAchievableMisrateTwoSample(n, m)
+    if (misrate < minMisrate) {
+        throw AssumptionException(Violation(AssumptionId.DOMAIN, Subject.MISRATE))
+    }
+
     // Sort both arrays
     val xs = x.sorted()
     val ys = y.sorted()

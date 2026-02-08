@@ -7,6 +7,7 @@
 
 import { AssumptionError } from './assumptions';
 import { gaussCdf } from './gaussCdf';
+import { minAchievableMisrateTwoSample } from './minMisrate';
 
 const MAX_EXACT_SIZE = 400;
 const MAX_ACCEPTABLE_BINOM_N = 65;
@@ -31,6 +32,11 @@ export function pairwiseMargin(n: number, m: number, misrate: number): number {
     throw AssumptionError.domain('y');
   }
   if (misrate < 0 || misrate > 1 || Number.isNaN(misrate)) {
+    throw AssumptionError.domain('misrate');
+  }
+
+  const minMisrate = minAchievableMisrateTwoSample(n, m);
+  if (misrate < minMisrate) {
     throw AssumptionError.domain('misrate');
   }
 

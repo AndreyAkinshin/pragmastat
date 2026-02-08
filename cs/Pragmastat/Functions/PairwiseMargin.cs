@@ -25,6 +25,10 @@ public class PairwiseMargin(int threshold = PairwiseMargin.MaxExactSize)
     if (double.IsNaN(misrate) || misrate < 0 || misrate > 1)
       throw AssumptionException.Domain(Subject.Misrate);
 
+    double minMisrate = MinAchievableMisrate.TwoSample(n, m);
+    if (misrate < minMisrate)
+      throw AssumptionException.Domain(Subject.Misrate);
+
     return n + m <= threshold
       ? CalcExact(n, m, misrate)
       : CalcApprox(n, m, misrate);

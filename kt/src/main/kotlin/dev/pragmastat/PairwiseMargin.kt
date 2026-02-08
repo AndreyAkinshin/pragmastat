@@ -28,6 +28,11 @@ fun pairwiseMargin(n: Int, m: Int, misrate: Double): Int {
         throw AssumptionException(Violation(AssumptionId.DOMAIN, Subject.MISRATE))
     }
 
+    val minMisrate = minAchievableMisrateTwoSample(n, m)
+    if (misrate < minMisrate) {
+        throw AssumptionException(Violation(AssumptionId.DOMAIN, Subject.MISRATE))
+    }
+
     return if (n + m <= MAX_EXACT_SIZE) {
         pairwiseMarginExact(n, m, misrate)
     } else {

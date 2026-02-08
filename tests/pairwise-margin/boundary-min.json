@@ -2,7 +2,7 @@
   "input": {
     "n": 1,
     "m": 1,
-    "misrate": 0.5
+    "misrate": 1
   },
   "output": 0
 }

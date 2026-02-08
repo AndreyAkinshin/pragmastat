@@ -14,8 +14,6 @@ func minAchievableMisrateOneSample(n int) (float64, error) {
 
 // minAchievableMisrateTwoSample computes the minimum achievable misrate
 // for two-sample Mann-Whitney based bounds.
-//
-//nolint:unused // kept for parity with other languages; will be used by two-sample bounds
 func minAchievableMisrateTwoSample(n, m int) (float64, error) {
 	if n <= 0 {
 		return 0, NewDomainError(SubjectX)
@@ -23,5 +21,11 @@ func minAchievableMisrateTwoSample(n, m int) (float64, error) {
 	if m <= 0 {
 		return 0, NewDomainError(SubjectY)
 	}
-	return 2.0 / float64(binomialCoefficient(n+m, n)), nil
+	var binom float64
+	if n+m < maxAcceptableBinomN {
+		binom = float64(binomialCoefficient(n+m, n))
+	} else {
+		binom = binomialCoefficientFloat(float64(n+m), float64(n))
+	}
+	return 2.0 / binom, nil
 }

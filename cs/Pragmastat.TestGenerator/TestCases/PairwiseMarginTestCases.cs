@@ -1,3 +1,4 @@
+using Pragmastat.Functions;
 using Pragmastat.TestGenerator.Framework;
 using Pragmastat.TestGenerator.Framework.PairwiseMargin;
 using Spectre.Console;
@@ -19,8 +20,8 @@ public static class PairwiseMarginTestCases
     inputBuilder.Add("demo-3", new PairwiseMarginInput(30, 30, 1e-4));
     inputBuilder.Add("demo-4", new PairwiseMarginInput(30, 30, 1e-3));
 
-    // Natural sequences (32 tests)
-    // [n, m] ∈ {1, 2, 3, 4} × {1, 2, 3, 4} × 2 misrates
+    // Natural sequences
+    // [n, m] ∈ {1, 2, 3, 4} × {1, 2, 3, 4} × 2 misrates, filtered by min_misrate
     int[] naturalSizes = [1, 2, 3, 4];
     double[] naturalMisrates = [1e-1, 1e-2];
     foreach (var misrate in naturalMisrates)
@@ -29,6 +30,7 @@ public static class PairwiseMarginTestCases
       {
         foreach (var m in naturalSizes)
         {
+          if (misrate < MinAchievableMisrate.TwoSample(n, m)) continue;
           string testName = $"natural-{n}-{m}-mr{FormatMisrate(misrate)}";
           inputBuilder.Add(testName, new PairwiseMarginInput(n, m, misrate));
         }
@@ -36,8 +38,8 @@ public static class PairwiseMarginTestCases
     }
 
     // Edge cases (10 tests)
-    inputBuilder.Add("boundary-min", new PairwiseMarginInput(1, 1, 0.5));
-    inputBuilder.Add("boundary-zero-margin-small", new PairwiseMarginInput(2, 2, 1e-6));
+    inputBuilder.Add("boundary-min", new PairwiseMarginInput(1, 1, 1.0));
+    inputBuilder.Add("boundary-zero-margin-small", new PairwiseMarginInput(20, 20, 1e-6));
     inputBuilder.Add("boundary-loose", new PairwiseMarginInput(5, 5, 0.9));
     inputBuilder.Add("symmetry-2-5", new PairwiseMarginInput(2, 5, 0.1));
     inputBuilder.Add("symmetry-5-2", new PairwiseMarginInput(5, 2, 0.1));
@@ -47,33 +49,35 @@ public static class PairwiseMarginTestCases
     inputBuilder.Add("asymmetry-extreme-100-1", new PairwiseMarginInput(100, 1, 0.1));
     inputBuilder.Add("asymmetry-extreme-2-50", new PairwiseMarginInput(2, 50, 0.05));
 
-    // Comprehensive grid (300 tests)
+    // Comprehensive grid, filtered by min_misrate
     // Misrates to test
     double[] misrates = [1e-1, 1e-2, 1e-3, 1e-4, 1e-5, 1e-6];
 
-    // Small sample sizes: all combinations of 1 <= n, m <= 5 (150 tests)
+    // Small sample sizes: all valid combinations of 1 <= n, m <= 5
     int[] smallSizes = [1, 2, 3, 4, 5];
 
-    // Larger sample sizes (150 tests)
+    // Larger sample sizes
     int[] largeSizes = [10, 20, 30, 50, 100];
 
     foreach (var misrate in misrates)
     {
-      // Small samples
+      // Small samples — skip if misrate below floor
       foreach (var n in smallSizes)
       {
         foreach (var m in smallSizes)
         {
+          if (misrate < MinAchievableMisrate.TwoSample(n, m)) continue;
           string testName = $"n{n}_m{m}_mr{FormatMisrate(misrate)}";
           inputBuilder.Add(testName, new PairwiseMarginInput(n, m, misrate));
         }
       }
 
-      // Large samples
+      // Large samples — skip if misrate below floor
       foreach (var n in largeSizes)
       {
         foreach (var m in largeSizes)
         {
+          if (misrate < MinAchievableMisrate.TwoSample(n, m)) continue;
           string testName = $"n{n}_m{m}_r{FormatMisrate(misrate)}";
           inputBuilder.Add(testName, new PairwiseMarginInput(n, m, misrate));
         }
