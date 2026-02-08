@@ -38,6 +38,16 @@ pub fn min_achievable_misrate_one_sample(n: usize) -> f64 {
     2.0_f64.powf(1.0 - n as f64)
 }
 
+/// Minimum achievable misrate for two-sample Mann-Whitney bounds: 2/C(n+m, n).
+pub fn min_achievable_misrate_two_sample(n: usize, m: usize) -> f64 {
+    let mut binom = 1.0_f64;
+    let k = n.min(m);
+    for i in 0..k {
+        binom = binom * ((n + m - i) as f64) / ((i + 1) as f64);
+    }
+    2.0 / binom
+}
+
 /// Parse misrate strings like "1e-1,5e-2,1e-2,5e-3,1e-3".
 pub fn parse_misrates(input: &str) -> Vec<f64> {
     input

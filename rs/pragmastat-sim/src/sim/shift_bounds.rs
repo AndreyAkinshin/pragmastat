@@ -1,4 +1,7 @@
-use super::bounds::{format_bounds_row, parse_misrates, round_bounds_row, BoundsInput, BoundsRow};
+use super::bounds::{
+    format_bounds_row, min_achievable_misrate_two_sample, parse_misrates, round_bounds_row,
+    BoundsInput, BoundsRow,
+};
 use super::{SimError, Simulation};
 use crate::distributions::{self, DistributionEntry};
 use pragmastat::Rng;
@@ -46,7 +49,11 @@ impl Simulation for ShiftBoundsSim {
 
         for dist in &self.distributions {
             for &n in sample_sizes {
+                let min_misrate = min_achievable_misrate_two_sample(n, n);
                 for &misrate in &self.misrates {
+                    if misrate < min_misrate {
+                        continue;
+                    }
                     let key = format!("{}-{}-{}", dist.name, n, misrate);
                     if !overwrite {
                         if let Some(row) = existing.get(&key) {
