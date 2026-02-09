@@ -7,7 +7,6 @@ Each language loads these JSON files to verify correctness and cross-language co
 
 ```
 tests/
-├── assumptions/         # Assumption validation tests
 ├── avg-spread/          # AvgSpread estimator tests
 ├── center/              # Center estimator tests
 ├── center-bounds/       # CenterBounds estimator tests
@@ -107,7 +106,9 @@ Error test cases verify domain validation. They use `expected_error` instead of 
 }
 ```
 
-The `id` field identifies the error type (e.g., "domain", "validity", "sparity").
+The `id` field identifies the assumption violation type (e.g., "domain", "validity", "positivity", "sparity").
+Test data matches on `id` only. The language-level violation schema also includes a `subject` field
+(e.g., "x", "y", "misrate"), but test assertions only verify the `id`.
 
 ## Test Case Naming
 
