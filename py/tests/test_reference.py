@@ -183,6 +183,17 @@ class TestReference:
             input_x = test_case["input"]["x"]
             input_y = test_case["input"]["y"]
             misrate = test_case["input"]["misrate"]
+
+            # Handle error test cases
+            if "expected_error" in test_case:
+                with pytest.raises(AssumptionError) as exc_info:
+                    shift_bounds(input_x, input_y, misrate)
+                assert (
+                    exc_info.value.violation.id.value
+                    == test_case["expected_error"]["id"]
+                )
+                continue
+
             expected_lower = test_case["output"]["lower"]
             expected_upper = test_case["output"]["upper"]
 
@@ -214,6 +225,17 @@ class TestReference:
             input_x = test_case["input"]["x"]
             input_y = test_case["input"]["y"]
             misrate = test_case["input"]["misrate"]
+
+            # Handle error test cases
+            if "expected_error" in test_case:
+                with pytest.raises(AssumptionError) as exc_info:
+                    ratio_bounds(input_x, input_y, misrate)
+                assert (
+                    exc_info.value.violation.id.value
+                    == test_case["expected_error"]["id"]
+                )
+                continue
+
             expected_lower = test_case["output"]["lower"]
             expected_upper = test_case["output"]["upper"]
 

@@ -12,6 +12,19 @@ test_that("shift_bounds satisfies reference tests", {
     input_x <- test_case$input$x
     input_y <- test_case$input$y
     misrate <- test_case$input$misrate
+
+    # Handle error test cases
+    if (!is.null(test_case$expected_error)) {
+      err <- expect_error(
+        shift_bounds(input_x, input_y, misrate),
+        class = "assumption_error"
+      )
+      expect_equal(err$violation$id, test_case$expected_error$id,
+        info = paste("Failed for test file:", basename(json_file), "- violation id")
+      )
+      next
+    }
+
     expected_lower <- test_case$output$lower
     expected_upper <- test_case$output$upper
 

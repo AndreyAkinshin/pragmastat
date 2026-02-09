@@ -152,6 +152,25 @@ describe('Reference Tests', () => {
 
         it(`should pass ${testName}`, () => {
           const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+
+          // Handle error test cases
+          if (data.expected_error) {
+            let thrownError: AssumptionError | null = null;
+            try {
+              shiftBounds(data.input.x, data.input.y, data.input.misrate);
+            } catch (e) {
+              if (e instanceof AssumptionError) {
+                thrownError = e;
+              } else {
+                throw e;
+              }
+            }
+            expect(thrownError).not.toBeNull();
+            expect(thrownError!.violation.id).toBe(data.expected_error.id);
+
+            return;
+          }
+
           const result = shiftBounds(data.input.x, data.input.y, data.input.misrate);
           expect(result.lower).toBeCloseTo(data.output.lower, 9);
           expect(result.upper).toBeCloseTo(data.output.upper, 9);
@@ -175,6 +194,25 @@ describe('Reference Tests', () => {
 
         it(`should pass ${testName}`, () => {
           const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+
+          // Handle error test cases
+          if (data.expected_error) {
+            let thrownError: AssumptionError | null = null;
+            try {
+              ratioBounds(data.input.x, data.input.y, data.input.misrate);
+            } catch (e) {
+              if (e instanceof AssumptionError) {
+                thrownError = e;
+              } else {
+                throw e;
+              }
+            }
+            expect(thrownError).not.toBeNull();
+            expect(thrownError!.violation.id).toBe(data.expected_error.id);
+
+            return;
+          }
+
           const result = ratioBounds(data.input.x, data.input.y, data.input.misrate);
           expect(result.lower).toBeCloseTo(data.output.lower, 9);
           expect(result.upper).toBeCloseTo(data.output.upper, 9);

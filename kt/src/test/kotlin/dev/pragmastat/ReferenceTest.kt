@@ -54,9 +54,11 @@ data class BoundsOutput(
     val upper: Double
 )
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 data class ShiftBoundsTestData(
     val input: ShiftBoundsInput,
-    val output: BoundsOutput
+    val output: BoundsOutput? = null,
+    @JsonProperty("expected_error") val expectedError: Map<String, String>? = null
 )
 
 data class RatioBoundsInput(
@@ -65,9 +67,11 @@ data class RatioBoundsInput(
     val misrate: Double
 )
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 data class RatioBoundsTestData(
     val input: RatioBoundsInput,
-    val output: BoundsOutput
+    val output: BoundsOutput? = null,
+    @JsonProperty("expected_error") val expectedError: Map<String, String>? = null
 )
 
 class ReferenceTest {
@@ -240,13 +244,24 @@ class ReferenceTest {
             val testName = "shift-bounds/${file.nameWithoutExtension}"
             tests.add(DynamicTest.dynamicTest(testName) {
                 val testData = mapper.readValue<ShiftBoundsTestData>(file)
+
+                // Handle error test cases
+                if (testData.expectedError != null) {
+                    val exception = assertThrows<AssumptionException> {
+                        shiftBounds(testData.input.x, testData.input.y, testData.input.misrate)
+                    }
+                    kotlin.test.assertEquals(testData.expectedError["id"], exception.violation.id.id,
+                        "Expected error id ${testData.expectedError["id"]}, got ${exception.violation.id.id}")
+                    return@dynamicTest
+                }
+
                 val result = shiftBounds(
                     testData.input.x,
                     testData.input.y,
                     testData.input.misrate
                 )
-                assertClose(testData.output.lower, result.lower)
-                assertClose(testData.output.upper, result.upper)
+                assertClose(testData.output!!.lower, result.lower)
+                assertClose(testData.output!!.upper, result.upper)
             })
         }
 
@@ -267,13 +282,24 @@ class ReferenceTest {
             val testName = "ratio-bounds/${file.nameWithoutExtension}"
             tests.add(DynamicTest.dynamicTest(testName) {
                 val testData = mapper.readValue<RatioBoundsTestData>(file)
+
+                // Handle error test cases
+                if (testData.expectedError != null) {
+                    val exception = assertThrows<AssumptionException> {
+                        ratioBounds(testData.input.x, testData.input.y, testData.input.misrate)
+                    }
+                    kotlin.test.assertEquals(testData.expectedError["id"], exception.violation.id.id,
+                        "Expected error id ${testData.expectedError["id"]}, got ${exception.violation.id.id}")
+                    return@dynamicTest
+                }
+
                 val result = ratioBounds(
                     testData.input.x,
                     testData.input.y,
                     testData.input.misrate
                 )
-                assertClose(testData.output.lower, result.lower)
-                assertClose(testData.output.upper, result.upper)
+                assertClose(testData.output!!.lower, result.lower)
+                assertClose(testData.output!!.upper, result.upper)
             })
         }
 

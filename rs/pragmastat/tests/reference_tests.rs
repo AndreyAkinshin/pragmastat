@@ -57,7 +57,8 @@ struct BoundsOutput {
 #[derive(Debug, Deserialize, Serialize)]
 struct ShiftBoundsTestCase {
     input: ShiftBoundsInput,
-    output: BoundsOutput,
+    output: Option<BoundsOutput>,
+    expected_error: Option<serde_json::Value>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -70,7 +71,8 @@ struct RatioBoundsInput {
 #[derive(Debug, Deserialize, Serialize)]
 struct RatioBoundsTestCase {
     input: RatioBoundsInput,
-    output: BoundsOutput,
+    output: Option<BoundsOutput>,
+    expected_error: Option<serde_json::Value>,
 }
 
 fn find_repo_root() -> PathBuf {
@@ -382,6 +384,36 @@ fn run_shift_bounds_tests() {
         let test_case: ShiftBoundsTestCase = serde_json::from_str(&content).unwrap();
         let file_name = json_file.file_name().unwrap();
 
+        // Handle error test cases
+        if let Some(ref expected_error) = test_case.expected_error {
+            let result = shift_bounds(
+                &test_case.input.x,
+                &test_case.input.y,
+                test_case.input.misrate,
+            );
+            match result {
+                Ok(_) => failures.push(format!("{file_name:?}: expected error, got Ok")),
+                Err(err) => {
+                    if let Some(expected_id) = expected_error.get("id").and_then(|v| v.as_str()) {
+                        if let EstimatorError::Assumption(ref ae) = err {
+                            if ae.violation().id.as_str() != expected_id {
+                                failures.push(format!(
+                                    "{file_name:?}: expected violation id {expected_id}, got {}",
+                                    ae.violation().id.as_str()
+                                ));
+                            }
+                        } else {
+                            failures.push(format!(
+                                "{file_name:?}: expected AssumptionError, got {err:?}"
+                            ));
+                        }
+                    }
+                }
+            }
+            continue;
+        }
+
+        let expected_output = test_case.output.expect("Test case must have output");
         let actual_output = match shift_bounds(
             &test_case.input.x,
             &test_case.input.y,
@@ -397,23 +429,23 @@ fn run_shift_bounds_tests() {
         if !approx_eq!(
             f64,
             actual_output.lower,
-            test_case.output.lower,
+            expected_output.lower,
             epsilon = 1e-9
         ) {
             failures.push(format!(
                 "{file_name:?}: expected lower {}, got {}",
-                test_case.output.lower, actual_output.lower
+                expected_output.lower, actual_output.lower
             ));
         }
         if !approx_eq!(
             f64,
             actual_output.upper,
-            test_case.output.upper,
+            expected_output.upper,
             epsilon = 1e-9
         ) {
             failures.push(format!(
                 "{file_name:?}: expected upper {}, got {}",
-                test_case.output.upper, actual_output.upper
+                expected_output.upper, actual_output.upper
             ));
         }
     }
@@ -459,6 +491,36 @@ fn run_ratio_bounds_tests() {
         let test_case: RatioBoundsTestCase = serde_json::from_str(&content).unwrap();
         let file_name = json_file.file_name().unwrap();
 
+        // Handle error test cases
+        if let Some(ref expected_error) = test_case.expected_error {
+            let result = ratio_bounds(
+                &test_case.input.x,
+                &test_case.input.y,
+                test_case.input.misrate,
+            );
+            match result {
+                Ok(_) => failures.push(format!("{file_name:?}: expected error, got Ok")),
+                Err(err) => {
+                    if let Some(expected_id) = expected_error.get("id").and_then(|v| v.as_str()) {
+                        if let EstimatorError::Assumption(ref ae) = err {
+                            if ae.violation().id.as_str() != expected_id {
+                                failures.push(format!(
+                                    "{file_name:?}: expected violation id {expected_id}, got {}",
+                                    ae.violation().id.as_str()
+                                ));
+                            }
+                        } else {
+                            failures.push(format!(
+                                "{file_name:?}: expected AssumptionError, got {err:?}"
+                            ));
+                        }
+                    }
+                }
+            }
+            continue;
+        }
+
+        let expected_output = test_case.output.expect("Test case must have output");
         let actual_output = match ratio_bounds(
             &test_case.input.x,
             &test_case.input.y,
@@ -474,23 +536,23 @@ fn run_ratio_bounds_tests() {
         if !approx_eq!(
             f64,
             actual_output.lower,
-            test_case.output.lower,
+            expected_output.lower,
             epsilon = 1e-9
         ) {
             failures.push(format!(
                 "{file_name:?}: expected lower {}, got {}",
-                test_case.output.lower, actual_output.lower
+                expected_output.lower, actual_output.lower
             ));
         }
         if !approx_eq!(
             f64,
             actual_output.upper,
-            test_case.output.upper,
+            expected_output.upper,
             epsilon = 1e-9
         ) {
             failures.push(format!(
                 "{file_name:?}: expected upper {}, got {}",
-                test_case.output.upper, actual_output.upper
+                expected_output.upper, actual_output.upper
             ));
         }
     }
