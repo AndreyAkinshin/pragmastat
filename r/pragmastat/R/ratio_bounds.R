@@ -15,6 +15,15 @@ ratio_bounds <- function(x, y, misrate) {
   check_validity(x, SUBJECTS$X)
   check_validity(y, SUBJECTS$Y)
 
+  if (is.nan(misrate) || misrate < 0 || misrate > 1) {
+    stop(assumption_error(ASSUMPTION_IDS$DOMAIN, SUBJECTS$MISRATE))
+  }
+
+  min_misrate <- min_achievable_misrate_two_sample(length(x), length(y))
+  if (misrate < min_misrate) {
+    stop(assumption_error(ASSUMPTION_IDS$DOMAIN, SUBJECTS$MISRATE))
+  }
+
   # Log-transform samples (includes positivity check)
   log_x <- log_transform(x, SUBJECTS$X)
   log_y <- log_transform(y, SUBJECTS$Y)

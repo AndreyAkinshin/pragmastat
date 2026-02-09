@@ -255,6 +255,15 @@ fun ratioBounds(x: List<Double>, y: List<Double>, misrate: Double): Bounds {
     checkValidity(x, Subject.X)
     checkValidity(y, Subject.Y)
 
+    if (misrate.isNaN() || misrate < 0.0 || misrate > 1.0) {
+        throw AssumptionException(Violation(AssumptionId.DOMAIN, Subject.MISRATE))
+    }
+
+    val minMisrate = minAchievableMisrateTwoSample(x.size, y.size)
+    if (misrate < minMisrate) {
+        throw AssumptionException(Violation(AssumptionId.DOMAIN, Subject.MISRATE))
+    }
+
     // Log-transform samples (includes positivity check)
     val logX = log(x, Subject.X)
     val logY = log(y, Subject.Y)

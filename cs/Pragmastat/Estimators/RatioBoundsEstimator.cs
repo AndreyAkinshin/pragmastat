@@ -2,6 +2,8 @@ using Pragmastat.Exceptions;
 using Pragmastat.Internal;
 using Pragmastat.Metrology;
 
+using static Pragmastat.Functions.MinAchievableMisrate;
+
 namespace Pragmastat.Estimators;
 
 /// <summary>
@@ -17,6 +19,14 @@ public class RatioBoundsEstimator : ITwoSampleBoundsEstimator
     Assertion.MatchedUnit(x, y);
     Assertion.Validity(x, Subject.X);
     Assertion.Validity(y, Subject.Y);
+
+    if (double.IsNaN(misrate) || misrate < 0 || misrate > 1)
+      throw AssumptionException.Domain(Subject.Misrate);
+
+    double minMisrate = TwoSample(x.Size, y.Size);
+    if (misrate < minMisrate)
+      throw AssumptionException.Domain(Subject.Misrate);
+
     Assertion.PositivityAssumption(x, Subject.X);
     Assertion.PositivityAssumption(y, Subject.Y);
 

@@ -389,6 +389,13 @@ def ratio_bounds(
     check_validity(x, "x")
     check_validity(y, "y")
 
+    if math.isnan(misrate) or misrate < 0 or misrate > 1:
+        raise AssumptionError.domain("misrate")
+
+    min_misrate = min_achievable_misrate_two_sample(len(x), len(y))
+    if misrate < min_misrate:
+        raise AssumptionError.domain("misrate")
+
     # Log-transform samples (includes positivity check)
     log_x = log(x, "x")
     log_y = log(y, "y")

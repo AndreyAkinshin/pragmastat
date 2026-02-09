@@ -329,6 +329,18 @@ func RatioBounds[T Number](x, y []T, misrate float64) (Bounds, error) {
 		return Bounds{}, err
 	}
 
+	if math.IsNaN(misrate) || misrate < 0 || misrate > 1 {
+		return Bounds{}, NewDomainError(SubjectMisrate)
+	}
+
+	minMisrate, err := minAchievableMisrateTwoSample(len(x), len(y))
+	if err != nil {
+		return Bounds{}, err
+	}
+	if misrate < minMisrate {
+		return Bounds{}, NewDomainError(SubjectMisrate)
+	}
+
 	// Log-transform samples (includes positivity check)
 	logX, err := Log(x, SubjectX)
 	if err != nil {

@@ -338,6 +338,20 @@ pub fn ratio_bounds(x: &[f64], y: &[f64], misrate: f64) -> Result<Bounds, Estima
     check_validity(x, Subject::X)?;
     check_validity(y, Subject::Y)?;
 
+    if misrate.is_nan() || !(0.0..=1.0).contains(&misrate) {
+        return Err(EstimatorError::from(AssumptionError::domain(
+            Subject::Misrate,
+        )));
+    }
+
+    let min_misrate = crate::min_misrate::min_achievable_misrate_two_sample(x.len(), y.len())
+        .map_err(EstimatorError::from)?;
+    if misrate < min_misrate {
+        return Err(EstimatorError::from(AssumptionError::domain(
+            Subject::Misrate,
+        )));
+    }
+
     // Log-transform samples (includes positivity check)
     let log_x = log(x, Subject::X)?;
     let log_y = log(y, Subject::Y)?;

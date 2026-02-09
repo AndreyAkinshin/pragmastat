@@ -281,6 +281,15 @@ export function ratioBounds(x: number[], y: number[], misrate: number): Bounds {
   checkValidity(x, 'x');
   checkValidity(y, 'y');
 
+  if (isNaN(misrate) || misrate < 0 || misrate > 1) {
+    throw AssumptionError.domain('misrate');
+  }
+
+  const minMisrate = minAchievableMisrateTwoSample(x.length, y.length);
+  if (misrate < minMisrate) {
+    throw AssumptionError.domain('misrate');
+  }
+
   // Log-transform samples (includes positivity check)
   const logX = log(x, 'x');
   const logY = log(y, 'y');
