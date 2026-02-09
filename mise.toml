@@ -514,6 +514,7 @@ run = "cargo fmt"
 
 [tasks."ts:build"]
 description = "Build TypeScript package"
+depends = ["ts:restore"]
 dir = "ts"
 run = "pnpm build"
 
