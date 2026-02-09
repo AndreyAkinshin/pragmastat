@@ -44,6 +44,16 @@ const VERSION_TARGETS: &[VersionTarget] = &[
         pattern: r#"("name":\s*"pragmastat",\s*)"version":\s*"[^"]*""#,
         replacement: r#"$1"version": "{version}""#,
     },
+    VersionTarget {
+        path: "py/uv.lock",
+        pattern: r#"(name = "pragmastat"\n)version = "[^"]*""#,
+        replacement: r#"${1}version = "{version}""#,
+    },
+    VersionTarget {
+        path: "rs/pragmastat-sim/Cargo.lock",
+        pattern: r#"(name = "pragmastat"\n)version = "[^"]*""#,
+        replacement: r#"${1}version = "{version}""#,
+    },
     // Version in version.typ is used by all Typst files
     VersionTarget {
         path: "manual/version.typ",
