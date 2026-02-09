@@ -153,6 +153,9 @@ jobs:
       with:
         dotnet-version: '10.0.x'
 
+    - name: Check
+      run: mise run cs:check
+
     - name: Build
       run: mise run cs:build${{ inputs.release && ':release' || '' }}
 
@@ -293,17 +296,11 @@ jobs:
     - name: Download dependencies
       run: mise run go:restore
 
-    - name: Check formatting
-      run: |
-        if [ -n "$(go fmt ./...)" ]; then
-          echo "Code is not formatted. Please run 'go fmt ./...'"
-          exit 1
-        fi
-      working-directory: go
+    - name: Check
+      run: mise run go:check
 
-    - name: Run tests with coverage
-      run: go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
-      working-directory: go
+    - name: Test
+      run: mise run go:test
 
     - name: Build
       run: mise run go:build
@@ -366,3 +363,27 @@ jobs:
           kt/build/libs/
           kt/build/staging-deploy/
         retention-days: 1
+
+  # ==========================================================================
+  # Summary Gate — single status check for branch protection
+  # ==========================================================================
+
+  ci-success:
+    name: CI Success
+    runs-on: ubuntu-latest
+    needs: [ci-manual, ci-r, ci-cs, ci-py, ci-rs, ci-ts, ci-go, ci-kt]
+    if: always()
+    steps:
+      - name: Check all jobs passed
+        run: |
+          if [[ "${{ needs.ci-manual.result }}" != "success" ]] || \
+             [[ "${{ needs.ci-r.result }}" != "success" ]] || \
+             [[ "${{ needs.ci-cs.result }}" != "success" ]] || \
+             [[ "${{ needs.ci-py.result }}" != "success" ]] || \
+             [[ "${{ needs.ci-rs.result }}" != "success" ]] || \
+             [[ "${{ needs.ci-ts.result }}" != "success" ]] || \
+             [[ "${{ needs.ci-go.result }}" != "success" ]] || \
+             [[ "${{ needs.ci-kt.result }}" != "success" ]]; then
+            echo "One or more required jobs failed"
+            exit 1
+          fi
