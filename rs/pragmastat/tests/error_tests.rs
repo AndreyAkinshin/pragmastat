@@ -223,6 +223,26 @@ fn pairwise_margin_nan_misrate() {
     assert_eq!(subject, Subject::Misrate);
 }
 
+#[test]
+fn pairwise_margin_misrate_below_min() {
+    // n=2, m=2: min_misrate = 2/C(4,2) = 1/3 ≈ 0.333
+    let result = pairwise_margin(2, 2, 0.05);
+    assert!(result.is_err());
+    let (id, subject) = unwrap_assumption(result.unwrap_err());
+    assert_eq!(id, AssumptionId::Domain);
+    assert_eq!(subject, Subject::Misrate);
+}
+
+#[test]
+fn shift_bounds_misrate_below_min() {
+    // n=2, m=2: min_misrate = 2/C(4,2) = 1/3 ≈ 0.333
+    let result = shift_bounds(&[1.0, 2.0], &[3.0, 4.0], 0.05);
+    assert!(result.is_err());
+    let (id, subject) = unwrap_estimator_error(result.unwrap_err());
+    assert_eq!(id, AssumptionId::Domain);
+    assert_eq!(subject, Subject::Misrate);
+}
+
 // --- signed_rank_margin ---
 
 #[test]

@@ -1,0 +1,11 @@
+{
+  "input": {
+    "x": [1, 2],
+    "y": [3, 4],
+    "misrate": 0.05
+  },
+  "expected_error": {
+    "id": "domain"
+  },
+  "comment": "misrate=0.05 is below min achievable misrate 2/C(4,2)=0.333 for n=2, m=2"
+}
