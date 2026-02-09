@@ -742,12 +742,32 @@ description = "Run CI pipeline for all language implementations"
 depends = ["cs:ci", "go:ci", "kt:ci", "py:ci", "r:ci", "rs:ci", "ts:ci", "docs:ci"]
 
 # ==========================================================================
+# Version Task
+# ==========================================================================
+
+[tasks."version"]
+description = "Set version, sync, stage, and commit"
+usage = 'arg "<version>" help="Version (e.g., 6.0.2 or v6.0.2)"'
+run = """
+VERSION="${usage_version#v}"
+echo "$VERSION" > VERSION
+mise run docs:sync
+git add -A
+git diff --cached --quiet && echo "Already at $VERSION" || git commit -m "chore: bump version to $VERSION"
+"""
+
+# ==========================================================================
 # Publish Task
 # ==========================================================================
 
 [tasks."publish"]
-description = "Publish a new version"
-file = ".mise/tasks/publish"
+description = "Bump version, push, and trigger release"
+usage = 'arg "<version>" help="Version (e.g., 6.0.2 or v6.0.2)"'
+run = [
+    "mise run version $usage_version",
+    "git push",
+    "gh workflow run publish.yml",
+]
 
 # ==========================================================================
 # Docker Tasks

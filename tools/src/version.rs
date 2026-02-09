@@ -44,7 +44,7 @@ const VERSION_TARGETS: &[VersionTarget] = &[
         pattern: r#"("name":\s*"pragmastat",\s*)"version":\s*"[^"]*""#,
         replacement: r#"$1"version": "{version}""#,
     },
-    // Version in version.typ is the SINGLE SOURCE for all Typst files
+    // Version in version.typ is used by all Typst files
     VersionTarget {
         path: "manual/version.typ",
         pattern: r#"#let version = ".*?""#,
@@ -59,22 +59,13 @@ const VERSION_TARGETS: &[VersionTarget] = &[
 ];
 
 pub fn read_version(base_path: &Path) -> Result<String> {
-    let version_path = base_path.join("manual/version.typ");
+    let version_path = base_path.join("VERSION");
     let content = std::fs::read_to_string(&version_path)
         .with_context(|| format!("Failed to read {}", version_path.display()))?;
-
-    // Parse Typst syntax: #let version = "X.Y.Z"
-    let regex =
-        Regex::new(r#"#let version = "([^"]+)""#).context("Failed to compile version regex")?;
-    let captures = regex
-        .captures(&content)
-        .with_context(|| format!("Version pattern not found in {}", version_path.display()))?;
-    let version = captures
-        .get(1)
-        .context("Version capture group not found")?
-        .as_str()
-        .to_string();
-
+    let version = content.trim().to_string();
+    if version.is_empty() {
+        anyhow::bail!("VERSION file is empty");
+    }
     Ok(version)
 }
 
