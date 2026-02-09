@@ -749,13 +749,17 @@ depends = ["cs:ci", "go:ci", "kt:ci", "py:ci", "r:ci", "rs:ci", "ts:ci", "docs:c
 [tasks."version"]
 description = "Set version, sync, stage, and commit"
 usage = 'arg "<version>" help="Version (e.g., 6.0.2 or v6.0.2)"'
-run = """
+run = '''
 VERSION="${usage_version#v}"
+if ! echo "$VERSION" | grep -qE '^[0-9]+(\.[0-9]+)*$'; then
+  echo "Error: version must contain only digits and dots (got: $VERSION)" >&2
+  exit 1
+fi
 echo "$VERSION" > VERSION
 mise run docs:sync
 git add -A
 git diff --cached --quiet && echo "Already at $VERSION" || git commit -m "chore: bump version to $VERSION"
-"""
+'''
 
 # ==========================================================================
 # Publish Task
