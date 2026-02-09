@@ -49,10 +49,7 @@ run = "dotnet format"
 [tasks."cs:clean"]
 description = "Clean C# build artifacts"
 dir = "cs"
-run = """
-dotnet clean
-rm -rf bin/ obj/ *.nupkg
-"""
+run = "rm -rf bin/ obj/ *.nupkg"
 
 [tasks."cs:restore"]
 description = "Restore C# dependencies"
