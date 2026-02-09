@@ -50,9 +50,7 @@ pub(crate) fn fast_spread(values: &[f64]) -> Result<f64, &'static str> {
 
     // Per-row active bounds over columns j (0-based indices)
     // Row i allows j in [i+1, n-1] initially
-    let mut left_bounds: Vec<u32> = (0..n)
-        .map(|i| (i + 1).min(n) as u32)
-        .collect();
+    let mut left_bounds: Vec<u32> = (0..n).map(|i| (i + 1).min(n) as u32).collect();
     let mut right_bounds = vec![(n - 1) as u32; n];
 
     for i in 0..n {
