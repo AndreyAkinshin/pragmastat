@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 
-#pragma warning disable CS0618 // Type or member is obsolete
-
 namespace Pragmastat.Randomization;
 
 /// <summary>
@@ -209,27 +207,6 @@ public sealed class Rng
   public bool UniformBool()
   {
     return _inner.UniformBool();
-  }
-
-  // ========================================================================
-  // Deprecated Methods
-  // ========================================================================
-
-  /// <summary>
-  /// Generate a uniform random integer in [min, max).
-  /// </summary>
-  /// <remarks>
-  /// Uses modulo reduction which introduces slight bias for ranges that don't
-  /// evenly divide 2^64. This bias is negligible for statistical simulations
-  /// but not suitable for cryptographic applications.
-  /// </remarks>
-  /// <param name="min">Minimum value (inclusive).</param>
-  /// <param name="max">Maximum value (exclusive).</param>
-  /// <returns>A random integer in [min, max). Returns min if min >= max.</returns>
-  [Obsolete("Use UniformInt64 instead")]
-  public long UniformInt(long min, long max)
-  {
-    return _inner.UniformInt64(min, max);
   }
 
   // ========================================================================

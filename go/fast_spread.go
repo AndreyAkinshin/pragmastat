@@ -219,7 +219,7 @@ func fastSpread[T Number](values []T) (float64, error) {
 		}
 
 		// Weighted random row selection
-		t := rng.UniformInt(0, activeSize)
+		t := rng.UniformInt64(0, activeSize)
 		acc := int64(0)
 		row := 0
 		for row = 0; row < n-1; row++ {

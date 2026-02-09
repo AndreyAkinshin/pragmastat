@@ -180,7 +180,7 @@ func fastCenter[T Number](values []T) (float64, error) {
 		// Choose next pivot
 		if activeSetSize > 2 {
 			// Use randomized row median strategy
-			targetIndex := rng.UniformInt(0, activeSetSize)
+			targetIndex := rng.UniformInt64(0, activeSetSize)
 			cumulativeSize := int64(0)
 			selectedRow := 0
 

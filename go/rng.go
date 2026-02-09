@@ -142,17 +142,6 @@ func (r *Rng) UniformBool() bool {
 }
 
 // ========================================================================
-// Deprecated Methods
-// ========================================================================
-
-// Deprecated: Use UniformInt64 instead.
-// UniformInt generates a uniform random integer in [min, max).
-// Returns min if min >= max.
-func (r *Rng) UniformInt(min, max int64) int64 {
-	return r.inner.uniformInt64(min, max)
-}
-
-// ========================================================================
 // Collection Methods
 // ========================================================================
 

@@ -624,10 +624,10 @@ func TestRngUniformIntReference(t *testing.T) {
 				t.Fatalf("Output length %d != count %d", len(testData.Output), testData.Input.Count)
 			}
 			for i := 0; i < testData.Input.Count; i++ {
-				actual := rng.UniformInt(testData.Input.Min, testData.Input.Max)
+				actual := rng.UniformInt64(testData.Input.Min, testData.Input.Max)
 				expected := testData.Output[i]
 				if actual != expected {
-					t.Errorf("UniformInt(%d, %d) at index %d = %d, want %d",
+					t.Errorf("UniformInt64(%d, %d) at index %d = %d, want %d",
 						testData.Input.Min, testData.Input.Max, i, actual, expected)
 				}
 			}

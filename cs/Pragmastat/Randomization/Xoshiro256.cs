@@ -246,21 +246,6 @@ internal sealed class Xoshiro256PlusPlus
     return Uniform() < 0.5;
   }
 
-  // ========================================================================
-  // Deprecated Methods
-  // ========================================================================
-
-  /// <summary>
-  /// Generate a uniform long in [min, max).
-  /// Returns min if min >= max.
-  /// </summary>
-  /// <exception cref="OverflowException">Thrown if max - min overflows.</exception>
-  [Obsolete("Use UniformInt64 instead")]
-  [MethodImpl(MethodImplOptions.AggressiveInlining)]
-  public long UniformInt(long min, long max)
-  {
-    return UniformInt64(min, max);
-  }
 }
 
 /// <summary>

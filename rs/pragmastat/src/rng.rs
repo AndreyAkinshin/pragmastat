@@ -3,8 +3,6 @@
 //! The `Rng` struct provides a deterministic PRNG based on xoshiro256++ that
 //! produces identical sequences across all Pragmastat language implementations.
 
-#![allow(deprecated)]
-
 use crate::fnv1a::fnv1a_hash;
 use crate::xoshiro256::Xoshiro256PlusPlus;
 
@@ -295,19 +293,6 @@ impl Rng {
     #[inline]
     pub fn uniform_bool(&mut self) -> bool {
         self.inner.uniform_bool()
-    }
-
-    // ========================================================================
-    // Deprecated Methods
-    // ========================================================================
-
-    /// Generate a uniform random integer in [min, max)
-    ///
-    /// Returns `min` if `min >= max`.
-    #[deprecated(since = "5.2.0", note = "use uniform_i64 instead")]
-    #[inline]
-    pub fn uniform_int(&mut self, min: i64, max: i64) -> i64 {
-        self.inner.uniform_i64(min, max)
     }
 
     // ========================================================================
