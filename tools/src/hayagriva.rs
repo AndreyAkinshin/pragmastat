@@ -26,7 +26,7 @@ pub fn parse_hayagriva(content: &str) -> Result<References> {
         .map_err(|e| anyhow::anyhow!("Failed to parse Hayagriva YAML: {e}"))?;
 
     // Also parse raw YAML to extract DOIs manually
-    let raw_yaml: serde_yaml::Value = serde_yaml::from_str(content)?;
+    let raw_yaml: serde_yml::Value = serde_yml::from_str(content)?;
 
     let mut references = HashMap::new();
 
@@ -76,7 +76,7 @@ pub fn parse_hayagriva(content: &str) -> Result<References> {
                 raw_yaml
                     .get(&key)
                     .and_then(|v| v.get("doi"))
-                    .and_then(serde_yaml::Value::as_str)
+                    .and_then(serde_yml::Value::as_str)
                     .map(String::from)
             });
 

@@ -8,7 +8,7 @@ pub type Definitions = HashMap<String, String>;
 /// Load definitions from a YAML file
 pub fn load_definitions(path: &Path) -> Result<Definitions> {
     let content = std::fs::read_to_string(path)?;
-    let definitions: Definitions = serde_yaml::from_str(&content)?;
+    let definitions: Definitions = serde_yml::from_str(&content)?;
     Ok(definitions)
 }
 
@@ -22,7 +22,7 @@ mod tests {
 Center: \operatorname{Center}
 x: \mathbf{x}
 ";
-        let defs: Definitions = serde_yaml::from_str(yaml).unwrap();
+        let defs: Definitions = serde_yml::from_str(yaml).unwrap();
         assert_eq!(
             defs.get("Center"),
             Some(&r"\operatorname{Center}".to_string())
@@ -42,7 +42,7 @@ pmax: \mathrm{max}
 pshape: \mathrm{shape}
 prate: \mathrm{rate}
 ";
-        let defs: Definitions = serde_yaml::from_str(yaml).unwrap();
+        let defs: Definitions = serde_yml::from_str(yaml).unwrap();
         assert_eq!(defs.get("pmean"), Some(&r"\mathrm{mean}".to_string()));
         assert_eq!(defs.get("pstddev"), Some(&r"\mathrm{stdDev}".to_string()));
         assert_eq!(defs.get("plogmean"), Some(&r"\mathrm{logMean}".to_string()));
@@ -62,7 +62,7 @@ prate: \mathrm{rate}
 cmad: c_{\mathrm{mad}}
 cspr: c_{\mathrm{spr}}
 ";
-        let defs: Definitions = serde_yaml::from_str(yaml).unwrap();
+        let defs: Definitions = serde_yml::from_str(yaml).unwrap();
         assert_eq!(defs.get("cmad"), Some(&r"c_{\mathrm{mad}}".to_string()));
         assert_eq!(defs.get("cspr"), Some(&r"c_{\mathrm{spr}}".to_string()));
     }
@@ -73,7 +73,7 @@ cspr: c_{\mathrm{spr}}
 misrate: \mathrm{misrate}
 approxdist: \sim\mathrm{approx}
 ";
-        let defs: Definitions = serde_yaml::from_str(yaml).unwrap();
+        let defs: Definitions = serde_yml::from_str(yaml).unwrap();
         assert_eq!(defs.get("misrate"), Some(&r"\mathrm{misrate}".to_string()));
         assert_eq!(
             defs.get("approxdist"),
