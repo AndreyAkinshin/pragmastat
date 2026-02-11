@@ -117,7 +117,7 @@ not in the estimator definition.
 
 *Why this matters for bounds*
 
-Functions like $ShiftBounds$ and $PairwiseMargin$ compute distribution-free bounds
+Functions like $ShiftBounds$, $SpreadBounds$, and $PairwiseMargin$ compute distribution-free bounds
 based on the assumption that pairwise comparisons have no ties in expectation.
 When ties are present, bounds remain valid but may be slightly conservative.
 Weak continuity is a weak assumption and is never reported as a violation.
@@ -210,6 +210,7 @@ A sample with $n = 1$ fails sparity because `Spread(x) = 0`, not because of a se
   [`Spread(x)` — one-sample spread requires sparity.],
   [`AvgSpread(x, y)` — both samples must have sparity.],
   [`Disparity(x, y)` — both samples must have sparity.],
+  [`SpreadBounds(x, misrate)` — sample must have sparity.],
 )
 
 *Naming*

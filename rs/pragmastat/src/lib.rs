@@ -13,6 +13,7 @@ pub(crate) mod gauss_cdf;
 pub(crate) mod min_misrate;
 pub(crate) mod pairwise_margin;
 pub mod rng;
+pub(crate) mod sign_margin;
 pub(crate) mod signed_rank_margin;
 
 // Internal fast algorithm implementations
@@ -29,7 +30,7 @@ pub use assumptions::{AssumptionError, AssumptionId, EstimatorError, Subject, Vi
 pub use distributions::{Additive, Distribution, Exp, Multiplic, Power, Uniform};
 pub use estimators::{
     avg_spread, center, center_bounds, disparity, ratio, ratio_bounds, rel_spread, shift,
-    shift_bounds, spread, Bounds, DEFAULT_MISRATE,
+    shift_bounds, spread, spread_bounds, spread_bounds_with_seed, Bounds, DEFAULT_MISRATE,
 };
 
 pub use rng::Rng;

@@ -5,6 +5,7 @@ pub mod disp_drift;
 pub mod drift;
 pub mod ratio_bounds;
 pub mod shift_bounds;
+pub mod spread_bounds;
 
 use serde::Serialize;
 use std::collections::BTreeMap;

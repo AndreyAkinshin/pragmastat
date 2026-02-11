@@ -28,6 +28,10 @@ pub enum Command {
     /// Run ratio-bounds simulation
     #[command(name = "ratio-bounds")]
     RatioBounds(BoundsArgs),
+
+    /// Run spread-bounds simulation
+    #[command(name = "spread-bounds")]
+    SpreadBounds(BoundsArgs),
 }
 
 #[derive(Parser)]
@@ -79,9 +83,9 @@ pub struct BoundsArgs {
     )]
     pub sample_sizes: String,
 
-    /// Number of samples per combination
-    #[arg(short = 'm', long = "sample-count", default_value = "1000000")]
-    pub sample_count: usize,
+    /// Number of samples per combination (default: 100/misrate)
+    #[arg(short = 'm', long = "sample-count")]
+    pub sample_count: Option<usize>,
 
     /// Comma-separated list of distributions
     #[arg(
@@ -95,7 +99,7 @@ pub struct BoundsArgs {
     #[arg(
         short = 'r',
         long = "misrates",
-        default_value = "1e-1,5e-2,1e-2,5e-3,1e-3"
+        default_value = "1e-2,1e-3,1e-6"
     )]
     pub misrates: String,
 

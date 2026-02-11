@@ -32,4 +32,6 @@ The studies provide detailed analyses of estimator properties for practitioners
 
 #include "../studies/median-bounds-efficiency.typ"
 
+#include "../studies/spread-bounds.typ"
+
 #include "../studies/additive.typ"

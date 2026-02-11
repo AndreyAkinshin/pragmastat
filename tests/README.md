@@ -23,7 +23,8 @@ tests/
 ├── shift-bounds/        # ShiftBounds estimator tests
 ├── shuffle/             # Shuffle tests
 ├── signed-rank-margin/  # SignedRankMargin function tests
-└── spread/              # Spread estimator tests
+├── spread/              # Spread estimator tests
+└── spread-bounds/       # SpreadBounds estimator tests
 ```
 
 ## Test File Format
@@ -82,6 +83,15 @@ Each test file is a JSON object with `input` and `output` fields:
 }
 ```
 
+### SpreadBounds
+
+```json
+{
+  "input": { "x": [1, 2, 3, 4, 5], "misrate": 0.5, "seed": "spread-bounds-tests" },
+  "output": { "lower": 1.0, "upper": 3.0 }
+}
+```
+
 ### sample / resample
 
 Both use the same format. `sample` draws without replacement; `resample` draws with replacement (bootstrap).
@@ -121,7 +131,7 @@ Test cases follow a consistent naming taxonomy:
 | `boundary-*` | Boundary value tests |
 | `exact-*` | Exact algorithm tests (vs approximation) |
 | `property-*` | Algebraic property verification |
-| `unsorted-*` | Input ordering invariance tests |
+| `unsorted-*` | Stable behavior on non-sorted inputs |
 | `natural-*` | Natural number sequences (1, 2, 3, ...) |
 | `additive-*` | Additive distribution samples |
 | `uniform-*` | Uniform distribution samples |
@@ -129,13 +139,14 @@ Test cases follow a consistent naming taxonomy:
 | `symmetric-*` | Symmetric distribution tests |
 | `medium-*` | Medium-size sample tests |
 | `misrate-*` | Misrate parameter variation tests |
+| `conservatism-*` | Conservatism tests (discreteness effects across sample sizes) |
 
 ### Misrate notation
 
-Misrate values use compact notation: `mr<mantissa>e<exponent>` represents `mantissa × 10^-exponent`:
-- `mr1e1` = 0.1 (10%)
-- `mr5e2` = 0.05 (5%)
-- `mr1e2` = 0.01 (1%)
+Misrate values use compact notation: `misrate-<mantissa>e-<exponent>` represents `mantissa × 10^-exponent`:
+- `misrate-1e-1` = 0.1 (10%)
+- `misrate-5e-2` = 0.05 (5%)
+- `misrate-1e-2` = 0.01 (1%)
 
 ## Tolerance Values
 

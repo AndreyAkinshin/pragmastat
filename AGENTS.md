@@ -46,7 +46,7 @@ All implementations expose:
 
 **Two-sample estimators:** `shift`, `ratio`, `avgSpread`, `disparity`
 
-**Bounds estimators:** `shiftBounds`, `ratioBounds`, `centerBounds`
+**Bounds estimators:** `shiftBounds`, `ratioBounds`, `centerBounds`, `spreadBounds`
 
 **Randomization:** `Rng`, `sample`, `shuffle`, `resample`
 

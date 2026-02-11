@@ -26,4 +26,10 @@ public static class Toolkit
   public static Bounds CenterBounds(Sample x) => CenterBounds(x, DefaultMisrate);
   public static Bounds CenterBounds(Sample x, Probability misrate) =>
     CenterBoundsEstimator.Instance.Estimate(x, misrate);
+
+  public static Bounds SpreadBounds(Sample x) => SpreadBounds(x, DefaultMisrate);
+  public static Bounds SpreadBounds(Sample x, Probability misrate) =>
+    SpreadBoundsEstimator.Instance.Estimate(x, misrate);
+  public static Bounds SpreadBounds(Sample x, Probability misrate, string seed) =>
+    SpreadBoundsEstimator.Instance.Estimate(x, misrate, seed);
 }

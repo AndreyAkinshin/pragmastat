@@ -7,9 +7,11 @@ import { fastSpread } from './fastSpread';
 import { fastShift, fastRatio } from './fastShift';
 import { pairwiseMargin } from './pairwiseMargin';
 import { signedRankMargin } from './signedRankMargin';
+import { signMarginRandomized } from './signMargin';
 import { fastCenterQuantileBounds } from './fastCenterQuantiles';
 import { minAchievableMisrateOneSample, minAchievableMisrateTwoSample } from './minMisrate';
 import { checkValidity, checkPositivity, checkSparity, log, AssumptionError } from './assumptions';
+import { Rng } from './rng';
 
 /**
  * Calculate the Center - median of all pairwise averages (x[i] + x[j])/2
@@ -332,4 +334,48 @@ export function centerBounds(x: number[], misrate: number = DEFAULT_MISRATE): Bo
 
   const [lo, hi] = fastCenterQuantileBounds(sorted, kLeft, kRight);
   return { lower: lo, upper: hi };
+}
+
+/**
+ * Provides distribution-free bounds for the Spread estimator using disjoint pairs
+ * with sign-test inversion.
+ *
+ * @param x Sample array
+ * @param misrate Misclassification rate (probability that true spread falls outside bounds)
+ * @param seed Optional string seed for deterministic randomization
+ * @returns An object containing the lower and upper bounds
+ * @throws AssumptionError if sample is invalid, misrate is out of domain, or sample is tie-dominant
+ */
+export function spreadBounds(
+  x: number[],
+  misrate: number = DEFAULT_MISRATE,
+  seed?: string,
+): Bounds {
+  checkValidity(x, 'x');
+  if (isNaN(misrate) || misrate < 0 || misrate > 1) throw AssumptionError.domain('misrate');
+  const n = x.length;
+  const m = Math.floor(n / 2);
+  const minMisrate = minAchievableMisrateOneSample(m);
+  if (misrate < minMisrate) throw AssumptionError.domain('misrate');
+  checkSparity(x, 'x');
+
+  const rng = seed !== undefined ? new Rng(seed) : new Rng();
+  const margin = signMarginRandomized(m, misrate, rng);
+  let halfMargin = Math.floor(margin / 2);
+  const maxHalfMargin = Math.floor((m - 1) / 2);
+  if (halfMargin > maxHalfMargin) halfMargin = maxHalfMargin;
+  const kLeft = halfMargin + 1;
+  const kRight = m - halfMargin;
+
+  const indices = Array.from({ length: n }, (_, i) => i);
+  const shuffled = rng.shuffle(indices);
+  const diffs: number[] = [];
+  for (let i = 0; i < m; i++) {
+    const a = shuffled[2 * i];
+    const b = shuffled[2 * i + 1];
+    diffs.push(Math.abs(x[a] - x[b]));
+  }
+  diffs.sort((a, b) => a - b);
+
+  return { lower: diffs[kLeft - 1], upper: diffs[kRight - 1] };
 }

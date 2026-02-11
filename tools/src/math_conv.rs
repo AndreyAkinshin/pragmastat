@@ -931,8 +931,14 @@ fn convert_explicit_fractions(input: &str) -> String {
                     let den = strip_outer_parens(&den);
 
                     let _ = write!(result, "\\frac{{{num}}}{{{den}}}");
-                    i = den_end;
-                    continue;
+                    // Process only one ⁄ per call to avoid a position
+                    // mismatch: the \frac expansion may be longer than the
+                    // original chars span, making chars_to_remove wrong
+                    // for any subsequent ⁄. The outer loop in
+                    // convert_fractions re-calls with a fresh chars array.
+                    let tail: String = chars[den_end..].iter().collect();
+                    result.push_str(&tail);
+                    return result;
                 }
             }
             // If we couldn't convert, output as regular slash
@@ -1113,9 +1119,45 @@ fn find_fraction_part_before(chars: &[char], slash_pos: usize) -> Option<(usize,
     // end is one past the last meaningful character (after skipping whitespace)
     let end = start + 1;
 
-    // If we hit a closing brace, don't convert - the content is inside a LaTeX command
+    // If we hit a closing brace, find the matching open brace and continue backwards
+    // to include the full expression (e.g., x_{min} where } ends a subscript group)
     if chars[start] == '}' {
-        return None;
+        let mut brace_depth = 1;
+        while start > 0 && brace_depth > 0 {
+            start -= 1;
+            match chars[start] {
+                '}' => brace_depth += 1,
+                '{' => brace_depth -= 1,
+                _ => {}
+            }
+        }
+        if brace_depth != 0 {
+            return None;
+        }
+        // Continue backwards to include subscript/superscript marker and variable name
+        // e.g., for x_{min}, after matching {min} we need to include x_
+        while start > 0
+            && (chars[start - 1].is_alphanumeric()
+                || chars[start - 1] == '_'
+                || chars[start - 1] == '\\'
+                || chars[start - 1] == '^'
+                || chars[start - 1] == '}')
+        {
+            start -= 1;
+            // If we hit another closing brace, find its matching open
+            if chars[start] == '}' {
+                let mut bd = 1;
+                while start > 0 && bd > 0 {
+                    start -= 1;
+                    match chars[start] {
+                        '}' => bd += 1,
+                        '{' => bd -= 1,
+                        _ => {}
+                    }
+                }
+            }
+        }
+        return Some((start, end));
     }
 
     // If we hit a closing paren, find the matching open
@@ -1411,9 +1453,9 @@ fn convert_subscripts(input: &str) -> String {
     // Handle _\text{...} -> _{\text{...}} (subscripts with text blocks)
     result = wrap_text_subscripts(&result, "_");
 
-    // NOTE: Single character subscripts like x_i are left as-is (not wrapped in braces).
-    // KaTeX handles x_i correctly, and wrapping in braces like x_{i} causes issues
-    // with MDX which interprets {i} as a JavaScript expression.
+    // Wrap multi-character identifiers after _ in braces:
+    // n_min -> n_{min} (Typst treats "min" as one subscript token, LaTeX does not)
+    result = wrap_multichar_scripts(&result, "_");
 
     result
 }
@@ -1428,8 +1470,53 @@ fn convert_superscripts(input: &str) -> String {
     // Handle ^\text{...} -> ^{\text{...}} (superscripts with text blocks)
     result = wrap_text_subscripts(&result, "^");
 
-    // NOTE: Single character superscripts like x^2 are left as-is (not wrapped in braces).
-    // KaTeX handles x^2 correctly, and wrapping in braces causes issues with MDX.
+    // Wrap multi-character identifiers after ^ in braces
+    result = wrap_multichar_scripts(&result, "^");
+
+    result
+}
+
+/// Wrap multi-character alphabetic identifiers after _ or ^ in braces.
+/// In Typst math, `n_min` means n subscript "min", but in LaTeX it means n subscript "m" + "in".
+/// This converts `_abc` to `_{abc}` (only for 2+ letter sequences not already braced).
+fn wrap_multichar_scripts(input: &str, prefix: &str) -> String {
+    let mut result = String::new();
+    let chars: Vec<char> = input.chars().collect();
+    let prefix_chars: Vec<char> = prefix.chars().collect();
+    let mut i = 0;
+
+    while i < chars.len() {
+        // Check for prefix character
+        if chars[i..].starts_with(&prefix_chars) {
+            let after = i + prefix_chars.len();
+            // Skip if already braced or parenthesized or followed by backslash (LaTeX command)
+            if after < chars.len() && (chars[after] == '{' || chars[after] == '(' || chars[after] == '\\') {
+                result.push(chars[i]);
+                i += 1;
+                continue;
+            }
+            // Count consecutive alphabetic chars
+            let ident_start = after;
+            let mut j = after;
+            while j < chars.len() && chars[j].is_ascii_alphabetic() {
+                j += 1;
+            }
+            let ident_len = j - ident_start;
+            if ident_len >= 2 {
+                result.extend(prefix_chars.iter());
+                result.push('{');
+                result.extend(chars[ident_start..j].iter());
+                result.push('}');
+                i = j;
+            } else {
+                result.push(chars[i]);
+                i += 1;
+            }
+        } else {
+            result.push(chars[i]);
+            i += 1;
+        }
+    }
 
     result
 }
@@ -2336,7 +2423,7 @@ mod tests {
         eprintln!("Result: {result}");
         // The entire (1 - U)^{2} should be in the denominator
         assert!(
-            result.contains("\\frac{x_min}{(1 - U)^{2}}"),
+            result.contains("\\frac{x_{min}}{(1 - U)^{2}}"),
             "Superscript should be part of denominator: {result}"
         );
     }
@@ -2350,7 +2437,7 @@ mod tests {
         // The denominator should include the entire (1-U)^{...} expression
         // Note: alpha gets converted to \alpha by Greek letter conversion
         assert!(
-            result.contains("\\frac{x_min}{(1 - U)^{\\frac{1}{\\alpha}}}"),
+            result.contains("\\frac{x_{min}}{(1 - U)^{\\frac{1}{\\alpha}}}"),
             "Exponent with fraction should be part of denominator: {result}"
         );
     }
@@ -2529,5 +2616,23 @@ mod tests {
         assert_eq!(typst_to_latex("sigma + tau", &defs), "\\sigma + \\tau");
         assert_eq!(typst_to_latex("(sigma)", &defs), "(\\sigma)");
         assert_eq!(typst_to_latex("sigma,tau", &defs), "\\sigma,\\tau");
+    }
+
+    #[test]
+    fn convert_chained_explicit_fractions() {
+        // From additive.typ: (sqrt(2) dot cmad dot pstddev\/sqrt(n))\/(z_(0.75) dot pstddev)
+        // The first \/ expands to \frac{B}{\sqrt{n}}, making result longer
+        // than the original chars span. The second \/ must still work correctly.
+        let mut defs = HashMap::new();
+        defs.insert("cmad".to_string(), "c_{\\mathrm{mad}}".to_string());
+        defs.insert("pstddev".to_string(), "\\mathrm{stdDev}".to_string());
+        let input =
+            "(sqrt(2) dot z_(0.75) dot cmad dot pstddev\\/sqrt(n))\\/(z_(0.75) dot pstddev)";
+        let result = typst_to_latex(input, &defs);
+        eprintln!("chained explicit fractions: {result}");
+        assert!(
+            !result.contains("\\sqrt{2\\frac"),
+            "sqrt brace must close before frac: {result}"
+        );
     }
 }

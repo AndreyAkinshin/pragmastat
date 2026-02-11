@@ -33,5 +33,6 @@ ShiftBoundsTestCases.Generate();
 RatioBoundsTestCases.Generate();
 SignedRankMarginTestCases.Generate();
 CenterBoundsTestCases.Generate();
+SpreadBoundsTestCases.Generate();
 AnsiConsole.MarkupLine("");
 AnsiConsole.Write(new Rule("[bold green]Generation Completed Successfully![/]").RuleStyle("green"));

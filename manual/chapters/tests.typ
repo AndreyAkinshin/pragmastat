@@ -24,4 +24,6 @@
 
 #include "../tests/center-bounds-tests.typ"
 
+#include "../tests/spread-bounds-tests.typ"
+
 #include "../tests/_framework.typ"

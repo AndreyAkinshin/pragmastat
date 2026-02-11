@@ -74,8 +74,13 @@ fn estimate_asymptotic_spread(entry: &DistributionEntry) -> f64 {
     const SAMPLING_SIZE: usize = 10_000_000;
     let dist = entry.create();
     let mut rng = Rng::from_string("asymptotic-spread");
-    let values = dist.samples(&mut rng, SAMPLING_SIZE);
-    crate::estimators::median(&values)
+    let mut diffs = Vec::with_capacity(SAMPLING_SIZE);
+    for _ in 0..SAMPLING_SIZE {
+        let a = dist.sample(&mut rng);
+        let b = dist.sample(&mut rng);
+        diffs.push((a - b).abs());
+    }
+    crate::estimators::median(&diffs)
 }
 
 /// Returns true if the distribution is always positive (for ratio-bounds).

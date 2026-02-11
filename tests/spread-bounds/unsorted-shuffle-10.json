@@ -1,0 +1,22 @@
+{
+  "input": {
+    "x": [
+      5,
+      8,
+      2,
+      10,
+      3,
+      7,
+      1,
+      9,
+      4,
+      6
+    ],
+    "misrate": 0.2,
+    "seed": "spread-bounds-tests"
+  },
+  "output": {
+    "lower": 3,
+    "upper": 6
+  }
+}

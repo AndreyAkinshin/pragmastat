@@ -7,11 +7,13 @@ from .fast_spread import _fast_spread
 from .fast_shift import _fast_shift
 from .pairwise_margin import pairwise_margin
 from .signed_rank_margin import signed_rank_margin
+from .sign_margin import sign_margin_randomized
 from .min_misrate import (
     min_achievable_misrate_one_sample,
     min_achievable_misrate_two_sample,
 )
 from ._fast_center_quantiles import fast_center_quantile_bounds
+from .rng import Rng
 from .assumptions import (
     check_validity,
     check_positivity,
@@ -444,3 +446,57 @@ def center_bounds(
 
     lo, hi = fast_center_quantile_bounds(sorted_x, k_left, k_right)
     return Bounds(lo, hi)
+
+
+def spread_bounds(
+    x: Union[Sequence[float], NDArray],
+    misrate: float = DEFAULT_MISRATE,
+    seed: Union[str, None] = None,
+) -> Bounds:
+    """
+    Provides distribution-free bounds for Spread using disjoint pairs with sign-test inversion.
+
+    Args:
+        x: Input sample.
+        misrate: Misclassification rate (probability that true spread falls outside bounds).
+        seed: Optional string seed for deterministic randomization.
+
+    Returns:
+        A Bounds object containing the lower and upper bounds.
+
+    Raises:
+        AssumptionError: If sample is empty or contains NaN/Inf.
+        AssumptionError: If misrate is out of range or below minimum achievable.
+        AssumptionError: If sample is tie-dominant.
+    """
+    x = np.asarray(x)
+    check_validity(x, "x")
+
+    if math.isnan(misrate) or misrate < 0 or misrate > 1:
+        raise AssumptionError.domain("misrate")
+
+    n = len(x)
+    m = n // 2
+    min_misrate_val = min_achievable_misrate_one_sample(m)
+    if misrate < min_misrate_val:
+        raise AssumptionError.domain("misrate")
+
+    check_sparity(x, "x")
+
+    rng = Rng(seed) if seed is not None else Rng()
+    margin = sign_margin_randomized(m, misrate, rng)
+    half_margin = margin // 2
+    max_half_margin = (m - 1) // 2
+    if half_margin > max_half_margin:
+        half_margin = max_half_margin
+
+    k_left = half_margin + 1
+    k_right = m - half_margin
+
+    indices = list(range(n))
+    shuffled = rng.shuffle(indices)
+    diffs = sorted(
+        abs(float(x[shuffled[2 * i]]) - float(x[shuffled[2 * i + 1]])) for i in range(m)
+    )
+
+    return Bounds(diffs[k_left - 1], diffs[k_right - 1])

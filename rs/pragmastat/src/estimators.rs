@@ -404,3 +404,89 @@ pub fn center_bounds(x: &[f64], misrate: f64) -> Result<Bounds, EstimatorError> 
         upper: hi,
     })
 }
+
+/// Provides distribution-free bounds for spread using disjoint pairs with sign-test inversion.
+///
+/// Uses a value-independent disjoint pairing and randomizes the sign-test cutoff
+/// between adjacent ranks to match the requested misrate.
+/// Requires misrate >= 2^(1 - floor(n/2)).
+///
+/// # Arguments
+///
+/// * `x` - Sample slice
+/// * `misrate` - Misclassification rate (probability that true spread falls outside bounds)
+///
+/// # Assumptions
+///
+/// - `sparity(x)` - sample must be non tie-dominant (spread > 0)
+///
+/// # Returns
+///
+/// A `Bounds` struct containing the lower and upper bounds, or an error if inputs are invalid.
+pub fn spread_bounds(x: &[f64], misrate: f64) -> Result<Bounds, EstimatorError> {
+    let mut rng = crate::rng::Rng::new();
+    spread_bounds_with_rng(x, misrate, &mut rng)
+}
+
+/// Provides distribution-free bounds for spread with a deterministic seed.
+///
+/// Same as `spread_bounds` but uses a string seed for reproducible randomization.
+pub fn spread_bounds_with_seed(
+    x: &[f64],
+    misrate: f64,
+    seed: &str,
+) -> Result<Bounds, EstimatorError> {
+    let mut rng = crate::rng::Rng::from_string(seed);
+    spread_bounds_with_rng(x, misrate, &mut rng)
+}
+
+fn spread_bounds_with_rng(
+    x: &[f64],
+    misrate: f64,
+    rng: &mut crate::rng::Rng,
+) -> Result<Bounds, EstimatorError> {
+    check_validity(x, Subject::X)?;
+
+    if misrate.is_nan() || !(0.0..=1.0).contains(&misrate) {
+        return Err(EstimatorError::from(AssumptionError::domain(
+            Subject::Misrate,
+        )));
+    }
+
+    let n = x.len();
+    let m = n / 2;
+    let min_misrate = crate::min_misrate::min_achievable_misrate_one_sample(m)?;
+    if misrate < min_misrate {
+        return Err(EstimatorError::from(AssumptionError::domain(
+            Subject::Misrate,
+        )));
+    }
+
+    check_sparity(x, Subject::X)?;
+
+    let margin = crate::sign_margin::sign_margin_randomized(m, misrate, rng)
+        .map_err(EstimatorError::from)?;
+    let mut half_margin = margin / 2;
+    let max_half_margin = (m - 1) / 2;
+    if half_margin > max_half_margin {
+        half_margin = max_half_margin;
+    }
+
+    let k_left = half_margin + 1;
+    let k_right = m - half_margin;
+
+    let indices: Vec<usize> = (0..n).collect();
+    let shuffled = rng.shuffle(&indices);
+    let mut diffs = Vec::with_capacity(m);
+    for i in 0..m {
+        let a = shuffled[2 * i];
+        let b = shuffled[2 * i + 1];
+        diffs.push((x[a] - x[b]).abs());
+    }
+    diffs.sort_by(|a, b| a.total_cmp(b));
+
+    let lower = diffs[k_left - 1];
+    let upper = diffs[k_right - 1];
+
+    Ok(Bounds { lower, upper })
+}

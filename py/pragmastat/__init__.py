@@ -16,6 +16,7 @@ from .estimators import (
     shift_bounds,
     ratio_bounds,
     center_bounds,
+    spread_bounds,
     Bounds,
 )
 from .rng import Rng
@@ -46,6 +47,7 @@ __all__ = [
     "shift_bounds",
     "ratio_bounds",
     "center_bounds",
+    "spread_bounds",
     "Bounds",
     # Random
     "Rng",

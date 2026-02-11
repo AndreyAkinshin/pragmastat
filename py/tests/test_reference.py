@@ -12,6 +12,7 @@ from pragmastat import (
     shift_bounds,
     ratio_bounds,
     center_bounds,
+    spread_bounds,
     Rng,
     Uniform,
     Additive,
@@ -594,6 +595,46 @@ class TestReference:
             expected_upper = test_case["output"]["upper"]
 
             result = center_bounds(input_x, misrate)
+
+            assert abs(result.lower - expected_lower) < 1e-9, (
+                f"Failed lower bound for test file: {json_file.name}, expected: {expected_lower}, got: {result.lower}"
+            )
+            assert abs(result.upper - expected_upper) < 1e-9, (
+                f"Failed upper bound for test file: {json_file.name}, expected: {expected_upper}, got: {result.upper}"
+            )
+
+    def test_spread_bounds_reference(self):
+        """Test spread_bounds against reference data."""
+        repo_root = find_repo_root()
+        test_data_dir = repo_root / "tests" / "spread-bounds"
+
+        json_files = list(test_data_dir.glob("*.json"))
+        assert len(json_files) > 0, f"No JSON test files found in {test_data_dir}"
+
+        for json_file in json_files:
+            with open(json_file, "r") as f:
+                test_case = json.load(f)
+
+            input_x = test_case["input"]["x"]
+            misrate = test_case["input"]["misrate"]
+            seed = test_case["input"].get("seed")
+
+            # Handle error test cases
+            if "expected_error" in test_case:
+                with pytest.raises(AssumptionError) as exc_info:
+                    spread_bounds(input_x, misrate, seed=seed)
+                assert (
+                    exc_info.value.violation.id.value
+                    == test_case["expected_error"]["id"]
+                ), (
+                    f"Expected error id {test_case['expected_error']['id']}, got {exc_info.value.violation.id.value}"
+                )
+                continue
+
+            expected_lower = test_case["output"]["lower"]
+            expected_upper = test_case["output"]["upper"]
+
+            result = spread_bounds(input_x, misrate, seed=seed)
 
             assert abs(result.lower - expected_lower) < 1e-9, (
                 f"Failed lower bound for test file: {json_file.name}, expected: {expected_lower}, got: {result.lower}"

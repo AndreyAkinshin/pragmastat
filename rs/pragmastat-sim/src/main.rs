@@ -16,6 +16,7 @@ use sim::center_bounds::CenterBoundsSim;
 use sim::disp_drift::DispDriftSim;
 use sim::ratio_bounds::RatioBoundsSim;
 use sim::shift_bounds::ShiftBoundsSim;
+use sim::spread_bounds::SpreadBoundsSim;
 
 fn parse_names(input: &str) -> Vec<String> {
     input
@@ -71,6 +72,14 @@ fn main() {
             let sizes = parse_sample_sizes(&args.sample_sizes);
             let seed = args.seed.unwrap_or_else(|| "ratio-bounds".to_string());
             let sim = RatioBoundsSim::new(dists, args.sample_count, &args.misrates, seed);
+            runner::run(&sim, &sizes, args.parallelism, args.overwrite, args.publish);
+        }
+        Command::SpreadBounds(args) => {
+            let dist_names = parse_names(&args.distributions);
+            let dists = find_distributions(&dist_names);
+            let sizes = parse_sample_sizes(&args.sample_sizes);
+            let seed = args.seed.unwrap_or_else(|| "spread-bounds".to_string());
+            let sim = SpreadBoundsSim::new(dists, args.sample_count, &args.misrates, seed);
             runner::run(&sim, &sizes, args.parallelism, args.overwrite, args.publish);
         }
     }

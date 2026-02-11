@@ -11,6 +11,7 @@ import {
   shiftBounds,
   ratioBounds,
   centerBounds,
+  spreadBounds,
 } from '../src/estimators';
 import { signedRankMargin } from '../src/signedRankMargin';
 import { AssumptionError } from '../src/assumptions';
@@ -643,6 +644,46 @@ describe('Reference Tests', () => {
           }
 
           const result = centerBounds(data.input.x, data.input.misrate);
+          expect(result.lower).toBeCloseTo(data.output.lower, 9);
+          expect(result.upper).toBeCloseTo(data.output.upper, 9);
+        });
+      });
+    }
+  });
+
+  // SpreadBounds tests
+  describe('spread-bounds', () => {
+    const dirPath = path.join(testDataPath, 'spread-bounds');
+    if (fs.existsSync(dirPath)) {
+      const testFiles = fs
+        .readdirSync(dirPath)
+        .filter((f) => f.endsWith('.json'))
+        .sort();
+
+      testFiles.forEach((fileName) => {
+        const filePath = path.join(dirPath, fileName);
+        const testName = fileName.replace('.json', '');
+
+        it(`should pass ${testName}`, () => {
+          const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+
+          if (data.expected_error) {
+            let thrownError: AssumptionError | null = null;
+            try {
+              spreadBounds(data.input.x, data.input.misrate, data.input.seed);
+            } catch (e) {
+              if (e instanceof AssumptionError) {
+                thrownError = e;
+              } else {
+                throw e;
+              }
+            }
+            expect(thrownError).not.toBeNull();
+            expect(thrownError!.violation.id).toBe(data.expected_error.id);
+            return;
+          }
+
+          const result = spreadBounds(data.input.x, data.input.misrate, data.input.seed);
           expect(result.lower).toBeCloseTo(data.output.lower, 9);
           expect(result.upper).toBeCloseTo(data.output.upper, 9);
         });

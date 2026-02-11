@@ -411,3 +411,77 @@ func CenterBounds[T Number](x []T, misrate ...float64) (Bounds, error) {
 	lo, hi := fastCenterQuantileBounds(sorted, kLeft, kRight)
 	return Bounds{Lower: lo, Upper: hi}, nil
 }
+
+// SpreadBounds provides distribution-free bounds for Spread using disjoint pairs.
+func SpreadBounds[T Number](x []T, misrate ...float64) (Bounds, error) {
+	mr := DefaultMisrate
+	if len(misrate) > 0 {
+		mr = misrate[0]
+	}
+	rng := NewRng()
+	return spreadBoundsWithRng(x, mr, rng)
+}
+
+// SpreadBoundsWithSeed provides deterministic SpreadBounds using a string seed.
+func SpreadBoundsWithSeed[T Number](x []T, misrate float64, seed string) (Bounds, error) {
+	rng := NewRngFromString(seed)
+	return spreadBoundsWithRng(x, misrate, rng)
+}
+
+func spreadBoundsWithRng[T Number](x []T, misrate float64, rng *Rng) (Bounds, error) {
+	// Check validity (priority 0)
+	if err := checkValidity(x, SubjectX); err != nil {
+		return Bounds{}, err
+	}
+
+	// Check misrate domain
+	if math.IsNaN(misrate) || misrate < 0 || misrate > 1 {
+		return Bounds{}, NewDomainError(SubjectMisrate)
+	}
+
+	n := len(x)
+	m := n / 2
+
+	minMisrate, err := minAchievableMisrateOneSample(m)
+	if err != nil {
+		return Bounds{}, err
+	}
+	if misrate < minMisrate {
+		return Bounds{}, NewDomainError(SubjectMisrate)
+	}
+
+	// Check sparity (priority 2)
+	if err := checkSparity(x, SubjectX); err != nil {
+		return Bounds{}, err
+	}
+
+	margin, err := signMarginRandomized(m, misrate, rng)
+	if err != nil {
+		return Bounds{}, err
+	}
+
+	halfMargin := margin / 2
+	maxHalfMargin := (m - 1) / 2
+	if halfMargin > maxHalfMargin {
+		halfMargin = maxHalfMargin
+	}
+
+	kLeft := halfMargin + 1
+	kRight := m - halfMargin
+
+	// Create index array and shuffle
+	indices := make([]int, n)
+	for i := range indices {
+		indices[i] = i
+	}
+	shuffled := Shuffle(rng, indices)
+
+	// Compute pairwise absolute differences
+	diffs := make([]float64, m)
+	for i := 0; i < m; i++ {
+		diffs[i] = math.Abs(float64(x[shuffled[2*i]]) - float64(x[shuffled[2*i+1]]))
+	}
+	sort.Float64s(diffs)
+
+	return Bounds{Lower: diffs[kLeft-1], Upper: diffs[kRight-1]}, nil
+}

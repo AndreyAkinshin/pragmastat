@@ -18,6 +18,9 @@ This chapter provides formal definitions and properties of each toolkit function
 #include "../toolkit/spread.typ"
 
 #pagebreak()
+#include "../toolkit/spread-bounds.typ"
+
+#pagebreak()
 #include "../toolkit/rel-spread.typ"
 
 #pagebreak()
@@ -58,6 +61,9 @@ This chapter provides formal definitions and properties of each toolkit function
 == Auxiliary
 
 #include "../toolkit/median.typ"
+
+#pagebreak()
+#include "../toolkit/sign-margin.typ"
 
 #pagebreak()
 #include "../toolkit/pairwise-margin.typ"

@@ -783,6 +783,14 @@ class ReferenceTest {
         @JsonProperty("expected_error") val expectedError: Map<String, String>? = null
     )
 
+    data class SpreadBoundsInput(val x: List<Double>, val misrate: Double, val seed: String)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    data class SpreadBoundsTestData(
+        val input: SpreadBoundsInput,
+        val output: BoundsOutput? = null,
+        @JsonProperty("expected_error") val expectedError: Map<String, String>? = null
+    )
+
     @TestFactory
     fun testSignedRankMargin(): List<DynamicTest> {
         val tests = mutableListOf<DynamicTest>()
@@ -847,6 +855,42 @@ class ReferenceTest {
                 val result = centerBounds(
                     testData.input.x,
                     testData.input.misrate
+                )
+                assertClose(testData.output!!.lower, result.lower)
+                assertClose(testData.output!!.upper, result.upper)
+            })
+        }
+
+        return tests
+    }
+
+    @TestFactory
+    fun testSpreadBounds(): List<DynamicTest> {
+        val tests = mutableListOf<DynamicTest>()
+        val testDir = File("../tests/spread-bounds")
+
+        if (!testDir.exists() || !testDir.isDirectory) {
+            Assumptions.assumeTrue(false, "Skipping spread-bounds tests: directory not found")
+            return tests
+        }
+
+        testDir.listFiles { _, name -> name.endsWith(".json") }?.forEach { file ->
+            val testName = "spread-bounds/${file.nameWithoutExtension}"
+            tests.add(DynamicTest.dynamicTest(testName) {
+                val testData = mapper.readValue<SpreadBoundsTestData>(file)
+
+                if (testData.expectedError != null) {
+                    val exception = assertThrows<AssumptionException> {
+                        spreadBounds(testData.input.x, testData.input.misrate, testData.input.seed)
+                    }
+                    assertEquals(testData.expectedError["id"], exception.violation.id.id)
+                    return@dynamicTest
+                }
+
+                val result = spreadBounds(
+                    testData.input.x,
+                    testData.input.misrate,
+                    testData.input.seed
                 )
                 assertClose(testData.output!!.lower, result.lower)
                 assertClose(testData.output!!.upper, result.upper)

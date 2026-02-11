@@ -9,6 +9,7 @@ pub struct BoundsRow {
     pub distribution: String,
     pub sample_size: usize,
     pub requested_misrate: f64,
+    pub sample_count: usize,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub observed_misrate: Option<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -48,7 +49,18 @@ pub fn min_achievable_misrate_two_sample(n: usize, m: usize) -> f64 {
     2.0 / binom
 }
 
-/// Parse misrate strings like "1e-1,5e-2,1e-2,5e-3,1e-3".
+/// Minimum achievable misrate for spread-bounds (sign-test on disjoint pairs): 2^(1 - floor(n/2)).
+pub fn min_achievable_misrate_spread(n: usize) -> f64 {
+    let m = n / 2;
+    2.0_f64.powf(1.0 - m as f64)
+}
+
+/// Resolve sample count: use explicit value or default to max(1_000_000, 100/misrate).
+pub fn resolve_sample_count(explicit: Option<usize>, misrate: f64) -> usize {
+    explicit.unwrap_or_else(|| ((100.0 / misrate) as usize).max(1_000_000))
+}
+
+/// Parse misrate strings like "1e-2,1e-3,1e-6".
 pub fn parse_misrates(input: &str) -> Vec<f64> {
     input
         .split(',')
@@ -82,40 +94,39 @@ pub fn round_bounds_row(row: BoundsRow, digits: u32) -> BoundsRow {
 
 /// Format a BoundsRow for console output with colors.
 pub fn format_bounds_row(row: &BoundsRow) -> String {
-    let dist_padded = format!("{:<9}", row.distribution);
-    let n_padded = format!("N={:<3}", row.sample_size);
-    let requested = format!("{:.4}", row.requested_misrate);
-
-    let req_padded = format!("{requested:<8}");
+    let dist = format!("{:<9}", row.distribution);
+    let n = format!("N={:<3}", row.sample_size);
+    let req = format!("{:e}", row.requested_misrate);
+    let digits = (row.sample_count as f64).log10().floor() as usize;
 
     if row.error.is_some() {
         let err_msg = row.error.as_deref().unwrap_or("unknown");
-        let err_text = format!("Error: {err_msg}");
         return format!(
-            "{}  {}   {} {}  {}",
-            style(&dist_padded).yellow().bold(),
-            style(&n_padded).yellow(),
+            "{}  {} {} {} {} Error: {}",
+            style(&dist).yellow().bold(),
+            style(&n).yellow(),
             style("Req:").cyan(),
-            req_padded,
-            style(err_text).red(),
+            req,
+            style("").cyan(),
+            style(err_msg).red(),
         );
     }
 
     let observed = row.observed_misrate.unwrap_or(0.0);
-    let obs_padded = format!("{observed:<8.4}");
+    let obs = format!("{observed:<10.*}", digits);
     let ratio = if row.requested_misrate > 0.0 {
         observed / row.requested_misrate
     } else {
         0.0
     };
     format!(
-        "{}  {}   {} {}  {} {}  {} {ratio:.2}",
-        style(&dist_padded).green().bold(),
-        style(&n_padded).green(),
+        "{}  {} {} {} {} {} {} {ratio:.2}",
+        style(&dist).green().bold(),
+        style(&n).green(),
         style("Req:").cyan(),
-        req_padded,
+        req,
         style("Obs:").cyan(),
-        obs_padded,
+        obs,
         style("Ratio:").cyan(),
     )
 }

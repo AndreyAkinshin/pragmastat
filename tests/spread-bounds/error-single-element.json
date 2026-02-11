@@ -1,0 +1,13 @@
+{
+  "input": {
+    "x": [
+      1
+    ],
+    "misrate": 0.5,
+    "seed": "spread-bounds-tests"
+  },
+  "expected_error": {
+    "id": "domain"
+  },
+  "comment": "SpreadBounds requires at least 2 elements to form pairs; m=floor(1/2)=0 violates domain"
+}

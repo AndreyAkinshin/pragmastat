@@ -1,0 +1,17 @@
+{
+  "input": {
+    "x": [
+      1,
+      10,
+      100,
+      1000,
+      10000
+    ],
+    "misrate": 0.8,
+    "seed": "spread-bounds-tests"
+  },
+  "output": {
+    "lower": 90,
+    "upper": 999
+  }
+}

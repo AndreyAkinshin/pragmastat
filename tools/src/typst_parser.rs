@@ -1249,6 +1249,21 @@ fn parse_table_call(call: ast::FuncCall) -> (Vec<Vec<TypstEvent>>, Vec<Vec<Vec<T
                     columns = col_count;
                 }
             }
+            ast::Arg::Pos(ast::Expr::FuncCall(header_call)) => {
+                // Handle table.header[...][...] — extract content blocks as header cells
+                let is_header = matches!(header_call.callee(), ast::Expr::FieldAccess(fa)
+                    if fa.field().to_untyped().text() == "header");
+                if is_header {
+                    for header_arg in header_call.args().items() {
+                        if let ast::Arg::Pos(ast::Expr::Content(content)) = header_arg {
+                            let mut cell_events = Vec::new();
+                            parse_node(content.body().to_untyped(), &mut cell_events, 0);
+                            headers.push(cell_events);
+                        }
+                    }
+                    is_first_row = false;
+                }
+            }
             ast::Arg::Pos(ast::Expr::Content(content)) => {
                 // Parse cell content
                 let mut cell_events = Vec::new();

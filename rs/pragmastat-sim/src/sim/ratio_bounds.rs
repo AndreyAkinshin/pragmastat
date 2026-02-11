@@ -1,6 +1,6 @@
 use super::bounds::{
-    format_bounds_row, min_achievable_misrate_two_sample, parse_misrates, round_bounds_row,
-    BoundsInput, BoundsRow,
+    format_bounds_row, min_achievable_misrate_two_sample, parse_misrates, resolve_sample_count,
+    round_bounds_row, BoundsInput, BoundsRow,
 };
 use super::{SimError, Simulation};
 use crate::distributions::{self, DistributionEntry};
@@ -9,7 +9,7 @@ use std::collections::BTreeMap;
 
 pub struct RatioBoundsSim {
     distributions: Vec<&'static DistributionEntry>,
-    sample_count: usize,
+    sample_count: Option<usize>,
     misrates: Vec<f64>,
     base_seed: String,
 }
@@ -17,7 +17,7 @@ pub struct RatioBoundsSim {
 impl RatioBoundsSim {
     pub fn new(
         distributions: Vec<&'static DistributionEntry>,
-        sample_count: usize,
+        sample_count: Option<usize>,
         misrates_str: &str,
         base_seed: String,
     ) -> Self {
@@ -66,7 +66,7 @@ impl Simulation for RatioBoundsSim {
                     }
                     inputs.push(BoundsInput {
                         distribution_name: dist.name.to_string(),
-                        sample_count: self.sample_count,
+                        sample_count: resolve_sample_count(self.sample_count, misrate),
                         sample_size: n,
                         misrate,
                         base_seed: self.base_seed.clone(),
@@ -119,6 +119,7 @@ impl Simulation for RatioBoundsSim {
             distribution: input.distribution_name.clone(),
             sample_size: input.sample_size,
             requested_misrate: input.misrate,
+            sample_count: input.sample_count,
             observed_misrate: Some(observed),
             error: None,
         })
@@ -129,6 +130,7 @@ impl Simulation for RatioBoundsSim {
             distribution: input.distribution_name.clone(),
             sample_size: input.sample_size,
             requested_misrate: input.misrate,
+            sample_count: input.sample_count,
             observed_misrate: None,
             error: Some(error.to_string()),
         }

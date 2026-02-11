@@ -310,3 +310,47 @@ fun centerBounds(x: List<Double>, misrate: Double = DEFAULT_MISRATE): Bounds {
     return Bounds(lo, hi)
 }
 
+/**
+ * Provides distribution-free bounds on the Spread estimator using
+ * disjoint pairs with sign-test inversion.
+ *
+ * @param x Sample data
+ * @param misrate Misclassification rate (probability that true spread falls outside bounds)
+ * @param seed Optional string seed for deterministic randomization
+ * @return A Bounds object containing the lower and upper bounds
+ */
+fun spreadBounds(x: List<Double>, misrate: Double = DEFAULT_MISRATE, seed: String? = null): Bounds {
+    checkValidity(x, Subject.X)
+
+    if (misrate.isNaN() || misrate < 0.0 || misrate > 1.0) {
+        throw AssumptionException(Violation(AssumptionId.DOMAIN, Subject.MISRATE))
+    }
+
+    val n = x.size
+    val m = n / 2
+    val minMisrate = minAchievableMisrateOneSample(m)
+    if (misrate < minMisrate) {
+        throw AssumptionException(Violation(AssumptionId.DOMAIN, Subject.MISRATE))
+    }
+
+    checkSparity(x, Subject.X)
+
+    val rng = if (seed != null) Rng(seed) else Rng()
+    val margin = signMarginRandomized(m, misrate, rng)
+    var halfMargin = margin / 2
+    val maxHalfMargin = (m - 1) / 2
+    if (halfMargin > maxHalfMargin) halfMargin = maxHalfMargin
+    val kLeft = halfMargin + 1
+    val kRight = m - halfMargin
+
+    val indices = (0 until n).toList()
+    val shuffled = rng.shuffle(indices)
+    val diffs = DoubleArray(m) { i ->
+        val a = shuffled[2 * i]; val b = shuffled[2 * i + 1]
+        abs(x[a] - x[b])
+    }
+    diffs.sort()
+
+    return Bounds(diffs[kLeft - 1], diffs[kRight - 1])
+}
+

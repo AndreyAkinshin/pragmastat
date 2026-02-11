@@ -20,6 +20,7 @@ export {
   shiftBounds,
   ratioBounds,
   centerBounds,
+  spreadBounds,
   type Bounds,
 } from './estimators';
 

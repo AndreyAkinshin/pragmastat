@@ -74,6 +74,8 @@
 #let ShiftBounds = math.op("ShiftBounds")
 #let RatioBounds = math.op("RatioBounds")
 #let CenterBounds = math.op("CenterBounds")
+#let SpreadBounds = math.op("SpreadBounds")
+#let SignMargin = math.op("SignMargin")
 #let SignedRankMargin = math.op("SignedRankMargin")
 #let Dominance = math.op("Dominance")
 
@@ -114,6 +116,7 @@
 #let vy = math.bold("y")
 #let vz = math.bold("z")
 #let vw = math.bold("w")
+#let vd = math.bold("d")
 
 // ==========================================================================
 // Drift and Efficiency
