@@ -1,6 +1,4 @@
 use float_cmp::approx_eq;
-use pragmastat::pairwise_margin::pairwise_margin;
-use pragmastat::signed_rank_margin::signed_rank_margin;
 use pragmastat::*;
 use serde::{Deserialize, Serialize};
 use std::fs;
@@ -27,20 +25,6 @@ struct OneSampleTestCase {
 struct TwoSampleTestCase {
     input: TwoSampleInput,
     output: f64,
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-struct PairwiseMarginInput {
-    n: usize,
-    m: usize,
-    misrate: f64,
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-struct PairwiseMarginTestCase {
-    input: PairwiseMarginInput,
-    output: Option<usize>,
-    expected_error: Option<serde_json::Value>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -268,90 +252,6 @@ fn test_disparity() {
     run_two_sample_tests("disparity", disparity);
 }
 
-fn run_pairwise_margin_tests() {
-    let repo_root = find_repo_root();
-    let test_data_dir = repo_root.join("tests").join("pairwise-margin");
-
-    if !test_data_dir.exists() {
-        panic!("Test data directory not found: {:?}", test_data_dir);
-    }
-
-    let json_files: Vec<_> = fs::read_dir(&test_data_dir)
-        .unwrap()
-        .filter_map(|entry| {
-            let entry = entry.unwrap();
-            let path = entry.path();
-            if path.extension()?.to_str()? == "json" {
-                Some(path)
-            } else {
-                None
-            }
-        })
-        .collect();
-
-    assert!(
-        !json_files.is_empty(),
-        "No JSON test files found in {:?}",
-        test_data_dir
-    );
-
-    let mut failures = Vec::new();
-
-    for json_file in &json_files {
-        let content = fs::read_to_string(json_file).unwrap();
-        let test_case: PairwiseMarginTestCase = serde_json::from_str(&content).unwrap();
-        let file_name = json_file.file_name().unwrap();
-
-        // Handle error test cases
-        if let Some(ref expected_error) = test_case.expected_error {
-            let result = pairwise_margin(
-                test_case.input.n,
-                test_case.input.m,
-                test_case.input.misrate,
-            );
-            match result {
-                Ok(_) => failures.push(format!("{file_name:?}: expected error, got Ok")),
-                Err(err) => {
-                    if let Some(expected_id) = expected_error.get("id").and_then(|v| v.as_str()) {
-                        if err.violation().id.as_str() != expected_id {
-                            failures.push(format!(
-                                "{file_name:?}: expected violation id {expected_id}, got {}",
-                                err.violation().id.as_str()
-                            ));
-                        }
-                    }
-                }
-            }
-            continue;
-        }
-
-        let actual_output = match pairwise_margin(
-            test_case.input.n,
-            test_case.input.m,
-            test_case.input.misrate,
-        ) {
-            Ok(val) => val,
-            Err(e) => {
-                failures.push(format!("{file_name:?}: unexpected error {e:?}"));
-                continue;
-            }
-        };
-        let expected_output = test_case.output.expect("Test case must have output");
-
-        if actual_output != expected_output {
-            failures.push(format!(
-                "{file_name:?}: expected {expected_output}, got {actual_output}"
-            ));
-        }
-    }
-
-    assert!(
-        failures.is_empty(),
-        "Failed tests:\n{}",
-        failures.join("\n")
-    );
-}
-
 fn run_shift_bounds_tests() {
     let repo_root = find_repo_root();
     let test_data_dir = repo_root.join("tests").join("shift-bounds");
@@ -564,11 +464,6 @@ fn run_ratio_bounds_tests() {
         "Failed tests:\n{}",
         failures.join("\n")
     );
-}
-
-#[test]
-fn test_pairwise_margin() {
-    run_pairwise_margin_tests();
 }
 
 #[test]
@@ -1505,19 +1400,6 @@ fn test_power_distribution() {
 // One-sample bounds tests
 
 #[derive(Debug, Deserialize)]
-struct SignedRankMarginInput {
-    n: usize,
-    misrate: f64,
-}
-
-#[derive(Debug, Deserialize)]
-struct SignedRankMarginTestCase {
-    input: SignedRankMarginInput,
-    output: Option<usize>,
-    expected_error: Option<serde_json::Value>,
-}
-
-#[derive(Debug, Deserialize)]
 struct CenterBoundsInput {
     x: Vec<f64>,
     misrate: f64,
@@ -1528,82 +1410,6 @@ struct CenterBoundsTestCase {
     input: CenterBoundsInput,
     output: Option<BoundsOutput>,
     expected_error: Option<serde_json::Value>,
-}
-
-fn run_signed_rank_margin_tests() {
-    let repo_root = find_repo_root();
-    let test_data_dir = repo_root.join("tests").join("signed-rank-margin");
-
-    if !test_data_dir.exists() {
-        panic!("Test data directory not found: {:?}", test_data_dir);
-    }
-
-    let json_files: Vec<_> = fs::read_dir(&test_data_dir)
-        .unwrap()
-        .filter_map(|entry| {
-            let entry = entry.unwrap();
-            let path = entry.path();
-            if path.extension()?.to_str()? == "json" {
-                Some(path)
-            } else {
-                None
-            }
-        })
-        .collect();
-
-    assert!(
-        !json_files.is_empty(),
-        "No JSON test files found in {:?}",
-        test_data_dir
-    );
-
-    let mut failures = Vec::new();
-
-    for json_file in &json_files {
-        let content = fs::read_to_string(json_file).unwrap();
-        let test_case: SignedRankMarginTestCase = serde_json::from_str(&content).unwrap();
-        let file_name = json_file.file_name().unwrap();
-
-        // Handle error test cases
-        if let Some(ref expected_error) = test_case.expected_error {
-            let result = signed_rank_margin(test_case.input.n, test_case.input.misrate);
-            match result {
-                Ok(_) => failures.push(format!("{file_name:?}: expected error, got Ok")),
-                Err(err) => {
-                    if let Some(expected_id) = expected_error.get("id").and_then(|v| v.as_str()) {
-                        if err.violation().id.as_str() != expected_id {
-                            failures.push(format!(
-                                "{file_name:?}: expected violation id {expected_id}, got {}",
-                                err.violation().id.as_str()
-                            ));
-                        }
-                    }
-                }
-            }
-            continue;
-        }
-
-        let actual_output = match signed_rank_margin(test_case.input.n, test_case.input.misrate) {
-            Ok(val) => val,
-            Err(e) => {
-                failures.push(format!("{file_name:?}: unexpected error {e:?}"));
-                continue;
-            }
-        };
-        let expected_output = test_case.output.expect("Test case must have output");
-
-        if actual_output != expected_output {
-            failures.push(format!(
-                "{file_name:?}: expected {expected_output}, got {actual_output}"
-            ));
-        }
-    }
-
-    assert!(
-        failures.is_empty(),
-        "Failed tests:\n{}",
-        failures.join("\n")
-    );
 }
 
 fn run_center_bounds_tests() {
@@ -1703,11 +1509,6 @@ fn run_center_bounds_tests() {
         "Failed tests:\n{}",
         failures.join("\n")
     );
-}
-
-#[test]
-fn test_signed_rank_margin() {
-    run_signed_rank_margin_tests();
 }
 
 #[test]

@@ -11,9 +11,9 @@ pub mod distributions;
 pub mod estimators;
 pub(crate) mod gauss_cdf;
 pub(crate) mod min_misrate;
-pub mod pairwise_margin;
+pub(crate) mod pairwise_margin;
 pub mod rng;
-pub mod signed_rank_margin;
+pub(crate) mod signed_rank_margin;
 
 // Internal fast algorithm implementations
 mod fast_center;

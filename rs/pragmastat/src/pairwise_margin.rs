@@ -301,3 +301,173 @@ fn stirling_approx_log(x: f64) -> f64 {
 
     result
 }
+
+#[cfg(test)]
+mod tests {
+    use super::pairwise_margin;
+    use serde::Deserialize;
+    use std::fs;
+    use std::path::PathBuf;
+
+    #[derive(Debug, Deserialize)]
+    struct Input {
+        n: usize,
+        m: usize,
+        misrate: f64,
+    }
+
+    #[derive(Debug, Deserialize)]
+    struct TestCase {
+        input: Input,
+        output: Option<usize>,
+        expected_error: Option<serde_json::Value>,
+    }
+
+    fn repo_root() -> PathBuf {
+        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .parent()
+            .unwrap()
+            .parent()
+            .unwrap()
+            .to_path_buf()
+    }
+
+    #[test]
+    fn reference() {
+        let test_data_dir = repo_root().join("tests").join("pairwise-margin");
+        assert!(
+            test_data_dir.exists(),
+            "Test data directory not found: {test_data_dir:?}"
+        );
+
+        let json_files: Vec<_> = fs::read_dir(&test_data_dir)
+            .unwrap()
+            .filter_map(|entry| {
+                let path = entry.unwrap().path();
+                if path.extension()?.to_str()? == "json" {
+                    Some(path)
+                } else {
+                    None
+                }
+            })
+            .collect();
+
+        assert!(
+            !json_files.is_empty(),
+            "No JSON test files found in {test_data_dir:?}"
+        );
+
+        let mut failures = Vec::new();
+
+        for json_file in &json_files {
+            let content = fs::read_to_string(json_file).unwrap();
+            let test_case: TestCase = serde_json::from_str(&content).unwrap();
+            let file_name = json_file.file_name().unwrap();
+
+            if let Some(ref expected_error) = test_case.expected_error {
+                let result = pairwise_margin(
+                    test_case.input.n,
+                    test_case.input.m,
+                    test_case.input.misrate,
+                );
+                match result {
+                    Ok(_) => failures.push(format!("{file_name:?}: expected error, got Ok")),
+                    Err(err) => {
+                        if let Some(expected_id) = expected_error.get("id").and_then(|v| v.as_str())
+                        {
+                            if err.violation().id.as_str() != expected_id {
+                                failures.push(format!(
+                                    "{file_name:?}: expected violation id {expected_id}, got {}",
+                                    err.violation().id.as_str()
+                                ));
+                            }
+                        }
+                    }
+                }
+                continue;
+            }
+
+            let actual_output = match pairwise_margin(
+                test_case.input.n,
+                test_case.input.m,
+                test_case.input.misrate,
+            ) {
+                Ok(val) => val,
+                Err(e) => {
+                    failures.push(format!("{file_name:?}: unexpected error {e:?}"));
+                    continue;
+                }
+            };
+            let expected_output = test_case.output.expect("Test case must have output");
+
+            if actual_output != expected_output {
+                failures.push(format!(
+                    "{file_name:?}: expected {expected_output}, got {actual_output}"
+                ));
+            }
+        }
+
+        assert!(
+            failures.is_empty(),
+            "Failed tests:\n{}",
+            failures.join("\n")
+        );
+    }
+
+    use crate::assumptions::{AssumptionId, Subject};
+
+    #[test]
+    fn zero_n() {
+        let result = pairwise_margin(0, 10, 0.05);
+        assert!(result.is_err());
+        let v = result.unwrap_err().violation();
+        assert_eq!(v.id, AssumptionId::Domain);
+        assert_eq!(v.subject, Subject::X);
+    }
+
+    #[test]
+    fn zero_m() {
+        let result = pairwise_margin(10, 0, 0.05);
+        assert!(result.is_err());
+        let v = result.unwrap_err().violation();
+        assert_eq!(v.id, AssumptionId::Domain);
+        assert_eq!(v.subject, Subject::Y);
+    }
+
+    #[test]
+    fn negative_misrate() {
+        let result = pairwise_margin(10, 10, -0.1);
+        assert!(result.is_err());
+        let v = result.unwrap_err().violation();
+        assert_eq!(v.id, AssumptionId::Domain);
+        assert_eq!(v.subject, Subject::Misrate);
+    }
+
+    #[test]
+    fn misrate_greater_than_one() {
+        let result = pairwise_margin(10, 10, 1.5);
+        assert!(result.is_err());
+        let v = result.unwrap_err().violation();
+        assert_eq!(v.id, AssumptionId::Domain);
+        assert_eq!(v.subject, Subject::Misrate);
+    }
+
+    #[test]
+    fn nan_misrate() {
+        let result = pairwise_margin(10, 10, f64::NAN);
+        assert!(result.is_err());
+        let v = result.unwrap_err().violation();
+        assert_eq!(v.id, AssumptionId::Domain);
+        assert_eq!(v.subject, Subject::Misrate);
+    }
+
+    #[test]
+    fn misrate_below_min() {
+        // n=2, m=2: min_misrate = 2/C(4,2) = 1/3 ≈ 0.333
+        let result = pairwise_margin(2, 2, 0.05);
+        assert!(result.is_err());
+        let v = result.unwrap_err().violation();
+        assert_eq!(v.id, AssumptionId::Domain);
+        assert_eq!(v.subject, Subject::Misrate);
+    }
+}

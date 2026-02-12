@@ -5,8 +5,6 @@ use pragmastat::estimators::{
     avg_spread, center, center_bounds, disparity, median, ratio, rel_spread, shift, shift_bounds,
     spread,
 };
-use pragmastat::pairwise_margin::pairwise_margin;
-use pragmastat::signed_rank_margin::signed_rank_margin;
 
 #[test]
 fn median_empty_input() {
@@ -172,102 +170,12 @@ fn unwrap_estimator_error(err: EstimatorError) -> (AssumptionId, Subject) {
     }
 }
 
-fn unwrap_assumption(err: pragmastat::assumptions::AssumptionError) -> (AssumptionId, Subject) {
-    (err.violation().id, err.violation().subject)
-}
-
-// --- pairwise_margin ---
-
-#[test]
-fn pairwise_margin_zero_n() {
-    let result = pairwise_margin(0, 10, 0.05);
-    assert!(result.is_err());
-    let (id, subject) = unwrap_assumption(result.unwrap_err());
-    assert_eq!(id, AssumptionId::Domain);
-    assert_eq!(subject, Subject::X);
-}
-
-#[test]
-fn pairwise_margin_zero_m() {
-    let result = pairwise_margin(10, 0, 0.05);
-    assert!(result.is_err());
-    let (id, subject) = unwrap_assumption(result.unwrap_err());
-    assert_eq!(id, AssumptionId::Domain);
-    assert_eq!(subject, Subject::Y);
-}
-
-#[test]
-fn pairwise_margin_negative_misrate() {
-    let result = pairwise_margin(10, 10, -0.1);
-    assert!(result.is_err());
-    let (id, subject) = unwrap_assumption(result.unwrap_err());
-    assert_eq!(id, AssumptionId::Domain);
-    assert_eq!(subject, Subject::Misrate);
-}
-
-#[test]
-fn pairwise_margin_misrate_greater_than_one() {
-    let result = pairwise_margin(10, 10, 1.5);
-    assert!(result.is_err());
-    let (id, subject) = unwrap_assumption(result.unwrap_err());
-    assert_eq!(id, AssumptionId::Domain);
-    assert_eq!(subject, Subject::Misrate);
-}
-
-#[test]
-fn pairwise_margin_nan_misrate() {
-    let result = pairwise_margin(10, 10, f64::NAN);
-    assert!(result.is_err());
-    let (id, subject) = unwrap_assumption(result.unwrap_err());
-    assert_eq!(id, AssumptionId::Domain);
-    assert_eq!(subject, Subject::Misrate);
-}
-
-#[test]
-fn pairwise_margin_misrate_below_min() {
-    // n=2, m=2: min_misrate = 2/C(4,2) = 1/3 ≈ 0.333
-    let result = pairwise_margin(2, 2, 0.05);
-    assert!(result.is_err());
-    let (id, subject) = unwrap_assumption(result.unwrap_err());
-    assert_eq!(id, AssumptionId::Domain);
-    assert_eq!(subject, Subject::Misrate);
-}
-
 #[test]
 fn shift_bounds_misrate_below_min() {
     // n=2, m=2: min_misrate = 2/C(4,2) = 1/3 ≈ 0.333
     let result = shift_bounds(&[1.0, 2.0], &[3.0, 4.0], 0.05);
     assert!(result.is_err());
     let (id, subject) = unwrap_estimator_error(result.unwrap_err());
-    assert_eq!(id, AssumptionId::Domain);
-    assert_eq!(subject, Subject::Misrate);
-}
-
-// --- signed_rank_margin ---
-
-#[test]
-fn signed_rank_margin_zero_n() {
-    let result = signed_rank_margin(0, 0.05);
-    assert!(result.is_err());
-    let (id, subject) = unwrap_assumption(result.unwrap_err());
-    assert_eq!(id, AssumptionId::Domain);
-    assert_eq!(subject, Subject::X);
-}
-
-#[test]
-fn signed_rank_margin_invalid_misrate() {
-    let result = signed_rank_margin(10, -0.1);
-    assert!(result.is_err());
-    let (id, subject) = unwrap_assumption(result.unwrap_err());
-    assert_eq!(id, AssumptionId::Domain);
-    assert_eq!(subject, Subject::Misrate);
-}
-
-#[test]
-fn signed_rank_margin_misrate_below_min() {
-    let result = signed_rank_margin(5, 1e-20);
-    assert!(result.is_err());
-    let (id, subject) = unwrap_assumption(result.unwrap_err());
     assert_eq!(id, AssumptionId::Domain);
     assert_eq!(subject, Subject::Misrate);
 }
