@@ -16,6 +16,7 @@ import { checkValidity, checkPositivity, checkSparity, log, AssumptionError } fr
  * @param values Array of numbers
  * @returns The median value
  */
+// Not re-exported from index.ts: internal utility kept for cross-language consistency
 export function median(values: number[]): number {
   // Check validity (priority 0)
   checkValidity(values, 'x');

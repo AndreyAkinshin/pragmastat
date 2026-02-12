@@ -16,6 +16,18 @@ type Number interface {
 
 var errEmptyInput = errors.New("input slice cannot be empty")
 
+// Cross-language consistency: all implementations keep median as internal utility
+func median[T Number](values []T) float64 { //nolint:unused
+	sorted := make([]T, len(values))
+	copy(sorted, values)
+	sort.Slice(sorted, func(i, j int) bool { return sorted[i] < sorted[j] })
+	mid := len(sorted) / 2
+	if len(sorted)%2 == 0 {
+		return (float64(sorted[mid-1]) + float64(sorted[mid])) / 2
+	}
+	return float64(sorted[mid])
+}
+
 // Center estimates the central value of the data.
 // Calculates the median of all pairwise averages (x[i] + x[j])/2.
 // More robust than the mean and more efficient than the median.
