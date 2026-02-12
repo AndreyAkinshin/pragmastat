@@ -9,7 +9,7 @@ namespace Pragmastat.Functions;
 /// PairwiseMargin function
 /// </summary>
 /// <param name="threshold">The maximum value for n+m, after which implementation switches from exact to approx</param>
-public class PairwiseMargin(int threshold = PairwiseMargin.MaxExactSize)
+internal class PairwiseMargin(int threshold = PairwiseMargin.MaxExactSize)
 {
   public static readonly PairwiseMargin Instance = new();
 

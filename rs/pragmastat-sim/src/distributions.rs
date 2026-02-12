@@ -75,7 +75,7 @@ fn estimate_asymptotic_spread(entry: &DistributionEntry) -> f64 {
     let dist = entry.create();
     let mut rng = Rng::from_string("asymptotic-spread");
     let values = dist.samples(&mut rng, SAMPLING_SIZE);
-    pragmastat::median(&values).expect("asymptotic spread estimation should not fail")
+    pragmastat::estimators::median(&values).expect("asymptotic spread estimation should not fail")
 }
 
 /// Returns true if the distribution is always positive (for ratio-bounds).

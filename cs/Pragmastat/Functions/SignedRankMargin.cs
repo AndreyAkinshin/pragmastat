@@ -8,7 +8,7 @@ namespace Pragmastat.Functions;
 /// One-sample analog of PairwiseMargin using Wilcoxon signed-rank distribution.
 /// </summary>
 /// <param name="threshold">Maximum n for exact computation; larger n uses approximation</param>
-public class SignedRankMargin(int threshold = SignedRankMargin.MaxExactSize)
+internal class SignedRankMargin(int threshold = SignedRankMargin.MaxExactSize)
 {
   public static readonly SignedRankMargin Instance = new();
 

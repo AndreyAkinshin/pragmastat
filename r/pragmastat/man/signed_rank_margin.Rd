@@ -18,13 +18,6 @@ Uses exact calculation for n <= 63 and Edgeworth approximation for larger n.
 An integer representing the total margin.
 }
 \seealso{
-\code{\link{center_bounds}}, \code{\link{pairwise_margin}}
+\code{\link{center_bounds}}
 }
-\examples{
-# Compute margin for small sample
-signed_rank_margin(10, 0.05)
-
-# Compute margin for larger sample (uses Edgeworth approximation)
-signed_rank_margin(100, 0.05)
-
-}
+\keyword{internal}

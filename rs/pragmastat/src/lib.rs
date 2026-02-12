@@ -28,10 +28,8 @@ mod xoshiro256;
 pub use assumptions::{AssumptionError, AssumptionId, EstimatorError, Subject, Violation};
 pub use distributions::{Additive, Distribution, Exp, Multiplic, Power, Uniform};
 pub use estimators::{
-    avg_spread, center, center_bounds, disparity, median, ratio, ratio_bounds, rel_spread, shift,
+    avg_spread, center, center_bounds, disparity, ratio, ratio_bounds, rel_spread, shift,
     shift_bounds, spread, Bounds, DEFAULT_MISRATE,
 };
 
-pub use pairwise_margin::pairwise_margin;
 pub use rng::Rng;
-pub use signed_rank_margin::signed_rank_margin;

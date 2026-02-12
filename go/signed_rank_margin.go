@@ -10,10 +10,10 @@ const (
 	signedRankMaxExactSize = 63
 )
 
-// SignedRankMargin computes the margin for one-sample signed-rank bounds.
+// signedRankMargin computes the margin for one-sample signed-rank bounds.
 // Uses Wilcoxon signed-rank distribution to determine the margin that achieves
 // the specified misrate.
-func SignedRankMargin(n int, misrate float64) (int, error) {
+func signedRankMargin(n int, misrate float64) (int, error) {
 	if n <= 0 {
 		return 0, NewDomainError(SubjectX)
 	}

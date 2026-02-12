@@ -16,25 +16,6 @@ type Number interface {
 
 var errEmptyInput = errors.New("input slice cannot be empty")
 
-// Median calculates the median of a slice of numeric values.
-func Median[T Number](values []T) (float64, error) {
-	// Check validity (priority 0)
-	if err := checkValidity(values, SubjectX); err != nil {
-		return 0, err
-	}
-	n := len(values)
-
-	// Create a copy to avoid modifying the original slice
-	sorted := make([]T, n)
-	copy(sorted, values)
-	sort.Slice(sorted, func(i, j int) bool { return sorted[i] < sorted[j] })
-
-	if n%2 == 0 {
-		return (float64(sorted[n/2-1]) + float64(sorted[n/2])) / 2.0, nil
-	}
-	return float64(sorted[n/2]), nil
-}
-
 // Center estimates the central value of the data.
 // Calculates the median of all pairwise averages (x[i] + x[j])/2.
 // More robust than the mean and more efficient than the median.
@@ -285,7 +266,7 @@ func ShiftBounds[T Number](x, y []T, misrate ...float64) (Bounds, error) {
 		return Bounds{Lower: value, Upper: value}, nil
 	}
 
-	margin, err := PairwiseMargin(n, m, mr)
+	margin, err := pairwiseMargin(n, m, mr)
 	if err != nil {
 		return Bounds{}, err
 	}
@@ -403,7 +384,7 @@ func CenterBounds[T Number](x []T, misrate ...float64) (Bounds, error) {
 		return Bounds{}, NewDomainError(SubjectMisrate)
 	}
 
-	margin, err := SignedRankMargin(n, mr)
+	margin, err := signedRankMargin(n, mr)
 	if err != nil {
 		return Bounds{}, err
 	}

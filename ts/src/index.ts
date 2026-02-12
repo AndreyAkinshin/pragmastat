@@ -10,7 +10,6 @@ export { AssumptionId, AssumptionError, type Subject, type Violation } from './a
 // Estimators
 export {
   DEFAULT_MISRATE,
-  median,
   center,
   spread,
   relSpread,
@@ -24,8 +23,6 @@ export {
   type Bounds,
 } from './estimators';
 
-export { pairwiseMargin } from './pairwiseMargin';
-export { signedRankMargin } from './signedRankMargin';
 export { Rng } from './rng';
 
 export { type Distribution, Uniform, Additive, Multiplic, Exp, Power } from './distributions/index';

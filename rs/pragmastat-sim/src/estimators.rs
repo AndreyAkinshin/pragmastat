@@ -18,7 +18,7 @@ pub fn std_dev(values: &[f64]) -> f64 {
 
 /// Median absolute deviation (MAD).
 pub fn mad(values: &[f64]) -> f64 {
-    let med = pragmastat::median(values).expect("MAD requires valid input");
+    let med = pragmastat::estimators::median(values).expect("MAD requires valid input");
     let mut abs_devs: Vec<f64> = values.iter().map(|&v| (v - med).abs()).collect();
     abs_devs.sort_by(|a, b| a.total_cmp(b));
     let n = abs_devs.len();

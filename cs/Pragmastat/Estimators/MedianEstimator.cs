@@ -3,7 +3,7 @@ using Pragmastat.Metrology;
 
 namespace Pragmastat.Estimators;
 
-public class MedianEstimator : IOneSampleEstimator
+internal class MedianEstimator : IOneSampleEstimator
 {
   public static readonly MedianEstimator Instance = new();
 

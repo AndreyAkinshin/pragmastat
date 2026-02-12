@@ -20,7 +20,7 @@ private const val MAX_EXACT_SIZE = 63
  * @return Margin value for one-sample bounds
  * @throws IllegalArgumentException if misrate is below minimum achievable
  */
-fun signedRankMargin(n: Int, misrate: Double): Int {
+internal fun signedRankMargin(n: Int, misrate: Double): Int {
     if (n <= 0) {
         throw AssumptionException(Violation(AssumptionId.DOMAIN, Subject.X))
     }

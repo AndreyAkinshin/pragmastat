@@ -17,7 +17,7 @@ fn median_sorted(sorted: &[f64]) -> Result<f64, &'static str> {
     }
 }
 
-/// Calculates the median of a slice
+/// Calculates the median of a slice (internal helper, not part of the public API)
 pub fn median(values: &[f64]) -> Result<f64, EstimatorError> {
     // Check validity (priority 0)
     check_validity(values, Subject::X)?;

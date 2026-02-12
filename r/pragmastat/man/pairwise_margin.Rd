@@ -18,15 +18,8 @@ approximation for larger samples.
 \value{
 An integer representing the total margin split between lower and upper tails.
 }
-\examples{
-# Compute margin for small samples
-pairwise_margin(10, 10, 0.05)
-
-# Compute margin for larger samples (uses Edgeworth approximation)
-pairwise_margin(300, 300, 0.05)
-
-}
 \references{
 Loeffler, H. (1982). Ueber eine Partition der nat. Zahlen und ihre Anwendung beim U-Test.
 Metrika, 29(1), 55-61.
 }
+\keyword{internal}

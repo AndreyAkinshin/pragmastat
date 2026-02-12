@@ -17,7 +17,7 @@ private const val MAX_ACCEPTABLE_BINOM_N = 65
  * @return Integer representing the total margin split between lower and upper tails
  * @throws AssumptionException if n <= 0, m <= 0, or misrate is outside [0, 1]
  */
-fun pairwiseMargin(n: Int, m: Int, misrate: Double): Int {
+internal fun pairwiseMargin(n: Int, m: Int, misrate: Double): Int {
     if (n <= 0) {
         throw AssumptionException(Violation(AssumptionId.DOMAIN, Subject.X))
     }

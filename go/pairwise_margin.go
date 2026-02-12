@@ -10,13 +10,13 @@ const (
 	maxAcceptableBinomN = 65
 )
 
-// PairwiseMargin determines how many extreme pairwise differences to exclude
+// pairwiseMargin determines how many extreme pairwise differences to exclude
 // when constructing bounds based on the distribution of dominance statistics.
 // Uses exact calculation for small samples (n+m <= 400) and Edgeworth
 // approximation for larger samples.
 //
 // Returns an error if n <= 0, m <= 0, or misrate is outside [0, 1] or NaN.
-func PairwiseMargin(n, m int, misrate float64) (int, error) {
+func pairwiseMargin(n, m int, misrate float64) (int, error) {
 	if n <= 0 {
 		return 0, NewDomainError(SubjectX)
 	}

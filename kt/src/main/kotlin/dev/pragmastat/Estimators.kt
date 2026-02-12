@@ -5,9 +5,9 @@ import kotlin.math.max
 import kotlin.math.min
 
 /**
- * Calculates the median of a list of values
+ * Calculates the median of a list of values (internal helper).
  */
-fun median(values: List<Double>): Double {
+internal fun median(values: List<Double>): Double {
     // Check validity (priority 0)
     checkValidity(values, Subject.X)
     

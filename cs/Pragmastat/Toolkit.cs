@@ -6,7 +6,6 @@ namespace Pragmastat;
 public static class Toolkit
 {
   public static readonly Probability DefaultMisrate = 1e-3;
-  public static Measurement Median(Sample x) => MedianEstimator.Instance.Estimate(x);
   public static Measurement Center(Sample x) => CenterEstimator.Instance.Estimate(x);
   public static Measurement Spread(Sample x) => SpreadEstimator.Instance.Estimate(x);
   public static Measurement RelSpread(Sample x) => RelSpreadEstimator.Instance.Estimate(x);
@@ -27,10 +26,4 @@ public static class Toolkit
   public static Bounds CenterBounds(Sample x) => CenterBounds(x, DefaultMisrate);
   public static Bounds CenterBounds(Sample x, Probability misrate) =>
     CenterBoundsEstimator.Instance.Estimate(x, misrate);
-
-  public static int SignedRankMargin(int n, Probability misrate) =>
-    Functions.SignedRankMargin.Instance.Calc(n, (double)misrate);
-
-  public static int PairwiseMargin(int n, int m, Probability misrate) =>
-    Functions.PairwiseMargin.Instance.Calc(n, m, (double)misrate);
 }

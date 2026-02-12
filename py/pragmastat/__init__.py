@@ -6,7 +6,6 @@ from .assumptions import (
 )
 from .estimators import (
     DEFAULT_MISRATE,
-    median,
     center,
     spread,
     rel_spread,
@@ -19,8 +18,6 @@ from .estimators import (
     center_bounds,
     Bounds,
 )
-from .pairwise_margin import pairwise_margin
-from .signed_rank_margin import signed_rank_margin
 from .rng import Rng
 from .distributions import (
     Distribution,
@@ -39,7 +36,6 @@ __all__ = [
     "Violation",
     # Estimators
     "DEFAULT_MISRATE",
-    "median",
     "center",
     "spread",
     "rel_spread",
@@ -51,8 +47,6 @@ __all__ = [
     "ratio_bounds",
     "center_bounds",
     "Bounds",
-    "pairwise_margin",
-    "signed_rank_margin",
     # Random
     "Rng",
     # Distributions
