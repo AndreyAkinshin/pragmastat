@@ -17,7 +17,7 @@ Requires weak symmetry and weak continuity assumptions.
 A list with components \code{lower} and \code{upper}.
 }
 \seealso{
-\code{\link{center}}, \code{\link{signed_rank_margin}}
+\code{\link{center}}
 }
 \examples{
 center_bounds(c(1, 2, 3, 4, 5), 0.1)

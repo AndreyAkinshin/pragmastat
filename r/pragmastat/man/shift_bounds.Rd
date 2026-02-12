@@ -35,6 +35,5 @@ bounds$upper
 
 }
 \seealso{
-\code{\link{shift}} for the point estimator,
-\code{\link{pairwise_margin}} for the underlying margin calculation.
+\code{\link{shift}} for the point estimator.
 }
