@@ -5,8 +5,7 @@
 The $Additive$ ('Normal') distribution has two parameters: the mean and the standard deviation,
 written as $Additive(pmean, pstddev)$.
 
-#v(0.5em)
-*Asymptotic Spread Value*
+=== Asymptotic Spread Value
 
 Consider two independent draws $X$ and $Y$ from the $Additive(pmean, pstddev)$ distribution.
 The goal is to find the median of their absolute difference $abs(X-Y)$.
@@ -40,8 +39,7 @@ the median absolute difference is approximately $sqrt(2) dot z_(0.75) dot pstdde
 This expression depends only on the scale parameter $pstddev$, not on the mean,
 reflecting the translation invariance of the problem.
 
-#v(0.5em)
-*Lemma: Average Estimator Drift Formula*
+=== Lemma: Average Estimator Drift Formula
 
 For average estimators $T_n$ with asymptotic standard deviation $a dot pstddev \/ sqrt(n)$ around the mean $mu$,
 define $RelSpread[T_n] := Spread[T_n] \/ Spread[X]$.
@@ -53,8 +51,7 @@ For any average estimator $T_n$ with asymptotic standard deviation $a dot pstdde
 - The relative spread: $RelSpread[T_n] = a \/ sqrt(n)$
 - The asymptotic drift: $Drift(T, X) = a$
 
-#v(0.5em)
-*Asymptotic Mean Drift*
+=== Asymptotic Mean Drift
 
 For the sample mean $Mean(vx) = 1\/n sum_(i=1)^n x_i$ applied to samples
 from $Additive(pmean, pstddev)$,
@@ -68,8 +65,7 @@ $ Drift(Mean, X) = 1 $
 $Mean$ achieves unit drift under the $Additive$ ('Normal') distribution, serving as the natural baseline for comparison.
 $Mean$ is the optimal estimator under the $Additive$ ('Normal') distribution: no other estimator achieves lower $Drift$.
 
-#v(0.5em)
-*Asymptotic Median Drift*
+=== Asymptotic Median Drift
 
 For the sample median $Median(vx)$ applied to samples from $Additive(pmean, pstddev)$,
 the asymptotic sampling distribution of $Median$ is approximately $Additive$ ('Normal')
@@ -89,8 +85,7 @@ $ Drift(Median, X) = sqrt(pi\/2) $
 Numerically, $sqrt(pi\/2) approx 1.2533$, so the median has approximately 25% higher drift than the mean
 under the $Additive$ ('Normal') distribution.
 
-#v(0.5em)
-*Asymptotic Center Drift*
+=== Asymptotic Center Drift
 
 For the sample center $Center(vx) = attach(Median, b: 1 <= i <= j <= n) lr((x_i + x_j)\/2)$ applied to samples from $Additive(pmean, pstddev)$,
 its asymptotic sampling distribution must be determined.
@@ -115,8 +110,7 @@ Numerically, $sqrt(pi\/3) approx 1.0233$,
 so the center estimator achieves a drift very close to 1 under the $Additive$ ('Normal') distribution,
 performing nearly as well as the mean while offering greater robustness to outliers.
 
-#v(0.5em)
-*Lemma: Dispersion Estimator Drift Formula*
+=== Lemma: Dispersion Estimator Drift Formula
 
 For dispersion estimators $T_n$ with asymptotic center $b dot pstddev$
 and standard deviation $a dot pstddev \/ sqrt(n)$,
@@ -132,8 +126,7 @@ Note: The $sqrt(2)$ factor comes from the standard deviation of the difference $
 of two independent estimates,
 and the $z_(0.75)$ factor converts this standard deviation to the median absolute difference.
 
-#v(0.5em)
-*Asymptotic StdDev Drift*
+=== Asymptotic StdDev Drift
 
 For the sample standard deviation $StdDev(vx) = sqrt(1\/(n-1) sum_(i=1)^n (x_i - Mean(vx))^2)$
 applied to samples from $Additive(pmean, pstddev)$,
@@ -158,8 +151,7 @@ $ Drift(StdDev, X) = lim_(n -> infinity) sqrt(n) dot RelSpread[StdDev(X_(1:n))] 
 
 Numerically, $z_(0.75) approx 0.67449$.
 
-#v(0.5em)
-*Asymptotic MAD Drift*
+=== Asymptotic MAD Drift
 
 For the median absolute deviation $MAD(vx) = Median(abs(x_i - Median(vx)))$
 applied to samples from $Additive(pmean, pstddev)$,
@@ -186,8 +178,7 @@ $ Drift(MAD, X) = lim_(n -> infinity) sqrt(n) dot RelSpread[MAD(X_(1:n))] = sqrt
 
 Numerically, $sqrt(2) dot cmad approx sqrt(2) dot 0.78 approx 1.10$.
 
-#v(0.5em)
-*Asymptotic Spread Drift*
+=== Asymptotic Spread Drift
 
 For the sample spread $Spread(vx) = attach(Median, b: 1 <= i < j <= n) abs(x_i - x_j)$
 applied to samples from $Additive(pmean, pstddev)$,
@@ -217,8 +208,7 @@ $ Drift(Spread, X) = lim_(n -> infinity) sqrt(n) dot RelSpread[Spread(X_(1:n))] 
 
 Numerically, $cspr approx 0.72$.
 
-#v(0.5em)
-*Summary*
+=== Summary
 
 *Summary for average estimators:*
 
