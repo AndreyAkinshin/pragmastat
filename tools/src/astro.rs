@@ -230,6 +230,9 @@ fn convert_typst_event_to_mdx(
             // Use HTML <br> for forced line break (more reliable than trailing spaces in markdown)
             output.push_str("<br/>\n");
         }
+        TypstEvent::HSpace(size) => {
+            let _ = write!(output, r#"<span style="display:inline-block;width:{size}"></span>"#);
+        }
         TypstEvent::Link { text, dest } => {
             // Handle internal links (cross-references)
             if let Some(label) = dest.strip_prefix("internal:") {

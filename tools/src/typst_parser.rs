@@ -95,6 +95,7 @@ pub enum TypstEvent {
     },
     ThematicBreak,
     Linebreak,
+    HSpace(String),
 }
 
 /// Parse a Typst document, resolving #include directives and evaluating variables
@@ -1116,8 +1117,18 @@ fn parse_node(node: &SyntaxNode, events: &mut Vec<TypstEvent>, list_depth: u8) {
                         // Vertical spacing - emit paragraph break
                         events.push(TypstEvent::ParagraphBreak);
                     }
-                    "h" | "pagebreak" => {
-                        // Horizontal spacing and page breaks are ignored in web output
+                    "h" => {
+                        // Horizontal spacing - preserve for web output
+                        for arg in call.args().items() {
+                            if let ast::Arg::Pos(expr) = arg {
+                                let size = expr.to_untyped().text().to_string();
+                                events.push(TypstEvent::HSpace(size));
+                                break;
+                            }
+                        }
+                    }
+                    "pagebreak" => {
+                        // Page breaks are ignored in web output
                     }
                     "list" => {
                         // Custom list: #list(marker: none, tight: true, [item1], [item2])
