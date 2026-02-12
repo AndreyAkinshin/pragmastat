@@ -75,22 +75,6 @@ description = "Generate C# reference test files"
 dir = "cs"
 run = "dotnet run --project Pragmastat.TestGenerator/Pragmastat.TestGenerator.csproj"
 
-[tasks."cs:sim"]
-description = "Run C# simulations"
-dir = "cs/Pragmastat.Simulations"
-run = "dotnet run -c Release"
-
-[tasks."cs:sim:all"]
-description = "Run all C# simulations"
-dir = "cs/Pragmastat.Simulations"
-run = [
-    "dotnet run -c Release -- avg-drift -e Mean,Median,Center",
-    "dotnet run -c Release -- disp-drift -e StdDev,MAD,Spread",
-    "dotnet run -c Release -- center-bounds",
-    "dotnet run -c Release -- shift-bounds",
-    "dotnet run -c Release -- ratio-bounds",
-]
-
 [tasks."cs:ci"]
 description = "Run C# CI pipeline"
 run = [

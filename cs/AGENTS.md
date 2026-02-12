@@ -37,8 +37,7 @@ cs/
 │   └── Randomization/          # Rng, Xoshiro256
 ├── Pragmastat.Demo/            # Demo application
 ├── Pragmastat.Tests/           # Unit tests
-├── Pragmastat.TestGenerator/   # Reference test generator
-└── Pragmastat.Extended/        # Extended estimators (Mean, MAD, StdDev)
+└── Pragmastat.TestGenerator/   # Reference test generator
 ```
 
 ## Key Types
@@ -95,8 +94,6 @@ try {
 
 - **Sample type**: Supports arithmetic operators (`+`, `-`, `*`, `/`)
 - **Metrology**: Unit-aware measurements with formatting
-- **Extended estimators**: Traditional estimators (Mean, MAD, StdDev) in separate assembly
-
 ## Build Configuration
 
 - Library targets: netstandard2.0, net6.0 (multi-targeting)

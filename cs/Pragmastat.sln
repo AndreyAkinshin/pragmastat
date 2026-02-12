@@ -4,11 +4,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pragmastat", "Pragmastat\Pr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pragmastat.Tests", "Pragmastat.Tests\Pragmastat.Tests.csproj", "{DE29C17F-5EB6-419D-A999-68E4F19430BC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pragmastat.Simulations", "Pragmastat.Simulations\Pragmastat.Simulations.csproj", "{865C3489-B0E6-44D9-98AA-0F077ACEEBAE}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pragmastat.Demo", "Pragmastat.Demo\Pragmastat.Demo.csproj", "{D72AFC86-80C6-48EA-8AF2-F6DB0EBE622F}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pragmastat.Extended", "Pragmastat.Extended\Pragmastat.Extended.csproj", "{8C69CBDB-26CF-4767-91B8-96C9F993012E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pragmastat.TestGenerator", "Pragmastat.TestGenerator\Pragmastat.TestGenerator.csproj", "{8B2807C6-B990-49B3-BC6A-B45A3D67708B}"
 EndProject
@@ -22,18 +18,10 @@ Global
 		{99D956D5-32D7-4056-A72F-DF9A77F4C30A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{99D956D5-32D7-4056-A72F-DF9A77F4C30A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{99D956D5-32D7-4056-A72F-DF9A77F4C30A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{865C3489-B0E6-44D9-98AA-0F077ACEEBAE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{865C3489-B0E6-44D9-98AA-0F077ACEEBAE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{865C3489-B0E6-44D9-98AA-0F077ACEEBAE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{865C3489-B0E6-44D9-98AA-0F077ACEEBAE}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D72AFC86-80C6-48EA-8AF2-F6DB0EBE622F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D72AFC86-80C6-48EA-8AF2-F6DB0EBE622F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D72AFC86-80C6-48EA-8AF2-F6DB0EBE622F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D72AFC86-80C6-48EA-8AF2-F6DB0EBE622F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8C69CBDB-26CF-4767-91B8-96C9F993012E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8C69CBDB-26CF-4767-91B8-96C9F993012E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8C69CBDB-26CF-4767-91B8-96C9F993012E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8C69CBDB-26CF-4767-91B8-96C9F993012E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{8B2807C6-B990-49B3-BC6A-B45A3D67708B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8B2807C6-B990-49B3-BC6A-B45A3D67708B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8B2807C6-B990-49B3-BC6A-B45A3D67708B}.Release|Any CPU.ActiveCfg = Release|Any CPU
