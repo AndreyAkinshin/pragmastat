@@ -5,23 +5,6 @@ import kotlin.math.max
 import kotlin.math.min
 
 /**
- * Calculates the median of a list of values (internal helper).
- */
-internal fun median(values: List<Double>): Double {
-    // Check validity (priority 0)
-    checkValidity(values, Subject.X)
-    
-    val sorted = values.sorted()
-    val n = sorted.size
-    
-    return if (n % 2 == 0) {
-        (sorted[n / 2 - 1] + sorted[n / 2]) / 2.0
-    } else {
-        sorted[n / 2]
-    }
-}
-
-/**
  * Estimates the central value of the data (Center)
  *
  * Calculates the median of all pairwise averages (x[i] + x[j])/2.

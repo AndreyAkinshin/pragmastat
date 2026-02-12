@@ -31,24 +31,6 @@ class Bounds(NamedTuple):
     upper: float
 
 
-def median(x: Union[Sequence[float], NDArray]) -> float:
-    """
-    Calculate the median of a sample.
-
-    Args:
-        x: Input sample.
-
-    Returns:
-        The median value.
-
-    Raises:
-        AssumptionError: If input is empty or contains NaN/Inf.
-    """
-    x = np.asarray(x)
-    check_validity(x, "x")
-    return float(np.median(x))
-
-
 def center(x: Union[Sequence[float], NDArray]) -> float:
     """
     Estimate the central value using Hodges-Lehmann estimator.

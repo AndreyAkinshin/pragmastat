@@ -12,26 +12,6 @@ import { minAchievableMisrateOneSample, minAchievableMisrateTwoSample } from './
 import { checkValidity, checkPositivity, checkSparity, log, AssumptionError } from './assumptions';
 
 /**
- * Calculate the median of an array of numbers
- * @param values Array of numbers
- * @returns The median value
- */
-// Not re-exported from index.ts: internal utility kept for cross-language consistency
-export function median(values: number[]): number {
-  // Check validity (priority 0)
-  checkValidity(values, 'x');
-
-  const sorted = [...values].sort((a, b) => a - b);
-  const mid = Math.floor(sorted.length / 2);
-
-  if (sorted.length % 2 === 0) {
-    return (sorted[mid - 1] + sorted[mid]) / 2;
-  } else {
-    return sorted[mid];
-  }
-}
-
-/**
  * Calculate the Center - median of all pairwise averages (x[i] + x[j])/2
  * Uses fast O(n log n) algorithm.
  * @param x Array of sample values
