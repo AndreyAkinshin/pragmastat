@@ -19,8 +19,8 @@ mise run ts:pack     # Create npm tarball
 ts/
 ├── src/
 │   ├── index.ts            # Public exports
-│   ├── estimators.ts       # Public API: median, center, spread, shift, etc.
-│   ├── pairwiseMargin.ts   # Margin calculation for shift bounds
+│   ├── estimators.ts       # Public API: center, spread, shift, etc.
+│   ├── pairwiseMargin.ts   # Margin calculation for shift bounds (internal)
 │   ├── rng.ts              # Deterministic xoshiro256++ PRNG
 │   ├── xoshiro256.ts       # PRNG core implementation
 │   ├── fastCenter.ts       # O(n log n) Hodges-Lehmann algorithm
@@ -50,7 +50,6 @@ ts/
 ## Public Functions
 
 ```typescript
-function median(x: number[]): number
 function center(x: number[]): number
 function spread(x: number[]): number
 function relSpread(x: number[]): number
@@ -60,7 +59,7 @@ function avgSpread(x: number[], y: number[]): number
 function disparity(x: number[], y: number[]): number
 function shiftBounds(x: number[], y: number[], misrate: number): Bounds
 function ratioBounds(x: number[], y: number[], misrate: number): Bounds
-function pairwiseMargin(n: number, m: number, misrate: number): number
+function centerBounds(x: number[], misrate: number): Bounds
 ```
 
 ## Distributions

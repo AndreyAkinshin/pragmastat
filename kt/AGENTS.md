@@ -16,8 +16,8 @@ mise run kt:pack     # Create JAR package
 ```
 kt/
 ├── src/main/kotlin/dev/pragmastat/
-│   ├── Estimators.kt       # Public API: median, center, spread, shift, etc.
-│   ├── PairwiseMargin.kt   # Margin calculation for shift bounds
+│   ├── Estimators.kt       # Public API: center, spread, shift, etc.
+│   ├── PairwiseMargin.kt   # Margin calculation for shift bounds (internal)
 │   ├── Rng.kt              # Deterministic xoshiro256++ PRNG
 │   ├── Xoshiro256.kt       # PRNG core implementation
 │   ├── FastCenter.kt       # O(n log n) Hodges-Lehmann algorithm
@@ -49,7 +49,6 @@ kt/
 ## Public Functions
 
 ```kotlin
-fun median(x: List<Double>): Double
 fun center(x: List<Double>): Double
 fun spread(x: List<Double>): Double
 fun relSpread(x: List<Double>): Double
@@ -59,7 +58,7 @@ fun avgSpread(x: List<Double>, y: List<Double>): Double
 fun disparity(x: List<Double>, y: List<Double>): Double
 fun shiftBounds(x: List<Double>, y: List<Double>, misrate: Double): Bounds
 fun ratioBounds(x: List<Double>, y: List<Double>, misrate: Double): Bounds
-fun pairwiseMargin(n: Int, m: Int, misrate: Double): Int
+fun centerBounds(x: List<Double>, misrate: Double): Bounds
 ```
 
 ## Distributions

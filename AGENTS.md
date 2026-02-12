@@ -42,15 +42,13 @@ pragmastat/
 
 All implementations expose:
 
-**One-sample estimators:** `median`, `center`, `spread`, `relSpread`
+**One-sample estimators:** `center`, `spread`, `relSpread`
 
 **Two-sample estimators:** `shift`, `ratio`, `avgSpread`, `disparity`
 
 **Bounds estimators:** `shiftBounds`, `ratioBounds`, `centerBounds`
 
-**Margin functions:** `pairwiseMargin`, `signedRankMargin`
-
-**Randomization:** `resample` (bootstrap resampling via Rng)
+**Randomization:** `Rng`, `sample`, `shuffle`, `resample`
 
 **Note:** Function names follow language conventions: camelCase for TypeScript/Kotlin/Go, snake_case for Python/Rust/R, PascalCase for C#.
 

@@ -16,7 +16,7 @@ mise run go:coverage # Run tests with coverage
 
 ```
 go/
-├── estimators.go       # Public API: Median, Center, Spread, Shift, etc.
+├── estimators.go       # Public API: Center, Spread, Shift, etc.
 ├── pairwise_margin.go  # Margin calculation for shift bounds
 ├── rng.go              # Deterministic xoshiro256++ PRNG
 ├── xoshiro256.go       # PRNG core implementation
@@ -47,7 +47,6 @@ go/
 ## Public Functions
 
 ```go
-func Median(x []float64) (float64, error)
 func Center(x []float64) (float64, error)
 func Spread(x []float64) (float64, error)
 func RelSpread(x []float64) (float64, error)
@@ -57,7 +56,7 @@ func AvgSpread(x, y []float64) (float64, error)
 func Disparity(x, y []float64) (float64, error)
 func ShiftBounds(x, y []float64, misrate float64) (Bounds, error)
 func RatioBounds(x, y []float64, misrate float64) (Bounds, error)
-func PairwiseMargin(n, m int, misrate float64) (int, error)
+func CenterBounds(x []float64, misrate float64) (Bounds, error)
 ```
 
 ## Testing

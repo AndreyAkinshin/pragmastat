@@ -1,6 +1,5 @@
 using static System.Console;
 using Pragmastat.Distributions;
-using Pragmastat.Functions;
 using Pragmastat.Randomization;
 
 namespace Pragmastat.Demo;
@@ -50,7 +49,6 @@ class Program
 
     var x = new Sample(1, 3, 5, 7, 9);
 
-    WriteLine(Toolkit.Median(x)); // 5
     WriteLine(x.Center()); // 5
     WriteLine(x.Spread()); // 4
     WriteLine((x + 10).Spread()); // 4
@@ -77,7 +75,6 @@ class Program
 
     x = new Sample(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
 
-    WriteLine(SignedRankMargin.Instance.Calc(10, 0.05)); // 18
     WriteLine(Toolkit.Center(x)); // 5.5
     WriteLine(Toolkit.CenterBounds(x, 0.05)); // [3.5, 7.5]
 
@@ -90,7 +87,6 @@ class Program
       21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35,
       36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50);
 
-    WriteLine(PairwiseMargin.Instance.Calc(30, 30, 1e-4)); // 390
     WriteLine(Toolkit.Shift(x, y)); // -20
     WriteLine(Toolkit.ShiftBounds(x, y, 1e-4)); // [-30, -10]
 

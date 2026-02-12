@@ -1,6 +1,5 @@
 from pragmastat import (
     Rng,
-    median,
     center,
     spread,
     rel_spread,
@@ -8,8 +7,6 @@ from pragmastat import (
     ratio,
     avg_spread,
     disparity,
-    signed_rank_margin,
-    pairwise_margin,
     center_bounds,
     shift_bounds,
     ratio_bounds,
@@ -59,7 +56,6 @@ def main():
 
     x = [1, 3, 5, 7, 9]
 
-    print(median(x))  # 5
     print(center(x))  # 5
     print(spread(x))  # 4
     print(spread([v + 10 for v in x]))  # 4
@@ -86,7 +82,6 @@ def main():
 
     x = list(range(1, 11))
 
-    print(signed_rank_margin(10, 0.05))  # 18
     print(center(x))  # 5.5
     bounds = center_bounds(x, 0.05)  # Bounds(lower=3.5, upper=7.5)
     print(f"Bounds(lower={bounds.lower}, upper={bounds.upper})")
@@ -96,7 +91,6 @@ def main():
     x = list(range(1, 31))
     y = list(range(21, 51))
 
-    print(pairwise_margin(30, 30, 1e-4))  # 390
     print(shift(x, y))  # -20
     bounds = shift_bounds(x, y, 1e-4)  # Bounds(lower=-30, upper=-10)
     print(f"Bounds(lower={bounds.lower}, upper={bounds.upper})")

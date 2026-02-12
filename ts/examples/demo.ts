@@ -1,6 +1,5 @@
 import {
-    median, center, spread, relSpread, shift, ratio, avgSpread, disparity,
-    signedRankMargin, pairwiseMargin,
+    center, spread, relSpread, shift, ratio, avgSpread, disparity,
     centerBounds, shiftBounds, ratioBounds,
     Rng, Uniform, Additive, Exp, Power, Multiplic
 } from '../src';
@@ -47,7 +46,6 @@ function main() {
 
     let x = [1, 3, 5, 7, 9];
 
-    console.log(median(x)); // 5
     console.log(center(x)); // 5
     console.log(spread(x)); // 4
     console.log(spread(x.map(v => v + 10))); // 4
@@ -74,7 +72,6 @@ function main() {
 
     x = Array.from({ length: 10 }, (_, i) => i + 1);
 
-    console.log(signedRankMargin(10, 0.05)); // 18
     console.log(center(x)); // 5.5
     console.log(centerBounds(x, 0.05)); // { lower: 3.5, upper: 7.5 }
 
@@ -83,7 +80,6 @@ function main() {
     x = Array.from({ length: 30 }, (_, i) => i + 1);
     y = Array.from({ length: 30 }, (_, i) => i + 21);
 
-    console.log(pairwiseMargin(30, 30, 1e-4)); // 390
     console.log(shift(x, y)); // -20
     console.log(shiftBounds(x, y, 1e-4)); // { lower: -30, upper: -10 }
 

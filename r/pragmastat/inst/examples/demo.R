@@ -68,7 +68,6 @@ print(ratio(y, x)) # 2
 
 x <- 1:10
 
-print(signed_rank_margin(10, 0.05)) # 18
 print(center(x)) # 5.5
 bounds <- center_bounds(x, 0.05) # [lower=3.5, upper=7.5]
 print(paste("[", bounds$lower, ", ", bounds$upper, "]", sep=""))
@@ -78,7 +77,6 @@ print(paste("[", bounds$lower, ", ", bounds$upper, "]", sep=""))
 x <- 1:30
 y <- 21:50
 
-print(pairwise_margin(30, 30, 1e-4)) # 390
 print(shift(x, y)) # -20
 bounds <- shift_bounds(x, y, 1e-4) # [lower=-30, upper=-10]
 print(paste("[", bounds$lower, ", ", bounds$upper, "]", sep=""))

@@ -18,8 +18,8 @@ mise run py:pack     # Build and verify with twine
 py/
 ├── pragmastat/
 │   ├── __init__.py         # Public exports
-│   ├── estimators.py       # Public API: median, center, spread, shift, etc.
-│   ├── pairwise_margin.py  # Margin calculation for shift bounds
+│   ├── estimators.py       # Public API: center, spread, shift, etc.
+│   ├── pairwise_margin.py  # Margin calculation for shift bounds (internal)
 │   ├── rng.py              # Deterministic xoshiro256++ PRNG
 │   ├── xoshiro256.py       # PRNG core implementation
 │   ├── fast_center.py      # O(n log n) Hodges-Lehmann algorithm
@@ -47,7 +47,6 @@ py/
 ## Public Functions
 
 ```python
-def median(x: Sequence[float] | NDArray) -> float
 def center(x: Sequence[float] | NDArray) -> float
 def spread(x: Sequence[float] | NDArray) -> float
 def rel_spread(x: Sequence[float] | NDArray) -> float
@@ -57,7 +56,7 @@ def avg_spread(x: Sequence[float] | NDArray, y: Sequence[float] | NDArray) -> fl
 def disparity(x: Sequence[float] | NDArray, y: Sequence[float] | NDArray) -> float
 def shift_bounds(x, y, misrate: float) -> Bounds
 def ratio_bounds(x, y, misrate: float) -> Bounds
-def pairwise_margin(n: int, m: int, misrate: float) -> int
+def center_bounds(x: Sequence[float] | NDArray, misrate: float) -> Bounds
 ```
 
 ## Testing

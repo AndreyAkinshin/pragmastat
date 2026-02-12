@@ -59,16 +59,13 @@ sample.Spread()
 sample.RelSpread()
 
 // Static methods in Toolkit
-Toolkit.Median(sample)
 Toolkit.Shift(x, y)
 Toolkit.Ratio(x, y)
 Toolkit.AvgSpread(x, y)
 Toolkit.Disparity(x, y)
 Toolkit.ShiftBounds(x, y, misrate)
 Toolkit.RatioBounds(x, y, misrate)
-
-// PairwiseMargin
-PairwiseMargin.Instance.Calc(n, m, misrate)
+Toolkit.CenterBounds(x, misrate)
 ```
 
 ## Testing

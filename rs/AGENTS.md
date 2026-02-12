@@ -17,8 +17,8 @@ mise run rs:bench    # Run benchmarks
 rs/pragmastat/
 ├── src/
 │   ├── lib.rs              # Public exports
-│   ├── estimators.rs       # Public API: median, center, spread, shift, etc.
-│   ├── pairwise_margin.rs  # Margin calculation for shift bounds
+│   ├── estimators.rs       # Public API: center, spread, shift, etc.
+│   ├── pairwise_margin.rs  # Margin calculation for shift bounds (internal)
 │   ├── rng.rs              # Deterministic xoshiro256++ PRNG
 │   ├── distributions/      # Sampling distributions (Uniform, Additive, Exp, Power, Multiplic)
 │   ├── fast_center.rs      # O(n log n) Hodges-Lehmann algorithm (internal)
@@ -41,7 +41,7 @@ rs/pragmastat/
 | Module | Visibility | Purpose |
 |--------|------------|---------|
 | `estimators` | Public | All statistical estimators |
-| `pairwise_margin` | Public | Misclassification margin calculation |
+| `pairwise_margin` | Internal | Misclassification margin calculation |
 | `rng` | Public | Deterministic PRNG with `Rng` struct |
 | `distributions` | Public | `Distribution` trait + implementations |
 | `fast_*` | Internal | O(n log n) algorithms, not part of public API |
@@ -69,7 +69,7 @@ pub fn center(x: &[f64]) -> Result<f64, &'static str>
 pub fn shift(x: &[f64], y: &[f64]) -> Result<f64, &'static str>
 pub fn shift_bounds(x: &[f64], y: &[f64], misrate: f64) -> Result<Bounds, &'static str>
 pub fn ratio_bounds(x: &[f64], y: &[f64], misrate: f64) -> Result<Bounds, &'static str>
-pub fn pairwise_margin(n: usize, m: usize, misrate: f64) -> Result<usize, &'static str>
+pub fn center_bounds(x: &[f64], misrate: f64) -> Result<Bounds, &'static str>
 ```
 
 Error conditions:

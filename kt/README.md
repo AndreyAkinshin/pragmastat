@@ -76,7 +76,6 @@ fun main() {
 
     var x = listOf(1.0, 3.0, 5.0, 7.0, 9.0)
 
-    println(median(x)) // 5
     println(center(x)) // 5
     println(spread(x)) // 4
     println(spread(x.map { it + 10 })) // 4
@@ -103,7 +102,6 @@ fun main() {
 
     x = (1..10).map { it.toDouble() }
 
-    println(signedRankMargin(10, 0.05)) // 18
     println(center(x)) // 5.5
     println(centerBounds(x, 0.05)) // Bounds(lower=3.5, upper=7.5)
 
@@ -112,7 +110,6 @@ fun main() {
     x = (1..30).map { it.toDouble() }
     y = (21..50).map { it.toDouble() }
 
-    println(pairwiseMargin(30, 30, 1e-4)) // 390
     println(shift(x, y)) // -20
     println(shiftBounds(x, y, 1e-4)) // Bounds(lower=-30.0, upper=-10.0)
 

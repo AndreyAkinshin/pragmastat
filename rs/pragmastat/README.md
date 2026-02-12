@@ -80,7 +80,6 @@ fn main() {
 
     let x = vec![1.0, 3.0, 5.0, 7.0, 9.0];
 
-    print(median(&x)); // 5
     print(center(&x)); // 5
     print(spread(&x)); // 4
     print(spread(&add(&x, 10.0))); // 4
@@ -107,7 +106,6 @@ fn main() {
 
     let x: Vec<f64> = (1..=10).map(|i| i as f64).collect();
 
-    println!("{}", signed_rank_margin(10, 0.05).unwrap()); // 18
     print(center(&x)); // 5.5
     let bounds = center_bounds(&x, 0.05).unwrap(); // {lower: 3.5, upper: 7.5}
     println!("{{lower: {}, upper: {}}}", bounds.lower, bounds.upper);
@@ -117,7 +115,6 @@ fn main() {
     let x: Vec<f64> = (1..=30).map(|i| i as f64).collect();
     let y: Vec<f64> = (21..=50).map(|i| i as f64).collect();
 
-    println!("{}", pairwise_margin(30, 30, 1e-4).unwrap()); // 390
     print(shift(&x, &y)); // -20
 
     let bounds = shift_bounds(&x, &y, 1e-4).unwrap(); // {lower: -30, upper: -10}

@@ -72,7 +72,7 @@ avg_spread(x, y)             # Weighted average of spreads
 disparity(x, y)              # Shift / AvgSpread
 shift_bounds(x, y, misrate)  # Confidence bounds on shift
 ratio_bounds(x, y, misrate)  # Confidence bounds on ratio
-pairwise_margin(n, m, misrate) # Margin for bounds calculation
+center_bounds(x, misrate)    # Confidence bounds on center
 ```
 
 ## Testing
