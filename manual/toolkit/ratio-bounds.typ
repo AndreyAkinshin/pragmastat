@@ -1,6 +1,6 @@
 #import "/manual/definitions.typ": *
 
-== RatioBounds
+=== RatioBounds
 
 $ RatioBounds(vx, vy, misrate) = exp(ShiftBounds(log vx, log vy, misrate)) $
 

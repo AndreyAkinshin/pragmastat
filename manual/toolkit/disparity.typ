@@ -1,6 +1,6 @@
 #import "/manual/definitions.typ": *
 
-== Disparity
+=== Disparity
 
 $ Disparity(vx, vy) = Shift(vx, vy) / AvgSpread(vx, vy) $
 

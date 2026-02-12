@@ -1,6 +1,6 @@
 #import "/manual/definitions.typ": *
 
-== CenterBounds
+=== CenterBounds
 
 $ CenterBounds(vx, misrate) = [w_((k_"left")), w_((k_"right"))] $
 

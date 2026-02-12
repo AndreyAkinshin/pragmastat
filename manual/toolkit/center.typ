@@ -1,6 +1,6 @@
 #import "/manual/definitions.typ": *
 
-== Center
+=== Center
 
 $ Center(vx) = attach(Median, b: 1 <= i <= j <= n) (x_i + x_j) / 2 $
 

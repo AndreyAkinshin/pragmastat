@@ -1,6 +1,6 @@
 #import "/manual/definitions.typ": *
 
-== Median
+=== Median
 
 $ Median(vx) = cases(
   x_(((n+1)\/2)) & "if" n "is odd",

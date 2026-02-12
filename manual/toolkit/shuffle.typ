@@ -1,6 +1,6 @@
 #import "/manual/definitions.typ": *
 
-== Shuffle
+=== Shuffle
 
 $ r.Shuffle(vx) $
 

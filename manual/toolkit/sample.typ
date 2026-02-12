@@ -1,6 +1,6 @@
 #import "/manual/definitions.typ": *
 
-== Sample
+=== Sample
 
 $ r.Sample(vx, k) $
 

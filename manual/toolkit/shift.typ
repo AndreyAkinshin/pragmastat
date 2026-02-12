@@ -1,6 +1,6 @@
 #import "/manual/definitions.typ": *
 
-== Shift
+=== Shift
 
 $ Shift(vx, vy) = attach(Median, b: 1 <= i <= n\, 1 <= j <= m) (x_i - y_j) $
 

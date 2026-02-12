@@ -1,6 +1,6 @@
 #import "/manual/definitions.typ": *
 
-== Spread
+=== Spread
 
 $ Spread(vx) = attach(Median, b: 1 <= i < j <= n) abs(x_i - x_j) $
 

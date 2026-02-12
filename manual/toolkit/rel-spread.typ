@@ -1,6 +1,6 @@
 #import "/manual/definitions.typ": *
 
-== RelSpread
+=== RelSpread
 
 $ RelSpread(vx) = Spread(vx) / abs(Center(vx)) $
 

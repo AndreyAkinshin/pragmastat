@@ -1,6 +1,6 @@
 #import "/manual/definitions.typ": *
 
-== ShiftBounds
+=== ShiftBounds
 
 $ ShiftBounds(vx, vy, misrate) = [z_((k_"left")), z_((k_"right"))] $
 

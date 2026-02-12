@@ -1,6 +1,6 @@
 #import "/manual/definitions.typ": *
 
-== Resample
+=== Resample
 
 $ r.Resample(vx, k) $
 

@@ -1,6 +1,6 @@
 #import "/manual/definitions.typ": *
 
-== PairwiseMargin
+=== PairwiseMargin
 
 $ PairwiseMargin(n, m, misrate) $
 

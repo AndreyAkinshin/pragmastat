@@ -1,6 +1,6 @@
 #import "/manual/definitions.typ": *
 
-== SignedRankMargin
+=== SignedRankMargin
 
 $ SignedRankMargin(n, misrate) $
 

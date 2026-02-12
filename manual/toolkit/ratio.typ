@@ -1,6 +1,6 @@
 #import "/manual/definitions.typ": *
 
-== Ratio
+=== Ratio
 
 $ Ratio(vx, vy) = exp(Shift(log vx, log vy)) $
 

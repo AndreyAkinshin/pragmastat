@@ -1,6 +1,6 @@
 #import "/manual/definitions.typ": *
 
-== Rng
+=== Rng
 
 $ Rng(s) $
 

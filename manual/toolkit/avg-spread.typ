@@ -1,6 +1,6 @@
 #import "/manual/definitions.typ": *
 
-== AvgSpread
+=== AvgSpread
 
 $ AvgSpread(vx, vy) = (n dot Spread(vx) + m dot Spread(vy)) / (n + m) $
 
