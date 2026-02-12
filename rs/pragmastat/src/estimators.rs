@@ -4,28 +4,6 @@ use crate::assumptions::{
     check_positivity, check_sparity, check_validity, log, AssumptionError, EstimatorError, Subject,
 };
 
-/// Calculates the median of a sorted slice
-fn median_sorted(sorted: &[f64]) -> Result<f64, &'static str> {
-    let n = sorted.len();
-    if n == 0 {
-        return Err("Input slice cannot be empty");
-    }
-    if n.is_multiple_of(2) {
-        Ok((sorted[n / 2 - 1] + sorted[n / 2]) / 2.0)
-    } else {
-        Ok(sorted[n / 2])
-    }
-}
-
-/// Calculates the median of a slice (internal helper, not part of the public API)
-pub fn median(values: &[f64]) -> Result<f64, EstimatorError> {
-    // Check validity (priority 0)
-    check_validity(values, Subject::X)?;
-    let mut sorted = values.to_vec();
-    sorted.sort_by(|a, b| a.total_cmp(b));
-    median_sorted(&sorted).map_err(|_| EstimatorError::from(AssumptionError::validity(Subject::X)))
-}
-
 /// Estimates the central value of the data (center)
 ///
 /// Calculates the median of all pairwise averages (x[i] + x[j])/2.

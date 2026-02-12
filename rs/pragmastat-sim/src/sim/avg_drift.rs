@@ -12,7 +12,7 @@ type EstimatorFn = fn(&[f64]) -> f64;
 fn lookup_estimator(name: &str) -> EstimatorFn {
     match name {
         "Mean" => estimators::mean,
-        "Median" => |v| pragmastat::estimators::median(v).unwrap(),
+        "Median" => |v| crate::estimators::median(v),
         "Center" => |v| pragmastat::center(v).unwrap(),
         _ => panic!("Unknown average estimator: {name}"),
     }

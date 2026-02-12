@@ -2,28 +2,8 @@
 
 use pragmastat::assumptions::{AssumptionId, EstimatorError, Subject};
 use pragmastat::estimators::{
-    avg_spread, center, center_bounds, disparity, median, ratio, rel_spread, shift, shift_bounds,
-    spread,
+    avg_spread, center, center_bounds, disparity, ratio, rel_spread, shift, shift_bounds, spread,
 };
-
-#[test]
-fn median_empty_input() {
-    let result = median(&[]);
-    assert!(result.is_err());
-    let (id, subject) = unwrap_estimator_error(result.unwrap_err());
-    assert_eq!(id, AssumptionId::Validity);
-    assert_eq!(subject, Subject::X);
-}
-
-#[test]
-fn median_nan_input() {
-    assert!(median(&[1.0, f64::NAN, 3.0]).is_err());
-}
-
-#[test]
-fn median_infinite_input() {
-    assert!(median(&[1.0, f64::INFINITY, 3.0]).is_err());
-}
 
 #[test]
 fn center_empty_input() {

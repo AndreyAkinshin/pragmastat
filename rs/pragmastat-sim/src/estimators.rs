@@ -7,6 +7,19 @@ pub fn mean(values: &[f64]) -> f64 {
     values.iter().sum::<f64>() / n as f64
 }
 
+/// Median of a slice.
+pub fn median(values: &[f64]) -> f64 {
+    assert!(!values.is_empty(), "median requires non-empty input");
+    let mut sorted = values.to_vec();
+    sorted.sort_by(|a, b| a.total_cmp(b));
+    let n = sorted.len();
+    if n.is_multiple_of(2) {
+        (sorted[n / 2 - 1] + sorted[n / 2]) / 2.0
+    } else {
+        sorted[n / 2]
+    }
+}
+
 /// Corrected sample standard deviation (Bessel's correction).
 pub fn std_dev(values: &[f64]) -> f64 {
     let n = values.len();
@@ -18,7 +31,7 @@ pub fn std_dev(values: &[f64]) -> f64 {
 
 /// Median absolute deviation (MAD).
 pub fn mad(values: &[f64]) -> f64 {
-    let med = pragmastat::estimators::median(values).expect("MAD requires valid input");
+    let med = median(values);
     let mut abs_devs: Vec<f64> = values.iter().map(|&v| (v - med).abs()).collect();
     abs_devs.sort_by(|a, b| a.total_cmp(b));
     let n = abs_devs.len();
