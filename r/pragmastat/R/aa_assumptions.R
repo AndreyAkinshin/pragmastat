@@ -13,6 +13,8 @@ SUBJECTS <- list(
   MISRATE = "misrate"
 )
 
+DEFAULT_MISRATE <- 1e-3
+
 assumption_error <- function(id, subject) {
   violation <- list(id = id, subject = subject)
   message <- paste0(id, "(", subject, ")")

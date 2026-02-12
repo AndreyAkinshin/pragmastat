@@ -2,7 +2,7 @@
 \alias{shift_bounds}
 \title{Bounds on the Shift Estimator}
 \usage{
-shift_bounds(x, y, misrate)
+shift_bounds(x, y, misrate = DEFAULT_MISRATE)
 }
 \arguments{
 \item{x}{A numeric vector representing the first sample.}

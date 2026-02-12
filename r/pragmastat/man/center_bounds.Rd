@@ -2,7 +2,7 @@
 \alias{center_bounds}
 \title{Exact Bounds for Center (Hodges-Lehmann Pseudomedian)}
 \usage{
-center_bounds(x, misrate)
+center_bounds(x, misrate = DEFAULT_MISRATE)
 }
 \arguments{
 \item{x}{Numeric vector of values (at least 2 elements).}

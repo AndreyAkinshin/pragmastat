@@ -4,7 +4,7 @@
 # @param x Numeric vector of values
 # @param misrate Misclassification rate (probability that true center falls outside bounds)
 # @return List with 'lower' and 'upper' components
-center_bounds <- function(x, misrate) {
+center_bounds <- function(x, misrate = DEFAULT_MISRATE) {
   check_validity(x, SUBJECTS$X)
 
   if (is.nan(misrate) || misrate < 0 || misrate > 1) {

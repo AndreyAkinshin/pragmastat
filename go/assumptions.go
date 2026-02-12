@@ -25,6 +25,9 @@ const (
 	SubjectMisrate Subject = "misrate"
 )
 
+// DefaultMisrate is the default misclassification rate for bounds estimators.
+const DefaultMisrate = 1e-3
+
 // Violation represents a specific assumption violation.
 type Violation struct {
 	ID      AssumptionID

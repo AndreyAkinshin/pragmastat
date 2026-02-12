@@ -9,6 +9,7 @@ export { AssumptionId, AssumptionError, type Subject, type Violation } from './a
 
 // Estimators
 export {
+  DEFAULT_MISRATE,
   median,
   center,
   spread,

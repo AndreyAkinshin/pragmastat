@@ -21,6 +21,9 @@ from .assumptions import (
 )
 
 
+DEFAULT_MISRATE = 1e-3
+
+
 class Bounds(NamedTuple):
     """Represents an interval with lower and upper bounds."""
 
@@ -289,7 +292,7 @@ def disparity(
 def shift_bounds(
     x: Union[Sequence[float], NDArray],
     y: Union[Sequence[float], NDArray],
-    misrate: float,
+    misrate: float = DEFAULT_MISRATE,
 ) -> Bounds:
     """
     Provides bounds on the Shift estimator with specified misclassification rate.
@@ -358,7 +361,7 @@ def shift_bounds(
 def ratio_bounds(
     x: Union[Sequence[float], NDArray],
     y: Union[Sequence[float], NDArray],
-    misrate: float,
+    misrate: float = DEFAULT_MISRATE,
 ) -> Bounds:
     """
     Provides bounds on the Ratio estimator with specified misclassification rate.
@@ -409,7 +412,7 @@ def ratio_bounds(
 
 def center_bounds(
     x: Union[Sequence[float], NDArray],
-    misrate: float,
+    misrate: float = DEFAULT_MISRATE,
 ) -> Bounds:
     """
     Provides exact bounds on the Center (Hodges-Lehmann pseudomedian) with specified misrate.

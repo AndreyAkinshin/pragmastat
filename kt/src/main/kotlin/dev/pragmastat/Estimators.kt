@@ -173,6 +173,8 @@ fun disparity(x: List<Double>, y: List<Double>): Double {
     return shiftVal / avgSpreadVal
 }
 
+const val DEFAULT_MISRATE = 1e-3
+
 /**
  * Represents an interval with lower and upper bounds
  */
@@ -189,7 +191,7 @@ data class Bounds(val lower: Double, val upper: Double)
  * @param misrate Misclassification rate (probability that true shift falls outside bounds)
  * @return A Bounds object containing the lower and upper bounds
  */
-fun shiftBounds(x: List<Double>, y: List<Double>, misrate: Double): Bounds {
+fun shiftBounds(x: List<Double>, y: List<Double>, misrate: Double = DEFAULT_MISRATE): Bounds {
     // Check validity for x
     checkValidity(x, Subject.X)
     // Check validity for y
@@ -251,7 +253,7 @@ fun shiftBounds(x: List<Double>, y: List<Double>, misrate: Double): Bounds {
  * @param misrate Misclassification rate (probability that true ratio falls outside bounds)
  * @return A Bounds object containing the lower and upper bounds
  */
-fun ratioBounds(x: List<Double>, y: List<Double>, misrate: Double): Bounds {
+fun ratioBounds(x: List<Double>, y: List<Double>, misrate: Double = DEFAULT_MISRATE): Bounds {
     checkValidity(x, Subject.X)
     checkValidity(y, Subject.Y)
 
@@ -290,7 +292,7 @@ fun ratioBounds(x: List<Double>, y: List<Double>, misrate: Double): Bounds {
  * @return A Bounds object containing the lower and upper bounds
  * @throws AssumptionException if sample size < 2 or misrate is below minimum achievable
  */
-fun centerBounds(x: List<Double>, misrate: Double): Bounds {
+fun centerBounds(x: List<Double>, misrate: Double = DEFAULT_MISRATE): Bounds {
     checkValidity(x, Subject.X)
 
     if (misrate.isNaN() || misrate < 0.0 || misrate > 1.0) {

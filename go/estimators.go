@@ -239,7 +239,12 @@ type Bounds struct {
 // ShiftBounds provides bounds on the Shift estimator with specified misclassification rate.
 // The misrate represents the probability that the true shift falls outside the computed bounds.
 // This is a pragmatic alternative to traditional confidence intervals for the Hodges-Lehmann estimator.
-func ShiftBounds[T Number](x, y []T, misrate float64) (Bounds, error) {
+func ShiftBounds[T Number](x, y []T, misrate ...float64) (Bounds, error) {
+	mr := DefaultMisrate
+	if len(misrate) > 0 {
+		mr = misrate[0]
+	}
+
 	// Check validity for x
 	if err := checkValidity(x, SubjectX); err != nil {
 		return Bounds{}, err
@@ -249,7 +254,7 @@ func ShiftBounds[T Number](x, y []T, misrate float64) (Bounds, error) {
 		return Bounds{}, err
 	}
 
-	if math.IsNaN(misrate) || misrate < 0 || misrate > 1 {
+	if math.IsNaN(mr) || mr < 0 || mr > 1 {
 		return Bounds{}, NewDomainError(SubjectMisrate)
 	}
 
@@ -260,7 +265,7 @@ func ShiftBounds[T Number](x, y []T, misrate float64) (Bounds, error) {
 	if err != nil {
 		return Bounds{}, err
 	}
-	if misrate < minMisrate {
+	if mr < minMisrate {
 		return Bounds{}, NewDomainError(SubjectMisrate)
 	}
 
@@ -280,7 +285,7 @@ func ShiftBounds[T Number](x, y []T, misrate float64) (Bounds, error) {
 		return Bounds{Lower: value, Upper: value}, nil
 	}
 
-	margin, err := PairwiseMargin(n, m, misrate)
+	margin, err := PairwiseMargin(n, m, mr)
 	if err != nil {
 		return Bounds{}, err
 	}
@@ -321,7 +326,12 @@ func ShiftBounds[T Number](x, y []T, misrate float64) (Bounds, error) {
 // Assumptions:
 //   - positivity(x) - all values in x must be strictly positive
 //   - positivity(y) - all values in y must be strictly positive
-func RatioBounds[T Number](x, y []T, misrate float64) (Bounds, error) {
+func RatioBounds[T Number](x, y []T, misrate ...float64) (Bounds, error) {
+	mr := DefaultMisrate
+	if len(misrate) > 0 {
+		mr = misrate[0]
+	}
+
 	if err := checkValidity(x, SubjectX); err != nil {
 		return Bounds{}, err
 	}
@@ -329,7 +339,7 @@ func RatioBounds[T Number](x, y []T, misrate float64) (Bounds, error) {
 		return Bounds{}, err
 	}
 
-	if math.IsNaN(misrate) || misrate < 0 || misrate > 1 {
+	if math.IsNaN(mr) || mr < 0 || mr > 1 {
 		return Bounds{}, NewDomainError(SubjectMisrate)
 	}
 
@@ -337,7 +347,7 @@ func RatioBounds[T Number](x, y []T, misrate float64) (Bounds, error) {
 	if err != nil {
 		return Bounds{}, err
 	}
-	if misrate < minMisrate {
+	if mr < minMisrate {
 		return Bounds{}, NewDomainError(SubjectMisrate)
 	}
 
@@ -352,7 +362,7 @@ func RatioBounds[T Number](x, y []T, misrate float64) (Bounds, error) {
 	}
 
 	// Delegate to ShiftBounds in log-space
-	logBounds, err := ShiftBounds(logX, logY, misrate)
+	logBounds, err := ShiftBounds(logX, logY, mr)
 	if err != nil {
 		return Bounds{}, err
 	}
@@ -366,12 +376,17 @@ func RatioBounds[T Number](x, y []T, misrate float64) (Bounds, error) {
 
 // CenterBounds provides exact distribution-free bounds for Center (Hodges-Lehmann pseudomedian).
 // Requires weak symmetry assumption: distribution symmetric around unknown center.
-func CenterBounds[T Number](x []T, misrate float64) (Bounds, error) {
+func CenterBounds[T Number](x []T, misrate ...float64) (Bounds, error) {
+	mr := DefaultMisrate
+	if len(misrate) > 0 {
+		mr = misrate[0]
+	}
+
 	if err := checkValidity(x, SubjectX); err != nil {
 		return Bounds{}, err
 	}
 
-	if math.IsNaN(misrate) || misrate < 0 || misrate > 1 {
+	if math.IsNaN(mr) || mr < 0 || mr > 1 {
 		return Bounds{}, NewDomainError(SubjectMisrate)
 	}
 
@@ -384,11 +399,11 @@ func CenterBounds[T Number](x []T, misrate float64) (Bounds, error) {
 	if err != nil {
 		return Bounds{}, err
 	}
-	if misrate < minMisrate {
+	if mr < minMisrate {
 		return Bounds{}, NewDomainError(SubjectMisrate)
 	}
 
-	margin, err := SignedRankMargin(n, misrate)
+	margin, err := SignedRankMargin(n, mr)
 	if err != nil {
 		return Bounds{}, err
 	}

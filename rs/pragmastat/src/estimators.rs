@@ -230,6 +230,9 @@ pub fn disparity(x: &[f64], y: &[f64]) -> Result<f64, EstimatorError> {
     Ok(shift_val / avg_spread_val)
 }
 
+/// Default misclassification rate for bounds estimators.
+pub const DEFAULT_MISRATE: f64 = 1e-3;
+
 /// Represents an interval with lower and upper bounds
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Bounds {

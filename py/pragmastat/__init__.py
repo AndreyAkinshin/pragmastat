@@ -5,6 +5,7 @@ from .assumptions import (
     Violation,
 )
 from .estimators import (
+    DEFAULT_MISRATE,
     median,
     center,
     spread,
@@ -37,6 +38,7 @@ __all__ = [
     "Subject",
     "Violation",
     # Estimators
+    "DEFAULT_MISRATE",
     "median",
     "center",
     "spread",

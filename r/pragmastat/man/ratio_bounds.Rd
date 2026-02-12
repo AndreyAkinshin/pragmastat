@@ -2,7 +2,7 @@
 \alias{ratio_bounds}
 \title{Bounds on the Ratio Estimator}
 \usage{
-ratio_bounds(x, y, misrate)
+ratio_bounds(x, y, misrate = DEFAULT_MISRATE)
 }
 \arguments{
 \item{x}{A numeric vector representing the first sample (must be strictly positive).}

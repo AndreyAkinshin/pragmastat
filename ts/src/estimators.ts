@@ -193,6 +193,8 @@ export function disparity(x: number[], y: number[]): number {
   return shiftVal / avgSpreadVal;
 }
 
+export const DEFAULT_MISRATE = 1e-3;
+
 /**
  * Represents an interval with lower and upper bounds
  */
@@ -213,7 +215,7 @@ export interface Bounds {
  * @returns An object containing the lower and upper bounds
  * @throws AssumptionError if either sample is empty or contains NaN/Inf
  */
-export function shiftBounds(x: number[], y: number[], misrate: number): Bounds {
+export function shiftBounds(x: number[], y: number[], misrate: number = DEFAULT_MISRATE): Bounds {
   // Check validity for x
   checkValidity(x, 'x');
   // Check validity for y
@@ -277,7 +279,7 @@ export function shiftBounds(x: number[], y: number[], misrate: number): Bounds {
  * @returns An object containing the lower and upper bounds
  * @throws AssumptionError if either sample is empty, contains NaN/Inf, or contains non-positive values
  */
-export function ratioBounds(x: number[], y: number[], misrate: number): Bounds {
+export function ratioBounds(x: number[], y: number[], misrate: number = DEFAULT_MISRATE): Bounds {
   checkValidity(x, 'x');
   checkValidity(y, 'y');
 
@@ -314,7 +316,7 @@ export function ratioBounds(x: number[], y: number[], misrate: number): Bounds {
  * @returns An object containing the lower and upper bounds
  * @throws AssumptionError if sample is empty or contains NaN/Inf
  */
-export function centerBounds(x: number[], misrate: number): Bounds {
+export function centerBounds(x: number[], misrate: number = DEFAULT_MISRATE): Bounds {
   checkValidity(x, 'x');
 
   if (isNaN(misrate) || misrate < 0 || misrate > 1) {

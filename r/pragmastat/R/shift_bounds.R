@@ -6,7 +6,7 @@
 # @param y Numeric vector of values
 # @param misrate Misclassification rate (probability that true shift falls outside bounds)
 # @return List with 'lower' and 'upper' components
-shift_bounds <- function(x, y, misrate) {
+shift_bounds <- function(x, y, misrate = DEFAULT_MISRATE) {
   # Check validity for x
   check_validity(x, SUBJECTS$X)
   # Check validity for y

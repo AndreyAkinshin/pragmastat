@@ -11,7 +11,7 @@
 # @param y Numeric vector of values (must be strictly positive)
 # @param misrate Misclassification rate (probability that true ratio falls outside bounds)
 # @return List with 'lower' and 'upper' components
-ratio_bounds <- function(x, y, misrate) {
+ratio_bounds <- function(x, y, misrate = DEFAULT_MISRATE) {
   check_validity(x, SUBJECTS$X)
   check_validity(y, SUBJECTS$Y)
 
