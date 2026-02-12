@@ -1,6 +1,6 @@
 {
   "name": "pragmastat",
-  "version": "7.0.1",
+  "version": "8.0.0",
   "description": "Pragmastat: Pragmatic Statistical Toolkit",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
