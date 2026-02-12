@@ -37,6 +37,6 @@ Robust bounds on $Center(vx)$ with specified coverage.
 $CenterBounds$ provides not just the estimated center but also the uncertainty of that estimate.
 The function returns an interval of plausible center values given the data.
 Set $misrate$ to control how often the bounds might fail to contain the true center:
-use $10^(-6)$ for critical decisions where errors are costly, or $10^(-3)$ for everyday analysis.
+use $10^(-3)$ for everyday analysis or $10^(-6)$ for critical decisions where errors are costly.
 These bounds require weak symmetry but no specific distributional form.
 If the bounds exclude some reference value, that suggests the true center differs reliably from that value.

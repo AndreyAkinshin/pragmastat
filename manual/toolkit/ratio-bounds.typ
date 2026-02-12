@@ -44,6 +44,6 @@ $RatioBounds$ returns $[e^a, e^b]$.
 #v(0.5em)
 $RatioBounds$ provides not just the estimated ratio but also the uncertainty of that estimate.
 The function returns an interval of plausible ratio values given the data.
-Set $misrate$ to control how often the bounds might fail to contain the true ratio: use $10^(-6)$ for critical decisions where errors are costly, or $10^(-3)$ for everyday analysis.
+Set $misrate$ to control how often the bounds might fail to contain the true ratio: use $10^(-3)$ for everyday analysis or $10^(-6)$ for critical decisions where errors are costly.
 These bounds require no assumptions about your data distribution, so they remain valid for any continuous positive measurements.
 If the bounds exclude $1$, that suggests a reliable multiplicative difference between the two groups.

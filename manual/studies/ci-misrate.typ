@@ -45,10 +45,9 @@ This simple inversion provides several advantages:
   $10^(-5)$ versus $10^(-6)$ immediately shows a 10× difference in error tolerance.
   99.999% versus 99.9999% confidence obscures this same relationship.
 - *Pragmatic default*.
-  The toolkit recommends $misrate = 10^(-6)$ (one-in-a-million error rate)
-  as a reasonable default for most applications.
-  This represents extremely high confidence (99.9999%)
-  while remaining computationally practical and conceptually clear.
+  The toolkit recommends $misrate = 10^(-3)$ (one-in-a-thousand error rate)
+  as a reasonable default for everyday analysis.
+  For critical decisions where errors are costly, use $misrate = 10^(-6)$ (one-in-a-million).
 
 The terminology shift from "confidence level" to "misrate"
   parallels other clarifying renames in this toolkit.
