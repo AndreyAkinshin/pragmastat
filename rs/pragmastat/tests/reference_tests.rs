@@ -1,4 +1,6 @@
 use float_cmp::approx_eq;
+use pragmastat::pairwise_margin::pairwise_margin;
+use pragmastat::signed_rank_margin::signed_rank_margin;
 use pragmastat::*;
 use serde::{Deserialize, Serialize};
 use std::fs;

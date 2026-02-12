@@ -102,9 +102,9 @@ func TestReferenceData(t *testing.T) {
 
 				// Handle error test cases
 				if len(testData.ExpectedError) > 0 {
-					_, err := PairwiseMargin(input.N, input.M, input.Misrate)
+					_, err := pairwiseMargin(input.N, input.M, input.Misrate)
 					if err == nil {
-						t.Errorf("Expected error for PairwiseMargin(%d, %d, %v), but got none", input.N, input.M, input.Misrate)
+						t.Errorf("Expected error for pairwiseMargin(%d, %d, %v), but got none", input.N, input.M, input.Misrate)
 						return
 					}
 					// Verify error details match expected
@@ -124,12 +124,12 @@ func TestReferenceData(t *testing.T) {
 					t.Fatalf("Failed to parse output data: %v", err)
 				}
 
-				actual, err := PairwiseMargin(input.N, input.M, input.Misrate)
+				actual, err := pairwiseMargin(input.N, input.M, input.Misrate)
 				if err != nil {
 					t.Fatalf("PairwiseMargin returned unexpected error: %v", err)
 				}
 				if actual != expected {
-					t.Errorf("PairwiseMargin(%d, %d, %v) = %d, want %d",
+					t.Errorf("pairwiseMargin(%d, %d, %v) = %d, want %d",
 						input.N, input.M, input.Misrate, actual, expected)
 				}
 			})
@@ -1230,9 +1230,9 @@ func TestSignedRankMarginReference(t *testing.T) {
 
 			// Handle error test cases
 			if len(testData.ExpectedError) > 0 {
-				_, err := SignedRankMargin(input.N, input.Misrate)
+				_, err := signedRankMargin(input.N, input.Misrate)
 				if err == nil {
-					t.Errorf("Expected error for SignedRankMargin(%d, %v), but got none",
+					t.Errorf("Expected error for signedRankMargin(%d, %v), but got none",
 						input.N, input.Misrate)
 					return
 				}
@@ -1255,12 +1255,12 @@ func TestSignedRankMarginReference(t *testing.T) {
 				t.Fatalf("Failed to parse output data: %v", err)
 			}
 
-			actual, err := SignedRankMargin(input.N, input.Misrate)
+			actual, err := signedRankMargin(input.N, input.Misrate)
 			if err != nil {
 				t.Fatalf("SignedRankMargin returned unexpected error: %v", err)
 			}
 			if actual != expected {
-				t.Errorf("SignedRankMargin(%d, %v) = %d, want %d",
+				t.Errorf("signedRankMargin(%d, %v) = %d, want %d",
 					input.N, input.Misrate, actual, expected)
 			}
 		})

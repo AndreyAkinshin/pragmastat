@@ -9,8 +9,6 @@ from pragmastat import (
     ratio,
     avg_spread,
     disparity,
-    pairwise_margin,
-    signed_rank_margin,
     shift_bounds,
     ratio_bounds,
     center_bounds,
@@ -21,6 +19,8 @@ from pragmastat import (
     Exp,
     Power,
 )
+from pragmastat.pairwise_margin import pairwise_margin
+from pragmastat.signed_rank_margin import signed_rank_margin
 from pragmastat.assumptions import AssumptionError
 
 
