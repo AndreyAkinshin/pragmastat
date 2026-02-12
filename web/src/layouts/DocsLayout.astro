@@ -141,6 +141,47 @@ const currentSlug = Astro.url.pathname.replace(/^\/|\/$/g, '');
       setSidebarCollapsed(false);
     });
 
+    // Active section highlighting in sidebar
+    {
+      const sublinks = document.querySelectorAll<HTMLAnchorElement>('.sidebar-sublink');
+      if (sublinks.length > 0) {
+        const headingIds = Array.from(sublinks).map((link) => link.hash.slice(1));
+        let ticking = false;
+
+        function updateActiveHeading() {
+          const scrollTop = window.scrollY;
+          const offset = 100; // how far below the top a heading must be to count
+          let activeId = '';
+
+          for (const id of headingIds) {
+            const el = document.getElementById(id);
+            if (el && el.offsetTop - offset <= scrollTop) {
+              activeId = id;
+            }
+          }
+
+          // If scrolled near the bottom, activate the last heading
+          if (window.innerHeight + scrollTop >= document.body.scrollHeight - 2) {
+            activeId = headingIds[headingIds.length - 1];
+          }
+
+          sublinks.forEach((link) => {
+            link.classList.toggle('active', link.hash === `#${activeId}`);
+          });
+          ticking = false;
+        }
+
+        window.addEventListener('scroll', () => {
+          if (!ticking) {
+            requestAnimationFrame(updateActiveHeading);
+            ticking = true;
+          }
+        });
+
+        updateActiveHeading();
+      }
+    }
+
     // Citation popovers
     (async function initCitations() {
       const citations = document.querySelectorAll('.citation');
