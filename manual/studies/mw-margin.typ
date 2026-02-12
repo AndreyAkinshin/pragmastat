@@ -1,6 +1,6 @@
 #import "/manual/definitions.typ": *
 
-== From Mann-Whitney U-test to Pairwise Margin
+=== From Mann-Whitney U-test to Pairwise Margin
 
 The Mann-Whitney $U$ test (also known as the Wilcoxon rank-sum test)
   ranks among the most widely used non-parametric statistical tests,

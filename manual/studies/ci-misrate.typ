@@ -1,6 +1,6 @@
 #import "/manual/definitions.typ": *
 
-== From Confidence Level to Misrate
+=== From Confidence Level to Misrate
 
 Traditional statistics expresses uncertainty through confidence levels:
   "95% confidence interval", "99% confidence", "99.9% confidence".

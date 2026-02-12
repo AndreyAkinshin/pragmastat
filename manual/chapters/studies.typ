@@ -18,11 +18,15 @@ The studies provide detailed analyses of estimator properties for practitioners
 
 #include "../studies/invariance.typ"
 
+== Reframings
+
 #include "../studies/efficiency-drift.typ"
 
 #include "../studies/ci-misrate.typ"
 
 #include "../studies/mw-margin.typ"
+
+== Notes
 
 #include "../studies/bootstrap-center.typ"
 

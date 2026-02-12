@@ -1,6 +1,6 @@
 #import "/manual/definitions.typ": *
 
-== Breakdown
+=== Breakdown
 
 Heavy-tailed distributions naturally produce extreme outliers that completely distort traditional estimators.
 A single extreme measurement from the $Power$ distribution can make the sample mean arbitrarily large.

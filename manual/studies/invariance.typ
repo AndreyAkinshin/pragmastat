@@ -1,6 +1,6 @@
 #import "/manual/definitions.typ": *
 
-== Invariance
+=== Invariance
 
 Invariance properties determine how estimators respond to data transformations.
 These properties are crucial for analysis design and interpretation:

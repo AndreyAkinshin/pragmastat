@@ -1,6 +1,6 @@
 #import "/manual/definitions.typ": *
 
-== Drift
+=== Drift
 
 Drift measures estimator precision by quantifying how much estimates scatter across repeated samples.
 It is based on the $Spread$ of estimates and therefore has a breakdown point of approximately $29%$.

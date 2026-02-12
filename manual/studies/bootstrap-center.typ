@@ -1,6 +1,6 @@
 #import "/manual/definitions.typ": *
 
-== On Bootstrap for Center Bounds
+=== On Bootstrap for Center Bounds
 
 A natural question arises: can bootstrap resampling improve $CenterBounds$ coverage
   for asymmetric distributions where the weak symmetry assumption fails?

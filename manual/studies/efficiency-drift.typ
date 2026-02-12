@@ -1,6 +1,6 @@
 #import "/manual/definitions.typ": *
 
-== From Statistical Efficiency to Drift
+=== From Statistical Efficiency to Drift
 
 Statistical efficiency measures estimator precision (@serfling2009).
 When multiple estimators target the same quantity, efficiency determines which provides more reliable results.

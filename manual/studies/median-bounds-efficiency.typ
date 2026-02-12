@@ -2,7 +2,7 @@
 
 #let MedianBounds = math.op("MedianBounds")
 
-== On Misrate Efficiency of MedianBounds
+=== On Misrate Efficiency of MedianBounds
 
 This study analyzes $MedianBounds$, a bounds estimator for the population median
   based on the sign test,
