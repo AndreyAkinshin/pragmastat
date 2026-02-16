@@ -50,7 +50,7 @@ pub fn sign_margin_randomized(
     };
     p = p.clamp(0.0, 1.0);
 
-    let u = rng.uniform();
+    let u = rng.uniform_f64();
     let r = if u < p { r_low + 1 } else { r_low };
     Ok(r * 2)
 }

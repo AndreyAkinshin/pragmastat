@@ -56,14 +56,16 @@ internal class Xoshiro256PlusPlus(seed: ULong) {
     // Floating Point Methods
     // ========================================================================
 
-    fun uniform(): Double {
+    fun uniformDouble(): Double {
         // Use upper 53 bits for maximum precision
         return (nextU64() shr 11).toDouble() * (1.0 / (1UL shl 53).toDouble())
     }
 
-    fun uniform(min: Double, max: Double): Double {
+    // FP rounding in min + (max-min)*u can theoretically yield max
+    // for extreme ranges. Acceptable for statistical use.
+    fun uniformDouble(min: Double, max: Double): Double {
         if (min >= max) return min
-        return min + (max - min) * uniform()
+        return min + (max - min) * uniformDouble()
     }
 
     fun uniformFloat(): Float {
@@ -141,7 +143,7 @@ internal class Xoshiro256PlusPlus(seed: ULong) {
     // ========================================================================
 
     fun uniformBool(): Boolean {
-        return uniform() < 0.5
+        return uniformDouble() < 0.5
     }
 }
 

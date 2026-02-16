@@ -1,5 +1,8 @@
 # Measures the relative dispersion of a sample (RelSpread)
 #
+# @description \code{rel_spread} is deprecated.
+# Use \code{spread(x) / abs(center(x))} instead.
+#
 # Calculates the ratio of Spread to absolute Center.
 # Robust alternative to the coefficient of variation.
 #
@@ -9,6 +12,7 @@
 # @param x Numeric vector of values
 # @return The relative spread estimate
 rel_spread <- function(x) {
+  .Deprecated("spread(x) / abs(center(x))")
   # Check validity (priority 0)
   check_validity(x, SUBJECTS$X)
   # Check positivity (priority 1)

@@ -15,8 +15,10 @@ rng(seed = NULL)
 \value{
 An Rng object (R6 class) with the following methods:
 \itemize{
-  \item \code{uniform()}: Generate a uniform random float in [0, 1)
+  \item \code{uniform_float()}: Generate a uniform random float in [0, 1)
+  \item \code{uniform_float_range(min_val, max_val)}: Generate a uniform random float in [min, max)
   \item \code{uniform_int(min_val, max_val)}: Generate a uniform random integer in [min, max)
+  \item \code{uniform_bool()}: Generate a uniform random boolean
   \item \code{shuffle(x)}: Return a shuffled copy of the input vector
   \item \code{sample(x, k)}: Sample k elements from the input vector without replacement
   \item \code{resample(x, k)}: Resample k elements with replacement (bootstrap sampling)
@@ -25,7 +27,7 @@ An Rng object (R6 class) with the following methods:
 \examples{
 # Create from string seed
 r <- rng("demo-uniform")
-r$uniform()
+r$uniform_float()
 
 # Shuffle a vector
 r <- rng("demo-shuffle")

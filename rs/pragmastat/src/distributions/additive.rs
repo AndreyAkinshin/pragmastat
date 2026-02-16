@@ -37,8 +37,8 @@ impl Distribution for Additive {
     fn sample(&self, rng: &mut Rng) -> f64 {
         // Box-Muller transform
         // We use both uniforms each time to maintain determinism across languages
-        let u1 = rng.uniform();
-        let u2 = rng.uniform();
+        let u1 = rng.uniform_f64();
+        let u2 = rng.uniform_f64();
 
         // Avoid log(0) - use smallest positive subnormal for cross-language consistency
         let u1 = if u1 == 0.0 {

@@ -50,7 +50,7 @@ def sign_margin_randomized(n: int, misrate: float, rng) -> int:  # noqa: ANN001
         p = 0.0
     p = max(0.0, min(1.0, p))
 
-    u = rng.uniform()
+    u = rng.uniform_float()
     r = r_low + 1 if u < p else r_low
     return r * 2
 

@@ -40,8 +40,8 @@ class Additive(Distribution):
 
     def sample(self, rng: "Rng") -> float:
         # Box-Muller transform
-        u1 = rng.uniform()
-        u2 = rng.uniform()
+        u1 = rng.uniform_float()
+        u2 = rng.uniform_float()
 
         # Avoid log(0) - use smallest positive subnormal for cross-language consistency
         if u1 == 0.0:

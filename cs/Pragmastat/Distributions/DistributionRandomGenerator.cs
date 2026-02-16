@@ -62,7 +62,7 @@ internal class QuantileRandomGenerator : AbstractRandomGenerator
 
   public override double Next()
   {
-    return _distribution.Quantile(Rng.Uniform());
+    return _distribution.Quantile(Rng.UniformDouble());
   }
 }
 

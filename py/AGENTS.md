@@ -40,7 +40,7 @@ py/
 
 | Type | Purpose |
 |------|---------|
-| `Rng` | Deterministic PRNG with `uniform()`, `sample()`, `shuffle()` |
+| `Rng` | Deterministic PRNG with `uniform_float()`, `sample()`, `shuffle()` |
 | `Bounds` | NamedTuple with `lower` and `upper` fields |
 | `Distribution` | Protocol for sampling distributions |
 
@@ -49,14 +49,15 @@ py/
 ```python
 def center(x: Sequence[float] | NDArray) -> float
 def spread(x: Sequence[float] | NDArray) -> float
-def rel_spread(x: Sequence[float] | NDArray) -> float
+def rel_spread(x: Sequence[float] | NDArray) -> float  # Deprecated
 def shift(x: Sequence[float] | NDArray, y: Sequence[float] | NDArray) -> float
 def ratio(x: Sequence[float] | NDArray, y: Sequence[float] | NDArray) -> float
-def avg_spread(x: Sequence[float] | NDArray, y: Sequence[float] | NDArray) -> float
 def disparity(x: Sequence[float] | NDArray, y: Sequence[float] | NDArray) -> float
 def shift_bounds(x, y, misrate: float) -> Bounds
 def ratio_bounds(x, y, misrate: float) -> Bounds
+def disparity_bounds(x, y, misrate: float) -> Bounds
 def center_bounds(x: Sequence[float] | NDArray, misrate: float) -> Bounds
+def spread_bounds(x: Sequence[float] | NDArray, misrate: float) -> Bounds
 ```
 
 ## Testing
@@ -86,6 +87,7 @@ Error conditions:
 - Empty input arrays
 - `misrate` outside `[0, 1]`
 - Division by zero (e.g., `rel_spread` when center is zero)
+- `rel_spread` is deprecated; use `spread(x) / abs(center(x))` instead
 - Non-positive values in `y` for `ratio`
 
 ## Determinism

@@ -36,6 +36,8 @@ class SplitMix64 {
  *
  * This is the jump-free version of the algorithm. It passes BigCrush
  * and is used by .NET 6+, Julia, and Rust's rand crate.
+ *
+ * @internal Not part of the public API — use {@link Rng} instead.
  */
 export class Xoshiro256PlusPlus {
   private state: [bigint, bigint, bigint, bigint];
@@ -66,15 +68,17 @@ export class Xoshiro256PlusPlus {
   // Floating Point Methods
   // ========================================================================
 
-  uniform(): number {
+  uniformFloat(): number {
     // Use upper 53 bits for maximum precision in float64
     const u64 = this.nextU64();
     return Number(u64 >> 11n) * (1.0 / Number(1n << 53n));
   }
 
-  uniformRange(min: number, max: number): number {
+  // Note: FP rounding in min + (max-min)*u can theoretically yield max
+  // for extreme values of (max-min). Acceptable for statistical use.
+  uniformFloatRange(min: number, max: number): number {
     if (min >= max) return min;
-    return min + (max - min) * this.uniform();
+    return min + (max - min) * this.uniformFloat();
   }
 
   // ========================================================================
@@ -83,16 +87,15 @@ export class Xoshiro256PlusPlus {
 
   /**
    * Generate a uniform integer in [min, max).
-   * @throws RangeError if max - min exceeds i64 range.
+   * @throws RangeError if max - min exceeds u64 range.
    */
   uniformInt(min: bigint, max: bigint): bigint {
     if (min >= max) {
       return min;
     }
     const range = max - min;
-    // Validate range fits in i64 (for cross-language consistency)
-    if (range > 0x7fffffffffffffffn) {
-      throw new RangeError('uniform_int: range overflow (max - min exceeds i64)');
+    if (range > 0xffffffffffffffffn) {
+      throw new RangeError('uniform_int: range overflow (max - min exceeds u64)');
     }
     return min + (this.nextU64() % range);
   }
@@ -102,7 +105,7 @@ export class Xoshiro256PlusPlus {
   // ========================================================================
 
   uniformBool(): boolean {
-    return this.uniform() < 0.5;
+    return this.uniformFloat() < 0.5;
   }
 }
 
@@ -111,7 +114,9 @@ const FNV_OFFSET_BASIS = 0xcbf29ce484222325n;
 const FNV_PRIME = 0x00000100000001b3n;
 
 /**
- * Compute FNV-1a 64-bit hash of a string
+ * Compute FNV-1a 64-bit hash of a string.
+ *
+ * @internal Not part of the public API — used by {@link Rng} for string seeds.
  */
 export function fnv1aHash(s: string): bigint {
   let hash = FNV_OFFSET_BASIS;

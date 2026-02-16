@@ -5,11 +5,15 @@ use crate::typst_parser::{TypstDocument, TypstEvent};
 use crate::xref::XRefMap;
 use std::fmt::Write;
 
-/// Generate the index/landing page with abstract and chapter links
-pub fn generate_index_page<C>(abstract_content: &str, chapters: &[C]) -> String
-where
-    C: ChapterInfoProvider<ChapterInfoRef>,
-{
+/// Page info for generating the index page
+pub struct PageInfo {
+    pub slug: &'static str,
+    pub title: &'static str,
+    pub group: Option<&'static str>,
+}
+
+/// Generate the index/landing page with abstract and page links
+pub fn generate_index_page<P: AsPageInfo>(abstract_content: &str, pages: &[P]) -> String {
     let mut output = String::new();
 
     // Frontmatter
@@ -23,10 +27,16 @@ where
     output.push_str(abstract_content.trim());
     output.push_str("\n\n");
 
-    // Chapter links
-    output.push_str("## Chapters\n\n");
-    for chapter in chapters {
-        let info = chapter.chapter_info();
+    // Page links grouped by group
+    let mut current_group: Option<&str> = None;
+    for page in pages {
+        let info = page.as_page_info();
+        if info.group != current_group {
+            if let Some(group) = info.group {
+                let _ = writeln!(output, "\n### {group}\n");
+            }
+            current_group = info.group;
+        }
         let _ = writeln!(output, "- [{}](./{})", info.title, info.slug);
     }
     output.push('\n');
@@ -34,18 +44,13 @@ where
     output
 }
 
-/// Trait for accessing chapter info (allows different struct types)
-pub trait ChapterInfoProvider<T> {
-    fn chapter_info(&self) -> T;
-}
-
-/// Reference to chapter info fields
-pub struct ChapterInfoRef {
-    pub slug: &'static str,
-    pub title: &'static str,
+/// Trait for extracting page info from a struct
+pub trait AsPageInfo {
+    fn as_page_info(&self) -> PageInfo;
 }
 
 /// Convert parsed Typst document to Astro MDX format
+#[allow(clippy::too_many_arguments)]
 pub fn convert_typst_to_mdx(
     document: &TypstDocument,
     definitions: &Definitions,
@@ -53,21 +58,50 @@ pub fn convert_typst_to_mdx(
     xref_map: &XRefMap,
     title: &str,
     order: u8,
+    group: Option<&str>,
+    heading_offset: i8,
 ) -> String {
     let mut output = String::new();
 
-    // Frontmatter with sidebar ordering
+    // Frontmatter with sidebar ordering and optional group
     output.push_str("---\n");
     let _ = writeln!(output, "title: \"{title}\"");
-    let _ = writeln!(output, "sidebar:\n  order: {order}");
+    if let Some(group) = group {
+        let _ = writeln!(output, "sidebar:\n  order: {order}\n  group: \"{group}\"");
+    } else {
+        let _ = writeln!(output, "sidebar:\n  order: {order}");
+    }
     output.push_str("---\n\n");
 
-    // Skip the first H1 heading (chapter title) since it's in frontmatter
-    let mut skip_first_h1 = true;
+    // Skip the first heading (H1 or H2) since it's in frontmatter
+    let mut skip_first_heading = true;
     for event in &document.events {
-        if skip_first_h1 && matches!(event, TypstEvent::Heading { level: 1, .. }) {
-            skip_first_h1 = false;
-            continue;
+        if skip_first_heading {
+            if let TypstEvent::Heading { level, .. } = event {
+                if *level <= 2 {
+                    skip_first_heading = false;
+                    continue;
+                }
+            }
+        }
+        // Apply heading offset for function/distribution/implementation pages
+        if heading_offset != 0 {
+            if let TypstEvent::Heading { level, text, label } = event {
+                let adjusted = (*level as i8 + heading_offset).max(1) as u8;
+                let adjusted_event = TypstEvent::Heading {
+                    level: adjusted,
+                    text: text.clone(),
+                    label: label.clone(),
+                };
+                convert_typst_event_to_mdx(
+                    &adjusted_event,
+                    definitions,
+                    references,
+                    xref_map,
+                    &mut output,
+                );
+                continue;
+            }
         }
         convert_typst_event_to_mdx(event, definitions, references, xref_map, &mut output);
     }
@@ -128,6 +162,45 @@ fn convert_typst_event_to_mdx(
                     output,
                     r#"<span class="citation" data-key="{key}">{short}</span>"#
                 );
+            } else {
+                output.push('[');
+                output.push_str(key);
+                output.push(']');
+            }
+        }
+        TypstEvent::FullCitation(key) => {
+            if let Some(reference) = references.get(key) {
+                // Render full bibliography entry (matches bibliography page format)
+                output.push_str("<div class=\"bib-entry\">\n");
+                let _ = writeln!(
+                    output,
+                    "  <div class=\"bib-title\">{}</div>",
+                    reference.title
+                );
+                if reference.authors.is_empty() {
+                    let _ = writeln!(
+                        output,
+                        "  <div class=\"bib-authors\">({})</div>",
+                        reference.year
+                    );
+                } else {
+                    let _ = writeln!(
+                        output,
+                        "  <div class=\"bib-authors\">{} ({})</div>",
+                        reference.authors.join(", "),
+                        reference.year
+                    );
+                }
+                if let Some(venue) = &reference.venue {
+                    let _ = writeln!(output, "  <div class=\"bib-venue\">{venue}</div>");
+                }
+                if let Some(doi) = &reference.doi {
+                    let _ = writeln!(
+                        output,
+                        "  <div class=\"bib-doi\"><a href=\"https://doi.org/{doi}\" target=\"_blank\">DOI: {doi}</a></div>"
+                    );
+                }
+                output.push_str("</div>\n");
             } else {
                 output.push('[');
                 output.push_str(key);
@@ -234,19 +307,50 @@ fn convert_typst_event_to_mdx(
             let _ = write!(output, r#"<span style="display:inline-block;width:{size}"></span>"#);
         }
         TypstEvent::Link { text, dest } => {
+            // Convert any $...$ math in the link text to KaTeX
+            let converted_text = convert_inline_math_in_text(text, definitions);
             // Handle internal links (cross-references)
             if let Some(label) = dest.strip_prefix("internal:") {
                 if let Some(url) = xref_map.resolve(label) {
-                    let _ = write!(output, "[{text}]({url})");
+                    let _ = write!(output, "[{converted_text}]({url})");
                 } else {
                     eprintln!("Warning: unresolved xref: {label}");
-                    output.push_str(text);
+                    output.push_str(&converted_text);
                 }
             } else {
-                let _ = write!(output, "[{text}]({dest})");
+                let _ = write!(output, "[{converted_text}]({dest})");
             }
         }
     }
+}
+
+/// Convert `$...$` math fragments in text to KaTeX
+///
+/// Link content blocks may contain inline math preserved as `$...$`.
+/// This function finds each fragment and converts the Typst math to LaTeX.
+fn convert_inline_math_in_text(text: &str, definitions: &Definitions) -> String {
+    let mut result = String::new();
+    let mut rest = text;
+
+    while let Some(start) = rest.find('$') {
+        // Add text before the $
+        result.push_str(&rest[..start]);
+
+        let after_dollar = &rest[start + 1..];
+        if let Some(end) = after_dollar.find('$') {
+            let math_content = &after_dollar[..end];
+            let latex = typst_to_latex(math_content, definitions);
+            let _ = write!(result, "${latex}$");
+            rest = &after_dollar[end + 1..];
+        } else {
+            // No closing $ — output the rest as-is
+            result.push_str(&rest[start..]);
+            return result;
+        }
+    }
+
+    result.push_str(rest);
+    result
 }
 
 /// Generate `KaTeX` macros configuration from definitions
@@ -280,13 +384,17 @@ pub struct ColophonInfo<'a> {
 }
 
 /// Generate colophon page MDX content
-pub fn generate_colophon_page(info: &ColophonInfo, order: u8) -> String {
+pub fn generate_colophon_page(info: &ColophonInfo, order: u8, group: Option<&str>) -> String {
     let mut output = String::new();
 
     // Frontmatter
     output.push_str("---\n");
     output.push_str("title: \"Colophon\"\n");
-    let _ = write!(output, "sidebar:\n  order: {order}\n");
+    if let Some(group) = group {
+        let _ = write!(output, "sidebar:\n  order: {order}\n  group: \"{group}\"\n");
+    } else {
+        let _ = write!(output, "sidebar:\n  order: {order}\n");
+    }
     output.push_str("---\n\n");
 
     // Author info (use <br /> for line breaks within the block)
@@ -336,13 +444,18 @@ pub fn generate_bibliography_page(
     references: &References,
     used_citations: &std::collections::HashSet<String>,
     order: u8,
+    group: Option<&str>,
 ) -> String {
     let mut output = String::new();
 
     // Frontmatter
     output.push_str("---\n");
     output.push_str("title: \"Bibliography\"\n");
-    let _ = write!(output, "sidebar:\n  order: {order}\n");
+    if let Some(group) = group {
+        let _ = write!(output, "sidebar:\n  order: {order}\n  group: \"{group}\"\n");
+    } else {
+        let _ = write!(output, "sidebar:\n  order: {order}\n");
+    }
     output.push_str("---\n\n");
 
     // Filter to only used references and sort by author last name, then year
@@ -487,8 +600,8 @@ mod tests {
         use crate::typst_parser::TypstEvent;
 
         let event = TypstEvent::Link {
-            text: "Algorithms".to_string(),
-            dest: "internal:ch-algorithms".to_string(),
+            text: "Assumptions".to_string(),
+            dest: "internal:sec-assumptions".to_string(),
         };
 
         let defs = HashMap::new();
@@ -497,7 +610,7 @@ mod tests {
         let mut output = String::new();
         convert_typst_event_to_mdx(&event, &defs, &refs, &xref, &mut output);
 
-        assert_eq!(output, "[Algorithms](/algorithms)");
+        assert_eq!(output, "[Assumptions](/assumptions)");
     }
 
     #[test]

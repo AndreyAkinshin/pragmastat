@@ -43,7 +43,7 @@ ts/
 
 | Type | Purpose |
 |------|---------|
-| `Rng` | Deterministic PRNG with `uniform()`, `sample()`, `shuffle()` |
+| `Rng` | Deterministic PRNG with `uniformFloat()`, `sample()`, `shuffle()` |
 | `Bounds` | Object with `lower` and `upper` properties |
 | `Distribution` | Interface for sampling distributions |
 
@@ -52,14 +52,15 @@ ts/
 ```typescript
 function center(x: number[]): number
 function spread(x: number[]): number
-function relSpread(x: number[]): number
+function relSpread(x: number[]): number  // Deprecated
 function shift(x: number[], y: number[]): number
 function ratio(x: number[], y: number[]): number
-function avgSpread(x: number[], y: number[]): number
 function disparity(x: number[], y: number[]): number
 function shiftBounds(x: number[], y: number[], misrate: number): Bounds
 function ratioBounds(x: number[], y: number[], misrate: number): Bounds
+function disparityBounds(x: number[], y: number[], misrate: number): Bounds
 function centerBounds(x: number[], misrate: number): Bounds
+function spreadBounds(x: number[], misrate: number): Bounds
 ```
 
 ## Distributions
@@ -99,6 +100,7 @@ Error conditions:
 - Empty input arrays
 - `misrate` outside `[0, 1]`
 - Division by zero (e.g., `relSpread` when center is zero)
+- `relSpread` is deprecated; use `spread(x) / Math.abs(center(x))` instead
 - Non-positive values in `y` for `ratio`
 
 ## Determinism

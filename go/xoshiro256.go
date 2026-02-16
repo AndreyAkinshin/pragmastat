@@ -55,16 +55,18 @@ func (x *xoshiro256PlusPlus) nextU64() uint64 {
 // Floating Point Methods
 // ========================================================================
 
-func (x *xoshiro256PlusPlus) uniform() float64 {
+func (x *xoshiro256PlusPlus) uniformFloat64() float64 {
 	// Use upper 53 bits for maximum precision
 	return float64(x.nextU64()>>11) * (1.0 / float64(uint64(1)<<53))
 }
 
-func (x *xoshiro256PlusPlus) uniformRange(min, max float64) float64 {
+// Note: FP rounding in min + (max-min)*u can theoretically yield max
+// for extreme values of (max-min). Acceptable for statistical use.
+func (x *xoshiro256PlusPlus) uniformFloat64Range(min, max float64) float64 {
 	if min >= max {
 		return min
 	}
-	return min + (max-min)*x.uniform()
+	return min + (max-min)*x.uniformFloat64()
 }
 
 func (x *xoshiro256PlusPlus) uniformFloat32() float32 {
@@ -87,19 +89,8 @@ func (x *xoshiro256PlusPlus) uniformInt64(min, max int64) int64 {
 	if min >= max {
 		return min
 	}
-	// Safe range computation avoiding signed overflow
-	var rangeSize uint64
-	if min >= 0 {
-		rangeSize = uint64(max) - uint64(min)
-	} else if max <= 0 {
-		rangeSize = uint64(-min) - uint64(-max)
-	} else {
-		// min < 0 < max: check for overflow
-		rangeSize = uint64(max) + uint64(-min)
-		if rangeSize < uint64(max) {
-			panic("uniform_int64: range overflow")
-		}
-	}
+	// uint64 subtraction gives correct unsigned distance for all int64 pairs
+	rangeSize := uint64(max) - uint64(min)
 	return min + int64(x.nextU64()%rangeSize)
 }
 
@@ -184,7 +175,7 @@ func (x *xoshiro256PlusPlus) uniformUint(min, max uint) uint {
 // ========================================================================
 
 func (x *xoshiro256PlusPlus) uniformBool() bool {
-	return x.uniform() < 0.5
+	return x.uniformFloat64() < 0.5
 }
 
 // FNV-1a hash constants

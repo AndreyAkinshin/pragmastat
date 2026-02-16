@@ -1,15 +1,5 @@
-test_that("rng uniform satisfies reference tests", {
-  # Find repository root
-  current_dir <- getwd()
-  repo_root <- current_dir
-  while (!file.exists(file.path(repo_root, "mise.toml"))) {
-    parent_dir <- dirname(repo_root)
-    if (parent_dir == repo_root) {
-      stop(paste0("Could not find repository root; current dir is ", getwd()))
-    }
-    repo_root <- parent_dir
-  }
-
+test_that("rng uniform_float satisfies reference tests", {
+  repo_root <- find_repo_root()
   rng_dir <- file.path(repo_root, "tests", "rng")
   json_files <- list.files(rng_dir, pattern = "^uniform-seed-.*\\.json$", full.names = TRUE)
 
@@ -23,7 +13,7 @@ test_that("rng uniform satisfies reference tests", {
 
     r <- rng(seed)
     for (i in seq_len(count)) {
-      actual <- r$uniform()
+      actual <- r$uniform_float()
       expect_equal(actual, expected[i],
         tolerance = 1e-15,
         info = paste("Failed for", basename(json_file), "at index", i)
@@ -33,16 +23,7 @@ test_that("rng uniform satisfies reference tests", {
 })
 
 test_that("rng uniform_int satisfies reference tests", {
-  current_dir <- getwd()
-  repo_root <- current_dir
-  while (!file.exists(file.path(repo_root, "mise.toml"))) {
-    parent_dir <- dirname(repo_root)
-    if (parent_dir == repo_root) {
-      stop(paste0("Could not find repository root; current dir is ", getwd()))
-    }
-    repo_root <- parent_dir
-  }
-
+  repo_root <- find_repo_root()
   rng_dir <- file.path(repo_root, "tests", "rng")
   json_files <- list.files(rng_dir, pattern = "^uniform-int-.*\\.json$", full.names = TRUE)
 
@@ -67,16 +48,7 @@ test_that("rng uniform_int satisfies reference tests", {
 })
 
 test_that("rng string seed satisfies reference tests", {
-  current_dir <- getwd()
-  repo_root <- current_dir
-  while (!file.exists(file.path(repo_root, "mise.toml"))) {
-    parent_dir <- dirname(repo_root)
-    if (parent_dir == repo_root) {
-      stop(paste0("Could not find repository root; current dir is ", getwd()))
-    }
-    repo_root <- parent_dir
-  }
-
+  repo_root <- find_repo_root()
   rng_dir <- file.path(repo_root, "tests", "rng")
   json_files <- list.files(rng_dir, pattern = "^uniform-string-.*\\.json$", full.names = TRUE)
 
@@ -90,7 +62,7 @@ test_that("rng string seed satisfies reference tests", {
 
     r <- rng(seed)
     for (i in seq_len(count)) {
-      actual <- r$uniform()
+      actual <- r$uniform_float()
       expect_equal(actual, expected[i],
         tolerance = 1e-15,
         info = paste("Failed for", basename(json_file), "at index", i)
@@ -99,17 +71,8 @@ test_that("rng string seed satisfies reference tests", {
   }
 })
 
-test_that("rng uniform_range satisfies reference tests", {
-  current_dir <- getwd()
-  repo_root <- current_dir
-  while (!file.exists(file.path(repo_root, "mise.toml"))) {
-    parent_dir <- dirname(repo_root)
-    if (parent_dir == repo_root) {
-      stop(paste0("Could not find repository root; current dir is ", getwd()))
-    }
-    repo_root <- parent_dir
-  }
-
+test_that("rng uniform_float_range satisfies reference tests", {
+  repo_root <- find_repo_root()
   rng_dir <- file.path(repo_root, "tests", "rng")
   json_files <- list.files(rng_dir, pattern = "^uniform-range-.*\\.json$", full.names = TRUE)
 
@@ -125,7 +88,7 @@ test_that("rng uniform_range satisfies reference tests", {
 
     r <- rng(seed)
     for (i in seq_len(count)) {
-      actual <- r$uniform_range(min_val, max_val)
+      actual <- r$uniform_float_range(min_val, max_val)
       expect_equal(actual, expected[i],
         tolerance = 1e-12,
         info = paste("Failed for", basename(json_file), "at index", i)
@@ -135,16 +98,7 @@ test_that("rng uniform_range satisfies reference tests", {
 })
 
 test_that("rng uniform_bool satisfies reference tests", {
-  current_dir <- getwd()
-  repo_root <- current_dir
-  while (!file.exists(file.path(repo_root, "mise.toml"))) {
-    parent_dir <- dirname(repo_root)
-    if (parent_dir == repo_root) {
-      stop(paste0("Could not find repository root; current dir is ", getwd()))
-    }
-    repo_root <- parent_dir
-  }
-
+  repo_root <- find_repo_root()
   rng_dir <- file.path(repo_root, "tests", "rng")
   json_files <- list.files(rng_dir, pattern = "^uniform-bool-seed-.*\\.json$", full.names = TRUE)
 
@@ -167,16 +121,7 @@ test_that("rng uniform_bool satisfies reference tests", {
 })
 
 test_that("shuffle satisfies reference tests", {
-  current_dir <- getwd()
-  repo_root <- current_dir
-  while (!file.exists(file.path(repo_root, "mise.toml"))) {
-    parent_dir <- dirname(repo_root)
-    if (parent_dir == repo_root) {
-      stop(paste0("Could not find repository root; current dir is ", getwd()))
-    }
-    repo_root <- parent_dir
-  }
-
+  repo_root <- find_repo_root()
   shuffle_dir <- file.path(repo_root, "tests", "shuffle")
   json_files <- list.files(shuffle_dir, pattern = "\\.json$", full.names = TRUE)
 
@@ -201,16 +146,7 @@ test_that("shuffle satisfies reference tests", {
 })
 
 test_that("sample satisfies reference tests", {
-  current_dir <- getwd()
-  repo_root <- current_dir
-  while (!file.exists(file.path(repo_root, "mise.toml"))) {
-    parent_dir <- dirname(repo_root)
-    if (parent_dir == repo_root) {
-      stop(paste0("Could not find repository root; current dir is ", getwd()))
-    }
-    repo_root <- parent_dir
-  }
-
+  repo_root <- find_repo_root()
   sample_dir <- file.path(repo_root, "tests", "sample")
   json_files <- list.files(sample_dir, pattern = "\\.json$", full.names = TRUE)
 
@@ -241,20 +177,11 @@ test_that("sample satisfies reference tests", {
 
 test_that("sample with negative k throws error", {
   r <- rng("test-sample-validation")
-  expect_error(r$sample(1:10, -1), "k must be non-negative")
+  expect_error(r$sample(1:10, -1), "k must be positive")
 })
 
 test_that("resample satisfies reference tests", {
-  current_dir <- getwd()
-  repo_root <- current_dir
-  while (!file.exists(file.path(repo_root, "mise.toml"))) {
-    parent_dir <- dirname(repo_root)
-    if (parent_dir == repo_root) {
-      stop(paste0("Could not find repository root; current dir is ", getwd()))
-    }
-    repo_root <- parent_dir
-  }
-
+  repo_root <- find_repo_root()
   resample_dir <- file.path(repo_root, "tests", "resample")
   json_files <- list.files(resample_dir, pattern = "\\.json$", full.names = TRUE)
 

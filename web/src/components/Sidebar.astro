@@ -12,15 +12,37 @@ interface Props {
 
 const { headings = [], currentSlug = '' } = Astro.props;
 
-// Dynamically fetch chapters from content collection, sorted by sidebar.order
+// Dynamically fetch pages from content collection, sorted by sidebar.order
 const allPages = await getCollection('manual');
-const chapters = allPages
+const pages = allPages
   .filter((page) => page.data.sidebar?.order !== undefined)
   .sort((a, b) => (a.data.sidebar?.order ?? 0) - (b.data.sidebar?.order ?? 0))
-  .map((page) => ({ slug: page.id, label: page.data.title }));
+  .map((page) => ({
+    slug: page.id,
+    label: page.data.title,
+    group: page.data.sidebar?.group,
+  }));
 
 function isActive(slug: string): boolean {
   return currentSlug === slug;
+}
+
+// Group pages: collect unique groups in order, plus ungrouped pages
+type SidebarEntry =
+  | { type: 'group-header'; label: string }
+  | { type: 'page'; slug: string; label: string };
+
+const entries: SidebarEntry[] = [];
+let currentGroup: string | undefined = undefined;
+
+for (const page of pages) {
+  if (page.group !== currentGroup) {
+    if (page.group) {
+      entries.push({ type: 'group-header', label: page.group });
+    }
+    currentGroup = page.group;
+  }
+  entries.push({ type: 'page', slug: page.slug, label: page.label });
 }
 ---
 
@@ -35,31 +57,40 @@ function isActive(slug: string): boolean {
   </div>
   <div class="sidebar-section">
     <ul class="sidebar-list">
-      {chapters.map(({ slug, label }) => (
-        <li>
-          <a
-            href={`/${slug}`}
-            class:list={['sidebar-link', { active: isActive(slug) }]}
-            aria-current={isActive(slug) ? 'page' : undefined}
-          >
-            {label}
-          </a>
-          {isActive(slug) && headings.length > 0 && (
-            <ul class="sidebar-sublist">
-              {headings.map((heading) => (
-                <li>
-                  <a
-                    href={`#${heading.slug}`}
-                    class:list={['sidebar-sublink', `depth-${heading.depth}`]}
-                  >
-                    {heading.text}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          )}
-        </li>
-      ))}
+      {entries.map((entry) =>
+        entry.type === 'group-header' ? (
+          <li class="sidebar-group-header">
+            <svg class="sidebar-group-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+            </svg>
+            {entry.label}
+          </li>
+        ) : (
+          <li>
+            <a
+              href={`/${entry.slug}`}
+              class:list={['sidebar-link', { active: isActive(entry.slug) }]}
+              aria-current={isActive(entry.slug) ? 'page' : undefined}
+            >
+              {entry.label}
+            </a>
+            {isActive(entry.slug) && headings.length > 0 && (
+              <ul class="sidebar-sublist">
+                {headings.map((heading) => (
+                  <li>
+                    <a
+                      href={`#${heading.slug}`}
+                      class:list={['sidebar-sublink', `depth-${heading.depth}`]}
+                    >
+                      {heading.text}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </li>
+        )
+      )}
     </ul>
   </div>
 </nav>
@@ -105,11 +136,34 @@ function isActive(slug: string): boolean {
     list-style: none;
     padding: 0;
     margin: 0;
+    padding-bottom: 6rem;
+  }
+
+  .sidebar-group-header {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-muted);
+    padding: 0.75rem 0.75rem 0.25rem;
+    margin-top: 0.5rem;
+  }
+
+  .sidebar-group-icon {
+    flex-shrink: 0;
+    opacity: 0.6;
+  }
+
+  .sidebar-group-header:first-child {
+    margin-top: 0;
   }
 
   .sidebar-link {
     display: block;
-    padding: 0.375rem 0.75rem;
+    padding: 0.375rem 0.75rem 0.375rem 2rem;
     font-size: 0.9375rem;
     color: var(--color-text-muted);
     border-radius: var(--radius-sm);
@@ -128,14 +182,15 @@ function isActive(slug: string): boolean {
     font-weight: 500;
   }
 
-  .sidebar-sublist {
+  /* Global: sublinks are created dynamically by JS after View Transition navigation */
+  :global(.sidebar-sublist) {
     list-style: none;
     padding: 0;
-    margin: 0.25rem 0 0.5rem 0.75rem;
+    margin: 0.25rem 0 0.5rem 2rem;
     border-left: 1px solid var(--color-border);
   }
 
-  .sidebar-sublink {
+  :global(.sidebar-sublink) {
     display: block;
     padding: 0.25rem 0.75rem;
     font-size: 0.8125rem;
@@ -145,30 +200,30 @@ function isActive(slug: string): boolean {
     transition: color var(--transition-fast), background-color var(--transition-fast);
   }
 
-  .sidebar-sublink:hover {
+  :global(.sidebar-sublink:hover) {
     color: var(--color-accent);
     background-color: var(--color-bg-muted);
   }
 
-  .sidebar-sublink.active {
+  :global(.sidebar-sublink.active) {
     color: var(--color-accent);
     background-color: var(--color-accent-muted);
     font-weight: 500;
   }
 
-  .sidebar-sublink.depth-3 {
+  :global(.sidebar-sublink.depth-3) {
     padding-left: 1.5rem;
   }
 
-  .sidebar-sublink.depth-4 {
+  :global(.sidebar-sublink.depth-4) {
     padding-left: 2.25rem;
   }
 
-  .sidebar-sublink.depth-5 {
+  :global(.sidebar-sublink.depth-5) {
     padding-left: 3rem;
   }
 
-  .sidebar-sublink.depth-6 {
+  :global(.sidebar-sublink.depth-6) {
     padding-left: 3.75rem;
   }
 </style>

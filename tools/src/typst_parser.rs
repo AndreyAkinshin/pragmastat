@@ -24,7 +24,7 @@ impl TypstDocument {
         citations: &mut std::collections::HashSet<String>,
     ) {
         match event {
-            TypstEvent::Citation(key) => {
+            TypstEvent::Citation(key) | TypstEvent::FullCitation(key) => {
                 citations.insert(key.clone());
             }
             TypstEvent::ListItem { content, .. }
@@ -74,6 +74,8 @@ pub enum TypstEvent {
         content: String,
     },
     Citation(String),
+    /// Full bibliography citation (from `cite(<key>, form: "full")`)
+    FullCitation(String),
     ParagraphBreak,
     ListItem {
         depth: u8,
@@ -1093,9 +1095,10 @@ fn parse_node(node: &SyntaxNode, events: &mut Vec<TypstEvent>, list_depth: u8) {
                         }
 
                         // Check for content body [text]
+                        // Use extract_link_content to preserve inline math as $...$
                         for child in call.args().to_untyped().children() {
                             if child.kind() == SyntaxKind::ContentBlock {
-                                text = extract_text_content(child);
+                                text = extract_link_content(child);
                                 break;
                             }
                         }
@@ -1130,17 +1133,79 @@ fn parse_node(node: &SyntaxNode, events: &mut Vec<TypstEvent>, list_depth: u8) {
                     "pagebreak" => {
                         // Page breaks are ignored in web output
                     }
+                    "cite" => {
+                        // Handle cite(<key>) and cite(<key>, form: "full")
+                        let mut key = None;
+                        let mut is_full = false;
+                        for arg in call.args().items() {
+                            match arg {
+                                ast::Arg::Pos(ast::Expr::Label(label)) => {
+                                    let label_text = label.to_untyped().text();
+                                    key = Some(
+                                        label_text
+                                            .trim_start_matches('<')
+                                            .trim_end_matches('>')
+                                            .to_string(),
+                                    );
+                                }
+                                ast::Arg::Named(named)
+                                    if named.name().to_untyped().text() == "form" =>
+                                {
+                                    let val = named.expr().to_untyped().text();
+                                    if val.trim_matches('"') == "full" {
+                                        is_full = true;
+                                    }
+                                }
+                                _ => {}
+                            }
+                        }
+                        if let Some(key) = key {
+                            if is_full {
+                                events.push(TypstEvent::FullCitation(key));
+                            } else {
+                                events.push(TypstEvent::Citation(key));
+                            }
+                        }
+                    }
                     "list" => {
                         // Custom list: #list(marker: none, tight: true, [item1], [item2])
-                        // Parse content block arguments as list items
+                        // Parse content block and function call arguments as list items
                         for arg in call.args().items() {
-                            if let ast::Arg::Pos(ast::Expr::Content(content)) = arg {
-                                let mut item_content = Vec::new();
-                                parse_node(content.body().to_untyped(), &mut item_content, 0);
-                                events.push(TypstEvent::ListItem {
-                                    depth: 1,
-                                    content: item_content,
-                                });
+                            match arg {
+                                ast::Arg::Pos(ast::Expr::Content(content)) => {
+                                    let mut item_content = Vec::new();
+                                    parse_node(
+                                        content.body().to_untyped(),
+                                        &mut item_content,
+                                        0,
+                                    );
+                                    events.push(TypstEvent::ListItem {
+                                        depth: 1,
+                                        content: item_content,
+                                    });
+                                }
+                                ast::Arg::Pos(expr) => {
+                                    let mut item_content = Vec::new();
+                                    parse_node(expr.to_untyped(), &mut item_content, list_depth);
+                                    if !item_content.is_empty() {
+                                        // FullCitation renders as block-level HTML,
+                                        // so emit directly without ListItem wrapper
+                                        if item_content.len() == 1
+                                            && matches!(
+                                                item_content[0],
+                                                TypstEvent::FullCitation(_)
+                                            )
+                                        {
+                                            events.extend(item_content);
+                                        } else {
+                                            events.push(TypstEvent::ListItem {
+                                                depth: 1,
+                                                content: item_content,
+                                            });
+                                        }
+                                    }
+                                }
+                                _ => {}
                             }
                         }
                     }
@@ -1178,6 +1243,10 @@ fn extract_text_content(node: &SyntaxNode) -> String {
 }
 
 fn extract_text_recursive(node: &SyntaxNode, text: &mut String) {
+    extract_text_recursive_inner(node, text, false);
+}
+
+fn extract_text_recursive_inner(node: &SyntaxNode, text: &mut String, preserve_math: bool) {
     match node.kind() {
         SyntaxKind::Text => {
             text.push_str(node.text());
@@ -1199,12 +1268,29 @@ fn extract_text_recursive(node: &SyntaxNode, text: &mut String) {
                 text.push_str(escaped);
             }
         }
+        SyntaxKind::Equation if preserve_math => {
+            // Preserve inline math as $...$ so the MDX converter can process it
+            // Use equation body to avoid including the $ delimiters twice
+            if let Some(eq) = node.cast::<ast::Equation>() {
+                let content = extract_math_content(eq.body().to_untyped());
+                text.push('$');
+                text.push_str(&content);
+                text.push('$');
+            }
+        }
         _ => {
             for child in node.children() {
-                extract_text_recursive(child, text);
+                extract_text_recursive_inner(child, text, preserve_math);
             }
         }
     }
+}
+
+/// Extract text content preserving inline math as $...$
+fn extract_link_content(node: &SyntaxNode) -> String {
+    let mut text = String::new();
+    extract_text_recursive_inner(node, &mut text, true);
+    text.trim().to_string()
 }
 
 /// Extract math content from equation body (preserves Typst math syntax)

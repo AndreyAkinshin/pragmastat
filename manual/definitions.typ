@@ -75,6 +75,8 @@
 #let RatioBounds = math.op("RatioBounds")
 #let CenterBounds = math.op("CenterBounds")
 #let SpreadBounds = math.op("SpreadBounds")
+#let AvgSpreadBounds = math.op("AvgSpreadBounds")
+#let DisparityBounds = math.op("DisparityBounds")
 #let SignMargin = math.op("SignMargin")
 #let SignedRankMargin = math.op("SignedRankMargin")
 #let Dominance = math.op("Dominance")
@@ -105,9 +107,11 @@
 // Utilities (randomization)
 // ==========================================================================
 #let Rng = math.op("Rng")
-#let Shuffle = math.op("Shuffle")
+#let UniformInt = math.op("UniformInt")
+#let UniformFloat = math.op("UniformFloat")
 #let Sample = math.op("Sample")
 #let Resample = math.op("Resample")
+#let Shuffle = math.op("Shuffle")
 
 // ==========================================================================
 // Vectors (bold)

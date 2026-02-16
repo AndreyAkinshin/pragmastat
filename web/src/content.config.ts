@@ -8,6 +8,7 @@ const manual = defineCollection({
     description: z.string().optional(),
     sidebar: z.object({
       order: z.number(),
+      group: z.string().optional(),
     }).optional(),
   }),
 });

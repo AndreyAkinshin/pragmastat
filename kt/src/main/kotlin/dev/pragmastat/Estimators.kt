@@ -44,6 +44,7 @@ fun spread(x: List<Double>): Double {
  * Assumptions:
  *   - positivity(x) - all values must be strictly positive (ensures Center > 0)
  */
+@Deprecated("Use spread(x) / abs(center(x)) instead.", ReplaceWith("spread(x) / abs(center(x))"))
 fun relSpread(x: List<Double>): Double {
     // Check validity (priority 0)
     checkValidity(x, Subject.X)
@@ -105,7 +106,7 @@ fun ratio(x: List<Double>, y: List<Double>): Double {
  *   - sparity(x) - first sample must be non tie-dominant (Spread > 0)
  *   - sparity(y) - second sample must be non tie-dominant (Spread > 0)
  */
-fun avgSpread(x: List<Double>, y: List<Double>): Double {
+internal fun avgSpread(x: List<Double>, y: List<Double>): Double {
     // Check validity for x (priority 0, subject x)
     checkValidity(x, Subject.X)
     // Check validity for y (priority 0, subject y)
@@ -354,3 +355,140 @@ fun spreadBounds(x: List<Double>, misrate: Double = DEFAULT_MISRATE, seed: Strin
     return Bounds(diffs[kLeft - 1], diffs[kRight - 1])
 }
 
+/**
+ * Provides distribution-free bounds for the Disparity estimator (Shift / AvgSpread)
+ * using Bonferroni combination of ShiftBounds and AvgSpreadBounds.
+ *
+ * @param x First sample
+ * @param y Second sample
+ * @param misrate Misclassification rate
+ * @param seed Optional string seed for deterministic randomization
+ * @return A Bounds object containing the lower and upper bounds
+ */
+fun disparityBounds(
+    x: List<Double>,
+    y: List<Double>,
+    misrate: Double = DEFAULT_MISRATE,
+    seed: String? = null
+): Bounds {
+    // Check validity (priority 0)
+    checkValidity(x, Subject.X)
+    checkValidity(y, Subject.Y)
+
+    if (misrate.isNaN() || misrate < 0.0 || misrate > 1.0) {
+        throw AssumptionException(Violation(AssumptionId.DOMAIN, Subject.MISRATE))
+    }
+
+    val n = x.size
+    val m = y.size
+    if (n < 2) {
+        throw AssumptionException(Violation(AssumptionId.DOMAIN, Subject.X))
+    }
+    if (m < 2) {
+        throw AssumptionException(Violation(AssumptionId.DOMAIN, Subject.Y))
+    }
+
+    val minShift = minAchievableMisrateTwoSample(n, m)
+    val minX = minAchievableMisrateOneSample(n / 2)
+    val minY = minAchievableMisrateOneSample(m / 2)
+    val minAvg = 2.0 * max(minX, minY)
+
+    if (misrate < minShift + minAvg) {
+        throw AssumptionException(Violation(AssumptionId.DOMAIN, Subject.MISRATE))
+    }
+
+    val extra = misrate - (minShift + minAvg)
+    val alphaShift = minShift + extra / 2.0
+    val alphaAvg = minAvg + extra / 2.0
+
+    // Check sparity (priority 2)
+    checkSparity(x, Subject.X)
+    checkSparity(y, Subject.Y)
+
+    val sb = shiftBounds(x, y, alphaShift)
+    val ab = avgSpreadBounds(x, y, alphaAvg, seed)
+
+    val la = ab.lower
+    val ua = ab.upper
+    val ls = sb.lower
+    val us = sb.upper
+
+    if (la > 0.0) {
+        val r1 = ls / la
+        val r2 = ls / ua
+        val r3 = us / la
+        val r4 = us / ua
+        val lower = min(min(r1, r2), min(r3, r4))
+        val upper = max(max(r1, r2), max(r3, r4))
+        return Bounds(lower, upper)
+    }
+
+    if (ua <= 0.0) {
+        if (ls == 0.0 && us == 0.0) return Bounds(0.0, 0.0)
+        if (ls >= 0.0) return Bounds(0.0, Double.POSITIVE_INFINITY)
+        if (us <= 0.0) return Bounds(Double.NEGATIVE_INFINITY, 0.0)
+        return Bounds(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY)
+    }
+
+    // Default: ua > 0 && la <= 0
+    if (ls > 0.0) return Bounds(ls / ua, Double.POSITIVE_INFINITY)
+    if (us < 0.0) return Bounds(Double.NEGATIVE_INFINITY, us / ua)
+    if (ls == 0.0 && us == 0.0) return Bounds(0.0, 0.0)
+    if (ls == 0.0 && us > 0.0) return Bounds(0.0, Double.POSITIVE_INFINITY)
+    if (ls < 0.0 && us == 0.0) return Bounds(Double.NEGATIVE_INFINITY, 0.0)
+
+    return Bounds(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY)
+}
+
+/**
+ * Provides distribution-free bounds for AvgSpread using Bonferroni combination.
+ *
+ * @param x First sample
+ * @param y Second sample
+ * @param misrate Misclassification rate (probability that true avg_spread falls outside bounds)
+ * @param seed Optional string seed for deterministic randomization
+ * @return A Bounds object containing the lower and upper bounds
+ */
+internal fun avgSpreadBounds(
+    x: List<Double>,
+    y: List<Double>,
+    misrate: Double = DEFAULT_MISRATE,
+    seed: String? = null
+): Bounds {
+    checkValidity(x, Subject.X)
+    checkValidity(y, Subject.Y)
+
+    if (misrate.isNaN() || misrate < 0.0 || misrate > 1.0) {
+        throw AssumptionException(Violation(AssumptionId.DOMAIN, Subject.MISRATE))
+    }
+
+    val n = x.size
+    val m = y.size
+    if (n < 2) {
+        throw AssumptionException(Violation(AssumptionId.DOMAIN, Subject.X))
+    }
+    if (m < 2) {
+        throw AssumptionException(Violation(AssumptionId.DOMAIN, Subject.Y))
+    }
+
+    val alpha = misrate / 2.0
+    val minX = minAchievableMisrateOneSample(n / 2)
+    val minY = minAchievableMisrateOneSample(m / 2)
+    if (alpha < minX || alpha < minY) {
+        throw AssumptionException(Violation(AssumptionId.DOMAIN, Subject.MISRATE))
+    }
+
+    checkSparity(x, Subject.X)
+    checkSparity(y, Subject.Y)
+
+    val boundsX = spreadBounds(x, alpha, seed)
+    val boundsY = spreadBounds(y, alpha, seed)
+
+    val weightX = n.toDouble() / (n + m).toDouble()
+    val weightY = m.toDouble() / (n + m).toDouble()
+
+    return Bounds(
+        weightX * boundsX.lower + weightY * boundsY.lower,
+        weightX * boundsX.upper + weightY * boundsY.upper
+    )
+}

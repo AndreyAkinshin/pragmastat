@@ -15,12 +15,12 @@ export {
   relSpread,
   shift,
   ratio,
-  avgSpread,
   disparity,
   shiftBounds,
   ratioBounds,
   centerBounds,
   spreadBounds,
+  disparityBounds,
   type Bounds,
 } from './estimators';
 

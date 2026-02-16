@@ -1,5 +1,7 @@
 import numpy as np
-from pragmastat import center, spread, rel_spread, shift, ratio, avg_spread, disparity
+import pytest
+from pragmastat import Rng, center, spread, rel_spread, shift, ratio, disparity
+from pragmastat.estimators import _avg_spread as avg_spread
 
 
 class TestInvariance:
@@ -8,9 +10,9 @@ class TestInvariance:
     tolerance = 1e-9
 
     def perform_test_one(self, expr1_func, expr2_func):
-        np.random.seed(self.seed)
+        rng = Rng(self.seed)
         for n in self.sample_sizes:
-            x = np.random.uniform(0, 1, n)
+            x = np.array([rng.uniform_float() for _ in range(n)])
             result1 = expr1_func(x)
             result2 = expr2_func(x)
             assert abs(result1 - result2) < self.tolerance, (
@@ -18,10 +20,10 @@ class TestInvariance:
             )
 
     def perform_test_two(self, expr1_func, expr2_func):
-        np.random.seed(self.seed)
+        rng = Rng(self.seed)
         for n in self.sample_sizes:
-            x = np.random.uniform(0, 1, n)
-            y = np.random.uniform(0, 1, n)
+            x = np.array([rng.uniform_float() for _ in range(n)])
+            y = np.array([rng.uniform_float() for _ in range(n)])
             result1 = expr1_func(x, y)
             result2 = expr2_func(x, y)
             assert abs(result1 - result2) < self.tolerance, (
@@ -50,7 +52,11 @@ class TestInvariance:
 
     # RelSpread tests
     def test_rel_spread_scale(self):
-        self.perform_test_one(lambda x: rel_spread(2 * x), lambda x: rel_spread(x))
+        import warnings
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            self.perform_test_one(lambda x: rel_spread(2 * x), lambda x: rel_spread(x))
 
     # Shift tests
     def test_shift_shift(self):
@@ -109,3 +115,75 @@ class TestInvariance:
         self.perform_test_two(
             lambda x, y: disparity(x, y), lambda x, y: -1 * disparity(y, x)
         )
+
+
+class TestRandomizationInvariance:
+    def test_shuffle_preserves_multiset(self):
+        for n in [1, 2, 5, 10, 100]:
+            x = list(range(n))
+            rng = Rng(42)
+            shuffled = rng.shuffle(x)
+            assert sorted(shuffled) == x
+
+    def test_sample_correct_size(self):
+        x = list(range(10))
+        for k in [1, 3, 5, 10, 15]:
+            rng = Rng(42)
+            sampled = rng.sample(x, k)
+            assert len(sampled) == min(k, len(x))
+
+    def test_sample_elements_from_source(self):
+        x = list(range(10))
+        rng = Rng(42)
+        sampled = rng.sample(x, 5)
+        for elem in sampled:
+            assert elem in x
+
+    def test_sample_preserves_order(self):
+        x = list(range(10))
+        rng = Rng(42)
+        sampled = rng.sample(x, 5)
+        for i in range(1, len(sampled)):
+            assert sampled[i] > sampled[i - 1]
+
+    def test_sample_no_duplicates(self):
+        for n in [2, 3, 5, 10, 20]:
+            source = list(range(n))
+            for k in [1, n // 2, n]:
+                rng = Rng(42)
+                sampled = rng.sample(source, k)
+                assert len(sampled) == len(set(sampled)), (
+                    f"Duplicate in sample(n={n}, k={k})"
+                )
+
+    def test_resample_negative_k_raises(self):
+        rng = Rng(42)
+        with pytest.raises(ValueError):
+            rng.resample([1, 2, 3], -1)
+
+    def test_resample_elements_from_source(self):
+        x = list(range(5))
+        rng = Rng(42)
+        resampled = rng.resample(x, 10)
+        for elem in resampled:
+            assert elem in x
+
+    def test_resample_k0_raises(self):
+        rng = Rng(42)
+        with pytest.raises(ValueError):
+            rng.resample([1, 2, 3], 0)
+
+    def test_shuffle_empty_raises(self):
+        rng = Rng(42)
+        with pytest.raises(ValueError):
+            rng.shuffle([])
+
+    def test_sample_k0_raises(self):
+        rng = Rng(42)
+        with pytest.raises(ValueError):
+            rng.sample([1, 2, 3], 0)
+
+    def test_sample_empty_raises(self):
+        rng = Rng(42)
+        with pytest.raises(ValueError):
+            rng.sample([], 1)

@@ -41,7 +41,7 @@ internal class SignMargin
     else if (p > 1)
       p = 1;
 
-    double u = rng.Uniform();
+    double u = rng.UniformDouble();
     int r = u < p ? rLow + 1 : rLow;
     return checked(r * 2);
   }

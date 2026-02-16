@@ -20,7 +20,7 @@ class Exp(private val rate: Double) : Distribution {
 
     override fun sample(rng: Rng): Double {
         // Inverse CDF method: -ln(1 - U) / rate
-        var u = rng.uniform()
+        var u = rng.uniformDouble()
         // Avoid log(0) - use machine epsilon for cross-language consistency
         if (u == 1.0) {
             u = 1.0 - Constants.MACHINE_EPSILON

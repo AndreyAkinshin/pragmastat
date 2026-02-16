@@ -6,11 +6,15 @@ package dev.pragmastat
  * Rng uses xoshiro256++ internally and guarantees identical output sequences
  * across all Pragmastat language implementations when initialized with the same seed.
  *
+ * **Thread safety:** Rng instances are **not** thread-safe. Each thread/coroutine
+ * must use its own instance. Sharing an instance across threads without
+ * external synchronization produces undefined (non-reproducible) output.
+ *
  * @example
  * ```kotlin
  * // Create from string seed
  * val rng = Rng("demo-uniform")
- * val value = rng.uniform()
+ * val value = rng.uniformDouble()
  *
  * // Shuffle a list
  * val rng2 = Rng("demo-shuffle")
@@ -48,13 +52,13 @@ class Rng private constructor(private val inner: Xoshiro256PlusPlus) {
      * Generate a uniform random Double in [0, 1).
      * Uses 53 bits of precision for the mantissa.
      */
-    fun uniform(): Double = inner.uniform()
+    fun uniformDouble(): Double = inner.uniformDouble()
 
     /**
      * Generate a uniform random Double in [min, max).
      * Returns min if min >= max.
      */
-    fun uniform(min: Double, max: Double): Double = inner.uniform(min, max)
+    fun uniformDouble(min: Double, max: Double): Double = inner.uniformDouble(min, max)
 
     /**
      * Generate a uniform random Float in [0, 1).
@@ -142,34 +146,15 @@ class Rng private constructor(private val inner: Xoshiro256PlusPlus) {
     // ========================================================================
 
     /**
-     * Return a shuffled copy of the input list.
-     * Uses the Fisher-Yates shuffle algorithm for uniform distribution.
-     * The original list is not modified.
-     */
-    fun <T> shuffle(x: List<T>): List<T> {
-        val result = x.toMutableList()
-        val n = result.size
-
-        // Fisher-Yates shuffle (backwards)
-        for (i in n - 1 downTo 1) {
-            val j = uniformLong(0, (i + 1).toLong()).toInt()
-            val temp = result[i]
-            result[i] = result[j]
-            result[j] = temp
-        }
-
-        return result
-    }
-
-    /**
      * Sample k elements from the input list without replacement.
      * Uses selection sampling to maintain order of first appearance.
      * Returns all elements if k >= x.size.
      *
-     * @throws IllegalArgumentException if k is negative.
+     * @throws IllegalArgumentException if k is not positive.
      */
     fun <T> sample(x: List<T>, k: Int): List<T> {
-        require(k >= 0) { "k must be non-negative" }
+        require(k > 0) { "k must be positive" }
+        require(x.isNotEmpty()) { "Cannot sample from empty list" }
         val n = x.size
         if (k >= n) return x.toList()
 
@@ -180,7 +165,7 @@ class Rng private constructor(private val inner: Xoshiro256PlusPlus) {
             if (remaining == 0) break
             val available = n - i
             // Probability of selecting this item: remaining / available
-            if (uniform() * available < remaining) {
+            if (uniformDouble() * available < remaining) {
                 result.add(x[i])
                 remaining--
             }
@@ -193,10 +178,10 @@ class Rng private constructor(private val inner: Xoshiro256PlusPlus) {
      * Resample k elements from the input list with replacement.
      * Each element in the result is independently drawn from the input list.
      *
-     * @throws IllegalArgumentException if k is negative.
+     * @throws IllegalArgumentException if k is not positive.
      */
     fun <T> resample(x: List<T>, k: Int): List<T> {
-        require(k >= 0) { "k must be non-negative" }
+        require(k > 0) { "k must be positive" }
         val n = x.size
         require(n > 0) { "Cannot resample from empty list" }
 
@@ -207,19 +192,46 @@ class Rng private constructor(private val inner: Xoshiro256PlusPlus) {
         }
         return result
     }
+
+    /**
+     * Return a shuffled copy of the input list.
+     * Uses the Fisher-Yates shuffle algorithm for uniform distribution.
+     * The original list is not modified.
+     */
+    fun <T> shuffle(x: List<T>): List<T> {
+        require(x.isNotEmpty()) { "Cannot shuffle empty list" }
+        val result = x.toMutableList()
+        val n = result.size
+
+        // Fisher-Yates shuffle (backwards)
+        for (i in n - 1 downTo 1) {
+            val j = uniformInt(0, i + 1)
+            val temp = result[i]
+            result[i] = result[j]
+            result[j] = temp
+        }
+
+        return result
+    }
 }
 
 /**
- * Extension function: shuffle a list using the given Rng.
- */
-fun <T> List<T>.shuffle(rng: Rng): List<T> = rng.shuffle(this)
-
-/**
  * Extension function: sample k elements from a list using the given Rng.
+ *
+ * Kotlin-specific convenience; other languages use `rng.sample(list, k)` directly.
  */
 fun <T> List<T>.sample(k: Int, rng: Rng): List<T> = rng.sample(this, k)
 
 /**
  * Extension function: resample k elements from a list using the given Rng.
+ *
+ * Kotlin-specific convenience; other languages use `rng.resample(list, k)` directly.
  */
 fun <T> List<T>.resample(k: Int, rng: Rng): List<T> = rng.resample(this, k)
+
+/**
+ * Extension function: shuffle a list using the given Rng.
+ *
+ * Kotlin-specific convenience; other languages use `rng.shuffle(list)` directly.
+ */
+fun <T> List<T>.shuffle(rng: Rng): List<T> = rng.shuffle(this)

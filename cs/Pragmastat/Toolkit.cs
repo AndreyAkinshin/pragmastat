@@ -8,12 +8,19 @@ public static class Toolkit
   public static readonly Probability DefaultMisrate = 1e-3;
   public static Measurement Center(Sample x) => CenterEstimator.Instance.Estimate(x);
   public static Measurement Spread(Sample x) => SpreadEstimator.Instance.Estimate(x);
+  [Obsolete("Use Spread(x) / Math.Abs(Center(x)) instead.")]
   public static Measurement RelSpread(Sample x) => RelSpreadEstimator.Instance.Estimate(x);
 
   public static Measurement Shift(Sample x, Sample y) => ShiftEstimator.Instance.Estimate(x, y);
   public static Measurement Ratio(Sample x, Sample y) => RatioEstimator.Instance.Estimate(x, y);
-  public static Measurement AvgSpread(Sample x, Sample y) => AvgSpreadEstimator.Instance.Estimate(x, y);
   public static Measurement Disparity(Sample x, Sample y) => DisparityEstimator.Instance.Estimate(x, y);
+  internal static Measurement AvgSpread(Sample x, Sample y) => AvgSpreadEstimator.Instance.Estimate(x, y);
+
+  internal static Bounds AvgSpreadBounds(Sample x, Sample y) => AvgSpreadBounds(x, y, DefaultMisrate);
+  internal static Bounds AvgSpreadBounds(Sample x, Sample y, Probability misrate) =>
+    AvgSpreadBoundsEstimator.Instance.Estimate(x, y, misrate);
+  internal static Bounds AvgSpreadBounds(Sample x, Sample y, Probability misrate, string seed) =>
+    AvgSpreadBoundsEstimator.Instance.Estimate(x, y, misrate, seed);
 
   public static Bounds ShiftBounds(Sample x, Sample y) => ShiftBounds(x, y, DefaultMisrate);
   public static Bounds ShiftBounds(Sample x, Sample y, Probability misrate) =>
@@ -22,6 +29,12 @@ public static class Toolkit
   public static Bounds RatioBounds(Sample x, Sample y) => RatioBounds(x, y, DefaultMisrate);
   public static Bounds RatioBounds(Sample x, Sample y, Probability misrate) =>
     RatioBoundsEstimator.Instance.Estimate(x, y, misrate);
+
+  public static Bounds DisparityBounds(Sample x, Sample y) => DisparityBounds(x, y, DefaultMisrate);
+  public static Bounds DisparityBounds(Sample x, Sample y, Probability misrate) =>
+    DisparityBoundsEstimator.Instance.Estimate(x, y, misrate);
+  public static Bounds DisparityBounds(Sample x, Sample y, Probability misrate, string seed) =>
+    DisparityBoundsEstimator.Instance.Estimate(x, y, misrate, seed);
 
   public static Bounds CenterBounds(Sample x) => CenterBounds(x, DefaultMisrate);
   public static Bounds CenterBounds(Sample x, Probability misrate) =>

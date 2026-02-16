@@ -36,7 +36,7 @@ impl Exp {
 impl Distribution for Exp {
     fn sample(&self, rng: &mut Rng) -> f64 {
         // Inverse CDF method: -ln(1 - U) / rate
-        let u = rng.uniform();
+        let u = rng.uniform_f64();
         // Avoid log(0) - use machine epsilon for cross-language consistency
         let u = if u == 1.0 { 1.0 - MACHINE_EPSILON } else { u };
         -(1.0 - u).ln() / self.rate

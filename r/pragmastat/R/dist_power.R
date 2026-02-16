@@ -23,7 +23,7 @@ dist_power <- function(min_val, shape) {
 
   sample_fn <- function(rng) {
     # Inverse CDF method: min / (1 - U)^(1/shape)
-    u <- rng$uniform()
+    u <- rng$uniform_float()
     # Avoid division by zero - use machine epsilon for cross-language consistency
     if (u == 1.0) {
       u <- 1.0 - .MACHINE_EPSILON

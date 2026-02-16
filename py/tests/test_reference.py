@@ -7,7 +7,6 @@ from pragmastat import (
     rel_spread,
     shift,
     ratio,
-    avg_spread,
     disparity,
     shift_bounds,
     ratio_bounds,
@@ -19,6 +18,11 @@ from pragmastat import (
     Multiplic,
     Exp,
     Power,
+)
+from pragmastat.estimators import (
+    _avg_spread as avg_spread,
+    _avg_spread_bounds as avg_spread_bounds,
+    disparity_bounds,
 )
 from pragmastat.pairwise_margin import pairwise_margin
 from pragmastat.signed_rank_margin import signed_rank_margin
@@ -122,7 +126,11 @@ class TestReference:
         run_reference_tests("spread", spread)
 
     def test_rel_spread_reference(self):
-        run_reference_tests("rel-spread", rel_spread)
+        import warnings
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            run_reference_tests("rel-spread", rel_spread)
 
     def test_shift_reference(self):
         run_reference_tests("shift", shift, is_two_sample=True)
@@ -216,8 +224,7 @@ class TestReference:
             pytest.skip("ratio-bounds test data directory not found")
 
         json_files = list(test_data_dir.glob("*.json"))
-        if len(json_files) == 0:
-            return
+        assert len(json_files) > 0, f"No JSON test files found in {test_data_dir}"
 
         for json_file in json_files:
             with open(json_file, "r") as f:
@@ -250,7 +257,7 @@ class TestReference:
             )
 
     def test_rng_uniform_reference(self):
-        """Test Rng uniform() against reference data."""
+        """Test Rng uniform_float() against reference data."""
         repo_root = find_repo_root()
         test_data_dir = repo_root / "tests" / "rng"
 
@@ -272,7 +279,7 @@ class TestReference:
             expected = test_case["output"]
 
             rng = Rng(seed)
-            actual = [rng.uniform() for _ in range(count)]
+            actual = [rng.uniform_float() for _ in range(count)]
 
             assert len(actual) == len(expected), (
                 f"Length mismatch for {json_file.name}: {len(actual)} vs {len(expected)}"
@@ -334,7 +341,7 @@ class TestReference:
             expected = test_case["output"]
 
             rng = Rng(seed)
-            actual = [rng.uniform() for _ in range(count)]
+            actual = [rng.uniform_float() for _ in range(count)]
 
             assert len(actual) == len(expected), (
                 f"Length mismatch for {json_file.name}: {len(actual)} vs {len(expected)}"
@@ -344,8 +351,8 @@ class TestReference:
                     f"Failed for {json_file.name}, index {i}: expected {exp}, got {act}"
                 )
 
-    def test_rng_uniform_range_reference(self):
-        """Test Rng uniform_range() against reference data."""
+    def test_rng_uniform_float_range_reference(self):
+        """Test Rng uniform_float_range() against reference data."""
         repo_root = find_repo_root()
         test_data_dir = repo_root / "tests" / "rng"
 
@@ -369,7 +376,7 @@ class TestReference:
             expected = test_case["output"]
 
             rng = Rng(seed)
-            actual = [rng.uniform_range(min_val, max_val) for _ in range(count)]
+            actual = [rng.uniform_float_range(min_val, max_val) for _ in range(count)]
 
             assert len(actual) == len(expected), (
                 f"Length mismatch for {json_file.name}: {len(actual)} vs {len(expected)}"
@@ -635,6 +642,90 @@ class TestReference:
             expected_upper = test_case["output"]["upper"]
 
             result = spread_bounds(input_x, misrate, seed=seed)
+
+            assert abs(result.lower - expected_lower) < 1e-9, (
+                f"Failed lower bound for test file: {json_file.name}, expected: {expected_lower}, got: {result.lower}"
+            )
+            assert abs(result.upper - expected_upper) < 1e-9, (
+                f"Failed upper bound for test file: {json_file.name}, expected: {expected_upper}, got: {result.upper}"
+            )
+
+    def test_avg_spread_bounds_reference(self):
+        """Test avg_spread_bounds against reference data."""
+        repo_root = find_repo_root()
+        test_data_dir = repo_root / "tests" / "avg-spread-bounds"
+
+        if not test_data_dir.exists():
+            pytest.skip("avg-spread-bounds test data directory not found")
+
+        json_files = list(test_data_dir.glob("*.json"))
+        assert len(json_files) > 0, f"No JSON test files found in {test_data_dir}"
+
+        for json_file in json_files:
+            with open(json_file, "r") as f:
+                test_case = json.load(f)
+
+            input_x = test_case["input"]["x"]
+            input_y = test_case["input"]["y"]
+            misrate = test_case["input"]["misrate"]
+            seed = test_case["input"].get("seed")
+
+            # Handle error test cases
+            if "expected_error" in test_case:
+                with pytest.raises(AssumptionError) as exc_info:
+                    avg_spread_bounds(input_x, input_y, misrate, seed=seed)
+                assert (
+                    exc_info.value.violation.id.value
+                    == test_case["expected_error"]["id"]
+                )
+                continue
+
+            expected_lower = test_case["output"]["lower"]
+            expected_upper = test_case["output"]["upper"]
+
+            result = avg_spread_bounds(input_x, input_y, misrate, seed=seed)
+
+            assert abs(result.lower - expected_lower) < 1e-9, (
+                f"Failed lower bound for test file: {json_file.name}, expected: {expected_lower}, got: {result.lower}"
+            )
+            assert abs(result.upper - expected_upper) < 1e-9, (
+                f"Failed upper bound for test file: {json_file.name}, expected: {expected_upper}, got: {result.upper}"
+            )
+
+    def test_disparity_bounds_reference(self):
+        """Test disparity_bounds against reference data."""
+        repo_root = find_repo_root()
+        test_data_dir = repo_root / "tests" / "disparity-bounds"
+
+        if not test_data_dir.exists():
+            pytest.skip("disparity-bounds test data directory not found")
+
+        json_files = list(test_data_dir.glob("*.json"))
+        assert len(json_files) > 0, f"No JSON test files found in {test_data_dir}"
+
+        for json_file in json_files:
+            with open(json_file, "r") as f:
+                test_case = json.load(f)
+
+            input_x = test_case["input"]["x"]
+            input_y = test_case["input"]["y"]
+            misrate = test_case["input"]["misrate"]
+            seed = test_case["input"].get("seed")
+
+            # Handle error test cases
+            if "expected_error" in test_case:
+                with pytest.raises(AssumptionError) as exc_info:
+                    disparity_bounds(input_x, input_y, misrate, seed=seed)
+                assert (
+                    exc_info.value.violation.id.value
+                    == test_case["expected_error"]["id"]
+                )
+                continue
+
+            expected_lower = test_case["output"]["lower"]
+            expected_upper = test_case["output"]["upper"]
+
+            result = disparity_bounds(input_x, input_y, misrate, seed=seed)
 
             assert abs(result.lower - expected_lower) < 1e-9, (
                 f"Failed lower bound for test file: {json_file.name}, expected: {expected_lower}, got: {result.lower}"

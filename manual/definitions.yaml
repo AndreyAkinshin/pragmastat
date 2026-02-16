@@ -17,6 +17,8 @@ ShiftBounds: \operatorname{ShiftBounds}
 RatioBounds: \operatorname{RatioBounds}
 CenterBounds: \operatorname{CenterBounds}
 SpreadBounds: \operatorname{SpreadBounds}
+AvgSpreadBounds: \operatorname{AvgSpreadBounds}
+DisparityBounds: \operatorname{DisparityBounds}
 Dominance: \operatorname{Dominance}
 
 # Traditional Estimators
@@ -39,9 +41,11 @@ Uniform: \underline{\operatorname{Uniform}}
 
 # Utilities (randomization)
 Rng: \operatorname{Rng}
-Shuffle: \operatorname{Shuffle}
+UniformInt: \operatorname{UniformInt}
+UniformFloat: \operatorname{UniformFloat}
 Sample: \operatorname{Sample}
 Resample: \operatorname{Resample}
+Shuffle: \operatorname{Shuffle}
 
 # Vectors (bold)
 vx: \mathbf{x}

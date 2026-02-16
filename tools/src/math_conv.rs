@@ -2239,7 +2239,7 @@ mod tests {
         let mut defs = HashMap::new();
         defs.insert("pstddev".to_string(), "\\mathrm{stdDev}".to_string());
 
-        // From the studies chapter: sqrt(2) dot pstddev
+        // From the notes chapter: sqrt(2) dot pstddev
         let result = typst_to_latex("sqrt(2) dot pstddev", &defs);
         eprintln!("Result: {result}");
         assert!(
@@ -2266,7 +2266,7 @@ mod tests {
         defs.insert("pmean".to_string(), "\\mathrm{mean}".to_string());
         defs.insert("pstddev".to_string(), "\\mathrm{stdDev}".to_string());
 
-        // From studies: Additive(0, sqrt(2) dot pstddev)
+        // From notes: Additive(0, sqrt(2) dot pstddev)
         let result = typst_to_latex("Additive(0, sqrt(2) dot pstddev)", &defs);
         eprintln!("Result: {result}");
         assert!(

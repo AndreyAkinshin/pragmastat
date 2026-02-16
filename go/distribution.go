@@ -6,7 +6,7 @@ package pragmastat
 // This is the smallest ε such that 1.0 + ε ≠ 1.0 in float64 arithmetic.
 // Represents the distance between 1.0 and the next representable number.
 //
-// Used to avoid log(0) or division by zero when uniform() returns exactly 1.0.
+// Used to avoid log(0) or division by zero when uniformFloat64() returns exactly 1.0.
 // All language implementations use this same value to ensure cross-language
 // determinism in distribution sampling.
 const machineEpsilon = 2.220446049250313e-16
@@ -19,7 +19,7 @@ const machineEpsilon = 2.220446049250313e-16
 // Unlike machine epsilon (which is the smallest ε where 1+ε ≠ 1), this is the
 // absolute smallest positive number before underflow to zero.
 //
-// Used to avoid log(0) in Box-Muller transform when uniform() returns exactly 0.
+// Used to avoid log(0) in Box-Muller transform when uniformFloat64() returns exactly 0.
 // All language implementations use this same value to ensure cross-language
 // determinism in distribution sampling.
 const smallestPositiveSubnormal = 5e-324

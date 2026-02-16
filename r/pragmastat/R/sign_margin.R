@@ -30,7 +30,7 @@ sign_margin_randomized <- function(n, misrate, rng) {
   }
   p <- max(0, min(1, p))
 
-  u <- rng$uniform()
+  u <- rng$uniform_float()
   r <- if (u < p) r_low + 1L else r_low
   return(as.integer(r * 2))
 }

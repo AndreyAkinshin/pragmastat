@@ -1,0 +1,11 @@
+{
+  "input": {
+    "x": [1, 2, 3, 4, 5],
+    "y": [],
+    "misrate": 0.2,
+    "seed": "disparity-bounds-tests"
+  },
+  "expected_error": {
+    "id": "validity"
+  }
+}

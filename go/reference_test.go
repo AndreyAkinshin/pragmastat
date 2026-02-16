@@ -65,7 +65,7 @@ func TestReferenceData(t *testing.T) {
 	twoSampleEstimators := map[string]func([]float64, []float64) (float64, error){
 		"shift":      Shift[float64],
 		"ratio":      Ratio[float64],
-		"avg-spread": AvgSpread[float64],
+		"avg-spread": avgSpread[float64],
 		"disparity":  Disparity[float64],
 	}
 
@@ -581,10 +581,10 @@ func TestRngUniformReference(t *testing.T) {
 				t.Fatalf("Output length %d != count %d", len(testData.Output), testData.Input.Count)
 			}
 			for i := 0; i < testData.Input.Count; i++ {
-				actual := rng.Uniform()
+				actual := rng.UniformFloat64()
 				expected := testData.Output[i]
 				if !floatEquals(actual, expected, 1e-15) {
-					t.Errorf("Uniform() at index %d = %v, want %v", i, actual, expected)
+					t.Errorf("UniformFloat64() at index %d = %v, want %v", i, actual, expected)
 				}
 			}
 		})
@@ -668,10 +668,10 @@ func TestRngStringSeedReference(t *testing.T) {
 				t.Fatalf("Output length %d != count %d", len(testData.Output), testData.Input.Count)
 			}
 			for i := 0; i < testData.Input.Count; i++ {
-				actual := rng.Uniform()
+				actual := rng.UniformFloat64()
 				expected := testData.Output[i]
 				if !floatEquals(actual, expected, 1e-15) {
-					t.Errorf("Uniform() at index %d = %v, want %v", i, actual, expected)
+					t.Errorf("UniformFloat64() at index %d = %v, want %v", i, actual, expected)
 				}
 			}
 		})
@@ -711,10 +711,10 @@ func TestRngUniformRangeReference(t *testing.T) {
 				t.Fatalf("Output length %d != count %d", len(testData.Output), testData.Input.Count)
 			}
 			for i := 0; i < testData.Input.Count; i++ {
-				actual := rng.UniformRange(testData.Input.Min, testData.Input.Max)
+				actual := rng.UniformFloat64Range(testData.Input.Min, testData.Input.Max)
 				expected := testData.Output[i]
 				if !floatEquals(actual, expected, 1e-12) {
-					t.Errorf("UniformRange(%v, %v) at index %d = %v, want %v",
+					t.Errorf("UniformFloat64Range(%v, %v) at index %d = %v, want %v",
 						testData.Input.Min, testData.Input.Max, i, actual, expected)
 				}
 			}
@@ -1205,6 +1205,22 @@ type SpreadBoundsInput struct {
 	Seed    string    `json:"seed"`
 }
 
+// AvgSpreadBoundsInput represents input for avg-spread-bounds tests
+type AvgSpreadBoundsInput struct {
+	X       []float64 `json:"x"`
+	Y       []float64 `json:"y"`
+	Misrate float64   `json:"misrate"`
+	Seed    string    `json:"seed"`
+}
+
+// DisparityBoundsInput represents input for disparity-bounds tests
+type DisparityBoundsInput struct {
+	X       []float64 `json:"x"`
+	Y       []float64 `json:"y"`
+	Misrate float64   `json:"misrate"`
+	Seed    string    `json:"seed"`
+}
+
 func TestSignedRankMarginReference(t *testing.T) {
 	dirPath := filepath.Join("../tests", "signed-rank-margin")
 	files, err := os.ReadDir(dirPath)
@@ -1412,6 +1428,150 @@ func TestSpreadBoundsReference(t *testing.T) {
 				!floatEquals(actual.Upper, expected.Upper, 1e-9) {
 				t.Errorf("SpreadBoundsWithSeed(%v, %v, %q) = [%v, %v], want [%v, %v]",
 					input.X, input.Misrate, input.Seed,
+					actual.Lower, actual.Upper,
+					expected.Lower, expected.Upper)
+			}
+		})
+	}
+}
+
+func TestAvgSpreadBoundsReference(t *testing.T) {
+	dirPath := filepath.Join("../tests", "avg-spread-bounds")
+	files, err := os.ReadDir(dirPath)
+	if err != nil {
+		t.Skipf("Skipping avg-spread-bounds tests: %v", err)
+	}
+
+	for _, file := range files {
+		if !strings.HasSuffix(file.Name(), ".json") {
+			continue
+		}
+
+		testName := strings.TrimSuffix(file.Name(), ".json")
+		t.Run(testName, func(t *testing.T) {
+			filePath := filepath.Join(dirPath, file.Name())
+			data, err := os.ReadFile(filePath)
+			if err != nil {
+				t.Fatalf("Failed to read test file: %v", err)
+			}
+
+			var testData TestData
+			if err := json.Unmarshal(data, &testData); err != nil {
+				t.Fatalf("Failed to parse test data: %v", err)
+			}
+
+			var input AvgSpreadBoundsInput
+			if err := json.Unmarshal(testData.Input, &input); err != nil {
+				t.Fatalf("Failed to parse input data: %v", err)
+			}
+
+			// Handle error test cases
+			if len(testData.ExpectedError) > 0 {
+				_, err := avgSpreadBounds(input.X, input.Y, input.Misrate)
+				if err == nil {
+					t.Errorf("avgSpreadBounds(%v, %v, %v) expected error but got nil",
+						input.X, input.Y, input.Misrate)
+					return
+				}
+				var expectedError map[string]string
+				if jsonErr := json.Unmarshal(testData.ExpectedError, &expectedError); jsonErr == nil {
+					if ae, ok := err.(*AssumptionError); ok {
+						if string(ae.Violation.ID) != expectedError["id"] {
+							t.Errorf("Expected error id %q, got %q", expectedError["id"], ae.Violation.ID)
+						}
+					} else {
+						t.Errorf("Expected *AssumptionError but got %T: %v", err, err)
+					}
+				}
+				return
+			}
+
+			var expected BoundsOutput
+			if err := json.Unmarshal(testData.Output, &expected); err != nil {
+				t.Fatalf("Failed to parse output data: %v", err)
+			}
+
+			actual, err := avgSpreadBoundsWithSeed(input.X, input.Y, input.Misrate, input.Seed)
+			if err != nil {
+				t.Fatalf("avgSpreadBoundsWithSeed(%v, %v, %v, %q) error: %v",
+					input.X, input.Y, input.Misrate, input.Seed, err)
+			}
+			if !floatEquals(actual.Lower, expected.Lower, 1e-9) ||
+				!floatEquals(actual.Upper, expected.Upper, 1e-9) {
+				t.Errorf("avgSpreadBoundsWithSeed(%v, %v, %v, %q) = [%v, %v], want [%v, %v]",
+					input.X, input.Y, input.Misrate, input.Seed,
+					actual.Lower, actual.Upper,
+					expected.Lower, expected.Upper)
+			}
+		})
+	}
+}
+
+func TestDisparityBoundsReference(t *testing.T) {
+	dirPath := filepath.Join("../tests", "disparity-bounds")
+	files, err := os.ReadDir(dirPath)
+	if err != nil {
+		t.Skipf("Skipping disparity-bounds tests: %v", err)
+	}
+
+	for _, file := range files {
+		if !strings.HasSuffix(file.Name(), ".json") {
+			continue
+		}
+
+		testName := strings.TrimSuffix(file.Name(), ".json")
+		t.Run(testName, func(t *testing.T) {
+			filePath := filepath.Join(dirPath, file.Name())
+			data, err := os.ReadFile(filePath)
+			if err != nil {
+				t.Fatalf("Failed to read test file: %v", err)
+			}
+
+			var testData TestData
+			if err := json.Unmarshal(data, &testData); err != nil {
+				t.Fatalf("Failed to parse test data: %v", err)
+			}
+
+			var input DisparityBoundsInput
+			if err := json.Unmarshal(testData.Input, &input); err != nil {
+				t.Fatalf("Failed to parse input data: %v", err)
+			}
+
+			// Handle error test cases
+			if len(testData.ExpectedError) > 0 {
+				_, err := DisparityBoundsWithSeed(input.X, input.Y, input.Misrate, input.Seed)
+				if err == nil {
+					t.Errorf("DisparityBoundsWithSeed(%v, %v, %v, %q) expected error but got nil",
+						input.X, input.Y, input.Misrate, input.Seed)
+					return
+				}
+				var expectedError map[string]string
+				if jsonErr := json.Unmarshal(testData.ExpectedError, &expectedError); jsonErr == nil {
+					if ae, ok := err.(*AssumptionError); ok {
+						if string(ae.Violation.ID) != expectedError["id"] {
+							t.Errorf("Expected error id %q, got %q", expectedError["id"], ae.Violation.ID)
+						}
+					} else {
+						t.Errorf("Expected *AssumptionError but got %T: %v", err, err)
+					}
+				}
+				return
+			}
+
+			var expected BoundsOutput
+			if err := json.Unmarshal(testData.Output, &expected); err != nil {
+				t.Fatalf("Failed to parse output data: %v", err)
+			}
+
+			actual, err := DisparityBoundsWithSeed(input.X, input.Y, input.Misrate, input.Seed)
+			if err != nil {
+				t.Fatalf("DisparityBoundsWithSeed(%v, %v, %v, %q) error: %v",
+					input.X, input.Y, input.Misrate, input.Seed, err)
+			}
+			if !floatEquals(actual.Lower, expected.Lower, 1e-9) ||
+				!floatEquals(actual.Upper, expected.Upper, 1e-9) {
+				t.Errorf("DisparityBoundsWithSeed(%v, %v, %v, %q) = [%v, %v], want [%v, %v]",
+					input.X, input.Y, input.Misrate, input.Seed,
 					actual.Lower, actual.Upper,
 					expected.Lower, expected.Upper)
 			}

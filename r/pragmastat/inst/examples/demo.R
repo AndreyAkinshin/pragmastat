@@ -1,29 +1,58 @@
 library(pragmastat)
 
+# --- One-Sample ---
+
+x <- 1:20
+
+print(center(x)) # 10.5
+bounds <- center_bounds(x, 0.05)
+print(paste("[", bounds$lower, ", ", bounds$upper, "]", sep="")) # [7.5, 13.5]
+print(spread(x)) # 6
+bounds <- spread_bounds(x, 0.05, seed = "demo")
+print(paste("[", bounds$lower, ", ", bounds$upper, "]", sep="")) # [2, 10]
+
+# --- Two-Sample ---
+
+x <- 1:30
+y <- 21:50
+
+print(shift(x, y)) # -20
+bounds <- shift_bounds(x, y, 0.05)
+print(paste("[", bounds$lower, ", ", bounds$upper, "]", sep="")) # [-25, -15]
+print(ratio(x, y)) # 0.43669798282695127
+bounds <- ratio_bounds(x, y, 0.05)
+print(paste("[", bounds$lower, ", ", bounds$upper, "]", sep="")) # [0.31250000000000006, 0.5599999999999999]
+print(disparity(x, y)) # -2.2222222222222223
+bounds <- disparity_bounds(x, y, 0.05, seed = "demo")
+print(paste("[", bounds$lower, ", ", bounds$upper, "]", sep="")) # [-13, -0.8235294117647058]
+
 # --- Randomization ---
 
 r <- rng("demo-uniform")
-print(r$uniform()) # 0.2640554428629759
-print(r$uniform()) # 0.9348534835582796
+print(r$uniform_float()) # 0.2640554428629759
+print(r$uniform_float()) # 0.9348534835582796
+
+r <- rng("demo-uniform-int")
+print(r$uniform_int(0, 100)) # 41
 
 r <- rng("demo-sample")
 print(r$sample(0:9, 3)) # [3, 8, 9]
 
+r <- rng("demo-resample")
+print(r$resample(c(1, 2, 3, 4, 5), 7)) # [3, 1, 3, 2, 4, 1, 2]
+
 r <- rng("demo-shuffle")
 print(r$shuffle(c(1, 2, 3, 4, 5))) # [4, 2, 3, 5, 1]
 
-r <- rng("demo-resample")
-print(r$resample(c(1, 2, 3, 4, 5), 7)) # [5, 1, 1, 3, 3, 4, 5]
-
-# --- Distribution Sampling ---
-
-r <- rng("demo-dist-uniform")
-dist <- dist_uniform(0, 10)
-print(dist$sample(r)) # 6.54043657816832
+# --- Distributions ---
 
 r <- rng("demo-dist-additive")
 dist <- dist_additive(0, 1)
 print(dist$sample(r)) # 0.17410448679568188
+
+r <- rng("demo-dist-multiplic")
+dist <- dist_multiplic(0, 1)
+print(dist$sample(r)) # 1.1273244602673853
 
 r <- rng("demo-dist-exp")
 dist <- dist_exp(1)
@@ -33,55 +62,6 @@ r <- rng("demo-dist-power")
 dist <- dist_power(1, 2)
 print(dist$sample(r)) # 1.023677535537084
 
-r <- rng("demo-dist-multiplic")
-dist <- dist_multiplic(0, 1)
-print(dist$sample(r)) # 1.1273244602673853
-
-# --- Single-Sample Statistics ---
-
-x <- c(1, 3, 5, 7, 9)
-
-print(median(x)) # 5
-print(center(x)) # 5
-print(spread(x)) # 4
-print(spread(x + 10)) # 4
-print(spread(x * 2)) # 8
-print(rel_spread(x)) # 0.8
-
-# --- Two-Sample Comparison ---
-
-x <- c(0, 3, 6, 9, 12)
-y <- c(0, 2, 4, 6, 8)
-
-print(shift(x, y)) # 2
-print(shift(y, x)) # -2
-print(avg_spread(x, y)) # 5
-print(disparity(x, y)) # 0.4
-print(disparity(y, x)) # -0.4
-
-x <- c(1, 2, 4, 8, 16)
-y <- c(2, 4, 8, 16, 32)
-print(ratio(x, y)) # 0.5
-print(ratio(y, x)) # 2
-
-# --- One-Sample Bounds ---
-
-x <- 1:10
-
-print(center(x)) # 5.5
-bounds <- center_bounds(x, 0.05) # [lower=3.5, upper=7.5]
-print(paste("[", bounds$lower, ", ", bounds$upper, "]", sep=""))
-
-# --- Two-Sample Bounds ---
-
-x <- 1:30
-y <- 21:50
-
-print(shift(x, y)) # -20
-bounds <- shift_bounds(x, y, 1e-4) # [lower=-30, upper=-10]
-print(paste("[", bounds$lower, ", ", bounds$upper, "]", sep=""))
-
-x <- c(1, 2, 3, 4, 5)
-y <- c(2, 3, 4, 5, 6)
-bounds <- ratio_bounds(x, y, 0.05) # [lower=0.333..., upper=1.5]
-print(paste("[", bounds$lower, ", ", bounds$upper, "]", sep=""))
+r <- rng("demo-dist-uniform")
+dist <- dist_uniform(0, 10)
+print(dist$sample(r)) # 6.54043657816832

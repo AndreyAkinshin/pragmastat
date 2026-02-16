@@ -13,12 +13,12 @@ Each distribution describes a family of random variables characterized by specif
 - $op("Estimator")[X]$ — true value (asymptotic limit)
 - $n -> infinity$ — asymptotic case (large sample approximation)
 
-#include "../distributions/additive.typ"
+#include "../additive/additive.typ"
 
-#include "../distributions/multiplic.typ"
+#include "../multiplic/multiplic.typ"
 
-#include "../distributions/exp.typ"
+#include "../exp/exp.typ"
 
-#include "../distributions/power.typ"
+#include "../power/power.typ"
 
-#include "../distributions/uniform.typ"
+#include "../uniform/uniform.typ"

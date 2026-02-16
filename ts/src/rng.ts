@@ -16,7 +16,7 @@ import { Xoshiro256PlusPlus, fnv1aHash } from './xoshiro256';
  * @example
  * // Create from string seed
  * const rng = new Rng("demo-uniform");
- * const value = rng.uniform();
+ * const value = rng.uniformFloat();
  *
  * @example
  * // Shuffle an array
@@ -46,7 +46,9 @@ export class Rng {
     } else if (typeof seed === 'string') {
       seedBigInt = fnv1aHash(seed);
     } else {
-      // Convert number to bigint, handling negative numbers via two's complement
+      // Convert number to bigint, handling negative numbers via two's complement.
+      // Note: Number seeds > 2^53 lose precision in the Number→BigInt conversion;
+      // use a string seed or BigInt literal for large integer seeds.
       seedBigInt = BigInt.asIntN(64, BigInt(seed));
     }
 
@@ -64,8 +66,8 @@ export class Rng {
    *
    * @returns Random value in [0, 1).
    */
-  uniform(): number {
-    return this.inner.uniform();
+  uniformFloat(): number {
+    return this.inner.uniformFloat();
   }
 
   /**
@@ -75,8 +77,8 @@ export class Rng {
    * @param max - Maximum value (exclusive).
    * @returns Random value in [min, max). Returns min if min >= max.
    */
-  uniformRange(min: number, max: number): number {
-    return this.inner.uniformRange(min, max);
+  uniformFloatRange(min: number, max: number): number {
+    return this.inner.uniformFloatRange(min, max);
   }
 
   // ========================================================================
@@ -128,41 +130,22 @@ export class Rng {
   }
 
   /**
-   * Return a shuffled copy of the input array.
-   *
-   * Uses the Fisher-Yates shuffle algorithm for uniform distribution.
-   * The original array is not modified.
-   *
-   * @param x - Input array to shuffle.
-   * @returns Shuffled copy of the input.
-   */
-  shuffle<T>(x: T[]): T[] {
-    const result = [...x];
-    const n = result.length;
-
-    // Fisher-Yates shuffle (backwards)
-    for (let i = n - 1; i > 0; i--) {
-      const j = this.uniformInt(0, i + 1);
-      [result[i], result[j]] = [result[j], result[i]];
-    }
-
-    return result;
-  }
-
-  /**
    * Sample k elements from the input array without replacement.
    *
    * Uses selection sampling to maintain order of first appearance.
    * Returns up to k elements; if k >= x.length, returns all elements.
    *
    * @param x - Input array to sample from.
-   * @param k - Number of elements to sample. Must be non-negative.
+   * @param k - Number of elements to sample. Must be positive.
    * @returns Array of k sampled elements.
-   * @throws Error if k is negative.
+   * @throws Error if k is not positive.
    */
   sample<T>(x: T[], k: number): T[] {
-    if (k < 0) {
-      throw new Error('sample: k must be non-negative');
+    if (k <= 0) {
+      throw new Error('sample: k must be positive');
+    }
+    if (x.length === 0) {
+      throw new Error('sample: cannot sample from empty array');
     }
     const n = x.length;
     if (k >= n) {
@@ -175,7 +158,7 @@ export class Rng {
     for (let i = 0; i < n && remaining > 0; i++) {
       const available = n - i;
       // Probability of selecting this item: remaining / available
-      if (this.uniform() * available < remaining) {
+      if (this.uniformFloat() * available < remaining) {
         result.push(x[i]);
         remaining--;
       }
@@ -190,13 +173,13 @@ export class Rng {
    * Each element in the result is independently drawn from the input array.
    *
    * @param x - Input array to sample from.
-   * @param k - Number of elements to sample. Must be non-negative.
+   * @param k - Number of elements to sample. Must be positive.
    * @returns Array of k sampled elements with replacement.
-   * @throws Error if k is negative.
+   * @throws Error if k is not positive.
    */
   resample<T>(x: T[], k: number): T[] {
-    if (k < 0) {
-      throw new Error('resample: k must be non-negative');
+    if (k <= 0) {
+      throw new Error('resample: k must be positive');
     }
     const n = x.length;
     if (n === 0) {
@@ -208,6 +191,31 @@ export class Rng {
       const idx = this.uniformInt(0, n);
       result.push(x[idx]);
     }
+    return result;
+  }
+
+  /**
+   * Return a shuffled copy of the input array.
+   *
+   * Uses the Fisher-Yates shuffle algorithm for uniform distribution.
+   * The original array is not modified.
+   *
+   * @param x - Input array to shuffle.
+   * @returns Shuffled copy of the input.
+   */
+  shuffle<T>(x: T[]): T[] {
+    if (x.length === 0) {
+      throw new Error('shuffle: cannot shuffle empty array');
+    }
+    const result = [...x];
+    const n = result.length;
+
+    // Fisher-Yates shuffle (backwards)
+    for (let i = n - 1; i > 0; i--) {
+      const j = this.uniformInt(0, i + 1);
+      [result[i], result[j]] = [result[j], result[i]];
+    }
+
     return result;
   }
 }

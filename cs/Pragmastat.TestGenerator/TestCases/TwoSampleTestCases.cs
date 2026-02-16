@@ -82,7 +82,7 @@ public static class TwoSampleTestCases
 
     // AvgSpread: 38 test cases (requires sparity: spread > 0 for both samples)
     // Excluded: single-element samples, constant samples, zero samples
-    GenerateTests("avg-spread", input => input.GetSampleX().AvgSpread(input.GetSampleY()),
+    GenerateTests("avg-spread", input => Pragmastat.Estimators.AvgSpreadEstimator.Instance.Estimate(input.GetSampleX(), input.GetSampleY()),
       new TwoSampleInputBuilder()
         // Demo examples (n = m = 5) - 5 tests
         .Add("demo-1", new Sample(0, 3, 6, 9, 12), new Sample(0, 2, 4, 6, 8))

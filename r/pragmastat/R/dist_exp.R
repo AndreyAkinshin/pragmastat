@@ -19,7 +19,7 @@ dist_exp <- function(rate) {
 
   sample_fn <- function(rng) {
     # Inverse CDF method: -ln(1 - U) / rate
-    u <- rng$uniform()
+    u <- rng$uniform_float()
     # Avoid log(0) - use machine epsilon for cross-language consistency
     if (u == 1.0) {
       u <- 1.0 - .MACHINE_EPSILON

@@ -86,6 +86,7 @@ class ReferenceTest {
     
     @TestFactory
     fun testOneSampleEstimators(): List<DynamicTest> {
+        @Suppress("DEPRECATION")
         val estimators = mapOf(
             "center" to ::center,
             "spread" to ::spread,
@@ -381,7 +382,7 @@ class ReferenceTest {
                 val testData = mapper.readValue<UniformTestData>(file)
                 val rng = Rng(testData.input.seed)
                 for (i in 0 until testData.input.count) {
-                    val actual = rng.uniform()
+                    val actual = rng.uniformDouble()
                     val expected = testData.output[i]
                     assertClose(expected, actual, 1e-15)
                 }
@@ -433,7 +434,7 @@ class ReferenceTest {
                 val testData = mapper.readValue<StringSeedTestData>(file)
                 val rng = Rng(testData.input.seed)
                 for (i in 0 until testData.input.count) {
-                    val actual = rng.uniform()
+                    val actual = rng.uniformDouble()
                     val expected = testData.output[i]
                     assertClose(expected, actual, 1e-15)
                 }
@@ -459,7 +460,7 @@ class ReferenceTest {
                 val testData = mapper.readValue<UniformRangeTestData>(file)
                 val rng = Rng(testData.input.seed)
                 for (i in 0 until testData.input.count) {
-                    val actual = rng.uniform(testData.input.min, testData.input.max)
+                    val actual = rng.uniformDouble(testData.input.min, testData.input.max)
                     val expected = testData.output[i]
                     assertClose(expected, actual, 1e-12)
                 }
@@ -791,6 +792,22 @@ class ReferenceTest {
         @JsonProperty("expected_error") val expectedError: Map<String, String>? = null
     )
 
+    data class AvgSpreadBoundsInput(val x: List<Double>, val y: List<Double>, val misrate: Double, val seed: String)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    data class AvgSpreadBoundsTestData(
+        val input: AvgSpreadBoundsInput,
+        val output: BoundsOutput? = null,
+        @JsonProperty("expected_error") val expectedError: Map<String, String>? = null
+    )
+
+    data class DisparityBoundsInput(val x: List<Double>, val y: List<Double>, val misrate: Double, val seed: String)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    data class DisparityBoundsTestData(
+        val input: DisparityBoundsInput,
+        val output: BoundsOutput? = null,
+        @JsonProperty("expected_error") val expectedError: Map<String, String>? = null
+    )
+
     @TestFactory
     fun testSignedRankMargin(): List<DynamicTest> {
         val tests = mutableListOf<DynamicTest>()
@@ -889,6 +906,80 @@ class ReferenceTest {
 
                 val result = spreadBounds(
                     testData.input.x,
+                    testData.input.misrate,
+                    testData.input.seed
+                )
+                assertClose(testData.output!!.lower, result.lower)
+                assertClose(testData.output!!.upper, result.upper)
+            })
+        }
+
+        return tests
+    }
+
+    @TestFactory
+    fun testAvgSpreadBounds(): List<DynamicTest> {
+        val tests = mutableListOf<DynamicTest>()
+        val testDir = File("../tests/avg-spread-bounds")
+
+        if (!testDir.exists() || !testDir.isDirectory) {
+            Assumptions.assumeTrue(false, "Skipping avg-spread-bounds tests: directory not found")
+            return tests
+        }
+
+        testDir.listFiles { _, name -> name.endsWith(".json") }?.forEach { file ->
+            val testName = "avg-spread-bounds/${file.nameWithoutExtension}"
+            tests.add(DynamicTest.dynamicTest(testName) {
+                val testData = mapper.readValue<AvgSpreadBoundsTestData>(file)
+
+                if (testData.expectedError != null) {
+                    val exception = assertThrows<AssumptionException> {
+                        avgSpreadBounds(testData.input.x, testData.input.y, testData.input.misrate, testData.input.seed)
+                    }
+                    assertEquals(testData.expectedError["id"], exception.violation.id.id)
+                    return@dynamicTest
+                }
+
+                val result = avgSpreadBounds(
+                    testData.input.x,
+                    testData.input.y,
+                    testData.input.misrate,
+                    testData.input.seed
+                )
+                assertClose(testData.output!!.lower, result.lower)
+                assertClose(testData.output!!.upper, result.upper)
+            })
+        }
+
+        return tests
+    }
+
+    @TestFactory
+    fun testDisparityBounds(): List<DynamicTest> {
+        val tests = mutableListOf<DynamicTest>()
+        val testDir = File("../tests/disparity-bounds")
+
+        if (!testDir.exists() || !testDir.isDirectory) {
+            Assumptions.assumeTrue(false, "Skipping disparity-bounds tests: directory not found")
+            return tests
+        }
+
+        testDir.listFiles { _, name -> name.endsWith(".json") }?.forEach { file ->
+            val testName = "disparity-bounds/${file.nameWithoutExtension}"
+            tests.add(DynamicTest.dynamicTest(testName) {
+                val testData = mapper.readValue<DisparityBoundsTestData>(file)
+
+                if (testData.expectedError != null) {
+                    val exception = assertThrows<AssumptionException> {
+                        disparityBounds(testData.input.x, testData.input.y, testData.input.misrate, testData.input.seed)
+                    }
+                    assertEquals(testData.expectedError["id"], exception.violation.id.id)
+                    return@dynamicTest
+                }
+
+                val result = disparityBounds(
+                    testData.input.x,
+                    testData.input.y,
                     testData.input.misrate,
                     testData.input.seed
                 )

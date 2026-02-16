@@ -33,7 +33,7 @@ export class Uniform implements Distribution {
   }
 
   sample(rng: Rng): number {
-    return this.min + rng.uniform() * (this.max - this.min);
+    return this.min + rng.uniformFloat() * (this.max - this.min);
   }
 
   samples(rng: Rng, count: number): number[] {

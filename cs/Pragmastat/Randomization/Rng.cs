@@ -7,8 +7,15 @@ namespace Pragmastat.Randomization;
 /// A deterministic random number generator.
 /// </summary>
 /// <remarks>
+/// <para>
 /// Rng uses xoshiro256++ internally and guarantees identical output sequences
 /// across all Pragmastat language implementations when initialized with the same seed.
+/// </para>
+/// <para>
+/// <b>Thread safety:</b> Rng instances are <b>not</b> thread-safe. Each thread
+/// must use its own instance. Sharing an instance across threads without
+/// external synchronization produces undefined (non-reproducible) output.
+/// </para>
 /// </remarks>
 public sealed class Rng
 {
@@ -54,9 +61,9 @@ public sealed class Rng
   /// Uses 53 bits of precision for the mantissa.
   /// </summary>
   /// <returns>A random value in [0, 1).</returns>
-  public double Uniform()
+  public double UniformDouble()
   {
-    return _inner.Uniform();
+    return _inner.UniformDouble();
   }
 
   /// <summary>
@@ -65,9 +72,9 @@ public sealed class Rng
   /// <param name="min">Minimum value (inclusive).</param>
   /// <param name="max">Maximum value (exclusive).</param>
   /// <returns>A random value in [min, max). Returns min if min >= max.</returns>
-  public double Uniform(double min, double max)
+  public double UniformDouble(double min, double max)
   {
-    return _inner.Uniform(min, max);
+    return _inner.UniformDouble(min, max);
   }
 
   /// <summary>
@@ -214,42 +221,21 @@ public sealed class Rng
   // ========================================================================
 
   /// <summary>
-  /// Return a shuffled copy of the input list.
-  /// Uses the Fisher-Yates shuffle algorithm for uniform distribution.
-  /// The original list is not modified.
-  /// </summary>
-  /// <typeparam name="T">Element type.</typeparam>
-  /// <param name="x">Input list to shuffle.</param>
-  /// <returns>Shuffled copy of the input.</returns>
-  public List<T> Shuffle<T>(IReadOnlyList<T> x)
-  {
-    var result = new List<T>(x);
-    int n = result.Count;
-
-    // Fisher-Yates shuffle (backwards)
-    for (int i = n - 1; i > 0; i--)
-    {
-      int j = (int)UniformInt64(0, i + 1);
-      (result[i], result[j]) = (result[j], result[i]);
-    }
-
-    return result;
-  }
-
-  /// <summary>
   /// Sample k elements from the input list without replacement.
   /// Uses selection sampling to maintain order of first appearance.
   /// Returns all elements if k >= x.Count.
   /// </summary>
   /// <typeparam name="T">Element type.</typeparam>
   /// <param name="x">Input list to sample from.</param>
-  /// <param name="k">Number of elements to sample. Must be non-negative.</param>
+  /// <param name="k">Number of elements to sample. Must be positive.</param>
   /// <returns>List of k sampled elements.</returns>
-  /// <exception cref="ArgumentOutOfRangeException">Thrown if k is negative.</exception>
+  /// <exception cref="ArgumentOutOfRangeException">Thrown if k is not positive.</exception>
   public List<T> Sample<T>(IReadOnlyList<T> x, int k)
   {
-    if (k < 0)
-      throw new ArgumentOutOfRangeException(nameof(k), k, "k must be non-negative");
+    if (k <= 0)
+      throw new ArgumentOutOfRangeException(nameof(k), k, "k must be positive");
+    if (x.Count == 0)
+      throw new ArgumentException("Cannot sample from empty list", nameof(x));
 
     int n = x.Count;
     if (k >= n)
@@ -264,7 +250,7 @@ public sealed class Rng
     {
       int available = n - i;
       // Probability of selecting this item: remaining / available
-      if (Uniform() * available < remaining)
+      if (UniformDouble() * available < remaining)
       {
         result.Add(x[i]);
         remaining--;
@@ -275,29 +261,16 @@ public sealed class Rng
   }
 
   /// <summary>
-  /// Return a shuffled copy of the sample values.
-  /// </summary>
-  /// <param name="sample">Input sample to shuffle.</param>
-  /// <returns>New sample with shuffled values.</returns>
-  public Sample Shuffle(Sample sample)
-  {
-    if (sample.IsWeighted)
-      throw new NotSupportedException("Weighted samples are not supported by Rng.Shuffle");
-    var shuffled = Shuffle(sample.Values);
-    return new Sample(shuffled, sample.Unit);
-  }
-
-  /// <summary>
   /// Sample k elements from the sample values without replacement.
   /// </summary>
   /// <param name="sample">Input sample to sample from.</param>
-  /// <param name="k">Number of elements to sample. Must be non-negative.</param>
+  /// <param name="k">Number of elements to sample. Must be positive.</param>
   /// <returns>New sample with k sampled values.</returns>
-  /// <exception cref="ArgumentOutOfRangeException">Thrown if k is negative.</exception>
+  /// <exception cref="ArgumentOutOfRangeException">Thrown if k is not positive.</exception>
   public Sample Sample(Sample sample, int k)
   {
-    if (k < 0)
-      throw new ArgumentOutOfRangeException(nameof(k), k, "k must be non-negative");
+    if (k <= 0)
+      throw new ArgumentOutOfRangeException(nameof(k), k, "k must be positive");
     if (sample.IsWeighted)
       throw new NotSupportedException("Weighted samples are not supported by Rng.Sample");
     int n = sample.Size;
@@ -312,7 +285,7 @@ public sealed class Rng
     for (int i = 0; i < n && remaining > 0; i++)
     {
       int available = n - i;
-      if (Uniform() * available < remaining)
+      if (UniformDouble() * available < remaining)
       {
         values.Add(sample.Values[i]);
         remaining--;
@@ -331,20 +304,20 @@ public sealed class Rng
   /// </summary>
   /// <typeparam name="T">Element type.</typeparam>
   /// <param name="x">Input list to sample from.</param>
-  /// <param name="k">Number of elements to sample. Must be non-negative.</param>
+  /// <param name="k">Number of elements to sample. Must be positive.</param>
   /// <returns>List of k sampled elements (may contain duplicates).</returns>
-  /// <exception cref="ArgumentOutOfRangeException">Thrown if k is negative.</exception>
+  /// <exception cref="ArgumentOutOfRangeException">Thrown if k is not positive.</exception>
   /// <exception cref="ArgumentException">Thrown if input list is empty.</exception>
   public List<T> Resample<T>(IReadOnlyList<T> x, int k)
   {
-    if (k < 0)
-      throw new ArgumentOutOfRangeException(nameof(k), k, "k must be non-negative");
+    if (k <= 0)
+      throw new ArgumentOutOfRangeException(nameof(k), k, "k must be positive");
     if (x.Count == 0)
       throw new ArgumentException("Cannot resample from empty list", nameof(x));
 
     var result = new List<T>(k);
     for (int i = 0; i < k; i++)
-      result.Add(x[UniformInt32(0, x.Count)]);
+      result.Add(x[(int)UniformInt64(0, x.Count)]);
     return result;
   }
 
@@ -352,13 +325,13 @@ public sealed class Rng
   /// Resample k elements from the sample values with replacement (bootstrap sampling).
   /// </summary>
   /// <param name="sample">Input sample to resample from.</param>
-  /// <param name="k">Number of elements to sample. Must be non-negative.</param>
+  /// <param name="k">Number of elements to sample. Must be positive.</param>
   /// <returns>New sample with k resampled values (may contain duplicates).</returns>
-  /// <exception cref="ArgumentOutOfRangeException">Thrown if k is negative.</exception>
+  /// <exception cref="ArgumentOutOfRangeException">Thrown if k is not positive.</exception>
   public Sample Resample(Sample sample, int k)
   {
-    if (k < 0)
-      throw new ArgumentOutOfRangeException(nameof(k), k, "k must be non-negative");
+    if (k <= 0)
+      throw new ArgumentOutOfRangeException(nameof(k), k, "k must be positive");
     if (sample.IsWeighted)
       throw new NotSupportedException("Weighted samples are not supported by Rng.Resample");
     if (sample.Size == 0)
@@ -366,7 +339,45 @@ public sealed class Rng
 
     var values = new List<double>(k);
     for (int i = 0; i < k; i++)
-      values.Add(sample.Values[UniformInt32(0, sample.Size)]);
+      values.Add(sample.Values[(int)UniformInt64(0, sample.Size)]);
     return new Sample(values, sample.Unit);
+  }
+
+  /// <summary>
+  /// Return a shuffled copy of the input list.
+  /// Uses the Fisher-Yates shuffle algorithm for uniform distribution.
+  /// The original list is not modified.
+  /// </summary>
+  /// <typeparam name="T">Element type.</typeparam>
+  /// <param name="x">Input list to shuffle.</param>
+  /// <returns>Shuffled copy of the input.</returns>
+  public List<T> Shuffle<T>(IReadOnlyList<T> x)
+  {
+    if (x.Count == 0)
+      throw new ArgumentException("Cannot shuffle empty list", nameof(x));
+    var result = new List<T>(x);
+    int n = result.Count;
+
+    // Fisher-Yates shuffle (backwards)
+    for (int i = n - 1; i > 0; i--)
+    {
+      int j = (int)UniformInt64(0, i + 1);
+      (result[i], result[j]) = (result[j], result[i]);
+    }
+
+    return result;
+  }
+
+  /// <summary>
+  /// Return a shuffled copy of the sample values.
+  /// </summary>
+  /// <param name="sample">Input sample to shuffle.</param>
+  /// <returns>New sample with shuffled values.</returns>
+  public Sample Shuffle(Sample sample)
+  {
+    if (sample.IsWeighted)
+      throw new NotSupportedException("Weighted samples are not supported by Rng.Shuffle");
+    var shuffled = Shuffle(sample.Values);
+    return new Sample(shuffled, sample.Unit);
   }
 }

@@ -17,6 +17,6 @@ class Uniform(private val min: Double, private val max: Double) : Distribution {
     }
 
     override fun sample(rng: Rng): Double {
-        return min + rng.uniform() * (max - min)
+        return min + rng.uniformDouble() * (max - min)
     }
 }

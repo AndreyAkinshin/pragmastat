@@ -17,7 +17,7 @@
 /// This is the smallest ε such that 1.0 + ε ≠ 1.0 in float64 arithmetic.
 /// Represents the distance between 1.0 and the next representable number.
 ///
-/// Used to avoid log(0) or division by zero when uniform() returns exactly 1.0.
+/// Used to avoid log(0) or division by zero when uniform_f64() returns exactly 1.0.
 /// All language implementations use this same value to ensure cross-language
 /// determinism in distribution sampling.
 const MACHINE_EPSILON: f64 = 2.220446049250313e-16;
@@ -30,7 +30,7 @@ const MACHINE_EPSILON: f64 = 2.220446049250313e-16;
 /// Unlike machine epsilon (which is the smallest ε where 1+ε ≠ 1), this is the
 /// absolute smallest positive number before underflow to zero.
 ///
-/// Used to avoid log(0) in Box-Muller transform when uniform() returns exactly 0.
+/// Used to avoid log(0) in Box-Muller transform when uniform_f64() returns exactly 0.
 /// All language implementations use this same value to ensure cross-language
 /// determinism in distribution sampling.
 const SMALLEST_POSITIVE_SUBNORMAL: f64 = 5e-324;

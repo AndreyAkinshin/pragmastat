@@ -46,8 +46,8 @@ public sealed class Additive : IDistribution, IContinuousDistribution
   public double Sample(Rng rng)
   {
     // Box-Muller transform
-    double u1 = rng.Uniform();
-    double u2 = rng.Uniform();
+    double u1 = rng.UniformDouble();
+    double u2 = rng.UniformDouble();
 
     // Avoid log(0) - use smallest positive subnormal for cross-language consistency
     if (u1 == 0)

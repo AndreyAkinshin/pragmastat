@@ -4,8 +4,6 @@
 #let lang = languages.cs
 
 // Escape # in C# for Typst heading
-== C\#
-
 Install from NuGet via .NET CLI:
 
 #raw("dotnet add package Pragmastat --version " + version, lang: "bash", block: true)

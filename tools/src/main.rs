@@ -85,72 +85,73 @@ fn find_project_root() -> Result<PathBuf> {
     anyhow::bail!("Could not find project root (CITATION.cff not found)")
 }
 
-/// Chapter metadata for web generation
-struct Chapter {
+/// Page metadata for web generation
+struct Page {
     slug: &'static str,
     file: &'static str,
     title: &'static str,
     order: u8,
+    group: Option<&'static str>,
+    heading_offset: i8,
 }
 
-impl astro::ChapterInfoProvider<astro::ChapterInfoRef> for Chapter {
-    fn chapter_info(&self) -> astro::ChapterInfoRef {
-        astro::ChapterInfoRef {
+impl astro::AsPageInfo for Page {
+    fn as_page_info(&self) -> astro::PageInfo {
+        astro::PageInfo {
             slug: self.slug,
             title: self.title,
+            group: self.group,
         }
     }
 }
 
-const CHAPTERS: &[Chapter] = &[
-    Chapter {
-        slug: "toolkit",
-        file: "chapters/toolkit",
-        title: "Toolkit",
-        order: 1,
-    },
-    Chapter {
-        slug: "distributions",
-        file: "chapters/distributions",
-        title: "Distributions",
-        order: 2,
-    },
-    Chapter {
-        slug: "algorithms",
-        file: "chapters/algorithms",
-        title: "Algorithms",
-        order: 3,
-    },
-    Chapter {
-        slug: "assumptions",
-        file: "chapters/assumptions",
-        title: "Assumptions",
-        order: 4,
-    },
-    Chapter {
-        slug: "studies",
-        file: "chapters/studies",
-        title: "Studies",
-        order: 5,
-    },
-    Chapter {
-        slug: "implementations",
-        file: "chapters/implementations",
-        title: "Implementations",
-        order: 6,
-    },
-    Chapter {
-        slug: "tests",
-        file: "chapters/tests",
-        title: "Tests",
-        order: 7,
-    },
-    Chapter {
-        slug: "methodology",
-        file: "chapters/methodology",
-        title: "Methodology",
-        order: 8,
-    },
+const PAGES: &[Page] = &[
+    // Synopsis
+    Page { slug: "synopsis", file: "synopsis/synopsis", title: "Synopsis", order: 0, group: None, heading_offset: 0 },
+    // One-Sample Estimators
+    Page { slug: "center", file: "center/center", title: "Center", order: 1, group: Some("One-Sample Estimators"), heading_offset: -1 },
+    Page { slug: "center-bounds", file: "center-bounds/center-bounds", title: "CenterBounds", order: 2, group: Some("One-Sample Estimators"), heading_offset: -1 },
+    Page { slug: "spread", file: "spread/spread", title: "Spread", order: 3, group: Some("One-Sample Estimators"), heading_offset: -1 },
+    Page { slug: "spread-bounds", file: "spread-bounds/spread-bounds", title: "SpreadBounds", order: 4, group: Some("One-Sample Estimators"), heading_offset: -1 },
+    // Two-Sample Estimators
+    Page { slug: "shift", file: "shift/shift", title: "Shift", order: 5, group: Some("Two-Sample Estimators"), heading_offset: -1 },
+    Page { slug: "shift-bounds", file: "shift-bounds/shift-bounds", title: "ShiftBounds", order: 6, group: Some("Two-Sample Estimators"), heading_offset: -1 },
+    Page { slug: "ratio", file: "ratio/ratio", title: "Ratio", order: 7, group: Some("Two-Sample Estimators"), heading_offset: -1 },
+    Page { slug: "ratio-bounds", file: "ratio-bounds/ratio-bounds", title: "RatioBounds", order: 8, group: Some("Two-Sample Estimators"), heading_offset: -1 },
+    Page { slug: "disparity", file: "disparity/disparity", title: "Disparity", order: 9, group: Some("Two-Sample Estimators"), heading_offset: -1 },
+    Page { slug: "disparity-bounds", file: "disparity-bounds/disparity-bounds", title: "DisparityBounds", order: 10, group: Some("Two-Sample Estimators"), heading_offset: -1 },
+    // Randomization
+    Page { slug: "rng", file: "rng/rng", title: "Rng", order: 11, group: Some("Randomization"), heading_offset: -1 },
+    Page { slug: "uniform-float", file: "uniform-float/uniform-float", title: "UniformFloat", order: 12, group: Some("Randomization"), heading_offset: -1 },
+    Page { slug: "uniform-int", file: "uniform-int/uniform-int", title: "UniformInt", order: 13, group: Some("Randomization"), heading_offset: -1 },
+    Page { slug: "sample", file: "sample/sample", title: "Sample", order: 14, group: Some("Randomization"), heading_offset: -1 },
+    Page { slug: "resample", file: "resample/resample", title: "Resample", order: 15, group: Some("Randomization"), heading_offset: -1 },
+    Page { slug: "shuffle", file: "shuffle/shuffle", title: "Shuffle", order: 16, group: Some("Randomization"), heading_offset: -1 },
+    // Distributions
+    Page { slug: "additive", file: "additive/additive", title: "Additive", order: 17, group: Some("Distributions"), heading_offset: -1 },
+    Page { slug: "multiplic", file: "multiplic/multiplic", title: "Multiplic", order: 18, group: Some("Distributions"), heading_offset: -1 },
+    Page { slug: "exp", file: "exp/exp", title: "Exp", order: 19, group: Some("Distributions"), heading_offset: -1 },
+    Page { slug: "power", file: "power/power", title: "Power", order: 20, group: Some("Distributions"), heading_offset: -1 },
+    Page { slug: "uniform", file: "uniform/uniform", title: "Uniform", order: 21, group: Some("Distributions"), heading_offset: -1 },
+    // Implementations
+    Page { slug: "py", file: "implementations/py", title: "Python", order: 22, group: Some("Implementations"), heading_offset: -1 },
+    Page { slug: "ts", file: "implementations/ts", title: "TypeScript", order: 23, group: Some("Implementations"), heading_offset: -1 },
+    Page { slug: "r", file: "implementations/r", title: "R", order: 24, group: Some("Implementations"), heading_offset: -1 },
+    Page { slug: "cs", file: "implementations/cs", title: "C#", order: 25, group: Some("Implementations"), heading_offset: -1 },
+    Page { slug: "kt", file: "implementations/kt", title: "Kotlin", order: 26, group: Some("Implementations"), heading_offset: -1 },
+    Page { slug: "rs", file: "implementations/rs", title: "Rust", order: 27, group: Some("Implementations"), heading_offset: -1 },
+    Page { slug: "go", file: "implementations/go", title: "Go", order: 28, group: Some("Implementations"), heading_offset: -1 },
+    // Auxiliary
+    Page { slug: "avg-spread", file: "avg-spread/avg-spread", title: "AvgSpread", order: 29, group: Some("Auxiliary"), heading_offset: -1 },
+    Page { slug: "avg-spread-bounds", file: "avg-spread-bounds/avg-spread-bounds", title: "AvgSpreadBounds", order: 30, group: Some("Auxiliary"), heading_offset: -1 },
+    Page { slug: "median", file: "median/median", title: "Median", order: 31, group: Some("Auxiliary"), heading_offset: -1 },
+    Page { slug: "sign-margin", file: "sign-margin/sign-margin", title: "SignMargin", order: 32, group: Some("Auxiliary"), heading_offset: -1 },
+    Page { slug: "pairwise-margin", file: "pairwise-margin/pairwise-margin", title: "PairwiseMargin", order: 33, group: Some("Auxiliary"), heading_offset: -1 },
+    Page { slug: "signed-rank-margin", file: "signed-rank-margin/signed-rank-margin", title: "SignedRankMargin", order: 34, group: Some("Auxiliary"), heading_offset: -1 },
+    // Appendix
+    Page { slug: "assumptions", file: "assumptions/assumptions", title: "Assumptions", order: 35, group: Some("Appendix"), heading_offset: 0 },
+    Page { slug: "foundations", file: "foundations/foundations", title: "Foundations", order: 36, group: Some("Appendix"), heading_offset: 0 },
+    Page { slug: "methodology", file: "methodology/methodology", title: "Methodology", order: 37, group: Some("Appendix"), heading_offset: 0 },
 ];
 
 fn build_web(base_path: &Path) -> Result<()> {
@@ -182,17 +183,17 @@ fn build_web(base_path: &Path) -> Result<()> {
 
     // Generate index page (abstract only)
     let abstract_content = std::fs::read_to_string(manual_path.join("abstract.typ"))?;
-    let index_mdx = astro::generate_index_page(&abstract_content, CHAPTERS);
+    let index_mdx = astro::generate_index_page(&abstract_content, PAGES);
     std::fs::write(web_content_path.join("index.mdx"), index_mdx)?;
     println!("  Generated: web/src/content/manual/index.mdx");
 
     // Create cross-reference map for internal links
     let xref_map = xref::XRefMap::new();
 
-    // Generate each chapter as a separate page and collect used citations
+    // Generate each page and collect used citations
     let mut used_citations = std::collections::HashSet::new();
-    for chapter in CHAPTERS {
-        let typ_path = manual_path.join(format!("{}.typ", chapter.file));
+    for page in PAGES {
+        let typ_path = manual_path.join(format!("{}.typ", page.file));
         let content = typst_parser::parse_typst_document(&typ_path, base_path)?;
         used_citations.extend(content.extract_citations());
         let mdx_content = astro::convert_typst_to_mdx(
@@ -200,17 +201,20 @@ fn build_web(base_path: &Path) -> Result<()> {
             &definitions,
             &references,
             &xref_map,
-            chapter.title,
-            chapter.order,
+            page.title,
+            page.order,
+            page.group,
+            page.heading_offset,
         );
 
-        let output_file = format!("{}.mdx", chapter.slug);
+        let output_file = format!("{}.mdx", page.slug);
         std::fs::write(web_content_path.join(&output_file), mdx_content)?;
         println!("  Generated: web/src/content/manual/{output_file}");
     }
 
     // Generate bibliography page (only includes actually used references)
-    let bibliography_mdx = astro::generate_bibliography_page(&references, &used_citations, 12);
+    let bibliography_mdx =
+        astro::generate_bibliography_page(&references, &used_citations, 50, Some("Appendix"));
     std::fs::write(web_content_path.join("bibliography.mdx"), bibliography_mdx)?;
     println!(
         "  Generated: web/src/content/manual/bibliography.mdx ({} cited)",
@@ -224,7 +228,7 @@ fn build_web(base_path: &Path) -> Result<()> {
         doi: "10.5281/zenodo.17236778",
         github_url: "https://github.com/AndreyAkinshin/pragmastat",
     };
-    let colophon_mdx = astro::generate_colophon_page(&colophon_info, 13);
+    let colophon_mdx = astro::generate_colophon_page(&colophon_info, 51, Some("Appendix"));
     std::fs::write(web_content_path.join("colophon.mdx"), colophon_mdx)?;
     println!("  Generated: web/src/content/manual/colophon.mdx");
 
@@ -314,9 +318,9 @@ fn clean(base_path: &Path) -> Result<()> {
         }
     }
 
-    // Clean chapter MDX files
-    for chapter in CHAPTERS {
-        let file = format!("web/src/content/manual/{}.mdx", chapter.slug);
+    // Clean page MDX files
+    for page in PAGES {
+        let file = format!("web/src/content/manual/{}.mdx", page.slug);
         let path = base_path.join(&file);
         if path.exists() {
             std::fs::remove_file(&path)?;

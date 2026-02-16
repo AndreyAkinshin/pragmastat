@@ -228,6 +228,7 @@ fn test_spread() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_rel_spread() {
     run_one_sample_tests("rel-spread", rel_spread);
 }
@@ -240,11 +241,6 @@ fn test_shift() {
 #[test]
 fn test_ratio() {
     run_two_sample_tests("ratio", ratio);
-}
-
-#[test]
-fn test_avg_spread() {
-    run_two_sample_tests("avg-spread", avg_spread);
 }
 
 #[test]
@@ -694,7 +690,9 @@ fn run_rng_uniform_tests() {
         let test_case: UniformTestCase = serde_json::from_str(&content).unwrap();
 
         let mut rng = Rng::from_seed(test_case.input.seed);
-        let actual: Vec<f64> = (0..test_case.input.count).map(|_| rng.uniform()).collect();
+        let actual: Vec<f64> = (0..test_case.input.count)
+            .map(|_| rng.uniform_f64())
+            .collect();
 
         for (i, (actual_val, expected_val)) in
             actual.iter().zip(test_case.output.iter()).enumerate()
@@ -774,7 +772,9 @@ fn run_rng_string_seed_tests() {
         let test_case: StringSeedTestCase = serde_json::from_str(&content).unwrap();
 
         let mut rng = Rng::from_string(&test_case.input.seed);
-        let actual: Vec<f64> = (0..test_case.input.count).map(|_| rng.uniform()).collect();
+        let actual: Vec<f64> = (0..test_case.input.count)
+            .map(|_| rng.uniform_f64())
+            .collect();
 
         for (i, (actual_val, expected_val)) in
             actual.iter().zip(test_case.output.iter()).enumerate()
@@ -817,7 +817,7 @@ fn run_rng_uniform_range_tests() {
 
         let mut rng = Rng::from_seed(test_case.input.seed);
         let actual: Vec<f64> = (0..test_case.input.count)
-            .map(|_| rng.uniform_range(test_case.input.min, test_case.input.max))
+            .map(|_| rng.uniform_f64_range(test_case.input.min, test_case.input.max))
             .collect();
 
         for (i, (actual_val, expected_val)) in

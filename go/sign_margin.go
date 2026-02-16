@@ -52,7 +52,7 @@ func signMarginRandomized(n int, misrate float64, rng *Rng) (int, error) {
 		p = 1
 	}
 
-	u := rng.Uniform()
+	u := rng.UniformFloat64()
 	r := rLow
 	if u < p {
 		r = rLow + 1

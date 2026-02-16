@@ -37,8 +37,8 @@ export class Additive implements Distribution {
 
   sample(rng: Rng): number {
     // Box-Muller transform
-    let u1 = rng.uniform();
-    const u2 = rng.uniform();
+    let u1 = rng.uniformFloat();
+    const u2 = rng.uniformFloat();
 
     // Avoid log(0) - use smallest positive subnormal for cross-language consistency
     if (u1 === 0) {

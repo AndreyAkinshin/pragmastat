@@ -21,7 +21,7 @@ internal fun signMarginRandomized(n: Int, misrate: Double, rng: Rng): Int {
     val logNum = if (logTarget > logCdfLow) logSubExp(logTarget, logCdfLow) else Double.NEGATIVE_INFINITY
     var p = if (logPmfHigh.isFinite() && logNum.isFinite()) exp(logNum - logPmfHigh) else 0.0
     p = p.coerceIn(0.0, 1.0)
-    val u = rng.uniform()
+    val u = rng.uniformDouble()
     val r = if (u < p) rLow + 1 else rLow
     return r * 2
 }

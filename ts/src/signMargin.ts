@@ -23,7 +23,7 @@ export function signMarginRandomized(n: number, misrate: number, rng: Rng): numb
   let p = isFinite(logPmfHigh) && isFinite(logNum) ? Math.exp(logNum - logPmfHigh) : 0;
   p = Math.max(0, Math.min(1, p));
 
-  const u = rng.uniform();
+  const u = rng.uniformFloat();
   const r = u < p ? rLow + 1 : rLow;
   return r * 2;
 }

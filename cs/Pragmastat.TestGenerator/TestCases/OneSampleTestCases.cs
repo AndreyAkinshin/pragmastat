@@ -1,3 +1,4 @@
+#pragma warning disable CS0618
 using Pragmastat.TestGenerator.Framework.OneSample;
 using Spectre.Console;
 

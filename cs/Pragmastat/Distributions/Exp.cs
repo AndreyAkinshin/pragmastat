@@ -38,7 +38,7 @@ public sealed class Exp : IDistribution, IContinuousDistribution
   public double Sample(Rng rng)
   {
     // Inverse CDF method: -ln(1 - U) / rate
-    double u = rng.Uniform();
+    double u = rng.UniformDouble();
     // Avoid log(0) - use machine epsilon for cross-language consistency
     if (u == 1.0)
       u = 1.0 - Constants.MachineEpsilon;

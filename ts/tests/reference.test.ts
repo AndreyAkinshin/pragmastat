@@ -12,6 +12,8 @@ import {
   ratioBounds,
   centerBounds,
   spreadBounds,
+  disparityBounds,
+  avgSpreadBounds,
 } from '../src/estimators';
 import { signedRankMargin } from '../src/signedRankMargin';
 import { AssumptionError } from '../src/assumptions';
@@ -238,7 +240,7 @@ describe('Reference Tests', () => {
         it(`should pass ${testName}`, () => {
           const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
           const rng = new Rng(data.input.seed);
-          const actual = Array.from({ length: data.input.count }, () => rng.uniform());
+          const actual = Array.from({ length: data.input.count }, () => rng.uniformFloat());
 
           for (let i = 0; i < actual.length; i++) {
             expect(actual[i]).toBeCloseTo(data.output[i], 15);
@@ -290,7 +292,7 @@ describe('Reference Tests', () => {
         it(`should pass ${testName}`, () => {
           const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
           const rng = new Rng(data.input.seed);
-          const actual = Array.from({ length: data.input.count }, () => rng.uniform());
+          const actual = Array.from({ length: data.input.count }, () => rng.uniformFloat());
 
           for (let i = 0; i < actual.length; i++) {
             expect(actual[i]).toBeCloseTo(data.output[i], 15);
@@ -317,7 +319,7 @@ describe('Reference Tests', () => {
           const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
           const rng = new Rng(data.input.seed);
           const actual = Array.from({ length: data.input.count }, () =>
-            rng.uniformRange(data.input.min, data.input.max),
+            rng.uniformFloatRange(data.input.min, data.input.max),
           );
 
           for (let i = 0; i < actual.length; i++) {
@@ -564,7 +566,7 @@ describe('Reference Tests', () => {
   describe('sample validation', () => {
     it('should throw error for negative k', () => {
       const rng = new Rng('test-sample-validation');
-      expect(() => rng.sample([1, 2, 3], -1)).toThrow('k must be non-negative');
+      expect(() => rng.sample([1, 2, 3], -1)).toThrow('k must be positive');
     });
   });
 
@@ -684,6 +686,104 @@ describe('Reference Tests', () => {
           }
 
           const result = spreadBounds(data.input.x, data.input.misrate, data.input.seed);
+          expect(result.lower).toBeCloseTo(data.output.lower, 9);
+          expect(result.upper).toBeCloseTo(data.output.upper, 9);
+        });
+      });
+    }
+  });
+
+  // DisparityBounds tests
+  describe('disparity-bounds', () => {
+    const dirPath = path.join(testDataPath, 'disparity-bounds');
+    if (fs.existsSync(dirPath)) {
+      const testFiles = fs
+        .readdirSync(dirPath)
+        .filter((f) => f.endsWith('.json'))
+        .sort();
+
+      it('should have test files', () => {
+        expect(testFiles.length).toBeGreaterThan(0);
+      });
+
+      testFiles.forEach((fileName) => {
+        const filePath = path.join(dirPath, fileName);
+        const testName = fileName.replace('.json', '');
+
+        it(`should pass ${testName}`, () => {
+          const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+
+          if (data.expected_error) {
+            let thrownError: AssumptionError | null = null;
+            try {
+              disparityBounds(data.input.x, data.input.y, data.input.misrate, data.input.seed);
+            } catch (e) {
+              if (e instanceof AssumptionError) {
+                thrownError = e;
+              } else {
+                throw e;
+              }
+            }
+            expect(thrownError).not.toBeNull();
+            expect(thrownError!.violation.id).toBe(data.expected_error.id);
+            return;
+          }
+
+          const result = disparityBounds(
+            data.input.x,
+            data.input.y,
+            data.input.misrate,
+            data.input.seed,
+          );
+          expect(result.lower).toBeCloseTo(data.output.lower, 9);
+          expect(result.upper).toBeCloseTo(data.output.upper, 9);
+        });
+      });
+    }
+  });
+
+  // AvgSpreadBounds tests
+  describe('avg-spread-bounds', () => {
+    const dirPath = path.join(testDataPath, 'avg-spread-bounds');
+    if (fs.existsSync(dirPath)) {
+      const testFiles = fs
+        .readdirSync(dirPath)
+        .filter((f) => f.endsWith('.json'))
+        .sort();
+
+      it('should have test files', () => {
+        expect(testFiles.length).toBeGreaterThan(0);
+      });
+
+      testFiles.forEach((fileName) => {
+        const filePath = path.join(dirPath, fileName);
+        const testName = fileName.replace('.json', '');
+
+        it(`should pass ${testName}`, () => {
+          const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+
+          if (data.expected_error) {
+            let thrownError: AssumptionError | null = null;
+            try {
+              avgSpreadBounds(data.input.x, data.input.y, data.input.misrate, data.input.seed);
+            } catch (e) {
+              if (e instanceof AssumptionError) {
+                thrownError = e;
+              } else {
+                throw e;
+              }
+            }
+            expect(thrownError).not.toBeNull();
+            expect(thrownError!.violation.id).toBe(data.expected_error.id);
+            return;
+          }
+
+          const result = avgSpreadBounds(
+            data.input.x,
+            data.input.y,
+            data.input.misrate,
+            data.input.seed,
+          );
           expect(result.lower).toBeCloseTo(data.output.lower, 9);
           expect(result.upper).toBeCloseTo(data.output.upper, 9);
         });

@@ -22,7 +22,7 @@ class Power(private val min: Double, private val shape: Double) : Distribution {
 
     override fun sample(rng: Rng): Double {
         // Inverse CDF method: min / (1 - U)^(1/shape)
-        var u = rng.uniform()
+        var u = rng.uniformDouble()
         // Avoid division by zero - use machine epsilon for cross-language consistency
         if (u == 1.0) {
             u = 1.0 - Constants.MACHINE_EPSILON

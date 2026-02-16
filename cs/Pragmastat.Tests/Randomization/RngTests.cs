@@ -29,7 +29,7 @@ public class RngTests
       Assert.Equal(count, output.GetArrayLength());
       for (int i = 0; i < count; i++)
       {
-        double actual = rng.Uniform();
+        double actual = rng.UniformDouble();
         double expected = output[i].GetDouble();
         Assert.True(Math.Abs(actual - expected) < 1e-15,
             $"File: {Path.GetFileName(filePath)}, index {i}: expected {expected}, got {actual}");
@@ -88,7 +88,7 @@ public class RngTests
       Assert.Equal(count, output.GetArrayLength());
       for (int i = 0; i < count; i++)
       {
-        double actual = rng.Uniform();
+        double actual = rng.UniformDouble();
         double expected = output[i].GetDouble();
         Assert.True(Math.Abs(actual - expected) < 1e-15,
             $"File: {Path.GetFileName(filePath)}, index {i}: expected {expected}, got {actual}");
@@ -237,7 +237,7 @@ public class RngTests
       Assert.Equal(count, output.GetArrayLength());
       for (int i = 0; i < count; i++)
       {
-        double actual = rng.Uniform(min, max);
+        double actual = rng.UniformDouble(min, max);
         double expected = output[i].GetDouble();
         Assert.True(Math.Abs(actual - expected) < 1e-12,
             $"File: {Path.GetFileName(filePath)}, index {i}: expected {expected}, got {actual}");

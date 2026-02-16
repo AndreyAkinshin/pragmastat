@@ -18,7 +18,7 @@ const currentSlug = Astro.url.pathname.replace(/^\/|\/$/g, '');
 
 <BaseLayout title={title} description={description}>
   <div class="layout" id="docs-layout">
-    <aside class="sidebar-container">
+    <aside class="sidebar-container" transition:persist="sidebar">
       <Sidebar headings={headings} currentSlug={currentSlug} />
     </aside>
 
@@ -67,158 +67,245 @@ const currentSlug = Astro.url.pathname.replace(/^\/|\/$/g, '');
   <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
   <script>
-    // Copy button for code blocks
+    // ========================================================================
+    // Sidebar active state update (for transition:persist)
+    // Runs on every navigation to update the persisted sidebar
+    // ========================================================================
+    function updateSidebarActiveState() {
+      const currentPath = window.location.pathname.replace(/^\/|\/$/g, '');
+
+      // Update active link classes
+      document.querySelectorAll<HTMLAnchorElement>('.sidebar-link').forEach((link) => {
+        const slug = (link.getAttribute('href') || '').replace(/^\/|\/$/g, '');
+        const isActive = slug === currentPath;
+        link.classList.toggle('active', isActive);
+        if (isActive) {
+          link.setAttribute('aria-current', 'page');
+        } else {
+          link.removeAttribute('aria-current');
+        }
+      });
+
+      // Remove old sublinks
+      document.querySelectorAll('.sidebar-sublist').forEach((el) => el.remove());
+
+      // Build new sublinks from the current page's headings
+      const headings = Array.from(
+        document.querySelectorAll('.content h2, .content h3, .content h4, .content h5, .content h6'),
+      )
+        .filter((h) => h.id)
+        .map((h) => ({
+          depth: parseInt(h.tagName[1]),
+          slug: h.id,
+          text: (h.textContent || '').trim(),
+        }));
+
+      const activeLink = document.querySelector('.sidebar-link.active');
+      if (activeLink && headings.length > 0) {
+        const sublist = document.createElement('ul');
+        sublist.className = 'sidebar-sublist';
+        for (const h of headings) {
+          const li = document.createElement('li');
+          const a = document.createElement('a');
+          a.href = `#${h.slug}`;
+          a.className = `sidebar-sublink depth-${h.depth}`;
+          a.textContent = h.text;
+          li.appendChild(a);
+          sublist.appendChild(li);
+        }
+        // Insert after the active link (inside the same <li>)
+        activeLink.after(sublist);
+      }
+    }
+
+    document.addEventListener('astro:after-swap', updateSidebarActiveState);
+
+    // ========================================================================
+    // Page-specific initialization (runs on every navigation)
+    // ========================================================================
     const copyIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
     const checkIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
 
-    document.querySelectorAll('.content pre').forEach((pre) => {
-      const button = document.createElement('button');
-      button.className = 'copy-button';
-      button.innerHTML = copyIcon;
-      button.setAttribute('aria-label', 'Copy code');
+    // Cache references.json across navigations
+    let cachedReferences: Record<string, any> | null = null;
 
-      button.addEventListener('click', async () => {
-        const code = pre.querySelector('code')?.textContent || '';
-        await navigator.clipboard.writeText(code);
-        button.innerHTML = checkIcon;
-        button.classList.add('copied');
-        setTimeout(() => {
-          button.innerHTML = copyIcon;
-          button.classList.remove('copied');
-        }, 3000);
-      });
+    function initPage() {
+      // Copy buttons for code blocks
+      document.querySelectorAll('.content pre').forEach((pre) => {
+        if (pre.querySelector('.copy-button')) return; // already initialized
+        const button = document.createElement('button');
+        button.className = 'copy-button';
+        button.innerHTML = copyIcon;
+        button.setAttribute('aria-label', 'Copy code');
 
-      pre.appendChild(button);
-    });
-
-    // Mobile sidebar toggle
-    const menuButton = document.getElementById('menu-button');
-    const sidebar = document.querySelector('.sidebar-container');
-    const overlay = document.getElementById('sidebar-overlay');
-
-    menuButton?.addEventListener('click', () => {
-      sidebar?.classList.toggle('open');
-      overlay?.classList.toggle('open');
-    });
-
-    overlay?.addEventListener('click', () => {
-      sidebar?.classList.remove('open');
-      overlay?.classList.remove('open');
-    });
-
-    // Desktop sidebar collapse toggle
-    const sidebarToggle = document.getElementById('sidebar-toggle');
-    const layout = document.getElementById('docs-layout');
-
-    function setSidebarCollapsed(collapsed: boolean) {
-      if (collapsed) {
-        document.documentElement.setAttribute('data-sidebar-collapsed', '');
-        layout?.setAttribute('data-sidebar-collapsed', '');
-        sidebarToggle?.setAttribute('aria-expanded', 'false');
-        localStorage.setItem('pragmastat-sidebar-collapsed', 'true');
-      } else {
-        document.documentElement.removeAttribute('data-sidebar-collapsed');
-        layout?.removeAttribute('data-sidebar-collapsed');
-        sidebarToggle?.setAttribute('aria-expanded', 'true');
-        localStorage.removeItem('pragmastat-sidebar-collapsed');
-      }
-    }
-
-    // Initialize from localStorage (also set on documentElement by BaseLayout inline script)
-    const sidebarCollapsed = localStorage.getItem('pragmastat-sidebar-collapsed') === 'true';
-    if (sidebarCollapsed) {
-      layout?.setAttribute('data-sidebar-collapsed', '');
-      sidebarToggle?.setAttribute('aria-expanded', 'false');
-    }
-
-    sidebarToggle?.addEventListener('click', () => {
-      const isCollapsed = layout?.hasAttribute('data-sidebar-collapsed');
-      setSidebarCollapsed(!isCollapsed);
-    });
-
-    const sidebarExpand = document.getElementById('sidebar-expand');
-    sidebarExpand?.addEventListener('click', () => {
-      setSidebarCollapsed(false);
-    });
-
-    // Active section highlighting in sidebar
-    {
-      const sublinks = document.querySelectorAll<HTMLAnchorElement>('.sidebar-sublink');
-      if (sublinks.length > 0) {
-        const headingIds = Array.from(sublinks).map((link) => link.hash.slice(1));
-        let ticking = false;
-
-        function updateActiveHeading() {
-          const scrollTop = window.scrollY;
-          const offset = 100; // how far below the top a heading must be to count
-          let activeId = '';
-
-          for (const id of headingIds) {
-            const el = document.getElementById(id);
-            if (el && el.offsetTop - offset <= scrollTop) {
-              activeId = id;
-            }
-          }
-
-          // If scrolled near the bottom, activate the last heading
-          if (window.innerHeight + scrollTop >= document.body.scrollHeight - 2) {
-            activeId = headingIds[headingIds.length - 1];
-          }
-
-          sublinks.forEach((link) => {
-            link.classList.toggle('active', link.hash === `#${activeId}`);
-          });
-          ticking = false;
-        }
-
-        window.addEventListener('scroll', () => {
-          if (!ticking) {
-            requestAnimationFrame(updateActiveHeading);
-            ticking = true;
-          }
+        button.addEventListener('click', async () => {
+          const code = pre.querySelector('code')?.textContent || '';
+          await navigator.clipboard.writeText(code);
+          button.innerHTML = checkIcon;
+          button.classList.add('copied');
+          setTimeout(() => {
+            button.innerHTML = copyIcon;
+            button.classList.remove('copied');
+          }, 3000);
         });
 
-        updateActiveHeading();
+        pre.appendChild(button);
+      });
+
+      // Mobile sidebar toggle
+      const menuButton = document.getElementById('menu-button');
+      const sidebar = document.querySelector('.sidebar-container');
+      const overlay = document.getElementById('sidebar-overlay');
+
+      function bindClickOnce(el: HTMLElement | null, handler: () => void) {
+        if (!el) return;
+        if (el.dataset.pragmastatBound === 'true') return;
+        el.dataset.pragmastatBound = 'true';
+        el.addEventListener('click', handler);
       }
+
+      bindClickOnce(menuButton, () => {
+        sidebar?.classList.toggle('open');
+        overlay?.classList.toggle('open');
+      });
+
+      bindClickOnce(overlay, () => {
+        sidebar?.classList.remove('open');
+        overlay?.classList.remove('open');
+      });
+
+      // Close mobile sidebar on navigation
+      sidebar?.classList.remove('open');
+      overlay?.classList.remove('open');
+
+      // Desktop sidebar collapse toggle
+      const sidebarToggle = document.getElementById('sidebar-toggle');
+      const layout = document.getElementById('docs-layout');
+
+      function setSidebarCollapsed(collapsed: boolean) {
+        const layoutEl = document.getElementById('docs-layout');
+        const toggleEl = document.getElementById('sidebar-toggle');
+        if (collapsed) {
+          document.documentElement.setAttribute('data-sidebar-collapsed', '');
+          layoutEl?.setAttribute('data-sidebar-collapsed', '');
+          toggleEl?.setAttribute('aria-expanded', 'false');
+          localStorage.setItem('pragmastat-sidebar-collapsed', 'true');
+        } else {
+          document.documentElement.removeAttribute('data-sidebar-collapsed');
+          layoutEl?.removeAttribute('data-sidebar-collapsed');
+          toggleEl?.setAttribute('aria-expanded', 'true');
+          localStorage.removeItem('pragmastat-sidebar-collapsed');
+        }
+      }
+
+      // Initialize from localStorage
+      const sidebarCollapsed = localStorage.getItem('pragmastat-sidebar-collapsed') === 'true';
+      if (sidebarCollapsed) {
+        layout?.setAttribute('data-sidebar-collapsed', '');
+        sidebarToggle?.setAttribute('aria-expanded', 'false');
+      }
+
+      bindClickOnce(sidebarToggle, () => {
+        const isCollapsed = document.getElementById('docs-layout')?.hasAttribute('data-sidebar-collapsed') ?? false;
+        setSidebarCollapsed(!isCollapsed);
+      });
+
+      const sidebarExpand = document.getElementById('sidebar-expand');
+      bindClickOnce(sidebarExpand, () => {
+        setSidebarCollapsed(false);
+      });
+
+      // Active section highlighting in sidebar (scroll spy)
+      initScrollSpy();
+
+      // Citation popovers
+      initCitations();
     }
 
+    // ========================================================================
+    // Scroll spy for sidebar sublinks
+    // ========================================================================
+    let scrollSpyCleanup: (() => void) | null = null;
+
+    function initScrollSpy() {
+      // Clean up previous scroll listener
+      scrollSpyCleanup?.();
+      scrollSpyCleanup = null;
+
+      const sublinks = document.querySelectorAll<HTMLAnchorElement>('.sidebar-sublink');
+      if (sublinks.length === 0) return;
+
+      const headingIds = Array.from(sublinks).map((link) => link.hash.slice(1));
+      let ticking = false;
+
+      function updateActiveHeading() {
+        const scrollTop = window.scrollY;
+        const offset = 100;
+        let activeId = '';
+
+        for (const id of headingIds) {
+          const el = document.getElementById(id);
+          if (el && el.offsetTop - offset <= scrollTop) {
+            activeId = id;
+          }
+        }
+
+        if (window.innerHeight + scrollTop >= document.body.scrollHeight - 2) {
+          activeId = headingIds[headingIds.length - 1];
+        }
+
+        sublinks.forEach((link) => {
+          link.classList.toggle('active', link.hash === `#${activeId}`);
+        });
+        ticking = false;
+      }
+
+      function onScroll() {
+        if (!ticking) {
+          requestAnimationFrame(updateActiveHeading);
+          ticking = true;
+        }
+      }
+
+      window.addEventListener('scroll', onScroll);
+      scrollSpyCleanup = () => window.removeEventListener('scroll', onScroll);
+      updateActiveHeading();
+    }
+
+    // ========================================================================
     // Citation popovers
-    (async function initCitations() {
+    // ========================================================================
+    async function initCitations() {
       const citations = document.querySelectorAll('.citation');
       if (citations.length === 0) return;
 
-      let references = {};
-      try {
-        const res = await fetch('/references.json');
-        if (!res.ok) {
-          console.warn('Failed to load references.json:', res.status);
+      if (!cachedReferences) {
+        try {
+          const res = await fetch('/references.json');
+          if (!res.ok) return;
+          cachedReferences = await res.json();
+        } catch {
           return;
         }
-        references = await res.json();
-      } catch (e) {
-        console.warn('Could not load references.json', e);
-        return;
       }
+      const references = cachedReferences!;
 
-      let popover = null;
-      let hideTimeout = null;
+      let popover: HTMLElement | null = null;
+      let hideTimeout: ReturnType<typeof setTimeout> | null = null;
       let isOverPopover = false;
 
-      function showPopover(citation, ref) {
-        // Clear any pending hide
+      function showPopover(citation: Element, ref: any) {
         if (hideTimeout) {
           clearTimeout(hideTimeout);
           hideTimeout = null;
         }
-
-        // Don't recreate if already showing for this citation
-        if (popover && popover.dataset.key === citation.dataset.key) return;
+        if (popover && popover.dataset.key === (citation as HTMLElement).dataset.key) return;
 
         hidePopoverNow();
         popover = document.createElement('div');
         popover.className = 'citation-popover';
-        popover.dataset.key = citation.dataset.key;
-        // Build popover content safely using DOM APIs to prevent XSS
+        popover.dataset.key = (citation as HTMLElement).dataset.key!;
+
         const titleDiv = document.createElement('div');
         titleDiv.className = 'citation-popover-title';
         titleDiv.textContent = ref.title;
@@ -248,7 +335,6 @@ const currentSlug = Astro.url.pathname.replace(/^\/|\/$/g, '');
           popover.appendChild(doiDiv);
         }
 
-        // Track mouse entering/leaving the popover
         popover.addEventListener('mouseenter', () => {
           isOverPopover = true;
           if (hideTimeout) {
@@ -263,13 +349,11 @@ const currentSlug = Astro.url.pathname.replace(/^\/|\/$/g, '');
 
         document.body.appendChild(popover);
 
-        // Position near the citation (with small gap for mouse movement)
         const rect = citation.getBoundingClientRect();
         const popRect = popover.getBoundingClientRect();
         let left = rect.left;
-        let top = rect.bottom + 4; // Reduced gap for easier mouse transition
+        let top = rect.bottom + 4;
 
-        // Keep within viewport
         if (left + popRect.width > window.innerWidth - 16) {
           left = window.innerWidth - popRect.width - 16;
         }
@@ -284,11 +368,9 @@ const currentSlug = Astro.url.pathname.replace(/^\/|\/$/g, '');
       function scheduleHide() {
         if (hideTimeout) return;
         hideTimeout = setTimeout(() => {
-          if (!isOverPopover) {
-            hidePopoverNow();
-          }
+          if (!isOverPopover) hidePopoverNow();
           hideTimeout = null;
-        }, 150); // Small delay to allow moving to popover
+        }, 150);
       }
 
       function hidePopoverNow() {
@@ -299,8 +381,8 @@ const currentSlug = Astro.url.pathname.replace(/^\/|\/$/g, '');
         isOverPopover = false;
       }
 
-      citations.forEach(citation => {
-        const key = citation.dataset.key;
+      citations.forEach((citation) => {
+        const key = (citation as HTMLElement).dataset.key;
         if (!key) return;
         const ref = references[key];
         if (!ref) return;
@@ -313,7 +395,10 @@ const currentSlug = Astro.url.pathname.replace(/^\/|\/$/g, '');
           else showPopover(citation, ref);
         });
       });
-    })();
+    }
+
+    // Run on initial load and every View Transition navigation
+    document.addEventListener('astro:page-load', initPage);
   </script>
 </BaseLayout>
 

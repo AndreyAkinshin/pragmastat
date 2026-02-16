@@ -3,13 +3,17 @@
 #' A deterministic PRNG based on xoshiro256++ that produces identical sequences
 #' across all Pragmastat language implementations when initialized with the same seed.
 #'
+#' Preferred usage: \code{rng("seed")} (lowercase factory function).
+#' The R6 class \code{Rng} is also exported for users who prefer
+#' \code{Rng$new("seed")} or need to reference the class directly.
+#'
 #' @param seed Integer seed, string seed, or NULL for system time
 #' @return An Rng object (R6 class)
 #'
 #' @examples
 #' # Create from string seed
 #' r <- rng("demo-uniform")
-#' r$uniform()
+#' r$uniform_float()
 #'
 #' # Shuffle a vector
 #' r <- rng("demo-shuffle")
@@ -51,16 +55,16 @@ Rng <- R6::R6Class(
 
     #' @description Generate a uniform random float in [0, 1)
     #' @return A random value in [0, 1)
-    uniform = function() {
-      xoshiro256_uniform(private$inner)
+    uniform_float = function() {
+      xoshiro256_uniform_float(private$inner)
     },
 
     #' @description Generate a uniform random float in [min, max)
     #' @param min_val Minimum value (inclusive)
     #' @param max_val Maximum value (exclusive)
     #' @return A random value in [min, max). Returns min_val if min_val >= max_val.
-    uniform_range = function(min_val, max_val) {
-      xoshiro256_uniform_range(private$inner, min_val, max_val)
+    uniform_float_range = function(min_val, max_val) {
+      xoshiro256_uniform_float_range(private$inner, min_val, max_val)
     },
 
     # ========================================================================
@@ -94,10 +98,58 @@ Rng <- R6::R6Class(
     # Collection Methods
     # ========================================================================
 
+    #' @description Sample k elements from the input vector without replacement
+    #' @param x Input vector to sample from
+    #' @param k Number of elements to sample (must be positive)
+    #' @return Vector of k sampled elements
+    sample = function(x, k) {
+      if (k <= 0) stop("k must be positive")
+      if (length(x) == 0) stop("sample: cannot sample from empty vector")
+      n <- length(x)
+      if (k >= n) {
+        return(x[seq_len(n)])
+      }
+
+      result <- vector(mode = typeof(x), length = k)
+      result_idx <- 0L
+      remaining <- k
+
+      for (i in seq_len(n)) {
+        if (remaining == 0L) break
+        available <- n - i + 1L
+        # Probability of selecting this item: remaining / available
+        if (self$uniform_float() * available < remaining) {
+          result_idx <- result_idx + 1L
+          result[result_idx] <- x[i]
+          remaining <- remaining - 1L
+        }
+      }
+
+      result
+    },
+
+    #' @description Resample k elements from the input vector with replacement
+    #' @param x Input vector to resample from (must be non-empty)
+    #' @param k Number of elements to resample (must be positive)
+    #' @return Vector of k resampled elements (may contain duplicates)
+    resample = function(x, k) {
+      if (k <= 0) stop("resample: k must be positive")
+      n <- length(x)
+      if (n == 0) stop("resample: cannot resample from empty vector")
+
+      result <- vector(mode = typeof(x), length = k)
+      for (i in seq_len(k)) {
+        idx <- self$uniform_int(1L, n + 1L)
+        result[i] <- x[idx]
+      }
+      result
+    },
+
     #' @description Return a shuffled copy of the input vector
     #' @param x Input vector to shuffle
     #' @return Shuffled copy of the input
     shuffle = function(x) {
+      if (length(x) == 0) stop("shuffle: cannot shuffle empty vector")
       result <- x
       n <- length(result)
 
@@ -113,52 +165,6 @@ Rng <- R6::R6Class(
         }
       }
 
-      result
-    },
-
-    #' @description Sample k elements from the input vector without replacement
-    #' @param x Input vector to sample from
-    #' @param k Number of elements to sample (must be non-negative)
-    #' @return Vector of k sampled elements
-    sample = function(x, k) {
-      if (k < 0) stop("k must be non-negative")
-      n <- length(x)
-      if (k >= n) {
-        return(x)
-      }
-
-      result <- vector(mode = typeof(x), length = k)
-      result_idx <- 0L
-      remaining <- k
-
-      for (i in seq_len(n)) {
-        if (remaining == 0L) break
-        available <- n - i + 1L
-        # Probability of selecting this item: remaining / available
-        if (self$uniform() * available < remaining) {
-          result_idx <- result_idx + 1L
-          result[result_idx] <- x[i]
-          remaining <- remaining - 1L
-        }
-      }
-
-      result
-    },
-
-    #' @description Resample k elements from the input vector with replacement
-    #' @param x Input vector to resample from (must be non-empty)
-    #' @param k Number of elements to resample (must be non-negative)
-    #' @return Vector of k resampled elements (may contain duplicates)
-    resample = function(x, k) {
-      if (k < 0) stop("resample: k must be non-negative")
-      n <- length(x)
-      if (n == 0) stop("resample: cannot resample from empty vector")
-
-      result <- vector(mode = typeof(x), length = k)
-      for (i in seq_len(k)) {
-        idx <- self$uniform_int(1L, n + 1L)
-        result[i] <- x[idx]
-      }
       result
     }
   )

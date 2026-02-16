@@ -1,0 +1,211 @@
+{
+  "version": 1,
+  "description": "Machine-readable index of all cross-language reference test suites",
+  "suites": {
+    "rng": {
+      "directory": "rng",
+      "generator": "rs/pragmastat/examples/gen_rng_tests.rs",
+      "description": "Random number generator reproducibility tests",
+      "sub_suites": {
+        "uniform-seed": {
+          "pattern": "uniform-seed-*.json",
+          "description": "Uniform f64 [0,1) from integer seeds",
+          "languages": ["cs", "go", "kt", "py", "r", "rs", "ts"]
+        },
+        "uniform-f32": {
+          "pattern": "uniform-f32-*.json",
+          "description": "Uniform f32 [0,1) from integer seeds",
+          "languages": ["cs", "go", "kt", "rs"]
+        },
+        "uniform-int": {
+          "pattern": "uniform-int-*.json",
+          "description": "Uniform i64 in [min, max)",
+          "languages": ["cs", "go", "kt", "py", "r", "rs", "ts"]
+        },
+        "uniform-i32": {
+          "pattern": "uniform-i32-*.json",
+          "description": "Uniform i32 in [min, max)",
+          "languages": ["cs", "go", "kt", "rs"]
+        },
+        "uniform-bool": {
+          "pattern": "uniform-bool-*.json",
+          "description": "Uniform boolean generation",
+          "languages": ["cs", "go", "kt", "py", "r", "rs", "ts"]
+        },
+        "uniform-string": {
+          "pattern": "uniform-string-*.json",
+          "description": "Uniform f64 [0,1) from string seeds (FNV-1a)",
+          "languages": ["cs", "go", "kt", "py", "r", "rs", "ts"]
+        },
+        "uniform-range": {
+          "pattern": "uniform-range-*.json",
+          "description": "Uniform f64 in [min, max)",
+          "languages": ["cs", "go", "kt", "py", "r", "rs", "ts"]
+        }
+      }
+    },
+    "shuffle": {
+      "directory": "shuffle",
+      "generator": "rs/pragmastat/examples/gen_rng_tests.rs",
+      "pattern": "*.json",
+      "description": "Fisher-Yates shuffle tests",
+      "languages": ["cs", "go", "kt", "py", "r", "rs", "ts"]
+    },
+    "sample": {
+      "directory": "sample",
+      "generator": "rs/pragmastat/examples/gen_rng_tests.rs",
+      "pattern": "*.json",
+      "description": "Selection sampling without replacement tests",
+      "languages": ["cs", "go", "kt", "py", "r", "rs", "ts"]
+    },
+    "resample": {
+      "directory": "resample",
+      "generator": "rs/pragmastat/examples/gen_rng_tests.rs",
+      "pattern": "*.json",
+      "description": "Bootstrap resampling with replacement tests",
+      "languages": ["cs", "go", "kt", "py", "r", "rs", "ts"]
+    },
+    "center": {
+      "directory": "center",
+      "generator": "cs/Pragmastat.TestGenerator",
+      "pattern": "*.json",
+      "description": "Center (location) estimator tests",
+      "languages": ["cs", "go", "kt", "py", "r", "rs", "ts"]
+    },
+    "center-bounds": {
+      "directory": "center-bounds",
+      "generator": "cs/Pragmastat.TestGenerator",
+      "pattern": "*.json",
+      "description": "CenterBounds confidence interval tests",
+      "languages": ["cs", "go", "kt", "py", "r", "rs", "ts"]
+    },
+    "spread": {
+      "directory": "spread",
+      "generator": "cs/Pragmastat.TestGenerator",
+      "pattern": "*.json",
+      "description": "Spread (scale) estimator tests",
+      "languages": ["cs", "go", "kt", "py", "r", "rs", "ts"]
+    },
+    "spread-bounds": {
+      "directory": "spread-bounds",
+      "generator": "cs/Pragmastat.TestGenerator",
+      "pattern": "*.json",
+      "description": "SpreadBounds confidence interval tests",
+      "languages": ["cs", "go", "kt", "py", "r", "rs", "ts"]
+    },
+    "rel-spread": {
+      "directory": "rel-spread",
+      "generator": "cs/Pragmastat.TestGenerator",
+      "pattern": "*.json",
+      "description": "Relative spread estimator tests",
+      "languages": ["cs", "go", "kt", "py", "r", "rs", "ts"]
+    },
+    "shift": {
+      "directory": "shift",
+      "generator": "cs/Pragmastat.TestGenerator",
+      "pattern": "*.json",
+      "description": "Shift (two-sample location) estimator tests",
+      "languages": ["cs", "go", "kt", "py", "r", "rs", "ts"]
+    },
+    "shift-bounds": {
+      "directory": "shift-bounds",
+      "generator": "cs/Pragmastat.TestGenerator",
+      "pattern": "*.json",
+      "description": "ShiftBounds confidence interval tests",
+      "languages": ["cs", "go", "kt", "py", "r", "rs", "ts"]
+    },
+    "ratio": {
+      "directory": "ratio",
+      "generator": "cs/Pragmastat.TestGenerator",
+      "pattern": "*.json",
+      "description": "Ratio (two-sample) estimator tests",
+      "languages": ["cs", "go", "kt", "py", "r", "rs", "ts"]
+    },
+    "ratio-bounds": {
+      "directory": "ratio-bounds",
+      "generator": "cs/Pragmastat.TestGenerator",
+      "pattern": "*.json",
+      "description": "RatioBounds confidence interval tests",
+      "languages": ["cs", "go", "kt", "py", "r", "rs", "ts"]
+    },
+    "disparity": {
+      "directory": "disparity",
+      "generator": "cs/Pragmastat.TestGenerator",
+      "pattern": "*.json",
+      "description": "Disparity estimator tests",
+      "languages": ["cs", "go", "kt", "py", "r", "rs", "ts"]
+    },
+    "disparity-bounds": {
+      "directory": "disparity-bounds",
+      "generator": "cs/Pragmastat.TestGenerator",
+      "pattern": "*.json",
+      "description": "DisparityBounds confidence interval tests",
+      "languages": ["cs", "go", "kt", "py", "r", "rs", "ts"]
+    },
+    "avg-spread": {
+      "directory": "avg-spread",
+      "generator": "cs/Pragmastat.TestGenerator",
+      "pattern": "*.json",
+      "description": "AvgSpread estimator tests",
+      "languages": ["cs", "go", "kt", "py", "r", "rs", "ts"]
+    },
+    "avg-spread-bounds": {
+      "directory": "avg-spread-bounds",
+      "generator": "cs/Pragmastat.TestGenerator",
+      "pattern": "*.json",
+      "description": "AvgSpreadBounds confidence interval tests",
+      "languages": ["cs", "go", "kt", "py", "r", "rs", "ts"]
+    },
+    "pairwise-margin": {
+      "directory": "pairwise-margin",
+      "generator": "cs/Pragmastat.TestGenerator",
+      "pattern": "*.json",
+      "description": "PairwiseMargin function tests",
+      "languages": ["cs", "go", "kt", "py", "r", "rs", "ts"]
+    },
+    "signed-rank-margin": {
+      "directory": "signed-rank-margin",
+      "generator": "cs/Pragmastat.TestGenerator",
+      "pattern": "*.json",
+      "description": "SignedRankMargin function tests",
+      "languages": ["cs", "go", "kt", "py", "r", "rs", "ts"]
+    },
+    "distributions": {
+      "directory": "distributions",
+      "generator": "rs/pragmastat/examples/gen_rng_tests.rs",
+      "description": "Distribution sampling and statistical function tests",
+      "sub_suites": {
+        "uniform": {
+          "directory": "distributions/uniform",
+          "pattern": "*.json",
+          "description": "Uniform distribution tests",
+          "languages": ["rs"]
+        },
+        "additive": {
+          "directory": "distributions/additive",
+          "pattern": "*.json",
+          "description": "Additive (normal) distribution tests",
+          "languages": ["rs"]
+        },
+        "multiplic": {
+          "directory": "distributions/multiplic",
+          "pattern": "*.json",
+          "description": "Multiplicative (log-normal) distribution tests",
+          "languages": ["rs"]
+        },
+        "exp": {
+          "directory": "distributions/exp",
+          "pattern": "*.json",
+          "description": "Exponential distribution tests",
+          "languages": ["rs"]
+        },
+        "power": {
+          "directory": "distributions/power",
+          "pattern": "*.json",
+          "description": "Power distribution tests",
+          "languages": ["rs"]
+        }
+      }
+    }
+  }
+}

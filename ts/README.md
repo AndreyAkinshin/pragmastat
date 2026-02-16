@@ -14,93 +14,68 @@ Pragmastat on npm: https://www.npmjs.com/package/pragmastat
 
 ```typescript
 import {
-    center, spread, relSpread, shift, ratio, avgSpread, disparity,
+    center, spread, shift, ratio, disparity,
     centerBounds, shiftBounds, ratioBounds,
-    Rng, Uniform, Additive, Exp, Power, Multiplic
+    spreadBounds, disparityBounds,
+    Rng, Additive, Multiplic, Exp, Power, Uniform
 } from '../src';
 
 function main() {
+    // --- One-Sample ---
+
+    let x = Array.from({ length: 20 }, (_, i) => i + 1);
+
+    console.log(center(x));             // 10.5
+    console.log(centerBounds(x, 0.05)); // { lower: 7.5, upper: 13.5 }
+    console.log(spread(x));             // 6
+    console.log(spreadBounds(x, 0.05, "demo")); // { lower: 2, upper: 10 }
+
+    // --- Two-Sample ---
+
+    x = Array.from({ length: 30 }, (_, i) => i + 1);
+    let y = Array.from({ length: 30 }, (_, i) => i + 21);
+
+    console.log(shift(x, y));             // -20
+    console.log(shiftBounds(x, y, 0.05)); // { lower: -25, upper: -15 }
+    console.log(ratio(x, y));             // 0.4366979828269513
+    console.log(ratioBounds(x, y, 0.05)); // { lower: 0.31250000000000006, upper: 0.5600000000000003 }
+    console.log(disparity(x, y));         // -2.2222222222222223
+    console.log(disparityBounds(x, y, 0.05, "demo")); // { lower: -13, upper: -0.8235294117647058 }
+
     // --- Randomization ---
 
     let rng = new Rng("demo-uniform");
-    console.log(rng.uniform()); // 0.2640554428629759
-    console.log(rng.uniform()); // 0.9348534835582796
+    console.log(rng.uniformFloat()); // 0.2640554428629759
+    console.log(rng.uniformFloat()); // 0.9348534835582796
+
+    rng = new Rng("demo-uniform-int");
+    console.log(rng.uniformInt(0, 100)); // 41
 
     rng = new Rng("demo-sample");
     console.log(rng.sample([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], 3)); // [3, 8, 9]
 
+    rng = new Rng("demo-resample");
+    console.log(rng.resample([1, 2, 3, 4, 5], 7)); // [3, 1, 3, 2, 4, 1, 2]
+
     rng = new Rng("demo-shuffle");
     console.log(rng.shuffle([1, 2, 3, 4, 5])); // [4, 2, 3, 5, 1]
 
-    rng = new Rng("demo-resample");
-    console.log(rng.resample([1, 2, 3, 4, 5], 7)); // [5, 1, 1, 3, 3, 4, 5]
-
-    // --- Distribution Sampling ---
-
-    rng = new Rng("demo-dist-uniform");
-    let dist = new Uniform(0, 10);
-    console.log(dist.sample(rng)); // 6.54043657816832
+    // --- Distributions ---
 
     rng = new Rng("demo-dist-additive");
-    let addDist = new Additive(0, 1);
-    console.log(addDist.sample(rng)); // 0.17410448679568188
-
-    rng = new Rng("demo-dist-exp");
-    let expDist = new Exp(1);
-    console.log(expDist.sample(rng)); // 0.6589065267276553
-
-    rng = new Rng("demo-dist-power");
-    let powDist = new Power(1, 2);
-    console.log(powDist.sample(rng)); // 1.023677535537084
+    console.log(new Additive(0, 1).sample(rng)); // 0.17410448679568188
 
     rng = new Rng("demo-dist-multiplic");
-    let mulDist = new Multiplic(0, 1);
-    console.log(mulDist.sample(rng)); // 1.1273244602673853
+    console.log(new Multiplic(0, 1).sample(rng)); // 1.1273244602673853
 
-    // --- Single-Sample Statistics ---
+    rng = new Rng("demo-dist-exp");
+    console.log(new Exp(1).sample(rng)); // 0.6589065267276553
 
-    let x = [1, 3, 5, 7, 9];
+    rng = new Rng("demo-dist-power");
+    console.log(new Power(1, 2).sample(rng)); // 1.023677535537084
 
-    console.log(center(x)); // 5
-    console.log(spread(x)); // 4
-    console.log(spread(x.map(v => v + 10))); // 4
-    console.log(spread(x.map(v => v * 2))); // 8
-    console.log(relSpread(x)); // 0.8
-
-    // --- Two-Sample Comparison ---
-
-    x = [0, 3, 6, 9, 12];
-    let y = [0, 2, 4, 6, 8];
-
-    console.log(shift(x, y)); // 2
-    console.log(shift(y, x)); // -2
-    console.log(avgSpread(x, y)); // 5
-    console.log(disparity(x, y)); // 0.4
-    console.log(disparity(y, x)); // -0.4
-
-    x = [1, 2, 4, 8, 16];
-    y = [2, 4, 8, 16, 32];
-    console.log(ratio(x, y)); // 0.5
-    console.log(ratio(y, x)); // 2
-
-    // --- One-Sample Bounds ---
-
-    x = Array.from({ length: 10 }, (_, i) => i + 1);
-
-    console.log(center(x)); // 5.5
-    console.log(centerBounds(x, 0.05)); // { lower: 3.5, upper: 7.5 }
-
-    // --- Two-Sample Bounds ---
-
-    x = Array.from({ length: 30 }, (_, i) => i + 1);
-    y = Array.from({ length: 30 }, (_, i) => i + 21);
-
-    console.log(shift(x, y)); // -20
-    console.log(shiftBounds(x, y, 1e-4)); // { lower: -30, upper: -10 }
-
-    x = [1, 2, 3, 4, 5];
-    y = [2, 3, 4, 5, 6];
-    console.log(ratioBounds(x, y, 0.05)); // { lower: 0.333..., upper: 1.5 }
+    rng = new Rng("demo-dist-uniform");
+    console.log(new Uniform(0, 10).sample(rng)); // 6.54043657816832
 }
 
 main();

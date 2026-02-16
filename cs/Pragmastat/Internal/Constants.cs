@@ -34,7 +34,7 @@ internal static class Constants
   /// Represents the distance between 1.0 and the next representable number.
   /// </para>
   /// <para>
-  /// Used to avoid log(0) or division by zero when uniform() returns exactly 1.0.
+  /// Used to avoid log(0) or division by zero when UniformDouble() returns exactly 1.0.
   /// All language implementations use this same value to ensure cross-language
   /// determinism in distribution sampling.
   /// </para>
@@ -54,7 +54,7 @@ internal static class Constants
   /// absolute smallest positive number before underflow to zero.
   /// </para>
   /// <para>
-  /// Used to avoid log(0) in Box-Muller transform when uniform() returns exactly 0.
+  /// Used to avoid log(0) in Box-Muller transform when UniformDouble() returns exactly 0.
   /// All language implementations use this same value to ensure cross-language
   /// determinism in distribution sampling.
   /// </para>

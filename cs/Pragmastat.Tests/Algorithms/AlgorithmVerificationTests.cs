@@ -172,7 +172,7 @@ public class AlgorithmVerificationTests
     {
       var values = new double[n];
       for (int j = 0; j < n; j++)
-        values[j] = rng.Uniform(-1, 1);
+        values[j] = rng.UniformDouble(-1, 1);
 
       var sample = new Sample(values);
 

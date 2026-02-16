@@ -42,7 +42,7 @@ kt/
 
 | Type | Purpose |
 |------|---------|
-| `Rng` | Deterministic PRNG with `uniform()`, `sample()`, `shuffle()` |
+| `Rng` | Deterministic PRNG with `uniformDouble()`, `sample()`, `shuffle()` |
 | `Bounds` | Data class with `lower` and `upper` properties |
 | `Distribution` | Interface for sampling distributions |
 
@@ -51,14 +51,15 @@ kt/
 ```kotlin
 fun center(x: List<Double>): Double
 fun spread(x: List<Double>): Double
-fun relSpread(x: List<Double>): Double
+fun relSpread(x: List<Double>): Double  // deprecated: use spread(x) / abs(center(x))
 fun shift(x: List<Double>, y: List<Double>): Double
 fun ratio(x: List<Double>, y: List<Double>): Double
-fun avgSpread(x: List<Double>, y: List<Double>): Double
 fun disparity(x: List<Double>, y: List<Double>): Double
 fun shiftBounds(x: List<Double>, y: List<Double>, misrate: Double): Bounds
 fun ratioBounds(x: List<Double>, y: List<Double>, misrate: Double): Bounds
+fun disparityBounds(x: List<Double>, y: List<Double>, misrate: Double): Bounds
 fun centerBounds(x: List<Double>, misrate: Double): Bounds
+fun spreadBounds(x: List<Double>, misrate: Double): Bounds
 ```
 
 ## Distributions

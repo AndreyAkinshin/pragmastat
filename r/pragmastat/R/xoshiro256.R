@@ -198,8 +198,9 @@ u64_mul <- function(a, b) {
   u64(hi, lo)
 }
 
-# Modulo (for uniform_int) - a is u64, b is a small positive numeric
-# Uses long division approach to avoid precision loss
+# Modulo (for uniform_int) - a is u64, b is a small positive numeric.
+# Exact for b < 2^32 by decomposing hi_mod into 16-bit chunks
+# to keep all intermediate products within the 53-bit mantissa.
 u64_mod <- function(a, b_numeric) {
   if (b_numeric <= 0) {
     return(0)
@@ -208,16 +209,20 @@ u64_mod <- function(a, b_numeric) {
     return(0)
   }
 
-  # For small moduli, we can compute using the formula:
   # (hi * 2^32 + lo) mod b = ((hi mod b) * (2^32 mod b) + (lo mod b)) mod b
-  # This avoids precision loss as long as b < 2^32
+  # Split hi_mod into 16-bit chunks so each product stays within 2^48 < 2^53
 
   if (b_numeric < 4294967296) {
     hi_mod <- a$hi %% b_numeric
     lo_mod <- a$lo %% b_numeric
-    # 2^32 mod b
     pow32_mod <- 4294967296 %% b_numeric
-    result <- (hi_mod * pow32_mod + lo_mod) %% b_numeric
+
+    hi_mod_lo <- hi_mod %% 65536
+    hi_mod_hi <- floor(hi_mod / 65536)
+    t1 <- (hi_mod_hi * pow32_mod) %% b_numeric
+    t2 <- (t1 * 65536) %% b_numeric
+    t3 <- (hi_mod_lo * pow32_mod) %% b_numeric
+    result <- (t2 + t3 + lo_mod) %% b_numeric
     return(result)
   }
 
@@ -225,6 +230,13 @@ u64_mod <- function(a, b_numeric) {
   a_numeric <- u64_to_numeric(a)
   a_numeric %% b_numeric
 }
+
+# Module-level constants for splitmix64 and FNV-1a (avoid re-creation per call)
+.SPLITMIX64_C1 <- u64_from_hex("9e3779b97f4a7c15")
+.SPLITMIX64_C2 <- u64_from_hex("bf58476d1ce4e5b9")
+.SPLITMIX64_C3 <- u64_from_hex("94d049bb133111eb")
+.FNV_OFFSET_BASIS <- u64_from_hex("cbf29ce484222325")
+.FNV_PRIME <- u64_from_hex("00000100000001b3")
 
 # SplitMix64 PRNG for seed expansion
 # seed can be numeric or a u64 list
@@ -240,14 +252,10 @@ splitmix64_new <- function(seed) {
 }
 
 splitmix64_next <- function(sm) {
-  C1 <- u64_from_hex("9e3779b97f4a7c15")
-  C2 <- u64_from_hex("bf58476d1ce4e5b9")
-  C3 <- u64_from_hex("94d049bb133111eb")
-
-  sm$state <- u64_add(sm$state, C1)
+  sm$state <- u64_add(sm$state, .SPLITMIX64_C1)
   z <- sm$state
-  z <- u64_mul(u64_xor(z, u64_shr(z, 30L)), C2)
-  z <- u64_mul(u64_xor(z, u64_shr(z, 27L)), C3)
+  z <- u64_mul(u64_xor(z, u64_shr(z, 30L)), .SPLITMIX64_C2)
+  z <- u64_mul(u64_xor(z, u64_shr(z, 27L)), .SPLITMIX64_C3)
   u64_xor(z, u64_shr(z, 31L))
 }
 
@@ -282,7 +290,7 @@ xoshiro256_next_u64 <- function(xo) {
 # Floating Point Methods
 # ========================================================================
 
-xoshiro256_uniform <- function(xo) {
+xoshiro256_uniform_float <- function(xo) {
   # Use upper 53 bits for maximum precision
   u64_val <- xoshiro256_next_u64(xo)
   # Shift right by 11 bits
@@ -291,11 +299,13 @@ xoshiro256_uniform <- function(xo) {
   u64_to_numeric(shifted) * (1.0 / 2^53)
 }
 
-xoshiro256_uniform_range <- function(xo, min_val, max_val) {
+# FP rounding in min + (max-min)*u can theoretically yield max
+# for extreme ranges. Acceptable for statistical use.
+xoshiro256_uniform_float_range <- function(xo, min_val, max_val) {
   if (min_val >= max_val) {
     return(min_val)
   }
-  min_val + (max_val - min_val) * xoshiro256_uniform(xo)
+  min_val + (max_val - min_val) * xoshiro256_uniform_float(xo)
 }
 
 # ========================================================================
@@ -322,19 +332,16 @@ xoshiro256_uniform_int <- function(xo, min_val, max_val) {
 # ========================================================================
 
 xoshiro256_uniform_bool <- function(xo) {
-  xoshiro256_uniform(xo) < 0.5
+  xoshiro256_uniform_float(xo) < 0.5
 }
 
 # FNV-1a hash
 fnv1a_hash <- function(s) {
-  FNV_OFFSET_BASIS <- u64_from_hex("cbf29ce484222325")
-  FNV_PRIME <- u64_from_hex("00000100000001b3")
-
-  hash <- FNV_OFFSET_BASIS
+  hash <- .FNV_OFFSET_BASIS
   bytes <- as.integer(charToRaw(enc2utf8(s)))
   for (b in bytes) {
     hash <- u64_xor(hash, u64(0, b))
-    hash <- u64_mul(hash, FNV_PRIME)
+    hash <- u64_mul(hash, .FNV_PRIME)
   }
   hash
 }

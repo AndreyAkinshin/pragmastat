@@ -1,0 +1,11 @@
+{
+  "input": {
+    "x": [1],
+    "y": [1, 2, 3, 4, 5],
+    "misrate": 0.2,
+    "seed": "avg-spread-bounds-tests"
+  },
+  "expected_error": {
+    "id": "domain"
+  }
+}

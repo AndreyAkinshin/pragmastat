@@ -1,0 +1,22 @@
+{
+  "input": {
+    "x": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "y": [
+      2,
+      3,
+      4,
+      5
+    ],
+    "misrate": 1,
+    "seed": "avg-spread-bounds-tests"
+  },
+  "output": {
+    "lower": 2,
+    "upper": 2
+  }
+}

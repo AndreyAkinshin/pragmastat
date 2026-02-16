@@ -26,11 +26,20 @@ mod fnv1a;
 mod splitmix64;
 mod xoshiro256;
 
+#[cfg(test)]
+mod avg_spread_bounds_tests;
+#[cfg(test)]
+mod avg_spread_tests;
+#[cfg(test)]
+mod disparity_bounds_tests;
+
 pub use assumptions::{AssumptionError, AssumptionId, EstimatorError, Subject, Violation};
 pub use distributions::{Additive, Distribution, Exp, Multiplic, Power, Uniform};
+#[allow(deprecated)]
 pub use estimators::{
-    avg_spread, center, center_bounds, disparity, ratio, ratio_bounds, rel_spread, shift,
-    shift_bounds, spread, spread_bounds, spread_bounds_with_seed, Bounds, DEFAULT_MISRATE,
+    center, center_bounds, disparity, disparity_bounds, disparity_bounds_with_seed, ratio,
+    ratio_bounds, rel_spread, shift, shift_bounds, spread, spread_bounds, spread_bounds_with_seed,
+    Bounds, DEFAULT_MISRATE,
 };
 
 pub use rng::Rng;

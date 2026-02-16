@@ -3,8 +3,6 @@
 // Uses definitions from parent scope (imported in main document)
 #let lang = languages.py
 
-== #lang.title
-
 Install from PyPI:
 
 #raw("pip install pragmastat==" + version, lang: "bash", block: true)

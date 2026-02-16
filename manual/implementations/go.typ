@@ -3,8 +3,6 @@
 // Uses definitions from parent scope (imported in main document)
 #let lang = languages.go
 
-== #lang.title
-
 Install from GitHub:
 
 #raw("go get github.com/AndreyAkinshin/pragmastat/go/v4@v" + version, lang: "bash", block: true)

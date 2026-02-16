@@ -5,6 +5,7 @@ using Pragmastat.Metrology;
 
 namespace Pragmastat.Estimators;
 
+[Obsolete("Use Spread(x) / Math.Abs(Center(x)) instead.")]
 public class RelSpreadEstimator : IOneSampleEstimator
 {
   public static readonly RelSpreadEstimator Instance = new();

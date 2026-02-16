@@ -17,7 +17,7 @@ func NewUniform(min, max float64) *Uniform {
 
 // Sample generates a single sample from the uniform distribution.
 func (u *Uniform) Sample(rng *Rng) float64 {
-	return u.Min + rng.Uniform()*(u.Max-u.Min)
+	return u.Min + rng.UniformFloat64()*(u.Max-u.Min)
 }
 
 // Samples generates multiple samples from the uniform distribution.

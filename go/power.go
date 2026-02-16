@@ -24,7 +24,7 @@ func NewPower(min, shape float64) *Power {
 // Sample generates a single sample from the power distribution.
 func (p *Power) Sample(rng *Rng) float64 {
 	// Inverse CDF method: min / (1 - U)^(1/shape)
-	u := rng.Uniform()
+	u := rng.UniformFloat64()
 	// Avoid division by zero
 	if u == 1.0 {
 		u = 1.0 - machineEpsilon

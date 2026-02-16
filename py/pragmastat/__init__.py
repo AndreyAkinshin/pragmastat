@@ -11,12 +11,12 @@ from .estimators import (
     rel_spread,
     shift,
     ratio,
-    avg_spread,
     disparity,
     shift_bounds,
     ratio_bounds,
     center_bounds,
     spread_bounds,
+    disparity_bounds,
     Bounds,
 )
 from .rng import Rng
@@ -42,12 +42,12 @@ __all__ = [
     "rel_spread",
     "shift",
     "ratio",
-    "avg_spread",
     "disparity",
     "shift_bounds",
     "ratio_bounds",
     "center_bounds",
     "spread_bounds",
+    "disparity_bounds",
     "Bounds",
     # Random
     "Rng",

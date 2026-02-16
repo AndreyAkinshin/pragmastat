@@ -42,7 +42,7 @@ public sealed class Uniform : IDistribution, IContinuousDistribution
   /// <inheritdoc />
   public double Sample(Rng rng)
   {
-    return Min + rng.Uniform() * (Max - Min);
+    return Min + rng.UniformDouble() * (Max - Min);
   }
 
   /// <inheritdoc />
@@ -61,7 +61,7 @@ public sealed class Uniform : IDistribution, IContinuousDistribution
 
   double IContinuousDistribution.Pdf(double x)
   {
-    return x < Min || x > Max ? 0 : 1 / (Max - Min);
+    return x < Min || x >= Max ? 0 : 1 / (Max - Min);
   }
 
   double IContinuousDistribution.Cdf(double x)

@@ -42,18 +42,22 @@ impl Xoshiro256PlusPlus {
     /// Generate a uniform f64 in [0, 1)
     /// Uses the upper 53 bits for maximum precision
     #[inline]
-    pub fn uniform(&mut self) -> f64 {
+    pub fn uniform_f64(&mut self) -> f64 {
         // Standard method: use upper 53 bits for mantissa
         (self.next_u64() >> 11) as f64 * (1.0 / (1u64 << 53) as f64)
     }
 
     /// Generate a uniform f64 in [min, max)
+    ///
+    /// Note: FP rounding in `min + (max - min) * u` can theoretically yield
+    /// `max` for extreme values of `(max - min)`. In practice this is vanishingly
+    /// rare and acceptable for statistical use.
     #[inline]
-    pub fn uniform_range(&mut self, min: f64, max: f64) -> f64 {
+    pub fn uniform_f64_range(&mut self, min: f64, max: f64) -> f64 {
         if min >= max {
             return min;
         }
-        min + (max - min) * self.uniform()
+        min + (max - min) * self.uniform_f64()
     }
 
     /// Generate a uniform f32 in [0, 1)
@@ -180,7 +184,7 @@ impl Xoshiro256PlusPlus {
     /// Generate a uniform boolean with P(true) = 0.5
     #[inline]
     pub fn uniform_bool(&mut self) -> bool {
-        self.uniform() < 0.5
+        self.uniform_f64() < 0.5
     }
 }
 
@@ -203,7 +207,7 @@ mod tests {
         let mut rng = Xoshiro256PlusPlus::new(42);
 
         for _ in 0..1000 {
-            let v = rng.uniform();
+            let v = rng.uniform_f64();
             assert!(v >= 0.0 && v < 1.0);
         }
     }
@@ -213,7 +217,7 @@ mod tests {
         let mut rng = Xoshiro256PlusPlus::new(42);
 
         for _ in 0..1000 {
-            let v = rng.uniform_range(-5.0, 5.0);
+            let v = rng.uniform_f64_range(-5.0, 5.0);
             assert!(v >= -5.0 && v < 5.0);
         }
     }

@@ -38,7 +38,7 @@ impl Power {
 impl Distribution for Power {
     fn sample(&self, rng: &mut Rng) -> f64 {
         // Inverse CDF method: min / (1 - U)^(1/shape)
-        let u = rng.uniform();
+        let u = rng.uniform_f64();
         // Avoid division by zero - use machine epsilon for cross-language consistency
         let u = if u == 1.0 { 1.0 - MACHINE_EPSILON } else { u };
         self.min / (1.0 - u).powf(1.0 / self.shape)

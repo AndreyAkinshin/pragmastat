@@ -18,7 +18,7 @@ use crate::xoshiro256::Xoshiro256PlusPlus;
 ///
 /// // Create from string seed
 /// let mut rng = Rng::from_string("demo-uniform");
-/// let value = rng.uniform();
+/// let value = rng.uniform_f64();
 ///
 /// // Shuffle a vector
 /// let mut rng = Rng::from_string("demo-shuffle");
@@ -47,6 +47,7 @@ impl Rng {
     pub fn new() -> Self {
         // Use system time as entropy source
         use std::time::{SystemTime, UNIX_EPOCH};
+        // Falls back to seed 0 if system clock is unavailable (e.g., pre-epoch clock)
         let seed = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .map(|d| d.as_nanos() as u64)
@@ -64,11 +65,11 @@ impl Rng {
     /// use pragmastat::Rng;
     ///
     /// let mut rng = Rng::from_seed(1729);
-    /// let v1 = rng.uniform();
+    /// let v1 = rng.uniform_f64();
     ///
     /// // Same seed produces same sequence
     /// let mut rng2 = Rng::from_seed(1729);
-    /// let v2 = rng2.uniform();
+    /// let v2 = rng2.uniform_f64();
     /// assert_eq!(v1, v2);
     /// ```
     pub fn from_seed(seed: i64) -> Self {
@@ -110,17 +111,24 @@ impl Rng {
     /// use pragmastat::Rng;
     ///
     /// let mut rng = Rng::from_string("demo-uniform");
-    /// let value = rng.uniform();
+    /// let value = rng.uniform_f64();
     /// assert!(value >= 0.0 && value < 1.0);
     /// ```
     #[inline]
-    pub fn uniform(&mut self) -> f64 {
-        self.inner.uniform()
+    pub fn uniform_f64(&mut self) -> f64 {
+        self.inner.uniform_f64()
     }
 
     /// Generate a uniform random f64 in [min, max)
     ///
     /// Returns `min` if `min >= max`.
+    ///
+    /// # Design note
+    ///
+    /// Unlike [`Uniform::new`](crate::distributions::Uniform::new) which panics
+    /// on invalid ranges, this method returns `min` for degenerate ranges. The
+    /// primitive draw is lenient to simplify use in computed-range scenarios;
+    /// the distribution type enforces the stricter contract.
     ///
     /// # Examples
     ///
@@ -128,12 +136,12 @@ impl Rng {
     /// use pragmastat::Rng;
     ///
     /// let mut rng = Rng::from_string("demo-uniform");
-    /// let value = rng.uniform_range(-5.0, 5.0);
+    /// let value = rng.uniform_f64_range(-5.0, 5.0);
     /// assert!(value >= -5.0 && value < 5.0);
     /// ```
     #[inline]
-    pub fn uniform_range(&mut self, min: f64, max: f64) -> f64 {
-        self.inner.uniform_range(min, max)
+    pub fn uniform_f64_range(&mut self, min: f64, max: f64) -> f64 {
+        self.inner.uniform_f64_range(min, max)
     }
 
     /// Generate a uniform random f32 in [0, 1)
@@ -182,9 +190,11 @@ impl Rng {
     ///
     /// # Note on Distribution
     ///
-    /// Uses modulo reduction which introduces slight bias for ranges that don't
-    /// evenly divide 2^64. This bias is negligible for statistical simulations
-    /// but not suitable for cryptographic applications.
+    /// Uses modulo reduction (`nextU64() % range`) which introduces slight bias
+    /// for ranges that don't evenly divide 2^64. The bias magnitude is
+    /// approximately `range / 2^64`, so it is negligible for small ranges
+    /// (array indices, dice rolls) but grows significant as `range` approaches
+    /// 2^63. Not suitable for cryptographic applications.
     ///
     /// # Examples
     ///
@@ -299,42 +309,14 @@ impl Rng {
     // Collection Methods
     // ========================================================================
 
-    /// Return a shuffled copy of the input slice
-    ///
-    /// Uses the Fisher-Yates shuffle algorithm for uniform distribution.
-    /// The original slice is not modified.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use pragmastat::Rng;
-    ///
-    /// let mut rng = Rng::from_string("demo-shuffle");
-    /// let data = vec![1.0, 2.0, 3.0, 4.0, 5.0];
-    /// let shuffled = rng.shuffle(&data);
-    ///
-    /// // Original unchanged
-    /// assert_eq!(data, vec![1.0, 2.0, 3.0, 4.0, 5.0]);
-    /// // Shuffled has same elements
-    /// assert_eq!(shuffled.len(), data.len());
-    /// ```
-    pub fn shuffle<T: Clone>(&mut self, x: &[T]) -> Vec<T> {
-        let mut result: Vec<T> = x.to_vec();
-        let n = result.len();
-
-        // Fisher-Yates shuffle (inside-out variant, backwards)
-        for i in (1..n).rev() {
-            let j = self.uniform_i64(0, (i + 1) as i64) as usize;
-            result.swap(i, j);
-        }
-
-        result
-    }
-
     /// Sample k elements from the input slice without replacement
     ///
     /// Uses selection sampling to maintain order of first appearance.
     /// Returns up to `k` elements; if `k >= x.len()`, returns all elements.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `k` is zero or if `x` is empty.
     ///
     /// # Examples
     ///
@@ -348,6 +330,8 @@ impl Rng {
     /// assert_eq!(sampled.len(), 3);
     /// ```
     pub fn sample<T: Clone>(&mut self, x: &[T], k: usize) -> Vec<T> {
+        assert!(k > 0, "Cannot sample zero elements");
+        assert!(!x.is_empty(), "Cannot sample from empty slice");
         let n = x.len();
         if k >= n {
             return x.to_vec();
@@ -359,7 +343,7 @@ impl Rng {
         for (i, item) in x.iter().enumerate() {
             let available = n - i;
             // Probability of selecting this item: remaining / available
-            if (self.uniform() * available as f64) < remaining as f64 {
+            if (self.uniform_f64() * available as f64) < remaining as f64 {
                 result.push(item.clone());
                 remaining -= 1;
                 if remaining == 0 {
@@ -378,7 +362,7 @@ impl Rng {
     ///
     /// # Panics
     ///
-    /// Panics if `x` is empty.
+    /// Panics if `k` is zero or if `x` is empty.
     ///
     /// # Examples
     ///
@@ -392,6 +376,7 @@ impl Rng {
     /// assert_eq!(resampled.len(), 10);
     /// ```
     pub fn resample<T: Clone>(&mut self, x: &[T], k: usize) -> Vec<T> {
+        assert!(k > 0, "Cannot resample zero elements");
         assert!(!x.is_empty(), "Cannot resample from empty slice");
 
         let n = x.len();
@@ -399,6 +384,43 @@ impl Rng {
 
         for _ in 0..k {
             result.push(x[self.uniform_usize(0, n)].clone());
+        }
+
+        result
+    }
+
+    /// Return a shuffled copy of the input slice
+    ///
+    /// Uses the Fisher-Yates shuffle algorithm for uniform distribution.
+    /// The original slice is not modified.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `x` is empty.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use pragmastat::Rng;
+    ///
+    /// let mut rng = Rng::from_string("demo-shuffle");
+    /// let data = vec![1.0, 2.0, 3.0, 4.0, 5.0];
+    /// let shuffled = rng.shuffle(&data);
+    ///
+    /// // Original unchanged
+    /// assert_eq!(data, vec![1.0, 2.0, 3.0, 4.0, 5.0]);
+    /// // Shuffled has same elements
+    /// assert_eq!(shuffled.len(), data.len());
+    /// ```
+    pub fn shuffle<T: Clone>(&mut self, x: &[T]) -> Vec<T> {
+        assert!(!x.is_empty(), "Cannot shuffle empty slice");
+        let mut result: Vec<T> = x.to_vec();
+        let n = result.len();
+
+        // Fisher-Yates shuffle (inside-out variant, backwards)
+        for i in (1..n).rev() {
+            let j = self.uniform_i64(0, (i + 1) as i64) as usize;
+            result.swap(i, j);
         }
 
         result
@@ -415,7 +437,7 @@ mod tests {
         let mut rng2 = Rng::from_seed(1729);
 
         for _ in 0..100 {
-            assert_eq!(rng1.uniform(), rng2.uniform());
+            assert_eq!(rng1.uniform_f64(), rng2.uniform_f64());
         }
     }
 
@@ -425,7 +447,7 @@ mod tests {
         let mut rng2 = Rng::from_string("test");
 
         for _ in 0..100 {
-            assert_eq!(rng1.uniform(), rng2.uniform());
+            assert_eq!(rng1.uniform_f64(), rng2.uniform_f64());
         }
     }
 
@@ -434,7 +456,7 @@ mod tests {
         let mut rng = Rng::from_string("test-uniform");
 
         for _ in 0..10000 {
-            let v = rng.uniform();
+            let v = rng.uniform_f64();
             assert!(v >= 0.0 && v < 1.0);
         }
     }
@@ -444,7 +466,7 @@ mod tests {
         let mut rng = Rng::from_string("test-uniform-range");
 
         for _ in 0..10000 {
-            let v = rng.uniform_range(-10.0, 10.0);
+            let v = rng.uniform_f64_range(-10.0, 10.0);
             assert!(v >= -10.0 && v < 10.0);
         }
     }

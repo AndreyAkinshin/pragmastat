@@ -44,6 +44,7 @@ pub fn spread(x: &[f64]) -> Result<f64, EstimatorError> {
         .map_err(|_| EstimatorError::from(AssumptionError::validity(Subject::X)))
 }
 
+#[deprecated(since = "10.0.0", note = "use spread(x) / center(x).abs() instead")]
 /// Measures the relative dispersion of a sample (rel_spread)
 ///
 /// Calculates the ratio of spread to absolute center.
@@ -140,7 +141,8 @@ pub fn ratio(x: &[f64], y: &[f64]) -> Result<f64, EstimatorError> {
 /// Returns `AssumptionError` if:
 /// - Either input is empty, contains NaN, or contains infinite values (validity)
 /// - Either sample is tie-dominant or has fewer than two elements (sparity)
-pub fn avg_spread(x: &[f64], y: &[f64]) -> Result<f64, EstimatorError> {
+#[cfg(test)]
+pub(crate) fn avg_spread(x: &[f64], y: &[f64]) -> Result<f64, EstimatorError> {
     // Check validity for x (priority 0, subject x)
     check_validity(x, Subject::X)?;
 
@@ -438,6 +440,284 @@ pub fn spread_bounds_with_seed(
 ) -> Result<Bounds, EstimatorError> {
     let mut rng = crate::rng::Rng::from_string(seed);
     spread_bounds_with_rng(x, misrate, &mut rng)
+}
+
+/// Provides distribution-free bounds for avg_spread using Bonferroni combination.
+///
+/// Computes SpreadBounds for each sample with equal split alpha = misrate / 2,
+/// then combines bounds via the weighted average:
+/// AvgSpread = (n * Spread(x) + m * Spread(y)) / (n + m).
+///
+/// Requires alpha >= 2^(1 - floor(n/2)) for x and y.
+///
+/// # Arguments
+///
+/// * `x` - First sample slice
+/// * `y` - Second sample slice
+/// * `misrate` - Misclassification rate (probability that true avg_spread falls outside bounds)
+///
+/// # Assumptions
+///
+/// - `sparity(x)` - first sample must be non tie-dominant (spread > 0)
+/// - `sparity(y)` - second sample must be non tie-dominant (spread > 0)
+///
+/// # Returns
+///
+/// A `Bounds` struct containing the lower and upper bounds, or an error if inputs are invalid.
+#[cfg(test)]
+pub(crate) fn avg_spread_bounds(
+    x: &[f64],
+    y: &[f64],
+    misrate: f64,
+) -> Result<Bounds, EstimatorError> {
+    let mut rng_x = crate::rng::Rng::new();
+    let mut rng_y = crate::rng::Rng::new();
+    avg_spread_bounds_with_rngs(x, y, misrate, &mut rng_x, &mut rng_y)
+}
+
+/// Provides distribution-free avg_spread bounds with a deterministic seed.
+///
+/// Same as `avg_spread_bounds` but uses two identical RNG streams derived
+/// from the provided seed for reproducible randomization.
+#[cfg(test)]
+pub(crate) fn avg_spread_bounds_with_seed(
+    x: &[f64],
+    y: &[f64],
+    misrate: f64,
+    seed: &str,
+) -> Result<Bounds, EstimatorError> {
+    let mut rng_x = crate::rng::Rng::from_string(seed);
+    let mut rng_y = crate::rng::Rng::from_string(seed);
+    avg_spread_bounds_with_rngs(x, y, misrate, &mut rng_x, &mut rng_y)
+}
+
+fn avg_spread_bounds_with_rngs(
+    x: &[f64],
+    y: &[f64],
+    misrate: f64,
+    rng_x: &mut crate::rng::Rng,
+    rng_y: &mut crate::rng::Rng,
+) -> Result<Bounds, EstimatorError> {
+    // Check validity (priority 0)
+    check_validity(x, Subject::X)?;
+    check_validity(y, Subject::Y)?;
+
+    // Check misrate domain
+    if misrate.is_nan() || !(0.0..=1.0).contains(&misrate) {
+        return Err(EstimatorError::from(AssumptionError::domain(
+            Subject::Misrate,
+        )));
+    }
+
+    let n = x.len();
+    let m = y.len();
+
+    if n < 2 {
+        return Err(EstimatorError::from(AssumptionError::domain(Subject::X)));
+    }
+    if m < 2 {
+        return Err(EstimatorError::from(AssumptionError::domain(Subject::Y)));
+    }
+
+    let mx = n / 2;
+    let my = m / 2;
+    let min_x = crate::min_misrate::min_achievable_misrate_one_sample(mx)?;
+    let min_y = crate::min_misrate::min_achievable_misrate_one_sample(my)?;
+
+    let alpha = misrate / 2.0;
+    if alpha < min_x || alpha < min_y {
+        return Err(EstimatorError::from(AssumptionError::domain(
+            Subject::Misrate,
+        )));
+    }
+
+    // Check sparity (priority 2)
+    check_sparity(x, Subject::X)?;
+    check_sparity(y, Subject::Y)?;
+
+    let bounds_x = spread_bounds_with_rng(x, alpha, rng_x)?;
+    let bounds_y = spread_bounds_with_rng(y, alpha, rng_y)?;
+
+    let weight_x = n as f64 / (n + m) as f64;
+    let weight_y = m as f64 / (n + m) as f64;
+
+    Ok(Bounds {
+        lower: weight_x * bounds_x.lower + weight_y * bounds_y.lower,
+        upper: weight_x * bounds_x.upper + weight_y * bounds_y.upper,
+    })
+}
+
+/// Provides distribution-free bounds for disparity using Bonferroni combination.
+///
+/// Splits the misrate between ShiftBounds and AvgSpreadBounds with a minimal-feasible
+/// Bonferroni split:
+/// `alpha_shift + alpha_avg = misrate`, with each at least its minimum achievable misrate.
+///
+/// If the AvgSpreadBounds lower endpoint is zero, the bounds may be unbounded.
+///
+/// # Arguments
+///
+/// * `x` - First sample slice
+/// * `y` - Second sample slice
+/// * `misrate` - Misclassification rate (probability that true disparity falls outside bounds)
+///
+/// # Assumptions
+///
+/// - `sparity(x)` - first sample must be non tie-dominant (spread > 0)
+/// - `sparity(y)` - second sample must be non tie-dominant (spread > 0)
+///
+/// # Returns
+///
+/// A `Bounds` struct containing the lower and upper bounds, or an error if inputs are invalid.
+pub fn disparity_bounds(x: &[f64], y: &[f64], misrate: f64) -> Result<Bounds, EstimatorError> {
+    let mut rng_x = crate::rng::Rng::new();
+    let mut rng_y = crate::rng::Rng::new();
+    disparity_bounds_with_rngs(x, y, misrate, &mut rng_x, &mut rng_y)
+}
+
+/// Provides distribution-free disparity bounds with a deterministic seed.
+///
+/// Same as `disparity_bounds` but uses two identical RNG streams derived
+/// from the provided seed for reproducible randomization. Both RNG streams
+/// are intentionally correlated (same seed) to ensure the Bonferroni split
+/// between shift bounds and avg-spread bounds uses consistent randomization.
+pub fn disparity_bounds_with_seed(
+    x: &[f64],
+    y: &[f64],
+    misrate: f64,
+    seed: &str,
+) -> Result<Bounds, EstimatorError> {
+    let mut rng_x = crate::rng::Rng::from_string(seed);
+    let mut rng_y = crate::rng::Rng::from_string(seed);
+    disparity_bounds_with_rngs(x, y, misrate, &mut rng_x, &mut rng_y)
+}
+
+fn disparity_bounds_with_rngs(
+    x: &[f64],
+    y: &[f64],
+    misrate: f64,
+    rng_x: &mut crate::rng::Rng,
+    rng_y: &mut crate::rng::Rng,
+) -> Result<Bounds, EstimatorError> {
+    // Check validity (priority 0)
+    check_validity(x, Subject::X)?;
+    check_validity(y, Subject::Y)?;
+
+    // Check misrate domain
+    if misrate.is_nan() || !(0.0..=1.0).contains(&misrate) {
+        return Err(EstimatorError::from(AssumptionError::domain(
+            Subject::Misrate,
+        )));
+    }
+
+    let n = x.len();
+    let m = y.len();
+
+    if n < 2 {
+        return Err(EstimatorError::from(AssumptionError::domain(Subject::X)));
+    }
+    if m < 2 {
+        return Err(EstimatorError::from(AssumptionError::domain(Subject::Y)));
+    }
+
+    let min_shift = crate::min_misrate::min_achievable_misrate_two_sample(n, m)
+        .map_err(EstimatorError::from)?;
+    let min_x = crate::min_misrate::min_achievable_misrate_one_sample(n / 2)?;
+    let min_y = crate::min_misrate::min_achievable_misrate_one_sample(m / 2)?;
+    let min_avg = 2.0 * min_x.max(min_y);
+
+    if misrate < min_shift + min_avg {
+        return Err(EstimatorError::from(AssumptionError::domain(
+            Subject::Misrate,
+        )));
+    }
+
+    let extra = misrate - (min_shift + min_avg);
+    let alpha_shift = min_shift + extra / 2.0;
+    let alpha_avg = min_avg + extra / 2.0;
+
+    // Check sparity (priority 2)
+    check_sparity(x, Subject::X)?;
+    check_sparity(y, Subject::Y)?;
+
+    let shift_bounds = shift_bounds(x, y, alpha_shift)?;
+    let avg_bounds = avg_spread_bounds_with_rngs(x, y, alpha_avg, rng_x, rng_y)?;
+
+    let la = avg_bounds.lower;
+    let ua = avg_bounds.upper;
+    let ls = shift_bounds.lower;
+    let us = shift_bounds.upper;
+
+    if la > 0.0 {
+        let r1 = ls / la;
+        let r2 = ls / ua;
+        let r3 = us / la;
+        let r4 = us / ua;
+        let lower = r1.min(r2).min(r3).min(r4);
+        let upper = r1.max(r2).max(r3).max(r4);
+        return Ok(Bounds { lower, upper });
+    }
+
+    if ua <= 0.0 {
+        if ls == 0.0 && us == 0.0 {
+            return Ok(Bounds {
+                lower: 0.0,
+                upper: 0.0,
+            });
+        }
+        if ls >= 0.0 {
+            return Ok(Bounds {
+                lower: 0.0,
+                upper: f64::INFINITY,
+            });
+        }
+        if us <= 0.0 {
+            return Ok(Bounds {
+                lower: f64::NEG_INFINITY,
+                upper: 0.0,
+            });
+        }
+        return Ok(Bounds {
+            lower: f64::NEG_INFINITY,
+            upper: f64::INFINITY,
+        });
+    }
+
+    if ls > 0.0 {
+        return Ok(Bounds {
+            lower: ls / ua,
+            upper: f64::INFINITY,
+        });
+    }
+    if us < 0.0 {
+        return Ok(Bounds {
+            lower: f64::NEG_INFINITY,
+            upper: us / ua,
+        });
+    }
+    if ls == 0.0 && us == 0.0 {
+        return Ok(Bounds {
+            lower: 0.0,
+            upper: 0.0,
+        });
+    }
+    if ls == 0.0 && us > 0.0 {
+        return Ok(Bounds {
+            lower: 0.0,
+            upper: f64::INFINITY,
+        });
+    }
+    if ls < 0.0 && us == 0.0 {
+        return Ok(Bounds {
+            lower: f64::NEG_INFINITY,
+            upper: 0.0,
+        });
+    }
+
+    Ok(Bounds {
+        lower: f64::NEG_INFINITY,
+        upper: f64::INFINITY,
+    })
 }
 
 fn spread_bounds_with_rng(

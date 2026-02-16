@@ -20,7 +20,7 @@ func NewExp(rate float64) *Exp {
 // Sample generates a single sample from the exponential distribution.
 func (e *Exp) Sample(rng *Rng) float64 {
 	// Inverse CDF method: -ln(1 - U) / rate
-	u := rng.Uniform()
+	u := rng.UniformFloat64()
 	// Avoid log(0)
 	if u == 1.0 {
 		u = 1.0 - machineEpsilon

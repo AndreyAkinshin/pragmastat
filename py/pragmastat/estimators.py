@@ -1,5 +1,6 @@
 from typing import Sequence, Union, NamedTuple
 import math
+import warnings
 import numpy as np
 from numpy.typing import NDArray
 from .fast_center import _fast_center
@@ -88,6 +89,9 @@ def rel_spread(x: Union[Sequence[float], NDArray]) -> float:
     """
     Measure relative dispersion of a sample.
 
+    .. deprecated::
+        Use ``spread(x) / abs(center(x))`` instead.
+
     Calculates the ratio of Spread to absolute Center.
     Robust alternative to the coefficient of variation.
 
@@ -104,6 +108,11 @@ def rel_spread(x: Union[Sequence[float], NDArray]) -> float:
         AssumptionError: If sample is empty, contains NaN/Inf,
             or contains non-positive values.
     """
+    warnings.warn(
+        "rel_spread is deprecated. Use spread(x) / abs(center(x)) instead.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     x = np.asarray(x)
     # Check validity (priority 0)
     check_validity(x, "x")
@@ -187,7 +196,7 @@ def ratio(
     return float(np.exp(log_result))
 
 
-def avg_spread(
+def _avg_spread(
     x: Union[Sequence[float], NDArray], y: Union[Sequence[float], NDArray]
 ) -> float:
     """
@@ -500,3 +509,156 @@ def spread_bounds(
     )
 
     return Bounds(diffs[k_left - 1], diffs[k_right - 1])
+
+
+def disparity_bounds(
+    x: Union[Sequence[float], NDArray],
+    y: Union[Sequence[float], NDArray],
+    misrate: float = DEFAULT_MISRATE,
+    seed: Union[str, None] = None,
+) -> Bounds:
+    """
+    Provides distribution-free bounds for the Disparity estimator (Shift / AvgSpread)
+    using Bonferroni combination of ShiftBounds and AvgSpreadBounds.
+
+    Args:
+        x: First input sample.
+        y: Second input sample.
+        misrate: Misclassification rate.
+        seed: Optional string seed for deterministic randomization.
+
+    Returns:
+        A Bounds object containing the lower and upper bounds.
+
+    Raises:
+        AssumptionError: If inputs are invalid, misrate is out of range, or samples are tie-dominant.
+    """
+    x = np.asarray(x)
+    y = np.asarray(y)
+
+    # Check validity (priority 0)
+    check_validity(x, "x")
+    check_validity(y, "y")
+
+    if math.isnan(misrate) or misrate < 0 or misrate > 1:
+        raise AssumptionError.domain("misrate")
+
+    n = len(x)
+    m = len(y)
+    if n < 2:
+        raise AssumptionError.domain("x")
+    if m < 2:
+        raise AssumptionError.domain("y")
+
+    min_shift = min_achievable_misrate_two_sample(n, m)
+    min_x = min_achievable_misrate_one_sample(n // 2)
+    min_y = min_achievable_misrate_one_sample(m // 2)
+    min_avg = 2.0 * max(min_x, min_y)
+
+    if misrate < min_shift + min_avg:
+        raise AssumptionError.domain("misrate")
+
+    extra = misrate - (min_shift + min_avg)
+    alpha_shift = min_shift + extra / 2.0
+    alpha_avg = min_avg + extra / 2.0
+
+    # Check sparity (priority 2)
+    check_sparity(x, "x")
+    check_sparity(y, "y")
+
+    sb = shift_bounds(x, y, alpha_shift)
+    ab = _avg_spread_bounds(x, y, alpha_avg, seed=seed)
+
+    la = ab.lower
+    ua = ab.upper
+    ls = sb.lower
+    us = sb.upper
+
+    if la > 0.0:
+        r1 = ls / la
+        r2 = ls / ua
+        r3 = us / la
+        r4 = us / ua
+        return Bounds(min(r1, r2, r3, r4), max(r1, r2, r3, r4))
+
+    if ua <= 0.0:
+        if ls == 0.0 and us == 0.0:
+            return Bounds(0.0, 0.0)
+        if ls >= 0.0:
+            return Bounds(0.0, math.inf)
+        if us <= 0.0:
+            return Bounds(-math.inf, 0.0)
+        return Bounds(-math.inf, math.inf)
+
+    # Default: ua > 0 and la <= 0
+    if ls > 0.0:
+        return Bounds(ls / ua, math.inf)
+    if us < 0.0:
+        return Bounds(-math.inf, us / ua)
+    if ls == 0.0 and us == 0.0:
+        return Bounds(0.0, 0.0)
+    if ls == 0.0 and us > 0.0:
+        return Bounds(0.0, math.inf)
+    if ls < 0.0 and us == 0.0:
+        return Bounds(-math.inf, 0.0)
+
+    return Bounds(-math.inf, math.inf)
+
+
+def _avg_spread_bounds(
+    x: Union[Sequence[float], NDArray],
+    y: Union[Sequence[float], NDArray],
+    misrate: float = DEFAULT_MISRATE,
+    seed: Union[str, None] = None,
+) -> Bounds:
+    """
+    Provides distribution-free bounds for AvgSpread using Bonferroni combination.
+
+    Args:
+        x: First input sample.
+        y: Second input sample.
+        misrate: Misclassification rate (probability that true avg_spread falls outside bounds).
+        seed: Optional string seed for deterministic randomization.
+
+    Returns:
+        A Bounds object containing the lower and upper bounds.
+
+    Raises:
+        AssumptionError: If sample is empty or contains NaN/Inf.
+        AssumptionError: If misrate is out of range or below minimum achievable.
+        AssumptionError: If either sample is tie-dominant.
+    """
+    x = np.asarray(x)
+    y = np.asarray(y)
+    check_validity(x, "x")
+    check_validity(y, "y")
+
+    if math.isnan(misrate) or misrate < 0 or misrate > 1:
+        raise AssumptionError.domain("misrate")
+
+    n = len(x)
+    m = len(y)
+    if n < 2:
+        raise AssumptionError.domain("x")
+    if m < 2:
+        raise AssumptionError.domain("y")
+
+    alpha = misrate / 2.0
+    min_x = min_achievable_misrate_one_sample(n // 2)
+    min_y = min_achievable_misrate_one_sample(m // 2)
+    if alpha < min_x or alpha < min_y:
+        raise AssumptionError.domain("misrate")
+
+    check_sparity(x, "x")
+    check_sparity(y, "y")
+
+    bounds_x = spread_bounds(x, alpha, seed=seed)
+    bounds_y = spread_bounds(y, alpha, seed=seed)
+
+    weight_x = n / (n + m)
+    weight_y = m / (n + m)
+
+    return Bounds(
+        weight_x * bounds_x.lower + weight_y * bounds_y.lower,
+        weight_x * bounds_x.upper + weight_y * bounds_y.upper,
+    )

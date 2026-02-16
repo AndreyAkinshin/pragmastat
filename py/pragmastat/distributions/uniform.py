@@ -35,4 +35,4 @@ class Uniform(Distribution):
         self.max = max_val
 
     def sample(self, rng: "Rng") -> float:
-        return self.min + rng.uniform() * (self.max - self.min)
+        return self.min + rng.uniform_float() * (self.max - self.min)

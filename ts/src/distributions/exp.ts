@@ -34,7 +34,7 @@ export class Exp implements Distribution {
 
   sample(rng: Rng): number {
     // Inverse CDF method: -ln(1 - U) / rate
-    let u = rng.uniform();
+    let u = rng.uniformFloat();
     // Avoid log(0) - use machine epsilon for cross-language consistency
     if (u === 1.0) {
       u = 1.0 - MACHINE_EPSILON;

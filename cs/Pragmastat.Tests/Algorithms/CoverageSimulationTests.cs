@@ -62,7 +62,7 @@ public class CoverageSimulationTests
     {
       var values = new double[n];
       for (int j = 0; j < n; j++)
-        values[j] = rng.Uniform(-1, 1);
+        values[j] = rng.UniformDouble(-1, 1);
 
       var sample = new Sample(values);
       var bounds = Toolkit.CenterBounds(sample, new Probability(misrate));
@@ -95,7 +95,7 @@ public class CoverageSimulationTests
     {
       double sum = 0;
       for (int j = 0; j < components; j++)
-        sum += rng.Uniform(-0.5, 0.5);
+        sum += rng.UniformDouble(-0.5, 0.5);
       values[i] = sum / Math.Sqrt(components / 12.0); // Scale to unit variance
     }
     return values;

@@ -1,8 +1,9 @@
 //! Tests for error handling and input validation
 
 use pragmastat::assumptions::{AssumptionId, EstimatorError, Subject};
+#[allow(deprecated)]
 use pragmastat::estimators::{
-    avg_spread, center, center_bounds, disparity, ratio, rel_spread, shift, shift_bounds, spread,
+    center, center_bounds, disparity, ratio, rel_spread, shift, shift_bounds, spread,
 };
 
 #[test]
@@ -94,16 +95,6 @@ fn ratio_nonpositive_y() {
     // y must be strictly positive for ratio calculation
     assert!(ratio(&[1.0, 2.0], &[0.0, 1.0]).is_err());
     assert!(ratio(&[1.0, 2.0], &[-1.0, 1.0]).is_err());
-}
-
-#[test]
-fn avg_spread_empty_x() {
-    assert!(avg_spread(&[], &[1.0, 2.0]).is_err());
-}
-
-#[test]
-fn avg_spread_empty_y() {
-    assert!(avg_spread(&[1.0, 2.0], &[]).is_err());
 }
 
 #[test]

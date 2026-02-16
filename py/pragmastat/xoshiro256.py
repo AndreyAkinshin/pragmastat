@@ -64,15 +64,19 @@ class Xoshiro256PlusPlus:
     # Floating Point Methods
     # ========================================================================
 
-    def uniform(self) -> float:
+    def uniform_float(self) -> float:
         """Generate a uniform float in [0, 1)."""
         return (self.next_u64() >> 11) * (1.0 / (1 << 53))
 
-    def uniform_range(self, min_val: float, max_val: float) -> float:
-        """Generate a uniform float in [min, max)."""
+    def uniform_float_range(self, min_val: float, max_val: float) -> float:
+        """Generate a uniform float in [min, max).
+
+        Note: FP rounding in min + (max-min)*u can theoretically yield max
+        for extreme values of (max-min). Acceptable for statistical use.
+        """
         if min_val >= max_val:
             return min_val
-        return min_val + (max_val - min_val) * self.uniform()
+        return min_val + (max_val - min_val) * self.uniform_float()
 
     # ========================================================================
     # Integer Methods
@@ -82,14 +86,13 @@ class Xoshiro256PlusPlus:
         """Generate a uniform integer in [min, max).
 
         Raises:
-            OverflowError: If max_val - min_val exceeds i64 range.
+            OverflowError: If max_val - min_val exceeds u64 range.
         """
         if min_val >= max_val:
             return min_val
         range_size = max_val - min_val
-        # Validate range fits in i64 (for cross-language consistency)
-        if range_size > 0x7FFFFFFFFFFFFFFF:
-            raise OverflowError("uniform_int: range overflow (max - min exceeds i64)")
+        if range_size > 0xFFFFFFFFFFFFFFFF:
+            raise OverflowError("uniform_int: range overflow (max - min exceeds u64)")
         return min_val + (self.next_u64() % range_size)
 
     # ========================================================================
@@ -98,7 +101,7 @@ class Xoshiro256PlusPlus:
 
     def uniform_bool(self) -> bool:
         """Generate a uniform bool with P(True) = 0.5."""
-        return self.uniform() < 0.5
+        return self.uniform_float() < 0.5
 
 
 # FNV-1a hash constants

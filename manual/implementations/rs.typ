@@ -3,8 +3,6 @@
 // Uses definitions from parent scope (imported in main document)
 #let lang = languages.rs
 
-== #lang.title
-
 Install from crates.io via cargo:
 
 #raw("cargo add pragmastat@" + version, lang: "bash", block: true)

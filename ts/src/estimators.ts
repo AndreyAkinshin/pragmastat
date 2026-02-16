@@ -47,6 +47,8 @@ export function spread(x: number[]): number {
 /**
  * Calculate the RelSpread - ratio of Spread to absolute Center
  *
+ * @deprecated Use `spread(x) / Math.abs(center(x))` instead.
+ *
  * Assumptions:
  *   positivity(x) - all values must be strictly positive (ensures Center > 0)
  *
@@ -116,6 +118,7 @@ export function ratio(x: number[], y: number[]): number {
  *   sparity(x) - first sample must be non tie-dominant (Spread > 0)
  *   sparity(y) - second sample must be non tie-dominant (Spread > 0)
  *
+ * @internal
  * @param x First sample
  * @param y Second sample
  * @returns The combined spread estimate
@@ -378,4 +381,128 @@ export function spreadBounds(
   diffs.sort((a, b) => a - b);
 
   return { lower: diffs[kLeft - 1], upper: diffs[kRight - 1] };
+}
+
+/**
+ * Provides distribution-free bounds for AvgSpread using Bonferroni combination.
+ *
+ * @internal
+ * @param x First sample array
+ * @param y Second sample array
+ * @param misrate Misclassification rate (probability that true avg_spread falls outside bounds)
+ * @param seed Optional string seed for deterministic randomization
+ * @returns An object containing the lower and upper bounds
+ * @throws AssumptionError if input is invalid, misrate is out of domain, or sample is tie-dominant
+ */
+export function avgSpreadBounds(
+  x: number[],
+  y: number[],
+  misrate: number = DEFAULT_MISRATE,
+  seed?: string,
+): Bounds {
+  checkValidity(x, 'x');
+  checkValidity(y, 'y');
+  if (isNaN(misrate) || misrate < 0 || misrate > 1) throw AssumptionError.domain('misrate');
+
+  const n = x.length;
+  const m = y.length;
+  if (n < 2) throw AssumptionError.domain('x');
+  if (m < 2) throw AssumptionError.domain('y');
+
+  const alpha = misrate / 2;
+  const minX = minAchievableMisrateOneSample(Math.floor(n / 2));
+  const minY = minAchievableMisrateOneSample(Math.floor(m / 2));
+  if (alpha < minX || alpha < minY) throw AssumptionError.domain('misrate');
+
+  checkSparity(x, 'x');
+  checkSparity(y, 'y');
+
+  const boundsX = spreadBounds(x, alpha, seed);
+  const boundsY = spreadBounds(y, alpha, seed);
+
+  const weightX = n / (n + m);
+  const weightY = m / (n + m);
+
+  return {
+    lower: weightX * boundsX.lower + weightY * boundsY.lower,
+    upper: weightX * boundsX.upper + weightY * boundsY.upper,
+  };
+}
+
+/**
+ * Provides distribution-free bounds for the Disparity estimator (Shift / AvgSpread)
+ * using Bonferroni combination of ShiftBounds and AvgSpreadBounds.
+ *
+ * @param x First sample
+ * @param y Second sample
+ * @param misrate Misclassification rate
+ * @param seed Optional string seed for deterministic randomization
+ * @returns An object containing the lower and upper bounds
+ * @throws AssumptionError if inputs are invalid, misrate is out of domain, or samples are tie-dominant
+ */
+export function disparityBounds(
+  x: number[],
+  y: number[],
+  misrate: number = DEFAULT_MISRATE,
+  seed?: string,
+): Bounds {
+  // Check validity (priority 0)
+  checkValidity(x, 'x');
+  checkValidity(y, 'y');
+
+  if (isNaN(misrate) || misrate < 0 || misrate > 1) throw AssumptionError.domain('misrate');
+
+  const n = x.length;
+  const m = y.length;
+  if (n < 2) throw AssumptionError.domain('x');
+  if (m < 2) throw AssumptionError.domain('y');
+
+  const minShift = minAchievableMisrateTwoSample(n, m);
+  const minX = minAchievableMisrateOneSample(Math.floor(n / 2));
+  const minY = minAchievableMisrateOneSample(Math.floor(m / 2));
+  const minAvg = 2.0 * Math.max(minX, minY);
+
+  if (misrate < minShift + minAvg) throw AssumptionError.domain('misrate');
+
+  const extra = misrate - (minShift + minAvg);
+  const alphaShift = minShift + extra / 2.0;
+  const alphaAvg = minAvg + extra / 2.0;
+
+  // Check sparity (priority 2)
+  checkSparity(x, 'x');
+  checkSparity(y, 'y');
+
+  const sb = shiftBounds(x, y, alphaShift);
+  const ab = avgSpreadBounds(x, y, alphaAvg, seed);
+
+  const la = ab.lower;
+  const ua = ab.upper;
+  const ls = sb.lower;
+  const us = sb.upper;
+
+  if (la > 0.0) {
+    const r1 = ls / la;
+    const r2 = ls / ua;
+    const r3 = us / la;
+    const r4 = us / ua;
+    const lower = Math.min(r1, r2, r3, r4);
+    const upper = Math.max(r1, r2, r3, r4);
+    return { lower, upper };
+  }
+
+  if (ua <= 0.0) {
+    if (ls === 0.0 && us === 0.0) return { lower: 0.0, upper: 0.0 };
+    if (ls >= 0.0) return { lower: 0.0, upper: Infinity };
+    if (us <= 0.0) return { lower: -Infinity, upper: 0.0 };
+    return { lower: -Infinity, upper: Infinity };
+  }
+
+  // Default: ua > 0 && la <= 0
+  if (ls > 0.0) return { lower: ls / ua, upper: Infinity };
+  if (us < 0.0) return { lower: -Infinity, upper: us / ua };
+  if (ls === 0.0 && us === 0.0) return { lower: 0.0, upper: 0.0 };
+  if (ls === 0.0 && us > 0.0) return { lower: 0.0, upper: Infinity };
+  if (ls < 0.0 && us === 0.0) return { lower: -Infinity, upper: 0.0 };
+
+  return { lower: -Infinity, upper: Infinity };
 }

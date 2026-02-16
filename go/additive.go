@@ -21,8 +21,8 @@ func NewAdditive(mean, stdDev float64) *Additive {
 // Sample generates a single sample from the additive distribution.
 func (a *Additive) Sample(rng *Rng) float64 {
 	// Box-Muller transform
-	u1 := rng.Uniform()
-	u2 := rng.Uniform()
+	u1 := rng.UniformFloat64()
+	u2 := rng.UniformFloat64()
 
 	// Avoid log(0) - use smallest positive subnormal for cross-language consistency
 	if u1 == 0 {

@@ -40,7 +40,7 @@ export class Power implements Distribution {
 
   sample(rng: Rng): number {
     // Inverse CDF method: min / (1 - U)^(1/shape)
-    let u = rng.uniform();
+    let u = rng.uniformFloat();
     // Avoid division by zero - use machine epsilon for cross-language consistency
     if (u === 1.0) {
       u = 1.0 - MACHINE_EPSILON;

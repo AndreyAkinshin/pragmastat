@@ -62,14 +62,19 @@ cargo test --test error_tests # Error handling tests
 
 ## Error Handling
 
-All public functions return `Result<T, &'static str>`:
+All public functions return `Result<T, EstimatorError>`:
 
 ```rust
-pub fn center(x: &[f64]) -> Result<f64, &'static str>
-pub fn shift(x: &[f64], y: &[f64]) -> Result<f64, &'static str>
-pub fn shift_bounds(x: &[f64], y: &[f64], misrate: f64) -> Result<Bounds, &'static str>
-pub fn ratio_bounds(x: &[f64], y: &[f64], misrate: f64) -> Result<Bounds, &'static str>
-pub fn center_bounds(x: &[f64], misrate: f64) -> Result<Bounds, &'static str>
+pub fn center(x: &[f64]) -> Result<f64, EstimatorError>
+pub fn spread(x: &[f64]) -> Result<f64, EstimatorError>
+pub fn shift(x: &[f64], y: &[f64]) -> Result<f64, EstimatorError>
+pub fn ratio(x: &[f64], y: &[f64]) -> Result<f64, EstimatorError>
+pub fn disparity(x: &[f64], y: &[f64]) -> Result<f64, EstimatorError>
+pub fn shift_bounds(x: &[f64], y: &[f64], misrate: f64) -> Result<Bounds, EstimatorError>
+pub fn ratio_bounds(x: &[f64], y: &[f64], misrate: f64) -> Result<Bounds, EstimatorError>
+pub fn disparity_bounds(x: &[f64], y: &[f64], misrate: f64) -> Result<Bounds, EstimatorError>
+pub fn center_bounds(x: &[f64], misrate: f64) -> Result<Bounds, EstimatorError>
+pub fn spread_bounds(x: &[f64], misrate: f64) -> Result<Bounds, EstimatorError>
 ```
 
 Error conditions:
@@ -77,6 +82,7 @@ Error conditions:
 - NaN or infinite values
 - Invalid `misrate` (outside `[0, 1]` or NaN)
 - Division by zero (e.g., `rel_spread` when center is zero)
+- `rel_spread` is deprecated; use `spread(x) / center(x).abs()` instead
 
 ## Determinism
 

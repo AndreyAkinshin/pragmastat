@@ -5,7 +5,7 @@ using Pragmastat.Metrology;
 
 namespace Pragmastat.Estimators;
 
-public class AvgSpreadEstimator : ITwoSampleEstimator
+internal class AvgSpreadEstimator : ITwoSampleEstimator
 {
   public static readonly AvgSpreadEstimator Instance = new();
 

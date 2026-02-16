@@ -1,4 +1,5 @@
 import { center, spread, relSpread, shift, ratio, avgSpread, disparity } from '../src/estimators';
+import { Rng } from '../src';
 
 /**
  * Invariance tests for mathematical properties of estimators
@@ -8,28 +9,10 @@ describe('Invariance Tests', () => {
   const seed = 1729;
   const sampleSizes = [2, 3, 4, 5, 6, 7, 8, 9, 10];
 
-  // Simple linear congruential generator for reproducible random numbers
-  class SimpleRng {
-    private state: number;
-
-    constructor(seed: number) {
-      this.state = seed;
-    }
-
-    next(): number {
-      this.state = ((this.state * 1103515245 + 12345) & 0x7fffffff) >>> 0;
-      return this.state / 0x7fffffff;
-    }
-
-    nextArray(n: number): number[] {
-      return Array.from({ length: n }, () => this.next());
-    }
-  }
-
   function performTestOne(expr1: (x: number[]) => number, expr2: (x: number[]) => number): void {
-    const rng = new SimpleRng(seed);
+    const rng = new Rng(seed);
     for (const n of sampleSizes) {
-      const x = rng.nextArray(n);
+      const x = Array.from({ length: n }, () => rng.uniformFloat());
       const result1 = expr1(x);
       const result2 = expr2(x);
       expect(result1).toBeCloseTo(result2, 9);
@@ -40,10 +23,10 @@ describe('Invariance Tests', () => {
     expr1: (x: number[], y: number[]) => number,
     expr2: (x: number[], y: number[]) => number,
   ): void {
-    const rng = new SimpleRng(seed);
+    const rng = new Rng(seed);
     for (const n of sampleSizes) {
-      const x = rng.nextArray(n);
-      const y = rng.nextArray(n);
+      const x = Array.from({ length: n }, () => rng.uniformFloat());
+      const y = Array.from({ length: n }, () => rng.uniformFloat());
       const result1 = expr1(x, y);
       const result2 = expr2(x, y);
       expect(result1).toBeCloseTo(result2, 9);
@@ -206,5 +189,96 @@ describe('Invariance Tests', () => {
         (x, y) => -1 * disparity(y, x),
       );
     });
+  });
+});
+
+describe('shuffle', () => {
+  it('should preserve multiset', () => {
+    for (const n of [1, 2, 5, 10, 100]) {
+      const x = Array.from({ length: n }, (_, i) => i);
+      const rng = new Rng(42);
+      const shuffled = rng.shuffle(x);
+      expect([...shuffled].sort((a, b) => a - b)).toEqual(x);
+    }
+  });
+});
+
+describe('sample', () => {
+  it('should return correct size', () => {
+    const x = Array.from({ length: 10 }, (_, i) => i);
+    for (const k of [1, 3, 5, 10, 15]) {
+      const rng = new Rng(42);
+      const sampled = rng.sample(x, k);
+      expect(sampled.length).toBe(Math.min(k, x.length));
+    }
+  });
+
+  it('should only contain elements from source', () => {
+    const x = Array.from({ length: 10 }, (_, i) => i);
+    const rng = new Rng(42);
+    const sampled = rng.sample(x, 5);
+    for (const elem of sampled) {
+      expect(x).toContain(elem);
+    }
+  });
+
+  it('should preserve order', () => {
+    const x = Array.from({ length: 10 }, (_, i) => i);
+    const rng = new Rng(42);
+    const sampled = rng.sample(x, 5);
+    for (let i = 1; i < sampled.length; i++) {
+      expect(sampled[i]).toBeGreaterThan(sampled[i - 1]);
+    }
+  });
+
+  it('should have no duplicates', () => {
+    for (const n of [2, 3, 5, 10, 20]) {
+      const source = Array.from({ length: n }, (_, i) => i);
+      for (const k of [1, Math.floor(n / 2), n]) {
+        const rng = new Rng(42);
+        const sampled = rng.sample(source, k);
+        expect(new Set(sampled).size).toBe(sampled.length);
+      }
+    }
+  });
+});
+
+describe('resample', () => {
+  it('should only contain elements from source', () => {
+    const x = Array.from({ length: 5 }, (_, i) => i);
+    const rng = new Rng(42);
+    const resampled = rng.resample(x, 10);
+    for (const elem of resampled) {
+      expect(x).toContain(elem);
+    }
+  });
+
+  it('should throw for k=0', () => {
+    const rng = new Rng(42);
+    expect(() => rng.resample([1, 2, 3], 0)).toThrow();
+  });
+
+  it('should throw for negative k', () => {
+    const rng = new Rng(42);
+    expect(() => rng.resample([1, 2, 3], -1)).toThrow();
+  });
+});
+
+describe('shuffle errors', () => {
+  it('should throw for empty array', () => {
+    const rng = new Rng(42);
+    expect(() => rng.shuffle([])).toThrow();
+  });
+});
+
+describe('sample errors', () => {
+  it('should throw for k=0', () => {
+    const rng = new Rng(42);
+    expect(() => rng.sample([1, 2, 3], 0)).toThrow();
+  });
+
+  it('should throw for empty array', () => {
+    const rng = new Rng(42);
+    expect(() => rng.sample([], 1)).toThrow();
   });
 });

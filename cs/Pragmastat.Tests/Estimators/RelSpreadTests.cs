@@ -1,3 +1,5 @@
+#pragma warning disable CS0618
+
 using JetBrains.Annotations;
 using Pragmastat.Exceptions;
 using Pragmastat.TestGenerator.Framework;

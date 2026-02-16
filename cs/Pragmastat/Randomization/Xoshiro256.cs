@@ -81,7 +81,7 @@ internal sealed class Xoshiro256PlusPlus
   /// Uses upper 53 bits for maximum precision.
   /// </summary>
   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-  public double Uniform()
+  public double UniformDouble()
   {
     return (NextU64() >> 11) * (1.0 / (1UL << 53));
   }
@@ -90,12 +90,16 @@ internal sealed class Xoshiro256PlusPlus
   /// Generate a uniform double in [min, max).
   /// Returns min if min >= max.
   /// </summary>
+  /// <remarks>
+  /// FP rounding in <c>min + (max - min) * u</c> can theoretically yield
+  /// <c>max</c> for extreme ranges. Acceptable for statistical use.
+  /// </remarks>
   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-  public double Uniform(double min, double max)
+  public double UniformDouble(double min, double max)
   {
     if (min >= max)
       return min;
-    return min + (max - min) * Uniform();
+    return min + (max - min) * UniformDouble();
   }
 
   /// <summary>
@@ -243,7 +247,7 @@ internal sealed class Xoshiro256PlusPlus
   [MethodImpl(MethodImplOptions.AggressiveInlining)]
   public bool UniformBool()
   {
-    return Uniform() < 0.5;
+    return UniformDouble() < 0.5;
   }
 
 }

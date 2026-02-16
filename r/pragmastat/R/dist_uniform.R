@@ -18,7 +18,7 @@ dist_uniform <- function(min_val, max_val) {
   }
 
   sample_fn <- function(rng) {
-    min_val + rng$uniform() * (max_val - min_val)
+    min_val + rng$uniform_float() * (max_val - min_val)
   }
 
   list(

@@ -219,6 +219,22 @@ knuth1997:
   publisher: Addison-Wesley
   location: Reading, Massachusetts
 
+efron1979:
+  type: article
+  title: "Bootstrap Methods: Another Look at the Jackknife"
+  author:
+    - name: Efron
+      given-name: Bradley
+  date: 1979
+  parent:
+    - type: periodical
+      title: The Annals of Statistics
+      volume: 7
+      issue: 1
+  page-range: 1-26
+  doi: 10.1214/aos/1176344552
+  url: https://projecteuclid.org/euclid.aos/1176344552
+
 fan1962:
   type: article
   title: "Development of Sampling Plans by Using Sequential (Item by Item) Selection Techniques and Digital Computers"

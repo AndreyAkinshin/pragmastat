@@ -53,7 +53,7 @@ r/pragmastat/
 
 | Class | Type | Purpose |
 |-------|------|---------|
-| `Rng` | R6 | Deterministic PRNG with `uniform()`, `sample()`, `shuffle()` |
+| `Rng` | R6 | Deterministic PRNG with `uniform_float()`, `uniform_float_range()`, `uniform_int()`, `uniform_bool()`, `sample()`, `resample()`, `shuffle()` |
 | `Uniform` | R6 | Uniform distribution |
 | `Additive` | R6 | Additive (Laplace) distribution |
 | `Exp` | R6 | Exponential distribution |
@@ -65,15 +65,20 @@ r/pragmastat/
 ```r
 center(x)                    # Hodges-Lehmann estimator
 spread(x)                    # Shamos estimator
-rel_spread(x)                # Spread / |Center|
+rel_spread(x)                # Spread / |Center| [DEPRECATED: use spread(x) / abs(center(x))]
 shift(x, y)                  # Median of pairwise differences
 ratio(x, y)                  # Geometric median of pairwise ratios (via log-space)
-avg_spread(x, y)             # Weighted average of spreads
 disparity(x, y)              # Shift / AvgSpread
-shift_bounds(x, y, misrate)  # Confidence bounds on shift
-ratio_bounds(x, y, misrate)  # Confidence bounds on ratio
-center_bounds(x, misrate)    # Confidence bounds on center
+shift_bounds(x, y, misrate)     # Confidence bounds on shift
+ratio_bounds(x, y, misrate)     # Confidence bounds on ratio
+disparity_bounds(x, y, misrate) # Confidence bounds on disparity
+center_bounds(x, misrate)       # Confidence bounds on center
+spread_bounds(x, misrate)       # Confidence bounds on spread
 ```
+
+## Deprecated Functions
+
+- `rel_spread(x)` is deprecated. Use `spread(x) / abs(center(x))` instead.
 
 ## Testing
 

@@ -1,4 +1,6 @@
 ---
+import { ViewTransitions } from 'astro:transitions';
+
 interface Props {
   title: string;
   description?: string;
@@ -16,6 +18,7 @@ const { title, description = 'Pragmatic Statistical Toolkit' } = Astro.props;
     <title>{title} | Pragmastat</title>
     <link rel="icon" type="image/svg+xml" href="/img/logo.svg" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.27/dist/katex.min.css" crossorigin="anonymous">
+    <ViewTransitions />
 
     <!-- Prevent flash of wrong theme / sidebar state / background color -->
     <script is:inline>

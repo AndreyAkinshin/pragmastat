@@ -21,8 +21,8 @@ class Additive(private val mean: Double, private val stdDev: Double) : Distribut
 
     override fun sample(rng: Rng): Double {
         // Box-Muller transform
-        var u1 = rng.uniform()
-        val u2 = rng.uniform()
+        var u1 = rng.uniformDouble()
+        val u2 = rng.uniformDouble()
 
         // Avoid log(0) - use smallest positive subnormal for cross-language consistency
         if (u1 == 0.0) {

@@ -55,17 +55,21 @@ cs/
 // Extension methods on Sample
 sample.Center()
 sample.Spread()
-sample.RelSpread()
 
 // Static methods in Toolkit
 Toolkit.Shift(x, y)
 Toolkit.Ratio(x, y)
-Toolkit.AvgSpread(x, y)
 Toolkit.Disparity(x, y)
 Toolkit.ShiftBounds(x, y, misrate)
 Toolkit.RatioBounds(x, y, misrate)
+Toolkit.DisparityBounds(x, y, misrate)
 Toolkit.CenterBounds(x, misrate)
+Toolkit.SpreadBounds(x, misrate)
 ```
+
+## Obsolete API
+
+- `RelSpread` (class, extension method, and static method) is obsolete. Use `Spread(x) / Math.Abs(Center(x))` instead.
 
 ## Testing
 
@@ -85,7 +89,7 @@ Uses exceptions for error conditions:
 ```csharp
 try {
     var result = sample.Center();
-} catch (ArgumentException e) {
+} catch (AssumptionException e) {
     // Handle: empty input, invalid parameters
 }
 ```

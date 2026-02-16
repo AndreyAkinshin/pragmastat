@@ -23,7 +23,7 @@ class Rng:
     Examples
     --------
     >>> rng = Rng("demo-uniform")  # Create from string seed
-    >>> rng.uniform()
+    >>> rng.uniform_float()
     0.2640554428629759
 
     >>> rng = Rng("demo-shuffle")
@@ -46,6 +46,10 @@ class Rng:
             If str: hash using FNV-1a to produce a numeric seed.
             If None: use system time for entropy (non-deterministic).
         """
+        # Runtime guard for callers that bypass type checking
+        if seed is not None and not isinstance(seed, (int, str)):
+            raise TypeError(f"seed must be int or str, got {type(seed).__name__}")
+
         if seed is None:
             seed_int = int(time.time_ns())
         elif isinstance(seed, str):
@@ -59,7 +63,7 @@ class Rng:
     # Floating Point Methods
     # ========================================================================
 
-    def uniform(self) -> float:
+    def uniform_float(self) -> float:
         """
         Generate a uniform random float in [0, 1).
 
@@ -73,12 +77,12 @@ class Rng:
         Examples
         --------
         >>> rng = Rng("demo-uniform")
-        >>> rng.uniform()
+        >>> rng.uniform_float()
         0.2640554428629759
         """
-        return self._inner.uniform()
+        return self._inner.uniform_float()
 
-    def uniform_range(self, min_val: float, max_val: float) -> float:
+    def uniform_float_range(self, min_val: float, max_val: float) -> float:
         """
         Generate a uniform random float in [min, max).
 
@@ -95,7 +99,7 @@ class Rng:
             Random value in [min, max).
             Returns min_val if min_val >= max_val.
         """
-        return self._inner.uniform_range(min_val, max_val)
+        return self._inner.uniform_float_range(min_val, max_val)
 
     # ========================================================================
     # Integer Methods
@@ -145,39 +149,6 @@ class Rng:
         """
         return self._inner.uniform_bool()
 
-    def shuffle(self, x: Sequence[T]) -> List[T]:
-        """
-        Return a shuffled copy of the input sequence.
-
-        Uses the Fisher-Yates shuffle algorithm for uniform distribution.
-        The original sequence is not modified.
-
-        Parameters
-        ----------
-        x : Sequence[T]
-            Input sequence to shuffle.
-
-        Returns
-        -------
-        List[T]
-            Shuffled copy of the input.
-
-        Examples
-        --------
-        >>> rng = Rng("demo-shuffle")
-        >>> rng.shuffle([1.0, 2.0, 3.0, 4.0, 5.0])
-        [4.0, 2.0, 3.0, 5.0, 1.0]
-        """
-        result = list(x)
-        n = len(result)
-
-        # Fisher-Yates shuffle (backwards)
-        for i in range(n - 1, 0, -1):
-            j = self.uniform_int(0, i + 1)
-            result[i], result[j] = result[j], result[i]
-
-        return result
-
     def sample(self, x: Sequence[T], k: int) -> List[T]:
         """
         Sample k elements from the input sequence without replacement.
@@ -206,11 +177,13 @@ class Rng:
         Raises
         ------
         ValueError
-            If k is negative.
+            If k is not positive.
         """
-        if k < 0:
-            raise ValueError("k must be non-negative")
+        if k <= 0:
+            raise ValueError("k must be positive")
         n = len(x)
+        if n == 0:
+            raise ValueError("sample: cannot sample from empty sequence")
         if k >= n:
             return list(x)
 
@@ -220,7 +193,7 @@ class Rng:
         for i, item in enumerate(x):
             available = n - i
             # Probability of selecting this item: remaining / available
-            if self.uniform() * available < remaining:
+            if self.uniform_float() * available < remaining:
                 result.append(item)
                 remaining -= 1
                 if remaining == 0:
@@ -249,10 +222,10 @@ class Rng:
         Raises
         ------
         ValueError
-            If k is negative.
+            If k is not positive.
         """
-        if k < 0:
-            raise ValueError("k must be non-negative")
+        if k <= 0:
+            raise ValueError("k must be positive")
         n = len(x)
         if n == 0:
             raise ValueError("resample: cannot resample from empty sequence")
@@ -261,4 +234,39 @@ class Rng:
         for _ in range(k):
             idx = self.uniform_int(0, n)
             result.append(x[idx])
+        return result
+
+    def shuffle(self, x: Sequence[T]) -> List[T]:
+        """
+        Return a shuffled copy of the input sequence.
+
+        Uses the Fisher-Yates shuffle algorithm for uniform distribution.
+        The original sequence is not modified.
+
+        Parameters
+        ----------
+        x : Sequence[T]
+            Input sequence to shuffle.
+
+        Returns
+        -------
+        List[T]
+            Shuffled copy of the input.
+
+        Examples
+        --------
+        >>> rng = Rng("demo-shuffle")
+        >>> rng.shuffle([1.0, 2.0, 3.0, 4.0, 5.0])
+        [4.0, 2.0, 3.0, 5.0, 1.0]
+        """
+        if len(x) == 0:
+            raise ValueError("shuffle: cannot shuffle empty sequence")
+        result = list(x)
+        n = len(result)
+
+        # Fisher-Yates shuffle (backwards)
+        for i in range(n - 1, 0, -1):
+            j = self.uniform_int(0, i + 1)
+            result[i], result[j] = result[j], result[i]
+
         return result

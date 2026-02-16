@@ -4,85 +4,59 @@ import dev.pragmastat.*
 import dev.pragmastat.distributions.*
 
 fun main() {
+    // --- One-Sample ---
+
+    var x = (1..20).map { it.toDouble() }
+
+    println(center(x))                    // 10.5
+    println(centerBounds(x, 0.05))        // Bounds(lower=7.5, upper=13.5)
+    println(spread(x))                    // 6.0
+    println(spreadBounds(x, 0.05, "demo")) // Bounds(lower=2.0, upper=10.0)
+
+    // --- Two-Sample ---
+
+    x = (1..30).map { it.toDouble() }
+    var y = (21..50).map { it.toDouble() }
+
+    println(shift(x, y))                    // -20
+    println(shiftBounds(x, y, 0.05))        // Bounds(lower=-25.0, upper=-15.0)
+    println(ratio(x, y))                    // 0.43669798282695127
+    println(ratioBounds(x, y, 0.05))        // Bounds(lower=0.31250000000000006, upper=0.5599999999999999)
+    println(disparity(x, y))                // -2.2222222222222223
+    println(disparityBounds(x, y, 0.05, "demo")) // Bounds(lower=-13.0, upper=-0.8235294117647058)
+
     // --- Randomization ---
 
     var rng = Rng("demo-uniform")
-    println(rng.uniform()) // 0.2640554428629759
-    println(rng.uniform()) // 0.9348534835582796
+    println(rng.uniformDouble()) // 0.2640554428629759
+    println(rng.uniformDouble()) // 0.9348534835582796
+
+    rng = Rng("demo-uniform-int")
+    println(rng.uniformInt(0, 100)) // 41
 
     rng = Rng("demo-sample")
-    println(rng.sample(listOf(0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0), 3)) // [3, 8, 9]
-
-    rng = Rng("demo-shuffle")
-    println(rng.shuffle(listOf(1.0, 2.0, 3.0, 4.0, 5.0))) // [4, 2, 3, 5, 1]
+    println(rng.sample(listOf(0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0), 3)) // [3.0, 8.0, 9.0]
 
     rng = Rng("demo-resample")
-    println(rng.resample(listOf(1.0, 2.0, 3.0, 4.0, 5.0), 7)) // [5, 1, 1, 3, 3, 4, 5]
+    println(rng.resample(listOf(1.0, 2.0, 3.0, 4.0, 5.0), 7)) // [3.0, 1.0, 3.0, 2.0, 4.0, 1.0, 2.0]
 
-    // --- Distribution Sampling ---
+    rng = Rng("demo-shuffle")
+    println(rng.shuffle(listOf(1.0, 2.0, 3.0, 4.0, 5.0))) // [4.0, 2.0, 3.0, 5.0, 1.0]
 
-    rng = Rng("demo-dist-uniform")
-    var dist: Distribution = Uniform(0.0, 10.0)
-    println(dist.sample(rng)) // 6.54043657816832
+    // --- Distributions ---
 
     rng = Rng("demo-dist-additive")
-    dist = Additive(0.0, 1.0)
-    println(dist.sample(rng)) // 0.17410448679568188
-
-    rng = Rng("demo-dist-exp")
-    dist = Exp(1.0)
-    println(dist.sample(rng)) // 0.6589065267276553
-
-    rng = Rng("demo-dist-power")
-    dist = Power(1.0, 2.0)
-    println(dist.sample(rng)) // 1.023677535537084
+    println(Additive(0.0, 1.0).sample(rng)) // 0.17410448679568188
 
     rng = Rng("demo-dist-multiplic")
-    dist = Multiplic(0.0, 1.0)
-    println(dist.sample(rng)) // 1.1273244602673853
+    println(Multiplic(0.0, 1.0).sample(rng)) // 1.1273244602673853
 
-    // --- Single-Sample Statistics ---
+    rng = Rng("demo-dist-exp")
+    println(Exp(1.0).sample(rng)) // 0.6589065267276553
 
-    var x = listOf(1.0, 3.0, 5.0, 7.0, 9.0)
+    rng = Rng("demo-dist-power")
+    println(Power(1.0, 2.0).sample(rng)) // 1.023677535537084
 
-    println(center(x)) // 5
-    println(spread(x)) // 4
-    println(spread(x.map { it + 10 })) // 4
-    println(spread(x.map { it * 2 })) // 8
-    println(relSpread(x)) // 0.8
-
-    // --- Two-Sample Comparison ---
-
-    x = listOf(0.0, 3.0, 6.0, 9.0, 12.0)
-    var y = listOf(0.0, 2.0, 4.0, 6.0, 8.0)
-
-    println(shift(x, y)) // 2
-    println(shift(y, x)) // -2
-    println(avgSpread(x, y)) // 5
-    println(disparity(x, y)) // 0.4
-    println(disparity(y, x)) // -0.4
-
-    x = listOf(1.0, 2.0, 4.0, 8.0, 16.0)
-    y = listOf(2.0, 4.0, 8.0, 16.0, 32.0)
-    println(ratio(x, y)) // 0.5
-    println(ratio(y, x)) // 2
-
-    // --- One-Sample Bounds ---
-
-    x = (1..10).map { it.toDouble() }
-
-    println(center(x)) // 5.5
-    println(centerBounds(x, 0.05)) // Bounds(lower=3.5, upper=7.5)
-
-    // --- Two-Sample Bounds ---
-
-    x = (1..30).map { it.toDouble() }
-    y = (21..50).map { it.toDouble() }
-
-    println(shift(x, y)) // -20
-    println(shiftBounds(x, y, 1e-4)) // Bounds(lower=-30.0, upper=-10.0)
-
-    x = listOf(1.0, 2.0, 3.0, 4.0, 5.0)
-    y = listOf(2.0, 3.0, 4.0, 5.0, 6.0)
-    println(ratioBounds(x, y, 0.05)) // Bounds(lower=0.333..., upper=1.5)
+    rng = Rng("demo-dist-uniform")
+    println(Uniform(0.0, 10.0).sample(rng)) // 6.54043657816832
 }

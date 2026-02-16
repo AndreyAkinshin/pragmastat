@@ -1,7 +1,0 @@
-{
-  "input": { "n": 5, "m": 5, "misrate": -0.1 },
-  "expected_error": {
-    "id": "domain"
-  },
-  "comment": "Negative misrate is outside valid domain [0, 1]"
-}

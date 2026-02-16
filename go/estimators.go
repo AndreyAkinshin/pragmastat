@@ -3,6 +3,7 @@ package pragmastat
 
 import (
 	"errors"
+	"fmt"
 	"math"
 	"sort"
 )
@@ -50,6 +51,8 @@ func Spread[T Number](x []T) (float64, error) {
 // RelSpread measures the relative dispersion of a sample.
 // Calculates the ratio of Spread to absolute Center.
 // Robust alternative to the coefficient of variation.
+//
+// Deprecated: Use Spread(x) / math.Abs(Center(x)) instead.
 //
 // Assumptions:
 //   - positivity(x) - all values must be strictly positive (ensures Center > 0)
@@ -125,13 +128,13 @@ func Ratio[T Number](x, y []T) (float64, error) {
 	return result[0], nil
 }
 
-// AvgSpread measures the typical variability when considering both samples together.
+// avgSpread measures the typical variability when considering both samples together.
 // Computes the weighted average of individual spreads: (n*Spread(x) + m*Spread(y))/(n+m).
 //
 // Assumptions:
 //   - sparity(x) - first sample must be non tie-dominant (Spread > 0)
 //   - sparity(y) - second sample must be non tie-dominant (Spread > 0)
-func AvgSpread[T Number](x, y []T) (float64, error) {
+func avgSpread[T Number](x, y []T) (float64, error) {
 	// Check validity for x (priority 0, subject x)
 	if err := checkValidity(x, SubjectX); err != nil {
 		return 0, err
@@ -221,6 +224,9 @@ type Bounds struct {
 // The misrate represents the probability that the true shift falls outside the computed bounds.
 // This is a pragmatic alternative to traditional confidence intervals for the Hodges-Lehmann estimator.
 func ShiftBounds[T Number](x, y []T, misrate ...float64) (Bounds, error) {
+	if len(misrate) > 1 {
+		return Bounds{}, fmt.Errorf("at most one misrate value expected, got %d", len(misrate))
+	}
 	mr := DefaultMisrate
 	if len(misrate) > 0 {
 		mr = misrate[0]
@@ -308,6 +314,9 @@ func ShiftBounds[T Number](x, y []T, misrate ...float64) (Bounds, error) {
 //   - positivity(x) - all values in x must be strictly positive
 //   - positivity(y) - all values in y must be strictly positive
 func RatioBounds[T Number](x, y []T, misrate ...float64) (Bounds, error) {
+	if len(misrate) > 1 {
+		return Bounds{}, fmt.Errorf("at most one misrate value expected, got %d", len(misrate))
+	}
 	mr := DefaultMisrate
 	if len(misrate) > 0 {
 		mr = misrate[0]
@@ -358,6 +367,9 @@ func RatioBounds[T Number](x, y []T, misrate ...float64) (Bounds, error) {
 // CenterBounds provides exact distribution-free bounds for Center (Hodges-Lehmann pseudomedian).
 // Requires weak symmetry assumption: distribution symmetric around unknown center.
 func CenterBounds[T Number](x []T, misrate ...float64) (Bounds, error) {
+	if len(misrate) > 1 {
+		return Bounds{}, fmt.Errorf("at most one misrate value expected, got %d", len(misrate))
+	}
 	mr := DefaultMisrate
 	if len(misrate) > 0 {
 		mr = misrate[0]
@@ -414,6 +426,9 @@ func CenterBounds[T Number](x []T, misrate ...float64) (Bounds, error) {
 
 // SpreadBounds provides distribution-free bounds for Spread using disjoint pairs.
 func SpreadBounds[T Number](x []T, misrate ...float64) (Bounds, error) {
+	if len(misrate) > 1 {
+		return Bounds{}, fmt.Errorf("at most one misrate value expected, got %d", len(misrate))
+	}
 	mr := DefaultMisrate
 	if len(misrate) > 0 {
 		mr = misrate[0]
@@ -426,6 +441,221 @@ func SpreadBounds[T Number](x []T, misrate ...float64) (Bounds, error) {
 func SpreadBoundsWithSeed[T Number](x []T, misrate float64, seed string) (Bounds, error) {
 	rng := NewRngFromString(seed)
 	return spreadBoundsWithRng(x, misrate, rng)
+}
+
+// avgSpreadBounds provides distribution-free bounds for AvgSpread using Bonferroni combination.
+func avgSpreadBounds[T Number](x, y []T, misrate ...float64) (Bounds, error) {
+	if len(misrate) > 1 {
+		return Bounds{}, fmt.Errorf("at most one misrate value expected, got %d", len(misrate))
+	}
+	mr := DefaultMisrate
+	if len(misrate) > 0 {
+		mr = misrate[0]
+	}
+	rngX := NewRng()
+	rngY := NewRng()
+	return avgSpreadBoundsWithRngs(x, y, mr, rngX, rngY)
+}
+
+// avgSpreadBoundsWithSeed provides deterministic AvgSpreadBounds using a string seed.
+func avgSpreadBoundsWithSeed[T Number](x, y []T, misrate float64, seed string) (Bounds, error) {
+	rngX := NewRngFromString(seed)
+	rngY := NewRngFromString(seed)
+	return avgSpreadBoundsWithRngs(x, y, misrate, rngX, rngY)
+}
+
+func avgSpreadBoundsWithRngs[T Number](x, y []T, misrate float64, rngX, rngY *Rng) (Bounds, error) {
+	// Check validity (priority 0)
+	if err := checkValidity(x, SubjectX); err != nil {
+		return Bounds{}, err
+	}
+	if err := checkValidity(y, SubjectY); err != nil {
+		return Bounds{}, err
+	}
+
+	// Check misrate domain
+	if math.IsNaN(misrate) || misrate < 0 || misrate > 1 {
+		return Bounds{}, NewDomainError(SubjectMisrate)
+	}
+
+	n := len(x)
+	m := len(y)
+	if n < 2 {
+		return Bounds{}, NewDomainError(SubjectX)
+	}
+	if m < 2 {
+		return Bounds{}, NewDomainError(SubjectY)
+	}
+
+	alpha := misrate / 2
+	minX, err := minAchievableMisrateOneSample(n / 2)
+	if err != nil {
+		return Bounds{}, err
+	}
+	minY, err := minAchievableMisrateOneSample(m / 2)
+	if err != nil {
+		return Bounds{}, err
+	}
+	if alpha < minX || alpha < minY {
+		return Bounds{}, NewDomainError(SubjectMisrate)
+	}
+
+	// Check sparity (priority 2)
+	if err := checkSparity(x, SubjectX); err != nil {
+		return Bounds{}, err
+	}
+	if err := checkSparity(y, SubjectY); err != nil {
+		return Bounds{}, err
+	}
+
+	boundsX, err := spreadBoundsWithRng(x, alpha, rngX)
+	if err != nil {
+		return Bounds{}, err
+	}
+	boundsY, err := spreadBoundsWithRng(y, alpha, rngY)
+	if err != nil {
+		return Bounds{}, err
+	}
+
+	wx := float64(n) / float64(n+m)
+	wy := float64(m) / float64(n+m)
+
+	return Bounds{
+		Lower: wx*boundsX.Lower + wy*boundsY.Lower,
+		Upper: wx*boundsX.Upper + wy*boundsY.Upper,
+	}, nil
+}
+
+// DisparityBounds provides distribution-free bounds for the Disparity estimator (Shift / AvgSpread)
+// using Bonferroni combination of ShiftBounds and AvgSpreadBounds.
+func DisparityBounds[T Number](x, y []T, misrate ...float64) (Bounds, error) {
+	if len(misrate) > 1 {
+		return Bounds{}, fmt.Errorf("at most one misrate value expected, got %d", len(misrate))
+	}
+	mr := DefaultMisrate
+	if len(misrate) > 0 {
+		mr = misrate[0]
+	}
+	rngX := NewRng()
+	rngY := NewRng()
+	return disparityBoundsWithRngs(x, y, mr, rngX, rngY)
+}
+
+// DisparityBoundsWithSeed provides deterministic DisparityBounds using a string seed.
+func DisparityBoundsWithSeed[T Number](x, y []T, misrate float64, seed string) (Bounds, error) {
+	rngX := NewRngFromString(seed)
+	rngY := NewRngFromString(seed)
+	return disparityBoundsWithRngs(x, y, misrate, rngX, rngY)
+}
+
+func disparityBoundsWithRngs[T Number](x, y []T, misrate float64, rngX, rngY *Rng) (Bounds, error) {
+	// Check validity (priority 0)
+	if err := checkValidity(x, SubjectX); err != nil {
+		return Bounds{}, err
+	}
+	if err := checkValidity(y, SubjectY); err != nil {
+		return Bounds{}, err
+	}
+
+	// Check misrate domain
+	if math.IsNaN(misrate) || misrate < 0 || misrate > 1 {
+		return Bounds{}, NewDomainError(SubjectMisrate)
+	}
+
+	n := len(x)
+	m := len(y)
+	if n < 2 {
+		return Bounds{}, NewDomainError(SubjectX)
+	}
+	if m < 2 {
+		return Bounds{}, NewDomainError(SubjectY)
+	}
+
+	minShift, err := minAchievableMisrateTwoSample(n, m)
+	if err != nil {
+		return Bounds{}, err
+	}
+	minX, err := minAchievableMisrateOneSample(n / 2)
+	if err != nil {
+		return Bounds{}, err
+	}
+	minY, err := minAchievableMisrateOneSample(m / 2)
+	if err != nil {
+		return Bounds{}, err
+	}
+	minAvg := 2.0 * math.Max(minX, minY)
+
+	if misrate < minShift+minAvg {
+		return Bounds{}, NewDomainError(SubjectMisrate)
+	}
+
+	extra := misrate - (minShift + minAvg)
+	alphaShift := minShift + extra/2.0
+	alphaAvg := minAvg + extra/2.0
+
+	// Check sparity (priority 2)
+	if err := checkSparity(x, SubjectX); err != nil {
+		return Bounds{}, err
+	}
+	if err := checkSparity(y, SubjectY); err != nil {
+		return Bounds{}, err
+	}
+
+	sb, err := ShiftBounds(x, y, alphaShift)
+	if err != nil {
+		return Bounds{}, err
+	}
+	ab, err := avgSpreadBoundsWithRngs(x, y, alphaAvg, rngX, rngY)
+	if err != nil {
+		return Bounds{}, err
+	}
+
+	la := ab.Lower
+	ua := ab.Upper
+	ls := sb.Lower
+	us := sb.Upper
+
+	if la > 0.0 {
+		r1 := ls / la
+		r2 := ls / ua
+		r3 := us / la
+		r4 := us / ua
+		lower := math.Min(math.Min(r1, r2), math.Min(r3, r4))
+		upper := math.Max(math.Max(r1, r2), math.Max(r3, r4))
+		return Bounds{Lower: lower, Upper: upper}, nil
+	}
+
+	if ua <= 0.0 {
+		if ls == 0.0 && us == 0.0 {
+			return Bounds{Lower: 0.0, Upper: 0.0}, nil
+		}
+		if ls >= 0.0 {
+			return Bounds{Lower: 0.0, Upper: math.Inf(1)}, nil
+		}
+		if us <= 0.0 {
+			return Bounds{Lower: math.Inf(-1), Upper: 0.0}, nil
+		}
+		return Bounds{Lower: math.Inf(-1), Upper: math.Inf(1)}, nil
+	}
+
+	// Default: ua > 0 && la <= 0
+	if ls > 0.0 {
+		return Bounds{Lower: ls / ua, Upper: math.Inf(1)}, nil
+	}
+	if us < 0.0 {
+		return Bounds{Lower: math.Inf(-1), Upper: us / ua}, nil
+	}
+	if ls == 0.0 && us == 0.0 {
+		return Bounds{Lower: 0.0, Upper: 0.0}, nil
+	}
+	if ls == 0.0 && us > 0.0 {
+		return Bounds{Lower: 0.0, Upper: math.Inf(1)}, nil
+	}
+	if ls < 0.0 && us == 0.0 {
+		return Bounds{Lower: math.Inf(-1), Upper: 0.0}, nil
+	}
+
+	return Bounds{Lower: math.Inf(-1), Upper: math.Inf(1)}, nil
 }
 
 func spreadBoundsWithRng[T Number](x []T, misrate float64, rng *Rng) (Bounds, error) {

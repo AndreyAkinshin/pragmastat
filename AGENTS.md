@@ -42,11 +42,11 @@ pragmastat/
 
 All implementations expose:
 
-**One-sample estimators:** `center`, `spread`, `relSpread`
+**One-sample estimators:** `center`, `spread`, `relSpread` (deprecated)
 
-**Two-sample estimators:** `shift`, `ratio`, `avgSpread`, `disparity`
+**Two-sample estimators:** `shift`, `ratio`, `disparity`
 
-**Bounds estimators:** `shiftBounds`, `ratioBounds`, `centerBounds`, `spreadBounds`
+**Bounds estimators:** `shiftBounds`, `ratioBounds`, `centerBounds`, `spreadBounds`, `disparityBounds`
 
 **Randomization:** `Rng`, `sample`, `shuffle`, `resample`
 
