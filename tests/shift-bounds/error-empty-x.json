@@ -1,0 +1,10 @@
+{
+  "input": {
+    "x": [],
+    "y": [1, 2, 3, 4, 5],
+    "misrate": 0.2
+  },
+  "expected_error": {
+    "id": "validity"
+  }
+}

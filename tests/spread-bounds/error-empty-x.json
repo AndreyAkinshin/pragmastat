@@ -1,0 +1,10 @@
+{
+  "input": {
+    "x": [],
+    "misrate": 0.2,
+    "seed": "spread-bounds-tests"
+  },
+  "expected_error": {
+    "id": "validity"
+  }
+}

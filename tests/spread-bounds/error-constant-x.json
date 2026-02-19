@@ -1,0 +1,10 @@
+{
+  "input": {
+    "x": [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5],
+    "misrate": 0.2,
+    "seed": "spread-bounds-tests"
+  },
+  "expected_error": {
+    "id": "sparity"
+  }
+}
