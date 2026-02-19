@@ -18,7 +18,7 @@ import {
     centerBounds, shiftBounds, ratioBounds,
     spreadBounds, disparityBounds,
     Rng, Additive, Multiplic, Exp, Power, Uniform
-} from '../src';
+} from 'pragmastat';
 
 function main() {
     // --- One-Sample ---

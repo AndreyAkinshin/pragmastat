@@ -150,8 +150,10 @@ pub fn sync_templates(base_path: &Path, version: &str) -> Result<()> {
         let demo_code = std::fs::read_to_string(&demo_path)
             .with_context(|| format!("Failed to read {}", demo_path.display()))?;
         let demo_code = demo_code.trim_end();
+        // Replace relative imports with package names for README (user-facing)
+        let demo_code = demo_code.replace("from '../src'", "from 'pragmastat'");
 
-        let readme_content = generate_readme(lang, version, demo_code);
+        let readme_content = generate_readme(lang, version, &demo_code);
         let readme_output = base_path.join(lang.readme_path);
         write_if_changed(&readme_output, &readme_content)?;
     }
