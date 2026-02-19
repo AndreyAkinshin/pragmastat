@@ -3,10 +3,10 @@
 Install from GitHub:
 
 ```bash
-go get github.com/AndreyAkinshin/pragmastat/go/v10@v10.0.1
+go get github.com/AndreyAkinshin/pragmastat/go/v10@v10.0.2
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v10.0.1/go
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v10.0.2/go
 
 ## Demo
 
