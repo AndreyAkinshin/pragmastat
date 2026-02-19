@@ -3,7 +3,7 @@
 ## Build Commands
 
 ```bash
-mise run r:ci        # Full CI: clean → check → build → test
+mise run r:ci        # Full CI: clean → restore → check → build → test
 mise run r:test      # Run tests only
 mise run r:check     # R CMD check (no tests, no dependencies)
 mise run r:check:fix # Format with styler
@@ -63,17 +63,17 @@ r/pragmastat/
 ## Public Functions
 
 ```r
-center(x)                    # Hodges-Lehmann estimator
-spread(x)                    # Shamos estimator
-rel_spread(x)                # Spread / |Center| [DEPRECATED: use spread(x) / abs(center(x))]
-shift(x, y)                  # Median of pairwise differences
-ratio(x, y)                  # Geometric median of pairwise ratios (via log-space)
-disparity(x, y)              # Shift / AvgSpread
-shift_bounds(x, y, misrate)     # Confidence bounds on shift
-ratio_bounds(x, y, misrate)     # Confidence bounds on ratio
-disparity_bounds(x, y, misrate) # Confidence bounds on disparity
-center_bounds(x, misrate)       # Confidence bounds on center
-spread_bounds(x, misrate)       # Confidence bounds on spread
+center(x)                              # Hodges-Lehmann estimator
+spread(x)                              # Shamos estimator
+rel_spread(x)                          # Spread / |Center| [DEPRECATED]
+shift(x, y)                            # Median of pairwise differences
+ratio(x, y)                            # Geometric median of pairwise ratios
+disparity(x, y)                        # Shift / AvgSpread
+shift_bounds(x, y, misrate = 1e-3)     # Confidence bounds on shift
+ratio_bounds(x, y, misrate = 1e-3)     # Confidence bounds on ratio
+disparity_bounds(x, y, misrate = 1e-3, seed = NULL) # Confidence bounds on disparity
+center_bounds(x, misrate = 1e-3)       # Confidence bounds on center
+spread_bounds(x, misrate = 1e-3, seed = NULL)       # Confidence bounds on spread
 ```
 
 ## Deprecated Functions
@@ -87,28 +87,33 @@ spread_bounds(x, misrate)       # Confidence bounds on spread
 - **Test framework**: testthat v3
 - **Tolerance**: `1e-10` for floating-point comparisons
 
+```bash
+mise run r:test              # All tests (preferred)
+```
+
 ```r
-devtools::test()             # All tests
+devtools::test()             # All tests (from R console)
 testthat::test_file("tests/testthat/test-center.R") # Single file
 ```
 
 ## Error Handling
 
-Functions use `stop()` for errors:
+Functions signal `assumption_error` conditions (with `violation` field containing `id` and `subject`):
 
 ```r
 tryCatch({
     result <- center(x)
-}, error = function(e) {
-    # Handle: empty input, invalid parameters
+}, assumption_error = function(e) {
+    # e$violation$id: "validity", "domain", "positivity", "sparity"
+    # e$violation$subject: "x", "y", "misrate"
 })
 ```
 
 Error conditions:
-- Empty input vectors
-- `misrate` outside `[0, 1]`
-- Division by zero (e.g., `rel_spread` when center is zero)
-- Non-positive values in `y` for `ratio`
+- Empty or non-finite input vectors (`validity`)
+- `misrate` outside valid range (`domain`)
+- Non-positive values for `ratio` (`positivity`)
+- Tie-dominant sample (`sparity`)
 
 ## Dependencies
 

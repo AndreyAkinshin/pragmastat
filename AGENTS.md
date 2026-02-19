@@ -27,6 +27,9 @@ pragmastat/
 ├── tools/                              # Rust CLI for content generation
 ├── img/                                # Source images (_light/_dark variants)
 ├── web/                                # Generated web output (Astro)
+├── sim/                                # Simulation output data
+├── VERSION                             # Single version source
+├── CITATION.cff                        # Citation metadata
 └── mise.toml                           # Build configuration
 ```
 
@@ -52,7 +55,12 @@ All implementations expose:
 
 **Note:** Function names follow language conventions: camelCase for TypeScript/Kotlin/Go, snake_case for Python/Rust/R, PascalCase for C#.
 
-See individual language READMEs for API details.
+**Error handling:** All languages use structured assumption errors with `Violation(id, subject)`:
+- IDs: `validity`, `domain`, `positivity`, `sparity` (checked in this priority order)
+- Subjects: `x`, `y`, `misrate`
+- Language-specific types: `AssumptionError` (Python/Go/Rust/TypeScript), `AssumptionException` (C#/Kotlin), `assumption_error` condition (R)
+
+See individual language READMEs and AGENTS.md for API details.
 
 ## Notes for AI Agents
 

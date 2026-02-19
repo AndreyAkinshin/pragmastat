@@ -53,11 +53,11 @@ def rel_spread(x: Sequence[float] | NDArray) -> float  # Deprecated
 def shift(x: Sequence[float] | NDArray, y: Sequence[float] | NDArray) -> float
 def ratio(x: Sequence[float] | NDArray, y: Sequence[float] | NDArray) -> float
 def disparity(x: Sequence[float] | NDArray, y: Sequence[float] | NDArray) -> float
-def shift_bounds(x, y, misrate: float) -> Bounds
-def ratio_bounds(x, y, misrate: float) -> Bounds
-def disparity_bounds(x, y, misrate: float) -> Bounds
-def center_bounds(x: Sequence[float] | NDArray, misrate: float) -> Bounds
-def spread_bounds(x: Sequence[float] | NDArray, misrate: float) -> Bounds
+def shift_bounds(x, y, misrate: float = 1e-3) -> Bounds
+def ratio_bounds(x, y, misrate: float = 1e-3) -> Bounds
+def disparity_bounds(x, y, misrate: float = 1e-3, seed: str | None = None) -> Bounds
+def center_bounds(x: Sequence[float] | NDArray, misrate: float = 1e-3) -> Bounds
+def spread_bounds(x: Sequence[float] | NDArray, misrate: float = 1e-3, seed: str | None = None) -> Bounds
 ```
 
 ## Testing
@@ -67,28 +67,32 @@ def spread_bounds(x: Sequence[float] | NDArray, misrate: float) -> Bounds
 - **Tolerance**: `1e-10` for floating-point comparisons
 
 ```bash
-pytest tests/                    # All tests
+mise run py:test                 # All tests (preferred)
+pytest tests/                    # All tests (raw)
 pytest tests/test_reference.py   # Reference tests only
-pytest tests/ -v                 # Verbose output
 ```
 
 ## Error Handling
 
-Functions raise `ValueError` for invalid inputs:
+Functions raise `AssumptionError` (with `violation` attribute containing `id` and `subject`) for invalid inputs:
 
 ```python
+from pragmastat import center, AssumptionError
+
 try:
     result = center(x)
-except ValueError as e:
-    # Handle: empty input, invalid parameters
+except AssumptionError as e:
+    # e.violation.id: "validity", "domain", "positivity", "sparity"
+    # e.violation.subject: "x", "y", "misrate"
+    pass
 ```
 
 Error conditions:
-- Empty input arrays
-- `misrate` outside `[0, 1]`
-- Division by zero (e.g., `rel_spread` when center is zero)
+- Empty or non-finite input arrays (`validity`)
+- `misrate` outside valid range (`domain`)
+- Non-positive values for `ratio` (`positivity`)
+- Tie-dominant sample (`sparity`)
 - `rel_spread` is deprecated; use `spread(x) / abs(center(x))` instead
-- Non-positive values in `y` for `ratio`
 
 ## Determinism
 

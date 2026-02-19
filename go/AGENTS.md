@@ -74,27 +74,32 @@ func DisparityBoundsWithSeed[T Number](x, y []T, misrate float64, seed string) (
 - **Tolerance**: `1e-10` for floating-point comparisons
 
 ```bash
-go test ./...           # All tests
+mise run go:test        # All tests (preferred)
+go test ./...           # All tests (raw)
 go test -v ./...        # Verbose output
 go test -bench=. ./...  # Run benchmarks
 ```
 
 ## Error Handling
 
-All estimator functions return `(T, error)`:
+All estimator functions return `(T, error)`. Errors are `*AssumptionError` with `Violation` struct:
 
 ```go
 val, err := pragmastat.Center(x)
 if err != nil {
-    // Handle: empty input, NaN values, invalid parameters
+    var ae *pragmastat.AssumptionError
+    if errors.As(err, &ae) {
+        // ae.Violation.ID: Validity, Domain, Positivity, Sparity
+        // ae.Violation.Subject: SubjectX, SubjectY, SubjectMisrate
+    }
 }
 ```
 
-Error variables:
-- `errEmptyInput` - empty slice provided
-- `errNMustBePositive` - n must be > 0
-- `errMMustBePositive` - m must be > 0
-- `errMisrateOutOfRange` - misrate not in [0, 1]
+Error conditions:
+- Empty or non-finite input (`Validity`)
+- `misrate` outside valid range (`Domain`)
+- Non-positive values for `Ratio` (`Positivity`)
+- Tie-dominant sample (`Sparity`)
 
 ## Determinism
 

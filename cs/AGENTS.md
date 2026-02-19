@@ -78,19 +78,20 @@ Toolkit.SpreadBounds(x, misrate)
 - **Tolerance**: `1e-10` for floating-point comparisons
 
 ```bash
-dotnet test                      # All tests
-dotnet run --project Pragmastat.Tests # Run test project
+mise run cs:test                 # All tests (preferred)
+dotnet test                      # All tests (raw)
 ```
 
 ## Error Handling
 
-Uses exceptions for error conditions:
+Uses `AssumptionException` (extends `ArgumentException`) with `Violation` property:
 
 ```csharp
 try {
     var result = sample.Center();
 } catch (AssumptionException e) {
-    // Handle: empty input, invalid parameters
+    // e.Violation.Id: Validity, Domain, Positivity, Sparity
+    // e.Violation.Subject: X, Y, Misrate
 }
 ```
 

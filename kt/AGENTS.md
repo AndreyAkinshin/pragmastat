@@ -55,11 +55,11 @@ fun relSpread(x: List<Double>): Double  // deprecated: use spread(x) / abs(cente
 fun shift(x: List<Double>, y: List<Double>): Double
 fun ratio(x: List<Double>, y: List<Double>): Double
 fun disparity(x: List<Double>, y: List<Double>): Double
-fun shiftBounds(x: List<Double>, y: List<Double>, misrate: Double): Bounds
-fun ratioBounds(x: List<Double>, y: List<Double>, misrate: Double): Bounds
-fun disparityBounds(x: List<Double>, y: List<Double>, misrate: Double): Bounds
-fun centerBounds(x: List<Double>, misrate: Double): Bounds
-fun spreadBounds(x: List<Double>, misrate: Double): Bounds
+fun shiftBounds(x: List<Double>, y: List<Double>, misrate: Double = 1e-3): Bounds
+fun ratioBounds(x: List<Double>, y: List<Double>, misrate: Double = 1e-3): Bounds
+fun disparityBounds(x: List<Double>, y: List<Double>, misrate: Double = 1e-3, seed: String? = null): Bounds
+fun centerBounds(x: List<Double>, misrate: Double = 1e-3): Bounds
+fun spreadBounds(x: List<Double>, misrate: Double = 1e-3, seed: String? = null): Bounds
 ```
 
 ## Distributions
@@ -79,27 +79,29 @@ class Multiplic(location: Double, scale: Double) : Distribution
 - **Tolerance**: `1e-10` for floating-point comparisons
 
 ```bash
-./gradlew test              # All tests
+mise run kt:test            # All tests (preferred)
+./gradlew test              # All tests (raw)
 ./gradlew test --info       # Verbose output
 ```
 
 ## Error Handling
 
-Functions throw exceptions for invalid inputs:
+Functions throw `AssumptionException` (extends `IllegalArgumentException`) with `violation` property:
 
 ```kotlin
 try {
     val result = center(x)
-} catch (e: IllegalArgumentException) {
-    // Handle: empty input, invalid parameters
+} catch (e: AssumptionException) {
+    // e.violation.id: VALIDITY, DOMAIN, POSITIVITY, SPARITY
+    // e.violation.subject: X, Y, MISRATE
 }
 ```
 
 Error conditions:
-- Empty input lists
-- `misrate` outside `[0, 1]`
-- Division by zero (e.g., `relSpread` when center is zero)
-- Non-positive values in `y` for `ratio`
+- Empty or non-finite input lists (`VALIDITY`)
+- `misrate` outside valid range (`DOMAIN`)
+- Non-positive values for `ratio` (`POSITIVITY`)
+- Tie-dominant sample (`SPARITY`)
 
 ## Build Configuration
 

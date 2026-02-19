@@ -56,11 +56,11 @@ function relSpread(x: number[]): number  // Deprecated
 function shift(x: number[], y: number[]): number
 function ratio(x: number[], y: number[]): number
 function disparity(x: number[], y: number[]): number
-function shiftBounds(x: number[], y: number[], misrate: number): Bounds
-function ratioBounds(x: number[], y: number[], misrate: number): Bounds
-function disparityBounds(x: number[], y: number[], misrate: number): Bounds
-function centerBounds(x: number[], misrate: number): Bounds
-function spreadBounds(x: number[], misrate: number): Bounds
+function shiftBounds(x: number[], y: number[], misrate?: number): Bounds
+function ratioBounds(x: number[], y: number[], misrate?: number): Bounds
+function disparityBounds(x: number[], y: number[], misrate?: number, seed?: string): Bounds
+function centerBounds(x: number[], misrate?: number): Bounds
+function spreadBounds(x: number[], misrate?: number, seed?: string): Bounds
 ```
 
 ## Distributions
@@ -80,28 +80,34 @@ class Multiplic implements Distribution { constructor(location: number, scale: n
 - **Tolerance**: `1e-10` for floating-point comparisons
 
 ```bash
-npm test                  # All tests
+mise run ts:test          # All tests (preferred)
+npm test                  # All tests (raw)
 npm run test:coverage     # With coverage report
 ```
 
 ## Error Handling
 
-Functions throw `Error` for invalid inputs:
+Functions throw `AssumptionError` (extends `Error`) with `violation` property:
 
 ```typescript
+import { center, AssumptionError } from 'pragmastat';
+
 try {
     const result = center(x);
 } catch (e) {
-    // Handle: empty input, invalid parameters
+    if (e instanceof AssumptionError) {
+        // e.violation.id: "validity", "domain", "positivity", "sparity"
+        // e.violation.subject: "x", "y", "misrate"
+    }
 }
 ```
 
 Error conditions:
-- Empty input arrays
-- `misrate` outside `[0, 1]`
-- Division by zero (e.g., `relSpread` when center is zero)
+- Empty or non-finite input arrays (`validity`)
+- `misrate` outside valid range (`domain`)
+- Non-positive values for `ratio` (`positivity`)
+- Tie-dominant sample (`sparity`)
 - `relSpread` is deprecated; use `spread(x) / Math.abs(center(x))` instead
-- Non-positive values in `y` for `ratio`
 
 ## Determinism
 
