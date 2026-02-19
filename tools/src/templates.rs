@@ -10,7 +10,7 @@ struct Language {
     demo_path: &'static str,
     readme_path: &'static str,
     package_url: &'static str,
-    /// Install instructions in Markdown format with {version} placeholder
+    /// Install instructions in Markdown format with {version} and {major} placeholders
     install_md: &'static str,
 }
 
@@ -44,7 +44,7 @@ NuGet\Install-Package Pragmastat -Version {version}
         install_md: r"Install from GitHub:
 
 ```bash
-go get github.com/AndreyAkinshin/pragmastat/go/v4@v{version}
+go get github.com/AndreyAkinshin/pragmastat/go/v{major}@v{version}
 ```",
     },
     Language {
@@ -160,7 +160,10 @@ pub fn sync_templates(base_path: &Path, version: &str) -> Result<()> {
 }
 
 fn generate_readme(lang: &Language, version: &str, demo: &str) -> String {
-    let install = lang.install_md.replace("{version}", version);
+    let major = version.split('.').next().unwrap_or(version);
+    let install = lang.install_md
+        .replace("{version}", version)
+        .replace("{major}", major);
     let source_url = format!(
         "https://github.com/AndreyAkinshin/pragmastat/tree/v{}/{}",
         version, lang.slug

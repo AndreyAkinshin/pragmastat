@@ -10,6 +10,16 @@ struct VersionTarget {
 
 const VERSION_TARGETS: &[VersionTarget] = &[
     VersionTarget {
+        path: "go/go.mod",
+        pattern: r"module github\.com/AndreyAkinshin/pragmastat/go/v\d+",
+        replacement: "module github.com/AndreyAkinshin/pragmastat/go/v{major}",
+    },
+    VersionTarget {
+        path: "go/demo/main.go",
+        pattern: r#"pragmastat "github\.com/AndreyAkinshin/pragmastat/go/v\d+""#,
+        replacement: r#"pragmastat "github.com/AndreyAkinshin/pragmastat/go/v{major}""#,
+    },
+    VersionTarget {
         path: "cs/Directory.Build.props",
         pattern: r"<Version>.*?</Version>",
         replacement: "<Version>{version}</Version>",
@@ -103,7 +113,10 @@ pub fn sync_versions(base_path: &Path, version: &str) -> Result<()> {
             );
         }
 
-        let replacement = target.replacement.replace("{version}", version);
+        let major = version.split('.').next().unwrap_or(version);
+        let replacement = target.replacement
+            .replace("{version}", version)
+            .replace("{major}", major);
         let updated = regex.replace_all(&content, replacement.as_str());
         write_if_changed(&file_path, updated.as_ref(), target.path)?;
     }
