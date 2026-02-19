@@ -18,13 +18,15 @@ struct TwoSampleInput {
 #[derive(Debug, Deserialize, Serialize)]
 struct OneSampleTestCase {
     input: OneSampleInput,
-    output: f64,
+    output: Option<f64>,
+    expected_error: Option<serde_json::Value>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 struct TwoSampleTestCase {
     input: TwoSampleInput,
-    output: f64,
+    output: Option<f64>,
+    expected_error: Option<serde_json::Value>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -111,21 +113,27 @@ where
     for json_file in &json_files {
         let content = fs::read_to_string(json_file).unwrap();
         let test_case: OneSampleTestCase = serde_json::from_str(&content).unwrap();
+        let file_name = json_file.file_name().unwrap();
 
-        // Skip test if it returns an error (assumption violation tests handled separately)
+        // Handle error test cases
+        if test_case.expected_error.is_some() {
+            match estimator_func(&test_case.input.x) {
+                Ok(_) => failures.push(format!("{file_name:?}: expected error, got Ok")),
+                Err(_) => {}
+            }
+            continue;
+        }
+
+        let expected_output = test_case.output.expect("Test case must have output");
         let actual_output = match estimator_func(&test_case.input.x) {
             Ok(val) => val,
             Err(_) => continue,
         };
-        let expected_output = test_case.output;
 
         executed_count += 1;
         if !approx_eq!(f64, actual_output, expected_output, epsilon = 1e-9) {
             failures.push(format!(
-                "{:?}: expected {}, got {}",
-                json_file.file_name().unwrap(),
-                expected_output,
-                actual_output
+                "{file_name:?}: expected {expected_output}, got {actual_output}",
             ));
         }
     }
@@ -182,23 +190,29 @@ where
     for json_file in &json_files {
         let content = fs::read_to_string(json_file).unwrap();
         let test_case: TwoSampleTestCase = serde_json::from_str(&content).unwrap();
+        let file_name = json_file.file_name().unwrap();
 
-        // Skip test if it returns an error (assumption violation tests handled separately)
+        // Handle error test cases
+        if test_case.expected_error.is_some() {
+            match estimator_func(&test_case.input.x, &test_case.input.y) {
+                Ok(_) => failures.push(format!("{file_name:?}: expected error, got Ok")),
+                Err(_) => {}
+            }
+            continue;
+        }
+
+        let expected_output = test_case.output.expect("Test case must have output");
         let actual_output = match estimator_func(&test_case.input.x, &test_case.input.y) {
             Ok(val) => val,
             Err(_) => continue,
         };
-        let expected_output = test_case.output;
 
         executed_count += 1;
         if !(approx_eq!(f64, actual_output, expected_output, epsilon = 1e-9)
             || (actual_output.is_infinite() && expected_output.is_infinite()))
         {
             failures.push(format!(
-                "{:?}: expected {}, got {}",
-                json_file.file_name().unwrap(),
-                expected_output,
-                actual_output
+                "{file_name:?}: expected {expected_output}, got {actual_output}",
             ));
         }
     }
@@ -360,8 +374,7 @@ fn run_ratio_bounds_tests() {
     let test_data_dir = repo_root.join("tests").join("ratio-bounds");
 
     if !test_data_dir.exists() {
-        eprintln!("Skipping ratio_bounds tests: test data directory not found");
-        return;
+        panic!("Test data directory not found: {:?}", test_data_dir);
     }
 
     let json_files: Vec<_> = fs::read_dir(&test_data_dir)
@@ -377,10 +390,11 @@ fn run_ratio_bounds_tests() {
         })
         .collect();
 
-    if json_files.is_empty() {
-        eprintln!("Skipping ratio_bounds tests: no JSON files found");
-        return;
-    }
+    assert!(
+        !json_files.is_empty(),
+        "No JSON test files found in {:?}",
+        test_data_dir
+    );
 
     let mut failures = Vec::new();
 
