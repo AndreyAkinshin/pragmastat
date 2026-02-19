@@ -1,3 +1,3 @@
-module github.com/AndreyAkinshin/pragmastat/go/v4
+module github.com/AndreyAkinshin/pragmastat/go/v10
 
 go 1.20

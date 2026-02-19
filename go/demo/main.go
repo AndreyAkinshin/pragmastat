@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	pragmastat "github.com/AndreyAkinshin/pragmastat/go/v4"
+	pragmastat "github.com/AndreyAkinshin/pragmastat/go/v10"
 )
 
 func must[T any](val T, err error) T {

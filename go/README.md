@@ -3,7 +3,7 @@
 Install from GitHub:
 
 ```bash
-go get github.com/AndreyAkinshin/pragmastat/go/v4@v10.0.0
+go get github.com/AndreyAkinshin/pragmastat/go/v10@v10.0.0
 ```
 
 Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v10.0.0/go
@@ -17,7 +17,7 @@ import (
 	"fmt"
 	"log"
 
-	pragmastat "github.com/AndreyAkinshin/pragmastat/go/v4"
+	pragmastat "github.com/AndreyAkinshin/pragmastat/go/v10"
 )
 
 func must[T any](val T, err error) T {
