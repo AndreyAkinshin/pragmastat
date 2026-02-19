@@ -1,20 +1,14 @@
 {
-  "loeffler1982": {
-    "key": "loeffler1982",
+  "fowler1991": {
+    "key": "fowler1991",
     "authors": [
-      "Löffler, Andreas"
+      "Fowler, Glenn",
+      "Noll, Landon Curt",
+      "Vo, Kiem-Phong"
     ],
-    "title": "On the calculation of the exact null-distribution of the Wilcoxon-Mann-Whitney U-statistic",
-    "year": "1982"
-  },
-  "fisher1938": {
-    "key": "fisher1938",
-    "authors": [
-      "Fisher, Ronald A.",
-      "Yates, Frank"
-    ],
-    "title": "Statistical Tables for Biological, Agricultural and Medical Research",
-    "year": "1938"
+    "title": "FNV Hash",
+    "year": "1991",
+    "url": "http://www.isthe.com/chongo/tech/comp/fnv/"
   },
   "efron1979": {
     "key": "efron1979",
@@ -27,48 +21,30 @@
     "doi": "10.1214/aos/1176344552",
     "url": "https://projecteuclid.org/euclid.aos/1176344552"
   },
-  "huber2009": {
-    "key": "huber2009",
+  "fisher1938": {
+    "key": "fisher1938",
     "authors": [
-      "Huber, Peter J"
+      "Fisher, Ronald A.",
+      "Yates, Frank"
     ],
-    "title": "Robust statistics",
-    "year": "2009",
-    "venue": "International encyclopedia of statistical science"
+    "title": "Statistical Tables for Biological, Agricultural and Medical Research",
+    "year": "1938"
   },
-  "boxmuller1958": {
-    "key": "boxmuller1958",
+  "norman2013": {
+    "key": "norman2013",
     "authors": [
-      "Box, George E. P.",
-      "Muller, Mervin E."
+      "Norman, Donald A."
     ],
-    "title": "A Note on the Generation of Random Normal Deviates",
-    "year": "1958",
-    "venue": "The Annals of Mathematical Statistics",
-    "doi": "10.1214/aoms/1177706645",
-    "url": "https://projecteuclid.org/euclid.aoms/1177706645"
+    "title": "The Design of Everyday Things: Revised and Expanded Edition",
+    "year": "2013"
   },
-  "sidak1999": {
-    "key": "sidak1999",
+  "shamos1976": {
+    "key": "shamos1976",
     "authors": [
-      "Sidak, Zbynek",
-      "Sen, Pranab Kumar",
-      "Hajek, Jaroslav"
+      "Shamos, Michael Ian"
     ],
-    "title": "Theory of rank tests",
-    "year": "1999"
-  },
-  "hyndman1996": {
-    "key": "hyndman1996",
-    "authors": [
-      "Hyndman, Rob J",
-      "Fan, Yanan"
-    ],
-    "title": "Sample Quantiles in Statistical Packages",
-    "year": "1996",
-    "venue": "The American Statistician",
-    "doi": "10.2307/2684934",
-    "url": "https://www.jstor.org/stable/2684934"
+    "title": "Geometry and Statistics: Problems at the Interface",
+    "year": "1976"
   },
   "monahan1984": {
     "key": "monahan1984",
@@ -81,41 +57,25 @@
     "doi": "10.1145/1271.319414",
     "url": "https://dl.acm.org/doi/10.1145/1271.319414"
   },
-  "knuth1997": {
-    "key": "knuth1997",
+  "cohen1988": {
+    "key": "cohen1988",
     "authors": [
-      "Knuth, Donald E."
+      "Cohen, Jacob"
     ],
-    "title": "The Art of Computer Programming, Volume 2: Seminumerical Algorithms",
-    "year": "1997"
+    "title": "Statistical Power Analysis for the Behavioral Sciences",
+    "year": "1988"
   },
-  "blackman2021": {
-    "key": "blackman2021",
+  "hodges1963": {
+    "key": "hodges1963",
     "authors": [
-      "Blackman, David",
-      "Vigna, Sebastiano"
+      "Hodges, J. L.",
+      "Lehmann, E. L."
     ],
-    "title": "Scrambled Linear Pseudorandom Number Generators",
-    "year": "2021",
-    "venue": "ACM Transactions on Mathematical Software",
-    "doi": "10.1145/3460772",
-    "url": "https://dl.acm.org/doi/10.1145/3460772"
-  },
-  "shamos1976": {
-    "key": "shamos1976",
-    "authors": [
-      "Shamos, Michael Ian"
-    ],
-    "title": "Geometry and Statistics: Problems at the Interface",
-    "year": "1976"
-  },
-  "norman2013": {
-    "key": "norman2013",
-    "authors": [
-      "Norman, Donald A."
-    ],
-    "title": "The Design of Everyday Things: Revised and Expanded Edition",
-    "year": "2013"
+    "title": "Estimates of Location Based on Rank Tests",
+    "year": "1963",
+    "venue": "The Annals of Mathematical Statistics",
+    "doi": "10.1214/aoms/1177704172",
+    "url": "http://projecteuclid.org/euclid.aoms/1177704172"
   },
   "fix1955": {
     "key": "fix1955",
@@ -129,16 +89,67 @@
     "doi": "10.1214/aoms/1177728547",
     "url": "https://projecteuclid.org/euclid.aoms/1177728547"
   },
-  "fowler1991": {
-    "key": "fowler1991",
+  "huber2009": {
+    "key": "huber2009",
     "authors": [
-      "Fowler, Glenn",
-      "Noll, Landon Curt",
-      "Vo, Kiem-Phong"
+      "Huber, Peter J"
     ],
-    "title": "FNV Hash",
-    "year": "1991",
-    "url": "http://www.isthe.com/chongo/tech/comp/fnv/"
+    "title": "Robust statistics",
+    "year": "2009",
+    "venue": "International encyclopedia of statistical science"
+  },
+  "blackman2021": {
+    "key": "blackman2021",
+    "authors": [
+      "Blackman, David",
+      "Vigna, Sebastiano"
+    ],
+    "title": "Scrambled Linear Pseudorandom Number Generators",
+    "year": "2021",
+    "venue": "ACM Transactions on Mathematical Software",
+    "doi": "10.1145/3460772",
+    "url": "https://dl.acm.org/doi/10.1145/3460772"
+  },
+  "sen1963": {
+    "key": "sen1963",
+    "authors": [
+      "Sen, Pranab Kumar"
+    ],
+    "title": "On the Estimation of Relative Potency in Dilution (-Direct) Assays by Distribution-Free Methods",
+    "year": "1963",
+    "venue": "Biometrics",
+    "doi": "10.2307/2527532",
+    "url": "https://www.jstor.org/stable/2527532"
+  },
+  "hyndman1996": {
+    "key": "hyndman1996",
+    "authors": [
+      "Hyndman, Rob J",
+      "Fan, Yanan"
+    ],
+    "title": "Sample Quantiles in Statistical Packages",
+    "year": "1996",
+    "venue": "The American Statistician",
+    "doi": "10.2307/2684934",
+    "url": "https://www.jstor.org/stable/2684934"
+  },
+  "sidak1999": {
+    "key": "sidak1999",
+    "authors": [
+      "Sidak, Zbynek",
+      "Sen, Pranab Kumar",
+      "Hajek, Jaroslav"
+    ],
+    "title": "Theory of rank tests",
+    "year": "1999"
+  },
+  "knuth1997": {
+    "key": "knuth1997",
+    "authors": [
+      "Knuth, Donald E."
+    ],
+    "title": "The Art of Computer Programming, Volume 2: Seminumerical Algorithms",
+    "year": "1997"
   },
   "fan1962": {
     "key": "fan1962",
@@ -153,13 +164,33 @@
     "doi": "10.1080/01621459.1962.10480667",
     "url": "https://www.tandfonline.com/doi/abs/10.1080/01621459.1962.10480667"
   },
-  "cohen1988": {
-    "key": "cohen1988",
+  "boxmuller1958": {
+    "key": "boxmuller1958",
     "authors": [
-      "Cohen, Jacob"
+      "Box, George E. P.",
+      "Muller, Mervin E."
     ],
-    "title": "Statistical Power Analysis for the Behavioral Sciences",
-    "year": "1988"
+    "title": "A Note on the Generation of Random Normal Deviates",
+    "year": "1958",
+    "venue": "The Annals of Mathematical Statistics",
+    "doi": "10.1214/aoms/1177706645",
+    "url": "https://projecteuclid.org/euclid.aoms/1177706645"
+  },
+  "serfling2009": {
+    "key": "serfling2009",
+    "authors": [
+      "Serfling, Robert J"
+    ],
+    "title": "Approximation theorems of mathematical statistics",
+    "year": "2009"
+  },
+  "loeffler1982": {
+    "key": "loeffler1982",
+    "authors": [
+      "Löffler, Andreas"
+    ],
+    "title": "On the calculation of the exact null-distribution of the Wilcoxon-Mann-Whitney U-statistic",
+    "year": "1982"
   },
   "steele2014": {
     "key": "steele2014",
@@ -173,36 +204,5 @@
     "venue": "OOPSLA '14: Proceedings of the 2014 ACM International Conference on Object Oriented Programming Systems Languages & Applications",
     "doi": "10.1145/2660193.2660195",
     "url": "https://dl.acm.org/doi/10.1145/2660193.2660195"
-  },
-  "sen1963": {
-    "key": "sen1963",
-    "authors": [
-      "Sen, Pranab Kumar"
-    ],
-    "title": "On the Estimation of Relative Potency in Dilution (-Direct) Assays by Distribution-Free Methods",
-    "year": "1963",
-    "venue": "Biometrics",
-    "doi": "10.2307/2527532",
-    "url": "https://www.jstor.org/stable/2527532"
-  },
-  "serfling2009": {
-    "key": "serfling2009",
-    "authors": [
-      "Serfling, Robert J"
-    ],
-    "title": "Approximation theorems of mathematical statistics",
-    "year": "2009"
-  },
-  "hodges1963": {
-    "key": "hodges1963",
-    "authors": [
-      "Hodges, J. L.",
-      "Lehmann, E. L."
-    ],
-    "title": "Estimates of Location Based on Rank Tests",
-    "year": "1963",
-    "venue": "The Annals of Mathematical Statistics",
-    "doi": "10.1214/aoms/1177704172",
-    "url": "http://projecteuclid.org/euclid.aoms/1177704172"
   }
 }
