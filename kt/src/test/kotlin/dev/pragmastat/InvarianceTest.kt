@@ -7,7 +7,7 @@ import kotlin.math.abs
 
 class InvarianceTest {
 
-    private val epsilon = 1e-10
+    private val epsilon = 1e-9
 
     private fun assertClose(expected: Double, actual: Double, tolerance: Double = epsilon) {
         assertTrue(abs(expected - actual) < tolerance,

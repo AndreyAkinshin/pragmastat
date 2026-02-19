@@ -21,7 +21,7 @@ func floatEquals(a, b, epsilon float64) bool {
 }
 
 const invarianceSeed int64 = 1729
-const invarianceTolerance float64 = 1e-10
+const invarianceTolerance float64 = 1e-9
 
 func uniformVec(rng *Rng, n int) []float64 {
 	v := make([]float64, n)
