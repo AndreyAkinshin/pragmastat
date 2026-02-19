@@ -443,20 +443,6 @@ func SpreadBoundsWithSeed[T Number](x []T, misrate float64, seed string) (Bounds
 	return spreadBoundsWithRng(x, misrate, rng)
 }
 
-// avgSpreadBounds provides distribution-free bounds for AvgSpread using Bonferroni combination.
-func avgSpreadBounds[T Number](x, y []T, misrate ...float64) (Bounds, error) {
-	if len(misrate) > 1 {
-		return Bounds{}, fmt.Errorf("at most one misrate value expected, got %d", len(misrate))
-	}
-	mr := DefaultMisrate
-	if len(misrate) > 0 {
-		mr = misrate[0]
-	}
-	rngX := NewRng()
-	rngY := NewRng()
-	return avgSpreadBoundsWithRngs(x, y, mr, rngX, rngY)
-}
-
 // avgSpreadBoundsWithSeed provides deterministic AvgSpreadBounds using a string seed.
 func avgSpreadBoundsWithSeed[T Number](x, y []T, misrate float64, seed string) (Bounds, error) {
 	rngX := NewRngFromString(seed)

@@ -1467,10 +1467,10 @@ func TestAvgSpreadBoundsReference(t *testing.T) {
 
 			// Handle error test cases
 			if len(testData.ExpectedError) > 0 {
-				_, err := avgSpreadBounds(input.X, input.Y, input.Misrate)
+				_, err := avgSpreadBoundsWithSeed(input.X, input.Y, input.Misrate, input.Seed)
 				if err == nil {
-					t.Errorf("avgSpreadBounds(%v, %v, %v) expected error but got nil",
-						input.X, input.Y, input.Misrate)
+					t.Errorf("avgSpreadBoundsWithSeed(%v, %v, %v, %q) expected error but got nil",
+						input.X, input.Y, input.Misrate, input.Seed)
 					return
 				}
 				var expectedError map[string]string
