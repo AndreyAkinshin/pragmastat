@@ -127,7 +127,10 @@ where
         let expected_output = test_case.output.expect("Test case must have output");
         let actual_output = match estimator_func(&test_case.input.x) {
             Ok(val) => val,
-            Err(_) => continue,
+            Err(e) => {
+                failures.push(format!("{file_name:?}: unexpected error {e:?}"));
+                continue;
+            }
         };
 
         executed_count += 1;
@@ -204,7 +207,10 @@ where
         let expected_output = test_case.output.expect("Test case must have output");
         let actual_output = match estimator_func(&test_case.input.x, &test_case.input.y) {
             Ok(val) => val,
-            Err(_) => continue,
+            Err(e) => {
+                failures.push(format!("{file_name:?}: unexpected error {e:?}"));
+                continue;
+            }
         };
 
         executed_count += 1;
