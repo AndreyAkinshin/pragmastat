@@ -18,7 +18,6 @@ from .rng import Rng
 from .assumptions import (
     check_validity,
     check_positivity,
-    check_sparity,
     log,
     AssumptionError,
 )
@@ -79,10 +78,10 @@ def spread(x: Union[Sequence[float], NDArray]) -> float:
     x = np.asarray(x)
     # Check validity (priority 0)
     check_validity(x, "x")
-    # Check sparity (priority 2)
-    check_sparity(x, "x")
-    # Use fast O(n log n) algorithm
-    return _fast_spread(x.tolist())
+    spread_val = _fast_spread(x.tolist())
+    if spread_val <= 0:
+        raise AssumptionError.sparity("x")
+    return spread_val
 
 
 def rel_spread(x: Union[Sequence[float], NDArray]) -> float:
@@ -226,15 +225,14 @@ def _avg_spread(
     check_validity(x, "x")
     # Check validity for y (priority 0, subject y)
     check_validity(y, "y")
-    # Check sparity for x (priority 2, subject x)
-    check_sparity(x, "x")
-    # Check sparity for y (priority 2, subject y)
-    check_sparity(y, "y")
     n = len(x)
     m = len(y)
-    # Calculate spreads (using internal implementation since we already validated)
     spread_x = _fast_spread(x.tolist())
+    if spread_x <= 0:
+        raise AssumptionError.sparity("x")
     spread_y = _fast_spread(y.tolist())
+    if spread_y <= 0:
+        raise AssumptionError.sparity("y")
     return (n * spread_x + m * spread_y) / (n + m)
 
 
@@ -267,17 +265,16 @@ def disparity(
     check_validity(x, "x")
     # Check validity for y (priority 0, subject y)
     check_validity(y, "y")
-    # Check sparity for x (priority 2, subject x)
-    check_sparity(x, "x")
-    # Check sparity for y (priority 2, subject y)
-    check_sparity(y, "y")
     n = len(x)
     m = len(y)
+    spread_x = _fast_spread(x.tolist())
+    if spread_x <= 0:
+        raise AssumptionError.sparity("x")
+    spread_y = _fast_spread(y.tolist())
+    if spread_y <= 0:
+        raise AssumptionError.sparity("y")
     # Calculate shift (we know inputs are valid)
     shift_val = float(_fast_shift(x, y, p=0.5))
-    # Calculate avg_spread (using internal implementation since we already validated)
-    spread_x = _fast_spread(x.tolist())
-    spread_y = _fast_spread(y.tolist())
     avg_spread_val = (n * spread_x + m * spread_y) / (n + m)
     return shift_val / avg_spread_val
 
@@ -490,7 +487,10 @@ def spread_bounds(
     if misrate < min_misrate_val:
         raise AssumptionError.domain("misrate")
 
-    check_sparity(x, "x")
+    if n < 2:
+        raise AssumptionError.sparity("x")
+    if _fast_spread(x.tolist()) <= 0:
+        raise AssumptionError.sparity("x")
 
     rng = Rng(seed) if seed is not None else Rng()
     margin = sign_margin_randomized(m, misrate, rng)
@@ -562,9 +562,10 @@ def disparity_bounds(
     alpha_shift = min_shift + extra / 2.0
     alpha_avg = min_avg + extra / 2.0
 
-    # Check sparity (priority 2)
-    check_sparity(x, "x")
-    check_sparity(y, "y")
+    if _fast_spread(x.tolist()) <= 0:
+        raise AssumptionError.sparity("x")
+    if _fast_spread(y.tolist()) <= 0:
+        raise AssumptionError.sparity("y")
 
     sb = shift_bounds(x, y, alpha_shift)
     ab = _avg_spread_bounds(x, y, alpha_avg, seed=seed)
@@ -649,8 +650,10 @@ def _avg_spread_bounds(
     if alpha < min_x or alpha < min_y:
         raise AssumptionError.domain("misrate")
 
-    check_sparity(x, "x")
-    check_sparity(y, "y")
+    if _fast_spread(x.tolist()) <= 0:
+        raise AssumptionError.sparity("x")
+    if _fast_spread(y.tolist()) <= 0:
+        raise AssumptionError.sparity("y")
 
     bounds_x = spread_bounds(x, alpha, seed=seed)
     bounds_y = spread_bounds(y, alpha, seed=seed)

@@ -43,16 +43,6 @@ internal fun checkPositivity(values: List<Double>, subject: Subject) {
     }
 }
 
-internal fun checkSparity(values: List<Double>, subject: Subject) {
-    if (values.size < 2) {
-        throw AssumptionException(Violation(AssumptionId.SPARITY, subject))
-    }
-    val spreadVal = fastSpread(values)
-    if (spreadVal <= 0.0) {
-        throw AssumptionException(Violation(AssumptionId.SPARITY, subject))
-    }
-}
-
 /**
  * Log-transforms a list. Throws AssumptionException if any value is non-positive.
  */

@@ -30,8 +30,12 @@ avg_spread_bounds <- function(x, y, misrate = DEFAULT_MISRATE, seed = NULL) {
     stop(assumption_error(ASSUMPTION_IDS$DOMAIN, SUBJECTS$MISRATE))
   }
 
-  check_sparity(x, SUBJECTS$X)
-  check_sparity(y, SUBJECTS$Y)
+  if (fast_spread(x) <= 0) {
+    stop(assumption_error(ASSUMPTION_IDS$SPARITY, SUBJECTS$X))
+  }
+  if (fast_spread(y) <= 0) {
+    stop(assumption_error(ASSUMPTION_IDS$SPARITY, SUBJECTS$Y))
+  }
 
   bounds_x <- spread_bounds(x, alpha, seed = seed)
   bounds_y <- spread_bounds(y, alpha, seed = seed)

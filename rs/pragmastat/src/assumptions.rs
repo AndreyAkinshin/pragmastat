@@ -15,8 +15,6 @@
 
 use std::fmt;
 
-use crate::fast_spread::fast_spread;
-
 /// Assumption identifiers in canonical priority order.
 ///
 /// Lower discriminant values indicate higher priority.
@@ -202,18 +200,6 @@ pub fn check_validity(values: &[f64], subject: Subject) -> Result<(), Assumption
 pub fn check_positivity(values: &[f64], subject: Subject) -> Result<(), AssumptionError> {
     if values.iter().any(|&v| v <= 0.0) {
         return Err(AssumptionError::positivity(subject));
-    }
-    Ok(())
-}
-
-/// Checks that a sample is non tie-dominant (Spread > 0).
-pub fn check_sparity(values: &[f64], subject: Subject) -> Result<(), AssumptionError> {
-    if values.len() < 2 {
-        return Err(AssumptionError::sparity(subject));
-    }
-    let spread_val = fast_spread(values).map_err(|_| AssumptionError::validity(subject))?;
-    if spread_val <= 0.0 {
-        return Err(AssumptionError::sparity(subject));
     }
     Ok(())
 }

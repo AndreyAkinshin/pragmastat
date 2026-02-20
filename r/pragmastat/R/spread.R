@@ -12,8 +12,9 @@
 spread <- function(x) {
   # Check validity (priority 0)
   check_validity(x, SUBJECTS$X)
-  # Check sparity (priority 2)
-  check_sparity(x, SUBJECTS$X)
-  # Use fast O(n log n) algorithm
-  fast_spread(x)
+  spread_val <- fast_spread(x)
+  if (spread_val <= 0) {
+    stop(assumption_error(ASSUMPTION_IDS$SPARITY, SUBJECTS$X))
+  }
+  spread_val
 }

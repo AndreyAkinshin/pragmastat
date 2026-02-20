@@ -1,6 +1,5 @@
 using System.Globalization;
 using JetBrains.Annotations;
-using Pragmastat.Algorithms;
 using Pragmastat.Exceptions;
 using Pragmastat.Metrology;
 
@@ -244,20 +243,6 @@ internal static class Assertion
       if (value <= 0)
         throw AssumptionException.Positivity(subject);
     }
-  }
-
-  /// <summary>
-  /// Checks that a sample is non tie-dominant (Spread > 0).
-  /// This also fails for samples with fewer than 2 elements.
-  /// </summary>
-  [AssertionMethod]
-  public static void Sparity(Sample sample, Subject subject)
-  {
-    if (sample.Size < 2)
-      throw AssumptionException.Sparity(subject);
-    var spread = FastSpread.Estimate(sample.SortedValues, isSorted: true);
-    if (spread <= 0)
-      throw AssumptionException.Sparity(subject);
   }
 
   [StringFormatMethod("format")]

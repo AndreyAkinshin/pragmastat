@@ -1,5 +1,3 @@
-import { fastSpread } from './fastSpread';
-
 /**
  * Assumption validation framework for Pragmastat estimators.
  *
@@ -68,16 +66,6 @@ export function checkValidity(values: number[], subject: Subject): void {
 export function checkPositivity(values: number[], subject: Subject): void {
   if (values.some((v) => v <= 0)) {
     throw AssumptionError.positivity(subject);
-  }
-}
-
-export function checkSparity(values: number[], subject: Subject): void {
-  if (values.length < 2) {
-    throw AssumptionError.sparity(subject);
-  }
-  const spread = fastSpread(values);
-  if (spread <= 0) {
-    throw AssumptionError.sparity(subject);
   }
 }
 

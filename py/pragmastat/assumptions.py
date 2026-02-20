@@ -19,8 +19,6 @@ from typing import Literal
 
 import numpy as np
 
-from .fast_spread import _fast_spread
-
 
 class AssumptionId(str, Enum):
     """Assumption identifiers in canonical priority order."""
@@ -85,15 +83,6 @@ def check_positivity(values: np.ndarray, subject: Subject) -> None:
     """Checks that all values are strictly positive."""
     if np.any(values <= 0):
         raise AssumptionError.positivity(subject)
-
-
-def check_sparity(values: np.ndarray, subject: Subject) -> None:
-    """Checks that a sample is non tie-dominant (Spread > 0)."""
-    if len(values) < 2:
-        raise AssumptionError.sparity(subject)
-    spread_val = _fast_spread(values.tolist())
-    if spread_val <= 0:
-        raise AssumptionError.sparity(subject)
 
 
 def log(values: np.ndarray, subject: Subject) -> np.ndarray:

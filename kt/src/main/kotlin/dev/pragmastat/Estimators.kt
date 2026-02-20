@@ -30,9 +30,11 @@ fun center(x: List<Double>): Double {
 fun spread(x: List<Double>): Double {
     // Check validity (priority 0)
     checkValidity(x, Subject.X)
-    // Check sparity (priority 2)
-    checkSparity(x, Subject.X)
-    return fastSpread(x)
+    val spreadVal = fastSpread(x)
+    if (spreadVal <= 0.0) {
+        throw AssumptionException(Violation(AssumptionId.SPARITY, Subject.X))
+    }
+    return spreadVal
 }
 
 /**
@@ -111,16 +113,17 @@ internal fun avgSpread(x: List<Double>, y: List<Double>): Double {
     checkValidity(x, Subject.X)
     // Check validity for y (priority 0, subject y)
     checkValidity(y, Subject.Y)
-    // Check sparity for x (priority 2, subject x)
-    checkSparity(x, Subject.X)
-    // Check sparity for y (priority 2, subject y)
-    checkSparity(y, Subject.Y)
 
     val n = x.size
     val m = y.size
-    // Calculate spreads (using internal implementation since we already validated)
     val spreadX = fastSpread(x)
+    if (spreadX <= 0.0) {
+        throw AssumptionException(Violation(AssumptionId.SPARITY, Subject.X))
+    }
     val spreadY = fastSpread(y)
+    if (spreadY <= 0.0) {
+        throw AssumptionException(Violation(AssumptionId.SPARITY, Subject.Y))
+    }
 
     return (n * spreadX + m * spreadY) / (n + m).toDouble()
 }
@@ -139,19 +142,21 @@ fun disparity(x: List<Double>, y: List<Double>): Double {
     checkValidity(x, Subject.X)
     // Check validity for y (priority 0, subject y)
     checkValidity(y, Subject.Y)
-    // Check sparity for x (priority 2, subject x)
-    checkSparity(x, Subject.X)
-    // Check sparity for y (priority 2, subject y)
-    checkSparity(y, Subject.Y)
 
     val n = x.size
     val m = y.size
 
+    val spreadX = fastSpread(x)
+    if (spreadX <= 0.0) {
+        throw AssumptionException(Violation(AssumptionId.SPARITY, Subject.X))
+    }
+    val spreadY = fastSpread(y)
+    if (spreadY <= 0.0) {
+        throw AssumptionException(Violation(AssumptionId.SPARITY, Subject.Y))
+    }
+
     // Calculate shift (we know inputs are valid)
     val shiftVal = fastShift(x, y)[0]
-    // Calculate avg_spread (using internal implementation since we already validated)
-    val spreadX = fastSpread(x)
-    val spreadY = fastSpread(y)
     val avgSpreadVal = (n * spreadX + m * spreadY) / (n + m).toDouble()
 
     return shiftVal / avgSpreadVal
@@ -334,7 +339,12 @@ fun spreadBounds(x: List<Double>, misrate: Double = DEFAULT_MISRATE, seed: Strin
         throw AssumptionException(Violation(AssumptionId.DOMAIN, Subject.MISRATE))
     }
 
-    checkSparity(x, Subject.X)
+    if (x.size < 2) {
+        throw AssumptionException(Violation(AssumptionId.SPARITY, Subject.X))
+    }
+    if (fastSpread(x) <= 0.0) {
+        throw AssumptionException(Violation(AssumptionId.SPARITY, Subject.X))
+    }
 
     val rng = if (seed != null) Rng(seed) else Rng()
     val margin = signMarginRandomized(m, misrate, rng)
@@ -401,9 +411,12 @@ fun disparityBounds(
     val alphaShift = minShift + extra / 2.0
     val alphaAvg = minAvg + extra / 2.0
 
-    // Check sparity (priority 2)
-    checkSparity(x, Subject.X)
-    checkSparity(y, Subject.Y)
+    if (fastSpread(x) <= 0.0) {
+        throw AssumptionException(Violation(AssumptionId.SPARITY, Subject.X))
+    }
+    if (fastSpread(y) <= 0.0) {
+        throw AssumptionException(Violation(AssumptionId.SPARITY, Subject.Y))
+    }
 
     val sb = shiftBounds(x, y, alphaShift)
     val ab = avgSpreadBounds(x, y, alphaAvg, seed)
@@ -478,8 +491,12 @@ internal fun avgSpreadBounds(
         throw AssumptionException(Violation(AssumptionId.DOMAIN, Subject.MISRATE))
     }
 
-    checkSparity(x, Subject.X)
-    checkSparity(y, Subject.Y)
+    if (fastSpread(x) <= 0.0) {
+        throw AssumptionException(Violation(AssumptionId.SPARITY, Subject.X))
+    }
+    if (fastSpread(y) <= 0.0) {
+        throw AssumptionException(Violation(AssumptionId.SPARITY, Subject.Y))
+    }
 
     val boundsX = spreadBounds(x, alpha, seed)
     val boundsY = spreadBounds(y, alpha, seed)

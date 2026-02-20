@@ -37,9 +37,12 @@ disparity_bounds <- function(x, y, misrate = DEFAULT_MISRATE, seed = NULL) {
   alpha_shift <- min_shift + extra / 2.0
   alpha_avg <- min_avg + extra / 2.0
 
-  # Check sparity (priority 2)
-  check_sparity(x, SUBJECTS$X)
-  check_sparity(y, SUBJECTS$Y)
+  if (fast_spread(x) <= 0) {
+    stop(assumption_error(ASSUMPTION_IDS$SPARITY, SUBJECTS$X))
+  }
+  if (fast_spread(y) <= 0) {
+    stop(assumption_error(ASSUMPTION_IDS$SPARITY, SUBJECTS$Y))
+  }
 
   sb <- shift_bounds(x, y, alpha_shift)
   ab <- avg_spread_bounds(x, y, alpha_avg, seed = seed)

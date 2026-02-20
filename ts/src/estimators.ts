@@ -10,7 +10,7 @@ import { signedRankMargin } from './signedRankMargin';
 import { signMarginRandomized } from './signMargin';
 import { fastCenterQuantileBounds } from './fastCenterQuantiles';
 import { minAchievableMisrateOneSample, minAchievableMisrateTwoSample } from './minMisrate';
-import { checkValidity, checkPositivity, checkSparity, log, AssumptionError } from './assumptions';
+import { checkValidity, checkPositivity, log, AssumptionError } from './assumptions';
 import { Rng } from './rng';
 
 /**
@@ -39,9 +39,11 @@ export function center(x: number[]): number {
 export function spread(x: number[]): number {
   // Check validity (priority 0)
   checkValidity(x, 'x');
-  // Check sparity (priority 2)
-  checkSparity(x, 'x');
-  return fastSpread(x);
+  const spreadVal = fastSpread(x);
+  if (spreadVal <= 0) {
+    throw AssumptionError.sparity('x');
+  }
+  return spreadVal;
 }
 
 /**
@@ -129,17 +131,18 @@ export function avgSpread(x: number[], y: number[]): number {
   checkValidity(x, 'x');
   // Check validity for y (priority 0, subject y)
   checkValidity(y, 'y');
-  // Check sparity for x (priority 2, subject x)
-  checkSparity(x, 'x');
-  // Check sparity for y (priority 2, subject y)
-  checkSparity(y, 'y');
 
   const nx = x.length;
   const ny = y.length;
 
-  // Calculate spreads (using internal implementation since we already validated)
   const spreadX = fastSpread(x);
+  if (spreadX <= 0) {
+    throw AssumptionError.sparity('x');
+  }
   const spreadY = fastSpread(y);
+  if (spreadY <= 0) {
+    throw AssumptionError.sparity('y');
+  }
 
   return (nx * spreadX + ny * spreadY) / (nx + ny);
 }
@@ -161,19 +164,21 @@ export function disparity(x: number[], y: number[]): number {
   checkValidity(x, 'x');
   // Check validity for y (priority 0, subject y)
   checkValidity(y, 'y');
-  // Check sparity for x (priority 2, subject x)
-  checkSparity(x, 'x');
-  // Check sparity for y (priority 2, subject y)
-  checkSparity(y, 'y');
 
   const nx = x.length;
   const ny = y.length;
 
+  const spreadX = fastSpread(x);
+  if (spreadX <= 0) {
+    throw AssumptionError.sparity('x');
+  }
+  const spreadY = fastSpread(y);
+  if (spreadY <= 0) {
+    throw AssumptionError.sparity('y');
+  }
+
   // Calculate shift (we know inputs are valid)
   const shiftVal = fastShift(x, y, [0.5], false)[0];
-  // Calculate avg_spread (using internal implementation since we already validated)
-  const spreadX = fastSpread(x);
-  const spreadY = fastSpread(y);
   const avgSpreadVal = (nx * spreadX + ny * spreadY) / (nx + ny);
 
   return shiftVal / avgSpreadVal;
@@ -360,7 +365,12 @@ export function spreadBounds(
   const m = Math.floor(n / 2);
   const minMisrate = minAchievableMisrateOneSample(m);
   if (misrate < minMisrate) throw AssumptionError.domain('misrate');
-  checkSparity(x, 'x');
+  if (x.length < 2) {
+    throw AssumptionError.sparity('x');
+  }
+  if (fastSpread(x) <= 0) {
+    throw AssumptionError.sparity('x');
+  }
 
   const rng = seed !== undefined ? new Rng(seed) : new Rng();
   const margin = signMarginRandomized(m, misrate, rng);
@@ -414,8 +424,12 @@ export function avgSpreadBounds(
   const minY = minAchievableMisrateOneSample(Math.floor(m / 2));
   if (alpha < minX || alpha < minY) throw AssumptionError.domain('misrate');
 
-  checkSparity(x, 'x');
-  checkSparity(y, 'y');
+  if (fastSpread(x) <= 0) {
+    throw AssumptionError.sparity('x');
+  }
+  if (fastSpread(y) <= 0) {
+    throw AssumptionError.sparity('y');
+  }
 
   const boundsX = spreadBounds(x, alpha, seed);
   const boundsY = spreadBounds(y, alpha, seed);
@@ -468,9 +482,12 @@ export function disparityBounds(
   const alphaShift = minShift + extra / 2.0;
   const alphaAvg = minAvg + extra / 2.0;
 
-  // Check sparity (priority 2)
-  checkSparity(x, 'x');
-  checkSparity(y, 'y');
+  if (fastSpread(x) <= 0) {
+    throw AssumptionError.sparity('x');
+  }
+  if (fastSpread(y) <= 0) {
+    throw AssumptionError.sparity('y');
+  }
 
   const sb = shiftBounds(x, y, alphaShift);
   const ab = avgSpreadBounds(x, y, alphaAvg, seed);

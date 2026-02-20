@@ -85,20 +85,6 @@ func checkPositivity[T Number](values []T, subject Subject) error {
 	return nil
 }
 
-func checkSparity[T Number](values []T, subject Subject) error {
-	if len(values) < 2 {
-		return NewSparityError(subject)
-	}
-	spread, err := fastSpread(values)
-	if err != nil {
-		return NewValidityError(subject)
-	}
-	if spread <= 0 {
-		return NewSparityError(subject)
-	}
-	return nil
-}
-
 // Log log-transforms a slice. Returns error if any value is non-positive.
 func Log[T Number](values []T, subject Subject) ([]float64, error) {
 	result := make([]float64, len(values))

@@ -1,3 +1,4 @@
+using Pragmastat.Algorithms;
 using Pragmastat.Exceptions;
 using Pragmastat.Internal;
 using Pragmastat.Metrology;
@@ -47,9 +48,10 @@ public class DisparityBoundsEstimator : ITwoSampleBoundsEstimator
     double alphaShift = minShift + extra / 2.0;
     double alphaAvg = minAvg + extra / 2.0;
 
-    // Check sparity (priority 2)
-    Assertion.Sparity(x, Subject.X);
-    Assertion.Sparity(y, Subject.Y);
+    if (FastSpread.Estimate(x.SortedValues, isSorted: true) <= 0)
+      throw AssumptionException.Sparity(Subject.X);
+    if (FastSpread.Estimate(y.SortedValues, isSorted: true) <= 0)
+      throw AssumptionException.Sparity(Subject.Y);
 
     var shiftBounds = ShiftBoundsEstimator.Instance.Estimate(x, y, alphaShift);
     var avgBounds = seed == null

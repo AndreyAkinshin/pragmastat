@@ -44,16 +44,6 @@ check_positivity <- function(values, subject) {
   }
 }
 
-check_sparity <- function(values, subject) {
-  if (length(values) < 2) {
-    stop(assumption_error(ASSUMPTION_IDS$SPARITY, subject))
-  }
-  spread_val <- fast_spread(values)
-  if (spread_val <= 0) {
-    stop(assumption_error(ASSUMPTION_IDS$SPARITY, subject))
-  }
-}
-
 is_assumption_error <- function(e) {
   inherits(e, "assumption_error")
 }

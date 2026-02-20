@@ -1,7 +1,7 @@
 //! Statistical estimators for one-sample and two-sample analysis
 
 use crate::assumptions::{
-    check_positivity, check_sparity, check_validity, log, AssumptionError, EstimatorError, Subject,
+    check_positivity, check_validity, log, AssumptionError, EstimatorError, Subject,
 };
 
 /// Estimates the central value of the data (center)
@@ -35,13 +35,12 @@ pub fn spread(x: &[f64]) -> Result<f64, EstimatorError> {
     // Check validity first (priority 0)
     check_validity(x, Subject::X)?;
 
-    // Check sparity (priority 2)
-    check_sparity(x, Subject::X)?;
-
-    // Use the internal fast implementation
-    // We know at this point the input is valid, so unwrap is safe for internal errors
-    crate::fast_spread::fast_spread(x)
-        .map_err(|_| EstimatorError::from(AssumptionError::validity(Subject::X)))
+    let spread_val = crate::fast_spread::fast_spread(x)
+        .map_err(|_| EstimatorError::from(AssumptionError::validity(Subject::X)))?;
+    if spread_val <= 0.0 {
+        return Err(EstimatorError::from(AssumptionError::sparity(Subject::X)));
+    }
+    Ok(spread_val)
 }
 
 #[deprecated(since = "10.0.0", note = "use spread(x) / center(x).abs() instead")]
@@ -149,20 +148,19 @@ pub(crate) fn avg_spread(x: &[f64], y: &[f64]) -> Result<f64, EstimatorError> {
     // Check validity for y (priority 0, subject y)
     check_validity(y, Subject::Y)?;
 
-    // Check sparity for x (priority 2, subject x)
-    check_sparity(x, Subject::X)?;
-
-    // Check sparity for y (priority 2, subject y)
-    check_sparity(y, Subject::Y)?;
-
     let n = x.len();
     let m = y.len();
 
-    // Calculate spreads (we know inputs are valid and non-degenerate)
     let spread_x = crate::fast_spread::fast_spread(x)
         .map_err(|_| EstimatorError::from(AssumptionError::validity(Subject::X)))?;
+    if spread_x <= 0.0 {
+        return Err(EstimatorError::from(AssumptionError::sparity(Subject::X)));
+    }
     let spread_y = crate::fast_spread::fast_spread(y)
         .map_err(|_| EstimatorError::from(AssumptionError::validity(Subject::Y)))?;
+    if spread_y <= 0.0 {
+        return Err(EstimatorError::from(AssumptionError::sparity(Subject::Y)));
+    }
 
     Ok((n as f64 * spread_x + m as f64 * spread_y) / (n + m) as f64)
 }
@@ -188,23 +186,24 @@ pub fn disparity(x: &[f64], y: &[f64]) -> Result<f64, EstimatorError> {
     // Check validity for y (priority 0, subject y)
     check_validity(y, Subject::Y)?;
 
-    // Check sparity for x (priority 2, subject x)
-    check_sparity(x, Subject::X)?;
+    let n = x.len();
+    let m = y.len();
 
-    // Check sparity for y (priority 2, subject y)
-    check_sparity(y, Subject::Y)?;
+    let spread_x = crate::fast_spread::fast_spread(x)
+        .map_err(|_| EstimatorError::from(AssumptionError::validity(Subject::X)))?;
+    if spread_x <= 0.0 {
+        return Err(EstimatorError::from(AssumptionError::sparity(Subject::X)));
+    }
+    let spread_y = crate::fast_spread::fast_spread(y)
+        .map_err(|_| EstimatorError::from(AssumptionError::validity(Subject::Y)))?;
+    if spread_y <= 0.0 {
+        return Err(EstimatorError::from(AssumptionError::sparity(Subject::Y)));
+    }
 
     // Calculate shift (we know inputs are valid)
     let shift_val = crate::fast_shift::fast_shift(x, y)
         .map_err(|_| EstimatorError::from(AssumptionError::validity(Subject::X)))?;
 
-    // Calculate avg_spread (we know inputs are valid and non-degenerate)
-    let n = x.len();
-    let m = y.len();
-    let spread_x = crate::fast_spread::fast_spread(x)
-        .map_err(|_| EstimatorError::from(AssumptionError::validity(Subject::X)))?;
-    let spread_y = crate::fast_spread::fast_spread(y)
-        .map_err(|_| EstimatorError::from(AssumptionError::validity(Subject::Y)))?;
     let avg_spread_val = (n as f64 * spread_x + m as f64 * spread_y) / (n + m) as f64;
 
     Ok(shift_val / avg_spread_val)
@@ -531,9 +530,18 @@ fn avg_spread_bounds_with_rngs(
         )));
     }
 
-    // Check sparity (priority 2)
-    check_sparity(x, Subject::X)?;
-    check_sparity(y, Subject::Y)?;
+    if crate::fast_spread::fast_spread(x)
+        .map_err(|_| EstimatorError::from(AssumptionError::validity(Subject::X)))?
+        <= 0.0
+    {
+        return Err(EstimatorError::from(AssumptionError::sparity(Subject::X)));
+    }
+    if crate::fast_spread::fast_spread(y)
+        .map_err(|_| EstimatorError::from(AssumptionError::validity(Subject::Y)))?
+        <= 0.0
+    {
+        return Err(EstimatorError::from(AssumptionError::sparity(Subject::Y)));
+    }
 
     let bounds_x = spread_bounds_with_rng(x, alpha, rng_x)?;
     let bounds_y = spread_bounds_with_rng(y, alpha, rng_y)?;
@@ -636,9 +644,18 @@ fn disparity_bounds_with_rngs(
     let alpha_shift = min_shift + extra / 2.0;
     let alpha_avg = min_avg + extra / 2.0;
 
-    // Check sparity (priority 2)
-    check_sparity(x, Subject::X)?;
-    check_sparity(y, Subject::Y)?;
+    if crate::fast_spread::fast_spread(x)
+        .map_err(|_| EstimatorError::from(AssumptionError::validity(Subject::X)))?
+        <= 0.0
+    {
+        return Err(EstimatorError::from(AssumptionError::sparity(Subject::X)));
+    }
+    if crate::fast_spread::fast_spread(y)
+        .map_err(|_| EstimatorError::from(AssumptionError::validity(Subject::Y)))?
+        <= 0.0
+    {
+        return Err(EstimatorError::from(AssumptionError::sparity(Subject::Y)));
+    }
 
     let shift_bounds = shift_bounds(x, y, alpha_shift)?;
     let avg_bounds = avg_spread_bounds_with_rngs(x, y, alpha_avg, rng_x, rng_y)?;
@@ -742,7 +759,15 @@ fn spread_bounds_with_rng(
         )));
     }
 
-    check_sparity(x, Subject::X)?;
+    if x.len() < 2 {
+        return Err(EstimatorError::from(AssumptionError::sparity(Subject::X)));
+    }
+    if crate::fast_spread::fast_spread(x)
+        .map_err(|_| EstimatorError::from(AssumptionError::validity(Subject::X)))?
+        <= 0.0
+    {
+        return Err(EstimatorError::from(AssumptionError::sparity(Subject::X)));
+    }
 
     let margin = crate::sign_margin::sign_margin_randomized(m, misrate, rng)
         .map_err(EstimatorError::from)?;

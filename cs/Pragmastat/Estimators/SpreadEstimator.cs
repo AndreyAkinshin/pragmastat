@@ -13,8 +13,9 @@ public class SpreadEstimator : IOneSampleEstimator
   {
     // Check validity first (priority 0)
     Assertion.Validity(x, Subject.X);
-    // Check sparity (priority 2)
-    Assertion.Sparity(x, Subject.X);
-    return FastSpread.Estimate(x.SortedValues, isSorted: true).WithUnitOf(x);
+    var spreadVal = FastSpread.Estimate(x.SortedValues, isSorted: true);
+    if (spreadVal <= 0)
+      throw AssumptionException.Sparity(Subject.X);
+    return spreadVal.WithUnitOf(x);
   }
 }

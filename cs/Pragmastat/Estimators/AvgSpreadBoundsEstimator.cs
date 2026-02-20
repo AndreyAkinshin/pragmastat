@@ -1,3 +1,4 @@
+using Pragmastat.Algorithms;
 using Pragmastat.Exceptions;
 using Pragmastat.Functions;
 using Pragmastat.Internal;
@@ -41,9 +42,10 @@ internal class AvgSpreadBoundsEstimator : ITwoSampleBoundsEstimator
     if (alpha < minX || alpha < minY)
       throw AssumptionException.Domain(Subject.Misrate);
 
-    // Check sparity (priority 2)
-    Assertion.Sparity(x, Subject.X);
-    Assertion.Sparity(y, Subject.Y);
+    if (FastSpread.Estimate(x.SortedValues, isSorted: true) <= 0)
+      throw AssumptionException.Sparity(Subject.X);
+    if (FastSpread.Estimate(y.SortedValues, isSorted: true) <= 0)
+      throw AssumptionException.Sparity(Subject.Y);
 
     Bounds boundsX = seed == null
       ? SpreadBoundsEstimator.Instance.Estimate(x, alpha)

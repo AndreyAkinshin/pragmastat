@@ -21,7 +21,12 @@ spread_bounds <- function(x, misrate = DEFAULT_MISRATE, seed = NULL) {
     stop(assumption_error(ASSUMPTION_IDS$DOMAIN, SUBJECTS$MISRATE))
   }
 
-  check_sparity(x, SUBJECTS$X)
+  if (n < 2) {
+    stop(assumption_error(ASSUMPTION_IDS$SPARITY, SUBJECTS$X))
+  }
+  if (fast_spread(x) <= 0) {
+    stop(assumption_error(ASSUMPTION_IDS$SPARITY, SUBJECTS$X))
+  }
 
   if (!is.null(seed)) {
     rng_obj <- Rng$new(seed)

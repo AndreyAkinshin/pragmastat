@@ -16,14 +16,14 @@ internal class AvgSpreadEstimator : ITwoSampleEstimator
     Assertion.Validity(x, Subject.X);
     // Check validity for y (priority 0, subject y)
     Assertion.Validity(y, Subject.Y);
-    // Check sparity for x (priority 2, subject x)
-    Assertion.Sparity(x, Subject.X);
-    // Check sparity for y (priority 2, subject y)
-    Assertion.Sparity(y, Subject.Y);
 
-    // Calculate spreads (using internal implementation since we already validated)
     var spreadX = FastSpread.Estimate(x.SortedValues, isSorted: true);
+    if (spreadX <= 0)
+      throw AssumptionException.Sparity(Subject.X);
     var spreadY = FastSpread.Estimate(y.SortedValues, isSorted: true);
+    if (spreadY <= 0)
+      throw AssumptionException.Sparity(Subject.Y);
+
     return ((x.Size * spreadX + y.Size * spreadY) / (x.Size + y.Size)).WithUnitOf(x);
   }
 }

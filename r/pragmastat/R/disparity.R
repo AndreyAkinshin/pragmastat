@@ -14,19 +14,21 @@ disparity <- function(x, y) {
   check_validity(x, SUBJECTS$X)
   # Check validity for y (priority 0, subject y)
   check_validity(y, SUBJECTS$Y)
-  # Check sparity for x (priority 2, subject x)
-  check_sparity(x, SUBJECTS$X)
-  # Check sparity for y (priority 2, subject y)
-  check_sparity(y, SUBJECTS$Y)
 
   n <- length(x)
   m <- length(y)
 
+  spread_x <- fast_spread(x)
+  if (spread_x <= 0) {
+    stop(assumption_error(ASSUMPTION_IDS$SPARITY, SUBJECTS$X))
+  }
+  spread_y <- fast_spread(y)
+  if (spread_y <= 0) {
+    stop(assumption_error(ASSUMPTION_IDS$SPARITY, SUBJECTS$Y))
+  }
+
   # Calculate shift (we know inputs are valid)
   shift_val <- fast_shift(x, y)[1]
-  # Calculate avg_spread (using internal implementation since we already validated)
-  spread_x <- fast_spread(x)
-  spread_y <- fast_spread(y)
   avg_spread_val <- (n * spread_x + m * spread_y) / (n + m)
 
   shift_val / avg_spread_val

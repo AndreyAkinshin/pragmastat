@@ -41,11 +41,14 @@ func Spread[T Number](x []T) (float64, error) {
 	if err := checkValidity(x, SubjectX); err != nil {
 		return 0, err
 	}
-	// Check sparity (priority 2)
-	if err := checkSparity(x, SubjectX); err != nil {
+	spreadVal, err := fastSpread(x)
+	if err != nil {
 		return 0, err
 	}
-	return fastSpread(x)
+	if spreadVal <= 0 {
+		return 0, NewSparityError(SubjectX)
+	}
+	return spreadVal, nil
 }
 
 // RelSpread measures the relative dispersion of a sample.
@@ -143,26 +146,23 @@ func avgSpread[T Number](x, y []T) (float64, error) {
 	if err := checkValidity(y, SubjectY); err != nil {
 		return 0, err
 	}
-	// Check sparity for x (priority 2, subject x)
-	if err := checkSparity(x, SubjectX); err != nil {
-		return 0, err
-	}
-	// Check sparity for y (priority 2, subject y)
-	if err := checkSparity(y, SubjectY); err != nil {
-		return 0, err
-	}
 
 	n := float64(len(x))
 	m := float64(len(y))
 
-	// Calculate spreads (using internal implementation since we already validated)
 	spreadX, err := fastSpread(x)
 	if err != nil {
 		return 0, err
 	}
+	if spreadX <= 0 {
+		return 0, NewSparityError(SubjectX)
+	}
 	spreadY, err := fastSpread(y)
 	if err != nil {
 		return 0, err
+	}
+	if spreadY <= 0 {
+		return 0, NewSparityError(SubjectY)
 	}
 
 	return (n*spreadX + m*spreadY) / (n + m), nil
@@ -183,29 +183,27 @@ func Disparity[T Number](x, y []T) (float64, error) {
 	if err := checkValidity(y, SubjectY); err != nil {
 		return 0, err
 	}
-	// Check sparity for x (priority 2, subject x)
-	if err := checkSparity(x, SubjectX); err != nil {
-		return 0, err
-	}
-	// Check sparity for y (priority 2, subject y)
-	if err := checkSparity(y, SubjectY); err != nil {
-		return 0, err
-	}
 
 	n := float64(len(x))
 	m := float64(len(y))
 
-	// Calculate shift (we know inputs are valid)
-	shiftVal, err := fastShift(x, y)
-	if err != nil {
-		return 0, err
-	}
-	// Calculate avg_spread (using internal implementation since we already validated)
 	spreadX, err := fastSpread(x)
 	if err != nil {
 		return 0, err
 	}
+	if spreadX <= 0 {
+		return 0, NewSparityError(SubjectX)
+	}
 	spreadY, err := fastSpread(y)
+	if err != nil {
+		return 0, err
+	}
+	if spreadY <= 0 {
+		return 0, NewSparityError(SubjectY)
+	}
+
+	// Calculate shift (we know inputs are valid)
+	shiftVal, err := fastShift(x, y)
 	if err != nil {
 		return 0, err
 	}
@@ -486,12 +484,19 @@ func avgSpreadBoundsWithRngs[T Number](x, y []T, misrate float64, rngX, rngY *Rn
 		return Bounds{}, NewDomainError(SubjectMisrate)
 	}
 
-	// Check sparity (priority 2)
-	if err := checkSparity(x, SubjectX); err != nil {
+	spreadX, err := fastSpread(x)
+	if err != nil {
 		return Bounds{}, err
 	}
-	if err := checkSparity(y, SubjectY); err != nil {
+	if spreadX <= 0 {
+		return Bounds{}, NewSparityError(SubjectX)
+	}
+	spreadY, err := fastSpread(y)
+	if err != nil {
 		return Bounds{}, err
+	}
+	if spreadY <= 0 {
+		return Bounds{}, NewSparityError(SubjectY)
 	}
 
 	boundsX, err := spreadBoundsWithRng(x, alpha, rngX)
@@ -579,12 +584,19 @@ func disparityBoundsWithRngs[T Number](x, y []T, misrate float64, rngX, rngY *Rn
 	alphaShift := minShift + extra/2.0
 	alphaAvg := minAvg + extra/2.0
 
-	// Check sparity (priority 2)
-	if err := checkSparity(x, SubjectX); err != nil {
+	spreadXVal, err := fastSpread(x)
+	if err != nil {
 		return Bounds{}, err
 	}
-	if err := checkSparity(y, SubjectY); err != nil {
+	if spreadXVal <= 0 {
+		return Bounds{}, NewSparityError(SubjectX)
+	}
+	spreadYVal, err := fastSpread(y)
+	if err != nil {
 		return Bounds{}, err
+	}
+	if spreadYVal <= 0 {
+		return Bounds{}, NewSparityError(SubjectY)
 	}
 
 	sb, err := ShiftBounds(x, y, alphaShift)
@@ -666,9 +678,15 @@ func spreadBoundsWithRng[T Number](x []T, misrate float64, rng *Rng) (Bounds, er
 		return Bounds{}, NewDomainError(SubjectMisrate)
 	}
 
-	// Check sparity (priority 2)
-	if err := checkSparity(x, SubjectX); err != nil {
+	if len(x) < 2 {
+		return Bounds{}, NewSparityError(SubjectX)
+	}
+	spreadVal, err := fastSpread(x)
+	if err != nil {
 		return Bounds{}, err
+	}
+	if spreadVal <= 0 {
+		return Bounds{}, NewSparityError(SubjectX)
 	}
 
 	margin, err := signMarginRandomized(m, misrate, rng)
