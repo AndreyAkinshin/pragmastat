@@ -7,27 +7,6 @@
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define ABS(a) ((a) < 0 ? -(a) : (a))
 
-// Helper function for uniform random selection
-static long long next_index(long long limit_exclusive) {
-    if (limit_exclusive <= 0) return 0;
-    if (limit_exclusive <= 2147483647LL) {
-        // Use R's random integer generator for small ranges
-        return (long long)(unif_rand() * limit_exclusive);
-    }
-
-    // For large ranges, use rejection sampling
-    unsigned long long u_limit = (unsigned long long)limit_exclusive;
-    while (1) {
-        // Generate 64-bit random number
-        unsigned long long u = ((unsigned long long)(unif_rand() * 4294967296.0)) << 32;
-        u |= (unsigned long long)(unif_rand() * 4294967296.0);
-        unsigned long long r = u % u_limit;
-        if (u - r <= ULLONG_MAX - (ULLONG_MAX % u_limit)) {
-            return (long long)r;
-        }
-    }
-}
-
 /*
  * Fast O(n log n) implementation of the Spread (Shamos) estimator
  * Computes the median of all pairwise absolute differences efficiently
@@ -85,8 +64,6 @@ SEXP fast_spread_c(SEXP values_sexp) {
     double pivot = a[n / 2] - a[(n - 1) / 2];
     long long prev_count_below = -1;
 
-    GetRNGstate();
-
     while (1) {
         // === PARTITION: count how many differences are < pivot ===
         long long count_below = 0;
@@ -121,7 +98,6 @@ SEXP fast_spread_c(SEXP values_sexp) {
         int at_target = (count_below == k_low) || (count_below == k_high - 1);
 
         if (at_target) {
-            PutRNGstate();
             SEXP result = PROTECT(allocVector(REALSXP, 1));
 
             if (k_low < k_high) {
@@ -156,7 +132,6 @@ SEXP fast_spread_c(SEXP values_sexp) {
             }
 
             if (active <= 0) {
-                PutRNGstate();
                 SEXP result = PROTECT(allocVector(REALSXP, 1));
                 if (k_low < k_high) {
                     REAL(result)[0] = 0.5 * (largest_below + smallest_at_or_above);
@@ -168,7 +143,6 @@ SEXP fast_spread_c(SEXP values_sexp) {
             }
 
             if (max_active <= min_active) {
-                PutRNGstate();
                 SEXP result = PROTECT(allocVector(REALSXP, 1));
                 REAL(result)[0] = min_active;
                 UNPROTECT(1);
@@ -228,7 +202,6 @@ SEXP fast_spread_c(SEXP values_sexp) {
             }
 
             if (active_size <= 0) {
-                PutRNGstate();
                 SEXP result = PROTECT(allocVector(REALSXP, 1));
                 if (k_low < k_high) {
                     REAL(result)[0] = 0.5 * (largest_below + smallest_at_or_above);
@@ -239,7 +212,6 @@ SEXP fast_spread_c(SEXP values_sexp) {
                 return result;
             }
 
-            PutRNGstate();
             SEXP result = PROTECT(allocVector(REALSXP, 1));
             if (k_low < k_high) {
                 REAL(result)[0] = 0.5 * (min_rem + max_rem);
@@ -252,8 +224,8 @@ SEXP fast_spread_c(SEXP values_sexp) {
             return result;
 
         } else {
-            // Weighted random row selection
-            long long t = next_index(active_size);
+            // Deterministic middle-element selection
+            long long t = active_size / 2;
             long long acc = 0;
             int row = 0;
 
@@ -274,7 +246,6 @@ SEXP fast_spread_c(SEXP values_sexp) {
     }
 
     // Should never reach here
-    PutRNGstate();
     error("Algorithm failed to converge");
     return R_NilValue;
 }

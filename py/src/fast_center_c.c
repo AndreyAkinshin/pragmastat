@@ -3,7 +3,6 @@
 #include <numpy/arrayobject.h>
 #include <math.h>
 #include <stdlib.h>
-#include <time.h>
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
@@ -15,11 +14,6 @@ static int compare_doubles(const void *a, const void *b) {
     if (da < db) return -1;
     if (da > db) return 1;
     return 0;
-}
-
-// Random double in [0, 1)
-static double uniform_random(void) {
-    return (double)rand() / ((double)RAND_MAX + 1.0);
 }
 
 /*
@@ -101,13 +95,6 @@ static PyObject* fast_center_c(PyObject* self, PyObject* args) {
     double pivot = sorted_values[(n - 1) / 2] + sorted_values[n / 2];
     long long active_set_size = total_pairs;
     long long previous_count = 0;
-
-    // Initialize random seed (only once per module)
-    static int seeded = 0;
-    if (!seeded) {
-        srand((unsigned int)time(NULL));
-        seeded = 1;
-    }
 
     double result_value = 0.0;
     int converged = 0;
@@ -230,9 +217,8 @@ static PyObject* fast_center_c(PyObject* self, PyObject* args) {
 
         // Choose next pivot
         if (active_set_size > 2) {
-            // Use randomized row median strategy
-            double random_fraction = uniform_random();
-            long long target_index = (long long)(random_fraction * active_set_size);
+            // Use deterministic middle-element strategy
+            long long target_index = active_set_size / 2;
             npy_intp selected_row = 0;
 
             long long cumulative_size = 0;
