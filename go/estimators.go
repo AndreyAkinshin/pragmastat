@@ -3,7 +3,6 @@ package pragmastat
 
 import (
 	"errors"
-	"fmt"
 	"math"
 	"sort"
 )
@@ -223,7 +222,7 @@ type Bounds struct {
 // This is a pragmatic alternative to traditional confidence intervals for the Hodges-Lehmann estimator.
 func ShiftBounds[T Number](x, y []T, misrate ...float64) (Bounds, error) {
 	if len(misrate) > 1 {
-		return Bounds{}, fmt.Errorf("at most one misrate value expected, got %d", len(misrate))
+		return Bounds{}, NewDomainError(SubjectMisrate)
 	}
 	mr := DefaultMisrate
 	if len(misrate) > 0 {
@@ -313,7 +312,7 @@ func ShiftBounds[T Number](x, y []T, misrate ...float64) (Bounds, error) {
 //   - positivity(y) - all values in y must be strictly positive
 func RatioBounds[T Number](x, y []T, misrate ...float64) (Bounds, error) {
 	if len(misrate) > 1 {
-		return Bounds{}, fmt.Errorf("at most one misrate value expected, got %d", len(misrate))
+		return Bounds{}, NewDomainError(SubjectMisrate)
 	}
 	mr := DefaultMisrate
 	if len(misrate) > 0 {
@@ -366,7 +365,7 @@ func RatioBounds[T Number](x, y []T, misrate ...float64) (Bounds, error) {
 // Requires weak symmetry assumption: distribution symmetric around unknown center.
 func CenterBounds[T Number](x []T, misrate ...float64) (Bounds, error) {
 	if len(misrate) > 1 {
-		return Bounds{}, fmt.Errorf("at most one misrate value expected, got %d", len(misrate))
+		return Bounds{}, NewDomainError(SubjectMisrate)
 	}
 	mr := DefaultMisrate
 	if len(misrate) > 0 {
@@ -425,7 +424,7 @@ func CenterBounds[T Number](x []T, misrate ...float64) (Bounds, error) {
 // SpreadBounds provides distribution-free bounds for Spread using disjoint pairs.
 func SpreadBounds[T Number](x []T, misrate ...float64) (Bounds, error) {
 	if len(misrate) > 1 {
-		return Bounds{}, fmt.Errorf("at most one misrate value expected, got %d", len(misrate))
+		return Bounds{}, NewDomainError(SubjectMisrate)
 	}
 	mr := DefaultMisrate
 	if len(misrate) > 0 {
@@ -521,7 +520,7 @@ func avgSpreadBoundsWithRngs[T Number](x, y []T, misrate float64, rngX, rngY *Rn
 // using Bonferroni combination of ShiftBounds and AvgSpreadBounds.
 func DisparityBounds[T Number](x, y []T, misrate ...float64) (Bounds, error) {
 	if len(misrate) > 1 {
-		return Bounds{}, fmt.Errorf("at most one misrate value expected, got %d", len(misrate))
+		return Bounds{}, NewDomainError(SubjectMisrate)
 	}
 	mr := DefaultMisrate
 	if len(misrate) > 0 {

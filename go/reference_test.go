@@ -316,6 +316,28 @@ func TestReferenceData(t *testing.T) {
 					t.Fatalf("Failed to parse test data: %v", err)
 				}
 
+				// Handle error test cases
+				if len(testData.ExpectedError) > 0 {
+					var input OneSampleInput
+					if err := json.Unmarshal(testData.Input, &input); err != nil {
+						t.Fatalf("Failed to parse input data: %v", err)
+					}
+					_, err := estimatorFunc(input.X)
+					if err == nil {
+						t.Errorf("Expected error for %s, but got none", testName)
+						return
+					}
+					var expectedError map[string]string
+					if jsonErr := json.Unmarshal(testData.ExpectedError, &expectedError); jsonErr == nil {
+						if ae, ok := err.(*AssumptionError); ok {
+							if string(ae.Violation.ID) != expectedError["id"] {
+								t.Errorf("Expected error id %q, got %q", expectedError["id"], ae.Violation.ID)
+							}
+						}
+					}
+					return
+				}
+
 				var expected float64
 				if err := json.Unmarshal(testData.Output, &expected); err != nil {
 					t.Fatalf("Failed to parse output data: %v", err)
@@ -396,6 +418,28 @@ func TestReferenceData(t *testing.T) {
 				var testData TestData
 				if err := json.Unmarshal(data, &testData); err != nil {
 					t.Fatalf("Failed to parse test data: %v", err)
+				}
+
+				// Handle error test cases
+				if len(testData.ExpectedError) > 0 {
+					var input TwoSampleInput
+					if err := json.Unmarshal(testData.Input, &input); err != nil {
+						t.Fatalf("Failed to parse input data: %v", err)
+					}
+					_, err := estimatorFunc(input.X, input.Y)
+					if err == nil {
+						t.Errorf("Expected error for %s, but got none", testName)
+						return
+					}
+					var expectedError map[string]string
+					if jsonErr := json.Unmarshal(testData.ExpectedError, &expectedError); jsonErr == nil {
+						if ae, ok := err.(*AssumptionError); ok {
+							if string(ae.Violation.ID) != expectedError["id"] {
+								t.Errorf("Expected error id %q, got %q", expectedError["id"], ae.Violation.ID)
+							}
+						}
+					}
+					return
 				}
 
 				var expected float64
