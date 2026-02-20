@@ -1,14 +1,15 @@
 {
-  "fowler1991": {
-    "key": "fowler1991",
+  "hyndman1996": {
+    "key": "hyndman1996",
     "authors": [
-      "Fowler, Glenn",
-      "Noll, Landon Curt",
-      "Vo, Kiem-Phong"
+      "Hyndman, Rob J",
+      "Fan, Yanan"
     ],
-    "title": "FNV Hash",
-    "year": "1991",
-    "url": "http://www.isthe.com/chongo/tech/comp/fnv/"
+    "title": "Sample Quantiles in Statistical Packages",
+    "year": "1996",
+    "venue": "The American Statistician",
+    "doi": "10.2307/2684934",
+    "url": "https://www.jstor.org/stable/2684934"
   },
   "boxmuller1958": {
     "key": "boxmuller1958",
@@ -21,6 +22,81 @@
     "venue": "The Annals of Mathematical Statistics",
     "doi": "10.1214/aoms/1177706645",
     "url": "https://projecteuclid.org/euclid.aoms/1177706645"
+  },
+  "fisher1938": {
+    "key": "fisher1938",
+    "authors": [
+      "Fisher, Ronald A.",
+      "Yates, Frank"
+    ],
+    "title": "Statistical Tables for Biological, Agricultural and Medical Research",
+    "year": "1938"
+  },
+  "knuth1997": {
+    "key": "knuth1997",
+    "authors": [
+      "Knuth, Donald E."
+    ],
+    "title": "The Art of Computer Programming, Volume 2: Seminumerical Algorithms",
+    "year": "1997"
+  },
+  "loeffler1982": {
+    "key": "loeffler1982",
+    "authors": [
+      "Löffler, Andreas"
+    ],
+    "title": "On the calculation of the exact null-distribution of the Wilcoxon-Mann-Whitney U-statistic",
+    "year": "1982"
+  },
+  "efron1979": {
+    "key": "efron1979",
+    "authors": [
+      "Efron, Bradley"
+    ],
+    "title": "Bootstrap Methods: Another Look at the Jackknife",
+    "year": "1979",
+    "venue": "The Annals of Statistics",
+    "doi": "10.1214/aos/1176344552",
+    "url": "https://projecteuclid.org/euclid.aos/1176344552"
+  },
+  "huber2009": {
+    "key": "huber2009",
+    "authors": [
+      "Huber, Peter J"
+    ],
+    "title": "Robust statistics",
+    "year": "2009",
+    "venue": "International encyclopedia of statistical science"
+  },
+  "serfling2009": {
+    "key": "serfling2009",
+    "authors": [
+      "Serfling, Robert J"
+    ],
+    "title": "Approximation theorems of mathematical statistics",
+    "year": "2009"
+  },
+  "sen1963": {
+    "key": "sen1963",
+    "authors": [
+      "Sen, Pranab Kumar"
+    ],
+    "title": "On the Estimation of Relative Potency in Dilution (-Direct) Assays by Distribution-Free Methods",
+    "year": "1963",
+    "venue": "Biometrics",
+    "doi": "10.2307/2527532",
+    "url": "https://www.jstor.org/stable/2527532"
+  },
+  "monahan1984": {
+    "key": "monahan1984",
+    "authors": [
+      "Monahan, John F"
+    ],
+    "title": "Algorithm 616: fast computation of the Hodges-Lehmann location estimator",
+    "year": "1984",
+    "venue": "ACM Transactions on Mathematical Software",
+    "doi": "10.1145/1271.319414",
+    "url": "https://dl.acm.org/doi/10.1145/1271.319414"
   },
   "steele2014": {
     "key": "steele2014",
@@ -35,50 +111,6 @@
     "doi": "10.1145/2660193.2660195",
     "url": "https://dl.acm.org/doi/10.1145/2660193.2660195"
   },
-  "sen1963": {
-    "key": "sen1963",
-    "authors": [
-      "Sen, Pranab Kumar"
-    ],
-    "title": "On the Estimation of Relative Potency in Dilution (-Direct) Assays by Distribution-Free Methods",
-    "year": "1963",
-    "venue": "Biometrics",
-    "doi": "10.2307/2527532",
-    "url": "https://www.jstor.org/stable/2527532"
-  },
-  "hodges1963": {
-    "key": "hodges1963",
-    "authors": [
-      "Hodges, J. L.",
-      "Lehmann, E. L."
-    ],
-    "title": "Estimates of Location Based on Rank Tests",
-    "year": "1963",
-    "venue": "The Annals of Mathematical Statistics",
-    "doi": "10.1214/aoms/1177704172",
-    "url": "http://projecteuclid.org/euclid.aoms/1177704172"
-  },
-  "fix1955": {
-    "key": "fix1955",
-    "authors": [
-      "Fix, Evelyn",
-      "Hodges, J. L."
-    ],
-    "title": "Significance probabilities of the Wilcoxon test",
-    "year": "1955",
-    "venue": "The Annals of Mathematical Statistics",
-    "doi": "10.1214/aoms/1177728547",
-    "url": "https://projecteuclid.org/euclid.aoms/1177728547"
-  },
-  "huber2009": {
-    "key": "huber2009",
-    "authors": [
-      "Huber, Peter J"
-    ],
-    "title": "Robust statistics",
-    "year": "2009",
-    "venue": "International encyclopedia of statistical science"
-  },
   "sidak1999": {
     "key": "sidak1999",
     "authors": [
@@ -88,81 +120,6 @@
     ],
     "title": "Theory of rank tests",
     "year": "1999"
-  },
-  "shamos1976": {
-    "key": "shamos1976",
-    "authors": [
-      "Shamos, Michael Ian"
-    ],
-    "title": "Geometry and Statistics: Problems at the Interface",
-    "year": "1976"
-  },
-  "serfling2009": {
-    "key": "serfling2009",
-    "authors": [
-      "Serfling, Robert J"
-    ],
-    "title": "Approximation theorems of mathematical statistics",
-    "year": "2009"
-  },
-  "loeffler1982": {
-    "key": "loeffler1982",
-    "authors": [
-      "Löffler, Andreas"
-    ],
-    "title": "On the calculation of the exact null-distribution of the Wilcoxon-Mann-Whitney U-statistic",
-    "year": "1982"
-  },
-  "fisher1938": {
-    "key": "fisher1938",
-    "authors": [
-      "Fisher, Ronald A.",
-      "Yates, Frank"
-    ],
-    "title": "Statistical Tables for Biological, Agricultural and Medical Research",
-    "year": "1938"
-  },
-  "monahan1984": {
-    "key": "monahan1984",
-    "authors": [
-      "Monahan, John F"
-    ],
-    "title": "Algorithm 616: fast computation of the Hodges-Lehmann location estimator",
-    "year": "1984",
-    "venue": "ACM Transactions on Mathematical Software",
-    "doi": "10.1145/1271.319414",
-    "url": "https://dl.acm.org/doi/10.1145/1271.319414"
-  },
-  "efron1979": {
-    "key": "efron1979",
-    "authors": [
-      "Efron, Bradley"
-    ],
-    "title": "Bootstrap Methods: Another Look at the Jackknife",
-    "year": "1979",
-    "venue": "The Annals of Statistics",
-    "doi": "10.1214/aos/1176344552",
-    "url": "https://projecteuclid.org/euclid.aos/1176344552"
-  },
-  "hyndman1996": {
-    "key": "hyndman1996",
-    "authors": [
-      "Hyndman, Rob J",
-      "Fan, Yanan"
-    ],
-    "title": "Sample Quantiles in Statistical Packages",
-    "year": "1996",
-    "venue": "The American Statistician",
-    "doi": "10.2307/2684934",
-    "url": "https://www.jstor.org/stable/2684934"
-  },
-  "knuth1997": {
-    "key": "knuth1997",
-    "authors": [
-      "Knuth, Donald E."
-    ],
-    "title": "The Art of Computer Programming, Volume 2: Seminumerical Algorithms",
-    "year": "1997"
   },
   "fan1962": {
     "key": "fan1962",
@@ -177,14 +134,6 @@
     "doi": "10.1080/01621459.1962.10480667",
     "url": "https://www.tandfonline.com/doi/abs/10.1080/01621459.1962.10480667"
   },
-  "norman2013": {
-    "key": "norman2013",
-    "authors": [
-      "Norman, Donald A."
-    ],
-    "title": "The Design of Everyday Things: Revised and Expanded Edition",
-    "year": "2013"
-  },
   "blackman2021": {
     "key": "blackman2021",
     "authors": [
@@ -196,6 +145,57 @@
     "venue": "ACM Transactions on Mathematical Software",
     "doi": "10.1145/3460772",
     "url": "https://dl.acm.org/doi/10.1145/3460772"
+  },
+  "shamos1976": {
+    "key": "shamos1976",
+    "authors": [
+      "Shamos, Michael Ian"
+    ],
+    "title": "Geometry and Statistics: Problems at the Interface",
+    "year": "1976"
+  },
+  "fowler1991": {
+    "key": "fowler1991",
+    "authors": [
+      "Fowler, Glenn",
+      "Noll, Landon Curt",
+      "Vo, Kiem-Phong"
+    ],
+    "title": "FNV Hash",
+    "year": "1991",
+    "url": "http://www.isthe.com/chongo/tech/comp/fnv/"
+  },
+  "hodges1963": {
+    "key": "hodges1963",
+    "authors": [
+      "Hodges, J. L.",
+      "Lehmann, E. L."
+    ],
+    "title": "Estimates of Location Based on Rank Tests",
+    "year": "1963",
+    "venue": "The Annals of Mathematical Statistics",
+    "doi": "10.1214/aoms/1177704172",
+    "url": "http://projecteuclid.org/euclid.aoms/1177704172"
+  },
+  "norman2013": {
+    "key": "norman2013",
+    "authors": [
+      "Norman, Donald A."
+    ],
+    "title": "The Design of Everyday Things: Revised and Expanded Edition",
+    "year": "2013"
+  },
+  "fix1955": {
+    "key": "fix1955",
+    "authors": [
+      "Fix, Evelyn",
+      "Hodges, J. L."
+    ],
+    "title": "Significance probabilities of the Wilcoxon test",
+    "year": "1955",
+    "venue": "The Annals of Mathematical Statistics",
+    "doi": "10.1214/aoms/1177728547",
+    "url": "https://projecteuclid.org/euclid.aoms/1177728547"
   },
   "cohen1988": {
     "key": "cohen1988",
