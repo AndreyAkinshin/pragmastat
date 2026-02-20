@@ -64,7 +64,7 @@ def spread_bounds(x: Sequence[float] | NDArray, misrate: float = 1e-3, seed: str
 
 - **Reference tests**: Load JSON fixtures from `../tests/` directory
 - **Invariance tests**: Verify mathematical properties
-- **Tolerance**: `1e-10` for floating-point comparisons
+- **Tolerance**: `1e-9` for floating-point comparisons
 
 ```bash
 mise run py:test                 # All tests (preferred)

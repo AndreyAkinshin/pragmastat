@@ -75,7 +75,7 @@ Toolkit.SpreadBounds(x, misrate)
 
 - **Reference tests**: Load JSON fixtures from `../tests/` directory via TestGenerator
 - **Test runner**: Uses custom runner in `Pragmastat.Tests`
-- **Tolerance**: `1e-10` for floating-point comparisons
+- **Tolerance**: `1e-9` for floating-point comparisons
 
 ```bash
 mise run cs:test                 # All tests (preferred)

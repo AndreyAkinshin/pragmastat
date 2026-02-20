@@ -77,7 +77,7 @@ class Multiplic implements Distribution { constructor(location: number, scale: n
 
 - **Reference tests**: Load JSON fixtures from `../tests/` directory
 - **Invariance tests**: Verify mathematical properties
-- **Tolerance**: `1e-10` for floating-point comparisons
+- **Tolerance**: `1e-9` for floating-point comparisons
 
 ```bash
 mise run ts:test          # All tests (preferred)

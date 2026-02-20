@@ -4,10 +4,10 @@ Add to `Cargo.toml`:
 
 ```toml
 [dependencies]
-pragmastat = "10.0.1"
+pragmastat = "10.0.3"
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v10.0.1/rs
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v10.0.3/rs
 
 Pragmastat on crates.io: https://crates.io/crates/pragmastat
 

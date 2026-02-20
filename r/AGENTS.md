@@ -85,7 +85,7 @@ spread_bounds(x, misrate = 1e-3, seed = NULL)       # Confidence bounds on sprea
 - **Reference tests**: Load JSON fixtures from `tests/` directory (copied during test)
 - **Invariance tests**: Verify mathematical properties
 - **Test framework**: testthat v3
-- **Tolerance**: `1e-10` for floating-point comparisons
+- **Tolerance**: `1e-9` for floating-point comparisons
 
 ```bash
 mise run r:test              # All tests (preferred)

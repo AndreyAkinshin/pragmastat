@@ -51,7 +51,7 @@ rs/pragmastat/
 - **Reference tests**: Load JSON fixtures from `../tests/` directory
 - **Invariance tests**: Verify mathematical properties (shift symmetry, spread scaling)
 - **Error tests**: Validate error handling for invalid inputs
-- **Tolerance**: `1e-10` for floating-point comparisons
+- **Tolerance**: `1e-9` for floating-point comparisons
 
 ```bash
 mise run rs:test              # All tests (preferred)

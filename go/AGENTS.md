@@ -71,7 +71,7 @@ func DisparityBoundsWithSeed[T Number](x, y []T, misrate float64, seed string) (
 
 - **Reference tests**: Load JSON fixtures from `../tests/` directory
 - **Invariance tests**: Verify mathematical properties
-- **Tolerance**: `1e-10` for floating-point comparisons
+- **Tolerance**: `1e-9` for floating-point comparisons
 
 ```bash
 mise run go:test        # All tests (preferred)

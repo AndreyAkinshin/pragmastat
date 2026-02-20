@@ -4,10 +4,10 @@ Install from GitHub:
 
 ```r
 # install.packages("remotes")
-remotes::install_github("AndreyAkinshin/pragmastat", subdir = "r/pragmastat", ref = "v10.0.1")
+remotes::install_github("AndreyAkinshin/pragmastat", subdir = "r/pragmastat", ref = "v10.0.3")
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v10.0.1/r
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v10.0.3/r
 
 ## Demo
 
