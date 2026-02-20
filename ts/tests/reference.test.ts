@@ -6,14 +6,14 @@ import {
   relSpread,
   shift,
   ratio,
-  avgSpread,
+  _avgSpread as avgSpread,
   disparity,
   shiftBounds,
   ratioBounds,
   centerBounds,
   spreadBounds,
   disparityBounds,
-  avgSpreadBounds,
+  _avgSpreadBounds as avgSpreadBounds,
 } from '../src/estimators';
 import { signedRankMargin } from '../src/signedRankMargin';
 import { AssumptionError } from '../src/assumptions';

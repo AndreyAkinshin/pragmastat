@@ -1,4 +1,12 @@
-import { center, spread, relSpread, shift, ratio, avgSpread, disparity } from '../src/estimators';
+import {
+  center,
+  spread,
+  relSpread,
+  shift,
+  ratio,
+  _avgSpread as avgSpread,
+  disparity,
+} from '../src/estimators';
 import { Rng } from '../src';
 
 /**

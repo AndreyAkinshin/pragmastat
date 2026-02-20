@@ -126,7 +126,7 @@ export function ratio(x: number[], y: number[]): number {
  * @returns The combined spread estimate
  * @throws AssumptionError if either sample is empty, contains NaN/Inf, or is tie-dominant
  */
-export function avgSpread(x: number[], y: number[]): number {
+function avgSpread(x: number[], y: number[]): number {
   // Check validity for x (priority 0, subject x)
   checkValidity(x, 'x');
   // Check validity for y (priority 0, subject y)
@@ -404,7 +404,7 @@ export function spreadBounds(
  * @returns An object containing the lower and upper bounds
  * @throws AssumptionError if input is invalid, misrate is out of domain, or sample is tie-dominant
  */
-export function avgSpreadBounds(
+function avgSpreadBounds(
   x: number[],
   y: number[],
   misrate: number = DEFAULT_MISRATE,
@@ -523,3 +523,6 @@ export function disparityBounds(
 
   return { lower: -Infinity, upper: Infinity };
 }
+
+// Internal-only exports for testing (not part of public API)
+export { avgSpread as _avgSpread, avgSpreadBounds as _avgSpreadBounds };
