@@ -6,23 +6,23 @@ Install from Maven Central Repository via Apache Maven:
 <dependency>
     <groupId>dev.pragmastat</groupId>
     <artifactId>pragmastat</artifactId>
-    <version>10.0.2</version>
+    <version>10.0.3</version>
 </dependency>
 ```
 
 Install from Maven Central Repository via Gradle:
 
 ```java
-implementation 'dev.pragmastat:pragmastat:10.0.2'
+implementation 'dev.pragmastat:pragmastat:10.0.3'
 ```
 
 Install from Maven Central Repository via Gradle (Kotlin):
 
 ```kotlin
-implementation("dev.pragmastat:pragmastat:10.0.2")
+implementation("dev.pragmastat:pragmastat:10.0.3")
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v10.0.2/kt
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v10.0.3/kt
 
 Pragmastat on Maven Central Repository: https://central.sonatype.com/artifact/dev.pragmastat/pragmastat/overview
 
