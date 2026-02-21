@@ -13,7 +13,7 @@ pub fn center(x: &[f64]) -> Result<f64, EstimatorError> {
     // Check validity (priority 0)
     check_validity(x, Subject::X)?;
     crate::fast_center::fast_center(x)
-        .map_err(|_| EstimatorError::from(AssumptionError::validity(Subject::X)))
+        .map_err(EstimatorError::from)
 }
 
 /// Estimates data dispersion (spread)
@@ -36,7 +36,7 @@ pub fn spread(x: &[f64]) -> Result<f64, EstimatorError> {
     check_validity(x, Subject::X)?;
 
     let spread_val = crate::fast_spread::fast_spread(x)
-        .map_err(|_| EstimatorError::from(AssumptionError::validity(Subject::X)))?;
+        .map_err(EstimatorError::from)?;
     if spread_val <= 0.0 {
         return Err(EstimatorError::from(AssumptionError::sparity(Subject::X)));
     }
@@ -67,13 +67,13 @@ pub fn rel_spread(x: &[f64]) -> Result<f64, EstimatorError> {
 
     // Calculate center (we know x is valid, center should succeed)
     let center_val = crate::fast_center::fast_center(x)
-        .map_err(|_| EstimatorError::from(AssumptionError::validity(Subject::X)))?;
+        .map_err(EstimatorError::from)?;
 
     // Calculate spread (we know x is valid)
     // Note: spread now requires sparity, but for rel_spread we require positivity
     // which is checked above. We use the internal implementation directly.
     let spread_val = crate::fast_spread::fast_spread(x)
-        .map_err(|_| EstimatorError::from(AssumptionError::validity(Subject::X)))?;
+        .map_err(EstimatorError::from)?;
 
     // center_val is guaranteed positive because all values are positive
     Ok(spread_val / center_val.abs())
@@ -89,7 +89,7 @@ pub fn shift(x: &[f64], y: &[f64]) -> Result<f64, EstimatorError> {
     check_validity(x, Subject::X)?;
     check_validity(y, Subject::Y)?;
     crate::fast_shift::fast_shift(x, y)
-        .map_err(|_| EstimatorError::from(AssumptionError::validity(Subject::X)))
+        .map_err(EstimatorError::from)
 }
 
 /// Measures how many times larger x is compared to y (ratio)
@@ -123,7 +123,7 @@ pub fn ratio(x: &[f64], y: &[f64]) -> Result<f64, EstimatorError> {
     check_positivity(y, Subject::Y)?;
 
     crate::fast_shift::fast_ratio(x, y)
-        .map_err(|_| EstimatorError::from(AssumptionError::validity(Subject::X)))
+        .map_err(EstimatorError::from)
 }
 
 /// Measures the typical variability when considering both samples together (avg_spread)
@@ -152,12 +152,12 @@ pub(crate) fn avg_spread(x: &[f64], y: &[f64]) -> Result<f64, EstimatorError> {
     let m = y.len();
 
     let spread_x = crate::fast_spread::fast_spread(x)
-        .map_err(|_| EstimatorError::from(AssumptionError::validity(Subject::X)))?;
+        .map_err(EstimatorError::from)?;
     if spread_x <= 0.0 {
         return Err(EstimatorError::from(AssumptionError::sparity(Subject::X)));
     }
     let spread_y = crate::fast_spread::fast_spread(y)
-        .map_err(|_| EstimatorError::from(AssumptionError::validity(Subject::Y)))?;
+        .map_err(EstimatorError::from)?;
     if spread_y <= 0.0 {
         return Err(EstimatorError::from(AssumptionError::sparity(Subject::Y)));
     }
@@ -190,19 +190,19 @@ pub fn disparity(x: &[f64], y: &[f64]) -> Result<f64, EstimatorError> {
     let m = y.len();
 
     let spread_x = crate::fast_spread::fast_spread(x)
-        .map_err(|_| EstimatorError::from(AssumptionError::validity(Subject::X)))?;
+        .map_err(EstimatorError::from)?;
     if spread_x <= 0.0 {
         return Err(EstimatorError::from(AssumptionError::sparity(Subject::X)));
     }
     let spread_y = crate::fast_spread::fast_spread(y)
-        .map_err(|_| EstimatorError::from(AssumptionError::validity(Subject::Y)))?;
+        .map_err(EstimatorError::from)?;
     if spread_y <= 0.0 {
         return Err(EstimatorError::from(AssumptionError::sparity(Subject::Y)));
     }
 
     // Calculate shift (we know inputs are valid)
     let shift_val = crate::fast_shift::fast_shift(x, y)
-        .map_err(|_| EstimatorError::from(AssumptionError::validity(Subject::X)))?;
+        .map_err(EstimatorError::from)?;
 
     let avg_spread_val = (n as f64 * spread_x + m as f64 * spread_y) / (n + m) as f64;
 
@@ -531,13 +531,13 @@ fn avg_spread_bounds_with_rngs(
     }
 
     if crate::fast_spread::fast_spread(x)
-        .map_err(|_| EstimatorError::from(AssumptionError::validity(Subject::X)))?
+        .map_err(EstimatorError::from)?
         <= 0.0
     {
         return Err(EstimatorError::from(AssumptionError::sparity(Subject::X)));
     }
     if crate::fast_spread::fast_spread(y)
-        .map_err(|_| EstimatorError::from(AssumptionError::validity(Subject::Y)))?
+        .map_err(EstimatorError::from)?
         <= 0.0
     {
         return Err(EstimatorError::from(AssumptionError::sparity(Subject::Y)));
@@ -645,13 +645,13 @@ fn disparity_bounds_with_rngs(
     let alpha_avg = min_avg + extra / 2.0;
 
     if crate::fast_spread::fast_spread(x)
-        .map_err(|_| EstimatorError::from(AssumptionError::validity(Subject::X)))?
+        .map_err(EstimatorError::from)?
         <= 0.0
     {
         return Err(EstimatorError::from(AssumptionError::sparity(Subject::X)));
     }
     if crate::fast_spread::fast_spread(y)
-        .map_err(|_| EstimatorError::from(AssumptionError::validity(Subject::Y)))?
+        .map_err(EstimatorError::from)?
         <= 0.0
     {
         return Err(EstimatorError::from(AssumptionError::sparity(Subject::Y)));
@@ -763,7 +763,7 @@ fn spread_bounds_with_rng(
         return Err(EstimatorError::from(AssumptionError::sparity(Subject::X)));
     }
     if crate::fast_spread::fast_spread(x)
-        .map_err(|_| EstimatorError::from(AssumptionError::validity(Subject::X)))?
+        .map_err(EstimatorError::from)?
         <= 0.0
     {
         return Err(EstimatorError::from(AssumptionError::sparity(Subject::X)));
