@@ -21,10 +21,6 @@ internal class AvgSpreadBoundsEstimator : ITwoSampleBoundsEstimator
   public Bounds Estimate(Sample x, Sample y, Probability misrate, string? seed)
   {
     Assertion.MatchedUnit(x, y);
-    // Check validity for x (priority 0, subject x)
-    Assertion.Validity(x, Subject.X);
-    // Check validity for y (priority 0, subject y)
-    Assertion.Validity(y, Subject.Y);
 
     if (double.IsNaN(misrate) || misrate < 0 || misrate > 1)
       throw AssumptionException.Domain(Subject.Misrate);

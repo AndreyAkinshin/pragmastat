@@ -11,8 +11,6 @@ public class SpreadEstimator : IOneSampleEstimator
 
   public Measurement Estimate(Sample x)
   {
-    // Check validity first (priority 0)
-    Assertion.Validity(x, Subject.X);
     var spreadVal = FastSpread.Estimate(x.SortedValues, isSorted: true);
     if (spreadVal <= 0)
       throw AssumptionException.Sparity(Subject.X);

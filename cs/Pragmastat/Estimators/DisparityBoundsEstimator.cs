@@ -22,9 +22,6 @@ public class DisparityBoundsEstimator : ITwoSampleBoundsEstimator
   public Bounds Estimate(Sample x, Sample y, Probability misrate, string? seed)
   {
     Assertion.MatchedUnit(x, y);
-    // Check validity (priority 0)
-    Assertion.Validity(x, Subject.X);
-    Assertion.Validity(y, Subject.Y);
 
     if (double.IsNaN(misrate) || misrate < 0 || misrate > 1)
       throw AssumptionException.Domain(Subject.Misrate);

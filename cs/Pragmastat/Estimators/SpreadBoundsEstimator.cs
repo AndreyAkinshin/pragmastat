@@ -22,8 +22,6 @@ public class SpreadBoundsEstimator : IOneSampleBoundsEstimator
 
   public Bounds Estimate(Sample x, Probability misrate, string? seed)
   {
-    Assertion.Validity(x, Subject.X);
-
     if (double.IsNaN(misrate) || misrate < 0 || misrate > 1)
       throw AssumptionException.Domain(Subject.Misrate);
 

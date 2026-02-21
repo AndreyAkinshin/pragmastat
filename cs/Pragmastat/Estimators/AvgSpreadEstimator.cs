@@ -12,10 +12,6 @@ internal class AvgSpreadEstimator : ITwoSampleEstimator
   public Measurement Estimate(Sample x, Sample y)
   {
     Assertion.MatchedUnit(x, y);
-    // Check validity for x (priority 0, subject x)
-    Assertion.Validity(x, Subject.X);
-    // Check validity for y (priority 0, subject y)
-    Assertion.Validity(y, Subject.Y);
 
     var spreadX = FastSpread.Estimate(x.SortedValues, isSorted: true);
     if (spreadX <= 0)

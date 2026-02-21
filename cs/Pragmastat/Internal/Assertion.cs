@@ -216,21 +216,8 @@ internal static class Assertion
       throw new WeightedSampleNotSupportedException(name);
   }
 
-  /// <summary>
-  /// Checks that a sample is valid (non-empty with finite values).
-  /// This validates the implicit validity assumption that applies to all functions.
-  /// </summary>
-  [AssertionMethod]
-  public static void Validity(Sample sample, Subject subject)
-  {
-    if (sample.Size == 0)
-      throw AssumptionException.Validity(subject);
-    foreach (var value in sample.Values)
-    {
-      if (!value.IsFinite())
-        throw AssumptionException.Validity(subject);
-    }
-  }
+  // No Validity(Sample, Subject) method here: the Sample constructor already guarantees
+  // non-empty input with finite values, so validity is enforced at construction time.
 
   /// <summary>
   /// Checks that all values in a sample are strictly positive.

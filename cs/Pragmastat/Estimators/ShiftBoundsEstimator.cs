@@ -14,10 +14,6 @@ public class ShiftBoundsEstimator : ITwoSampleBoundsEstimator
   public Bounds Estimate(Sample x, Sample y, Probability misrate)
   {
     Assertion.MatchedUnit(x, y);
-    // Check validity for x
-    Assertion.Validity(x, Subject.X);
-    // Check validity for y
-    Assertion.Validity(y, Subject.Y);
 
     int n = x.Size, m = y.Size;
     long total = (long)n * m;
