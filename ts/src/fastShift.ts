@@ -57,7 +57,8 @@ export function fastShift(
 
   const m = xs.length;
   const n = ys.length;
-  const total = m * n;
+  // Use BigInt to prevent 53-bit precision overflow for large m*n
+  const total = BigInt(m) * BigInt(n);
 
   // Type-7 quantile: h = 1 + (n-1)*p, then interpolate between floor(h) and ceil(h)
   const requiredRanks = new Set<number>();
@@ -67,14 +68,15 @@ export function fastShift(
     weight: number;
   }> = [];
 
+  const totalNum = Number(total);
   for (let i = 0; i < p.length; i++) {
-    const h = 1.0 + (total - 1) * p[i];
+    const h = 1.0 + Number(total - 1n) * p[i];
     let lowerRank = Math.floor(h);
     let upperRank = Math.ceil(h);
     const weight = h - lowerRank;
 
     if (lowerRank < 1) lowerRank = 1;
-    if (upperRank > total) upperRank = total;
+    if (upperRank > totalNum) upperRank = totalNum;
 
     interpolationParams.push({ lowerRank, upperRank, weight });
     requiredRanks.add(lowerRank);
@@ -105,7 +107,8 @@ export function fastShift(
 function selectKthPairwiseDiff(x: number[], y: number[], k: number): number {
   const m = x.length;
   const n = y.length;
-  const total = m * n;
+  // Use BigInt to prevent 53-bit precision overflow for large m*n
+  const total = Number(BigInt(m) * BigInt(n));
 
   if (k < 1 || k > total) {
     throw new Error(`k must be between 1 and ${total}`);
