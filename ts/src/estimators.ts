@@ -228,23 +228,27 @@ export function shiftBounds(x: number[], y: number[], misrate: number = DEFAULT_
   const xs = [...x].sort((a, b) => a - b);
   const ys = [...y].sort((a, b) => a - b);
 
-  const total = n * m;
+  const total = BigInt(n) * BigInt(m);
 
   // Special case: when there's only one pairwise difference, bounds collapse to a single value
-  if (total === 1) {
+  if (total === 1n) {
     const value = xs[0] - ys[0];
     return { lower: value, upper: value };
   }
 
-  const margin = pairwiseMargin(n, m, misrate);
-  const halfMargin = Math.min(Math.floor(margin / 2), Math.floor((total - 1) / 2));
+  const margin = BigInt(pairwiseMargin(n, m, misrate));
+  const maxHalfMargin = (total - 1n) / 2n;
+  let halfMargin = margin / 2n;
+  if (halfMargin > maxHalfMargin) {
+    halfMargin = maxHalfMargin;
+  }
   const kLeft = halfMargin;
-  const kRight = total - 1 - halfMargin;
+  const kRight = total - 1n - halfMargin;
 
-  // Compute quantile positions
-  const denominator = total - 1 || 1;
-  const pLeft = kLeft / denominator;
-  const pRight = kRight / denominator;
+  // Compute quantile positions (convert to Number for float division)
+  const denominator = Number(total - 1n) || 1;
+  const pLeft = Number(kLeft) / denominator;
+  const pRight = Number(kRight) / denominator;
 
   // Use fastShift to compute quantiles of pairwise differences
   const [left, right] = fastShift(xs, ys, [pLeft, pRight], true);
@@ -327,15 +331,19 @@ export function centerBounds(x: number[], misrate: number = DEFAULT_MISRATE): Bo
   }
 
   // Total number of pairwise averages (including self-pairs)
-  const totalPairs = (n * (n + 1)) / 2;
+  const totalPairs = (BigInt(n) * BigInt(n + 1)) / 2n;
 
   // Get signed-rank margin
-  const margin = signedRankMargin(n, misrate);
-  const halfMargin = Math.min(Math.floor(margin / 2), Math.floor((totalPairs - 1) / 2));
+  const margin = BigInt(signedRankMargin(n, misrate));
+  const maxHalfMargin = (totalPairs - 1n) / 2n;
+  let halfMargin = margin / 2n;
+  if (halfMargin > maxHalfMargin) {
+    halfMargin = maxHalfMargin;
+  }
 
   // k_left and k_right are 1-based ranks
-  const kLeft = halfMargin + 1;
-  const kRight = totalPairs - halfMargin;
+  const kLeft = Number(halfMargin + 1n);
+  const kRight = Number(totalPairs - halfMargin);
 
   // Sort the input
   const sorted = [...x].sort((a, b) => a - b);
