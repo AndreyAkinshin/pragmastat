@@ -263,7 +263,7 @@ checksum = "c33a9471896f1c69cecef8d20cbe2f7accd12527ce60845ff44c153bb2a21b49"
 
 [[package]]
 name = "pragmastat"
-version = "10.0.4"
+version = "10.0.5"
 
 [[package]]
 name = "pragmastat-sim"
