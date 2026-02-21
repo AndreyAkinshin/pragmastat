@@ -5,7 +5,7 @@
 
 Install from GitHub:
 
-#raw("go get github.com/AndreyAkinshin/pragmastat/go/v4@v" + version, lang: "bash", block: true)
+#raw("go get github.com/AndreyAkinshin/pragmastat/go/v" + major + "@v" + version, lang: "bash", block: true)
 
 Source code: #link(github-tree + "/go")
 

@@ -76,6 +76,12 @@ const VERSION_TARGETS: &[VersionTarget] = &[
         pattern: r">v\d+\.\d+\.\d+<",
         replacement: ">v{version}<",
     },
+    // Go badge link in root README
+    VersionTarget {
+        path: "README.md",
+        pattern: r"pkg\.go\.dev/github\.com/AndreyAkinshin/pragmastat/go/v\d+",
+        replacement: "pkg.go.dev/github.com/AndreyAkinshin/pragmastat/go/v{major}",
+    },
 ];
 
 pub fn read_version(base_path: &Path) -> Result<String> {

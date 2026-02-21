@@ -2,7 +2,7 @@
 // Shared definitions for PDF generation and web conversion
 // These are imported into the main document and implementation pages
 
-#import "version.typ": version
+#import "version.typ": version, major
 
 // ==========================================================================
 // Shared URLs
