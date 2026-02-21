@@ -91,7 +91,7 @@ pub(crate) fn fast_shift_quantiles(
     // Compute values for all required ranks
     let mut rank_values = std::collections::HashMap::new();
     for rank in required_ranks {
-        rank_values.insert(rank, select_kth_pairwise_diff(&xs, &ys, rank));
+        rank_values.insert(rank, select_kth_pairwise_diff(&xs, &ys, rank)?);
     }
 
     // Interpolate to get final results
@@ -113,13 +113,13 @@ pub(crate) fn fast_shift_quantiles(
 
 /// Binary search to find the k-th smallest pairwise difference x[i] - y[j]
 /// without materializing all m*n differences.
-pub(crate) fn select_kth_pairwise_diff(x: &[f64], y: &[f64], k: i64) -> f64 {
+pub(crate) fn select_kth_pairwise_diff(x: &[f64], y: &[f64], k: i64) -> Result<f64, &'static str> {
     let m = x.len();
     let n = y.len();
     let total = (m as i64) * (n as i64);
 
     if k < 1 || k > total {
-        panic!("k out of range: k={}, total={}", k, total);
+        return Err("k out of range");
     }
 
     // Initial search bounds: [min_diff, max_diff]
@@ -127,7 +127,7 @@ pub(crate) fn select_kth_pairwise_diff(x: &[f64], y: &[f64], k: i64) -> f64 {
     let mut search_max = x[m - 1] - y[0];
 
     if search_min.is_nan() || search_max.is_nan() {
-        panic!("NaN in input values");
+        return Err("NaN in input values");
     }
 
     const MAX_ITERATIONS: usize = 128; // Sufficient for double precision
@@ -136,7 +136,7 @@ pub(crate) fn select_kth_pairwise_diff(x: &[f64], y: &[f64], k: i64) -> f64 {
 
     for _ in 0..MAX_ITERATIONS {
         if search_min == search_max {
-            return search_min;
+            return Ok(search_min);
         }
 
         let mid = midpoint(search_min, search_max);
@@ -144,16 +144,16 @@ pub(crate) fn select_kth_pairwise_diff(x: &[f64], y: &[f64], k: i64) -> f64 {
 
         // If we found the exact value
         if closest_below == closest_above {
-            return closest_below;
+            return Ok(closest_below);
         }
 
         // Check if we're stuck (no progress)
         if search_min == prev_min && search_max == prev_max {
-            return if count_le >= k {
+            return Ok(if count_le >= k {
                 closest_below
             } else {
                 closest_above
-            };
+            });
         }
 
         prev_min = search_min;
@@ -167,8 +167,7 @@ pub(crate) fn select_kth_pairwise_diff(x: &[f64], y: &[f64], k: i64) -> f64 {
         }
     }
 
-    // Should converge within MAX_ITERATIONS
-    panic!("Convergence failure in fast_shift");
+    Err("Convergence failure in fast_shift")
 }
 
 /// Counts how many pairs x[i] - y[j] <= threshold using a two-pointer algorithm.
