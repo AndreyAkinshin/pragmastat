@@ -2,6 +2,7 @@ package pragmastat
 
 import (
 	"errors"
+	"fmt"
 	"math"
 	"sort"
 )
@@ -113,7 +114,11 @@ func fastShiftQuantiles[T Number](x, y []T, p []float64, assumeSorted bool) ([]f
 	// Compute values for all required ranks
 	rankValues := make(map[int64]float64)
 	for rank := range requiredRanks {
-		rankValues[rank] = selectKthPairwiseDiff(xs, ys, rank)
+		val, err := selectKthPairwiseDiff(xs, ys, rank)
+		if err != nil {
+			return nil, err
+		}
+		rankValues[rank] = val
 	}
 
 	// Interpolate to get final results
@@ -133,20 +138,20 @@ func fastShiftQuantiles[T Number](x, y []T, p []float64, assumeSorted bool) ([]f
 
 // selectKthPairwiseDiff finds the k-th smallest pairwise difference (1-based indexing).
 // Uses binary search combined with two-pointer counting to avoid materializing all differences.
-func selectKthPairwiseDiff[T Number](x, y []T, k int64) float64 {
+func selectKthPairwiseDiff[T Number](x, y []T, k int64) (float64, error) {
 	m := len(x)
 	n := len(y)
 	total := int64(m) * int64(n)
 
 	if k < 1 || k > total {
-		panic("k out of range")
+		return 0, fmt.Errorf("k out of range: k=%d, total=%d", k, total)
 	}
 
 	searchMin := float64(x[0] - y[n-1])
 	searchMax := float64(x[m-1] - y[0])
 
 	if math.IsNaN(searchMin) || math.IsNaN(searchMax) {
-		panic("NaN in input values")
+		return 0, errors.New("NaN in input values")
 	}
 
 	const maxIterations = 128 // Sufficient for double precision convergence
@@ -158,15 +163,15 @@ func selectKthPairwiseDiff[T Number](x, y []T, k int64) float64 {
 		countLessOrEqual, closestBelow, closestAbove := countAndNeighbors(x, y, mid)
 
 		if closestBelow == closestAbove {
-			return closestBelow
+			return closestBelow, nil
 		}
 
 		// No progress means we're stuck between two discrete values
 		if searchMin == prevMin && searchMax == prevMax {
 			if countLessOrEqual >= k {
-				return closestBelow
+				return closestBelow, nil
 			}
-			return closestAbove
+			return closestAbove, nil
 		}
 
 		prevMin = searchMin
@@ -180,10 +185,10 @@ func selectKthPairwiseDiff[T Number](x, y []T, k int64) float64 {
 	}
 
 	if searchMin != searchMax {
-		panic("convergence failure (pathological input)")
+		return 0, errors.New("convergence failure (pathological input)")
 	}
 
-	return searchMin
+	return searchMin, nil
 }
 
 // countAndNeighbors counts pairs where x[i] - y[j] <= threshold using two-pointer algorithm.
