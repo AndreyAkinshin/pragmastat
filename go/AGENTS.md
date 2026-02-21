@@ -55,16 +55,12 @@ func Shift[T Number](x, y []T) (float64, error)
 func Ratio[T Number](x, y []T) (float64, error)
 func Disparity[T Number](x, y []T) (float64, error)
 
-// Bounds estimators (variadic misrate, defaults to 1e-3)
-func ShiftBounds[T Number](x, y []T, misrate ...float64) (Bounds, error)
-func RatioBounds[T Number](x, y []T, misrate ...float64) (Bounds, error)
-func DisparityBounds[T Number](x, y []T, misrate ...float64) (Bounds, error)
-func CenterBounds[T Number](x []T, misrate ...float64) (Bounds, error)
-func SpreadBounds[T Number](x []T, misrate ...float64) (Bounds, error)
-
-// Deterministic variants (with string seed)
-func SpreadBoundsWithSeed[T Number](x []T, misrate float64, seed string) (Bounds, error)
-func DisparityBoundsWithSeed[T Number](x, y []T, misrate float64, seed string) (Bounds, error)
+// Bounds estimators (variadic BoundsConfig with Misrate and Seed fields)
+func ShiftBounds[T Number](x, y []T, config ...BoundsConfig) (Bounds, error)
+func RatioBounds[T Number](x, y []T, config ...BoundsConfig) (Bounds, error)
+func DisparityBounds[T Number](x, y []T, config ...BoundsConfig) (Bounds, error)
+func CenterBounds[T Number](x []T, config ...BoundsConfig) (Bounds, error)
+func SpreadBounds[T Number](x []T, config ...BoundsConfig) (Bounds, error)
 ```
 
 ## Testing

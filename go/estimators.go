@@ -217,16 +217,34 @@ type Bounds struct {
 	Upper float64
 }
 
+// BoundsConfig holds optional parameters for bounds estimators.
+type BoundsConfig struct {
+	Misrate float64 // Misclassification rate; 0 means DefaultMisrate
+	Seed    string  // Random seed; empty means non-deterministic
+}
+
+func parseBoundsConfig(config []BoundsConfig) (float64, string, error) {
+	if len(config) > 1 {
+		return 0, "", NewDomainError(SubjectMisrate)
+	}
+	mr := DefaultMisrate
+	seed := ""
+	if len(config) > 0 {
+		if config[0].Misrate != 0 {
+			mr = config[0].Misrate
+		}
+		seed = config[0].Seed
+	}
+	return mr, seed, nil
+}
+
 // ShiftBounds provides bounds on the Shift estimator with specified misclassification rate.
 // The misrate represents the probability that the true shift falls outside the computed bounds.
 // This is a pragmatic alternative to traditional confidence intervals for the Hodges-Lehmann estimator.
-func ShiftBounds[T Number](x, y []T, misrate ...float64) (Bounds, error) {
-	if len(misrate) > 1 {
-		return Bounds{}, NewDomainError(SubjectMisrate)
-	}
-	mr := DefaultMisrate
-	if len(misrate) > 0 {
-		mr = misrate[0]
+func ShiftBounds[T Number](x, y []T, config ...BoundsConfig) (Bounds, error) {
+	mr, _, err := parseBoundsConfig(config)
+	if err != nil {
+		return Bounds{}, err
 	}
 
 	// Check validity for x
@@ -310,13 +328,10 @@ func ShiftBounds[T Number](x, y []T, misrate ...float64) (Bounds, error) {
 // Assumptions:
 //   - positivity(x) - all values in x must be strictly positive
 //   - positivity(y) - all values in y must be strictly positive
-func RatioBounds[T Number](x, y []T, misrate ...float64) (Bounds, error) {
-	if len(misrate) > 1 {
-		return Bounds{}, NewDomainError(SubjectMisrate)
-	}
-	mr := DefaultMisrate
-	if len(misrate) > 0 {
-		mr = misrate[0]
+func RatioBounds[T Number](x, y []T, config ...BoundsConfig) (Bounds, error) {
+	mr, _, err := parseBoundsConfig(config)
+	if err != nil {
+		return Bounds{}, err
 	}
 
 	if err := checkValidity(x, SubjectX); err != nil {
@@ -349,7 +364,7 @@ func RatioBounds[T Number](x, y []T, misrate ...float64) (Bounds, error) {
 	}
 
 	// Delegate to ShiftBounds in log-space
-	logBounds, err := ShiftBounds(logX, logY, mr)
+	logBounds, err := ShiftBounds(logX, logY, BoundsConfig{Misrate: mr})
 	if err != nil {
 		return Bounds{}, err
 	}
@@ -363,13 +378,10 @@ func RatioBounds[T Number](x, y []T, misrate ...float64) (Bounds, error) {
 
 // CenterBounds provides exact distribution-free bounds for Center (Hodges-Lehmann pseudomedian).
 // Requires weak symmetry assumption: distribution symmetric around unknown center.
-func CenterBounds[T Number](x []T, misrate ...float64) (Bounds, error) {
-	if len(misrate) > 1 {
-		return Bounds{}, NewDomainError(SubjectMisrate)
-	}
-	mr := DefaultMisrate
-	if len(misrate) > 0 {
-		mr = misrate[0]
+func CenterBounds[T Number](x []T, config ...BoundsConfig) (Bounds, error) {
+	mr, _, err := parseBoundsConfig(config)
+	if err != nil {
+		return Bounds{}, err
 	}
 
 	if err := checkValidity(x, SubjectX); err != nil {
@@ -422,29 +434,18 @@ func CenterBounds[T Number](x []T, misrate ...float64) (Bounds, error) {
 }
 
 // SpreadBounds provides distribution-free bounds for Spread using disjoint pairs.
-func SpreadBounds[T Number](x []T, misrate ...float64) (Bounds, error) {
-	if len(misrate) > 1 {
-		return Bounds{}, NewDomainError(SubjectMisrate)
+func SpreadBounds[T Number](x []T, config ...BoundsConfig) (Bounds, error) {
+	mr, seed, err := parseBoundsConfig(config)
+	if err != nil {
+		return Bounds{}, err
 	}
-	mr := DefaultMisrate
-	if len(misrate) > 0 {
-		mr = misrate[0]
+	var rng *Rng
+	if seed != "" {
+		rng = NewRngFromString(seed)
+	} else {
+		rng = NewRng()
 	}
-	rng := NewRng()
 	return spreadBoundsWithRng(x, mr, rng)
-}
-
-// SpreadBoundsWithSeed provides deterministic SpreadBounds using a string seed.
-func SpreadBoundsWithSeed[T Number](x []T, misrate float64, seed string) (Bounds, error) {
-	rng := NewRngFromString(seed)
-	return spreadBoundsWithRng(x, misrate, rng)
-}
-
-// avgSpreadBoundsWithSeed provides deterministic AvgSpreadBounds using a string seed.
-func avgSpreadBoundsWithSeed[T Number](x, y []T, misrate float64, seed string) (Bounds, error) {
-	rngX := NewRngFromString(seed)
-	rngY := NewRngFromString(seed)
-	return avgSpreadBoundsWithRngs(x, y, misrate, rngX, rngY)
 }
 
 func avgSpreadBoundsWithRngs[T Number](x, y []T, misrate float64, rngX, rngY *Rng) (Bounds, error) {
@@ -518,24 +519,20 @@ func avgSpreadBoundsWithRngs[T Number](x, y []T, misrate float64, rngX, rngY *Rn
 
 // DisparityBounds provides distribution-free bounds for the Disparity estimator (Shift / AvgSpread)
 // using Bonferroni combination of ShiftBounds and AvgSpreadBounds.
-func DisparityBounds[T Number](x, y []T, misrate ...float64) (Bounds, error) {
-	if len(misrate) > 1 {
-		return Bounds{}, NewDomainError(SubjectMisrate)
+func DisparityBounds[T Number](x, y []T, config ...BoundsConfig) (Bounds, error) {
+	mr, seed, err := parseBoundsConfig(config)
+	if err != nil {
+		return Bounds{}, err
 	}
-	mr := DefaultMisrate
-	if len(misrate) > 0 {
-		mr = misrate[0]
+	var rngX, rngY *Rng
+	if seed != "" {
+		rngX = NewRngFromString(seed)
+		rngY = NewRngFromString(seed)
+	} else {
+		rngX = NewRng()
+		rngY = NewRng()
 	}
-	rngX := NewRng()
-	rngY := NewRng()
 	return disparityBoundsWithRngs(x, y, mr, rngX, rngY)
-}
-
-// DisparityBoundsWithSeed provides deterministic DisparityBounds using a string seed.
-func DisparityBoundsWithSeed[T Number](x, y []T, misrate float64, seed string) (Bounds, error) {
-	rngX := NewRngFromString(seed)
-	rngY := NewRngFromString(seed)
-	return disparityBoundsWithRngs(x, y, misrate, rngX, rngY)
 }
 
 func disparityBoundsWithRngs[T Number](x, y []T, misrate float64, rngX, rngY *Rng) (Bounds, error) {
@@ -598,7 +595,7 @@ func disparityBoundsWithRngs[T Number](x, y []T, misrate float64, rngX, rngY *Rn
 		return Bounds{}, NewSparityError(SubjectY)
 	}
 
-	sb, err := ShiftBounds(x, y, alphaShift)
+	sb, err := ShiftBounds(x, y, BoundsConfig{Misrate: alphaShift})
 	if err != nil {
 		return Bounds{}, err
 	}

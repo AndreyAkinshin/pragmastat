@@ -169,7 +169,7 @@ func TestReferenceData(t *testing.T) {
 
 				// Handle error test cases
 				if len(testData.ExpectedError) > 0 {
-					_, err := ShiftBounds[float64](input.X, input.Y, input.Misrate)
+					_, err := ShiftBounds[float64](input.X, input.Y, BoundsConfig{Misrate: input.Misrate})
 					if err == nil {
 						t.Errorf("Expected error for ShiftBounds(%v, %v, %v), but got none", input.X, input.Y, input.Misrate)
 						return
@@ -190,7 +190,7 @@ func TestReferenceData(t *testing.T) {
 					t.Fatalf("Failed to parse output data: %v", err)
 				}
 
-				actual, err := ShiftBounds[float64](input.X, input.Y, input.Misrate)
+				actual, err := ShiftBounds[float64](input.X, input.Y, BoundsConfig{Misrate: input.Misrate})
 				if err != nil {
 					t.Fatalf("ShiftBounds(%v, %v, %v) error: %v",
 						input.X, input.Y, input.Misrate, err)
@@ -239,7 +239,7 @@ func TestReferenceData(t *testing.T) {
 
 				// Handle error test cases
 				if len(testData.ExpectedError) > 0 {
-					_, err := RatioBounds(input.X, input.Y, input.Misrate)
+					_, err := RatioBounds(input.X, input.Y, BoundsConfig{Misrate: input.Misrate})
 					if err == nil {
 						t.Errorf("Expected error for RatioBounds(%v, %v, %v), but got none", input.X, input.Y, input.Misrate)
 						return
@@ -260,7 +260,7 @@ func TestReferenceData(t *testing.T) {
 					t.Fatalf("Failed to parse output data: %v", err)
 				}
 
-				actual, err := RatioBounds(input.X, input.Y, input.Misrate)
+				actual, err := RatioBounds(input.X, input.Y, BoundsConfig{Misrate: input.Misrate})
 				if err != nil {
 					t.Fatalf("RatioBounds(%v, %v, %v) error: %v",
 						input.X, input.Y, input.Misrate, err)
@@ -1366,7 +1366,7 @@ func TestCenterBoundsReference(t *testing.T) {
 
 			// Handle error test cases
 			if len(testData.ExpectedError) > 0 {
-				_, err := CenterBounds(input.X, input.Misrate)
+				_, err := CenterBounds(input.X, BoundsConfig{Misrate: input.Misrate})
 				if err == nil {
 					t.Errorf("CenterBounds(%v, %v) expected error but got nil",
 						input.X, input.Misrate)
@@ -1391,7 +1391,7 @@ func TestCenterBoundsReference(t *testing.T) {
 				t.Fatalf("Failed to parse output data: %v", err)
 			}
 
-			actual, err := CenterBounds(input.X, input.Misrate)
+			actual, err := CenterBounds(input.X, BoundsConfig{Misrate: input.Misrate})
 			if err != nil {
 				t.Fatalf("CenterBounds(%v, %v) error: %v",
 					input.X, input.Misrate, err)
@@ -1439,9 +1439,9 @@ func TestSpreadBoundsReference(t *testing.T) {
 
 			// Handle error test cases
 			if len(testData.ExpectedError) > 0 {
-				_, err := SpreadBoundsWithSeed(input.X, input.Misrate, input.Seed)
+				_, err := SpreadBounds(input.X, BoundsConfig{Misrate: input.Misrate, Seed: input.Seed})
 				if err == nil {
-					t.Errorf("SpreadBoundsWithSeed(%v, %v, %q) expected error but got nil",
+					t.Errorf("SpreadBounds(%v, %v, %q) expected error but got nil",
 						input.X, input.Misrate, input.Seed)
 					return
 				}
@@ -1463,14 +1463,14 @@ func TestSpreadBoundsReference(t *testing.T) {
 				t.Fatalf("Failed to parse output data: %v", err)
 			}
 
-			actual, err := SpreadBoundsWithSeed(input.X, input.Misrate, input.Seed)
+			actual, err := SpreadBounds(input.X, BoundsConfig{Misrate: input.Misrate, Seed: input.Seed})
 			if err != nil {
-				t.Fatalf("SpreadBoundsWithSeed(%v, %v, %q) error: %v",
+				t.Fatalf("SpreadBounds(%v, %v, %q) error: %v",
 					input.X, input.Misrate, input.Seed, err)
 			}
 			if !floatEquals(actual.Lower, expected.Lower, 1e-9) ||
 				!floatEquals(actual.Upper, expected.Upper, 1e-9) {
-				t.Errorf("SpreadBoundsWithSeed(%v, %v, %q) = [%v, %v], want [%v, %v]",
+				t.Errorf("SpreadBounds(%v, %v, %q) = [%v, %v], want [%v, %v]",
 					input.X, input.Misrate, input.Seed,
 					actual.Lower, actual.Upper,
 					expected.Lower, expected.Upper)
@@ -1511,9 +1511,9 @@ func TestAvgSpreadBoundsReference(t *testing.T) {
 
 			// Handle error test cases
 			if len(testData.ExpectedError) > 0 {
-				_, err := avgSpreadBoundsWithSeed(input.X, input.Y, input.Misrate, input.Seed)
+				_, err := avgSpreadBoundsWithRngs(input.X, input.Y, input.Misrate, NewRngFromString(input.Seed), NewRngFromString(input.Seed))
 				if err == nil {
-					t.Errorf("avgSpreadBoundsWithSeed(%v, %v, %v, %q) expected error but got nil",
+					t.Errorf("avgSpreadBoundsWithRngs(%v, %v, %v, %q) expected error but got nil",
 						input.X, input.Y, input.Misrate, input.Seed)
 					return
 				}
@@ -1535,14 +1535,14 @@ func TestAvgSpreadBoundsReference(t *testing.T) {
 				t.Fatalf("Failed to parse output data: %v", err)
 			}
 
-			actual, err := avgSpreadBoundsWithSeed(input.X, input.Y, input.Misrate, input.Seed)
+			actual, err := avgSpreadBoundsWithRngs(input.X, input.Y, input.Misrate, NewRngFromString(input.Seed), NewRngFromString(input.Seed))
 			if err != nil {
-				t.Fatalf("avgSpreadBoundsWithSeed(%v, %v, %v, %q) error: %v",
+				t.Fatalf("avgSpreadBoundsWithRngs(%v, %v, %v, %q) error: %v",
 					input.X, input.Y, input.Misrate, input.Seed, err)
 			}
 			if !floatEquals(actual.Lower, expected.Lower, 1e-9) ||
 				!floatEquals(actual.Upper, expected.Upper, 1e-9) {
-				t.Errorf("avgSpreadBoundsWithSeed(%v, %v, %v, %q) = [%v, %v], want [%v, %v]",
+				t.Errorf("avgSpreadBoundsWithRngs(%v, %v, %v, %q) = [%v, %v], want [%v, %v]",
 					input.X, input.Y, input.Misrate, input.Seed,
 					actual.Lower, actual.Upper,
 					expected.Lower, expected.Upper)
@@ -1583,9 +1583,9 @@ func TestDisparityBoundsReference(t *testing.T) {
 
 			// Handle error test cases
 			if len(testData.ExpectedError) > 0 {
-				_, err := DisparityBoundsWithSeed(input.X, input.Y, input.Misrate, input.Seed)
+				_, err := DisparityBounds(input.X, input.Y, BoundsConfig{Misrate: input.Misrate, Seed: input.Seed})
 				if err == nil {
-					t.Errorf("DisparityBoundsWithSeed(%v, %v, %v, %q) expected error but got nil",
+					t.Errorf("DisparityBounds(%v, %v, %v, %q) expected error but got nil",
 						input.X, input.Y, input.Misrate, input.Seed)
 					return
 				}
@@ -1607,14 +1607,14 @@ func TestDisparityBoundsReference(t *testing.T) {
 				t.Fatalf("Failed to parse output data: %v", err)
 			}
 
-			actual, err := DisparityBoundsWithSeed(input.X, input.Y, input.Misrate, input.Seed)
+			actual, err := DisparityBounds(input.X, input.Y, BoundsConfig{Misrate: input.Misrate, Seed: input.Seed})
 			if err != nil {
-				t.Fatalf("DisparityBoundsWithSeed(%v, %v, %v, %q) error: %v",
+				t.Fatalf("DisparityBounds(%v, %v, %v, %q) error: %v",
 					input.X, input.Y, input.Misrate, input.Seed, err)
 			}
 			if !floatEquals(actual.Lower, expected.Lower, 1e-9) ||
 				!floatEquals(actual.Upper, expected.Upper, 1e-9) {
-				t.Errorf("DisparityBoundsWithSeed(%v, %v, %v, %q) = [%v, %v], want [%v, %v]",
+				t.Errorf("DisparityBounds(%v, %v, %v, %q) = [%v, %v], want [%v, %v]",
 					input.X, input.Y, input.Misrate, input.Seed,
 					actual.Lower, actual.Upper,
 					expected.Lower, expected.Upper)
