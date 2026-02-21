@@ -65,7 +65,8 @@ export function fastSpread(values: number[]): number {
   const a = [...values].sort((a, b) => a - b);
 
   // Total number of pairwise differences with i < j
-  const N = Math.floor((n * (n - 1)) / 2);
+  // Use BigInt to prevent 53-bit precision overflow for large n
+  const N = Number((BigInt(n) * BigInt(n - 1)) / 2n);
   const kLow = Math.floor((N + 1) / 2); // 1-based rank of lower middle
   const kHigh = Math.floor((N + 2) / 2); // 1-based rank of upper middle
 

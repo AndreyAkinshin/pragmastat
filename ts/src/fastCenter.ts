@@ -65,7 +65,8 @@ export function fastCenter(values: number[]): number {
   const sortedValues = [...values].sort((a, b) => a - b);
 
   // Calculate target median rank(s) among all pairwise sums
-  const totalPairs = Math.floor((n * (n + 1)) / 2);
+  // Use BigInt to prevent 53-bit precision overflow for large n
+  const totalPairs = Number((BigInt(n) * BigInt(n + 1)) / 2n);
   const medianRankLow = Math.floor((totalPairs + 1) / 2); // 1-based rank
   const medianRankHigh = Math.floor((totalPairs + 2) / 2);
 
