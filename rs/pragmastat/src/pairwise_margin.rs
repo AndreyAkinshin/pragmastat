@@ -27,7 +27,7 @@ const MAX_ACCEPTABLE_BINOM_N: usize = 65;
 /// # Errors
 ///
 /// Returns an error if n == 0, m == 0, or misrate is outside [0, 1] or is NaN.
-pub fn pairwise_margin(n: usize, m: usize, misrate: f64) -> Result<usize, AssumptionError> {
+pub fn pairwise_margin(n: usize, m: usize, misrate: f64) -> Result<u64, AssumptionError> {
     if n == 0 {
         return Err(AssumptionError::domain(Subject::X));
     }
@@ -51,12 +51,12 @@ pub fn pairwise_margin(n: usize, m: usize, misrate: f64) -> Result<usize, Assump
 }
 
 /// Uses the exact distribution based on Loeffler's recurrence
-fn pairwise_margin_exact(n: usize, m: usize, misrate: f64) -> usize {
-    pairwise_margin_exact_raw(n, m, misrate / 2.0) * 2
+fn pairwise_margin_exact(n: usize, m: usize, misrate: f64) -> u64 {
+    pairwise_margin_exact_raw(n, m, misrate / 2.0) as u64 * 2
 }
 
 /// Uses Edgeworth approximation for large samples
-fn pairwise_margin_approx(n: usize, m: usize, misrate: f64) -> usize {
+fn pairwise_margin_approx(n: usize, m: usize, misrate: f64) -> u64 {
     pairwise_margin_approx_raw(n, m, misrate / 2.0) * 2
 }
 
@@ -119,9 +119,9 @@ fn pairwise_margin_exact_raw(n: usize, m: usize, p: f64) -> usize {
 }
 
 /// Inverse Edgeworth Approximation
-fn pairwise_margin_approx_raw(n: usize, m: usize, misrate: f64) -> usize {
-    let mut a = 0;
-    let mut b = n * m;
+fn pairwise_margin_approx_raw(n: usize, m: usize, misrate: f64) -> u64 {
+    let mut a: u64 = 0;
+    let mut b: u64 = n as u64 * m as u64;
     while a < b - 1 {
         let c = (a + b) / 2;
         let p = edgeworth_cdf(n, m, c);
@@ -140,7 +140,7 @@ fn pairwise_margin_approx_raw(n: usize, m: usize, misrate: f64) -> usize {
 }
 
 /// Computes the CDF using Edgeworth expansion
-fn edgeworth_cdf(n: usize, m: usize, u: usize) -> f64 {
+fn edgeworth_cdf(n: usize, m: usize, u: u64) -> f64 {
     let n_f64 = n as f64;
     let m_f64 = m as f64;
     let u_f64 = u as f64;
@@ -319,7 +319,7 @@ mod tests {
     #[derive(Debug, Deserialize)]
     struct TestCase {
         input: Input,
-        output: Option<usize>,
+        output: Option<u64>,
         expected_error: Option<serde_json::Value>,
     }
 
