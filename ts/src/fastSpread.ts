@@ -24,7 +24,7 @@ function float64ToBits(value: number): bigint {
 /**
  * Derive a deterministic seed from input values using FNV-1a hash.
  */
-function deriveSeed(values: number[]): number {
+function deriveSeed(values: number[]): bigint {
   let hash = FNV_OFFSET_BASIS;
   for (const v of values) {
     const bits = float64ToBits(v);
@@ -33,9 +33,7 @@ function deriveSeed(values: number[]): number {
       hash = (hash * FNV_PRIME) & MASK64;
     }
   }
-  // Convert to signed int64 for consistency
-  const signedHash = BigInt.asIntN(64, hash);
-  return Number(signedHash);
+  return BigInt.asIntN(64, hash);
 }
 
 /**

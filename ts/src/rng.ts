@@ -34,17 +34,20 @@ export class Rng {
   /**
    * Create a new Rng.
    *
-   * @param seed - If number: use as integer seed directly.
+   * @param seed - If number: use as integer seed directly (loses precision beyond 2^53).
+   *               If bigint: use as exact 64-bit seed (no precision loss).
    *               If string: hash using FNV-1a to produce a numeric seed.
    *               If undefined: use current time for entropy (non-deterministic).
    */
-  constructor(seed?: number | string) {
+  constructor(seed?: number | string | bigint) {
     let seedBigInt: bigint;
 
     if (seed === undefined) {
       seedBigInt = BigInt(Date.now());
     } else if (typeof seed === 'string') {
       seedBigInt = fnv1aHash(seed);
+    } else if (typeof seed === 'bigint') {
+      seedBigInt = BigInt.asIntN(64, seed);
     } else {
       // Convert number to bigint, handling negative numbers via two's complement.
       // Note: Number seeds > 2^53 lose precision in the Number→BigInt conversion;
