@@ -139,14 +139,45 @@ pub fn parse_definitions(path: &Path) -> Result<EvalContext> {
                     i += 1;
                 }
 
-                // Parse imported variable name(s) - for now just handle single var or *
+                // Parse imported variable name(s): single name, star, or comma-separated list
+                let mut import_vars = Vec::new();
                 let var_start = i;
-                while i < chars.len()
-                    && (chars[i].is_alphanumeric() || chars[i] == '_' || chars[i] == '*')
-                {
+                if i < chars.len() && chars[i] == '*' {
+                    import_vars.push("*".to_string());
                     i += 1;
+                } else {
+                    while i < chars.len()
+                        && (chars[i].is_alphanumeric() || chars[i] == '_')
+                    {
+                        i += 1;
+                    }
+                    import_vars.push(chars_to_string(var_start, i));
+
+                    // Parse additional comma-separated names
+                    loop {
+                        // Skip whitespace
+                        while i < chars.len() && chars[i] == ' ' {
+                            i += 1;
+                        }
+                        if i >= chars.len() || chars[i] != ',' {
+                            break;
+                        }
+                        i += 1; // Skip comma
+                        // Skip whitespace
+                        while i < chars.len() && chars[i] == ' ' {
+                            i += 1;
+                        }
+                        let next_start = i;
+                        while i < chars.len()
+                            && (chars[i].is_alphanumeric() || chars[i] == '_')
+                        {
+                            i += 1;
+                        }
+                        if i > next_start {
+                            import_vars.push(chars_to_string(next_start, i));
+                        }
+                    }
                 }
-                let import_var = chars_to_string(var_start, i);
 
                 // Resolve import path relative to definitions file
                 let import_file_path = base_path.join(&import_path);
@@ -155,15 +186,13 @@ pub fn parse_definitions(path: &Path) -> Result<EvalContext> {
                     let imported_ctx = parse_definitions(&import_file_path)?;
 
                     // Import the specified variable(s)
-                    if import_var == "*" {
-                        // Import all variables
-                        for (name, value) in imported_ctx.vars {
-                            ctx.set(&name, value);
-                        }
-                    } else {
-                        // Import specific variable
-                        if let Some(value) = imported_ctx.get(&import_var) {
-                            ctx.set(&import_var, value.clone());
+                    for import_var in &import_vars {
+                        if import_var == "*" {
+                            for (name, value) in &imported_ctx.vars {
+                                ctx.set(name, value.clone());
+                            }
+                        } else if let Some(value) = imported_ctx.get(import_var) {
+                            ctx.set(import_var, value.clone());
                         }
                     }
                 }
