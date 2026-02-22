@@ -4,9 +4,10 @@ One-sample analog of PairwiseMargin using Wilcoxon signed-rank distribution.
 """
 
 import math
+
+from .assumptions import AssumptionError
 from .gauss_cdf import gauss_cdf
 from .min_misrate import min_achievable_misrate_one_sample
-from .assumptions import AssumptionError
 
 # Maximum n for exact computation. Limited to 63 because 2^n must fit in a 64-bit integer.
 SIGNED_RANK_MAX_EXACT_SIZE = 63
@@ -39,8 +40,7 @@ def signed_rank_margin(n: int, misrate: float) -> int:
 
     if n <= SIGNED_RANK_MAX_EXACT_SIZE:
         return _signed_rank_margin_exact(n, misrate)
-    else:
-        return _signed_rank_margin_approx(n, misrate)
+    return _signed_rank_margin_approx(n, misrate)
 
 
 def _signed_rank_margin_exact(n: int, misrate: float) -> int:
@@ -105,13 +105,7 @@ def _signed_rank_edgeworth_cdf(n: int, w: int) -> float:
     phi = math.exp(-z * z / 2.0) / math.sqrt(2.0 * math.pi)
     big_phi = gauss_cdf(z)
 
-    kappa4 = (
-        -n_f64
-        * (n_f64 + 1.0)
-        * (2.0 * n_f64 + 1.0)
-        * (3.0 * n_f64 * n_f64 + 3.0 * n_f64 - 1.0)
-        / 240.0
-    )
+    kappa4 = -n_f64 * (n_f64 + 1.0) * (2.0 * n_f64 + 1.0) * (3.0 * n_f64 * n_f64 + 3.0 * n_f64 - 1.0) / 240.0
 
     e3 = kappa4 / (24.0 * sigma2 * sigma2)
 

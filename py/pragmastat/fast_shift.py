@@ -4,7 +4,8 @@ Computes quantiles of all pairwise differences without materializing them.
 Uses binary search in value space with two-pointer counting.
 """
 
-from typing import List, Union, Sequence
+from typing import List, Sequence, Union
+
 import numpy as np
 from numpy.typing import NDArray
 
@@ -22,9 +23,7 @@ def _midpoint(a: float, b: float) -> float:
     return a + (b - a) * 0.5
 
 
-def _count_and_neighbors(
-    x: List[float], y: List[float], threshold: float
-) -> tuple[int, float, float]:
+def _count_and_neighbors(x: List[float], y: List[float], threshold: float) -> tuple[int, float, float]:
     """
     Count pairs where x[i] - y[j] <= threshold using two-pointer algorithm.
 
@@ -249,6 +248,5 @@ def _fast_shift(
         p_arr = np.array([p] if return_single else p, dtype=np.float64)
         result = _fast_shift_c.fast_shift_c(x_arr, y_arr, p_arr)
         return float(result[0]) if return_single else result.tolist()
-    else:
-        # Fall back to pure Python implementation
-        return _fast_shift_python(x, y, p, assume_sorted)
+    # Fall back to pure Python implementation
+    return _fast_shift_python(x, y, p, assume_sorted)

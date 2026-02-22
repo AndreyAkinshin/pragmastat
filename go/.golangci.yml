@@ -1,0 +1,109 @@
+version: "2"
+
+linters:
+  default: none
+  enable:
+    - asasalint
+    - asciicheck
+    - bidichk
+    - bodyclose
+    - copyloopvar
+    - dupword
+    - durationcheck
+    - errcheck
+    - errchkjson
+    - errname
+    - exhaustive
+    - exptostd
+    - fatcontext
+    - forcetypeassert
+    - gocheckcompilerdirectives
+    - gocritic
+    #- godot  # disabled: complexity notes intentionally omit trailing periods
+    - gomoddirectives
+    - goprintffuncname
+    - govet
+    - grouper
+    - ineffassign
+    - intrange
+    - misspell
+    - mirror
+    - nakedret
+    - nilerr
+    - nilnesserr
+    - noctx
+    - nolintlint
+    - prealloc
+    - reassign
+    - recvcheck
+    - staticcheck
+    - unconvert
+    - unparam
+    - unused
+    - usestdlibvars
+    - wastedassign
+    - whitespace
+
+  # Disabled with documented reasons:
+  # cyclop          — redundant with gocyclo
+  # depguard        — no restricted packages in this project
+  # dupl            — test boilerplate is inherently repetitive across RNG/distribution tests
+  # err113          — internal errors use ad-hoc errors.New; wrapping not needed
+  # errorlint       — type assertions on *AssumptionError are intentional (no wrapping)
+  # exhaustruct     — too strict for statistical data structs
+  # forbidigo       — no forbidden identifiers
+  # funlen          — statistical algorithms are inherently long
+  # gochecknoglobals — package-level constants are idiomatic (DefaultMisrate, etc.)
+  # gochecknoinits  — no init() functions, but linter is noisy
+  # gocognit        — redundant with gocyclo
+  # goconst         — repeated test paths are acceptable
+  # gocyclo         — statistical algorithms have inherent cyclomatic complexity
+  # godoclint       — multiple package comments across files are intentional
+  # godot           — complexity notes intentionally omit trailing periods
+  # goheader        — no file header requirement
+  # gomodguard      — no blocked modules
+  # gosec           — integer truncation (G115) in RNG is intentional bit manipulation
+  # gosmopolitan    — not an i18n project
+  # iface           — interface patterns are intentional
+  # inamedparam     — unnamed params acceptable in math interfaces
+  # interfacebloat  — no large interfaces
+  # ireturn         — returning interfaces is acceptable for Distribution
+  # lll             — line length handled by gofmt
+  # loggercheck     — no structured logging
+  # maintidx        — redundant with gocyclo
+  # mnd             — numeric constants in statistical code are domain-specific
+  # musttag         — no JSON struct tags required for internal types
+  # nestif          — statistical algorithms have deep conditional logic
+  # nlreturn        — too opinionated
+  # noinlineerr     — inline error checks are idiomatic Go
+  # nonamedreturns  — named returns acceptable for documentation
+  # paralleltest    — test parallelism managed manually
+  # perfsprint      — micro-optimization, not needed
+  # predeclared     — min/max param names are standard in math APIs
+  # revive          — exported comment rules too strict for math constructors/constants
+  # sloglint        — no slog usage
+  # tagliatelle     — no JSON tag naming convention
+  # testpackage     — internal tests access unexported functions
+  # thelper         — test helpers are simple enough
+  # tparallel       — test parallelism managed manually
+  # varnamelen      — short math variable names (x, y, n, m, p) are standard
+  # wrapcheck       — internal errors don't need wrapping
+  # wsl_v5          — too opinionated about whitespace
+
+  settings:
+    nakedret:
+      max-func-lines: 0  # disallow naked returns
+    godot:
+      scope: toplevel
+      exclude:
+        - "^Space complexity:"  # algorithm complexity notes
+    errcheck:
+      check-type-assertions: true
+    gocritic:
+      disabled-checks:
+        - ifElseChain   # acceptable in bounds division logic
+        - assignOp      # y = y - 2.0 reads better in math context
+
+  exclusions:
+    paths:
+      - "demo/"  # demo code has relaxed standards

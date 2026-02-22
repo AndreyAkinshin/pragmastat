@@ -13,7 +13,6 @@ class Distribution(ABC):
     @abstractmethod
     def sample(self, rng: "Rng") -> float:
         """Generate a single sample from this distribution."""
-        pass
 
     def samples(self, rng: "Rng", count: int) -> list[float]:
         """Generate multiple samples from this distribution."""

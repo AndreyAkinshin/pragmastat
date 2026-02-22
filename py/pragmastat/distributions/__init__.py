@@ -19,10 +19,10 @@ from .power import Power
 from .uniform import Uniform
 
 __all__ = [
-    "Distribution",
-    "Uniform",
     "Additive",
-    "Multiplic",
+    "Distribution",
     "Exp",
+    "Multiplic",
     "Power",
+    "Uniform",
 ]

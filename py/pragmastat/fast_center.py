@@ -3,8 +3,9 @@
 Based on Monahan's Algorithm 616 (1984).
 """
 
-from typing import List
 import struct
+from typing import List
+
 import numpy as np
 
 from .rng import Rng
@@ -89,10 +90,7 @@ def _fast_center_python(values: List[float]) -> float:
 
         for row in range(1, n + 1):  # 1-based
             # Move left from current column until we find sums < pivot
-            while (
-                current_column >= row
-                and sorted_values[row - 1] + sorted_values[current_column - 1] >= pivot
-            ):
+            while current_column >= row and sorted_values[row - 1] + sorted_values[current_column - 1] >= pivot:
                 current_column -= 1
 
             # Count elements in this row that are < pivot
@@ -127,10 +125,7 @@ def _fast_center_python(values: List[float]) -> float:
             continue
 
         # === TARGET CHECK ===
-        at_target_rank = (
-            count_below_pivot == median_rank_low
-            or count_below_pivot == median_rank_high - 1
-        )
+        at_target_rank = count_below_pivot == median_rank_low or count_below_pivot == median_rank_high - 1
 
         if at_target_rank:
             # Find boundary values
@@ -151,23 +146,16 @@ def _fast_center_python(values: List[float]) -> float:
                 # Find smallest sum in this row that's >= pivot
                 if count_in_row < total_in_row:
                     first_at_or_above_index = i + count_in_row + 1
-                    first_at_or_above_value = (
-                        row_value + sorted_values[first_at_or_above_index - 1]
-                    )
-                    smallest_at_or_above_pivot = min(
-                        smallest_at_or_above_pivot, first_at_or_above_value
-                    )
+                    first_at_or_above_value = row_value + sorted_values[first_at_or_above_index - 1]
+                    smallest_at_or_above_pivot = min(smallest_at_or_above_pivot, first_at_or_above_value)
 
             # Calculate final result
             if median_rank_low < median_rank_high:
                 # Even total: average the two middle values
                 return (smallest_at_or_above_pivot + largest_below_pivot) / 4
-            else:
-                # Odd total: return the single middle value
-                need_largest = count_below_pivot == median_rank_low
-                return (
-                    largest_below_pivot if need_largest else smallest_at_or_above_pivot
-                ) / 2
+            # Odd total: return the single middle value
+            need_largest = count_below_pivot == median_rank_low
+            return (largest_below_pivot if need_largest else smallest_at_or_above_pivot) / 2
 
         # === UPDATE BOUNDS ===
         if count_below_pivot < median_rank_low:
@@ -183,9 +171,7 @@ def _fast_center_python(values: List[float]) -> float:
         previous_count = count_below_pivot
 
         # Recalculate active set size
-        active_set_size = sum(
-            max(0, right_bounds[i] - left_bounds[i] + 1) for i in range(n)
-        )
+        active_set_size = sum(max(0, right_bounds[i] - left_bounds[i] + 1) for i in range(n))
 
         # Choose next pivot
         if active_set_size > 2:
@@ -202,12 +188,8 @@ def _fast_center_python(values: List[float]) -> float:
                 cumulative_size += row_size
 
             # Use median element of the selected row as pivot
-            median_column_in_row = (
-                left_bounds[selected_row] + right_bounds[selected_row]
-            ) // 2
-            pivot = (
-                sorted_values[selected_row] + sorted_values[median_column_in_row - 1]
-            )
+            median_column_in_row = (left_bounds[selected_row] + right_bounds[selected_row]) // 2
+            pivot = sorted_values[selected_row] + sorted_values[median_column_in_row - 1]
         else:
             # Few elements remain - use midrange strategy
             min_remaining_sum = float("inf")
@@ -232,7 +214,7 @@ def _fast_center_python(values: List[float]) -> float:
                 return pivot / 2
 
 
-def _fast_center(values: List[float]) -> float:
+def _fast_center(values) -> float:
     """
     Compute the median of all pairwise averages (xi + xj)/2 efficiently.
 
@@ -243,15 +225,15 @@ def _fast_center(values: List[float]) -> float:
     Space complexity: O(n)
 
     Args:
-        values: A list of numeric values
+        values: A list or numpy array of numeric values
 
     Returns:
         The center estimate (Hodges-Lehmann estimator)
     """
     if _HAS_C_EXTENSION:
-        # Convert to numpy array and use C implementation
         arr = np.asarray(values, dtype=np.float64)
         return _fast_center_c.fast_center_c(arr)
-    else:
-        # Fall back to pure Python implementation
-        return _fast_center_python(values)
+    # Pure Python fallback requires a list
+    if not isinstance(values, list):
+        values = list(values)
+    return _fast_center_python(values)

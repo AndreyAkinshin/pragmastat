@@ -3,8 +3,9 @@
 Based on Monahan's selection algorithm adapted for pairwise differences.
 """
 
-from typing import List
 import struct
+from typing import List
+
 import numpy as np
 
 from .rng import Rng
@@ -93,8 +94,7 @@ def _fast_spread_python(values: List[float]) -> float:
 
         j = 1  # global two-pointer (non-decreasing across rows)
         for i in range(n - 1):
-            if j < i + 1:
-                j = i + 1
+            j = max(j, i + 1)
             while j < n and a[j] - a[i] < pivot:
                 j += 1
 
@@ -118,10 +118,9 @@ def _fast_spread_python(values: List[float]) -> float:
             if k_low < k_high:
                 # Even N: average the two central order stats
                 return 0.5 * (largest_below + smallest_at_or_above)
-            else:
-                # Odd N: pick the single middle
-                need_largest = count_below == k_low
-                return largest_below if need_largest else smallest_at_or_above
+            # Odd N: pick the single middle
+            need_largest = count_below == k_low
+            return largest_below if need_largest else smallest_at_or_above
 
         # === STALL HANDLING ===
         if count_below == prev_count_below:
@@ -159,8 +158,7 @@ def _fast_spread_python(values: List[float]) -> float:
             # Need larger differences: discard all strictly below pivot
             for i in range(n - 1):
                 new_L = i + 1 + row_counts[i]
-                if new_L > L[i]:
-                    L[i] = new_L
+                L[i] = max(L[i], new_L)
                 if L[i] > R[i]:
                     L[i] = 1
                     R[i] = 0
@@ -168,8 +166,7 @@ def _fast_spread_python(values: List[float]) -> float:
             # Too many below: keep only those strictly below pivot
             for i in range(n - 1):
                 new_R = i + row_counts[i]
-                if new_R < R[i]:
-                    R[i] = new_R
+                R[i] = min(R[i], new_R)
                 if R[i] < i + 1:
                     L[i] = 1
                     R[i] = 0
@@ -198,30 +195,25 @@ def _fast_spread_python(values: List[float]) -> float:
 
             if k_low < k_high:
                 return 0.5 * (min_rem + max_rem)
-            return (
-                min_rem
-                if abs((k_low - 1) - count_below) <= abs(count_below - k_low)
-                else max_rem
-            )
-        else:
-            # Weighted random row selection
-            t = rng.uniform_int(0, active_size)
-            acc = 0
-            row = 0
-            for row in range(n - 1):
-                if L[row] > R[row]:
-                    continue
-                size = R[row] - L[row] + 1
-                if t < acc + size:
-                    break
-                acc += size
+            return min_rem if abs((k_low - 1) - count_below) <= abs(count_below - k_low) else max_rem
+        # Weighted random row selection
+        t = rng.uniform_int(0, active_size)
+        acc = 0
+        row = 0
+        for row in range(n - 1):
+            if L[row] > R[row]:
+                continue
+            size = R[row] - L[row] + 1
+            if t < acc + size:
+                break
+            acc += size
 
-            # Median column of the selected row
-            col = (L[row] + R[row]) // 2
-            pivot = a[col] - a[row]
+        # Median column of the selected row
+        col = (L[row] + R[row]) // 2
+        pivot = a[col] - a[row]
 
 
-def _fast_spread(values: List[float]) -> float:
+def _fast_spread(values) -> float:
     """
     Compute the median of all pairwise absolute differences |xi - xj| efficiently.
 
@@ -232,15 +224,15 @@ def _fast_spread(values: List[float]) -> float:
     Space complexity: O(n)
 
     Args:
-        values: A list of numeric values
+        values: A list or numpy array of numeric values
 
     Returns:
         The spread estimate (Shamos estimator)
     """
     if _HAS_C_EXTENSION:
-        # Convert to numpy array and use C implementation
         arr = np.asarray(values, dtype=np.float64)
         return _fast_spread_c.fast_spread_c(arr)
-    else:
-        # Fall back to pure Python implementation
-        return _fast_spread_python(values)
+    # Pure Python fallback requires a list
+    if not isinstance(values, list):
+        values = list(values)
+    return _fast_spread_python(values)

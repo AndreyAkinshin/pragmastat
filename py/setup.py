@@ -1,5 +1,5 @@
-from setuptools import setup, Extension
 import numpy
+from setuptools import Extension, setup
 
 # Define the C extensions
 extensions = [

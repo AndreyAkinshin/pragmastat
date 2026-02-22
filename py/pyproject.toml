@@ -17,3 +17,76 @@ DOI = "https://doi.org/10.5281/zenodo.17236778"
 [build-system]
 requires = ["setuptools>=61.0", "wheel", "numpy>=1.20"]
 build-backend = "setuptools.build_meta"
+
+[tool.ruff]
+line-length = 120
+target-version = "py38"
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    # Style conflicts with project conventions
+    "D203",    # incompatible with D211 (no-blank-line-before-class)
+    "D213",    # incompatible with D212 (multi-line-summary-first-line)
+    "D212",    # multi-line summary first line — project uses second-line style
+    # Math/stats variable naming (x, y, n, m, p, etc.)
+    "N806",    # non-lowercase-variable-in-function — math notation convention
+    # Python 3.8 compatibility (requires-python = ">=3.8")
+    "FA100",   # future-rewritable-type-annotation — py38 compat
+    "FA102",   # future-required-type-annotation — py38 compat
+    "UP015",   # redundant-open-modes — explicit is fine
+    # Test-specific
+    "S101",    # assert — used in tests
+    "INP001",  # implicit-namespace-package — examples/tests don't need __init__.py
+    "PT011",   # pytest-raises-too-broad — acceptable for assumption error tests
+    # Numeric code patterns
+    "PLR2004", # magic-value-comparison — numeric constants in statistical code
+    "E501",    # line-too-long — handled by formatter
+    # Exception patterns
+    "EM101",   # raw-string-in-exception — acceptable for internal errors
+    "EM102",   # f-string-in-exception — acceptable for internal errors
+    "TRY003",  # raise-vanilla-args — acceptable for domain errors
+    # Documentation gaps (to be addressed incrementally)
+    "D100",    # undocumented-public-module
+    "D101",    # undocumented-public-class
+    "D102",    # undocumented-public-method
+    "D103",    # undocumented-public-function
+    "D104",    # undocumented-public-package
+    "D105",    # undocumented-magic-method
+    "D107",    # undocumented-public-init
+    # Annotation gaps (to be addressed incrementally)
+    "ANN001",  # missing-type-function-argument
+    "ANN201",  # missing-return-type-undocumented-public-function
+    # Relative imports — project convention
+    "TID252",  # relative-imports
+    # Complexity thresholds — statistical algorithms are inherently complex
+    "C901",    # complex-structure
+    "PLR0911", # too-many-return-statements
+    "PLR0912", # too-many-branches
+    "PLR0915", # too-many-statements
+    # Style preferences
+    "COM812",  # missing-trailing-comma — conflicts with formatter
+    "FBT001",  # boolean-type-hint-positional-argument — acceptable for seed/misrate
+    "FBT002",  # boolean-default-value-positional-argument
+    "T201",    # print — used in demos and examples
+    "PLC0415", # import-outside-top-level — conditional C extension imports
+    "ICN001",  # unconventional-import-alias
+    "RUF012",  # mutable-class-default
+    "PTH123",  # builtin-open — pathlib not required
+    # Docstring formatting — existing conventions
+    "D401",    # non-imperative-mood — descriptive style in existing docstrings
+    "D205",    # missing-blank-line-after-summary — existing style
+    "D400",    # missing-trailing-period — existing style
+    "D413",    # missing-blank-line-after-last-section — existing style
+    "D415",    # missing-terminal-punctuation — existing style
+    # Code patterns acceptable in statistical code
+    "PLW0108", # unnecessary-lambda — used for estimator dispatch tables
+    "PLR1714", # repeated-equality-comparison — explicit comparisons are clearer
+    "SIM108",  # if-else-block-instead-of-if-exp — explicit blocks preferred
+    "ERA001",  # commented-out-code — occasional reference comments
+    "RUF022",  # unsorted-dunder-all — __all__ grouped by category intentionally
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["ANN", "D", "S101", "PLR2004"]
+"examples/*" = ["ANN", "D", "T201", "INP001"]

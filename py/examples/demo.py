@@ -1,15 +1,15 @@
 from pragmastat import (
     Rng,
     center,
-    spread,
-    shift,
-    ratio,
-    disparity,
     center_bounds,
-    shift_bounds,
-    ratio_bounds,
-    spread_bounds,
+    disparity,
     disparity_bounds,
+    ratio,
+    ratio_bounds,
+    shift,
+    shift_bounds,
+    spread,
+    spread_bounds,
 )
 from pragmastat.distributions import Additive, Exp, Multiplic, Power, Uniform
 
@@ -21,14 +21,10 @@ def main():
 
     print(center(x))  # 10.5
     bounds = center_bounds(x, 0.05)
-    print(
-        f"Bounds(lower={bounds.lower}, upper={bounds.upper})"
-    )  # Bounds(lower=7.5, upper=13.5)
+    print(f"Bounds(lower={bounds.lower}, upper={bounds.upper})")  # Bounds(lower=7.5, upper=13.5)
     print(spread(x))  # 6.0
     bounds = spread_bounds(x, 0.05, seed="demo")
-    print(
-        f"Bounds(lower={bounds.lower}, upper={bounds.upper})"
-    )  # Bounds(lower=2.0, upper=10.0)
+    print(f"Bounds(lower={bounds.lower}, upper={bounds.upper})")  # Bounds(lower=2.0, upper=10.0)
 
     # --- Two-Sample ---
 
@@ -37,9 +33,7 @@ def main():
 
     print(shift(x, y))  # -20.0
     bounds = shift_bounds(x, y, 0.05)
-    print(
-        f"Bounds(lower={bounds.lower}, upper={bounds.upper})"
-    )  # Bounds(lower=-25.0, upper=-15.0)
+    print(f"Bounds(lower={bounds.lower}, upper={bounds.upper})")  # Bounds(lower=-25.0, upper=-15.0)
     print(ratio(x, y))  # 0.43669798282695127
     bounds = ratio_bounds(x, y, 0.05)
     print(
@@ -47,9 +41,7 @@ def main():
     )  # Bounds(lower=0.31250000000000006, upper=0.5599999999999999)
     print(disparity(x, y))  # -2.2222222222222223
     bounds = disparity_bounds(x, y, 0.05, seed="demo")
-    print(
-        f"Bounds(lower={bounds.lower}, upper={bounds.upper})"
-    )  # Bounds(lower=-13.0, upper=-0.8235294117647058)
+    print(f"Bounds(lower={bounds.lower}, upper={bounds.upper})")  # Bounds(lower=-13.0, upper=-0.8235294117647058)
 
     # --- Randomization ---
 

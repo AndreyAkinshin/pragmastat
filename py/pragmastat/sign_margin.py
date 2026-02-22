@@ -6,7 +6,7 @@ from .assumptions import AssumptionError
 from .min_misrate import min_achievable_misrate_one_sample
 
 
-def sign_margin_randomized(n: int, misrate: float, rng) -> int:  # noqa: ANN001
+def sign_margin_randomized(n: int, misrate: float, rng) -> int:
     """Compute randomized sign margin for one-sample bounds.
 
     Args:
@@ -38,11 +38,7 @@ def sign_margin_randomized(n: int, misrate: float, rng) -> int:  # noqa: ANN001
     r_low, log_cdf_low, log_pmf_high = _binom_cdf_split(n, target)
 
     log_target = math.log(target)
-    log_num = (
-        _log_sub_exp(log_target, log_cdf_low)
-        if log_target > log_cdf_low
-        else float("-inf")
-    )
+    log_num = _log_sub_exp(log_target, log_cdf_low) if log_target > log_cdf_low else float("-inf")
 
     if math.isfinite(log_pmf_high) and math.isfinite(log_num):
         p = math.exp(log_num - log_pmf_high)

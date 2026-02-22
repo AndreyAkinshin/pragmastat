@@ -48,8 +48,7 @@ def pairwise_margin(n: int, m: int, misrate: float) -> int:
 
     if n + m <= MAX_EXACT_SIZE:
         return _pairwise_margin_exact(n, m, misrate)
-    else:
-        return _pairwise_margin_approx(n, m, misrate)
+    return _pairwise_margin_approx(n, m, misrate)
 
 
 def _pairwise_margin_exact(n: int, m: int, misrate: float) -> int:
@@ -152,15 +151,7 @@ def _edgeworth_cdf(n: int, m: int, u: int) -> float:
     # Compute moments
     mu2 = (nf * mf * (nf + mf + 1.0)) / 12.0
     mu4 = (
-        nf
-        * mf
-        * (nf + mf + 1.0)
-        * (
-            5.0 * mf * nf * (mf + nf)
-            - 2.0 * (m2 + n2)
-            + 3.0 * mf * nf
-            - 2.0 * (nf + mf)
-        )
+        nf * mf * (nf + mf + 1.0) * (5.0 * mf * nf * (mf + nf) - 2.0 * (m2 + n2) + 3.0 * mf * nf - 2.0 * (nf + mf))
     ) / 240.0
 
     mu6 = (
@@ -257,12 +248,11 @@ def _log_factorial(n: int) -> float:
     # are retained for correctness if the function is used in other contexts.
     if x < 1.0:
         return _stirling_approx_log(x + 3.0) - math.log(x * (x + 1.0) * (x + 2.0))
-    elif x < 2.0:
+    if x < 2.0:
         return _stirling_approx_log(x + 2.0) - math.log(x * (x + 1.0))
-    elif x < 3.0:
+    if x < 3.0:
         return _stirling_approx_log(x + 1.0) - math.log(x)
-    else:
-        return _stirling_approx_log(x)
+    return _stirling_approx_log(x)
 
 
 def _stirling_approx_log(x: float) -> float:
@@ -282,12 +272,6 @@ def _stirling_approx_log(x: float) -> float:
     x7 = x5 * x2
     x9 = x7 * x2
 
-    result += (
-        B2 / (2.0 * x)
-        + B4 / (12.0 * x3)
-        + B6 / (30.0 * x5)
-        + B8 / (56.0 * x7)
-        + B10 / (90.0 * x9)
-    )
+    result += B2 / (2.0 * x) + B4 / (12.0 * x3) + B6 / (30.0 * x5) + B8 / (56.0 * x7) + B10 / (90.0 * x9)
 
     return result

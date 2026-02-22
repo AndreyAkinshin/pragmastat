@@ -89,12 +89,7 @@ def _find_exact_quantile(sorted_vals: List[float], k: int) -> float:
             else:
                 right = m
 
-        if (
-            left < n
-            and left >= i
-            and abs(sorted_vals[left] - threshold)
-            < RELATIVE_EPSILON * max(1.0, abs(threshold))
-        ):
+        if left < n and left >= i and abs(sorted_vals[left] - threshold) < RELATIVE_EPSILON * max(1.0, abs(threshold)):
             candidates.append((sorted_vals[i] + sorted_vals[left]) / 2)
 
         if left > i:
@@ -115,9 +110,7 @@ def _find_exact_quantile(sorted_vals: List[float], k: int) -> float:
     return target
 
 
-def fast_center_quantile_bounds(
-    sorted_vals: List[float], k_lo: int, k_hi: int
-) -> Tuple[float, float]:
+def fast_center_quantile_bounds(sorted_vals: List[float], k_lo: int, k_hi: int) -> Tuple[float, float]:
     """
     Finds both lower and upper quantile bounds for pairwise averages.
 
