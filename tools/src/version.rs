@@ -31,7 +31,7 @@ const VERSION_TARGETS: &[VersionTarget] = &[
     },
     VersionTarget {
         path: "py/pyproject.toml",
-        pattern: r#"version = ".*?""#,
+        pattern: r#"(?m)^version = ".*?""#,
         replacement: r#"version = "{version}""#,
     },
     VersionTarget {
