@@ -33,7 +33,11 @@ cs/
 │   │   ├── PairwiseMargin.cs
 │   │   ├── ErrorFunction.cs
 │   │   └── ...
+│   ├── Bounds.cs               # Lower/upper bound pair
+│   ├── Probability.cs          # Probability value type
 │   ├── Sample.cs               # Core sample type
+│   ├── SampleExtensions.cs     # Extension methods on Sample
+│   ├── Toolkit.cs              # Static API entry point
 │   └── Randomization/          # Rng, Xoshiro256
 ├── Pragmastat.Demo/            # Demo application
 ├── Pragmastat.Tests/           # Unit tests

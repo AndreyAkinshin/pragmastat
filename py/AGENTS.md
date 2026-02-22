@@ -17,19 +17,25 @@ mise run py:pack     # Build and verify with twine
 ```
 py/
 ├── pragmastat/
-│   ├── __init__.py         # Public exports
-│   ├── estimators.py       # Public API: center, spread, shift, etc.
-│   ├── pairwise_margin.py  # Margin calculation for shift bounds (internal)
-│   ├── rng.py              # Deterministic xoshiro256++ PRNG
-│   ├── xoshiro256.py       # PRNG core implementation
-│   ├── fast_center.py      # O(n log n) Hodges-Lehmann algorithm
-│   ├── fast_spread.py      # O(n log n) Shamos algorithm
-│   ├── fast_shift.py       # O((m+n) log L) shift quantiles
-│   ├── _constants.py       # Internal constants
-│   └── distributions/      # Uniform, Additive, Exp, Power, Multiplic
+│   ├── __init__.py                # Public exports
+│   ├── estimators.py              # Public API: center, spread, shift, etc.
+│   ├── assumptions.py             # Input validation and error types
+│   ├── pairwise_margin.py         # Margin calculation for shift bounds (internal)
+│   ├── sign_margin.py             # Sign margin for binomial CDF inversion
+│   ├── signed_rank_margin.py      # Signed-rank margin computation
+│   ├── min_misrate.py             # Minimum achievable misrate calculation
+│   ├── gauss_cdf.py               # Standard normal CDF (ACM Algorithm 209)
+│   ├── rng.py                     # Deterministic xoshiro256++ PRNG
+│   ├── xoshiro256.py              # PRNG core implementation
+│   ├── fast_center.py             # O(n log n) Hodges-Lehmann algorithm
+│   ├── _fast_center_quantiles.py  # Center quantile binary search (internal)
+│   ├── fast_spread.py             # O(n log n) Shamos algorithm
+│   ├── fast_shift.py              # O((m+n) log L) shift quantiles
+│   ├── _constants.py              # Internal constants
+│   └── distributions/             # Uniform, Additive, Exp, Power, Multiplic
 ├── tests/
-│   ├── test_reference.py   # JSON fixture validation
-│   ├── test_invariance.py  # Mathematical property tests
+│   ├── test_reference.py          # JSON fixture validation
+│   ├── test_invariance.py         # Mathematical property tests
 │   └── test_performance.py
 ├── examples/
 │   └── demo.py

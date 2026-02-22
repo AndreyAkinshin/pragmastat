@@ -20,23 +20,32 @@ mise run r:doc       # Build documentation with roxygen2
 ```
 r/pragmastat/
 ├── R/
-│   ├── aaa_constants.R     # Internal constants (loaded first)
-│   ├── center.R            # Center estimator
-│   ├── spread.R            # Spread estimator
-│   ├── rel_spread.R        # Relative spread
-│   ├── shift.R             # Shift estimator
-│   ├── ratio.R             # Ratio estimator
-│   ├── ratio_bounds.R      # Ratio confidence bounds
-│   ├── avg_spread.R        # Average spread
-│   ├── disparity.R         # Disparity (effect size)
-│   ├── shift_bounds.R      # Shift confidence bounds
-│   ├── pairwise_margin.R   # Margin calculation
-│   ├── fast_center.R       # O(n log n) Hodges-Lehmann algorithm
-│   ├── fast_spread.R       # O(n log n) Shamos algorithm
-│   ├── fast_shift.R        # O((m+n) log L) shift quantiles
-│   ├── rng.R               # Deterministic xoshiro256++ PRNG (R6 class)
-│   ├── xoshiro256.R        # PRNG core implementation (R6 class)
-│   └── dist_*.R            # Distribution classes
+│   ├── aaa_constants.R          # Internal constants (loaded first)
+│   ├── aa_assumptions.R         # Input validation and error types
+│   ├── center.R                 # Center estimator
+│   ├── center_bounds.R          # Center confidence bounds
+│   ├── spread.R                 # Spread estimator
+│   ├── spread_bounds.R          # Spread confidence bounds
+│   ├── rel_spread.R             # Relative spread
+│   ├── shift.R                  # Shift estimator
+│   ├── shift_bounds.R           # Shift confidence bounds
+│   ├── ratio.R                  # Ratio estimator
+│   ├── ratio_bounds.R           # Ratio confidence bounds
+│   ├── avg_spread.R             # Average spread
+│   ├── avg_spread_bounds.R      # Average spread confidence bounds
+│   ├── disparity.R              # Disparity (effect size)
+│   ├── disparity_bounds.R       # Disparity confidence bounds
+│   ├── pairwise_margin.R        # Margin calculation
+│   ├── sign_margin.R            # Sign margin for binomial CDF inversion
+│   ├── signed_rank_margin.R     # Signed-rank margin computation
+│   ├── min_misrate.R            # Minimum achievable misrate calculation
+│   ├── fast_center.R            # O(n log n) Hodges-Lehmann algorithm
+│   ├── fast_center_quantiles.R  # Center quantile binary search
+│   ├── fast_spread.R            # O(n log n) Shamos algorithm
+│   ├── fast_shift.R             # O((m+n) log L) shift quantiles
+│   ├── rng.R                    # Deterministic xoshiro256++ PRNG (R6 class)
+│   ├── xoshiro256.R             # PRNG core implementation (R6 class)
+│   └── dist_*.R                 # Distribution classes
 ├── tests/testthat/
 │   ├── helper-reference-tests.R
 │   ├── test-center.R

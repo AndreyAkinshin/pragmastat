@@ -16,23 +16,29 @@ mise run go:coverage # Run tests with coverage
 
 ```
 go/
-├── estimators.go       # Public API: Center, Spread, Shift, etc.
-├── pairwise_margin.go  # Margin calculation for shift bounds
-├── rng.go              # Deterministic xoshiro256++ PRNG
-├── xoshiro256.go       # PRNG core implementation
-├── fast_center.go      # O(n log n) Hodges-Lehmann algorithm
-├── fast_spread.go      # O(n log n) Shamos algorithm
-├── fast_shift.go       # O((m+n) log L) shift quantiles
-├── distribution.go     # Distribution interface
-├── uniform.go          # Uniform distribution
-├── additive.go         # Additive (Normal/Gaussian) distribution
-├── exp.go              # Exponential distribution
-├── power.go            # Power distribution
-├── multiplic.go        # Multiplicative (Log-Normal) distribution
+├── estimators.go              # Public API: Center, Spread, Shift, etc.
+├── assumptions.go             # Input validation and error types
+├── pairwise_margin.go         # Margin calculation for shift bounds
+├── sign_margin.go             # Sign margin for binomial CDF inversion
+├── signed_rank_margin.go      # Signed-rank margin computation
+├── min_misrate.go             # Minimum achievable misrate calculation
+├── gauss_cdf.go               # Standard normal CDF (ACM Algorithm 209)
+├── rng.go                     # Deterministic xoshiro256++ PRNG
+├── xoshiro256.go              # PRNG core implementation
+├── fast_center.go             # O(n log n) Hodges-Lehmann algorithm
+├── fast_center_quantiles.go   # Center quantile binary search
+├── fast_spread.go             # O(n log n) Shamos algorithm
+├── fast_shift.go              # O((m+n) log L) shift quantiles
+├── distribution.go            # Distribution interface
+├── uniform.go                 # Uniform distribution
+├── additive.go                # Additive (Normal/Gaussian) distribution
+├── exp.go                     # Exponential distribution
+├── power.go                   # Power distribution
+├── multiplic.go               # Multiplicative (Log-Normal) distribution
 ├── demo/
-│   └── main.go         # Demo application
-├── reference_test.go   # JSON fixture validation
-├── invariance_test.go  # Mathematical property tests
+│   └── main.go                # Demo application
+├── reference_test.go          # JSON fixture validation
+├── invariance_test.go         # Mathematical property tests
 └── performance_test.go
 ```
 

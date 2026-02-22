@@ -18,20 +18,25 @@ mise run ts:pack     # Create npm tarball
 ```
 ts/
 ├── src/
-│   ├── index.ts            # Public exports
-│   ├── estimators.ts       # Public API: center, spread, shift, etc.
-│   ├── pairwiseMargin.ts   # Margin calculation for shift bounds (internal)
-│   ├── rng.ts              # Deterministic xoshiro256++ PRNG
-│   ├── xoshiro256.ts       # PRNG core implementation
-│   ├── fastCenter.ts       # O(n log n) Hodges-Lehmann algorithm
-│   ├── fastSpread.ts       # O(n log n) Shamos algorithm
-│   ├── fastShift.ts        # O((m+n) log L) shift quantiles
-│   ├── constants.ts        # Internal constants
-│   ├── utils.ts            # Internal utilities
-│   └── distributions/      # Uniform, Additive, Exp, Power, Multiplic
+│   ├── index.ts               # Public exports
+│   ├── estimators.ts          # Public API: center, spread, shift, etc.
+│   ├── assumptions.ts         # Input validation and error types
+│   ├── pairwiseMargin.ts      # Margin calculation for shift bounds (internal)
+│   ├── signMargin.ts          # Sign margin for binomial CDF inversion
+│   ├── signedRankMargin.ts    # Signed-rank margin computation
+│   ├── minMisrate.ts          # Minimum achievable misrate calculation
+│   ├── gaussCdf.ts            # Standard normal CDF (ACM Algorithm 209)
+│   ├── rng.ts                 # Deterministic xoshiro256++ PRNG
+│   ├── xoshiro256.ts          # PRNG core implementation
+│   ├── fastCenter.ts          # O(n log n) Hodges-Lehmann algorithm
+│   ├── fastCenterQuantiles.ts # Center quantile binary search
+│   ├── fastSpread.ts          # O(n log n) Shamos algorithm
+│   ├── fastShift.ts           # O((m+n) log L) shift quantiles
+│   ├── constants.ts           # Internal constants
+│   └── distributions/         # Uniform, Additive, Exp, Power, Multiplic
 ├── tests/
-│   ├── reference.test.ts   # JSON fixture validation
-│   ├── invariance.test.ts  # Mathematical property tests
+│   ├── reference.test.ts      # JSON fixture validation
+│   ├── invariance.test.ts     # Mathematical property tests
 │   └── performance.test.ts
 ├── examples/
 │   └── demo.ts

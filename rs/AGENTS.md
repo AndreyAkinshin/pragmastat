@@ -16,21 +16,30 @@ mise run rs:bench    # Run benchmarks
 ```
 rs/pragmastat/
 ├── src/
-│   ├── lib.rs              # Public exports
-│   ├── estimators.rs       # Public API: center, spread, shift, etc.
-│   ├── pairwise_margin.rs  # Margin calculation for shift bounds (internal)
-│   ├── rng.rs              # Deterministic xoshiro256++ PRNG
-│   ├── distributions/      # Sampling distributions (Uniform, Additive, Exp, Power, Multiplic)
-│   ├── fast_center.rs      # O(n log n) Hodges-Lehmann algorithm (internal)
-│   ├── fast_spread.rs      # O(n log n) Shamos algorithm (internal)
-│   ├── fast_shift.rs       # O((m+n) log L) shift quantiles (internal)
-│   ├── xoshiro256.rs       # PRNG core implementation (internal)
-│   ├── splitmix64.rs       # Seed mixing (internal)
-│   └── fnv1a.rs            # Hash for deterministic seeding (internal)
+│   ├── lib.rs                     # Public exports
+│   ├── estimators.rs              # Public API: center, spread, shift, etc.
+│   ├── assumptions.rs             # Input validation and error types
+│   ├── pairwise_margin.rs         # Margin calculation for shift bounds (internal)
+│   ├── sign_margin.rs             # Sign margin for binomial CDF inversion (internal)
+│   ├── signed_rank_margin.rs      # Signed-rank margin computation (internal)
+│   ├── min_misrate.rs             # Minimum achievable misrate calculation (internal)
+│   ├── gauss_cdf.rs               # Standard normal CDF (ACM Algorithm 209) (internal)
+│   ├── rng.rs                     # Deterministic xoshiro256++ PRNG
+│   ├── distributions/             # Sampling distributions (Uniform, Additive, Exp, Power, Multiplic)
+│   ├── fast_center.rs             # O(n log n) Hodges-Lehmann algorithm (internal)
+│   ├── fast_center_quantiles.rs   # Center quantile binary search (internal)
+│   ├── fast_spread.rs             # O(n log n) Shamos algorithm (internal)
+│   ├── fast_shift.rs              # O((m+n) log L) shift quantiles (internal)
+│   ├── xoshiro256.rs              # PRNG core implementation (internal)
+│   ├── splitmix64.rs              # Seed mixing (internal)
+│   ├── fnv1a.rs                   # Hash for deterministic seeding (internal)
+│   ├── avg_spread_tests.rs        # Average spread unit tests
+│   ├── avg_spread_bounds_tests.rs # Average spread bounds unit tests
+│   └── disparity_bounds_tests.rs  # Disparity bounds unit tests
 ├── tests/
-│   ├── reference_tests.rs  # JSON fixture validation
-│   ├── invariance_tests.rs # Mathematical property tests
-│   ├── error_tests.rs      # Error path coverage
+│   ├── reference_tests.rs         # JSON fixture validation
+│   ├── invariance_tests.rs        # Mathematical property tests
+│   ├── error_tests.rs             # Error path coverage
 │   └── performance_tests.rs
 └── examples/
     └── demo.rs

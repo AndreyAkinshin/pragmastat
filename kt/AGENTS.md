@@ -16,14 +16,20 @@ mise run kt:pack     # Create JAR package
 ```
 kt/
 ├── src/main/kotlin/dev/pragmastat/
-│   ├── Estimators.kt       # Public API: center, spread, shift, etc.
-│   ├── PairwiseMargin.kt   # Margin calculation for shift bounds (internal)
-│   ├── Rng.kt              # Deterministic xoshiro256++ PRNG
-│   ├── Xoshiro256.kt       # PRNG core implementation
-│   ├── FastCenter.kt       # O(n log n) Hodges-Lehmann algorithm
-│   ├── FastSpread.kt       # O(n log n) Shamos algorithm
-│   ├── FastShift.kt        # O((m+n) log L) shift quantiles
-│   ├── Constants.kt        # Internal constants
+│   ├── Estimators.kt            # Public API: center, spread, shift, etc.
+│   ├── Assumptions.kt           # Input validation and error types
+│   ├── PairwiseMargin.kt        # Margin calculation for shift bounds (internal)
+│   ├── SignMargin.kt            # Sign margin for binomial CDF inversion
+│   ├── SignedRankMargin.kt      # Signed-rank margin computation
+│   ├── MinMisrate.kt            # Minimum achievable misrate calculation
+│   ├── GaussCdf.kt              # Standard normal CDF (ACM Algorithm 209)
+│   ├── Rng.kt                   # Deterministic xoshiro256++ PRNG
+│   ├── Xoshiro256.kt            # PRNG core implementation
+│   ├── FastCenter.kt            # O(n log n) Hodges-Lehmann algorithm
+│   ├── FastCenterQuantiles.kt   # Center quantile binary search
+│   ├── FastSpread.kt            # O(n log n) Shamos algorithm
+│   ├── FastShift.kt             # O((m+n) log L) shift quantiles
+│   ├── Constants.kt             # Internal constants
 │   └── distributions/
 │       ├── Distribution.kt
 │       ├── Uniform.kt
@@ -32,8 +38,8 @@ kt/
 │       ├── Power.kt
 │       └── Multiplic.kt
 ├── src/test/kotlin/dev/pragmastat/
-│   ├── ReferenceTest.kt    # JSON fixture validation
-│   ├── InvarianceTest.kt   # Mathematical property tests
+│   ├── ReferenceTest.kt         # JSON fixture validation
+│   ├── InvarianceTest.kt        # Mathematical property tests
 │   └── PerformanceTest.kt
 └── build.gradle.kts
 ```
