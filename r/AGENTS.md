@@ -55,10 +55,10 @@ r/pragmastat/
 |-------|------|---------|
 | `Rng` | R6 | Deterministic PRNG with `uniform_float()`, `uniform_float_range()`, `uniform_int()`, `uniform_bool()`, `sample()`, `resample()`, `shuffle()` |
 | `Uniform` | R6 | Uniform distribution |
-| `Additive` | R6 | Additive (Laplace) distribution |
+| `Additive` | R6 | Additive (Normal/Gaussian) distribution |
 | `Exp` | R6 | Exponential distribution |
 | `Power` | R6 | Power distribution |
-| `Multiplic` | R6 | Multiplicative (log-Laplace) distribution |
+| `Multiplic` | R6 | Multiplicative (Log-Normal) distribution |
 
 ## Public Functions
 

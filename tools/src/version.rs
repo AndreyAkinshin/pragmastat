@@ -70,6 +70,11 @@ const VERSION_TARGETS: &[VersionTarget] = &[
         pattern: r#"#let version = ".*?""#,
         replacement: r#"#let version = "{version}""#,
     },
+    VersionTarget {
+        path: "manual/version.typ",
+        pattern: r#"#let major = ".*?""#,
+        replacement: r#"#let major = "{major}""#,
+    },
     // Web frontpage version display
     VersionTarget {
         path: "web/src/pages/index.astro",

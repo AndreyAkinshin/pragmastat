@@ -25,10 +25,10 @@ go/
 ├── fast_shift.go       # O((m+n) log L) shift quantiles
 ├── distribution.go     # Distribution interface
 ├── uniform.go          # Uniform distribution
-├── additive.go         # Additive (Laplace) distribution
+├── additive.go         # Additive (Normal/Gaussian) distribution
 ├── exp.go              # Exponential distribution
 ├── power.go            # Power distribution
-├── multiplic.go        # Multiplicative (log-Laplace) distribution
+├── multiplic.go        # Multiplicative (Log-Normal) distribution
 ├── demo/
 │   └── main.go         # Demo application
 ├── reference_test.go   # JSON fixture validation
