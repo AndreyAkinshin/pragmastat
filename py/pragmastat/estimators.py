@@ -1,27 +1,28 @@
-from typing import Sequence, Union, NamedTuple
 import math
 import warnings
+from typing import NamedTuple, Sequence, Union
+
 import numpy as np
 from numpy.typing import NDArray
+
+from ._fast_center_quantiles import fast_center_quantile_bounds
+from .assumptions import (
+    AssumptionError,
+    check_positivity,
+    check_validity,
+    log,
+)
 from .fast_center import _fast_center
-from .fast_spread import _fast_spread
 from .fast_shift import _fast_shift
-from .pairwise_margin import pairwise_margin
-from .signed_rank_margin import signed_rank_margin
-from .sign_margin import sign_margin_randomized
+from .fast_spread import _fast_spread
 from .min_misrate import (
     min_achievable_misrate_one_sample,
     min_achievable_misrate_two_sample,
 )
-from ._fast_center_quantiles import fast_center_quantile_bounds
+from .pairwise_margin import pairwise_margin
 from .rng import Rng
-from .assumptions import (
-    check_validity,
-    check_positivity,
-    log,
-    AssumptionError,
-)
-
+from .sign_margin import sign_margin_randomized
+from .signed_rank_margin import signed_rank_margin
 
 DEFAULT_MISRATE = 1e-3
 
@@ -52,7 +53,7 @@ def center(x: Union[Sequence[float], NDArray]) -> float:
     x = np.asarray(x)
     check_validity(x, "x")
     # Use fast O(n log n) algorithm
-    return _fast_center(x.tolist())
+    return _fast_center(x)
 
 
 def spread(x: Union[Sequence[float], NDArray]) -> float:
@@ -78,7 +79,7 @@ def spread(x: Union[Sequence[float], NDArray]) -> float:
     x = np.asarray(x)
     # Check validity (priority 0)
     check_validity(x, "x")
-    spread_val = _fast_spread(x.tolist())
+    spread_val = _fast_spread(x)
     if spread_val <= 0:
         raise AssumptionError.sparity("x")
     return spread_val
@@ -118,16 +119,14 @@ def rel_spread(x: Union[Sequence[float], NDArray]) -> float:
     # Check positivity (priority 1)
     check_positivity(x, "x")
     # Calculate center (we know x is valid, center should succeed)
-    center_val = _fast_center(x.tolist())
+    center_val = _fast_center(x)
     # Calculate spread (using internal implementation since we already validated)
-    spread_val = _fast_spread(x.tolist())
+    spread_val = _fast_spread(x)
     # center_val is guaranteed positive because all values are positive
     return spread_val / abs(center_val)
 
 
-def shift(
-    x: Union[Sequence[float], NDArray], y: Union[Sequence[float], NDArray]
-) -> float:
+def shift(x: Union[Sequence[float], NDArray], y: Union[Sequence[float], NDArray]) -> float:
     """
     Measure the typical difference between elements of x and y.
 
@@ -152,9 +151,7 @@ def shift(
     return float(_fast_shift(x, y, p=0.5))
 
 
-def ratio(
-    x: Union[Sequence[float], NDArray], y: Union[Sequence[float], NDArray]
-) -> float:
+def ratio(x: Union[Sequence[float], NDArray], y: Union[Sequence[float], NDArray]) -> float:
     """
     Measure how many times larger x is compared to y.
 
@@ -195,9 +192,7 @@ def ratio(
     return float(np.exp(log_result))
 
 
-def _avg_spread(
-    x: Union[Sequence[float], NDArray], y: Union[Sequence[float], NDArray]
-) -> float:
+def _avg_spread(x: Union[Sequence[float], NDArray], y: Union[Sequence[float], NDArray]) -> float:
     """
     Measure the typical variability when considering both samples together.
 
@@ -227,18 +222,16 @@ def _avg_spread(
     check_validity(y, "y")
     n = len(x)
     m = len(y)
-    spread_x = _fast_spread(x.tolist())
+    spread_x = _fast_spread(x)
     if spread_x <= 0:
         raise AssumptionError.sparity("x")
-    spread_y = _fast_spread(y.tolist())
+    spread_y = _fast_spread(y)
     if spread_y <= 0:
         raise AssumptionError.sparity("y")
     return (n * spread_x + m * spread_y) / (n + m)
 
 
-def disparity(
-    x: Union[Sequence[float], NDArray], y: Union[Sequence[float], NDArray]
-) -> float:
+def disparity(x: Union[Sequence[float], NDArray], y: Union[Sequence[float], NDArray]) -> float:
     """
     Measure effect size: a normalized difference between x and y.
 
@@ -267,10 +260,10 @@ def disparity(
     check_validity(y, "y")
     n = len(x)
     m = len(y)
-    spread_x = _fast_spread(x.tolist())
+    spread_x = _fast_spread(x)
     if spread_x <= 0:
         raise AssumptionError.sparity("x")
-    spread_y = _fast_spread(y.tolist())
+    spread_y = _fast_spread(y)
     if spread_y <= 0:
         raise AssumptionError.sparity("y")
     # Calculate shift (we know inputs are valid)
@@ -322,8 +315,8 @@ def shift_bounds(
         raise AssumptionError.domain("misrate")
 
     # Sort both arrays
-    xs = sorted(x.tolist())
-    ys = sorted(y.tolist())
+    xs = sorted(x)
+    ys = sorted(y)
 
     total = n * m
 
@@ -448,7 +441,7 @@ def center_bounds(
     k_right = total_pairs - half_margin
 
     # Sort the input
-    sorted_x = sorted(x.tolist())
+    sorted_x = sorted(x)
 
     lo, hi = fast_center_quantile_bounds(sorted_x, k_left, k_right)
     return Bounds(lo, hi)
@@ -489,24 +482,21 @@ def spread_bounds(
 
     if n < 2:
         raise AssumptionError.sparity("x")
-    if _fast_spread(x.tolist()) <= 0:
+    if _fast_spread(x) <= 0:
         raise AssumptionError.sparity("x")
 
     rng = Rng(seed) if seed is not None else Rng()
     margin = sign_margin_randomized(m, misrate, rng)
     half_margin = margin // 2
     max_half_margin = (m - 1) // 2
-    if half_margin > max_half_margin:
-        half_margin = max_half_margin
+    half_margin = min(half_margin, max_half_margin)
 
     k_left = half_margin + 1
     k_right = m - half_margin
 
     indices = list(range(n))
     shuffled = rng.shuffle(indices)
-    diffs = sorted(
-        abs(float(x[shuffled[2 * i]]) - float(x[shuffled[2 * i + 1]])) for i in range(m)
-    )
+    diffs = sorted(abs(float(x[shuffled[2 * i]]) - float(x[shuffled[2 * i + 1]])) for i in range(m))
 
     return Bounds(diffs[k_left - 1], diffs[k_right - 1])
 
@@ -562,9 +552,9 @@ def disparity_bounds(
     alpha_shift = min_shift + extra / 2.0
     alpha_avg = min_avg + extra / 2.0
 
-    if _fast_spread(x.tolist()) <= 0:
+    if _fast_spread(x) <= 0:
         raise AssumptionError.sparity("x")
-    if _fast_spread(y.tolist()) <= 0:
+    if _fast_spread(y) <= 0:
         raise AssumptionError.sparity("y")
 
     sb = shift_bounds(x, y, alpha_shift)
@@ -650,9 +640,9 @@ def _avg_spread_bounds(
     if alpha < min_x or alpha < min_y:
         raise AssumptionError.domain("misrate")
 
-    if _fast_spread(x.tolist()) <= 0:
+    if _fast_spread(x) <= 0:
         raise AssumptionError.sparity("x")
-    if _fast_spread(y.tolist()) <= 0:
+    if _fast_spread(y) <= 0:
         raise AssumptionError.sparity("y")
 
     bounds_x = spread_bounds(x, alpha, seed=seed)
