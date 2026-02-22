@@ -26,7 +26,10 @@ internal fun minAchievableMisrateOneSample(n: Int): Double {
  * @param m Size of second sample (must be positive)
  * @return Minimum achievable misrate
  */
-internal fun minAchievableMisrateTwoSample(n: Int, m: Int): Double {
+internal fun minAchievableMisrateTwoSample(
+    n: Int,
+    m: Int,
+): Double {
     if (n <= 0) {
         throw AssumptionException(Violation(AssumptionId.DOMAIN, Subject.X))
     }
@@ -39,7 +42,10 @@ internal fun minAchievableMisrateTwoSample(n: Int, m: Int): Double {
 /**
  * Computes binomial coefficient C(n, k) using integer arithmetic
  */
-private fun binomialCoefficient(n: Int, k: Int): Double {
+private fun binomialCoefficient(
+    n: Int,
+    k: Int,
+): Double {
     var kk = k
     if (kk > n) return 0.0
     if (kk == 0 || kk == n) return 1.0

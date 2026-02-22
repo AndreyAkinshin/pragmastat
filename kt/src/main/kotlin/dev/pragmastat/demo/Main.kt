@@ -8,9 +8,9 @@ fun main() {
 
     var x = (1..20).map { it.toDouble() }
 
-    println(center(x))                    // 10.5
-    println(centerBounds(x, 0.05))        // Bounds(lower=7.5, upper=13.5)
-    println(spread(x))                    // 6.0
+    println(center(x)) // 10.5
+    println(centerBounds(x, 0.05)) // Bounds(lower=7.5, upper=13.5)
+    println(spread(x)) // 6.0
     println(spreadBounds(x, 0.05, "demo")) // Bounds(lower=2.0, upper=10.0)
 
     // --- Two-Sample ---
@@ -18,11 +18,11 @@ fun main() {
     x = (1..30).map { it.toDouble() }
     var y = (21..50).map { it.toDouble() }
 
-    println(shift(x, y))                    // -20
-    println(shiftBounds(x, y, 0.05))        // Bounds(lower=-25.0, upper=-15.0)
-    println(ratio(x, y))                    // 0.43669798282695127
-    println(ratioBounds(x, y, 0.05))        // Bounds(lower=0.31250000000000006, upper=0.5599999999999999)
-    println(disparity(x, y))                // -2.2222222222222223
+    println(shift(x, y)) // -20
+    println(shiftBounds(x, y, 0.05)) // Bounds(lower=-25.0, upper=-15.0)
+    println(ratio(x, y)) // 0.43669798282695127
+    println(ratioBounds(x, y, 0.05)) // Bounds(lower=0.31250000000000006, upper=0.5599999999999999)
+    println(disparity(x, y)) // -2.2222222222222223
     println(disparityBounds(x, y, 0.05, "demo")) // Bounds(lower=-13.0, upper=-0.8235294117647058)
 
     // --- Randomization ---

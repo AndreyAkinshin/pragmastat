@@ -17,7 +17,11 @@ private const val MAX_ACCEPTABLE_BINOM_N = 65
  * @return Integer representing the total margin split between lower and upper tails
  * @throws AssumptionException if n <= 0, m <= 0, or misrate is outside [0, 1]
  */
-internal fun pairwiseMargin(n: Int, m: Int, misrate: Double): Int {
+internal fun pairwiseMargin(
+    n: Int,
+    m: Int,
+    misrate: Double,
+): Int {
     if (n <= 0) {
         throw AssumptionException(Violation(AssumptionId.DOMAIN, Subject.X))
     }
@@ -43,14 +47,22 @@ internal fun pairwiseMargin(n: Int, m: Int, misrate: Double): Int {
 /**
  * Uses the exact distribution based on Loeffler's recurrence
  */
-private fun pairwiseMarginExact(n: Int, m: Int, misrate: Double): Int {
+private fun pairwiseMarginExact(
+    n: Int,
+    m: Int,
+    misrate: Double,
+): Int {
     return pairwiseMarginExactRaw(n, m, misrate / 2.0) * 2
 }
 
 /**
  * Uses Edgeworth approximation for large samples
  */
-private fun pairwiseMarginApprox(n: Int, m: Int, misrate: Double): Int {
+private fun pairwiseMarginApprox(
+    n: Int,
+    m: Int,
+    misrate: Double,
+): Int {
     return pairwiseMarginApproxRaw(n, m, misrate / 2.0) * 2
 }
 
@@ -58,12 +70,17 @@ private fun pairwiseMarginApprox(n: Int, m: Int, misrate: Double): Int {
  * Inversed implementation of Andreas Löffler's (1982)
  * "Über eine Partition der nat. Zahlen und ihre Anwendung beim U-Test"
  */
-private fun pairwiseMarginExactRaw(n: Int, m: Int, p: Double): Int {
-    val total = if (n + m < MAX_ACCEPTABLE_BINOM_N) {
-        binomialCoefficient(n + m, m)
-    } else {
-        binomialCoefficientFloat(n + m, m)
-    }
+private fun pairwiseMarginExactRaw(
+    n: Int,
+    m: Int,
+    p: Double,
+): Int {
+    val total =
+        if (n + m < MAX_ACCEPTABLE_BINOM_N) {
+            binomialCoefficient(n + m, m)
+        } else {
+            binomialCoefficientFloat(n + m, m)
+        }
 
     val pmf = mutableListOf(1.0) // pmf[0] = 1
     val sigma = mutableListOf(0.0) // sigma[0] is unused
@@ -117,7 +134,11 @@ private fun pairwiseMarginExactRaw(n: Int, m: Int, p: Double): Int {
 /**
  * Inverse Edgeworth Approximation
  */
-private fun pairwiseMarginApproxRaw(n: Int, m: Int, misrate: Double): Int {
+private fun pairwiseMarginApproxRaw(
+    n: Int,
+    m: Int,
+    misrate: Double,
+): Int {
     var a = 0L
     var b = n.toLong() * m.toLong()
     while (a < b - 1) {
@@ -138,7 +159,11 @@ private fun pairwiseMarginApproxRaw(n: Int, m: Int, misrate: Double): Int {
 /**
  * Computes the CDF using Edgeworth expansion
  */
-private fun edgeworthCdf(n: Int, m: Int, u: Long): Double {
+private fun edgeworthCdf(
+    n: Int,
+    m: Int,
+    u: Long,
+): Double {
     val nf = n.toDouble()
     val mf = m.toDouble()
     val uf = u.toDouble()
@@ -162,22 +187,30 @@ private fun edgeworthCdf(n: Int, m: Int, u: Long): Double {
 
     // Compute moments
     val mu2 = (nf * mf * (nf + mf + 1.0)) / 12.0
-    val mu4 = (nf * mf * (nf + mf + 1.0) *
-            (5.0 * mf * nf * (mf + nf) - 2.0 * (m2 + n2) + 3.0 * mf * nf - 2.0 * (nf + mf))) / 240.0
+    val mu4 =
+        (
+            nf * mf * (nf + mf + 1.0) *
+                (5.0 * mf * nf * (mf + nf) - 2.0 * (m2 + n2) + 3.0 * mf * nf - 2.0 * (nf + mf))
+        ) / 240.0
 
-    val mu6 = (nf * mf * (nf + mf + 1.0) *
-            (35.0 * m2 * n2 * (m2 + n2) +
-                    70.0 * m3 * n3 -
-                    42.0 * mf * nf * (m3 + n3) -
-                    14.0 * m2 * n2 * (nf + mf) +
-                    16.0 * (n4 + m4) -
-                    52.0 * nf * mf * (n2 + m2) -
-                    43.0 * n2 * m2 +
-                    32.0 * (m3 + n3) +
-                    14.0 * mf * nf * (nf + mf) +
-                    8.0 * (n2 + m2) +
-                    16.0 * nf * mf -
-                    8.0 * (nf + mf))) / 4032.0
+    val mu6 =
+        (
+            nf * mf * (nf + mf + 1.0) *
+                (
+                    35.0 * m2 * n2 * (m2 + n2) +
+                        70.0 * m3 * n3 -
+                        42.0 * mf * nf * (m3 + n3) -
+                        14.0 * m2 * n2 * (nf + mf) +
+                        16.0 * (n4 + m4) -
+                        52.0 * nf * mf * (n2 + m2) -
+                        43.0 * n2 * m2 +
+                        32.0 * (m3 + n3) +
+                        14.0 * mf * nf * (nf + mf) +
+                        8.0 * (n2 + m2) +
+                        16.0 * nf * mf -
+                        8.0 * (nf + mf)
+                )
+        ) / 4032.0
 
     // Pre-compute powers of mu2 and related terms
     val mu2_2 = mu2 * mu2
@@ -210,7 +243,10 @@ private fun edgeworthCdf(n: Int, m: Int, u: Long): Double {
 /**
  * Computes binomial coefficient C(n, k) using integer arithmetic
  */
-private fun binomialCoefficient(n: Int, k: Int): Double {
+private fun binomialCoefficient(
+    n: Int,
+    k: Int,
+): Double {
     var kk = k
     if (kk > n) return 0.0
     if (kk == 0 || kk == n) return 1.0
@@ -228,7 +264,10 @@ private fun binomialCoefficient(n: Int, k: Int): Double {
 /**
  * Computes binomial coefficient using floating-point logarithms for large values
  */
-private fun binomialCoefficientFloat(n: Int, k: Int): Double {
+private fun binomialCoefficientFloat(
+    n: Int,
+    k: Int,
+): Double {
     var kk = k
     if (kk > n) return 0.0
     if (kk == 0 || kk == n) return 1.0

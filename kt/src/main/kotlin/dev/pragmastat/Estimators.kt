@@ -67,7 +67,10 @@ fun relSpread(x: List<Double>): Double {
  * Positive values mean x is typically larger, negative means y is typically larger.
  * Uses fast O((m + n) * log(precision)) algorithm.
  */
-fun shift(x: List<Double>, y: List<Double>): Double {
+fun shift(
+    x: List<Double>,
+    y: List<Double>,
+): Double {
     // Check validity (priority 0)
     checkValidity(x, Subject.X)
     checkValidity(y, Subject.Y)
@@ -86,7 +89,10 @@ fun shift(x: List<Double>, y: List<Double>): Double {
  *   - positivity(x) - all values in x must be strictly positive
  *   - positivity(y) - all values in y must be strictly positive
  */
-fun ratio(x: List<Double>, y: List<Double>): Double {
+fun ratio(
+    x: List<Double>,
+    y: List<Double>,
+): Double {
     // Check validity for x (priority 0, subject x)
     checkValidity(x, Subject.X)
     // Check validity for y (priority 0, subject y)
@@ -108,7 +114,10 @@ fun ratio(x: List<Double>, y: List<Double>): Double {
  *   - sparity(x) - first sample must be non tie-dominant (Spread > 0)
  *   - sparity(y) - second sample must be non tie-dominant (Spread > 0)
  */
-internal fun avgSpread(x: List<Double>, y: List<Double>): Double {
+internal fun avgSpread(
+    x: List<Double>,
+    y: List<Double>,
+): Double {
     // Check validity for x (priority 0, subject x)
     checkValidity(x, Subject.X)
     // Check validity for y (priority 0, subject y)
@@ -137,7 +146,10 @@ internal fun avgSpread(x: List<Double>, y: List<Double>): Double {
  *   - sparity(x) - first sample must be non tie-dominant (Spread > 0)
  *   - sparity(y) - second sample must be non tie-dominant (Spread > 0)
  */
-fun disparity(x: List<Double>, y: List<Double>): Double {
+fun disparity(
+    x: List<Double>,
+    y: List<Double>,
+): Double {
     // Check validity for x (priority 0, subject x)
     checkValidity(x, Subject.X)
     // Check validity for y (priority 0, subject y)
@@ -180,7 +192,11 @@ data class Bounds(val lower: Double, val upper: Double)
  * @param misrate Misclassification rate (probability that true shift falls outside bounds)
  * @return A Bounds object containing the lower and upper bounds
  */
-fun shiftBounds(x: List<Double>, y: List<Double>, misrate: Double = DEFAULT_MISRATE): Bounds {
+fun shiftBounds(
+    x: List<Double>,
+    y: List<Double>,
+    misrate: Double = DEFAULT_MISRATE,
+): Bounds {
     // Check validity for x
     checkValidity(x, Subject.X)
     // Check validity for y
@@ -242,7 +258,11 @@ fun shiftBounds(x: List<Double>, y: List<Double>, misrate: Double = DEFAULT_MISR
  * @param misrate Misclassification rate (probability that true ratio falls outside bounds)
  * @return A Bounds object containing the lower and upper bounds
  */
-fun ratioBounds(x: List<Double>, y: List<Double>, misrate: Double = DEFAULT_MISRATE): Bounds {
+fun ratioBounds(
+    x: List<Double>,
+    y: List<Double>,
+    misrate: Double = DEFAULT_MISRATE,
+): Bounds {
     checkValidity(x, Subject.X)
     checkValidity(y, Subject.Y)
 
@@ -265,7 +285,7 @@ fun ratioBounds(x: List<Double>, y: List<Double>, misrate: Double = DEFAULT_MISR
     // Exp-transform back to ratio-space
     return Bounds(
         kotlin.math.exp(logBounds.lower),
-        kotlin.math.exp(logBounds.upper)
+        kotlin.math.exp(logBounds.upper),
     )
 }
 
@@ -281,7 +301,10 @@ fun ratioBounds(x: List<Double>, y: List<Double>, misrate: Double = DEFAULT_MISR
  * @return A Bounds object containing the lower and upper bounds
  * @throws AssumptionException if sample size < 2 or misrate is below minimum achievable
  */
-fun centerBounds(x: List<Double>, misrate: Double = DEFAULT_MISRATE): Bounds {
+fun centerBounds(
+    x: List<Double>,
+    misrate: Double = DEFAULT_MISRATE,
+): Bounds {
     checkValidity(x, Subject.X)
 
     if (misrate.isNaN() || misrate < 0.0 || misrate > 1.0) {
@@ -325,7 +348,11 @@ fun centerBounds(x: List<Double>, misrate: Double = DEFAULT_MISRATE): Bounds {
  * @param seed Optional string seed for deterministic randomization
  * @return A Bounds object containing the lower and upper bounds
  */
-fun spreadBounds(x: List<Double>, misrate: Double = DEFAULT_MISRATE, seed: String? = null): Bounds {
+fun spreadBounds(
+    x: List<Double>,
+    misrate: Double = DEFAULT_MISRATE,
+    seed: String? = null,
+): Bounds {
     checkValidity(x, Subject.X)
 
     if (misrate.isNaN() || misrate < 0.0 || misrate > 1.0) {
@@ -356,10 +383,12 @@ fun spreadBounds(x: List<Double>, misrate: Double = DEFAULT_MISRATE, seed: Strin
 
     val indices = (0 until n).toList()
     val shuffled = rng.shuffle(indices)
-    val diffs = DoubleArray(m) { i ->
-        val a = shuffled[2 * i]; val b = shuffled[2 * i + 1]
-        abs(x[a] - x[b])
-    }
+    val diffs =
+        DoubleArray(m) { i ->
+            val a = shuffled[2 * i]
+            val b = shuffled[2 * i + 1]
+            abs(x[a] - x[b])
+        }
     diffs.sort()
 
     return Bounds(diffs[kLeft - 1], diffs[kRight - 1])
@@ -379,7 +408,7 @@ fun disparityBounds(
     x: List<Double>,
     y: List<Double>,
     misrate: Double = DEFAULT_MISRATE,
-    seed: String? = null
+    seed: String? = null,
 ): Bounds {
     // Check validity (priority 0)
     checkValidity(x, Subject.X)
@@ -466,7 +495,7 @@ internal fun avgSpreadBounds(
     x: List<Double>,
     y: List<Double>,
     misrate: Double = DEFAULT_MISRATE,
-    seed: String? = null
+    seed: String? = null,
 ): Bounds {
     checkValidity(x, Subject.X)
     checkValidity(y, Subject.Y)
@@ -506,6 +535,6 @@ internal fun avgSpreadBounds(
 
     return Bounds(
         weightX * boundsX.lower + weightY * boundsY.lower,
-        weightX * boundsX.upper + weightY * boundsY.upper
+        weightX * boundsX.upper + weightY * boundsY.upper,
     )
 }

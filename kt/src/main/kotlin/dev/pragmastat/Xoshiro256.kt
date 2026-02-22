@@ -34,7 +34,10 @@ internal class Xoshiro256PlusPlus(seed: ULong) {
         s3 = sm.next()
     }
 
-    private fun rotl(x: ULong, k: Int): ULong = (x shl k) or (x shr (64 - k))
+    private fun rotl(
+        x: ULong,
+        k: Int,
+    ): ULong = (x shl k) or (x shr (64 - k))
 
     fun nextU64(): ULong {
         val result = rotl(s0 + s3, 23) + s0
@@ -63,7 +66,10 @@ internal class Xoshiro256PlusPlus(seed: ULong) {
 
     // FP rounding in min + (max-min)*u can theoretically yield max
     // for extreme ranges. Acceptable for statistical use.
-    fun uniformDouble(min: Double, max: Double): Double {
+    fun uniformDouble(
+        min: Double,
+        max: Double,
+    ): Double {
         if (min >= max) return min
         return min + (max - min) * uniformDouble()
     }
@@ -73,7 +79,10 @@ internal class Xoshiro256PlusPlus(seed: ULong) {
         return (nextU64() shr 40).toFloat() * (1.0f / (1UL shl 24).toFloat())
     }
 
-    fun uniformFloat(min: Float, max: Float): Float {
+    fun uniformFloat(
+        min: Float,
+        max: Float,
+    ): Float {
         if (min >= max) return min
         return min + (max - min) * uniformFloat()
     }
@@ -86,25 +95,37 @@ internal class Xoshiro256PlusPlus(seed: ULong) {
      * Generate a uniform Long in [min, max).
      * @throws ArithmeticException if max - min overflows.
      */
-    fun uniformLong(min: Long, max: Long): Long {
+    fun uniformLong(
+        min: Long,
+        max: Long,
+    ): Long {
         if (min >= max) return min
         val range = Math.subtractExact(max, min).toULong()
         return min + (nextU64() % range).toLong()
     }
 
-    fun uniformInt(min: Int, max: Int): Int {
+    fun uniformInt(
+        min: Int,
+        max: Int,
+    ): Int {
         if (min >= max) return min
         val range = (max.toLong() - min.toLong()).toULong()
         return min + (nextU64() % range).toInt()
     }
 
-    fun uniformShort(min: Short, max: Short): Short {
+    fun uniformShort(
+        min: Short,
+        max: Short,
+    ): Short {
         if (min >= max) return min
         val range = (max.toInt() - min.toInt()).toULong()
         return (min + (nextU64() % range).toInt()).toShort()
     }
 
-    fun uniformByte(min: Byte, max: Byte): Byte {
+    fun uniformByte(
+        min: Byte,
+        max: Byte,
+    ): Byte {
         if (min >= max) return min
         val range = (max.toInt() - min.toInt()).toULong()
         return (min + (nextU64() % range).toInt()).toByte()
@@ -114,25 +135,37 @@ internal class Xoshiro256PlusPlus(seed: ULong) {
     // Unsigned Integer Methods
     // ========================================================================
 
-    fun uniformULong(min: ULong, max: ULong): ULong {
+    fun uniformULong(
+        min: ULong,
+        max: ULong,
+    ): ULong {
         if (min >= max) return min
         val range = max - min
         return min + nextU64() % range
     }
 
-    fun uniformUInt(min: UInt, max: UInt): UInt {
+    fun uniformUInt(
+        min: UInt,
+        max: UInt,
+    ): UInt {
         if (min >= max) return min
         val range = (max - min).toULong()
         return min + (nextU64() % range).toUInt()
     }
 
-    fun uniformUShort(min: UShort, max: UShort): UShort {
+    fun uniformUShort(
+        min: UShort,
+        max: UShort,
+    ): UShort {
         if (min >= max) return min
         val range = (max - min).toULong()
         return (min + (nextU64() % range).toUInt()).toUShort()
     }
 
-    fun uniformUByte(min: UByte, max: UByte): UByte {
+    fun uniformUByte(
+        min: UByte,
+        max: UByte,
+    ): UByte {
         if (min >= max) return min
         val range = (max - min).toULong()
         return (min + (nextU64() % range).toUInt()).toUByte()

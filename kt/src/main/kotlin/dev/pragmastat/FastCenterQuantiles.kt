@@ -22,7 +22,11 @@ internal object FastCenterQuantiles {
      * @param marginHi Rank of upper bound (1-based)
      * @return Pair of (lower, upper) quantiles
      */
-    fun bounds(sorted: List<Double>, marginLo: Long, marginHi: Long): Pair<Double, Double> {
+    fun bounds(
+        sorted: List<Double>,
+        marginLo: Long,
+        marginHi: Long,
+    ): Pair<Double, Double> {
         val n = sorted.size
         val totalPairs = n.toLong() * (n + 1) / 2
 
@@ -38,7 +42,10 @@ internal object FastCenterQuantiles {
     /**
      * Count pairwise averages <= target value.
      */
-    private fun countPairsLessOrEqual(sorted: List<Double>, target: Double): Long {
+    private fun countPairsLessOrEqual(
+        sorted: List<Double>,
+        target: Double,
+    ): Long {
         val n = sorted.size
         var count = 0L
         // j is not reset: as i increases, threshold decreases monotonically
@@ -62,7 +69,10 @@ internal object FastCenterQuantiles {
     /**
      * Find exact k-th pairwise average using selection algorithm.
      */
-    private fun findExactQuantile(sorted: List<Double>, k: Long): Double {
+    private fun findExactQuantile(
+        sorted: List<Double>,
+        k: Long,
+    ): Double {
         val n = sorted.size
         val totalPairs = n.toLong() * (n + 1) / 2
 

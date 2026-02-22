@@ -13,7 +13,7 @@ internal fun fastShift(
     x: List<Double>,
     y: List<Double>,
     probabilities: DoubleArray = doubleArrayOf(0.5),
-    assumeSorted: Boolean = false
+    assumeSorted: Boolean = false,
 ): DoubleArray {
     require(x.isNotEmpty() && y.isNotEmpty()) { "Input lists cannot be empty" }
 
@@ -32,21 +32,22 @@ internal fun fastShift(
 
     // Type-7 quantile: h = 1 + (total-1)*p, then interpolate between floor(h) and ceil(h)
     val requiredRanks = mutableSetOf<Long>()
-    val interpolationParams = Array(probabilities.size) { i ->
-        val p = probabilities[i]
-        val h = 1.0 + (total - 1) * p
-        var lowerRank = floor(h).toLong()
-        var upperRank = ceil(h).toLong()
-        val weight = h - lowerRank
+    val interpolationParams =
+        Array(probabilities.size) { i ->
+            val p = probabilities[i]
+            val h = 1.0 + (total - 1) * p
+            var lowerRank = floor(h).toLong()
+            var upperRank = ceil(h).toLong()
+            val weight = h - lowerRank
 
-        if (lowerRank < 1) lowerRank = 1
-        if (upperRank > total) upperRank = total
+            if (lowerRank < 1) lowerRank = 1
+            if (upperRank > total) upperRank = total
 
-        requiredRanks.add(lowerRank)
-        requiredRanks.add(upperRank)
+            requiredRanks.add(lowerRank)
+            requiredRanks.add(upperRank)
 
-        Triple(lowerRank, upperRank, weight)
-    }
+            Triple(lowerRank, upperRank, weight)
+        }
 
     // Find all required rank values
     val rankValues = mutableMapOf<Long, Double>()
@@ -60,8 +61,11 @@ internal fun fastShift(
         val lower = rankValues[lowerRank]!!
         val upper = rankValues[upperRank]!!
 
-        if (weight == 0.0) lower
-        else (1.0 - weight) * lower + weight * upper
+        if (weight == 0.0) {
+            lower
+        } else {
+            (1.0 - weight) * lower + weight * upper
+        }
     }
 }
 
@@ -69,7 +73,11 @@ internal fun fastShift(
  * Binary search in [min_diff, max_diff] that snaps to actual discrete values.
  * Avoids materializing all m*n differences.
  */
-internal fun selectKthPairwiseDiff(x: List<Double>, y: List<Double>, k: Long): Double {
+internal fun selectKthPairwiseDiff(
+    x: List<Double>,
+    y: List<Double>,
+    k: Long,
+): Double {
     val m = x.size
     val n = y.size
     val total = m.toLong() * n.toLong()
@@ -128,7 +136,7 @@ internal fun selectKthPairwiseDiff(x: List<Double>, y: List<Double>, k: Long): D
 private fun countAndNeighbors(
     x: List<Double>,
     y: List<Double>,
-    threshold: Double
+    threshold: Double,
 ): Triple<Long, Double, Double> {
     val m = x.size
     val n = y.size
@@ -166,7 +174,10 @@ private fun countAndNeighbors(
     return Triple(count, maxBelow, minAbove)
 }
 
-private fun midpoint(a: Double, b: Double): Double = a + (b - a) * 0.5
+private fun midpoint(
+    a: Double,
+    b: Double,
+): Double = a + (b - a) * 0.5
 
 /**
  * Fast O((m + n) * log(precision)) implementation of the Ratio estimator via log-transformation.
@@ -178,7 +189,7 @@ internal fun fastRatio(
     x: List<Double>,
     y: List<Double>,
     probabilities: DoubleArray = doubleArrayOf(0.5),
-    assumeSorted: Boolean = false
+    assumeSorted: Boolean = false,
 ): DoubleArray {
     require(x.isNotEmpty() && y.isNotEmpty()) { "Input lists cannot be empty" }
 

@@ -34,7 +34,8 @@ internal fun fastCenter(values: List<Double>): Double {
 
         for (row in 1..n) {
             while (currentColumn >= row &&
-                sortedValues[row - 1] + sortedValues[currentColumn - 1] >= pivot) {
+                sortedValues[row - 1] + sortedValues[currentColumn - 1] >= pivot
+            ) {
                 currentColumn--
             }
             val elementsBelow = if (currentColumn >= row) currentColumn - row + 1 else 0
@@ -59,7 +60,8 @@ internal fun fastCenter(values: List<Double>): Double {
             continue
         }
 
-        val atTargetRank = countBelowPivot == medianRankLow ||
+        val atTargetRank =
+            countBelowPivot == medianRankLow ||
                 countBelowPivot == medianRankHigh - 1
 
         if (atTargetRank) {

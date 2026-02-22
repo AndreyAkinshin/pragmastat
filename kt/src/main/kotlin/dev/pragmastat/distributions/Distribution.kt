@@ -14,7 +14,10 @@ interface Distribution {
     /**
      * Generate multiple samples from this distribution.
      */
-    fun samples(rng: Rng, count: Int): List<Double> {
+    fun samples(
+        rng: Rng,
+        count: Int,
+    ): List<Double> {
         return (0 until count).map { sample(rng) }
     }
 }

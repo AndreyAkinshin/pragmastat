@@ -1,22 +1,30 @@
 package dev.pragmastat
 
 import org.junit.jupiter.api.Test
+import kotlin.math.abs
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
-import kotlin.math.abs
 
 class InvarianceTest {
-
     private val epsilon = 1e-9
 
-    private fun assertClose(expected: Double, actual: Double, tolerance: Double = epsilon) {
-        assertTrue(abs(expected - actual) < tolerance,
-            "Expected $expected but got $actual (difference: ${abs(expected - actual)})")
+    private fun assertClose(
+        expected: Double,
+        actual: Double,
+        tolerance: Double = epsilon,
+    ) {
+        assertTrue(
+            abs(expected - actual) < tolerance,
+            "Expected $expected but got $actual (difference: ${abs(expected - actual)})",
+        )
     }
 
     private val sampleSizes = (2..10).toList()
 
-    private fun uniformVec(rng: Rng, n: Int): List<Double> = List(n) { rng.uniformDouble() }
+    private fun uniformVec(
+        rng: Rng,
+        n: Int,
+    ): List<Double> = List(n) { rng.uniformDouble() }
 
     @Test
     fun testCenterLocationInvariance() {
@@ -61,7 +69,7 @@ class InvarianceTest {
             assertClose(spread(x) * scale, spread(xScaled))
         }
     }
-    
+
     @Suppress("DEPRECATION")
     @Test
     fun testRelSpreadScaleInvariance() {
@@ -329,8 +337,11 @@ class InvarianceTest {
             for (k in listOf(1, n / 2, n)) {
                 val rng = Rng(42)
                 val sampled = rng.sample(source, k)
-                assertEquals(sampled.size, sampled.distinct().size,
-                    "Duplicate in sample(n=$n, k=$k)")
+                assertEquals(
+                    sampled.size,
+                    sampled.distinct().size,
+                    "Duplicate in sample(n=$n, k=$k)",
+                )
             }
         }
     }

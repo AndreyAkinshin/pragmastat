@@ -1,0 +1,6 @@
+[*.kt]
+# Allow wildcard imports (used for pragmastat.* in demos and distribution helpers)
+ktlint_standard_no-wildcard-imports = disabled
+
+# Allow UPPER_CASE local properties (math/algorithm constants like FNV_OFFSET_BASIS)
+ktlint_standard_property-naming = disabled

@@ -26,7 +26,6 @@ package dev.pragmastat
  * ```
  */
 class Rng private constructor(private val inner: Xoshiro256PlusPlus) {
-
     /**
      * Create a new Rng with system entropy (non-deterministic).
      */
@@ -58,7 +57,10 @@ class Rng private constructor(private val inner: Xoshiro256PlusPlus) {
      * Generate a uniform random Double in [min, max).
      * Returns min if min >= max.
      */
-    fun uniformDouble(min: Double, max: Double): Double = inner.uniformDouble(min, max)
+    fun uniformDouble(
+        min: Double,
+        max: Double,
+    ): Double = inner.uniformDouble(min, max)
 
     /**
      * Generate a uniform random Float in [0, 1).
@@ -70,7 +72,10 @@ class Rng private constructor(private val inner: Xoshiro256PlusPlus) {
      * Generate a uniform random Float in [min, max).
      * Returns min if min >= max.
      */
-    fun uniformFloat(min: Float, max: Float): Float = inner.uniformFloat(min, max)
+    fun uniformFloat(
+        min: Float,
+        max: Float,
+    ): Float = inner.uniformFloat(min, max)
 
     // ========================================================================
     // Signed Integer Methods
@@ -84,25 +89,37 @@ class Rng private constructor(private val inner: Xoshiro256PlusPlus) {
      * evenly divide 2^64. This bias is negligible for statistical simulations
      * but not suitable for cryptographic applications.
      */
-    fun uniformLong(min: Long, max: Long): Long = inner.uniformLong(min, max)
+    fun uniformLong(
+        min: Long,
+        max: Long,
+    ): Long = inner.uniformLong(min, max)
 
     /**
      * Generate a uniform random Int in [min, max).
      * Returns min if min >= max.
      */
-    fun uniformInt(min: Int, max: Int): Int = inner.uniformInt(min, max)
+    fun uniformInt(
+        min: Int,
+        max: Int,
+    ): Int = inner.uniformInt(min, max)
 
     /**
      * Generate a uniform random Short in [min, max).
      * Returns min if min >= max.
      */
-    fun uniformShort(min: Short, max: Short): Short = inner.uniformShort(min, max)
+    fun uniformShort(
+        min: Short,
+        max: Short,
+    ): Short = inner.uniformShort(min, max)
 
     /**
      * Generate a uniform random Byte in [min, max).
      * Returns min if min >= max.
      */
-    fun uniformByte(min: Byte, max: Byte): Byte = inner.uniformByte(min, max)
+    fun uniformByte(
+        min: Byte,
+        max: Byte,
+    ): Byte = inner.uniformByte(min, max)
 
     // ========================================================================
     // Unsigned Integer Methods
@@ -112,25 +129,37 @@ class Rng private constructor(private val inner: Xoshiro256PlusPlus) {
      * Generate a uniform random ULong in [min, max).
      * Returns min if min >= max.
      */
-    fun uniformULong(min: ULong, max: ULong): ULong = inner.uniformULong(min, max)
+    fun uniformULong(
+        min: ULong,
+        max: ULong,
+    ): ULong = inner.uniformULong(min, max)
 
     /**
      * Generate a uniform random UInt in [min, max).
      * Returns min if min >= max.
      */
-    fun uniformUInt(min: UInt, max: UInt): UInt = inner.uniformUInt(min, max)
+    fun uniformUInt(
+        min: UInt,
+        max: UInt,
+    ): UInt = inner.uniformUInt(min, max)
 
     /**
      * Generate a uniform random UShort in [min, max).
      * Returns min if min >= max.
      */
-    fun uniformUShort(min: UShort, max: UShort): UShort = inner.uniformUShort(min, max)
+    fun uniformUShort(
+        min: UShort,
+        max: UShort,
+    ): UShort = inner.uniformUShort(min, max)
 
     /**
      * Generate a uniform random UByte in [min, max).
      * Returns min if min >= max.
      */
-    fun uniformUByte(min: UByte, max: UByte): UByte = inner.uniformUByte(min, max)
+    fun uniformUByte(
+        min: UByte,
+        max: UByte,
+    ): UByte = inner.uniformUByte(min, max)
 
     // ========================================================================
     // Boolean Methods
@@ -152,7 +181,10 @@ class Rng private constructor(private val inner: Xoshiro256PlusPlus) {
      *
      * @throws IllegalArgumentException if k is not positive.
      */
-    fun <T> sample(x: List<T>, k: Int): List<T> {
+    fun <T> sample(
+        x: List<T>,
+        k: Int,
+    ): List<T> {
         require(k > 0) { "k must be positive" }
         require(x.isNotEmpty()) { "Cannot sample from empty list" }
         val n = x.size
@@ -180,7 +212,10 @@ class Rng private constructor(private val inner: Xoshiro256PlusPlus) {
      *
      * @throws IllegalArgumentException if k is not positive.
      */
-    fun <T> resample(x: List<T>, k: Int): List<T> {
+    fun <T> resample(
+        x: List<T>,
+        k: Int,
+    ): List<T> {
         require(k > 0) { "k must be positive" }
         val n = x.size
         require(n > 0) { "Cannot resample from empty list" }
@@ -220,14 +255,20 @@ class Rng private constructor(private val inner: Xoshiro256PlusPlus) {
  *
  * Kotlin-specific convenience; other languages use `rng.sample(list, k)` directly.
  */
-fun <T> List<T>.sample(k: Int, rng: Rng): List<T> = rng.sample(this, k)
+fun <T> List<T>.sample(
+    k: Int,
+    rng: Rng,
+): List<T> = rng.sample(this, k)
 
 /**
  * Extension function: resample k elements from a list using the given Rng.
  *
  * Kotlin-specific convenience; other languages use `rng.resample(list, k)` directly.
  */
-fun <T> List<T>.resample(k: Int, rng: Rng): List<T> = rng.resample(this, k)
+fun <T> List<T>.resample(
+    k: Int,
+    rng: Rng,
+): List<T> = rng.resample(this, k)
 
 /**
  * Extension function: shuffle a list using the given Rng.

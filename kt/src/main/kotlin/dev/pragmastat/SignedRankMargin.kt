@@ -20,7 +20,10 @@ private const val MAX_EXACT_SIZE = 63
  * @return Margin value for one-sample bounds
  * @throws IllegalArgumentException if misrate is below minimum achievable
  */
-internal fun signedRankMargin(n: Int, misrate: Double): Int {
+internal fun signedRankMargin(
+    n: Int,
+    misrate: Double,
+): Int {
     if (n <= 0) {
         throw AssumptionException(Violation(AssumptionId.DOMAIN, Subject.X))
     }
@@ -40,12 +43,18 @@ internal fun signedRankMargin(n: Int, misrate: Double): Int {
     }
 }
 
-private fun calcExact(n: Int, misrate: Double): Int {
+private fun calcExact(
+    n: Int,
+    misrate: Double,
+): Int {
     val raw = calcExactRaw(n, misrate / 2)
     return raw * 2
 }
 
-private fun calcApprox(n: Int, misrate: Double): Int {
+private fun calcApprox(
+    n: Int,
+    misrate: Double,
+): Int {
     val raw = calcApproxRaw(n, misrate / 2)
     val margin = raw * 2
     if (margin > Int.MAX_VALUE) {
@@ -59,7 +68,10 @@ private fun calcApprox(n: Int, misrate: Double): Int {
  * Uses dynamic programming to compute the CDF.
  */
 @OptIn(ExperimentalUnsignedTypes::class)
-private fun calcExactRaw(n: Int, p: Double): Int {
+private fun calcExactRaw(
+    n: Int,
+    p: Double,
+): Int {
     val total = 1UL shl n
     val maxW = n.toLong() * (n + 1) / 2
 
@@ -88,7 +100,10 @@ private fun calcExactRaw(n: Int, p: Double): Int {
 /**
  * Compute one-sided margin using Edgeworth approximation for large n.
  */
-private fun calcApproxRaw(n: Int, misrate: Double): Long {
+private fun calcApproxRaw(
+    n: Int,
+    misrate: Double,
+): Long {
     val maxW = n.toLong() * (n + 1) / 2
     var a = 0L
     var b = maxW
@@ -109,7 +124,10 @@ private fun calcApproxRaw(n: Int, misrate: Double): Long {
 /**
  * Edgeworth expansion for Wilcoxon signed-rank distribution CDF.
  */
-private fun edgeworthCdf(n: Int, w: Long): Double {
+private fun edgeworthCdf(
+    n: Int,
+    w: Long,
+): Double {
     val mu = n.toDouble() * (n + 1) / 4.0
     val sigma2 = n * (n + 1.0) * (2 * n + 1) / 24.0
     val sigma = sqrt(sigma2)
@@ -130,4 +148,3 @@ private fun edgeworthCdf(n: Int, w: Long): Double {
     val edgeworth = bigPhi + e3 * f3
     return min(max(edgeworth, 0.0), 1.0)
 }
-

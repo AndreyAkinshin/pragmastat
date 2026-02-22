@@ -4,13 +4,19 @@ import kotlin.math.exp
 import kotlin.math.ln
 import kotlin.math.max
 
-internal fun signMarginRandomized(n: Int, misrate: Double, rng: Rng): Int {
+internal fun signMarginRandomized(
+    n: Int,
+    misrate: Double,
+    rng: Rng,
+): Int {
     if (n <= 0) throw AssumptionException(Violation(AssumptionId.DOMAIN, Subject.X))
-    if (misrate.isNaN() || misrate < 0.0 || misrate > 1.0)
+    if (misrate.isNaN() || misrate < 0.0 || misrate > 1.0) {
         throw AssumptionException(Violation(AssumptionId.DOMAIN, Subject.MISRATE))
+    }
     val minMisrate = minAchievableMisrateOneSample(n)
-    if (misrate < minMisrate)
+    if (misrate < minMisrate) {
         throw AssumptionException(Violation(AssumptionId.DOMAIN, Subject.MISRATE))
+    }
 
     val target = misrate / 2.0
     if (target <= 0.0) return 0
@@ -28,7 +34,10 @@ internal fun signMarginRandomized(n: Int, misrate: Double, rng: Rng): Int {
 
 private data class SplitResult(val rLow: Int, val logCdfLow: Double, val logPmfHigh: Double)
 
-private fun binomCdfSplit(n: Int, target: Double): SplitResult {
+private fun binomCdfSplit(
+    n: Int,
+    target: Double,
+): SplitResult {
     val logTarget = ln(target)
     var logPmf = -n.toDouble() * ln(2.0)
     var logCdf = logPmf
@@ -38,18 +47,27 @@ private fun binomCdfSplit(n: Int, target: Double): SplitResult {
         val logPmfNext = logPmf + ln((n - k + 1).toDouble()) - ln(k.toDouble())
         val logCdfNext = logAddExp(logCdf, logPmfNext)
         if (logCdfNext > logTarget) return SplitResult(rLow, logCdf, logPmfNext)
-        rLow = k; logPmf = logPmfNext; logCdf = logCdfNext
+        rLow = k
+        logPmf = logPmfNext
+        logCdf = logCdfNext
     }
     return SplitResult(rLow, logCdf, Double.NEGATIVE_INFINITY)
 }
 
-private fun logAddExp(a: Double, b: Double): Double {
+private fun logAddExp(
+    a: Double,
+    b: Double,
+): Double {
     if (a == Double.NEGATIVE_INFINITY) return b
     if (b == Double.NEGATIVE_INFINITY) return a
-    val m = max(a, b); return m + ln(exp(a - m) + exp(b - m))
+    val m = max(a, b)
+    return m + ln(exp(a - m) + exp(b - m))
 }
 
-private fun logSubExp(a: Double, b: Double): Double {
+private fun logSubExp(
+    a: Double,
+    b: Double,
+): Double {
     if (b == Double.NEGATIVE_INFINITY) return a
     val diff = exp(b - a)
     return if (diff >= 1.0) Double.NEGATIVE_INFINITY else a + ln(1.0 - diff)
