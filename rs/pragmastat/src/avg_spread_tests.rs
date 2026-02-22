@@ -1,3 +1,4 @@
+use crate::assumptions::{AssumptionId, EstimatorError, Subject};
 use crate::estimators::avg_spread;
 use float_cmp::approx_eq;
 use serde::Deserialize;
@@ -11,9 +12,16 @@ struct TwoSampleInput {
 }
 
 #[derive(Debug, Deserialize)]
+struct ExpectedError {
+    id: String,
+    subject: String,
+}
+
+#[derive(Debug, Deserialize)]
 struct TwoSampleTestCase {
     input: TwoSampleInput,
-    output: f64,
+    output: Option<f64>,
+    expected_error: Option<ExpectedError>,
 }
 
 fn find_repo_root() -> PathBuf {
@@ -63,22 +71,53 @@ fn test_avg_spread_reference() {
     for json_file in &json_files {
         let content = fs::read_to_string(json_file).unwrap();
         let test_case: TwoSampleTestCase = serde_json::from_str(&content).unwrap();
+        let file_name = json_file.file_name().unwrap();
 
+        // Handle error test cases
+        if let Some(ref expected_error) = test_case.expected_error {
+            match avg_spread(&test_case.input.x, &test_case.input.y) {
+                Ok(_) => failures.push(format!("{file_name:?}: expected error, got Ok")),
+                Err(EstimatorError::Assumption(ae)) => {
+                    let violation = ae.violation();
+                    if violation.id.as_str() != expected_error.id {
+                        failures.push(format!(
+                            "{file_name:?}: expected violation id \"{}\", got \"{}\"",
+                            expected_error.id,
+                            violation.id.as_str()
+                        ));
+                    }
+                    if violation.subject.as_str() != expected_error.subject {
+                        failures.push(format!(
+                            "{file_name:?}: expected violation subject \"{}\", got \"{}\"",
+                            expected_error.subject,
+                            violation.subject.as_str()
+                        ));
+                    }
+                }
+                Err(err) => {
+                    failures.push(format!(
+                        "{file_name:?}: expected AssumptionError, got {err:?}"
+                    ));
+                }
+            }
+            continue;
+        }
+
+        let expected_output = test_case.output.expect("Test case must have output");
         let actual_output = match avg_spread(&test_case.input.x, &test_case.input.y) {
             Ok(val) => val,
-            Err(_) => continue,
+            Err(e) => {
+                failures.push(format!("{file_name:?}: unexpected error {e:?}"));
+                continue;
+            }
         };
-        let expected_output = test_case.output;
 
         executed_count += 1;
         if !(approx_eq!(f64, actual_output, expected_output, epsilon = 1e-9)
             || (actual_output.is_infinite() && expected_output.is_infinite()))
         {
             failures.push(format!(
-                "{:?}: expected {}, got {}",
-                json_file.file_name().unwrap(),
-                expected_output,
-                actual_output
+                "{file_name:?}: expected {expected_output}, got {actual_output}",
             ));
         }
     }

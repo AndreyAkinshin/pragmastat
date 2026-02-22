@@ -17,16 +17,19 @@ public class SpreadTests
   [MemberData(nameof(TestDataNames))]
   public void SpreadTest(string testName)
   {
+    if (ReferenceTestSuiteHelper.IsErrorTestCase(SuiteName, testName, shared: true))
+    {
+      var errorTestCase = controller.LoadErrorTestCase(testName);
+      var ex = Assert.Throws<AssumptionException>(() =>
+        controller.Run(errorTestCase.Input));
+      Assert.Equal(errorTestCase.ExpectedError.Id, ex.Violation.IdString);
+      Assert.Equal(errorTestCase.ExpectedError.Subject, ex.Violation.Subject.ToString().ToLower());
+      return;
+    }
+
     var testCase = controller.LoadTestCase(testName);
-    try
-    {
-      var actual = controller.Run(testCase.Input);
-      Assert.True(controller.Assert(testCase.Output, actual));
-    }
-    catch (AssumptionException)
-    {
-      // Skip cases that violate assumptions - tested separately
-    }
+    var actual = controller.Run(testCase.Input);
+    Assert.True(controller.Assert(testCase.Output, actual));
   }
 
   [Fact]

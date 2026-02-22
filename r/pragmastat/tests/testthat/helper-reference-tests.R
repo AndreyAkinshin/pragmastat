@@ -23,37 +23,47 @@ run_reference_tests <- function(estimator_name, estimator_func, is_two_sample = 
 
   for (json_file in json_files) {
     test_case <- jsonlite::fromJSON(json_file)
+    file_label <- basename(json_file)
 
-    # Try to run the estimator, skip assumption violations
-    result <- tryCatch(
-      {
-        if (is_two_sample) {
-          input_x <- test_case$input$x
-          input_y <- test_case$input$y
-          expected_output <- test_case$output
+    if (!is.null(test_case$expected_error)) {
+      # Error test case: expect assumption_error with matching violation fields
+      cond <- tryCatch(
+        {
+          if (is_two_sample) {
+            estimator_func(test_case$input$x, test_case$input$y)
+          } else {
+            estimator_func(test_case$input$x)
+          }
+          NULL
+        },
+        assumption_error = function(e) e
+      )
 
-          actual_output <- estimator_func(input_x, input_y)
-        } else {
-          input_x <- test_case$input$x
-          expected_output <- test_case$output
+      expect_false(is.null(cond),
+        info = paste("Expected assumption_error but none was signaled:", file_label)
+      )
 
-          actual_output <- estimator_func(input_x)
-        }
-        list(output = actual_output, expected = expected_output, skip = FALSE)
-      },
-      assumption_error = function(e) {
-        # Skip cases that violate assumptions - tested separately
-        list(skip = TRUE)
+      expect_equal(cond$violation$id, test_case$expected_error$id,
+        info = paste("Error id mismatch:", file_label)
+      )
+
+      if (!is.null(test_case$expected_error$subject)) {
+        expect_equal(cond$violation$subject, test_case$expected_error$subject,
+          info = paste("Error subject mismatch:", file_label)
+        )
       }
-    )
+    } else {
+      # Normal test case: compare output
+      if (is_two_sample) {
+        actual_output <- estimator_func(test_case$input$x, test_case$input$y)
+      } else {
+        actual_output <- estimator_func(test_case$input$x)
+      }
 
-    if (result$skip) {
-      next
+      expect_equal(actual_output, test_case$output,
+        tolerance = 1e-9,
+        info = paste("Failed for test file:", file_label)
+      )
     }
-
-    expect_equal(result$output, result$expected,
-      tolerance = 1e-9,
-      info = paste("Failed for test file:", basename(json_file))
-    )
   }
 }

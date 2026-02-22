@@ -1,4 +1,5 @@
 using JetBrains.Annotations;
+using Pragmastat.Exceptions;
 using Pragmastat.TestGenerator.Framework;
 using Pragmastat.TestGenerator.Framework.TwoSample;
 
@@ -16,6 +17,16 @@ public class ShiftTests
   [MemberData(nameof(TestDataNames))]
   public void ShiftTest(string testName)
   {
+    if (ReferenceTestSuiteHelper.IsErrorTestCase(SuiteName, testName, shared: true))
+    {
+      var errorTestCase = controller.LoadErrorTestCase(testName);
+      var ex = Assert.Throws<AssumptionException>(() =>
+        controller.Run(errorTestCase.Input));
+      Assert.Equal(errorTestCase.ExpectedError.Id, ex.Violation.IdString);
+      Assert.Equal(errorTestCase.ExpectedError.Subject, ex.Violation.Subject.ToString().ToLower());
+      return;
+    }
+
     var testCase = controller.LoadTestCase(testName);
     var actual = controller.Run(testCase.Input);
     Assert.True(controller.Assert(testCase.Output, actual));

@@ -16,11 +16,6 @@ import kotlin.test.assertTrue
 import kotlin.test.assertEquals
 import kotlin.math.abs
 
-data class TestData(
-    val input: Any,
-    val output: Double
-)
-
 data class OneSampleInput(
     val x: List<Double>
 )
@@ -28,6 +23,20 @@ data class OneSampleInput(
 data class TwoSampleInput(
     val x: List<Double>,
     val y: List<Double>
+)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class OneSampleTestData(
+    val input: OneSampleInput,
+    val output: Double? = null,
+    @JsonProperty("expected_error") val expectedError: Map<String, String>? = null
+)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class TwoSampleTestData(
+    val input: TwoSampleInput,
+    val output: Double? = null,
+    @JsonProperty("expected_error") val expectedError: Map<String, String>? = null
 )
 
 data class PairwiseMarginInput(
@@ -107,32 +116,24 @@ class ReferenceTest {
             testDir.listFiles { _, name -> name.endsWith(".json") }?.forEach { file ->
                 val testName = "${estimatorName}/${file.nameWithoutExtension}"
                 tests.add(DynamicTest.dynamicTest(testName) {
-                    val testData = mapper.readValue<TestData>(file)
-                    
-                    // Try to parse input as OneSampleInput
-                    val input = when (val rawInput = testData.input) {
-                        is Map<*, *> -> {
-                            if (rawInput.containsKey("x")) {
-                                @Suppress("UNCHECKED_CAST")
-                                val rawList = rawInput["x"] as List<*>
-                                rawList.map { (it as Number).toDouble() }
-                            } else {
-                                throw IllegalArgumentException("Invalid input format")
-                            }
+                    val testData = mapper.readValue<OneSampleTestData>(file)
+
+                    // Handle error test cases
+                    if (testData.expectedError != null) {
+                        val exception = assertThrows<AssumptionException> {
+                            estimatorFunc(testData.input.x)
                         }
-                        is List<*> -> {
-                            rawInput.map { (it as Number).toDouble() }
+                        assertEquals(testData.expectedError["id"], exception.violation.id.id,
+                            "Expected error id ${testData.expectedError["id"]}, got ${exception.violation.id.id}")
+                        if (testData.expectedError.containsKey("subject")) {
+                            assertEquals(testData.expectedError["subject"], exception.violation.subject.id,
+                                "Expected error subject ${testData.expectedError["subject"]}, got ${exception.violation.subject.id}")
                         }
-                        else -> throw IllegalArgumentException("Invalid input format")
+                        return@dynamicTest
                     }
-                    
-                    try {
-                        val result = estimatorFunc(input)
-                        assertClose(testData.output, result)
-                    } catch (e: AssumptionException) {
-                        // Skip cases that violate assumptions - tested separately
-                        Assumptions.assumeTrue(false, "skipping due to assumption violation: ${e.message}")
-                    }
+
+                    val result = estimatorFunc(testData.input.x)
+                    assertClose(testData.output!!, result)
                 })
             }
         }
@@ -163,29 +164,24 @@ class ReferenceTest {
             testDir.listFiles { _, name -> name.endsWith(".json") }?.forEach { file ->
                 val testName = "${estimatorName}/${file.nameWithoutExtension}"
                 tests.add(DynamicTest.dynamicTest(testName) {
-                    val testData = mapper.readValue<TestData>(file)
-                    
-                    // Parse as TwoSampleInput
-                    val input = when (val rawInput = testData.input) {
-                        is Map<*, *> -> {
-                            @Suppress("UNCHECKED_CAST")
-                            val rawX = rawInput["x"] as List<*>
-                            val x = rawX.map { (it as Number).toDouble() }
-                            @Suppress("UNCHECKED_CAST")
-                            val rawY = rawInput["y"] as List<*>
-                            val y = rawY.map { (it as Number).toDouble() }
-                            Pair(x, y)
+                    val testData = mapper.readValue<TwoSampleTestData>(file)
+
+                    // Handle error test cases
+                    if (testData.expectedError != null) {
+                        val exception = assertThrows<AssumptionException> {
+                            estimatorFunc(testData.input.x, testData.input.y)
                         }
-                        else -> throw IllegalArgumentException("Invalid input format for two-sample test")
+                        assertEquals(testData.expectedError["id"], exception.violation.id.id,
+                            "Expected error id ${testData.expectedError["id"]}, got ${exception.violation.id.id}")
+                        if (testData.expectedError.containsKey("subject")) {
+                            assertEquals(testData.expectedError["subject"], exception.violation.subject.id,
+                                "Expected error subject ${testData.expectedError["subject"]}, got ${exception.violation.subject.id}")
+                        }
+                        return@dynamicTest
                     }
-                    
-                    try {
-                        val result = estimatorFunc(input.first, input.second)
-                        assertClose(testData.output, result)
-                    } catch (e: AssumptionException) {
-                        // Skip cases that violate assumptions - tested separately
-                        Assumptions.assumeTrue(false, "skipping due to assumption violation: ${e.message}")
-                    }
+
+                    val result = estimatorFunc(testData.input.x, testData.input.y)
+                    assertClose(testData.output!!, result)
                 })
             }
         }
@@ -215,6 +211,10 @@ class ReferenceTest {
                     }
                     kotlin.test.assertEquals(testData.expectedError["id"], exception.violation.id.id,
                         "Expected error id ${testData.expectedError["id"]}, got ${exception.violation.id.id}")
+                    if (testData.expectedError.containsKey("subject")) {
+                        kotlin.test.assertEquals(testData.expectedError["subject"], exception.violation.subject.id,
+                            "Expected error subject ${testData.expectedError["subject"]}, got ${exception.violation.subject.id}")
+                    }
                     return@dynamicTest
                 }
 
@@ -253,6 +253,10 @@ class ReferenceTest {
                     }
                     kotlin.test.assertEquals(testData.expectedError["id"], exception.violation.id.id,
                         "Expected error id ${testData.expectedError["id"]}, got ${exception.violation.id.id}")
+                    if (testData.expectedError.containsKey("subject")) {
+                        kotlin.test.assertEquals(testData.expectedError["subject"], exception.violation.subject.id,
+                            "Expected error subject ${testData.expectedError["subject"]}, got ${exception.violation.subject.id}")
+                    }
                     return@dynamicTest
                 }
 
@@ -291,6 +295,10 @@ class ReferenceTest {
                     }
                     kotlin.test.assertEquals(testData.expectedError["id"], exception.violation.id.id,
                         "Expected error id ${testData.expectedError["id"]}, got ${exception.violation.id.id}")
+                    if (testData.expectedError.containsKey("subject")) {
+                        kotlin.test.assertEquals(testData.expectedError["subject"], exception.violation.subject.id,
+                            "Expected error subject ${testData.expectedError["subject"]}, got ${exception.violation.subject.id}")
+                    }
                     return@dynamicTest
                 }
 
@@ -830,6 +838,10 @@ class ReferenceTest {
                     }
                     kotlin.test.assertEquals(testData.expectedError["id"], exception.violation.id.id,
                         "Expected error id ${testData.expectedError["id"]}, got ${exception.violation.id.id}")
+                    if (testData.expectedError.containsKey("subject")) {
+                        kotlin.test.assertEquals(testData.expectedError["subject"], exception.violation.subject.id,
+                            "Expected error subject ${testData.expectedError["subject"]}, got ${exception.violation.subject.id}")
+                    }
                     return@dynamicTest
                 }
 
@@ -865,7 +877,12 @@ class ReferenceTest {
                     val exception = assertThrows<AssumptionException> {
                         centerBounds(testData.input.x, testData.input.misrate)
                     }
-                    assertEquals(testData.expectedError!!["id"], exception.violation.id.id)
+                    assertEquals(testData.expectedError["id"], exception.violation.id.id,
+                        "Expected error id ${testData.expectedError["id"]}, got ${exception.violation.id.id}")
+                    if (testData.expectedError.containsKey("subject")) {
+                        assertEquals(testData.expectedError["subject"], exception.violation.subject.id,
+                            "Expected error subject ${testData.expectedError["subject"]}, got ${exception.violation.subject.id}")
+                    }
                     return@dynamicTest
                 }
 
@@ -900,7 +917,12 @@ class ReferenceTest {
                     val exception = assertThrows<AssumptionException> {
                         spreadBounds(testData.input.x, testData.input.misrate, testData.input.seed)
                     }
-                    assertEquals(testData.expectedError["id"], exception.violation.id.id)
+                    assertEquals(testData.expectedError["id"], exception.violation.id.id,
+                        "Expected error id ${testData.expectedError["id"]}, got ${exception.violation.id.id}")
+                    if (testData.expectedError.containsKey("subject")) {
+                        assertEquals(testData.expectedError["subject"], exception.violation.subject.id,
+                            "Expected error subject ${testData.expectedError["subject"]}, got ${exception.violation.subject.id}")
+                    }
                     return@dynamicTest
                 }
 
@@ -936,7 +958,12 @@ class ReferenceTest {
                     val exception = assertThrows<AssumptionException> {
                         avgSpreadBounds(testData.input.x, testData.input.y, testData.input.misrate, testData.input.seed)
                     }
-                    assertEquals(testData.expectedError["id"], exception.violation.id.id)
+                    assertEquals(testData.expectedError["id"], exception.violation.id.id,
+                        "Expected error id ${testData.expectedError["id"]}, got ${exception.violation.id.id}")
+                    if (testData.expectedError.containsKey("subject")) {
+                        assertEquals(testData.expectedError["subject"], exception.violation.subject.id,
+                            "Expected error subject ${testData.expectedError["subject"]}, got ${exception.violation.subject.id}")
+                    }
                     return@dynamicTest
                 }
 
@@ -973,7 +1000,12 @@ class ReferenceTest {
                     val exception = assertThrows<AssumptionException> {
                         disparityBounds(testData.input.x, testData.input.y, testData.input.misrate, testData.input.seed)
                     }
-                    assertEquals(testData.expectedError["id"], exception.violation.id.id)
+                    assertEquals(testData.expectedError["id"], exception.violation.id.id,
+                        "Expected error id ${testData.expectedError["id"]}, got ${exception.violation.id.id}")
+                    if (testData.expectedError.containsKey("subject")) {
+                        assertEquals(testData.expectedError["subject"], exception.violation.subject.id,
+                            "Expected error subject ${testData.expectedError["subject"]}, got ${exception.violation.subject.id}")
+                    }
                     return@dynamicTest
                 }
 

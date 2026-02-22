@@ -1,32 +1,38 @@
 import json
 from pathlib import Path
+
 import pytest
+
 from pragmastat import (
-    center,
-    spread,
-    rel_spread,
-    shift,
-    ratio,
-    disparity,
-    shift_bounds,
-    ratio_bounds,
-    center_bounds,
-    spread_bounds,
+    Additive,
+    Exp,
+    Multiplic,
+    Power,
     Rng,
     Uniform,
-    Additive,
-    Multiplic,
-    Exp,
-    Power,
+    center,
+    center_bounds,
+    disparity,
+    ratio,
+    ratio_bounds,
+    rel_spread,
+    shift,
+    shift_bounds,
+    spread,
+    spread_bounds,
 )
+from pragmastat.assumptions import AssumptionError
 from pragmastat.estimators import (
     _avg_spread as avg_spread,
+)
+from pragmastat.estimators import (
     _avg_spread_bounds as avg_spread_bounds,
+)
+from pragmastat.estimators import (
     disparity_bounds,
 )
 from pragmastat.pairwise_margin import pairwise_margin
 from pragmastat.signed_rank_margin import signed_rank_margin
-from pragmastat.assumptions import AssumptionError
 
 
 def find_repo_root():
@@ -40,55 +46,45 @@ def find_repo_root():
 
 
 def run_reference_tests(estimator_name, estimator_func, is_two_sample=False):
-    """Run reference tests against JSON data files.
-
-    Tests that raise AssumptionError are skipped, as those cases
-    are validated separately in the assumption tests.
-    """
+    """Run reference tests against JSON data files."""
     repo_root = find_repo_root()
     test_data_dir = repo_root / "tests" / estimator_name
 
     json_files = list(test_data_dir.glob("*.json"))
     assert len(json_files) > 0, f"No JSON test files found in {test_data_dir}"
 
-    skipped_count = 0
-    executed_count = 0
-
     for json_file in json_files:
         with open(json_file, "r") as f:
             test_case = json.load(f)
 
+        input_x = test_case["input"]["x"]
+
+        if "expected_error" in test_case:
+            expected_error = test_case["expected_error"]
+            call_args = (input_x, test_case["input"]["y"]) if is_two_sample else (input_x,)
+            with pytest.raises(AssumptionError) as exc_info:
+                estimator_func(*call_args)
+            assert exc_info.value.violation.id.value == expected_error["id"], (
+                f"Expected error id '{expected_error['id']}', "
+                f"got '{exc_info.value.violation.id.value}' for {json_file.name}"
+            )
+            if "subject" in expected_error:
+                assert exc_info.value.violation.subject == expected_error["subject"], (
+                    f"Expected error subject '{expected_error['subject']}', "
+                    f"got '{exc_info.value.violation.subject}' for {json_file.name}"
+                )
+            continue
+
+        expected_output = test_case["output"]
+
         if is_two_sample:
-            input_x = test_case["input"]["x"]
-            input_y = test_case["input"]["y"]
-            expected_output = test_case["output"]
-
-            try:
-                actual_output = estimator_func(input_x, input_y)
-            except AssumptionError:
-                # Skip cases that violate assumptions - tested separately
-                skipped_count += 1
-                continue
+            actual_output = estimator_func(input_x, test_case["input"]["y"])
         else:
-            input_x = test_case["input"]["x"]
-            expected_output = test_case["output"]
+            actual_output = estimator_func(input_x)
 
-            try:
-                actual_output = estimator_func(input_x)
-            except AssumptionError:
-                # Skip cases that violate assumptions - tested separately
-                skipped_count += 1
-                continue
-
-        executed_count += 1
         assert abs(actual_output - expected_output) < 1e-9, (
             f"Failed for test file: {json_file.name}, expected: {expected_output}, got: {actual_output}"
         )
-
-    # Ensure at least some tests were actually executed
-    assert executed_count > 0, (
-        f"All {len(json_files)} tests were skipped due to assumption violations"
-    )
 
 
 def run_distribution_tests(dist_name, dist_factory):
@@ -109,13 +105,9 @@ def run_distribution_tests(dist_name, dist_factory):
         dist = dist_factory(input_data)
         actual = [dist.sample(rng) for _ in range(input_data["count"])]
 
-        assert len(actual) == len(expected), (
-            f"Length mismatch for {json_file.name}: {len(actual)} vs {len(expected)}"
-        )
+        assert len(actual) == len(expected), f"Length mismatch for {json_file.name}: {len(actual)} vs {len(expected)}"
         for i, (act, exp) in enumerate(zip(actual, expected)):
-            assert abs(act - exp) < 1e-12, (
-                f"Failed for {json_file.name}, index {i}: expected {exp}, got {act}"
-            )
+            assert abs(act - exp) < 1e-12, f"Failed for {json_file.name}, index {i}: expected {exp}, got {act}"
 
 
 class TestReference:
@@ -162,12 +154,18 @@ class TestReference:
 
             # Handle error test cases
             if "expected_error" in test_case:
+                expected_error = test_case["expected_error"]
                 with pytest.raises(AssumptionError) as exc_info:
                     pairwise_margin(n, m, misrate)
-                assert (
-                    exc_info.value.violation.id.value
-                    == test_case["expected_error"]["id"]
+                assert exc_info.value.violation.id.value == expected_error["id"], (
+                    f"Expected error id '{expected_error['id']}', "
+                    f"got '{exc_info.value.violation.id.value}' for {json_file.name}"
                 )
+                if "subject" in expected_error:
+                    assert exc_info.value.violation.subject == expected_error["subject"], (
+                        f"Expected error subject '{expected_error['subject']}', "
+                        f"got '{exc_info.value.violation.subject}' for {json_file.name}"
+                    )
                 continue
 
             expected_output = test_case["output"]
@@ -195,12 +193,18 @@ class TestReference:
 
             # Handle error test cases
             if "expected_error" in test_case:
+                expected_error = test_case["expected_error"]
                 with pytest.raises(AssumptionError) as exc_info:
                     shift_bounds(input_x, input_y, misrate)
-                assert (
-                    exc_info.value.violation.id.value
-                    == test_case["expected_error"]["id"]
+                assert exc_info.value.violation.id.value == expected_error["id"], (
+                    f"Expected error id '{expected_error['id']}', "
+                    f"got '{exc_info.value.violation.id.value}' for {json_file.name}"
                 )
+                if "subject" in expected_error:
+                    assert exc_info.value.violation.subject == expected_error["subject"], (
+                        f"Expected error subject '{expected_error['subject']}', "
+                        f"got '{exc_info.value.violation.subject}' for {json_file.name}"
+                    )
                 continue
 
             expected_lower = test_case["output"]["lower"]
@@ -236,12 +240,18 @@ class TestReference:
 
             # Handle error test cases
             if "expected_error" in test_case:
+                expected_error = test_case["expected_error"]
                 with pytest.raises(AssumptionError) as exc_info:
                     ratio_bounds(input_x, input_y, misrate)
-                assert (
-                    exc_info.value.violation.id.value
-                    == test_case["expected_error"]["id"]
+                assert exc_info.value.violation.id.value == expected_error["id"], (
+                    f"Expected error id '{expected_error['id']}', "
+                    f"got '{exc_info.value.violation.id.value}' for {json_file.name}"
                 )
+                if "subject" in expected_error:
+                    assert exc_info.value.violation.subject == expected_error["subject"], (
+                        f"Expected error subject '{expected_error['subject']}', "
+                        f"got '{exc_info.value.violation.subject}' for {json_file.name}"
+                    )
                 continue
 
             expected_lower = test_case["output"]["lower"]
@@ -261,14 +271,8 @@ class TestReference:
         repo_root = find_repo_root()
         test_data_dir = repo_root / "tests" / "rng"
 
-        json_files = [
-            f
-            for f in test_data_dir.glob("*.json")
-            if f.name.startswith("uniform-seed-")
-        ]
-        assert len(json_files) > 0, (
-            f"No uniform seed test files found in {test_data_dir}"
-        )
+        json_files = [f for f in test_data_dir.glob("*.json") if f.name.startswith("uniform-seed-")]
+        assert len(json_files) > 0, f"No uniform seed test files found in {test_data_dir}"
 
         for json_file in json_files:
             with open(json_file, "r") as f:
@@ -285,21 +289,15 @@ class TestReference:
                 f"Length mismatch for {json_file.name}: {len(actual)} vs {len(expected)}"
             )
             for i, (act, exp) in enumerate(zip(actual, expected)):
-                assert abs(act - exp) < 1e-15, (
-                    f"Failed for {json_file.name}, index {i}: expected {exp}, got {act}"
-                )
+                assert abs(act - exp) < 1e-15, f"Failed for {json_file.name}, index {i}: expected {exp}, got {act}"
 
     def test_rng_uniform_int_reference(self):
         """Test Rng uniform_int() against reference data."""
         repo_root = find_repo_root()
         test_data_dir = repo_root / "tests" / "rng"
 
-        json_files = [
-            f for f in test_data_dir.glob("*.json") if f.name.startswith("uniform-int-")
-        ]
-        assert len(json_files) > 0, (
-            f"No uniform int test files found in {test_data_dir}"
-        )
+        json_files = [f for f in test_data_dir.glob("*.json") if f.name.startswith("uniform-int-")]
+        assert len(json_files) > 0, f"No uniform int test files found in {test_data_dir}"
 
         for json_file in json_files:
             with open(json_file, "r") as f:
@@ -314,23 +312,15 @@ class TestReference:
             rng = Rng(seed)
             actual = [rng.uniform_int(min_val, max_val) for _ in range(count)]
 
-            assert actual == expected, (
-                f"Failed for {json_file.name}: expected {expected}, got {actual}"
-            )
+            assert actual == expected, f"Failed for {json_file.name}: expected {expected}, got {actual}"
 
     def test_rng_string_seed_reference(self):
         """Test Rng with string seeds against reference data."""
         repo_root = find_repo_root()
         test_data_dir = repo_root / "tests" / "rng"
 
-        json_files = [
-            f
-            for f in test_data_dir.glob("*.json")
-            if f.name.startswith("uniform-string-")
-        ]
-        assert len(json_files) > 0, (
-            f"No string seed test files found in {test_data_dir}"
-        )
+        json_files = [f for f in test_data_dir.glob("*.json") if f.name.startswith("uniform-string-")]
+        assert len(json_files) > 0, f"No string seed test files found in {test_data_dir}"
 
         for json_file in json_files:
             with open(json_file, "r") as f:
@@ -347,23 +337,15 @@ class TestReference:
                 f"Length mismatch for {json_file.name}: {len(actual)} vs {len(expected)}"
             )
             for i, (act, exp) in enumerate(zip(actual, expected)):
-                assert abs(act - exp) < 1e-15, (
-                    f"Failed for {json_file.name}, index {i}: expected {exp}, got {act}"
-                )
+                assert abs(act - exp) < 1e-15, f"Failed for {json_file.name}, index {i}: expected {exp}, got {act}"
 
     def test_rng_uniform_float_range_reference(self):
         """Test Rng uniform_float_range() against reference data."""
         repo_root = find_repo_root()
         test_data_dir = repo_root / "tests" / "rng"
 
-        json_files = [
-            f
-            for f in test_data_dir.glob("*.json")
-            if f.name.startswith("uniform-range-")
-        ]
-        assert len(json_files) > 0, (
-            f"No uniform range test files found in {test_data_dir}"
-        )
+        json_files = [f for f in test_data_dir.glob("*.json") if f.name.startswith("uniform-range-")]
+        assert len(json_files) > 0, f"No uniform range test files found in {test_data_dir}"
 
         for json_file in json_files:
             with open(json_file, "r") as f:
@@ -382,23 +364,15 @@ class TestReference:
                 f"Length mismatch for {json_file.name}: {len(actual)} vs {len(expected)}"
             )
             for i, (act, exp) in enumerate(zip(actual, expected)):
-                assert abs(act - exp) < 1e-12, (
-                    f"Failed for {json_file.name}, index {i}: expected {exp}, got {act}"
-                )
+                assert abs(act - exp) < 1e-12, f"Failed for {json_file.name}, index {i}: expected {exp}, got {act}"
 
     def test_rng_uniform_bool_reference(self):
         """Test Rng uniform_bool() against reference data."""
         repo_root = find_repo_root()
         test_data_dir = repo_root / "tests" / "rng"
 
-        json_files = [
-            f
-            for f in test_data_dir.glob("*.json")
-            if f.name.startswith("uniform-bool-seed-")
-        ]
-        assert len(json_files) > 0, (
-            f"No uniform bool test files found in {test_data_dir}"
-        )
+        json_files = [f for f in test_data_dir.glob("*.json") if f.name.startswith("uniform-bool-seed-")]
+        assert len(json_files) > 0, f"No uniform bool test files found in {test_data_dir}"
 
         for json_file in json_files:
             with open(json_file, "r") as f:
@@ -411,9 +385,7 @@ class TestReference:
             rng = Rng(seed)
             actual = [rng.uniform_bool() for _ in range(count)]
 
-            assert actual == expected, (
-                f"Failed for {json_file.name}: expected {expected}, got {actual}"
-            )
+            assert actual == expected, f"Failed for {json_file.name}: expected {expected}, got {actual}"
 
     def test_shuffle_reference(self):
         """Test Rng shuffle() against reference data."""
@@ -438,9 +410,7 @@ class TestReference:
                 f"Length mismatch for {json_file.name}: {len(actual)} vs {len(expected)}"
             )
             for i, (act, exp) in enumerate(zip(actual, expected)):
-                assert abs(act - exp) < 1e-15, (
-                    f"Failed for {json_file.name}, index {i}: expected {exp}, got {act}"
-                )
+                assert abs(act - exp) < 1e-15, f"Failed for {json_file.name}, index {i}: expected {exp}, got {act}"
 
     def test_sample_reference(self):
         """Test Rng sample() against reference data."""
@@ -466,9 +436,7 @@ class TestReference:
                 f"Length mismatch for {json_file.name}: {len(actual)} vs {len(expected)}"
             )
             for i, (act, exp) in enumerate(zip(actual, expected)):
-                assert abs(act - exp) < 1e-15, (
-                    f"Failed for {json_file.name}, index {i}: expected {exp}, got {act}"
-                )
+                assert abs(act - exp) < 1e-15, f"Failed for {json_file.name}, index {i}: expected {exp}, got {act}"
 
     def test_resample_reference(self):
         """Test Rng resample() against reference data."""
@@ -494,9 +462,7 @@ class TestReference:
                 f"Length mismatch for {json_file.name}: {len(actual)} vs {len(expected)}"
             )
             for i, (act, exp) in enumerate(zip(actual, expected)):
-                assert abs(act - exp) < 1e-15, (
-                    f"Failed for {json_file.name}, index {i}: expected {exp}, got {act}"
-                )
+                assert abs(act - exp) < 1e-15, f"Failed for {json_file.name}, index {i}: expected {exp}, got {act}"
 
     def test_uniform_distribution_reference(self):
         run_distribution_tests(
@@ -513,9 +479,7 @@ class TestReference:
     def test_multiplic_distribution_reference(self):
         run_distribution_tests(
             "multiplic",
-            lambda input_data: Multiplic(
-                input_data["logMean"], input_data["logStdDev"]
-            ),
+            lambda input_data: Multiplic(input_data["logMean"], input_data["logStdDev"]),
         )
 
     def test_exp_distribution_reference(self):
@@ -559,8 +523,14 @@ class TestReference:
                 with pytest.raises(AssumptionError) as exc_info:
                     signed_rank_margin(n, misrate)
                 assert exc_info.value.violation.id.value == expected_error["id"], (
-                    f"Expected error id {expected_error['id']}, got {exc_info.value.violation.id.value}"
+                    f"Expected error id '{expected_error['id']}', "
+                    f"got '{exc_info.value.violation.id.value}' for {json_file.name}"
                 )
+                if "subject" in expected_error:
+                    assert exc_info.value.violation.subject == expected_error["subject"], (
+                        f"Expected error subject '{expected_error['subject']}', "
+                        f"got '{exc_info.value.violation.subject}' for {json_file.name}"
+                    )
                 continue
 
             expected_output = test_case["output"]
@@ -588,14 +558,18 @@ class TestReference:
 
             # Handle error test cases
             if "expected_error" in test_case:
+                expected_error = test_case["expected_error"]
                 with pytest.raises(AssumptionError) as exc_info:
                     center_bounds(input_x, misrate)
-                assert (
-                    exc_info.value.violation.id.value
-                    == test_case["expected_error"]["id"]
-                ), (
-                    f"Expected error id {test_case['expected_error']['id']}, got {exc_info.value.violation.id.value}"
+                assert exc_info.value.violation.id.value == expected_error["id"], (
+                    f"Expected error id '{expected_error['id']}', "
+                    f"got '{exc_info.value.violation.id.value}' for {json_file.name}"
                 )
+                if "subject" in expected_error:
+                    assert exc_info.value.violation.subject == expected_error["subject"], (
+                        f"Expected error subject '{expected_error['subject']}', "
+                        f"got '{exc_info.value.violation.subject}' for {json_file.name}"
+                    )
                 continue
 
             expected_lower = test_case["output"]["lower"]
@@ -628,14 +602,18 @@ class TestReference:
 
             # Handle error test cases
             if "expected_error" in test_case:
+                expected_error = test_case["expected_error"]
                 with pytest.raises(AssumptionError) as exc_info:
                     spread_bounds(input_x, misrate, seed=seed)
-                assert (
-                    exc_info.value.violation.id.value
-                    == test_case["expected_error"]["id"]
-                ), (
-                    f"Expected error id {test_case['expected_error']['id']}, got {exc_info.value.violation.id.value}"
+                assert exc_info.value.violation.id.value == expected_error["id"], (
+                    f"Expected error id '{expected_error['id']}', "
+                    f"got '{exc_info.value.violation.id.value}' for {json_file.name}"
                 )
+                if "subject" in expected_error:
+                    assert exc_info.value.violation.subject == expected_error["subject"], (
+                        f"Expected error subject '{expected_error['subject']}', "
+                        f"got '{exc_info.value.violation.subject}' for {json_file.name}"
+                    )
                 continue
 
             expected_lower = test_case["output"]["lower"]
@@ -672,12 +650,18 @@ class TestReference:
 
             # Handle error test cases
             if "expected_error" in test_case:
+                expected_error = test_case["expected_error"]
                 with pytest.raises(AssumptionError) as exc_info:
                     avg_spread_bounds(input_x, input_y, misrate, seed=seed)
-                assert (
-                    exc_info.value.violation.id.value
-                    == test_case["expected_error"]["id"]
+                assert exc_info.value.violation.id.value == expected_error["id"], (
+                    f"Expected error id '{expected_error['id']}', "
+                    f"got '{exc_info.value.violation.id.value}' for {json_file.name}"
                 )
+                if "subject" in expected_error:
+                    assert exc_info.value.violation.subject == expected_error["subject"], (
+                        f"Expected error subject '{expected_error['subject']}', "
+                        f"got '{exc_info.value.violation.subject}' for {json_file.name}"
+                    )
                 continue
 
             expected_lower = test_case["output"]["lower"]
@@ -714,12 +698,18 @@ class TestReference:
 
             # Handle error test cases
             if "expected_error" in test_case:
+                expected_error = test_case["expected_error"]
                 with pytest.raises(AssumptionError) as exc_info:
                     disparity_bounds(input_x, input_y, misrate, seed=seed)
-                assert (
-                    exc_info.value.violation.id.value
-                    == test_case["expected_error"]["id"]
+                assert exc_info.value.violation.id.value == expected_error["id"], (
+                    f"Expected error id '{expected_error['id']}', "
+                    f"got '{exc_info.value.violation.id.value}' for {json_file.name}"
                 )
+                if "subject" in expected_error:
+                    assert exc_info.value.violation.subject == expected_error["subject"], (
+                        f"Expected error subject '{expected_error['subject']}', "
+                        f"got '{exc_info.value.violation.subject}' for {json_file.name}"
+                    )
                 continue
 
             expected_lower = test_case["output"]["lower"]

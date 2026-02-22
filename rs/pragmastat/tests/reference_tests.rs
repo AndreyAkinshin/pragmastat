@@ -1,8 +1,15 @@
 use float_cmp::approx_eq;
+use pragmastat::assumptions::EstimatorError;
 use pragmastat::*;
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;
+
+#[derive(Debug, Deserialize, Serialize)]
+struct ExpectedError {
+    id: String,
+    subject: String,
+}
 
 #[derive(Debug, Deserialize, Serialize)]
 struct OneSampleInput {
@@ -19,14 +26,14 @@ struct TwoSampleInput {
 struct OneSampleTestCase {
     input: OneSampleInput,
     output: Option<f64>,
-    expected_error: Option<serde_json::Value>,
+    expected_error: Option<ExpectedError>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 struct TwoSampleTestCase {
     input: TwoSampleInput,
     output: Option<f64>,
-    expected_error: Option<serde_json::Value>,
+    expected_error: Option<ExpectedError>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -46,7 +53,7 @@ struct BoundsOutput {
 struct ShiftBoundsTestCase {
     input: ShiftBoundsInput,
     output: Option<BoundsOutput>,
-    expected_error: Option<serde_json::Value>,
+    expected_error: Option<ExpectedError>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -60,7 +67,7 @@ struct RatioBoundsInput {
 struct RatioBoundsTestCase {
     input: RatioBoundsInput,
     output: Option<BoundsOutput>,
-    expected_error: Option<serde_json::Value>,
+    expected_error: Option<ExpectedError>,
 }
 
 fn find_repo_root() -> PathBuf {
@@ -75,10 +82,41 @@ fn find_repo_root() -> PathBuf {
     }
 }
 
-fn run_one_sample_tests<F, E>(estimator_name: &str, estimator_func: F)
+fn verify_error(
+    failures: &mut Vec<String>,
+    file_name: &std::ffi::OsStr,
+    err: &EstimatorError,
+    expected: &ExpectedError,
+) {
+    match err {
+        EstimatorError::Assumption(ae) => {
+            let violation = ae.violation();
+            if violation.id.as_str() != expected.id {
+                failures.push(format!(
+                    "{file_name:?}: expected violation id \"{}\", got \"{}\"",
+                    expected.id,
+                    violation.id.as_str()
+                ));
+            }
+            if violation.subject.as_str() != expected.subject {
+                failures.push(format!(
+                    "{file_name:?}: expected violation subject \"{}\", got \"{}\"",
+                    expected.subject,
+                    violation.subject.as_str()
+                ));
+            }
+        }
+        _ => {
+            failures.push(format!(
+                "{file_name:?}: expected AssumptionError, got {err:?}"
+            ));
+        }
+    }
+}
+
+fn run_one_sample_tests<F>(estimator_name: &str, estimator_func: F)
 where
-    F: Fn(&[f64]) -> Result<f64, E>,
-    E: std::fmt::Debug,
+    F: Fn(&[f64]) -> Result<f64, EstimatorError>,
 {
     let repo_root = find_repo_root();
     let test_data_dir = repo_root.join("tests").join(estimator_name);
@@ -116,10 +154,12 @@ where
         let file_name = json_file.file_name().unwrap();
 
         // Handle error test cases
-        if test_case.expected_error.is_some() {
+        if let Some(ref expected_error) = test_case.expected_error {
             match estimator_func(&test_case.input.x) {
                 Ok(_) => failures.push(format!("{file_name:?}: expected error, got Ok")),
-                Err(_) => {}
+                Err(err) => {
+                    verify_error(&mut failures, file_name, &err, expected_error);
+                }
             }
             continue;
         }
@@ -155,10 +195,9 @@ where
     );
 }
 
-fn run_two_sample_tests<F, E>(estimator_name: &str, estimator_func: F)
+fn run_two_sample_tests<F>(estimator_name: &str, estimator_func: F)
 where
-    F: Fn(&[f64], &[f64]) -> Result<f64, E>,
-    E: std::fmt::Debug,
+    F: Fn(&[f64], &[f64]) -> Result<f64, EstimatorError>,
 {
     let repo_root = find_repo_root();
     let test_data_dir = repo_root.join("tests").join(estimator_name);
@@ -196,10 +235,12 @@ where
         let file_name = json_file.file_name().unwrap();
 
         // Handle error test cases
-        if test_case.expected_error.is_some() {
+        if let Some(ref expected_error) = test_case.expected_error {
             match estimator_func(&test_case.input.x, &test_case.input.y) {
                 Ok(_) => failures.push(format!("{file_name:?}: expected error, got Ok")),
-                Err(_) => {}
+                Err(err) => {
+                    verify_error(&mut failures, file_name, &err, expected_error);
+                }
             }
             continue;
         }
@@ -312,20 +353,7 @@ fn run_shift_bounds_tests() {
             match result {
                 Ok(_) => failures.push(format!("{file_name:?}: expected error, got Ok")),
                 Err(err) => {
-                    if let Some(expected_id) = expected_error.get("id").and_then(|v| v.as_str()) {
-                        if let EstimatorError::Assumption(ref ae) = err {
-                            if ae.violation().id.as_str() != expected_id {
-                                failures.push(format!(
-                                    "{file_name:?}: expected violation id {expected_id}, got {}",
-                                    ae.violation().id.as_str()
-                                ));
-                            }
-                        } else {
-                            failures.push(format!(
-                                "{file_name:?}: expected AssumptionError, got {err:?}"
-                            ));
-                        }
-                    }
+                    verify_error(&mut failures, file_name, &err, expected_error);
                 }
             }
             continue;
@@ -419,20 +447,7 @@ fn run_ratio_bounds_tests() {
             match result {
                 Ok(_) => failures.push(format!("{file_name:?}: expected error, got Ok")),
                 Err(err) => {
-                    if let Some(expected_id) = expected_error.get("id").and_then(|v| v.as_str()) {
-                        if let EstimatorError::Assumption(ref ae) = err {
-                            if ae.violation().id.as_str() != expected_id {
-                                failures.push(format!(
-                                    "{file_name:?}: expected violation id {expected_id}, got {}",
-                                    ae.violation().id.as_str()
-                                ));
-                            }
-                        } else {
-                            failures.push(format!(
-                                "{file_name:?}: expected AssumptionError, got {err:?}"
-                            ));
-                        }
-                    }
+                    verify_error(&mut failures, file_name, &err, expected_error);
                 }
             }
             continue;
@@ -1429,7 +1444,7 @@ struct CenterBoundsInput {
 struct CenterBoundsTestCase {
     input: CenterBoundsInput,
     output: Option<BoundsOutput>,
-    expected_error: Option<serde_json::Value>,
+    expected_error: Option<ExpectedError>,
 }
 
 fn run_center_bounds_tests() {
@@ -1472,20 +1487,7 @@ fn run_center_bounds_tests() {
             match result {
                 Ok(_) => failures.push(format!("{file_name:?}: expected error, got Ok")),
                 Err(err) => {
-                    if let Some(expected_id) = expected_error.get("id").and_then(|v| v.as_str()) {
-                        if let EstimatorError::Assumption(ref ae) = err {
-                            if ae.violation().id.as_str() != expected_id {
-                                failures.push(format!(
-                                    "{file_name:?}: expected violation id {expected_id}, got {}",
-                                    ae.violation().id.as_str()
-                                ));
-                            }
-                        } else {
-                            failures.push(format!(
-                                "{file_name:?}: expected AssumptionError, got {err:?}"
-                            ));
-                        }
-                    }
+                    verify_error(&mut failures, file_name, &err, expected_error);
                 }
             }
             continue;
@@ -1547,7 +1549,7 @@ struct SpreadBoundsInput {
 struct SpreadBoundsTestCase {
     input: SpreadBoundsInput,
     output: Option<BoundsOutput>,
-    expected_error: Option<serde_json::Value>,
+    expected_error: Option<ExpectedError>,
 }
 
 fn run_spread_bounds_tests() {
@@ -1595,20 +1597,7 @@ fn run_spread_bounds_tests() {
             match result {
                 Ok(_) => failures.push(format!("{file_name:?}: expected error, got Ok")),
                 Err(err) => {
-                    if let Some(expected_id) = expected_error.get("id").and_then(|v| v.as_str()) {
-                        if let EstimatorError::Assumption(ref ae) = err {
-                            if ae.violation().id.as_str() != expected_id {
-                                failures.push(format!(
-                                    "{file_name:?}: expected violation id {expected_id}, got {}",
-                                    ae.violation().id.as_str()
-                                ));
-                            }
-                        } else {
-                            failures.push(format!(
-                                "{file_name:?}: expected AssumptionError, got {err:?}"
-                            ));
-                        }
-                    }
+                    verify_error(&mut failures, file_name, &err, expected_error);
                 }
             }
             continue;

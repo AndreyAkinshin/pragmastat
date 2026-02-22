@@ -1,5 +1,3 @@
-using System.Text.Json;
-
 namespace Pragmastat.TestGenerator.Framework.RatioBounds;
 
 public class RatioBoundsController(string name, double eps = 1e-9)
@@ -19,13 +17,4 @@ public class RatioBoundsController(string name, double eps = 1e-9)
     return new RatioBoundsOutput(bounds);
   }
 
-  public ErrorTestCase<RatioBoundsInput> LoadErrorTestCase(string testName)
-  {
-    string testSuiteDirectory = ReferenceTestSuiteHelper.GetTestSuiteDirectory(SuiteName, true);
-    string filePath = Path.Combine(testSuiteDirectory, testName + ".json");
-    string testCaseJson = File.ReadAllText(filePath);
-    var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-    return JsonSerializer.Deserialize<ErrorTestCase<RatioBoundsInput>>(testCaseJson, options)
-           ?? throw new InvalidOperationException($"Failed to deserialize error test case: {testName}");
-  }
 }

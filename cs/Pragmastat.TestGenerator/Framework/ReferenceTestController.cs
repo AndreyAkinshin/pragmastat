@@ -60,6 +60,15 @@ public abstract class ReferenceTestController<TInput, TOutput>
     return Deserialize<ReferenceTestCase<TInput, TOutput>>(testCaseJson);
   }
 
+  public ErrorTestCase<TInput> LoadErrorTestCase(string testName)
+  {
+    string filePath = Path.Combine(testSuiteDirectory, testName + ".json");
+    string testCaseJson = File.ReadAllText(filePath);
+    var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+    return JsonSerializer.Deserialize<ErrorTestCase<TInput>>(testCaseJson, options)
+           ?? throw new InvalidOperationException($"Failed to deserialize error test case: {testName}");
+  }
+
   public void Save(IReadOnlyDictionary<string, ReferenceTestCase<TInput, TOutput>> data)
   {
     if (!Directory.Exists(testSuiteDirectory))

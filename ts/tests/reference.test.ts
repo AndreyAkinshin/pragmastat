@@ -67,32 +67,50 @@ describe('Reference Tests', () => {
             throw new Error(`Unknown estimator: ${dirName}`);
           }
 
-          // Determine if this is a one-sample or two-sample test
-          try {
-            if (data.input && typeof data.input === 'object' && 'x' in data.input) {
-              if ('y' in data.input) {
-                // Two-sample test
-                const result = estimatorFunc(data.input.x, data.input.y);
-                expect(result).toBeCloseTo(data.output, 9);
-              } else {
-                // One-sample test with x property
-                const result = estimatorFunc(data.input.x);
-                expect(result).toBeCloseTo(data.output, 9);
+          // Handle error test cases
+          if (data.expected_error) {
+            let thrownError: AssumptionError | null = null;
+            try {
+              if (data.input && typeof data.input === 'object' && 'x' in data.input) {
+                if ('y' in data.input) {
+                  estimatorFunc(data.input.x, data.input.y);
+                } else {
+                  estimatorFunc(data.input.x);
+                }
+              } else if (Array.isArray(data.input)) {
+                estimatorFunc(data.input);
               }
-            } else if (Array.isArray(data.input)) {
-              // One-sample test with direct array
-              const result = estimatorFunc(data.input);
+            } catch (e) {
+              if (e instanceof AssumptionError) {
+                thrownError = e;
+              } else {
+                throw e;
+              }
+            }
+            expect(thrownError).not.toBeNull();
+            expect(thrownError!.violation.id).toBe(data.expected_error.id);
+            expect(thrownError!.violation.subject).toBe(data.expected_error.subject);
+
+            return;
+          }
+
+          // Determine if this is a one-sample or two-sample test
+          if (data.input && typeof data.input === 'object' && 'x' in data.input) {
+            if ('y' in data.input) {
+              // Two-sample test
+              const result = estimatorFunc(data.input.x, data.input.y);
               expect(result).toBeCloseTo(data.output, 9);
             } else {
-              throw new Error(`Invalid test data format in ${filePath}`);
+              // One-sample test with x property
+              const result = estimatorFunc(data.input.x);
+              expect(result).toBeCloseTo(data.output, 9);
             }
-          } catch (e) {
-            // Skip cases that violate assumptions - tested separately
-            if (e instanceof AssumptionError) {
-              console.log(`Skipping ${fileName}: assumption violation`);
-              return;
-            }
-            throw e;
+          } else if (Array.isArray(data.input)) {
+            // One-sample test with direct array
+            const result = estimatorFunc(data.input);
+            expect(result).toBeCloseTo(data.output, 9);
+          } else {
+            throw new Error(`Invalid test data format in ${filePath}`);
           }
         });
       });
@@ -129,6 +147,7 @@ describe('Reference Tests', () => {
             }
             expect(thrownError).not.toBeNull();
             expect(thrownError!.violation.id).toBe(data.expected_error.id);
+            expect(thrownError!.violation.subject).toBe(data.expected_error.subject);
 
             return;
           }
@@ -170,6 +189,7 @@ describe('Reference Tests', () => {
             }
             expect(thrownError).not.toBeNull();
             expect(thrownError!.violation.id).toBe(data.expected_error.id);
+            expect(thrownError!.violation.subject).toBe(data.expected_error.subject);
 
             return;
           }
@@ -212,6 +232,7 @@ describe('Reference Tests', () => {
             }
             expect(thrownError).not.toBeNull();
             expect(thrownError!.violation.id).toBe(data.expected_error.id);
+            expect(thrownError!.violation.subject).toBe(data.expected_error.subject);
 
             return;
           }
@@ -600,6 +621,7 @@ describe('Reference Tests', () => {
             }
             expect(thrownError).not.toBeNull();
             expect(thrownError!.violation.id).toBe(data.expected_error.id);
+            expect(thrownError!.violation.subject).toBe(data.expected_error.subject);
 
             return;
           }
@@ -641,6 +663,7 @@ describe('Reference Tests', () => {
             }
             expect(thrownError).not.toBeNull();
             expect(thrownError!.violation.id).toBe(data.expected_error.id);
+            expect(thrownError!.violation.subject).toBe(data.expected_error.subject);
 
             return;
           }
@@ -682,6 +705,7 @@ describe('Reference Tests', () => {
             }
             expect(thrownError).not.toBeNull();
             expect(thrownError!.violation.id).toBe(data.expected_error.id);
+            expect(thrownError!.violation.subject).toBe(data.expected_error.subject);
             return;
           }
 
@@ -726,6 +750,7 @@ describe('Reference Tests', () => {
             }
             expect(thrownError).not.toBeNull();
             expect(thrownError!.violation.id).toBe(data.expected_error.id);
+            expect(thrownError!.violation.subject).toBe(data.expected_error.subject);
             return;
           }
 
@@ -775,6 +800,7 @@ describe('Reference Tests', () => {
             }
             expect(thrownError).not.toBeNull();
             expect(thrownError!.violation.id).toBe(data.expected_error.id);
+            expect(thrownError!.violation.subject).toBe(data.expected_error.subject);
             return;
           }
 
