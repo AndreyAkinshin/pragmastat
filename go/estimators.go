@@ -225,7 +225,7 @@ type BoundsConfig struct {
 
 func parseBoundsConfig(config []BoundsConfig) (float64, string, error) {
 	if len(config) > 1 {
-		return 0, "", NewDomainError(SubjectMisrate)
+		panic("pragmastat: at most one BoundsConfig allowed")
 	}
 	mr := DefaultMisrate
 	seed := ""
