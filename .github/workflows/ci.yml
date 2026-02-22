@@ -101,6 +101,8 @@ jobs:
   # Language Builds (all run in parallel)
   # ==========================================================================
 
+  # R runs in rocker/verse container without mise; raw commands used intentionally.
+  # Steps mirror mise tasks: r:check → r:build → r:test.
   ci-r:
     runs-on: ubuntu-24.04
     container: rocker/verse:4.5.1
@@ -348,6 +350,10 @@ jobs:
       env:
         GRADLE_SIGNING_KEY: ${{ secrets.GRADLE_SIGNING_KEY }}
         GRADLE_SIGNING_PASSWORD: ${{ secrets.GRADLE_SIGNING_PASSWORD }}
+
+    - name: Check (non-release mode)
+      if: ${{ !inputs.release }}
+      run: mise run kt:check
 
     - name: Build and test (non-release mode)
       if: ${{ !inputs.release }}

@@ -173,9 +173,14 @@ dir = "kt"
 run = "./gradlew test"
 
 [tasks."kt:check"]
-description = "Check Kotlin code"
+description = "Check Kotlin code (lint and format)"
 dir = "kt"
-run = "./gradlew check"
+run = "./gradlew ktlintCheck"
+
+[tasks."kt:check:fix"]
+description = "Format Kotlin code"
+dir = "kt"
+run = "./gradlew ktlintFormat"
 
 [tasks."kt:clean"]
 description = "Clean Kotlin build artifacts"
@@ -409,6 +414,11 @@ description = "Format Rust code"
 dir = "rs/pragmastat"
 run = "cargo fmt"
 
+[tasks."rs:restore"]
+description = "Download Rust dependencies"
+dir = "rs/pragmastat"
+run = "cargo fetch"
+
 [tasks."rs:clean"]
 description = "Clean Rust build artifacts"
 dir = "rs/pragmastat"
@@ -451,6 +461,7 @@ run = "cargo publish --dry-run"
 description = "Run Rust CI pipeline"
 run = [
     { task = "rs:clean" },
+    { task = "rs:restore" },
     { task = "rs:check" },
     { task = "rs:build" },
     { task = "rs:test" },
