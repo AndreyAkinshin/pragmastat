@@ -1,9 +1,7 @@
 {
   "input": {
     "x": [1, 2, 3, 4, 5],
-    "y": [],
-    "misrate": 0.2,
-    "seed": "avg-spread-bounds-tests"
+    "y": []
   },
   "expected_error": {
     "id": "validity",

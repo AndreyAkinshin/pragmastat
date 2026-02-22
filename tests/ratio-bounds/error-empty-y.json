@@ -5,6 +5,7 @@
     "misrate": 0.2
   },
   "expected_error": {
-    "id": "validity"
+    "id": "validity",
+    "subject": "y"
   }
 }

@@ -6,6 +6,7 @@
     "seed": "avg-spread-bounds-tests"
   },
   "expected_error": {
-    "id": "domain"
+    "id": "domain",
+    "subject": "misrate"
   }
 }

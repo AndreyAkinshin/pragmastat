@@ -1,7 +1,6 @@
 {
   "input": {
-    "x": [],
-    "misrate": 0.2
+    "x": []
   },
   "expected_error": {
     "id": "validity",

@@ -6,6 +6,7 @@
     "seed": "disparity-bounds-tests"
   },
   "expected_error": {
-    "id": "domain"
+    "id": "domain",
+    "subject": "x"
   }
 }

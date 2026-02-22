@@ -5,6 +5,7 @@
     "seed": "spread-bounds-tests"
   },
   "expected_error": {
-    "id": "sparity"
+    "id": "sparity",
+    "subject": "x"
   }
 }

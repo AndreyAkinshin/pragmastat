@@ -5,6 +5,7 @@
     "seed": "spread-bounds-tests"
   },
   "expected_error": {
-    "id": "validity"
+    "id": "validity",
+    "subject": "x"
   }
 }
