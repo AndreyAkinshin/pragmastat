@@ -223,7 +223,7 @@ type BoundsConfig struct {
 	Seed    string  // Random seed; empty means non-deterministic
 }
 
-func parseBoundsConfig(config []BoundsConfig) (float64, string, error) {
+func parseBoundsConfig(config []BoundsConfig) (float64, string) {
 	if len(config) > 1 {
 		panic("pragmastat: at most one BoundsConfig allowed")
 	}
@@ -235,17 +235,14 @@ func parseBoundsConfig(config []BoundsConfig) (float64, string, error) {
 		}
 		seed = config[0].Seed
 	}
-	return mr, seed, nil
+	return mr, seed
 }
 
 // ShiftBounds provides bounds on the Shift estimator with specified misclassification rate.
 // The misrate represents the probability that the true shift falls outside the computed bounds.
 // This is a pragmatic alternative to traditional confidence intervals for the Hodges-Lehmann estimator.
 func ShiftBounds[T Number](x, y []T, config ...BoundsConfig) (Bounds, error) {
-	mr, _, err := parseBoundsConfig(config)
-	if err != nil {
-		return Bounds{}, err
-	}
+	mr, _ := parseBoundsConfig(config)
 
 	// Check validity for x
 	if err := checkValidity(x, SubjectX); err != nil {
@@ -329,10 +326,7 @@ func ShiftBounds[T Number](x, y []T, config ...BoundsConfig) (Bounds, error) {
 //   - positivity(x) - all values in x must be strictly positive
 //   - positivity(y) - all values in y must be strictly positive
 func RatioBounds[T Number](x, y []T, config ...BoundsConfig) (Bounds, error) {
-	mr, _, err := parseBoundsConfig(config)
-	if err != nil {
-		return Bounds{}, err
-	}
+	mr, _ := parseBoundsConfig(config)
 
 	if err := checkValidity(x, SubjectX); err != nil {
 		return Bounds{}, err
@@ -379,10 +373,7 @@ func RatioBounds[T Number](x, y []T, config ...BoundsConfig) (Bounds, error) {
 // CenterBounds provides exact distribution-free bounds for Center (Hodges-Lehmann pseudomedian).
 // Requires weak symmetry assumption: distribution symmetric around unknown center.
 func CenterBounds[T Number](x []T, config ...BoundsConfig) (Bounds, error) {
-	mr, _, err := parseBoundsConfig(config)
-	if err != nil {
-		return Bounds{}, err
-	}
+	mr, _ := parseBoundsConfig(config)
 
 	if err := checkValidity(x, SubjectX); err != nil {
 		return Bounds{}, err
@@ -435,10 +426,7 @@ func CenterBounds[T Number](x []T, config ...BoundsConfig) (Bounds, error) {
 
 // SpreadBounds provides distribution-free bounds for Spread using disjoint pairs.
 func SpreadBounds[T Number](x []T, config ...BoundsConfig) (Bounds, error) {
-	mr, seed, err := parseBoundsConfig(config)
-	if err != nil {
-		return Bounds{}, err
-	}
+	mr, seed := parseBoundsConfig(config)
 	var rng *Rng
 	if seed != "" {
 		rng = NewRngFromString(seed)
@@ -520,10 +508,7 @@ func avgSpreadBoundsWithRngs[T Number](x, y []T, misrate float64, rngX, rngY *Rn
 // DisparityBounds provides distribution-free bounds for the Disparity estimator (Shift / AvgSpread)
 // using Bonferroni combination of ShiftBounds and AvgSpreadBounds.
 func DisparityBounds[T Number](x, y []T, config ...BoundsConfig) (Bounds, error) {
-	mr, seed, err := parseBoundsConfig(config)
-	if err != nil {
-		return Bounds{}, err
-	}
+	mr, seed := parseBoundsConfig(config)
 	var rngX, rngY *Rng
 	if seed != "" {
 		rngX = NewRngFromString(seed)
