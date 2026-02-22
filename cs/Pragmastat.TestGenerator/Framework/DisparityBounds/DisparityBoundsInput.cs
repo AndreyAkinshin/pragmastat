@@ -1,4 +1,5 @@
 using JetBrains.Annotations;
+using Pragmastat.Exceptions;
 
 namespace Pragmastat.TestGenerator.Framework.DisparityBounds;
 
@@ -23,5 +24,5 @@ public class DisparityBoundsInput
   }
 
   public Sample GetSampleX() => new Sample(X);
-  public Sample GetSampleY() => new Sample(Y);
+  public Sample GetSampleY() => new Sample(Y, validationSubject: Subject.Y);
 }
