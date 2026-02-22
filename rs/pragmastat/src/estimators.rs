@@ -372,7 +372,7 @@ pub fn center_bounds(x: &[f64], misrate: f64) -> Result<Bounds, EstimatorError> 
 
     let margin = crate::signed_rank_margin::signed_rank_margin(n, misrate)?;
 
-    let total_pairs = (n * (n + 1) / 2) as i64;
+    let total_pairs = (n as i64) * (n as i64 + 1) / 2;
 
     let mut half_margin = (margin / 2) as i64;
     let max_half_margin = (total_pairs - 1) / 2;
