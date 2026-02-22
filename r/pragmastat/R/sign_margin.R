@@ -12,8 +12,12 @@ sign_margin_randomized <- function(n, misrate, rng) {
   }
 
   target <- misrate / 2
-  if (target <= 0) return(0L)
-  if (target >= 1) return(as.integer(n * 2))
+  if (target <= 0) {
+    return(0L)
+  }
+  if (target >= 1) {
+    return(as.integer(n * 2))
+  }
 
   split <- binom_cdf_split(n, target)
   r_low <- split$r_low
@@ -60,15 +64,23 @@ binom_cdf_split <- function(n, target) {
 }
 
 log_add_exp <- function(a, b) {
-  if (is.infinite(a) && a < 0) return(b)
-  if (is.infinite(b) && b < 0) return(a)
+  if (is.infinite(a) && a < 0) {
+    return(b)
+  }
+  if (is.infinite(b) && b < 0) {
+    return(a)
+  }
   m <- max(a, b)
   m + log(exp(a - m) + exp(b - m))
 }
 
 log_sub_exp <- function(a, b) {
-  if (is.infinite(b) && b < 0) return(a)
+  if (is.infinite(b) && b < 0) {
+    return(a)
+  }
   diff <- exp(b - a)
-  if (diff >= 1) return(-Inf)
+  if (diff >= 1) {
+    return(-Inf)
+  }
   a + log(1 - diff)
 }

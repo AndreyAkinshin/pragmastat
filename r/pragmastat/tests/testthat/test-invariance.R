@@ -130,7 +130,7 @@ test_that("invariance tests work correctly", {
 
 test_that("shuffle preserves multiset", {
   for (n in c(1, 2, 5, 10, 100)) {
-    x <- seq_len(n) - 1  # 0-based to match other languages
+    x <- seq_len(n) - 1 # 0-based to match other languages
     r <- rng(42L)
     shuffled <- r$shuffle(x)
     expect_equal(sort(shuffled), x)
@@ -173,7 +173,8 @@ test_that("sample has no duplicates", {
       r <- rng(42L)
       sampled <- r$sample(source, k)
       expect_equal(length(sampled), length(unique(sampled)),
-        info = paste0("Duplicate in sample(n=", n, ", k=", k, ")"))
+        info = paste0("Duplicate in sample(n=", n, ", k=", k, ")")
+      )
     }
   }
 })

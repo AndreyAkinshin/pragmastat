@@ -63,18 +63,34 @@ disparity_bounds <- function(x, y, misrate = DEFAULT_MISRATE, seed = NULL) {
   }
 
   if (ua <= 0.0) {
-    if (ls == 0.0 && us == 0.0) return(list(lower = 0.0, upper = 0.0))
-    if (ls >= 0.0) return(list(lower = 0.0, upper = Inf))
-    if (us <= 0.0) return(list(lower = -Inf, upper = 0.0))
+    if (ls == 0.0 && us == 0.0) {
+      return(list(lower = 0.0, upper = 0.0))
+    }
+    if (ls >= 0.0) {
+      return(list(lower = 0.0, upper = Inf))
+    }
+    if (us <= 0.0) {
+      return(list(lower = -Inf, upper = 0.0))
+    }
     return(list(lower = -Inf, upper = Inf))
   }
 
   # Default: ua > 0 && la <= 0
-  if (ls > 0.0) return(list(lower = ls / ua, upper = Inf))
-  if (us < 0.0) return(list(lower = -Inf, upper = us / ua))
-  if (ls == 0.0 && us == 0.0) return(list(lower = 0.0, upper = 0.0))
-  if (ls == 0.0 && us > 0.0) return(list(lower = 0.0, upper = Inf))
-  if (ls < 0.0 && us == 0.0) return(list(lower = -Inf, upper = 0.0))
+  if (ls > 0.0) {
+    return(list(lower = ls / ua, upper = Inf))
+  }
+  if (us < 0.0) {
+    return(list(lower = -Inf, upper = us / ua))
+  }
+  if (ls == 0.0 && us == 0.0) {
+    return(list(lower = 0.0, upper = 0.0))
+  }
+  if (ls == 0.0 && us > 0.0) {
+    return(list(lower = 0.0, upper = Inf))
+  }
+  if (ls < 0.0 && us == 0.0) {
+    return(list(lower = -Inf, upper = 0.0))
+  }
 
   return(list(lower = -Inf, upper = Inf))
 }
