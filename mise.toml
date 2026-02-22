@@ -725,6 +725,10 @@ depends = ["cs:test", "go:test", "kt:test", "py:test", "r:test", "rs:test", "ts:
 description = "Check all language implementations"
 depends = ["cs:check", "go:check", "kt:check", "py:check", "r:check", "rs:check", "ts:check"]
 
+[tasks."check:fix"]
+description = "Auto-fix all language implementations"
+depends = ["cs:check:fix", "go:check:fix", "kt:check:fix", "py:check:fix", "r:check:fix", "rs:check:fix", "ts:check:fix"]
+
 [tasks."clean"]
 description = "Clean all build artifacts"
 depends = ["cs:clean", "go:clean", "kt:clean", "py:clean", "r:clean", "rs:clean", "ts:clean", "img:clean", "web:clean", "docs:clean"]
