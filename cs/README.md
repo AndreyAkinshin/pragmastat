@@ -3,16 +3,16 @@
 Install from NuGet via .NET CLI:
 
 ```bash
-dotnet add package Pragmastat --version 10.0.5
+dotnet add package Pragmastat --version 10.0.6
 ```
 
 Install from NuGet via Package Manager Console:
 
 ```ps1
-NuGet\Install-Package Pragmastat -Version 10.0.5
+NuGet\Install-Package Pragmastat -Version 10.0.6
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v10.0.5/cs
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v10.0.6/cs
 
 Pragmastat on NuGet: https://www.nuget.org/packages/Pragmastat/
 
