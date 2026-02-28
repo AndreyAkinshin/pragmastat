@@ -32,6 +32,10 @@ mod avg_spread_bounds_tests;
 mod avg_spread_tests;
 #[cfg(test)]
 mod disparity_bounds_tests;
+#[cfg(test)]
+mod pairwise_margin_tests;
+#[cfg(test)]
+mod signed_rank_margin_tests;
 
 pub use assumptions::{AssumptionError, AssumptionId, EstimatorError, Subject, Violation};
 pub use distributions::{Additive, Distribution, Exp, Multiplic, Power, Uniform};
