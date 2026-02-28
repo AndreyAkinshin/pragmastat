@@ -35,26 +35,54 @@ import dev.pragmastat.*
 import dev.pragmastat.distributions.*
 
 fun main() {
-    // --- One-Sample ---
+    // --- One-Sample (free functions) ---
 
-    var x = (1..22).map { it.toDouble() }
+    var xv = (1..22).map { it.toDouble() }
 
-    println(center(x)) // 11.5
-    println(centerBounds(x, 1e-3)) // Bounds(lower=6.0, upper=17.0)
-    println(spread(x)) // 7.0
-    println(spreadBounds(x, 1e-3, "demo")) // Bounds(lower=1.0, upper=18.0)
+    println(center(xv)) // 11.5
+    println(centerBounds(xv, 1e-3)) // Bounds(lower=6.0, upper=17.0)
+    println(spread(xv)) // 7.0
+    println(spreadBounds(xv, 1e-3, "demo")) // Bounds(lower=1.0, upper=18.0)
 
-    // --- Two-Sample ---
+    // --- Two-Sample (free functions) ---
 
-    x = (1..30).map { it.toDouble() }
-    var y = (21..50).map { it.toDouble() }
+    xv = (1..30).map { it.toDouble() }
+    var yv = (21..50).map { it.toDouble() }
 
-    println(shift(x, y)) // -20.0
-    println(shiftBounds(x, y, 1e-3)) // Bounds(lower=-28.0, upper=-12.0)
-    println(ratio(x, y)) // 0.43669798282695127
-    println(ratioBounds(x, y, 1e-3)) // Bounds(lower=0.23255813953488377, upper=0.6428571428571428)
-    println(disparity(x, y)) // -2.2222222222222223
-    println(disparityBounds(x, y, 1e-3, "demo")) // Bounds(lower=-29.0, upper=-0.4782608695652174)
+    println(shift(xv, yv)) // -20.0
+    println(shiftBounds(xv, yv, 1e-3)) // Bounds(lower=-28.0, upper=-12.0)
+    println(ratio(xv, yv)) // 0.43669798282695127
+    println(ratioBounds(xv, yv, 1e-3)) // Bounds(lower=0.23255813953488377, upper=0.6428571428571428)
+    println(disparity(xv, yv)) // -2.2222222222222223
+    println(disparityBounds(xv, yv, 1e-3, "demo")) // Bounds(lower=-29.0, upper=-0.4782608695652174)
+
+    // --- Sample-based API ---
+
+    val x = Sample.of((1..22).map { it.toDouble() })
+    println(center(x)) // Measurement(value=11.5, unit=NumberUnit)
+    println(spread(x)) // Measurement(value=7.0, unit=NumberUnit)
+    println(centerBounds(x, 1e-3)) // Bounds(lower=6.0, upper=17.0, unit=NumberUnit)
+
+    val sx = Sample.of((1..30).map { it.toDouble() })
+    val sy = Sample.of((21..50).map { it.toDouble() })
+    println(shift(sx, sy)) // Measurement(value=-20.0, unit=NumberUnit)
+    println(ratio(sx, sy)) // Measurement(value=0.436..., unit=RatioUnit)
+    println(disparity(sx, sy)) // Measurement(value=-2.222..., unit=DisparityUnit)
+
+    // --- Custom units ---
+
+    val ns = CustomUnit("ns", "Time", "ns", "Nanosecond", 1)
+    val us = CustomUnit("us", "Time", "us", "Microsecond", 1000)
+    val ms = CustomUnit("ms", "Time", "ms", "Millisecond", 1_000_000)
+
+    val registry = UnitRegistry.standard()
+    registry.register(ns)
+    registry.register(us)
+    registry.register(ms)
+
+    val timeSample = Sample.of(listOf(100.0, 200.0, 300.0, 400.0, 500.0), ns)
+    println(center(timeSample)) // 300 ns
+    println(center(timeSample.convertTo(us))) // 0.3 us
 
     // --- Randomization ---
 

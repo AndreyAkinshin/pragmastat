@@ -36,7 +36,6 @@ cs/
 │   ├── Bounds.cs               # Lower/upper bound pair
 │   ├── Probability.cs          # Probability value type
 │   ├── Sample.cs               # Core sample type
-│   ├── SampleExtensions.cs     # Extension methods on Sample
 │   ├── Toolkit.cs              # Static API entry point
 │   └── Randomization/          # Rng, Xoshiro256
 ├── Pragmastat.Demo/            # Demo application
@@ -56,19 +55,17 @@ cs/
 ## Public API
 
 ```csharp
-// Extension methods on Sample
-sample.Center()
-sample.Spread()
-
 // Static methods in Toolkit
+Toolkit.Center(x)
+Toolkit.Spread(x)
 Toolkit.Shift(x, y)
 Toolkit.Ratio(x, y)
 Toolkit.Disparity(x, y)
+Toolkit.CenterBounds(x, misrate)
+Toolkit.SpreadBounds(x, misrate)
 Toolkit.ShiftBounds(x, y, misrate)
 Toolkit.RatioBounds(x, y, misrate)
 Toolkit.DisparityBounds(x, y, misrate)
-Toolkit.CenterBounds(x, misrate)
-Toolkit.SpreadBounds(x, misrate)
 ```
 
 ## Obsolete API
@@ -92,7 +89,7 @@ Uses `AssumptionException` (extends `ArgumentException`) with `Violation` proper
 
 ```csharp
 try {
-    var result = sample.Center();
+    var result = Toolkit.Center(sample);
 } catch (AssumptionException e) {
     // e.Violation.Id: Validity, Domain, Positivity, Sparity
     // e.Violation.Subject: X, Y, Misrate
