@@ -11,7 +11,10 @@ internal class AvgSpreadEstimator : ITwoSampleEstimator
 
   public Measurement Estimate(Sample x, Sample y)
   {
-    Assertion.MatchedUnit(x, y);
+    Assertion.NonWeighted("x", x);
+    Assertion.NonWeighted("y", y);
+    Assertion.CompatibleUnits(x, y);
+    (x, y) = Assertion.ConvertToFiner(x, y);
 
     var spreadX = FastSpread.Estimate(x.SortedValues, isSorted: true);
     if (spreadX <= 0)

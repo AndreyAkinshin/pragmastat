@@ -12,13 +12,10 @@ public class RelSpreadEstimator : IOneSampleEstimator
 
   public Measurement Estimate(Sample x)
   {
-    // Check positivity (priority 1)
+    Assertion.NonWeighted("x", x);
     Assertion.PositivityAssumption(x, Subject.X);
-    // Calculate center (we know x is valid, center should succeed)
     var centerVal = FastCenter.Estimate(x.SortedValues);
-    // Calculate spread (using internal implementation since we already validated)
     var spreadVal = FastSpread.Estimate(x.SortedValues, isSorted: true);
-    // center is guaranteed positive because all values are positive
     return (spreadVal / Abs(centerVal)).WithUnit(NumberUnit.Instance);
   }
 }

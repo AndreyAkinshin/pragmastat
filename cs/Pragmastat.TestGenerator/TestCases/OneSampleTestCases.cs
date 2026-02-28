@@ -1,4 +1,5 @@
 #pragma warning disable CS0618
+using Pragmastat.Estimators;
 using Pragmastat.TestGenerator.Framework.OneSample;
 using Spectre.Console;
 
@@ -11,7 +12,7 @@ public static class OneSampleTestCases
     // Center: 38 test cases (24 original + 14 unsorted)
     // Note: Performance tests (perf-100k) are not stored in the repository because they generate
     // large JSON files. Instead, they should be implemented manually in each language's test suite.
-    GenerateTests("center", input => input.ToSample().Center(),
+    GenerateTests("center", input => CenterEstimator.Instance.Estimate(input.ToSample()),
       new OneSampleInputBuilder()
         // Demo examples (n = 5) - 3 tests
         .Add("demo-1", new Sample(0, 2, 4, 6, 8))
@@ -53,7 +54,7 @@ public static class OneSampleTestCases
     // Spread: 30 test cases (requires sparity: spread > 0, so no constant samples or n=1)
     // Note: Performance tests (perf-100k) are not stored in the repository because they generate
     // large JSON files. Instead, they should be implemented manually in each language's test suite.
-    GenerateTests("spread", input => input.ToSample().Spread(),
+    GenerateTests("spread", input => SpreadEstimator.Instance.Estimate(input.ToSample()),
       new OneSampleInputBuilder()
         // Demo examples (n = 5) - 3 tests
         .Add("demo-1", new Sample(0, 2, 4, 6, 8))
@@ -87,7 +88,7 @@ public static class OneSampleTestCases
         .AddUnsortedShuffle("extreme-wide-unsorted-5", 1000, 0.001, 1000000, 100, 1));  // Wide range unsorted
 
     // RelSpread: 18 test cases (requires positivity: all values > 0)
-    GenerateTests("rel-spread", input => input.ToSample().RelSpread(),
+    GenerateTests("rel-spread", input => RelSpreadEstimator.Instance.Estimate(input.ToSample()),
       new OneSampleInputBuilder()
         // Demo examples (n = 5) - 2 tests (positive only)
         .Add("demo-1", new Sample(1, 3, 5, 7, 9))

@@ -1,4 +1,5 @@
 using JetBrains.Annotations;
+using Pragmastat.Estimators;
 using Pragmastat.Exceptions;
 using Pragmastat.TestGenerator.Framework;
 using Pragmastat.TestGenerator.Framework.OneSample;
@@ -8,7 +9,7 @@ namespace Pragmastat.Tests.Estimators;
 public class CenterTests
 {
   private const string SuiteName = "center";
-  private readonly OneSampleEstimatorController controller = new(SuiteName, input => input.ToSample().Center());
+  private readonly OneSampleEstimatorController controller = new(SuiteName, input => CenterEstimator.Instance.Estimate(input.ToSample()));
 
   [UsedImplicitly]
   public static readonly TheoryData<string> TestDataNames = ReferenceTestSuiteHelper.GetTheoryData(SuiteName, true);
@@ -40,7 +41,7 @@ public class CenterTests
     // The test case is not stored in the repository because it generates a large JSON file (~1.5 MB).
     var x = Enumerable.Range(1, 100000).Select(i => (double)i).ToArray();
     var sample = new Sample(x);
-    var actual = sample.Center();
+    var actual = CenterEstimator.Instance.Estimate(sample);
     const double expected = 50000.5;
     Assert.True(controller.Assert(expected, actual));
   }

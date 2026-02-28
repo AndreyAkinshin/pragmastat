@@ -1,4 +1,5 @@
 using JetBrains.Annotations;
+using Pragmastat.Estimators;
 using Pragmastat.Exceptions;
 using Pragmastat.TestGenerator.Framework;
 using Pragmastat.TestGenerator.Framework.TwoSample;
@@ -8,7 +9,7 @@ namespace Pragmastat.Tests.Estimators;
 public class ShiftTests
 {
   private const string SuiteName = "shift";
-  private readonly TwoSampleEstimatorController controller = new(SuiteName, input => input.GetSampleX().Shift(input.GetSampleY()));
+  private readonly TwoSampleEstimatorController controller = new(SuiteName, input => ShiftEstimator.Instance.Estimate(input.GetSampleX(), input.GetSampleY()));
 
   [UsedImplicitly]
   public static readonly TheoryData<string> TestDataNames = ReferenceTestSuiteHelper.GetTheoryData(SuiteName, true);
@@ -41,7 +42,7 @@ public class ShiftTests
     var data = Enumerable.Range(1, 100000).Select(i => (double)i).ToArray();
     var sampleX = new Sample(data);
     var sampleY = new Sample(data);
-    var actual = sampleX.Shift(sampleY);
+    var actual = ShiftEstimator.Instance.Estimate(sampleX, sampleY);
     const double expected = 0;
     Assert.True(controller.Assert(expected, actual));
   }

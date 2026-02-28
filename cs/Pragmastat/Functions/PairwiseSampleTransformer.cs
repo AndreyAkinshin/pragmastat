@@ -9,7 +9,7 @@ internal static class PairwiseSampleTransformer
     Sample y,
     Func<double, double, double> func)
   {
-    Assertion.MatchedUnit(x, y);
+    Assertion.CompatibleUnits(x, y);
 
     int n = x.Size;
     int m = y.Size;
@@ -23,7 +23,7 @@ internal static class PairwiseSampleTransformer
         for (int j = 0; j < m; j++)
         {
           values[k] = func(x.Values[i], y.Values[j]);
-          weights[k++] = x.Weights[i] * y.Weights[j];
+          weights[k++] = x.Weights![i] * y.Weights![j];
         }
 
       return new Sample(values, weights, x.Unit);

@@ -1,4 +1,5 @@
 using JetBrains.Annotations;
+using Pragmastat.Estimators;
 using Pragmastat.Exceptions;
 using Pragmastat.TestGenerator.Framework;
 using Pragmastat.TestGenerator.Framework.TwoSample;
@@ -8,7 +9,7 @@ namespace Pragmastat.Tests.Estimators;
 public class DisparityTests
 {
   private const string SuiteName = "disparity";
-  private readonly TwoSampleEstimatorController controller = new(SuiteName, input => input.GetSampleX().Disparity(input.GetSampleY()));
+  private readonly TwoSampleEstimatorController controller = new(SuiteName, input => DisparityEstimator.Instance.Estimate(input.GetSampleX(), input.GetSampleY()));
 
   [UsedImplicitly]
   public static readonly TheoryData<string> TestDataNames = ReferenceTestSuiteHelper.GetTheoryData(SuiteName, true);

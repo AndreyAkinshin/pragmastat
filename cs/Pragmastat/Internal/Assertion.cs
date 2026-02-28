@@ -186,16 +186,17 @@ internal static class Assertion
   }
 
   [AssertionMethod]
-  public static void MatchedUnit(Sample sample1, Sample sample2)
+  public static void CompatibleUnits(Sample sample1, Sample sample2)
   {
-    Equal(sample1.Unit, sample2.Unit);
+    if (!sample1.Unit.IsCompatible(sample2.Unit))
+      throw new UnitMismatchException(sample1.Unit, sample2.Unit);
   }
 
-  [AssertionMethod]
-  public static void Equal(MeasurementUnit unit1, MeasurementUnit unit2)
+  public static (Sample, Sample) ConvertToFiner(Sample a, Sample b)
   {
-    if (unit1 != unit2)
-      throw new UnitMismatchException(unit1, unit2);
+    if (a.Unit == b.Unit) return (a, b);
+    var target = MeasurementUnit.Finer(a.Unit, b.Unit);
+    return (a.ConvertTo(target), b.ConvertTo(target));
   }
 
   [AssertionMethod]

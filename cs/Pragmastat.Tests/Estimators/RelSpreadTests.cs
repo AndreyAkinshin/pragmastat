@@ -1,6 +1,7 @@
 #pragma warning disable CS0618
 
 using JetBrains.Annotations;
+using Pragmastat.Estimators;
 using Pragmastat.Exceptions;
 using Pragmastat.TestGenerator.Framework;
 using Pragmastat.TestGenerator.Framework.OneSample;
@@ -10,7 +11,7 @@ namespace Pragmastat.Tests.Estimators;
 public class RelSpreadTests
 {
   private const string SuiteName = "rel-spread";
-  private readonly OneSampleEstimatorController controller = new(SuiteName, input => input.ToSample().RelSpread());
+  private readonly OneSampleEstimatorController controller = new(SuiteName, input => RelSpreadEstimator.Instance.Estimate(input.ToSample()));
 
   [UsedImplicitly]
   public static readonly TheoryData<string> TestDataNames = ReferenceTestSuiteHelper.GetTheoryData(SuiteName, true);

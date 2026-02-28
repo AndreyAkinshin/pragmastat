@@ -24,7 +24,7 @@ public class OneSampleInput
   {
     Parameters = parameters;
     X = s.Values.ToArray();
-    W = s.IsWeighted ? s.Weights.ToArray() : null;
+    W = s.IsWeighted ? s.Weights!.ToArray() : null;
   }
 
   public Sample ToSample() => W == null ? new Sample(X) : new Sample(X, W);

@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Text;
 using JetBrains.Annotations;
 using Pragmastat.Exceptions;
 using Pragmastat.Internal;
@@ -8,15 +10,15 @@ namespace Pragmastat;
 public class Sample
 {
   public IReadOnlyList<double> Values { get; }
-  public IReadOnlyList<double> Weights { get; }
+  public IReadOnlyList<double>? Weights { get; }
   public double TotalWeight { get; }
   public bool IsWeighted { get; }
   public MeasurementUnit Unit { get; }
 
-  private readonly Lazy<(IReadOnlyList<double> SortedValues, IReadOnlyList<double> SortedWeights)> lazySortedData;
+  private readonly Lazy<(IReadOnlyList<double> SortedValues, IReadOnlyList<double>? SortedWeights)> lazySortedData;
 
   public IReadOnlyList<double> SortedValues => lazySortedData.Value.SortedValues;
-  public IReadOnlyList<double> SortedWeights => lazySortedData.Value.SortedWeights;
+  public IReadOnlyList<double>? SortedWeights => lazySortedData.Value.SortedWeights;
 
   /// <summary>
   /// Sample size (always positive)
@@ -54,18 +56,13 @@ public class Sample
 
     Values = values;
     Unit = unit ?? NumberUnit.Instance;
-    double weight = 1.0 / values.Count;
-    Weights = new IdenticalReadOnlyList<double>(values.Count, weight);
+    Weights = null;
     TotalWeight = 1.0;
     WeightedSize = values.Count;
     IsWeighted = false;
 
-    lazySortedData = new Lazy<(IReadOnlyList<double> SortedValues, IReadOnlyList<double> SortedWeights)>(() =>
-    {
-      if (IsSorted(Values))
-        return (Values, Weights);
-      return (Values.CopyToArrayAndSort(), Weights);
-    });
+    lazySortedData = new Lazy<(IReadOnlyList<double>, IReadOnlyList<double>?)>(() =>
+      (IsSorted(Values) ? Values : Values.CopyToArrayAndSort(), null));
   }
 
   public Sample(IReadOnlyList<double> values, IReadOnlyList<double> weights, MeasurementUnit? measurementUnit = null, Subject? validationSubject = null)
@@ -89,7 +86,7 @@ public class Sample
         nameof(weights));
 
     double totalWeight = 0, maxWeight = double.MinValue, minWeight = double.MaxValue;
-    double totalWeightSquared = 0; // Sum of weight squares
+    double totalWeightSquared = 0;
     foreach (double weight in weights)
     {
       totalWeight += weight;
@@ -112,13 +109,13 @@ public class Sample
     WeightedSize = totalWeight.Sqr() / totalWeightSquared;
     IsWeighted = true;
 
-    lazySortedData = new Lazy<(IReadOnlyList<double> SortedValues, IReadOnlyList<double> SortedWeights)>(() =>
+    lazySortedData = new Lazy<(IReadOnlyList<double>, IReadOnlyList<double>?)>(() =>
     {
       if (IsSorted(Values))
         return (Values, Weights);
 
       double[] sortedValues = Values.CopyToArray();
-      double[] sortedWeights = Weights.CopyToArray();
+      double[] sortedWeights = Weights!.CopyToArray();
       Array.Sort(sortedValues, sortedWeights);
 
       return (sortedValues, sortedWeights);
@@ -136,41 +133,72 @@ public class Sample
   {
   }
 
+  public Sample ConvertTo(MeasurementUnit target)
+  {
+    if (!Unit.IsCompatible(target))
+      throw new UnitMismatchException(Unit, target);
+    if (Unit == target) return this;
+    double factor = MeasurementUnit.ConversionFactor(Unit, target);
+    double[] converted = new double[Size];
+    for (int i = 0; i < Size; i++)
+      converted[i] = Values[i] * factor;
+    return IsWeighted
+      ? new Sample(converted, Weights!, target)
+      : new Sample(converted, target);
+  }
+
   public Sample Concat(Sample sample)
   {
-    if (Unit.GetFlavor() != sample.Unit.GetFlavor())
-      throw new ArgumentException(
-        $"Different measurement unit flavors: " +
-        $"{Unit.GetFlavor()} vs. {sample.Unit.GetFlavor()}",
-        nameof(sample));
+    if (!Unit.IsCompatible(sample.Unit))
+      throw new UnitMismatchException(Unit, sample.Unit);
 
-    var unit1 = Unit;
-    var unit2 = sample.Unit;
-    var unit = unit1.BaseUnits < unit2.BaseUnits ? unit1 : unit2;
+    var target = MeasurementUnit.Finer(Unit, sample.Unit);
 
     IEnumerable<double> GetValues(Sample s)
     {
-      if (unit.BaseUnits == s.Unit.BaseUnits)
+      if (s.Unit == target)
         return s.Values;
-      double ratio = s.Unit.BaseUnits * 1.0 / unit.BaseUnits;
-      return s.Values.Select(x => x * ratio);
+      double factor = MeasurementUnit.ConversionFactor(s.Unit, target);
+      return s.Values.Select(x => x * factor);
+    }
+
+    double[] UniformWeights(int count)
+    {
+      double w = 1.0 / count;
+      double[] result = new double[count];
+      for (int i = 0; i < count; i++)
+        result[i] = w;
+      return result;
     }
 
     var values1 = GetValues(this);
     var values2 = GetValues(sample);
-    var weights1 = Weights;
-    var weights2 = sample.Weights;
-    return new Sample(values1.Concat(values2).ToList(), weights1.Concat(weights2).ToList(), unit);
+    var weights1 = Weights ?? UniformWeights(Size);
+    var weights2 = sample.Weights ?? UniformWeights(sample.Size);
+    return new Sample(values1.Concat(values2).ToList(), weights1.Concat(weights2).ToList(), target);
   }
 
-  public override string ToString() => SampleFormatter.Default.Format(this);
+  public override string ToString()
+  {
+    var builder = new StringBuilder();
+    builder.Append('[');
+    for (int i = 0; i < Values.Count; i++)
+    {
+      if (i != 0) builder.Append(',');
+      builder.Append(Values[i].ToString("G", CultureInfo.InvariantCulture));
+    }
+    builder.Append(']');
+    if (Unit.Abbreviation.Length > 0)
+      builder.Append(Unit.Abbreviation);
+    return builder.ToString();
+  }
 
   public static Sample operator *(Sample sample, double value)
   {
     double[] values = new double[sample.Size];
     for (int i = 0; i < sample.Size; i++)
       values[i] = sample.Values[i] * value;
-    return sample.IsWeighted ? new Sample(values, sample.Weights, sample.Unit) : new Sample(values, sample.Unit);
+    return sample.IsWeighted ? new Sample(values, sample.Weights!, sample.Unit) : new Sample(values, sample.Unit);
   }
 
   public static Sample operator /(Sample sample, double value)
@@ -178,7 +206,7 @@ public class Sample
     double[] values = new double[sample.Size];
     for (int i = 0; i < sample.Size; i++)
       values[i] = sample.Values[i] / value;
-    return sample.IsWeighted ? new Sample(values, sample.Weights, sample.Unit) : new Sample(values, sample.Unit);
+    return sample.IsWeighted ? new Sample(values, sample.Weights!, sample.Unit) : new Sample(values, sample.Unit);
   }
 
   public static Sample operator +(Sample sample, double value)
@@ -186,7 +214,7 @@ public class Sample
     double[] values = new double[sample.Size];
     for (int i = 0; i < sample.Size; i++)
       values[i] = sample.Values[i] + value;
-    return sample.IsWeighted ? new Sample(values, sample.Weights, sample.Unit) : new Sample(values, sample.Unit);
+    return sample.IsWeighted ? new Sample(values, sample.Weights!, sample.Unit) : new Sample(values, sample.Unit);
   }
 
   public static Sample operator -(Sample sample, double value)
@@ -194,7 +222,7 @@ public class Sample
     double[] values = new double[sample.Size];
     for (int i = 0; i < sample.Size; i++)
       values[i] = sample.Values[i] - value;
-    return sample.IsWeighted ? new Sample(values, sample.Weights, sample.Unit) : new Sample(values, sample.Unit);
+    return sample.IsWeighted ? new Sample(values, sample.Weights!, sample.Unit) : new Sample(values, sample.Unit);
   }
 
   public static Sample operator *(double value, Sample sample) => sample * value;
@@ -228,6 +256,8 @@ public class Sample
         throw AssumptionException.Positivity(ValidationSubject ?? Subject.X);
       logValues[i] = Math.Log(Values[i]);
     }
-    return new Sample(logValues, Weights);
+    return IsWeighted
+      ? new Sample(logValues, Weights!, NumberUnit.Instance)
+      : new Sample(logValues, NumberUnit.Instance);
   }
 }

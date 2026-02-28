@@ -1,3 +1,5 @@
+using System.Globalization;
+using Pragmastat.Exceptions;
 using Pragmastat.Internal;
 
 namespace Pragmastat.Metrology;
@@ -13,14 +15,22 @@ public class Measurement(double nominalValue, MeasurementUnit unit) : IComparabl
 
   public static Measurement operator +(Measurement a, Measurement b)
   {
-    Assertion.Equal(a.Unit, b.Unit);
-    return new Measurement(a.NominalValue + b.NominalValue, a.Unit);
+    if (!a.Unit.IsCompatible(b.Unit))
+      throw new UnitMismatchException(a.Unit, b.Unit);
+    var target = MeasurementUnit.Finer(a.Unit, b.Unit);
+    double av = a.NominalValue * MeasurementUnit.ConversionFactor(a.Unit, target);
+    double bv = b.NominalValue * MeasurementUnit.ConversionFactor(b.Unit, target);
+    return new Measurement(av + bv, target);
   }
 
   public static Measurement operator -(Measurement a, Measurement b)
   {
-    Assertion.Equal(a.Unit, b.Unit);
-    return new Measurement(a.NominalValue - b.NominalValue, a.Unit);
+    if (!a.Unit.IsCompatible(b.Unit))
+      throw new UnitMismatchException(a.Unit, b.Unit);
+    var target = MeasurementUnit.Finer(a.Unit, b.Unit);
+    double av = a.NominalValue * MeasurementUnit.ConversionFactor(a.Unit, target);
+    double bv = b.NominalValue * MeasurementUnit.ConversionFactor(b.Unit, target);
+    return new Measurement(av - bv, target);
   }
 
   public static Measurement operator +(Measurement a, double b) => new(a.NominalValue + b, a.Unit);
@@ -53,17 +63,16 @@ public class Measurement(double nominalValue, MeasurementUnit unit) : IComparabl
   public static bool operator >=(Measurement? left, Measurement? right) =>
     Comparer<Measurement?>.Default.Compare(left, right) >= 0;
 
-
   public int CompareTo(Measurement? other)
   {
     if (ReferenceEquals(this, other))
       return 0;
     if (ReferenceEquals(null, other))
       return 1;
-    if (Unit.GetFlavor() != other.Unit.GetFlavor())
-      throw new InvalidOperationException($"Cannot compare units of different flavors: {this} and {other}");
+    if (!Unit.IsCompatible(other.Unit))
+      throw new InvalidOperationException($"Cannot compare units of different families: {this} and {other}");
     double a = NominalValue * Unit.BaseUnits;
-    double b = other.NominalValue * Unit.BaseUnits;
+    double b = other.NominalValue * other.Unit.BaseUnits;
     return a.CompareTo(b);
   }
 
@@ -74,7 +83,11 @@ public class Measurement(double nominalValue, MeasurementUnit unit) : IComparabl
     _ => throw new ArgumentException($"Object must be of type {nameof(Measurement)}")
   };
 
-  public override string ToString() => MeasurementFormatter.Default.Format(this);
+  public override string ToString()
+  {
+    string value = NominalValue.ToString("G", CultureInfo.InvariantCulture);
+    return Unit.Abbreviation.Length > 0 ? $"{value} {Unit.Abbreviation}" : value;
+  }
 }
 
 public static class MeasurementExtensions

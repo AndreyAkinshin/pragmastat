@@ -11,6 +11,7 @@ public class SpreadEstimator : IOneSampleEstimator
 
   public Measurement Estimate(Sample x)
   {
+    Assertion.NonWeighted("x", x);
     var spreadVal = FastSpread.Estimate(x.SortedValues, isSorted: true);
     if (spreadVal <= 0)
       throw AssumptionException.Sparity(Subject.X);

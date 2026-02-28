@@ -11,10 +11,11 @@ public class RatioEstimator : ITwoSampleEstimator
 
   public Measurement Estimate(Sample x, Sample y)
   {
-    Assertion.MatchedUnit(x, y);
-    // Check positivity for x (priority 1, subject x)
+    Assertion.NonWeighted("x", x);
+    Assertion.NonWeighted("y", y);
+    Assertion.CompatibleUnits(x, y);
+    (x, y) = Assertion.ConvertToFiner(x, y);
     Assertion.PositivityAssumption(x, Subject.X);
-    // Check positivity for y (priority 1, subject y)
     Assertion.PositivityAssumption(y, Subject.Y);
     return FastRatio
       .Estimate(x.SortedValues, y.SortedValues, [0.5], assumeSorted: true)
