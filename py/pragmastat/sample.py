@@ -133,6 +133,8 @@ class Sample:
 
     # --- Comparison and display ---
 
+    __hash__ = None  # mutable numpy arrays inside
+
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Sample):
             return NotImplemented
@@ -240,7 +242,7 @@ def _convert_to_finer(a: Sample, b: Sample) -> tuple[Sample, Sample]:
 
 def _prepare_pair(x: Sample, y: Sample) -> tuple[Sample, Sample]:
     """Prepare two samples: set subjects, check compatibility, convert to finer unit."""
-    x = x._with_subject("x")
-    y = y._with_subject("y")
+    x = x._with_subject("x")  # noqa: SLF001
+    y = y._with_subject("y")  # noqa: SLF001
     _check_compatible_units(x, y)
     return _convert_to_finer(x, y)
