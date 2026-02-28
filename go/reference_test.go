@@ -3,6 +3,7 @@ package pragmastat
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"os"
 	"path/filepath"
 	"strings"
@@ -54,19 +55,32 @@ type BoundsOutput struct {
 	Upper float64 `json:"upper"`
 }
 
+// mustSample creates a Sample or fatals.
+func mustSample(t *testing.T, values []float64) *Sample {
+	t.Helper()
+	s, err := NewSample(values)
+	if err != nil {
+		t.Fatalf("NewSample failed: %v", err)
+	}
+	return s
+}
+
 func TestReferenceData(t *testing.T) {
 	// Map estimator names to functions
-	oneSampleEstimators := map[string]func([]float64) (float64, error){
-		"center":     Center[float64],
-		"spread":     Spread[float64],
-		"rel-spread": RelSpread[float64],
+	oneSampleEstimators := map[string]func(*Sample) (Measurement, error){
+		"center":     Center,
+		"spread":     Spread,
+		"rel-spread": RelSpread,
 	}
 
-	twoSampleEstimators := map[string]func([]float64, []float64) (float64, error){
-		"shift":      Shift[float64],
-		"ratio":      Ratio[float64],
-		"avg-spread": avgSpread[float64],
-		"disparity":  Disparity[float64],
+	twoSampleEstimators := map[string]func(*Sample, *Sample) (Measurement, error){
+		"shift":     Shift,
+		"ratio":     Ratio,
+		"disparity": Disparity,
+	}
+
+	twoSampleInternalEstimators := map[string]func(*Sample, *Sample) (Measurement, error){
+		"avg-spread": avgSpread,
 	}
 
 	// Special test for pairwise-margin
@@ -100,14 +114,12 @@ func TestReferenceData(t *testing.T) {
 					t.Fatalf("Failed to parse input data: %v", err)
 				}
 
-				// Handle error test cases
 				if len(testData.ExpectedError) > 0 {
 					_, err := pairwiseMargin(input.N, input.M, input.Misrate)
 					if err == nil {
 						t.Errorf("Expected error for pairwiseMargin(%d, %d, %v), but got none", input.N, input.M, input.Misrate)
 						return
 					}
-					// Verify error details match expected
 					var expectedError map[string]string
 					if jsonErr := json.Unmarshal(testData.ExpectedError, &expectedError); jsonErr == nil {
 						if ae, ok := err.(*AssumptionError); ok {
@@ -172,9 +184,16 @@ func TestReferenceData(t *testing.T) {
 					t.Fatalf("Failed to parse input data: %v", err)
 				}
 
-				// Handle error test cases
 				if len(testData.ExpectedError) > 0 {
-					_, err := ShiftBounds[float64](input.X, input.Y, input.Misrate)
+					sx, sxErr := NewSample(input.X)
+					if sxErr != nil {
+						return // Sample construction error counts as expected
+					}
+					sy, syErr := newSample(input.Y, nil, nil, SubjectY)
+					if syErr != nil {
+						return // Sample construction error counts as expected
+					}
+					_, err := ShiftBounds(sx, sy, input.Misrate)
 					if err == nil {
 						t.Errorf("Expected error for ShiftBounds(%v, %v, %v), but got none", input.X, input.Y, input.Misrate)
 						return
@@ -200,7 +219,12 @@ func TestReferenceData(t *testing.T) {
 					t.Fatalf("Failed to parse output data: %v", err)
 				}
 
-				actual, err := ShiftBounds[float64](input.X, input.Y, input.Misrate)
+				sx := mustSample(t, input.X)
+				sy, err := newSample(input.Y, nil, nil, SubjectY)
+				if err != nil {
+					t.Fatalf("Failed to create sample Y: %v", err)
+				}
+				actual, err := ShiftBounds(sx, sy, input.Misrate)
 				if err != nil {
 					t.Fatalf("ShiftBounds(%v, %v, %v) error: %v",
 						input.X, input.Y, input.Misrate, err)
@@ -247,9 +271,16 @@ func TestReferenceData(t *testing.T) {
 					t.Fatalf("Failed to parse input data: %v", err)
 				}
 
-				// Handle error test cases
 				if len(testData.ExpectedError) > 0 {
-					_, err := RatioBounds(input.X, input.Y, input.Misrate)
+					sx, sxErr := NewSample(input.X)
+					if sxErr != nil {
+						return
+					}
+					sy, syErr := newSample(input.Y, nil, nil, SubjectY)
+					if syErr != nil {
+						return
+					}
+					_, err := RatioBounds(sx, sy, input.Misrate)
 					if err == nil {
 						t.Errorf("Expected error for RatioBounds(%v, %v, %v), but got none", input.X, input.Y, input.Misrate)
 						return
@@ -275,7 +306,12 @@ func TestReferenceData(t *testing.T) {
 					t.Fatalf("Failed to parse output data: %v", err)
 				}
 
-				actual, err := RatioBounds(input.X, input.Y, input.Misrate)
+				sx := mustSample(t, input.X)
+				sy, err := newSample(input.Y, nil, nil, SubjectY)
+				if err != nil {
+					t.Fatalf("Failed to create sample Y: %v", err)
+				}
+				actual, err := RatioBounds(sx, sy, input.Misrate)
 				if err != nil {
 					t.Fatalf("RatioBounds(%v, %v, %v) error: %v",
 						input.X, input.Y, input.Misrate, err)
@@ -337,7 +373,20 @@ func TestReferenceData(t *testing.T) {
 					if err := json.Unmarshal(testData.Input, &input); err != nil {
 						t.Fatalf("Failed to parse input data: %v", err)
 					}
-					_, err := estimatorFunc(input.X)
+					sx, sErr := NewSample(input.X)
+					if sErr != nil {
+						// Sample construction error counts as the expected error
+						var expectedError map[string]string
+						if jsonErr := json.Unmarshal(testData.ExpectedError, &expectedError); jsonErr == nil {
+							if ae, ok := sErr.(*AssumptionError); ok {
+								if string(ae.Violation.ID) != expectedError["id"] {
+									t.Errorf("Expected error id %q, got %q", expectedError["id"], ae.Violation.ID)
+								}
+							}
+						}
+						return
+					}
+					_, err := estimatorFunc(sx)
 					if err == nil {
 						t.Errorf("Expected error for %s, but got none", testName)
 						return
@@ -363,28 +412,28 @@ func TestReferenceData(t *testing.T) {
 					t.Fatalf("Failed to parse output data: %v", err)
 				}
 
-				// Try to parse as OneSampleInput first
 				var input OneSampleInput
 				if err := json.Unmarshal(testData.Input, &input); err == nil && input.X != nil {
-					result, err := estimatorFunc(input.X)
+					sx := mustSample(t, input.X)
+					m, err := estimatorFunc(sx)
 					if err != nil {
 						t.Fatalf("%s(%v) error: %v", estimatorName, input.X, err)
 					}
-					if !floatEquals(result, expected, 1e-9) {
-						t.Errorf("%s(%v) = %v, want %v", estimatorName, input.X, result, expected)
+					if !floatEquals(m.Value, expected, 1e-9) {
+						t.Errorf("%s(%v) = %v, want %v", estimatorName, input.X, m.Value, expected)
 					}
 					return
 				}
 
-				// Try to parse as direct array
 				var directInput []float64
 				if err := json.Unmarshal(testData.Input, &directInput); err == nil {
-					result, err := estimatorFunc(directInput)
+					sx := mustSample(t, directInput)
+					m, err := estimatorFunc(sx)
 					if err != nil {
 						t.Fatalf("%s(%v) error: %v", estimatorName, directInput, err)
 					}
-					if !floatEquals(result, expected, 1e-9) {
-						t.Errorf("%s(%v) = %v, want %v", estimatorName, directInput, result, expected)
+					if !floatEquals(m.Value, expected, 1e-9) {
+						t.Errorf("%s(%v) = %v, want %v", estimatorName, directInput, m.Value, expected)
 					}
 					return
 				}
@@ -394,8 +443,16 @@ func TestReferenceData(t *testing.T) {
 		}
 	}
 
-	// Test two-sample estimators
-	for estimatorName, estimatorFunc := range twoSampleEstimators {
+	// Test two-sample estimators (public + internal)
+	allTwoSample := make(map[string]func(*Sample, *Sample) (Measurement, error))
+	for k, v := range twoSampleEstimators {
+		allTwoSample[k] = v
+	}
+	for k, v := range twoSampleInternalEstimators {
+		allTwoSample[k] = v
+	}
+
+	for estimatorName, estimatorFunc := range allTwoSample {
 		dirPath := filepath.Join(testDataPath, estimatorName)
 		files, err := os.ReadDir(dirPath)
 		if err != nil {
@@ -438,7 +495,31 @@ func TestReferenceData(t *testing.T) {
 					if err := json.Unmarshal(testData.Input, &input); err != nil {
 						t.Fatalf("Failed to parse input data: %v", err)
 					}
-					_, err := estimatorFunc(input.X, input.Y)
+					sx, sxErr := NewSample(input.X)
+					if sxErr != nil {
+						var expectedError map[string]string
+						if jsonErr := json.Unmarshal(testData.ExpectedError, &expectedError); jsonErr == nil {
+							if ae, ok := sxErr.(*AssumptionError); ok {
+								if string(ae.Violation.ID) != expectedError["id"] {
+									t.Errorf("Expected error id %q, got %q", expectedError["id"], ae.Violation.ID)
+								}
+							}
+						}
+						return
+					}
+					sy, syErr := newSample(input.Y, nil, nil, SubjectY)
+					if syErr != nil {
+						var expectedError map[string]string
+						if jsonErr := json.Unmarshal(testData.ExpectedError, &expectedError); jsonErr == nil {
+							if ae, ok := syErr.(*AssumptionError); ok {
+								if string(ae.Violation.ID) != expectedError["id"] {
+									t.Errorf("Expected error id %q, got %q", expectedError["id"], ae.Violation.ID)
+								}
+							}
+						}
+						return
+					}
+					_, err := estimatorFunc(sx, sy)
 					if err == nil {
 						t.Errorf("Expected error for %s, but got none", testName)
 						return
@@ -469,12 +550,17 @@ func TestReferenceData(t *testing.T) {
 					t.Fatalf("Failed to parse input data: %v", err)
 				}
 
-				result, err := estimatorFunc(input.X, input.Y)
+				sx := mustSample(t, input.X)
+				sy, err := newSample(input.Y, nil, nil, SubjectY)
+				if err != nil {
+					t.Fatalf("Failed to create sample Y: %v", err)
+				}
+				m, err := estimatorFunc(sx, sy)
 				if err != nil {
 					t.Fatalf("%s(%v, %v) error: %v", estimatorName, input.X, input.Y, err)
 				}
-				if !floatEquals(result, expected, 1e-9) {
-					t.Errorf("%s(%v, %v) = %v, want %v", estimatorName, input.X, input.Y, result, expected)
+				if !floatEquals(m.Value, expected, 1e-9) {
+					t.Errorf("%s(%v, %v) = %v, want %v", estimatorName, input.X, input.Y, m.Value, expected)
 				}
 			})
 		}
@@ -938,7 +1024,7 @@ func TestShuffleReference(t *testing.T) {
 			}
 
 			rng := NewRngFromSeed(testData.Input.Seed)
-			actual := Shuffle(rng, testData.Input.X)
+			actual := RngShuffle(rng, testData.Input.X)
 
 			if len(actual) != len(testData.Output) {
 				t.Fatalf("Shuffle() length = %d, want %d", len(actual), len(testData.Output))
@@ -981,14 +1067,14 @@ func TestSampleReference(t *testing.T) {
 			}
 
 			rng := NewRngFromSeed(testData.Input.Seed)
-			actual := Sample(rng, testData.Input.X, testData.Input.K)
+			actual := RngSample(rng, testData.Input.X, testData.Input.K)
 
 			if len(actual) != len(testData.Output) {
-				t.Fatalf("Sample() length = %d, want %d", len(actual), len(testData.Output))
+				t.Fatalf("RngSample() length = %d, want %d", len(actual), len(testData.Output))
 			}
 			for i, v := range actual {
 				if !floatEquals(v, testData.Output[i], 1e-15) {
-					t.Errorf("Sample() at index %d = %v, want %v", i, v, testData.Output[i])
+					t.Errorf("RngSample() at index %d = %v, want %v", i, v, testData.Output[i])
 				}
 			}
 		})
@@ -1024,14 +1110,14 @@ func TestResampleReference(t *testing.T) {
 			}
 
 			rng := NewRngFromSeed(testData.Input.Seed)
-			actual := Resample(rng, testData.Input.X, testData.Input.K)
+			actual := RngResample(rng, testData.Input.X, testData.Input.K)
 
 			if len(actual) != len(testData.Output) {
-				t.Fatalf("Resample() length = %d, want %d", len(actual), len(testData.Output))
+				t.Fatalf("RngResample() length = %d, want %d", len(actual), len(testData.Output))
 			}
 			for i, v := range actual {
 				if !floatEquals(v, testData.Output[i], 1e-15) {
-					t.Errorf("Resample() at index %d = %v, want %v", i, v, testData.Output[i])
+					t.Errorf("RngResample() at index %d = %v, want %v", i, v, testData.Output[i])
 				}
 			}
 		})
@@ -1236,11 +1322,11 @@ func TestPowerDistributionReference(t *testing.T) {
 func TestSampleNegativeKPanics(t *testing.T) {
 	defer func() {
 		if r := recover(); r == nil {
-			t.Errorf("Sample with negative k should panic")
+			t.Errorf("RngSample with negative k should panic")
 		}
 	}()
 	rng := NewRngFromString("test-sample-validation")
-	Sample(rng, []float64{1, 2, 3}, -1)
+	RngSample(rng, []float64{1, 2, 3}, -1)
 }
 
 // SignedRankMarginInput represents input for signed-rank-margin tests
@@ -1308,7 +1394,6 @@ func TestSignedRankMarginReference(t *testing.T) {
 				t.Fatalf("Failed to parse input data: %v", err)
 			}
 
-			// Handle error test cases
 			if len(testData.ExpectedError) > 0 {
 				_, err := signedRankMargin(input.N, input.Misrate)
 				if err == nil {
@@ -1316,7 +1401,6 @@ func TestSignedRankMarginReference(t *testing.T) {
 						input.N, input.Misrate)
 					return
 				}
-				// Verify error details match expected
 				var expectedError map[string]string
 				if jsonErr := json.Unmarshal(testData.ExpectedError, &expectedError); jsonErr == nil {
 					if ae, ok := err.(*AssumptionError); ok {
@@ -1382,15 +1466,18 @@ func TestCenterBoundsReference(t *testing.T) {
 				t.Fatalf("Failed to parse input data: %v", err)
 			}
 
-			// Handle error test cases
 			if len(testData.ExpectedError) > 0 {
-				_, err := CenterBounds(input.X, input.Misrate)
+				sx, sErr := NewSample(input.X)
+				if sErr != nil {
+					// Construction error is the expected error
+					return
+				}
+				_, err := CenterBounds(sx, input.Misrate)
 				if err == nil {
 					t.Errorf("CenterBounds(%v, %v) expected error but got nil",
 						input.X, input.Misrate)
 					return
 				}
-				// Verify error details match expected
 				var expectedError map[string]string
 				if jsonErr := json.Unmarshal(testData.ExpectedError, &expectedError); jsonErr == nil {
 					if ae, ok := err.(*AssumptionError); ok {
@@ -1414,7 +1501,8 @@ func TestCenterBoundsReference(t *testing.T) {
 				t.Fatalf("Failed to parse output data: %v", err)
 			}
 
-			actual, err := CenterBounds(input.X, input.Misrate)
+			sx := mustSample(t, input.X)
+			actual, err := CenterBounds(sx, input.Misrate)
 			if err != nil {
 				t.Fatalf("CenterBounds(%v, %v) error: %v",
 					input.X, input.Misrate, err)
@@ -1460,9 +1548,12 @@ func TestSpreadBoundsReference(t *testing.T) {
 				t.Fatalf("Failed to parse input data: %v", err)
 			}
 
-			// Handle error test cases
 			if len(testData.ExpectedError) > 0 {
-				_, err := SpreadBoundsWithSeed(input.X, input.Misrate, input.Seed)
+				sx, sErr := NewSample(input.X)
+				if sErr != nil {
+					return
+				}
+				_, err := SpreadBoundsWithSeed(sx, input.Misrate, input.Seed)
 				if err == nil {
 					t.Errorf("SpreadBounds(%v, %v, %q) expected error but got nil",
 						input.X, input.Misrate, input.Seed)
@@ -1491,7 +1582,8 @@ func TestSpreadBoundsReference(t *testing.T) {
 				t.Fatalf("Failed to parse output data: %v", err)
 			}
 
-			actual, err := SpreadBoundsWithSeed(input.X, input.Misrate, input.Seed)
+			sx := mustSample(t, input.X)
+			actual, err := SpreadBoundsWithSeed(sx, input.Misrate, input.Seed)
 			if err != nil {
 				t.Fatalf("SpreadBounds(%v, %v, %q) error: %v",
 					input.X, input.Misrate, input.Seed, err)
@@ -1537,9 +1629,16 @@ func TestAvgSpreadBoundsReference(t *testing.T) {
 				t.Fatalf("Failed to parse input data: %v", err)
 			}
 
-			// Handle error test cases
 			if len(testData.ExpectedError) > 0 {
-				_, err := avgSpreadBoundsWithRngs(input.X, input.Y, input.Misrate, NewRngFromString(input.Seed), NewRngFromString(input.Seed))
+				sx, sxErr := NewSample(input.X)
+				if sxErr != nil {
+					return
+				}
+				sy, syErr := newSample(input.Y, nil, nil, SubjectY)
+				if syErr != nil {
+					return
+				}
+				_, err := avgSpreadBoundsWithRngs(sx, sy, input.Misrate, NewRngFromString(input.Seed), NewRngFromString(input.Seed))
 				if err == nil {
 					t.Errorf("avgSpreadBoundsWithRngs(%v, %v, %v, %q) expected error but got nil",
 						input.X, input.Y, input.Misrate, input.Seed)
@@ -1568,7 +1667,12 @@ func TestAvgSpreadBoundsReference(t *testing.T) {
 				t.Fatalf("Failed to parse output data: %v", err)
 			}
 
-			actual, err := avgSpreadBoundsWithRngs(input.X, input.Y, input.Misrate, NewRngFromString(input.Seed), NewRngFromString(input.Seed))
+			sx := mustSample(t, input.X)
+			sy, err := newSample(input.Y, nil, nil, SubjectY)
+			if err != nil {
+				t.Fatalf("Failed to create sample Y: %v", err)
+			}
+			actual, err := avgSpreadBoundsWithRngs(sx, sy, input.Misrate, NewRngFromString(input.Seed), NewRngFromString(input.Seed))
 			if err != nil {
 				t.Fatalf("avgSpreadBoundsWithRngs(%v, %v, %v, %q) error: %v",
 					input.X, input.Y, input.Misrate, input.Seed, err)
@@ -1614,9 +1718,16 @@ func TestDisparityBoundsReference(t *testing.T) {
 				t.Fatalf("Failed to parse input data: %v", err)
 			}
 
-			// Handle error test cases
 			if len(testData.ExpectedError) > 0 {
-				_, err := DisparityBoundsWithSeed(input.X, input.Y, input.Misrate, input.Seed)
+				sx, sxErr := NewSample(input.X)
+				if sxErr != nil {
+					return
+				}
+				sy, syErr := newSample(input.Y, nil, nil, SubjectY)
+				if syErr != nil {
+					return
+				}
+				_, err := DisparityBoundsWithSeed(sx, sy, input.Misrate, input.Seed)
 				if err == nil {
 					t.Errorf("DisparityBounds(%v, %v, %v, %q) expected error but got nil",
 						input.X, input.Y, input.Misrate, input.Seed)
@@ -1645,7 +1756,12 @@ func TestDisparityBoundsReference(t *testing.T) {
 				t.Fatalf("Failed to parse output data: %v", err)
 			}
 
-			actual, err := DisparityBoundsWithSeed(input.X, input.Y, input.Misrate, input.Seed)
+			sx := mustSample(t, input.X)
+			sy, err := newSample(input.Y, nil, nil, SubjectY)
+			if err != nil {
+				t.Fatalf("Failed to create sample Y: %v", err)
+			}
+			actual, err := DisparityBoundsWithSeed(sx, sy, input.Misrate, input.Seed)
 			if err != nil {
 				t.Fatalf("DisparityBounds(%v, %v, %v, %q) error: %v",
 					input.X, input.Y, input.Misrate, input.Seed, err)
@@ -1656,6 +1772,258 @@ func TestDisparityBoundsReference(t *testing.T) {
 					input.X, input.Y, input.Misrate, input.Seed,
 					actual.Lower, actual.Upper,
 					expected.Lower, expected.Upper)
+			}
+		})
+	}
+}
+
+// Metrology tests
+
+func TestSampleConstruction(t *testing.T) {
+	dirPath := filepath.Join("../tests", "sample-construction")
+	files, err := os.ReadDir(dirPath)
+	if err != nil {
+		t.Fatalf("Test data directory not found: %v", err)
+	}
+
+	for _, file := range files {
+		if !strings.HasSuffix(file.Name(), ".json") {
+			continue
+		}
+
+		testName := strings.TrimSuffix(file.Name(), ".json")
+		t.Run(testName, func(t *testing.T) {
+			filePath := filepath.Join(dirPath, file.Name())
+			data, err := os.ReadFile(filePath)
+			if err != nil {
+				t.Fatalf("Failed to read test file: %v", err)
+			}
+
+			var raw map[string]json.RawMessage
+			if err := json.Unmarshal(data, &raw); err != nil {
+				t.Fatalf("Failed to parse: %v", err)
+			}
+
+			var input struct {
+				Values  []interface{} `json:"values"`
+				Weights []float64     `json:"weights"`
+			}
+			if err := json.Unmarshal(raw["input"], &input); err != nil {
+				t.Fatalf("Failed to parse input: %v", err)
+			}
+
+			// Convert values handling special floats
+			values := make([]float64, len(input.Values))
+			for i, v := range input.Values {
+				switch val := v.(type) {
+				case float64:
+					values[i] = val
+				case string:
+					switch val {
+					case "NaN":
+						values[i] = math.NaN()
+					case "Infinity":
+						values[i] = math.Inf(1)
+					case "-Infinity":
+						values[i] = math.Inf(-1)
+					}
+				}
+			}
+
+			if _, ok := raw["expected_error"]; ok {
+				var s *Sample
+				var sErr error
+				if input.Weights != nil {
+					s, sErr = NewWeightedSample(values, input.Weights, nil)
+				} else {
+					s, sErr = NewSample(values)
+				}
+				if sErr == nil {
+					t.Errorf("Expected error but got sample: %v", s)
+				}
+				return
+			}
+
+			var output struct {
+				Size       int  `json:"size"`
+				IsWeighted bool `json:"is_weighted"`
+			}
+			if err := json.Unmarshal(raw["output"], &output); err != nil {
+				t.Fatalf("Failed to parse output: %v", err)
+			}
+
+			var s *Sample
+			var sErr error
+			if input.Weights != nil {
+				s, sErr = NewWeightedSample(values, input.Weights, nil)
+			} else {
+				s, sErr = NewSample(values)
+			}
+			if sErr != nil {
+				t.Fatalf("Unexpected error: %v", sErr)
+			}
+			if s.Size() != output.Size {
+				t.Errorf("Size = %d, want %d", s.Size(), output.Size)
+			}
+			if s.IsWeighted != output.IsWeighted {
+				t.Errorf("IsWeighted = %v, want %v", s.IsWeighted, output.IsWeighted)
+			}
+		})
+	}
+}
+
+func TestUnitPropagation(t *testing.T) {
+	dirPath := filepath.Join("../tests", "unit-propagation")
+	files, err := os.ReadDir(dirPath)
+	if err != nil {
+		t.Fatalf("Test data directory not found: %v", err)
+	}
+
+	registry := StandardRegistry()
+
+	for _, file := range files {
+		if !strings.HasSuffix(file.Name(), ".json") {
+			continue
+		}
+
+		testName := strings.TrimSuffix(file.Name(), ".json")
+		t.Run(testName, func(t *testing.T) {
+			filePath := filepath.Join(dirPath, file.Name())
+			data, err := os.ReadFile(filePath)
+			if err != nil {
+				t.Fatalf("Failed to read test file: %v", err)
+			}
+
+			var raw map[string]json.RawMessage
+			if err := json.Unmarshal(data, &raw); err != nil {
+				t.Fatalf("Failed to parse: %v", err)
+			}
+
+			// Check for expected_error (weighted-rejected test)
+			if _, ok := raw["expected_error"]; ok {
+				var input struct {
+					Estimator string    `json:"estimator"`
+					X         []float64 `json:"x"`
+					XWeights  []float64 `json:"x_weights"`
+				}
+				if err := json.Unmarshal(raw["input"], &input); err != nil {
+					t.Fatalf("Failed to parse input: %v", err)
+				}
+				sx, sErr := NewWeightedSample(input.X, input.XWeights, nil)
+				if sErr != nil {
+					t.Fatalf("Failed to create weighted sample: %v", sErr)
+				}
+				_, err := Center(sx)
+				if err == nil {
+					t.Errorf("Expected error for weighted sample, got none")
+				}
+				return
+			}
+
+			var input struct {
+				Estimator string    `json:"estimator"`
+				X         []float64 `json:"x"`
+				Y         []float64 `json:"y"`
+				XUnit     string    `json:"x_unit"`
+				YUnit     string    `json:"y_unit"`
+			}
+			if err := json.Unmarshal(raw["input"], &input); err != nil {
+				t.Fatalf("Failed to parse input: %v", err)
+			}
+
+			var output struct {
+				Value *float64 `json:"value"`
+				Unit  string   `json:"unit"`
+			}
+			if err := json.Unmarshal(raw["output"], &output); err != nil {
+				t.Fatalf("Failed to parse output: %v", err)
+			}
+
+			xUnit, err := registry.Resolve(input.XUnit)
+			if err != nil {
+				t.Fatalf("Failed to resolve x_unit %q: %v", input.XUnit, err)
+			}
+
+			sx, err := NewSampleWithUnit(input.X, xUnit)
+			if err != nil {
+				t.Fatalf("Failed to create sample X: %v", err)
+			}
+
+			switch input.Estimator {
+			case "center":
+				m, err := Center(sx)
+				if err != nil {
+					t.Fatalf("Center error: %v", err)
+				}
+				if m.Unit.ID != output.Unit {
+					t.Errorf("Unit = %q, want %q", m.Unit.ID, output.Unit)
+				}
+				if output.Value != nil && !floatEquals(m.Value, *output.Value, 1e-9) {
+					t.Errorf("Value = %v, want %v", m.Value, *output.Value)
+				}
+
+			case "spread":
+				m, err := Spread(sx)
+				if err != nil {
+					t.Fatalf("Spread error: %v", err)
+				}
+				if m.Unit.ID != output.Unit {
+					t.Errorf("Unit = %q, want %q", m.Unit.ID, output.Unit)
+				}
+
+			case "shift":
+				yUnit, err := registry.Resolve(input.YUnit)
+				if err != nil {
+					t.Fatalf("Failed to resolve y_unit: %v", err)
+				}
+				sy, err := newSample(input.Y, nil, yUnit, SubjectY)
+				if err != nil {
+					t.Fatalf("Failed to create sample Y: %v", err)
+				}
+				m, err := Shift(sx, sy)
+				if err != nil {
+					t.Fatalf("Shift error: %v", err)
+				}
+				if m.Unit.ID != output.Unit {
+					t.Errorf("Unit = %q, want %q", m.Unit.ID, output.Unit)
+				}
+
+			case "ratio":
+				yUnit, err := registry.Resolve(input.YUnit)
+				if err != nil {
+					t.Fatalf("Failed to resolve y_unit: %v", err)
+				}
+				sy, err := newSample(input.Y, nil, yUnit, SubjectY)
+				if err != nil {
+					t.Fatalf("Failed to create sample Y: %v", err)
+				}
+				m, err := Ratio(sx, sy)
+				if err != nil {
+					t.Fatalf("Ratio error: %v", err)
+				}
+				if m.Unit.ID != output.Unit {
+					t.Errorf("Unit = %q, want %q", m.Unit.ID, output.Unit)
+				}
+
+			case "disparity":
+				yUnit, err := registry.Resolve(input.YUnit)
+				if err != nil {
+					t.Fatalf("Failed to resolve y_unit: %v", err)
+				}
+				sy, err := newSample(input.Y, nil, yUnit, SubjectY)
+				if err != nil {
+					t.Fatalf("Failed to create sample Y: %v", err)
+				}
+				m, err := Disparity(sx, sy)
+				if err != nil {
+					t.Fatalf("Disparity error: %v", err)
+				}
+				if m.Unit.ID != output.Unit {
+					t.Errorf("Unit = %q, want %q", m.Unit.ID, output.Unit)
+				}
+
+			default:
+				t.Fatalf("Unknown estimator: %q", input.Estimator)
 			}
 		})
 	}

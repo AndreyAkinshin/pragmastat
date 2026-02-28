@@ -149,11 +149,11 @@ func (r *Rng) UniformBool() bool {
 // Collection Methods
 // ========================================================================
 
-// Sample returns k elements from the input slice without replacement.
+// RngSample returns k elements from the input slice without replacement.
 // Uses selection sampling to maintain order of first appearance.
 // Returns all elements if k >= len(x).
 // Panics if k is not positive (programmer error, not recoverable).
-func Sample[T any](rng *Rng, x []T, k int) []T {
+func RngSample[T any](rng *Rng, x []T, k int) []T {
 	if k <= 0 {
 		panic("sample: k must be positive")
 	}
@@ -182,17 +182,16 @@ func Sample[T any](rng *Rng, x []T, k int) []T {
 	return result
 }
 
-// SampleFloat64 returns k float64 elements from the slice without replacement.
-// This is a convenience method; Sample[T] is also available for other types.
-func (r *Rng) SampleFloat64(x []float64, k int) []float64 {
-	return Sample(r, x, k)
+// SampleSlice returns k float64 elements from the slice without replacement.
+func (r *Rng) SampleSlice(x []float64, k int) []float64 {
+	return RngSample(r, x, k)
 }
 
-// Resample returns k elements from the input slice with replacement (bootstrap sampling).
+// RngResample returns k elements from the input slice with replacement (bootstrap sampling).
 // Each element is independently selected with equal probability.
 // The original slice is not modified.
 // Panics if k is not positive or if x is empty (programmer errors, not recoverable).
-func Resample[T any](rng *Rng, x []T, k int) []T {
+func RngResample[T any](rng *Rng, x []T, k int) []T {
 	if k <= 0 {
 		panic("resample: k must be positive")
 	}
@@ -208,15 +207,15 @@ func Resample[T any](rng *Rng, x []T, k int) []T {
 	return result
 }
 
-// ResampleFloat64 returns k float64 elements from the slice with replacement.
-func (r *Rng) ResampleFloat64(x []float64, k int) []float64 {
-	return Resample(r, x, k)
+// ResampleSlice returns k float64 elements from the slice with replacement.
+func (r *Rng) ResampleSlice(x []float64, k int) []float64 {
+	return RngResample(r, x, k)
 }
 
-// Shuffle returns a shuffled copy of the input slice.
+// RngShuffle returns a shuffled copy of the input slice.
 // Uses the Fisher-Yates shuffle algorithm for uniform distribution.
 // The original slice is not modified.
-func Shuffle[T any](rng *Rng, x []T) []T {
+func RngShuffle[T any](rng *Rng, x []T) []T {
 	if len(x) == 0 {
 		panic("shuffle: cannot shuffle empty slice")
 	}
@@ -233,8 +232,7 @@ func Shuffle[T any](rng *Rng, x []T) []T {
 	return result
 }
 
-// ShuffleFloat64 returns a shuffled copy of the float64 slice.
-// This is a convenience method; Shuffle[T] is also available for other types.
-func (r *Rng) ShuffleFloat64(x []float64) []float64 {
-	return Shuffle(r, x)
+// ShuffleSlice returns a shuffled copy of the float64 slice.
+func (r *Rng) ShuffleSlice(x []float64) []float64 {
+	return RngShuffle(r, x)
 }

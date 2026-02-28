@@ -47,6 +47,29 @@ func mulScalar(x []float64, c float64) []float64 {
 	return result
 }
 
+func mustVal(m Measurement, err error) float64 {
+	if err != nil {
+		panic(err)
+	}
+	return m.Value
+}
+
+func mustSampleOf(x []float64) *Sample {
+	s, err := NewSample(x)
+	if err != nil {
+		panic(err)
+	}
+	return s
+}
+
+func mustSampleOfY(x []float64) *Sample {
+	s, err := newSample(x, nil, nil, SubjectY)
+	if err != nil {
+		panic(err)
+	}
+	return s
+}
+
 // performTestOne tests a one-sample invariance property across sizes 2-10
 func performTestOne(t *testing.T, expr1 func([]float64) float64, expr2 func([]float64) float64) {
 	t.Helper()
@@ -76,33 +99,26 @@ func performTestTwo(t *testing.T, expr1 func([]float64, []float64) float64, expr
 	}
 }
 
-func must(v float64, err error) float64 {
-	if err != nil {
-		panic(err)
-	}
-	return v
-}
-
 // Center invariance tests
 
 func TestCenterShift(t *testing.T) {
 	performTestOne(t,
-		func(x []float64) float64 { return must(Center(addScalar(x, 2))) },
-		func(x []float64) float64 { return must(Center(x)) + 2 },
+		func(x []float64) float64 { return mustVal(Center(mustSampleOf(addScalar(x, 2)))) },
+		func(x []float64) float64 { return mustVal(Center(mustSampleOf(x))) + 2 },
 	)
 }
 
 func TestCenterScale(t *testing.T) {
 	performTestOne(t,
-		func(x []float64) float64 { return must(Center(mulScalar(x, 2))) },
-		func(x []float64) float64 { return 2 * must(Center(x)) },
+		func(x []float64) float64 { return mustVal(Center(mustSampleOf(mulScalar(x, 2)))) },
+		func(x []float64) float64 { return 2 * mustVal(Center(mustSampleOf(x))) },
 	)
 }
 
 func TestCenterNegate(t *testing.T) {
 	performTestOne(t,
-		func(x []float64) float64 { return must(Center(mulScalar(x, -1))) },
-		func(x []float64) float64 { return -1 * must(Center(x)) },
+		func(x []float64) float64 { return mustVal(Center(mustSampleOf(mulScalar(x, -1)))) },
+		func(x []float64) float64 { return -1 * mustVal(Center(mustSampleOf(x))) },
 	)
 }
 
@@ -110,22 +126,22 @@ func TestCenterNegate(t *testing.T) {
 
 func TestSpreadShift(t *testing.T) {
 	performTestOne(t,
-		func(x []float64) float64 { return must(Spread(addScalar(x, 2))) },
-		func(x []float64) float64 { return must(Spread(x)) },
+		func(x []float64) float64 { return mustVal(Spread(mustSampleOf(addScalar(x, 2)))) },
+		func(x []float64) float64 { return mustVal(Spread(mustSampleOf(x))) },
 	)
 }
 
 func TestSpreadScale(t *testing.T) {
 	performTestOne(t,
-		func(x []float64) float64 { return must(Spread(mulScalar(x, 2))) },
-		func(x []float64) float64 { return 2 * must(Spread(x)) },
+		func(x []float64) float64 { return mustVal(Spread(mustSampleOf(mulScalar(x, 2)))) },
+		func(x []float64) float64 { return 2 * mustVal(Spread(mustSampleOf(x))) },
 	)
 }
 
 func TestSpreadNegate(t *testing.T) {
 	performTestOne(t,
-		func(x []float64) float64 { return must(Spread(mulScalar(x, -1))) },
-		func(x []float64) float64 { return must(Spread(x)) },
+		func(x []float64) float64 { return mustVal(Spread(mustSampleOf(mulScalar(x, -1)))) },
+		func(x []float64) float64 { return mustVal(Spread(mustSampleOf(x))) },
 	)
 }
 
@@ -133,8 +149,8 @@ func TestSpreadNegate(t *testing.T) {
 
 func TestRelSpreadScale(t *testing.T) {
 	performTestOne(t,
-		func(x []float64) float64 { return must(RelSpread(mulScalar(x, 2))) },
-		func(x []float64) float64 { return must(RelSpread(x)) },
+		func(x []float64) float64 { return mustVal(RelSpread(mustSampleOf(mulScalar(x, 2)))) },
+		func(x []float64) float64 { return mustVal(RelSpread(mustSampleOf(x))) },
 	)
 }
 
@@ -142,22 +158,26 @@ func TestRelSpreadScale(t *testing.T) {
 
 func TestShiftShift(t *testing.T) {
 	performTestTwo(t,
-		func(x, y []float64) float64 { return must(Shift(addScalar(x, 3), addScalar(y, 2))) },
-		func(x, y []float64) float64 { return must(Shift(x, y)) + 1 },
+		func(x, y []float64) float64 {
+			return mustVal(Shift(mustSampleOf(addScalar(x, 3)), mustSampleOfY(addScalar(y, 2))))
+		},
+		func(x, y []float64) float64 { return mustVal(Shift(mustSampleOf(x), mustSampleOfY(y))) + 1 },
 	)
 }
 
 func TestShiftScale(t *testing.T) {
 	performTestTwo(t,
-		func(x, y []float64) float64 { return must(Shift(mulScalar(x, 2), mulScalar(y, 2))) },
-		func(x, y []float64) float64 { return 2 * must(Shift(x, y)) },
+		func(x, y []float64) float64 {
+			return mustVal(Shift(mustSampleOf(mulScalar(x, 2)), mustSampleOfY(mulScalar(y, 2))))
+		},
+		func(x, y []float64) float64 { return 2 * mustVal(Shift(mustSampleOf(x), mustSampleOfY(y))) },
 	)
 }
 
 func TestShiftAntisymmetry(t *testing.T) {
 	performTestTwo(t,
-		func(x, y []float64) float64 { return must(Shift(x, y)) },
-		func(x, y []float64) float64 { return -1 * must(Shift(y, x)) },
+		func(x, y []float64) float64 { return mustVal(Shift(mustSampleOf(x), mustSampleOfY(y))) },
+		func(x, y []float64) float64 { return -1 * mustVal(Shift(mustSampleOf(y), mustSampleOfY(x))) },
 	)
 }
 
@@ -165,8 +185,10 @@ func TestShiftAntisymmetry(t *testing.T) {
 
 func TestRatioScale(t *testing.T) {
 	performTestTwo(t,
-		func(x, y []float64) float64 { return must(Ratio(mulScalar(x, 2), mulScalar(y, 3))) },
-		func(x, y []float64) float64 { return (2.0 / 3) * must(Ratio(x, y)) },
+		func(x, y []float64) float64 {
+			return mustVal(Ratio(mustSampleOf(mulScalar(x, 2)), mustSampleOfY(mulScalar(y, 3))))
+		},
+		func(x, y []float64) float64 { return (2.0 / 3) * mustVal(Ratio(mustSampleOf(x), mustSampleOfY(y))) },
 	)
 }
 
@@ -174,29 +196,33 @@ func TestRatioScale(t *testing.T) {
 
 func TestAvgSpreadEqual(t *testing.T) {
 	performTestOne(t,
-		func(x []float64) float64 { return must(avgSpread(x, x)) },
-		func(x []float64) float64 { return must(Spread(x)) },
+		func(x []float64) float64 { return mustVal(avgSpread(mustSampleOf(x), mustSampleOfY(x))) },
+		func(x []float64) float64 { return mustVal(Spread(mustSampleOf(x))) },
 	)
 }
 
 func TestAvgSpreadSymmetry(t *testing.T) {
 	performTestTwo(t,
-		func(x, y []float64) float64 { return must(avgSpread(x, y)) },
-		func(x, y []float64) float64 { return must(avgSpread(y, x)) },
+		func(x, y []float64) float64 { return mustVal(avgSpread(mustSampleOf(x), mustSampleOfY(y))) },
+		func(x, y []float64) float64 { return mustVal(avgSpread(mustSampleOf(y), mustSampleOfY(x))) },
 	)
 }
 
 func TestAvgSpreadAverage(t *testing.T) {
 	performTestOne(t,
-		func(x []float64) float64 { return must(avgSpread(x, mulScalar(x, 5))) },
-		func(x []float64) float64 { return 3 * must(Spread(x)) },
+		func(x []float64) float64 {
+			return mustVal(avgSpread(mustSampleOf(x), mustSampleOfY(mulScalar(x, 5))))
+		},
+		func(x []float64) float64 { return 3 * mustVal(Spread(mustSampleOf(x))) },
 	)
 }
 
 func TestAvgSpreadScale(t *testing.T) {
 	performTestTwo(t,
-		func(x, y []float64) float64 { return must(avgSpread(mulScalar(x, -2), mulScalar(y, -2))) },
-		func(x, y []float64) float64 { return 2 * must(avgSpread(x, y)) },
+		func(x, y []float64) float64 {
+			return mustVal(avgSpread(mustSampleOf(mulScalar(x, -2)), mustSampleOfY(mulScalar(y, -2))))
+		},
+		func(x, y []float64) float64 { return 2 * mustVal(avgSpread(mustSampleOf(x), mustSampleOfY(y))) },
 	)
 }
 
@@ -204,29 +230,39 @@ func TestAvgSpreadScale(t *testing.T) {
 
 func TestDisparityShift(t *testing.T) {
 	performTestTwo(t,
-		func(x, y []float64) float64 { return must(Disparity(addScalar(x, 2), addScalar(y, 2))) },
-		func(x, y []float64) float64 { return must(Disparity(x, y)) },
+		func(x, y []float64) float64 {
+			return mustVal(Disparity(mustSampleOf(addScalar(x, 2)), mustSampleOfY(addScalar(y, 2))))
+		},
+		func(x, y []float64) float64 { return mustVal(Disparity(mustSampleOf(x), mustSampleOfY(y))) },
 	)
 }
 
 func TestDisparityScale(t *testing.T) {
 	performTestTwo(t,
-		func(x, y []float64) float64 { return must(Disparity(mulScalar(x, 2), mulScalar(y, 2))) },
-		func(x, y []float64) float64 { return must(Disparity(x, y)) },
+		func(x, y []float64) float64 {
+			return mustVal(Disparity(mustSampleOf(mulScalar(x, 2)), mustSampleOfY(mulScalar(y, 2))))
+		},
+		func(x, y []float64) float64 { return mustVal(Disparity(mustSampleOf(x), mustSampleOfY(y))) },
 	)
 }
 
 func TestDisparityScaleNeg(t *testing.T) {
 	performTestTwo(t,
-		func(x, y []float64) float64 { return must(Disparity(mulScalar(x, -2), mulScalar(y, -2))) },
-		func(x, y []float64) float64 { return -1 * must(Disparity(x, y)) },
+		func(x, y []float64) float64 {
+			return mustVal(Disparity(mustSampleOf(mulScalar(x, -2)), mustSampleOfY(mulScalar(y, -2))))
+		},
+		func(x, y []float64) float64 {
+			return -1 * mustVal(Disparity(mustSampleOf(x), mustSampleOfY(y)))
+		},
 	)
 }
 
 func TestDisparityAntisymmetry(t *testing.T) {
 	performTestTwo(t,
-		func(x, y []float64) float64 { return must(Disparity(x, y)) },
-		func(x, y []float64) float64 { return -1 * must(Disparity(y, x)) },
+		func(x, y []float64) float64 { return mustVal(Disparity(mustSampleOf(x), mustSampleOfY(y))) },
+		func(x, y []float64) float64 {
+			return -1 * mustVal(Disparity(mustSampleOf(y), mustSampleOfY(x)))
+		},
 	)
 }
 
@@ -240,7 +276,7 @@ func TestShuffleInvariance(t *testing.T) {
 				x[i] = float64(i)
 			}
 			rng := NewRngFromSeed(42)
-			shuffled := Shuffle(rng, x)
+			shuffled := RngShuffle(rng, x)
 			sortedShuffled := make([]float64, len(shuffled))
 			copy(sortedShuffled, shuffled)
 			sort.Float64s(sortedShuffled)
@@ -259,7 +295,7 @@ func TestSampleInvariance(t *testing.T) {
 	t.Run("correct size", func(t *testing.T) {
 		for _, k := range []int{1, 5, 10} {
 			rng := NewRngFromSeed(42)
-			sampled := Sample(rng, x, k)
+			sampled := RngSample(rng, x, k)
 			expectedLen := k
 			if k > len(x) {
 				expectedLen = len(x)
@@ -272,7 +308,7 @@ func TestSampleInvariance(t *testing.T) {
 
 	t.Run("elements from source", func(t *testing.T) {
 		rng := NewRngFromSeed(42)
-		sampled := Sample(rng, x, 5)
+		sampled := RngSample(rng, x, 5)
 		xSet := make(map[float64]bool)
 		for _, v := range x {
 			xSet[v] = true
@@ -286,7 +322,7 @@ func TestSampleInvariance(t *testing.T) {
 
 	t.Run("preserves order", func(t *testing.T) {
 		rng := NewRngFromSeed(42)
-		sampled := Sample(rng, x, 5)
+		sampled := RngSample(rng, x, 5)
 		for i := 1; i < len(sampled); i++ {
 			if sampled[i] <= sampled[i-1] {
 				t.Errorf("order violated: sampled[%d]=%v <= sampled[%d]=%v",
@@ -303,7 +339,7 @@ func TestSampleInvariance(t *testing.T) {
 			}
 			for _, k := range []int{1, n / 2, n} {
 				rng := NewRngFromSeed(42)
-				sampled := Sample(rng, source, k)
+				sampled := RngSample(rng, source, k)
 				seen := make(map[float64]bool)
 				for _, v := range sampled {
 					if seen[v] {
@@ -321,7 +357,7 @@ func TestResampleInvariance(t *testing.T) {
 
 	t.Run("elements from source", func(t *testing.T) {
 		rng := NewRngFromSeed(42)
-		resampled := Resample(rng, x, 20)
+		resampled := RngResample(rng, x, 20)
 		xSet := make(map[float64]bool)
 		for _, v := range x {
 			xSet[v] = true
@@ -336,50 +372,50 @@ func TestResampleInvariance(t *testing.T) {
 	t.Run("k0 panics", func(t *testing.T) {
 		defer func() {
 			if r := recover(); r == nil {
-				t.Errorf("Resample with k=0 should panic")
+				t.Errorf("RngResample with k=0 should panic")
 			}
 		}()
 		rng := NewRngFromSeed(42)
-		Resample(rng, x, 0)
+		RngResample(rng, x, 0)
 	})
 }
 
 func TestResampleNegativeKPanics(t *testing.T) {
 	defer func() {
 		if r := recover(); r == nil {
-			t.Errorf("Resample with negative k should panic")
+			t.Errorf("RngResample with negative k should panic")
 		}
 	}()
 	rng := NewRngFromString("test-resample-validation")
-	Resample(rng, []float64{1, 2, 3}, -1)
+	RngResample(rng, []float64{1, 2, 3}, -1)
 }
 
 func TestShuffleEmptyPanics(t *testing.T) {
 	defer func() {
 		if r := recover(); r == nil {
-			t.Errorf("Shuffle with empty slice should panic")
+			t.Errorf("RngShuffle with empty slice should panic")
 		}
 	}()
 	rng := NewRngFromSeed(42)
-	Shuffle(rng, []float64{})
+	RngShuffle(rng, []float64{})
 }
 
 func TestSampleK0Panics(t *testing.T) {
 	defer func() {
 		if r := recover(); r == nil {
-			t.Errorf("Sample with k=0 should panic")
+			t.Errorf("RngSample with k=0 should panic")
 		}
 	}()
 	rng := NewRngFromSeed(42)
-	Sample(rng, []float64{1, 2, 3}, 0)
+	RngSample(rng, []float64{1, 2, 3}, 0)
 }
 
 func TestSampleEmptyPanics(t *testing.T) {
 	defer func() {
 		if r := recover(); r == nil {
-			t.Errorf("Sample with empty slice should panic")
+			t.Errorf("RngSample with empty slice should panic")
 		}
 	}()
 	rng := NewRngFromSeed(42)
-	Sample(rng, []float64{}, 1)
+	RngSample(rng, []float64{}, 1)
 }

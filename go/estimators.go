@@ -2,7 +2,7 @@
 package pragmastat
 
 import (
-	"errors"
+	"fmt"
 	"math"
 	"sort"
 )
@@ -14,157 +14,188 @@ type Number interface {
 		~float32 | ~float64
 }
 
-var errEmptyInput = errors.New("input slice cannot be empty")
+var errEmptyInput = fmt.Errorf("input slice cannot be empty")
+
+// Bounds represents an interval [Lower, Upper] with an associated measurement unit.
+type Bounds struct {
+	Lower float64
+	Upper float64
+	Unit  *MeasurementUnit
+}
+
+// Contains returns true if value is within [Lower, Upper].
+func (b Bounds) Contains(value float64) bool {
+	return b.Lower <= value && value <= b.Upper
+}
+
+func (b Bounds) String() string {
+	if b.Unit != nil && len(b.Unit.Abbreviation) > 0 {
+		return fmt.Sprintf("[%v;%v] %s", b.Lower, b.Upper, b.Unit.Abbreviation)
+	}
+	return fmt.Sprintf("[%v;%v]", b.Lower, b.Upper)
+}
 
 // Center estimates the central value of the data.
 // Calculates the median of all pairwise averages (x[i] + x[j])/2.
-// More robust than the mean and more efficient than the median.
-// Uses fast O(n log n) algorithm.
-func Center[T Number](x []T) (float64, error) {
-	// Check validity (priority 0)
-	if err := checkValidity(x, SubjectX); err != nil {
-		return 0, err
+func Center(x *Sample) (Measurement, error) {
+	if err := checkNonWeighted("x", x); err != nil {
+		return Measurement{}, err
 	}
-	return fastCenter(x)
+	result, err := fastCenter(x.Values)
+	if err != nil {
+		return Measurement{}, err
+	}
+	return NewMeasurement(result, x.Unit), nil
 }
 
 // Spread estimates data dispersion (variability or scatter).
 // Calculates the median of all pairwise absolute differences |x[i] - x[j]|.
-// More robust than standard deviation and more efficient than MAD.
-// Uses fast O(n log n) algorithm.
 //
 // Assumptions:
 //   - sparity(x) - sample must be non tie-dominant (Spread > 0)
-func Spread[T Number](x []T) (float64, error) {
-	// Check validity (priority 0)
-	if err := checkValidity(x, SubjectX); err != nil {
-		return 0, err
+func Spread(x *Sample) (Measurement, error) {
+	if err := checkNonWeighted("x", x); err != nil {
+		return Measurement{}, err
 	}
-	spreadVal, err := fastSpread(x)
+	spreadVal, err := fastSpread(x.Values)
 	if err != nil {
-		return 0, err
+		return Measurement{}, err
 	}
 	if spreadVal <= 0 {
-		return 0, NewSparityError(SubjectX)
+		return Measurement{}, NewSparityError(x.subject)
 	}
-	return spreadVal, nil
+	return NewMeasurement(spreadVal, x.Unit), nil
 }
 
 // RelSpread measures the relative dispersion of a sample.
 // Calculates the ratio of Spread to absolute Center.
-// Robust alternative to the coefficient of variation.
 //
-// Deprecated: Use Spread(x) / math.Abs(Center(x)) instead.
+// Deprecated: Use Spread(x).Value / math.Abs(Center(x).Value) instead.
 //
 // Assumptions:
-//   - positivity(x) - all values must be strictly positive (ensures Center > 0)
-func RelSpread[T Number](x []T) (float64, error) {
-	// Check validity (priority 0)
-	if err := checkValidity(x, SubjectX); err != nil {
-		return 0, err
+//   - positivity(x) - all values must be strictly positive
+func RelSpread(x *Sample) (Measurement, error) {
+	if err := checkNonWeighted("x", x); err != nil {
+		return Measurement{}, err
 	}
-	// Check positivity (priority 1)
-	if err := checkPositivity(x, SubjectX); err != nil {
-		return 0, err
+	for _, v := range x.Values {
+		if v <= 0 {
+			return Measurement{}, NewPositivityError(x.subject)
+		}
 	}
-	// Calculate center (we know x is valid)
-	centerVal, err := fastCenter(x)
+	centerVal, err := fastCenter(x.Values)
 	if err != nil {
-		return 0, err
+		return Measurement{}, err
 	}
-	// Calculate spread (using internal implementation since we already validated)
-	spreadVal, err := fastSpread(x)
+	spreadVal, err := fastSpread(x.Values)
 	if err != nil {
-		return 0, err
+		return Measurement{}, err
 	}
-	// center is guaranteed positive because all values are positive
-	return spreadVal / math.Abs(centerVal), nil
+	return NewMeasurement(spreadVal/math.Abs(centerVal), NumberUnit), nil
 }
 
 // Shift measures the typical difference between elements of x and y.
 // Calculates the median of all pairwise differences (x[i] - y[j]).
-// Positive values mean x is typically larger, negative means y is typically larger.
-// Uses fast O((m + n) * log(precision)) algorithm.
-func Shift[T Number](x, y []T) (float64, error) {
-	// Check validity (priority 0)
-	if err := checkValidity(x, SubjectX); err != nil {
-		return 0, err
+func Shift(x, y *Sample) (Measurement, error) {
+	if err := checkNonWeighted("x", x); err != nil {
+		return Measurement{}, err
 	}
-	if err := checkValidity(y, SubjectY); err != nil {
-		return 0, err
+	if err := checkNonWeighted("y", y); err != nil {
+		return Measurement{}, err
 	}
-	return fastShift(x, y)
+	x.subject = SubjectX
+	y.subject = SubjectY
+	if err := checkCompatibleUnits(x, y); err != nil {
+		return Measurement{}, err
+	}
+	x, y, err := convertToFiner(x, y)
+	if err != nil {
+		return Measurement{}, err
+	}
+	result, err := fastShift(x.Values, y.Values)
+	if err != nil {
+		return Measurement{}, err
+	}
+	return NewMeasurement(result, x.Unit), nil
 }
 
 // Ratio measures how many times larger x is compared to y.
 // Calculates the median of all pairwise ratios (x[i] / y[j]) via log-transformation.
-// Equivalent to: exp(Shift(log(x), log(y)))
-// For example, Ratio = 1.2 means x is typically 20% larger than y.
-// Uses fast O((m + n) * log(precision)) algorithm.
 //
 // Assumptions:
 //   - positivity(x) - all values in x must be strictly positive
 //   - positivity(y) - all values in y must be strictly positive
-func Ratio[T Number](x, y []T) (float64, error) {
-	// Check validity for x (priority 0, subject x)
-	if err := checkValidity(x, SubjectX); err != nil {
-		return 0, err
+func Ratio(x, y *Sample) (Measurement, error) {
+	if err := checkNonWeighted("x", x); err != nil {
+		return Measurement{}, err
 	}
-	// Check validity for y (priority 0, subject y)
-	if err := checkValidity(y, SubjectY); err != nil {
-		return 0, err
+	if err := checkNonWeighted("y", y); err != nil {
+		return Measurement{}, err
 	}
-	// Check positivity for x (priority 1, subject x)
-	if err := checkPositivity(x, SubjectX); err != nil {
-		return 0, err
+	x.subject = SubjectX
+	y.subject = SubjectY
+	if err := checkCompatibleUnits(x, y); err != nil {
+		return Measurement{}, err
 	}
-	// Check positivity for y (priority 1, subject y)
-	if err := checkPositivity(y, SubjectY); err != nil {
-		return 0, err
-	}
-
-	result, err := fastRatioQuantiles(x, y, []float64{0.5}, false)
+	x, y, err := convertToFiner(x, y)
 	if err != nil {
-		return 0, err
+		return Measurement{}, err
 	}
-	return result[0], nil
+	for _, v := range x.Values {
+		if v <= 0 {
+			return Measurement{}, NewPositivityError(x.subject)
+		}
+	}
+	for _, v := range y.Values {
+		if v <= 0 {
+			return Measurement{}, NewPositivityError(y.subject)
+		}
+	}
+	result, err := fastRatioQuantiles(x.Values, y.Values, []float64{0.5}, false)
+	if err != nil {
+		return Measurement{}, err
+	}
+	return NewMeasurement(result[0], RatioUnit), nil
 }
 
 // avgSpread measures the typical variability when considering both samples together.
-// Computes the weighted average of individual spreads: (n*Spread(x) + m*Spread(y))/(n+m).
-//
-// Assumptions:
-//   - sparity(x) - first sample must be non tie-dominant (Spread > 0)
-//   - sparity(y) - second sample must be non tie-dominant (Spread > 0)
-func avgSpread[T Number](x, y []T) (float64, error) {
-	// Check validity for x (priority 0, subject x)
-	if err := checkValidity(x, SubjectX); err != nil {
-		return 0, err
+// Internal estimator used by Disparity.
+func avgSpread(x, y *Sample) (Measurement, error) {
+	if err := checkNonWeighted("x", x); err != nil {
+		return Measurement{}, err
 	}
-	// Check validity for y (priority 0, subject y)
-	if err := checkValidity(y, SubjectY); err != nil {
-		return 0, err
+	if err := checkNonWeighted("y", y); err != nil {
+		return Measurement{}, err
 	}
-
-	n := float64(len(x))
-	m := float64(len(y))
-
-	spreadX, err := fastSpread(x)
+	x.subject = SubjectX
+	y.subject = SubjectY
+	if err := checkCompatibleUnits(x, y); err != nil {
+		return Measurement{}, err
+	}
+	x, y, err := convertToFiner(x, y)
 	if err != nil {
-		return 0, err
+		return Measurement{}, err
+	}
+
+	n := float64(x.Size())
+	m := float64(y.Size())
+
+	spreadX, err := fastSpread(x.Values)
+	if err != nil {
+		return Measurement{}, err
 	}
 	if spreadX <= 0 {
-		return 0, NewSparityError(SubjectX)
+		return Measurement{}, NewSparityError(x.subject)
 	}
-	spreadY, err := fastSpread(y)
+	spreadY, err := fastSpread(y.Values)
 	if err != nil {
-		return 0, err
+		return Measurement{}, err
 	}
 	if spreadY <= 0 {
-		return 0, NewSparityError(SubjectY)
+		return Measurement{}, NewSparityError(y.subject)
 	}
 
-	return (n*spreadX + m*spreadY) / (n + m), nil
+	return NewMeasurement((n*spreadX+m*spreadY)/(n+m), x.Unit), nil
 }
 
 // Disparity measures effect size: a normalized difference between x and y.
@@ -173,60 +204,65 @@ func avgSpread[T Number](x, y []T) (float64, error) {
 // Assumptions:
 //   - sparity(x) - first sample must be non tie-dominant (Spread > 0)
 //   - sparity(y) - second sample must be non tie-dominant (Spread > 0)
-func Disparity[T Number](x, y []T) (float64, error) {
-	// Check validity for x (priority 0, subject x)
-	if err := checkValidity(x, SubjectX); err != nil {
-		return 0, err
+func Disparity(x, y *Sample) (Measurement, error) {
+	if err := checkNonWeighted("x", x); err != nil {
+		return Measurement{}, err
 	}
-	// Check validity for y (priority 0, subject y)
-	if err := checkValidity(y, SubjectY); err != nil {
-		return 0, err
+	if err := checkNonWeighted("y", y); err != nil {
+		return Measurement{}, err
 	}
-
-	n := float64(len(x))
-	m := float64(len(y))
-
-	spreadX, err := fastSpread(x)
+	x.subject = SubjectX
+	y.subject = SubjectY
+	if err := checkCompatibleUnits(x, y); err != nil {
+		return Measurement{}, err
+	}
+	x, y, err := convertToFiner(x, y)
 	if err != nil {
-		return 0, err
+		return Measurement{}, err
+	}
+
+	n := float64(x.Size())
+	m := float64(y.Size())
+
+	spreadX, err := fastSpread(x.Values)
+	if err != nil {
+		return Measurement{}, err
 	}
 	if spreadX <= 0 {
-		return 0, NewSparityError(SubjectX)
+		return Measurement{}, NewSparityError(x.subject)
 	}
-	spreadY, err := fastSpread(y)
+	spreadY, err := fastSpread(y.Values)
 	if err != nil {
-		return 0, err
+		return Measurement{}, err
 	}
 	if spreadY <= 0 {
-		return 0, NewSparityError(SubjectY)
+		return Measurement{}, NewSparityError(y.subject)
 	}
 
-	// Calculate shift (we know inputs are valid)
-	shiftVal, err := fastShift(x, y)
+	shiftVal, err := fastShift(x.Values, y.Values)
 	if err != nil {
-		return 0, err
+		return Measurement{}, err
 	}
 	avgSpreadVal := (n*spreadX + m*spreadY) / (n + m)
 
-	return shiftVal / avgSpreadVal, nil
-}
-
-// Bounds represents an interval [Lower, Upper].
-type Bounds struct {
-	Lower float64
-	Upper float64
+	return NewMeasurement(shiftVal/avgSpreadVal, DisparityUnit), nil
 }
 
 // ShiftBounds provides bounds on the Shift estimator with specified misclassification rate.
-// The misrate represents the probability that the true shift falls outside the computed bounds.
-// This is a pragmatic alternative to traditional confidence intervals for the Hodges-Lehmann estimator.
-func ShiftBounds[T Number](x, y []T, misrate float64) (Bounds, error) {
-	// Check validity for x
-	if err := checkValidity(x, SubjectX); err != nil {
+func ShiftBounds(x, y *Sample, misrate float64) (Bounds, error) {
+	if err := checkNonWeighted("x", x); err != nil {
 		return Bounds{}, err
 	}
-	// Check validity for y
-	if err := checkValidity(y, SubjectY); err != nil {
+	if err := checkNonWeighted("y", y); err != nil {
+		return Bounds{}, err
+	}
+	x.subject = SubjectX
+	y.subject = SubjectY
+	if err := checkCompatibleUnits(x, y); err != nil {
+		return Bounds{}, err
+	}
+	x, y, err := convertToFiner(x, y)
+	if err != nil {
 		return Bounds{}, err
 	}
 
@@ -234,8 +270,8 @@ func ShiftBounds[T Number](x, y []T, misrate float64) (Bounds, error) {
 		return Bounds{}, NewDomainError(SubjectMisrate)
 	}
 
-	n := len(x)
-	m := len(y)
+	n := x.Size()
+	m := y.Size()
 
 	minMisrate, err := minAchievableMisrateTwoSample(n, m)
 	if err != nil {
@@ -245,20 +281,14 @@ func ShiftBounds[T Number](x, y []T, misrate float64) (Bounds, error) {
 		return Bounds{}, NewDomainError(SubjectMisrate)
 	}
 
-	// Sort both arrays
-	xs := make([]T, n)
-	ys := make([]T, m)
-	copy(xs, x)
-	copy(ys, y)
-	sort.Slice(xs, func(i, j int) bool { return xs[i] < xs[j] })
-	sort.Slice(ys, func(i, j int) bool { return ys[i] < ys[j] })
+	xSorted := x.SortedValues()
+	ySorted := y.SortedValues()
 
 	total := int64(n) * int64(m)
 
-	// Special case: when there's only one pairwise difference, bounds collapse to a single value
 	if total == 1 {
-		value := float64(xs[0]) - float64(ys[0])
-		return Bounds{Lower: value, Upper: value}, nil
+		value := xSorted[0] - ySorted[0]
+		return Bounds{Lower: value, Upper: value, Unit: x.Unit}, nil
 	}
 
 	margin, err := pairwiseMargin(n, m, misrate)
@@ -273,14 +303,13 @@ func ShiftBounds[T Number](x, y []T, misrate float64) (Bounds, error) {
 	kLeft := halfMargin
 	kRight := (total - 1) - halfMargin
 
-	// Compute quantile positions
 	denominator := float64(total - 1)
 	if denominator <= 0 {
 		denominator = 1
 	}
 
 	p := []float64{float64(kLeft) / denominator, float64(kRight) / denominator}
-	bounds, err := fastShiftQuantiles(xs, ys, p, true)
+	bounds, err := fastShiftQuantiles(xSorted, ySorted, p, true)
 	if err != nil {
 		return Bounds{}, err
 	}
@@ -291,22 +320,28 @@ func ShiftBounds[T Number](x, y []T, misrate float64) (Bounds, error) {
 		lower, upper = upper, lower
 	}
 
-	return Bounds{Lower: lower, Upper: upper}, nil
+	return Bounds{Lower: lower, Upper: upper, Unit: x.Unit}, nil
 }
 
 // RatioBounds provides bounds on the Ratio estimator with specified misclassification rate.
 //
-// Computes bounds via log-transformation and ShiftBounds delegation:
-// RatioBounds(x, y, misrate) = exp(ShiftBounds(log(x), log(y), misrate))
-//
 // Assumptions:
 //   - positivity(x) - all values in x must be strictly positive
 //   - positivity(y) - all values in y must be strictly positive
-func RatioBounds[T Number](x, y []T, misrate float64) (Bounds, error) {
-	if err := checkValidity(x, SubjectX); err != nil {
+func RatioBounds(x, y *Sample, misrate float64) (Bounds, error) {
+	if err := checkNonWeighted("x", x); err != nil {
 		return Bounds{}, err
 	}
-	if err := checkValidity(y, SubjectY); err != nil {
+	if err := checkNonWeighted("y", y); err != nil {
+		return Bounds{}, err
+	}
+	x.subject = SubjectX
+	y.subject = SubjectY
+	if err := checkCompatibleUnits(x, y); err != nil {
+		return Bounds{}, err
+	}
+	x, y, err := convertToFiner(x, y)
+	if err != nil {
 		return Bounds{}, err
 	}
 
@@ -314,7 +349,7 @@ func RatioBounds[T Number](x, y []T, misrate float64) (Bounds, error) {
 		return Bounds{}, NewDomainError(SubjectMisrate)
 	}
 
-	minMisrate, err := minAchievableMisrateTwoSample(len(x), len(y))
+	minMisrate, err := minAchievableMisrateTwoSample(x.Size(), y.Size())
 	if err != nil {
 		return Bounds{}, err
 	}
@@ -322,33 +357,31 @@ func RatioBounds[T Number](x, y []T, misrate float64) (Bounds, error) {
 		return Bounds{}, NewDomainError(SubjectMisrate)
 	}
 
-	// Log-transform samples (includes positivity check)
-	logX, err := Log(x, SubjectX)
+	logX, err := x.logTransform()
 	if err != nil {
 		return Bounds{}, err
 	}
-	logY, err := Log(y, SubjectY)
+	logY, err := y.logTransform()
 	if err != nil {
 		return Bounds{}, err
 	}
 
-	// Delegate to ShiftBounds in log-space
 	logBounds, err := ShiftBounds(logX, logY, misrate)
 	if err != nil {
 		return Bounds{}, err
 	}
 
-	// Exp-transform back to ratio-space
 	return Bounds{
 		Lower: math.Exp(logBounds.Lower),
 		Upper: math.Exp(logBounds.Upper),
+		Unit:  RatioUnit,
 	}, nil
 }
 
 // CenterBounds provides exact distribution-free bounds for Center (Hodges-Lehmann pseudomedian).
 // Requires weak symmetry assumption: distribution symmetric around unknown center.
-func CenterBounds[T Number](x []T, misrate float64) (Bounds, error) {
-	if err := checkValidity(x, SubjectX); err != nil {
+func CenterBounds(x *Sample, misrate float64) (Bounds, error) {
+	if err := checkNonWeighted("x", x); err != nil {
 		return Bounds{}, err
 	}
 
@@ -356,9 +389,9 @@ func CenterBounds[T Number](x []T, misrate float64) (Bounds, error) {
 		return Bounds{}, NewDomainError(SubjectMisrate)
 	}
 
-	n := len(x)
+	n := x.Size()
 	if n < 2 {
-		return Bounds{}, NewDomainError(SubjectX)
+		return Bounds{}, NewDomainError(x.subject)
 	}
 
 	minMisrate, err := minAchievableMisrateOneSample(n)
@@ -382,52 +415,111 @@ func CenterBounds[T Number](x []T, misrate float64) (Bounds, error) {
 		halfMargin = maxHalfMargin
 	}
 
-	// kLeft and kRight are 1-based ranks (fastCenterQuantileBounds uses 1-based rank semantics)
 	kLeft := halfMargin + 1
 	kRight := totalPairs - halfMargin
 
-	// Sort the input
-	sorted := make([]float64, n)
-	for i, v := range x {
-		sorted[i] = float64(v)
-	}
-	sort.Float64s(sorted)
-
-	lo, hi := fastCenterQuantileBounds(sorted, kLeft, kRight)
-	return Bounds{Lower: lo, Upper: hi}, nil
+	lo, hi := fastCenterQuantileBounds(x.SortedValues(), kLeft, kRight)
+	return Bounds{Lower: lo, Upper: hi, Unit: x.Unit}, nil
 }
 
 // SpreadBounds provides distribution-free bounds for Spread using disjoint pairs.
-func SpreadBounds[T Number](x []T, misrate float64) (Bounds, error) {
+func SpreadBounds(x *Sample, misrate float64) (Bounds, error) {
 	return spreadBoundsWithRng(x, misrate, NewRng())
 }
 
 // SpreadBoundsWithSeed provides distribution-free bounds for Spread with deterministic randomization.
-func SpreadBoundsWithSeed[T Number](x []T, misrate float64, seed string) (Bounds, error) {
+func SpreadBoundsWithSeed(x *Sample, misrate float64, seed string) (Bounds, error) {
 	return spreadBoundsWithRng(x, misrate, NewRngFromString(seed))
 }
 
-func avgSpreadBoundsWithRngs[T Number](x, y []T, misrate float64, rngX, rngY *Rng) (Bounds, error) {
-	// Check validity (priority 0)
-	if err := checkValidity(x, SubjectX); err != nil {
-		return Bounds{}, err
-	}
-	if err := checkValidity(y, SubjectY); err != nil {
+func spreadBoundsWithRng(x *Sample, misrate float64, rng *Rng) (Bounds, error) {
+	if err := checkNonWeighted("x", x); err != nil {
 		return Bounds{}, err
 	}
 
-	// Check misrate domain
 	if math.IsNaN(misrate) || misrate < 0 || misrate > 1 {
 		return Bounds{}, NewDomainError(SubjectMisrate)
 	}
 
-	n := len(x)
-	m := len(y)
+	n := x.Size()
+	m := n / 2
+
+	minMisrate, err := minAchievableMisrateOneSample(m)
+	if err != nil {
+		return Bounds{}, err
+	}
+	if misrate < minMisrate {
+		return Bounds{}, NewDomainError(SubjectMisrate)
+	}
+
 	if n < 2 {
-		return Bounds{}, NewDomainError(SubjectX)
+		return Bounds{}, NewSparityError(x.subject)
+	}
+	spreadVal, err := fastSpread(x.Values)
+	if err != nil {
+		return Bounds{}, err
+	}
+	if spreadVal <= 0 {
+		return Bounds{}, NewSparityError(x.subject)
+	}
+
+	margin, err := signMarginRandomized(m, misrate, rng)
+	if err != nil {
+		return Bounds{}, err
+	}
+
+	halfMargin := margin / 2
+	maxHalfMargin := (m - 1) / 2
+	if halfMargin > maxHalfMargin {
+		halfMargin = maxHalfMargin
+	}
+
+	kLeft := halfMargin + 1
+	kRight := m - halfMargin
+
+	indices := make([]int, n)
+	for i := range indices {
+		indices[i] = i
+	}
+	shuffled := RngShuffle(rng, indices)
+
+	diffs := make([]float64, m)
+	for i := 0; i < m; i++ {
+		diffs[i] = math.Abs(x.Values[shuffled[2*i]] - x.Values[shuffled[2*i+1]])
+	}
+	sort.Float64s(diffs)
+
+	return Bounds{Lower: diffs[kLeft-1], Upper: diffs[kRight-1], Unit: x.Unit}, nil
+}
+
+func avgSpreadBoundsWithRngs(x, y *Sample, misrate float64, rngX, rngY *Rng) (Bounds, error) {
+	if err := checkNonWeighted("x", x); err != nil {
+		return Bounds{}, err
+	}
+	if err := checkNonWeighted("y", y); err != nil {
+		return Bounds{}, err
+	}
+	x.subject = SubjectX
+	y.subject = SubjectY
+	if err := checkCompatibleUnits(x, y); err != nil {
+		return Bounds{}, err
+	}
+	x, y, err := convertToFiner(x, y)
+	if err != nil {
+		return Bounds{}, err
+	}
+
+	if math.IsNaN(misrate) || misrate < 0 || misrate > 1 {
+		return Bounds{}, NewDomainError(SubjectMisrate)
+	}
+
+	n := x.Size()
+	m := y.Size()
+	if n < 2 {
+		return Bounds{}, NewDomainError(x.subject)
 	}
 	if m < 2 {
-		return Bounds{}, NewDomainError(SubjectY)
+		return Bounds{}, NewDomainError(y.subject)
 	}
 
 	alpha := misrate / 2
@@ -443,19 +535,19 @@ func avgSpreadBoundsWithRngs[T Number](x, y []T, misrate float64, rngX, rngY *Rn
 		return Bounds{}, NewDomainError(SubjectMisrate)
 	}
 
-	spreadX, err := fastSpread(x)
+	spreadX, err := fastSpread(x.Values)
 	if err != nil {
 		return Bounds{}, err
 	}
 	if spreadX <= 0 {
-		return Bounds{}, NewSparityError(SubjectX)
+		return Bounds{}, NewSparityError(x.subject)
 	}
-	spreadY, err := fastSpread(y)
+	spreadY, err := fastSpread(y.Values)
 	if err != nil {
 		return Bounds{}, err
 	}
 	if spreadY <= 0 {
-		return Bounds{}, NewSparityError(SubjectY)
+		return Bounds{}, NewSparityError(y.subject)
 	}
 
 	boundsX, err := spreadBoundsWithRng(x, alpha, rngX)
@@ -473,41 +565,48 @@ func avgSpreadBoundsWithRngs[T Number](x, y []T, misrate float64, rngX, rngY *Rn
 	return Bounds{
 		Lower: wx*boundsX.Lower + wy*boundsY.Lower,
 		Upper: wx*boundsX.Upper + wy*boundsY.Upper,
+		Unit:  x.Unit,
 	}, nil
 }
 
-// DisparityBounds provides distribution-free bounds for the Disparity estimator (Shift / AvgSpread)
-// using Bonferroni combination of ShiftBounds and AvgSpreadBounds.
-func DisparityBounds[T Number](x, y []T, misrate float64) (Bounds, error) {
+// DisparityBounds provides distribution-free bounds for the Disparity estimator.
+func DisparityBounds(x, y *Sample, misrate float64) (Bounds, error) {
 	return disparityBoundsWithRngs(x, y, misrate, NewRng(), NewRng())
 }
 
 // DisparityBoundsWithSeed provides distribution-free bounds for Disparity with deterministic randomization.
-func DisparityBoundsWithSeed[T Number](x, y []T, misrate float64, seed string) (Bounds, error) {
+func DisparityBoundsWithSeed(x, y *Sample, misrate float64, seed string) (Bounds, error) {
 	return disparityBoundsWithRngs(x, y, misrate, NewRngFromString(seed), NewRngFromString(seed))
 }
 
-func disparityBoundsWithRngs[T Number](x, y []T, misrate float64, rngX, rngY *Rng) (Bounds, error) {
-	// Check validity (priority 0)
-	if err := checkValidity(x, SubjectX); err != nil {
+func disparityBoundsWithRngs(x, y *Sample, misrate float64, rngX, rngY *Rng) (Bounds, error) {
+	if err := checkNonWeighted("x", x); err != nil {
 		return Bounds{}, err
 	}
-	if err := checkValidity(y, SubjectY); err != nil {
+	if err := checkNonWeighted("y", y); err != nil {
+		return Bounds{}, err
+	}
+	x.subject = SubjectX
+	y.subject = SubjectY
+	if err := checkCompatibleUnits(x, y); err != nil {
+		return Bounds{}, err
+	}
+	x, y, err := convertToFiner(x, y)
+	if err != nil {
 		return Bounds{}, err
 	}
 
-	// Check misrate domain
 	if math.IsNaN(misrate) || misrate < 0 || misrate > 1 {
 		return Bounds{}, NewDomainError(SubjectMisrate)
 	}
 
-	n := len(x)
-	m := len(y)
+	n := x.Size()
+	m := y.Size()
 	if n < 2 {
-		return Bounds{}, NewDomainError(SubjectX)
+		return Bounds{}, NewDomainError(x.subject)
 	}
 	if m < 2 {
-		return Bounds{}, NewDomainError(SubjectY)
+		return Bounds{}, NewDomainError(y.subject)
 	}
 
 	minShift, err := minAchievableMisrateTwoSample(n, m)
@@ -532,19 +631,19 @@ func disparityBoundsWithRngs[T Number](x, y []T, misrate float64, rngX, rngY *Rn
 	alphaShift := minShift + extra/2.0
 	alphaAvg := minAvg + extra/2.0
 
-	spreadXVal, err := fastSpread(x)
+	spreadXVal, err := fastSpread(x.Values)
 	if err != nil {
 		return Bounds{}, err
 	}
 	if spreadXVal <= 0 {
-		return Bounds{}, NewSparityError(SubjectX)
+		return Bounds{}, NewSparityError(x.subject)
 	}
-	spreadYVal, err := fastSpread(y)
+	spreadYVal, err := fastSpread(y.Values)
 	if err != nil {
 		return Bounds{}, err
 	}
 	if spreadYVal <= 0 {
-		return Bounds{}, NewSparityError(SubjectY)
+		return Bounds{}, NewSparityError(y.subject)
 	}
 
 	sb, err := ShiftBounds(x, y, alphaShift)
@@ -561,6 +660,8 @@ func disparityBoundsWithRngs[T Number](x, y []T, misrate float64, rngX, rngY *Rn
 	ls := sb.Lower
 	us := sb.Upper
 
+	unit := DisparityUnit
+
 	if la > 0.0 {
 		r1 := ls / la
 		r2 := ls / ua
@@ -568,102 +669,76 @@ func disparityBoundsWithRngs[T Number](x, y []T, misrate float64, rngX, rngY *Rn
 		r4 := us / ua
 		lower := math.Min(math.Min(r1, r2), math.Min(r3, r4))
 		upper := math.Max(math.Max(r1, r2), math.Max(r3, r4))
-		return Bounds{Lower: lower, Upper: upper}, nil
+		return Bounds{Lower: lower, Upper: upper, Unit: unit}, nil
 	}
 
 	if ua <= 0.0 {
 		if ls == 0.0 && us == 0.0 {
-			return Bounds{Lower: 0.0, Upper: 0.0}, nil
+			return Bounds{Lower: 0.0, Upper: 0.0, Unit: unit}, nil
 		}
 		if ls >= 0.0 {
-			return Bounds{Lower: 0.0, Upper: math.Inf(1)}, nil
+			return Bounds{Lower: 0.0, Upper: math.Inf(1), Unit: unit}, nil
 		}
 		if us <= 0.0 {
-			return Bounds{Lower: math.Inf(-1), Upper: 0.0}, nil
+			return Bounds{Lower: math.Inf(-1), Upper: 0.0, Unit: unit}, nil
 		}
-		return Bounds{Lower: math.Inf(-1), Upper: math.Inf(1)}, nil
+		return Bounds{Lower: math.Inf(-1), Upper: math.Inf(1), Unit: unit}, nil
 	}
 
 	// Default: ua > 0 && la <= 0
 	if ls > 0.0 {
-		return Bounds{Lower: ls / ua, Upper: math.Inf(1)}, nil
+		return Bounds{Lower: ls / ua, Upper: math.Inf(1), Unit: unit}, nil
 	}
 	if us < 0.0 {
-		return Bounds{Lower: math.Inf(-1), Upper: us / ua}, nil
+		return Bounds{Lower: math.Inf(-1), Upper: us / ua, Unit: unit}, nil
 	}
 	if ls == 0.0 && us == 0.0 {
-		return Bounds{Lower: 0.0, Upper: 0.0}, nil
+		return Bounds{Lower: 0.0, Upper: 0.0, Unit: unit}, nil
 	}
 	if ls == 0.0 && us > 0.0 {
-		return Bounds{Lower: 0.0, Upper: math.Inf(1)}, nil
+		return Bounds{Lower: 0.0, Upper: math.Inf(1), Unit: unit}, nil
 	}
 	if ls < 0.0 && us == 0.0 {
-		return Bounds{Lower: math.Inf(-1), Upper: 0.0}, nil
+		return Bounds{Lower: math.Inf(-1), Upper: 0.0, Unit: unit}, nil
 	}
 
-	return Bounds{Lower: math.Inf(-1), Upper: math.Inf(1)}, nil
+	return Bounds{Lower: math.Inf(-1), Upper: math.Inf(1), Unit: unit}, nil
 }
 
-func spreadBoundsWithRng[T Number](x []T, misrate float64, rng *Rng) (Bounds, error) {
-	// Check validity (priority 0)
-	if err := checkValidity(x, SubjectX); err != nil {
-		return Bounds{}, err
-	}
+// Fluent methods on *Sample
 
-	// Check misrate domain
-	if math.IsNaN(misrate) || misrate < 0 || misrate > 1 {
-		return Bounds{}, NewDomainError(SubjectMisrate)
-	}
+// Center estimates the central value of the sample.
+func (s *Sample) Center() (Measurement, error) { return Center(s) }
 
-	n := len(x)
-	m := n / 2
+// Spread estimates data dispersion of the sample.
+func (s *Sample) Spread() (Measurement, error) { return Spread(s) }
 
-	minMisrate, err := minAchievableMisrateOneSample(m)
-	if err != nil {
-		return Bounds{}, err
-	}
-	if misrate < minMisrate {
-		return Bounds{}, NewDomainError(SubjectMisrate)
-	}
+// Shift measures the typical difference between this sample and other.
+func (s *Sample) Shift(other *Sample) (Measurement, error) { return Shift(s, other) }
 
-	if len(x) < 2 {
-		return Bounds{}, NewSparityError(SubjectX)
-	}
-	spreadVal, err := fastSpread(x)
-	if err != nil {
-		return Bounds{}, err
-	}
-	if spreadVal <= 0 {
-		return Bounds{}, NewSparityError(SubjectX)
-	}
+// Ratio measures how many times larger this sample is compared to other.
+func (s *Sample) Ratio(other *Sample) (Measurement, error) { return Ratio(s, other) }
 
-	margin, err := signMarginRandomized(m, misrate, rng)
-	if err != nil {
-		return Bounds{}, err
-	}
+// Disparity measures effect size between this sample and other.
+func (s *Sample) Disparity(other *Sample) (Measurement, error) { return Disparity(s, other) }
 
-	halfMargin := margin / 2
-	maxHalfMargin := (m - 1) / 2
-	if halfMargin > maxHalfMargin {
-		halfMargin = maxHalfMargin
-	}
+// CenterBounds provides distribution-free bounds for Center.
+func (s *Sample) CenterBounds(misrate float64) (Bounds, error) { return CenterBounds(s, misrate) }
 
-	kLeft := halfMargin + 1
-	kRight := m - halfMargin
+// SpreadBounds provides distribution-free bounds for Spread.
+func (s *Sample) SpreadBounds(misrate float64) (Bounds, error) { return SpreadBounds(s, misrate) }
 
-	// Create index array and shuffle
-	indices := make([]int, n)
-	for i := range indices {
-		indices[i] = i
-	}
-	shuffled := Shuffle(rng, indices)
+// ShiftBounds provides bounds on Shift relative to other.
+func (s *Sample) ShiftBounds(other *Sample, misrate float64) (Bounds, error) {
+	return ShiftBounds(s, other, misrate)
+}
 
-	// Compute pairwise absolute differences
-	diffs := make([]float64, m)
-	for i := 0; i < m; i++ {
-		diffs[i] = math.Abs(float64(x[shuffled[2*i]]) - float64(x[shuffled[2*i+1]]))
-	}
-	sort.Float64s(diffs)
+// RatioBounds provides bounds on Ratio relative to other.
+func (s *Sample) RatioBounds(other *Sample, misrate float64) (Bounds, error) {
+	return RatioBounds(s, other, misrate)
+}
 
-	return Bounds{Lower: diffs[kLeft-1], Upper: diffs[kRight-1]}, nil
+// DisparityBounds provides bounds on Disparity relative to other.
+func (s *Sample) DisparityBounds(other *Sample, misrate float64) (Bounds, error) {
+	return DisparityBounds(s, other, misrate)
 }

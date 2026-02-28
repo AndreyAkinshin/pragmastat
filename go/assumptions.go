@@ -63,28 +63,6 @@ func NewDomainError(subject Subject) *AssumptionError {
 	return &AssumptionError{Violation: Violation{ID: Domain, Subject: subject}}
 }
 
-func checkValidity[T Number](values []T, subject Subject) error {
-	if len(values) == 0 {
-		return NewValidityError(subject)
-	}
-	for _, v := range values {
-		fv := float64(v)
-		if math.IsNaN(fv) || math.IsInf(fv, 0) {
-			return NewValidityError(subject)
-		}
-	}
-	return nil
-}
-
-func checkPositivity[T Number](values []T, subject Subject) error {
-	for _, v := range values {
-		if float64(v) <= 0 {
-			return NewPositivityError(subject)
-		}
-	}
-	return nil
-}
-
 // Log log-transforms a slice. Returns error if any value is non-positive.
 func Log[T Number](values []T, subject Subject) ([]float64, error) {
 	result := make([]float64, len(values))
