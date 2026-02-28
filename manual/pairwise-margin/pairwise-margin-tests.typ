@@ -31,11 +31,11 @@ These demo cases match the reference values used throughout the manual to illust
 - `boundary-loose`: $n=5$, $m=5$, $misrate=0.9$ (very permissive misrate)
 - `symmetry-2-5`: $n=2$, $m=5$, $misrate=0.1$ (tests symmetry property)
 - `symmetry-5-2`: $n=5$, $m=2$, $misrate=0.1$ (symmetric counterpart, same output as above)
-- `symmetry-3-7`: $n=3$, $m=7$, $misrate=0.05$ (asymmetric sizes)
-- `symmetry-7-3`: $n=7$, $m=3$, $misrate=0.05$ (symmetric counterpart)
+- `symmetry-3-7`: $n=3$, $m=7$ (asymmetric sizes)
+- `symmetry-7-3`: $n=7$, $m=3$ (symmetric counterpart)
 - `asymmetry-extreme-1-100`: $n=1$, $m=100$, $misrate=0.1$ (extreme size difference)
 - `asymmetry-extreme-100-1`: $n=100$, $m=1$, $misrate=0.1$ (reversed extreme)
-- `asymmetry-extreme-2-50`: $n=2$, $m=50$, $misrate=0.05$ (highly unbalanced)
+- `asymmetry-extreme-2-50`: $n=2$, $m=50$ (highly unbalanced)
 
 These edge cases validate correct handling of boundary conditions, the symmetry property $PairwiseMargin(n, m, misrate) = PairwiseMargin(m, n, misrate)$, and extreme asymmetry in sample sizes.
 

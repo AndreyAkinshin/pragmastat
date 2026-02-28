@@ -43,7 +43,7 @@ In a simulation study that evaluates bounds across many samples,
 
 Bootstrap bounds are _nominal_, not exact.
 The percentile method has well-documented undercoverage for small samples:
-  requesting 95% confidence ($misrate = 0.05$) typically yields 85–92% actual coverage for $n < 30$.
+  requesting high confidence (for example, $misrate = 1e-3$) often yields materially higher actual misrate for $n < 30$.
 This is inherent to the bootstrap percentile method — the quantile estimates from $B$ resamples
   are biased toward the sample and underrepresent tail behavior.
 Refined methods (BCa, bootstrap-$t$) partially address this
@@ -176,12 +176,12 @@ The constant $C(alpha)$ increases for smaller misrates,
   meaning tighter error tolerances require proportionally larger samples for efficient bounds:
 
 #table(
-  columns: 6,
-  align: (center,) * 6,
-  [$alpha$], [$0.1$], [$0.05$], [$0.01$], [$0.005$], [$0.001$],
-  [$z_alpha$], [$-1.64$], [$-1.96$], [$-2.58$], [$-2.81$], [$-3.29$],
-  [$phi(z_alpha)$], [$0.103$], [$0.058$], [$0.015$], [$0.008$], [$0.002$],
-  [$C(alpha)$], [$2.06$], [$2.33$], [$2.94$], [$3.17$], [$3.45$],
+  columns: 5,
+  align: (center,) * 5,
+  [$alpha$], [$0.1$], [$0.01$], [$0.005$], [$0.001$],
+  [$z_alpha$], [$-1.64$], [$-2.58$], [$-2.81$], [$-3.29$],
+  [$phi(z_alpha)$], [$0.103$], [$0.015$], [$0.008$], [$0.002$],
+  [$C(alpha)$], [$2.06$], [$2.94$], [$3.17$], [$3.45$],
 )
 
 For $alpha = 0.1$ and $n = 50$: $EE[eta] approx 1 - 2.06 \/ sqrt(50) approx 0.71$.

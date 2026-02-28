@@ -21,15 +21,15 @@ A list with components:
 }
 \examples{
 # Basic usage
-x <- c(1, 2, 3, 4, 5)
-y <- c(3, 4, 5, 6, 7)
-shift_bounds(x, y, 0.05)
+x <- c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+y <- c(3, 4, 5, 6, 7, 8, 9, 10, 11, 12)
+shift_bounds(x, y, 1e-3)
 
 # With larger samples
 set.seed(42)
 x <- rnorm(50, mean = 0)
 y <- rnorm(50, mean = 2)
-bounds <- shift_bounds(x, y, 0.05)
+bounds <- shift_bounds(x, y, 1e-3)
 bounds$lower
 bounds$upper
 

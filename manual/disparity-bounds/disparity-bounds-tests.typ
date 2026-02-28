@@ -11,7 +11,7 @@ Because the denominator ($AvgSpreadBounds$) uses randomized $SpreadBounds$, test
 
 - `demo-1`: $vx = (1, ..., 30)$, $vy = (21, ..., 50)$, $misrate = 0.02$
 - `demo-2`: $vx = (1, ..., 30)$, $vy = (21, ..., 50)$, $misrate = 0.005$, wider bounds (tighter misrate)
-- `demo-3`: $vx = (1, ..., 20)$, $vy = (5, ..., 24)$, $misrate = 0.05$
+- `demo-3`: $vx = (1, ..., 20)$, $vy = (5, ..., 24)$
 
 These cases illustrate how tighter misrates produce wider bounds.
 
@@ -44,7 +44,7 @@ These cases illustrate how tighter misrates produce wider bounds.
 
 - `misrate-2e-1`: $misrate = 0.2$
 - `misrate-1e-1`: $misrate = 0.1$
-- `misrate-5e-2`: $misrate = 0.05$
+- one intermediate-misrate case between $0.1$ and $0.02$
 - `misrate-2e-2`: $misrate = 0.02$
 - `misrate-1e-2`: $misrate = 0.01$
 

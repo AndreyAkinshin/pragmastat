@@ -18,7 +18,7 @@ Large deviations from $n m\/2$ suggest the distributions differ.
 
 The test answers: "Could this $U$ value arise by chance if the samples were truly equivalent?"
 The $p$-value quantifies this probability.
-If $p < 0.05$, traditional practice declares the difference "statistically significant".
+If $p$ falls below a fixed threshold (for example, $1e-3$), the result is declared "statistically significant".
 
 This approach creates several problems for practitioners:
 
@@ -26,8 +26,8 @@ This approach creates several problems for practitioners:
   The test produces a yes/no answer: reject or fail to reject the null hypothesis.
   Practitioners typically want to know the magnitude of difference, not just whether one exists.
 - *Arbitrary thresholds*.
-  The 0.05 threshold has no universal justification,
-  yet it dominates practice and creates a false dichotomy between $p = 0.049$ and $p = 0.051$.
+  A fixed threshold has no universal justification,
+  yet it creates a false dichotomy between $p = 0.0009$ and $p = 0.0011$.
 - *Hypothesis-centric framework*.
   The test assumes a null hypothesis of "no difference"
   and evaluates evidence against it.

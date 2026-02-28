@@ -24,14 +24,12 @@ These demo cases match the reference values used throughout the manual to illust
 
 These boundary cases validate correct handling of minimum achievable misrate (formula: $2^(1-n)$) and edge conditions.
 
-*Exact computation* ($n <= 10$) — validates dynamic programming path:
+*Exact computation* ($n <= 10$) — validates dynamic programming path (selected cases shown):
 
 - `exact-n5-mr1e1`: $n=5$, $misrate=0.1$
 - `exact-n6-mr1e1`: $n=6$, $misrate=0.1$
-- `exact-n6-mr5e2`: $n=6$, $misrate=0.05$
 - `exact-n10-mr1e1`: $n=10$, $misrate=0.1$, expected output: $22$
 - `exact-n10-mr1e2`: $n=10$, $misrate=0.01$
-- `exact-n10-mr5e2`: $n=10$, $misrate=0.05$
 - `exact-n10-mr5e3`: $n=10$, $misrate=0.005$
 
 These cases exercise the exact Wilcoxon signed-rank CDF computation for small samples where dynamic programming is used.
@@ -51,6 +49,6 @@ The medium sample tests validate the transition region between exact computation
 *Error case* — domain violation:
 
 - `error-n1`: $n=1$, $misrate=0.5$ (invalid: misrate below minimum achievable $2^(1-1) = 1.0$)
-- `error-n0`: $n=0$, $misrate=0.05$ (invalid: n must be positive)
+- `error-n0`: $n=0$, $misrate=1e-3$ (invalid: n must be positive)
 
 This error case verifies that implementations correctly reject $n=1$ with $misrate=0.5$ as invalid input, since the minimum achievable misrate for $n=1$ is $2^0 = 1.0$.

@@ -23,12 +23,12 @@ import {
 function main() {
     // --- One-Sample ---
 
-    let x = Array.from({ length: 20 }, (_, i) => i + 1);
+    let x = Array.from({ length: 22 }, (_, i) => i + 1);
 
-    console.log(center(x));             // 10.5
-    console.log(centerBounds(x, 0.05)); // { lower: 7.5, upper: 13.5 }
-    console.log(spread(x));             // 6
-    console.log(spreadBounds(x, 0.05, "demo")); // { lower: 2, upper: 10 }
+    console.log(center(x));             // 11.5
+    console.log(centerBounds(x, 1e-3)); // { lower: 6, upper: 17 }
+    console.log(spread(x));             // 7
+    console.log(spreadBounds(x, 1e-3, "demo")); // { lower: 1, upper: 18 }
 
     // --- Two-Sample ---
 
@@ -36,11 +36,11 @@ function main() {
     let y = Array.from({ length: 30 }, (_, i) => i + 21);
 
     console.log(shift(x, y));             // -20
-    console.log(shiftBounds(x, y, 0.05)); // { lower: -25, upper: -15 }
+    console.log(shiftBounds(x, y, 1e-3)); // { lower: -28, upper: -12 }
     console.log(ratio(x, y));             // 0.4366979828269513
-    console.log(ratioBounds(x, y, 0.05)); // { lower: 0.31250000000000006, upper: 0.5600000000000003 }
+    console.log(ratioBounds(x, y, 1e-3)); // { lower: 0.23255813953488377, upper: 0.6428571428571428 }
     console.log(disparity(x, y));         // -2.2222222222222223
-    console.log(disparityBounds(x, y, 0.05, "demo")); // { lower: -13, upper: -0.8235294117647058 }
+    console.log(disparityBounds(x, y, 1e-3, "demo")); // { lower: -29, upper: -0.4782608695652174 }
 
     // --- Randomization ---
 
@@ -52,13 +52,13 @@ function main() {
     console.log(rng.uniformInt(0, 100)); // 41
 
     rng = new Rng("demo-sample");
-    console.log(rng.sample([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], 3)); // [3, 8, 9]
+    console.log(JSON.stringify(rng.sample([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], 3))); // [3,8,9]
 
     rng = new Rng("demo-resample");
-    console.log(rng.resample([1, 2, 3, 4, 5], 7)); // [3, 1, 3, 2, 4, 1, 2]
+    console.log(JSON.stringify(rng.resample([1, 2, 3, 4, 5], 7))); // [3,1,3,2,4,1,2]
 
     rng = new Rng("demo-shuffle");
-    console.log(rng.shuffle([1, 2, 3, 4, 5])); // [4, 2, 3, 5, 1]
+    console.log(JSON.stringify(rng.shuffle([1, 2, 3, 4, 5]))); // [4,2,3,5,1]
 
     // --- Distributions ---
 

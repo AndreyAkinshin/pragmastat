@@ -19,12 +19,13 @@ func main() {
 
 	x := []float64{
 		1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
-		11, 12, 13, 14, 15, 16, 17, 18, 19, 20}
+		11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+		21, 22}
 
-	fmt.Println(must(pragmastat.Center(x)))                             // 10.5
-	fmt.Println(must(pragmastat.CenterBounds(x, 0.05)))                 // {7.5 13.5}
-	fmt.Println(must(pragmastat.Spread(x)))                             // 6
-	fmt.Println(must(pragmastat.SpreadBoundsWithSeed(x, 0.05, "demo"))) // {2 10}
+	fmt.Println(must(pragmastat.Center(x)))                             // 11.5
+	fmt.Println(must(pragmastat.CenterBounds(x, 1e-3)))                 // {6 17}
+	fmt.Println(must(pragmastat.Spread(x)))                             // 7
+	fmt.Println(must(pragmastat.SpreadBoundsWithSeed(x, 1e-3, "demo"))) // {1 18}
 
 	// --- Two-Sample ---
 
@@ -36,11 +37,11 @@ func main() {
 		36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50}
 
 	fmt.Println(must(pragmastat.Shift(x, y)))                                 // -20
-	fmt.Println(must(pragmastat.ShiftBounds(x, y, 0.05)))                     // {-25 -15}
+	fmt.Println(must(pragmastat.ShiftBounds(x, y, 1e-3)))                     // {-28 -12}
 	fmt.Println(must(pragmastat.Ratio(x, y)))                                 // 0.4366979828269513
-	fmt.Println(must(pragmastat.RatioBounds(x, y, 0.05)))                     // {0.31250000000000006 0.5600000000000003}
+	fmt.Println(must(pragmastat.RatioBounds(x, y, 1e-3)))                     // {0.23255813953488377 0.6428571428571428}
 	fmt.Println(must(pragmastat.Disparity(x, y)))                             // -2.2222222222222223
-	fmt.Println(must(pragmastat.DisparityBoundsWithSeed(x, y, 0.05, "demo"))) // {-13 -0.8235294117647058}
+	fmt.Println(must(pragmastat.DisparityBoundsWithSeed(x, y, 1e-3, "demo"))) // {-29 -0.4782608695652174}
 
 	// --- Randomization ---
 

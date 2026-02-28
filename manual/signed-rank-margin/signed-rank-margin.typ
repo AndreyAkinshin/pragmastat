@@ -29,7 +29,7 @@ Exclusion count for one-sample signed-rank based bounds.
 #v(0.3em)
 *Example*
 
-- `SignedRankMargin(10, 0.05) = 18`
+- `SignedRankMargin(20, 1e-3) = 44`
 - `SignedRankMargin(30, 1e-4) = 112`
 - `SignedRankMargin(100, 1e-6) = 706`
 

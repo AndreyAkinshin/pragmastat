@@ -10,9 +10,9 @@ The domain constraint $misrate >= 2 / binom(n+m, n)$ is enforced; inputs violati
 
 *Demo examples* ($n = m = 5$, positive samples) — 3 tests:
 
-- `demo-1`: $vx = (1, 2, 3, 4, 5)$, $vy = (2, 3, 4, 5, 6)$, $misrate = 0.05$
+- `demo-1`: $vx = (1, 2, 3, 4, 5)$, $vy = (2, 3, 4, 5, 6)$
 - `demo-2`: $vx = (1, 2, 3, 4, 5)$, $vy = (2, 3, 4, 5, 6)$, $misrate = 0.01$, expected: wider bounds than demo-1
-- `demo-3`: $vx = (2, 3, 4, 5, 6)$, $vy = (2, 3, 4, 5, 6)$, $misrate = 0.05$, expected: bounds containing $1$ (identity case)
+- `demo-3`: $vx = (2, 3, 4, 5, 6)$, $vy = (2, 3, 4, 5, 6)$, expected: bounds containing $1$ (identity case)
 
 These cases illustrate how tighter misrates produce wider bounds and validate the identity property where identical samples yield bounds containing one.
 
@@ -44,7 +44,7 @@ These sizes are chosen to satisfy $misrate >= 2 / binom(n+m, n)$ for all combina
 
 *Edge cases* — boundary conditions and extreme scenarios (10 tests):
 
-- `edge-min-samples`: $vx = (2, 3, 4, 5, 6)$, $vy = (3, 4, 5, 6, 7)$, $misrate = 0.05$
+- `edge-min-samples`: $vx = (2, 3, 4, 5, 6)$, $vy = (3, 4, 5, 6, 7)$
 - `edge-permissive-misrate`: $vx = (1, 2, 3, 4, 5)$, $vy = (2, 3, 4, 5, 6)$, $misrate = 0.5$ (very wide bounds)
 - `edge-strict-misrate`: $n = m = 20$, $misrate = 10^(-6)$ (very narrow bounds)
 - `edge-unity-ratio`: $n = m = 10$, all values $= 5$, $misrate = 10^(-3)$ (bounds around 1)
@@ -93,9 +93,9 @@ The sequence demonstrates how bound width increases as misrate decreases, helpin
 - `unsorted-x-shuffle-5-5`: $vx = (3, 1, 5, 4, 2)$, $vy = (1, 2, 3, 4, 5)$, $misrate = 10^(-2)$ (X shuffled)
 - `unsorted-y-shuffle-5-5`: $vx = (1, 2, 3, 4, 5)$, $vy = (4, 2, 5, 1, 3)$, $misrate = 10^(-2)$ (Y shuffled)
 - `unsorted-both-shuffle-5-5`: $vx = (3, 1, 5, 4, 2)$, $vy = (2, 4, 1, 5, 3)$, $misrate = 10^(-2)$ (both shuffled)
-- `unsorted-demo-unsorted-x`: $vx = (5, 1, 4, 2, 3)$, $vy = (2, 3, 4, 5, 6)$, $misrate = 0.05$ (demo-1 X unsorted)
-- `unsorted-demo-unsorted-y`: $vx = (1, 2, 3, 4, 5)$, $vy = (6, 2, 5, 3, 4)$, $misrate = 0.05$ (demo-1 Y unsorted)
-- `unsorted-demo-both-unsorted`: $vx = (4, 1, 5, 2, 3)$, $vy = (5, 2, 6, 3, 4)$, $misrate = 0.05$ (demo-1 both unsorted)
+- `unsorted-demo-unsorted-x`: $vx = (5, 1, 4, 2, 3)$, $vy = (2, 3, 4, 5, 6)$ (demo-1 X unsorted)
+- `unsorted-demo-unsorted-y`: $vx = (1, 2, 3, 4, 5)$, $vy = (6, 2, 5, 3, 4)$ (demo-1 Y unsorted)
+- `unsorted-demo-both-unsorted`: $vx = (4, 1, 5, 2, 3)$, $vy = (5, 2, 6, 3, 4)$ (demo-1 both unsorted)
 - `unsorted-identity-unsorted`: $vx = (4, 1, 5, 2, 3)$, $vy = (5, 1, 4, 3, 2)$, $misrate = 10^(-2)$ (identity property, both unsorted)
 - `unsorted-scale-unsorted`: $vx = (10, 30, 20)$, $vy = (15, 5, 10)$, $misrate = 0.5$ (scale relationship, both unsorted)
 - `unsorted-asymmetric-5-10`: $vx = (2, 5, 1, 3, 4)$, $vy = (10, 5, 2, 8, 4, 1, 9, 3, 7, 6)$, $misrate = 10^(-2)$ (asymmetric sizes, both unsorted)

@@ -17,14 +17,14 @@ from pragmastat.distributions import Additive, Exp, Multiplic, Power, Uniform
 def main():
     # --- One-Sample ---
 
-    x = list(range(1, 21))
+    x = list(range(1, 23))
 
-    print(center(x))  # 10.5
-    bounds = center_bounds(x, 0.05)
-    print(f"Bounds(lower={bounds.lower}, upper={bounds.upper})")  # Bounds(lower=7.5, upper=13.5)
-    print(spread(x))  # 6.0
-    bounds = spread_bounds(x, 0.05, seed="demo")
-    print(f"Bounds(lower={bounds.lower}, upper={bounds.upper})")  # Bounds(lower=2.0, upper=10.0)
+    print(center(x))  # 11.5
+    bounds = center_bounds(x, 1e-3)
+    print(f"Bounds(lower={bounds.lower}, upper={bounds.upper})")  # Bounds(lower=6.0, upper=17.0)
+    print(spread(x))  # 7.0
+    bounds = spread_bounds(x, 1e-3, seed="demo")
+    print(f"Bounds(lower={bounds.lower}, upper={bounds.upper})")  # Bounds(lower=1.0, upper=18.0)
 
     # --- Two-Sample ---
 
@@ -32,16 +32,16 @@ def main():
     y = list(range(21, 51))
 
     print(shift(x, y))  # -20.0
-    bounds = shift_bounds(x, y, 0.05)
-    print(f"Bounds(lower={bounds.lower}, upper={bounds.upper})")  # Bounds(lower=-25.0, upper=-15.0)
+    bounds = shift_bounds(x, y, 1e-3)
+    print(f"Bounds(lower={bounds.lower}, upper={bounds.upper})")  # Bounds(lower=-28.0, upper=-12.0)
     print(ratio(x, y))  # 0.43669798282695127
-    bounds = ratio_bounds(x, y, 0.05)
+    bounds = ratio_bounds(x, y, 1e-3)
     print(
         f"Bounds(lower={bounds.lower}, upper={bounds.upper})"
-    )  # Bounds(lower=0.31250000000000006, upper=0.5599999999999999)
+    )  # Bounds(lower=0.23255813953488377, upper=0.6428571428571428)
     print(disparity(x, y))  # -2.2222222222222223
-    bounds = disparity_bounds(x, y, 0.05, seed="demo")
-    print(f"Bounds(lower={bounds.lower}, upper={bounds.upper})")  # Bounds(lower=-13.0, upper=-0.8235294117647058)
+    bounds = disparity_bounds(x, y, 1e-3, seed="demo")
+    print(f"Bounds(lower={bounds.lower}, upper={bounds.upper})")  # Bounds(lower=-29.0, upper=-0.4782608695652174)
 
     # --- Randomization ---
 

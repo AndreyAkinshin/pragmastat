@@ -31,9 +31,9 @@ These cases illustrate how tighter misrates produce wider bounds and how sample 
 *Natural sequences* (misrate varies by size) --- 4 tests:
 
 - `natural-10`: $vx = (1, 2, ..., 10)$, $misrate = 0.15$
-- `natural-15`: $vx = (1, 2, ..., 15)$, $misrate = 0.05$
-- `natural-20`: $vx = (1, 2, ..., 20)$, $misrate = 0.05$
-- `natural-30`: $vx = (1, 2, ..., 30)$, $misrate = 0.05$
+- `natural-15`: $vx = (1, 2, ..., 15)$
+- `natural-20`: $vx = (1, 2, ..., 20)$
+- `natural-30`: $vx = (1, 2, ..., 30)$
 
 *Property validation* ($n = 10$, $misrate = 0.2$) --- 4 tests:
 
@@ -67,7 +67,7 @@ These cases illustrate how tighter misrates produce wider bounds and how sample 
 
 - `misrate-5e-1`: $misrate = 0.5$
 - `misrate-1e-1`: $misrate = 0.1$
-- `misrate-5e-2`: $misrate = 0.05$
+- one intermediate-misrate case between $0.1$ and $0.01$
 - `misrate-1e-2`: $misrate = 0.01$
 - `misrate-2e-3`: $misrate = 0.002$
 

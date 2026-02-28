@@ -223,7 +223,7 @@ This toolkit inverts such framings to present information in directly actionable
 #table(
   columns: 3,
   [*Traditional*], [*Pragmastat*], [*Reason for Inversion*],
-  [Confidence level (95%)], [$misrate$ (0.05)], [Direct error interpretation],
+  [Confidence level (99.9%)], [$misrate$ (1e-3)], [Direct error interpretation],
   [Confidence interval], [Bounds], [Plain language, no jargon],
   [Hypothesis test (p-value)], [Bounds estimation], ["What's plausible?" not "Is zero plausible?"],
   [Efficiency (variance ratio)], [Drift (spread-based)], [Works with heavy tails],
@@ -231,9 +231,9 @@ This toolkit inverts such framings to present information in directly actionable
 
 #v(0.5em)
 Consider the confidence level vs. misrate inversion.
-A "95% confidence interval" requires understanding:
-"If I repeated this procedure infinitely, 95% of intervals would contain the true value."
-A "5% misrate" states directly: "This procedure errs about 5% of the time."
+A "99.9% confidence interval" requires understanding:
+"If I repeated this procedure infinitely, 99.9% of intervals would contain the true value."
+A "0.1% misrate" states directly: "This procedure errs about 0.1% of the time."
 
 The shift from confidence intervals to bounds, and from hypothesis testing to interval estimation,
 moves from frequentist theology toward decision-relevant inference.
@@ -467,7 +467,7 @@ For one-sample bounds, minimum achievable misrate $= 2^(1-n)$:
 *Practical implications*
 
 #list(marker: none, tight: true,
-  [$n < 5$: Cannot achieve 95% confidence ($misrate = 0.05$)],
+  [$n < 11$: Cannot achieve 99.9% confidence ($misrate = 1e-3$)],
   [$n < 7$: Cannot achieve 99% confidence ($misrate = 0.01$)],
   [$n >= 20$: $misrate = 10^(-6)$ is achievable],
 )

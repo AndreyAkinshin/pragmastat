@@ -25,7 +25,7 @@ These cases illustrate how tighter misrates produce wider bounds.
 - `natural-10`: $vx = (1, ..., 10)$, expected output: $[2.5, 8.5]$
 - `natural-20`: $vx = (1, ..., 20)$, bounds containing $Center = 10.5$
 
-*Property validation* ($n = 5$, $misrate = 0.05$) — 5 tests:
+*Property validation* ($n = 5$, $misrate = 0.1$) — 5 tests:
 
 - `property-identity`: $vx = (1, 2, 3, 4, 5)$, bounds must contain $Center = 3$
 - `property-centered`: $vx = (-2, -1, 0, 1, 2)$, bounds must contain $Center = 0$
@@ -40,10 +40,10 @@ These cases illustrate how tighter misrates produce wider bounds.
 - `edge-loose-misrate`: $vx = (1, 2, 3, 4, 5)$, $misrate = 0.5$ (permissive bounds)
 - `edge-strict-misrate`: $vx = (1, ..., 10)$, $misrate = 0.002$ (near-minimum misrate for $n=10$)
 - `edge-duplicates-10`: $vx = (5, 5, 5, 5, 5, 5, 5, 5, 5, 5)$, $misrate = 0.01$ (all identical, bounds $= [5, 5]$)
-- `edge-negative`: $vx = (-5, -4, -3, -2, -1)$, $misrate = 0.05$ (negative values)
+- `edge-negative`: $vx = (-5, -4, -3, -2, -1)$, $misrate = 0.1$ (negative values)
 - `edge-wide-range`: $vx = (1, 10, 100, 1000, 10000)$, $misrate = 0.1$ (extreme value range)
 
-*Symmetric distributions* ($misrate = 0.05$) — 4 tests with symmetric data:
+*Symmetric distributions* (mixed misrates) — 4 tests with symmetric data:
 
 - `symmetric-5`: $vx = (-2, -1, 0, 1, 2)$, bounds centered around $0$
 - `symmetric-7`: $vx = (-3, -2, -1, 0, 1, 2, 3)$, bounds centered around $0$
@@ -74,7 +74,7 @@ These tests validate that $CenterBounds$ handles asymmetric data correctly, comp
 *Misrate variation* ($vx = (1, ..., 10)$) — 4 tests with varying misrates:
 
 - `misrate-1e-1`: $misrate = 0.1$
-- `misrate-5e-2`: $misrate = 0.05$
+- one intermediate-misrate case between $0.1$ and $0.01$
 - `misrate-1e-2`: $misrate = 0.01$
 - `misrate-5e-3`: $misrate = 0.005$
 

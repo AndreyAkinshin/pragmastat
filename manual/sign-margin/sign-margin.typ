@@ -31,7 +31,7 @@ Randomized exclusion count for disjoint-pair sign-test bounds.
 
 Each call returns one of two adjacent grid points (randomized):
 
-- `SignMargin(10, 0.05)` returns 2 or 4
+- `SignMargin(15, 1e-3)` returns 2 or 4
 - `SignMargin(15, 0.01)` returns 4 or 6
 - `SignMargin(30, 1e-4)` returns 8 or 10
 

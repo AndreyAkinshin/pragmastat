@@ -173,7 +173,7 @@ If $Pr("Dominance" <= c) >= misrate\/2$, the threshold lies below $c$ and the se
 The loop terminates when $a$ and $b$ become adjacent, requiring $O(log(n m))$ CDF evaluations.
 
 This binary search exhibits uniform performance across misrate values.
-Whether computing bounds for $misrate = 10^(-6)$ or $misrate = 0.05$,
+Whether computing bounds for $misrate = 10^(-6)$ or $misrate = 1e-3$,
   the algorithm performs the same number of iterations determined solely by the sample sizes.
 Each CDF evaluation costs constant time regardless of the threshold location,
   making the approximate method particularly efficient for large samples where exact computation becomes impractical.
