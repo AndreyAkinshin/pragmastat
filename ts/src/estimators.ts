@@ -40,7 +40,7 @@ export const DEFAULT_MISRATE = 1e-3;
  * @returns The center measurement
  */
 export function center(x: Sample): Measurement {
-  checkNonWeighted(x);
+  checkNonWeighted('x', x);
   const vals = [...x.values];
   // fastCenter performs its own internal work on raw arrays
   const result = fastCenter(vals);
@@ -56,7 +56,7 @@ export function center(x: Sample): Measurement {
  * @throws AssumptionError if sample is tie-dominant
  */
 export function spread(x: Sample): Measurement {
-  checkNonWeighted(x);
+  checkNonWeighted('x', x);
   const vals = [...x.values];
   const spreadVal = fastSpread(vals);
   if (spreadVal <= 0) {
@@ -75,7 +75,7 @@ export function spread(x: Sample): Measurement {
  * @throws AssumptionError if sample contains non-positive values
  */
 export function relSpread(x: Sample): Measurement {
-  checkNonWeighted(x);
+  checkNonWeighted('x', x);
   const vals = [...x.values];
   // Check positivity
   for (const v of vals) {
@@ -96,8 +96,8 @@ export function relSpread(x: Sample): Measurement {
  * @returns The shift measurement
  */
 export function shift(x: Sample, y: Sample): Measurement {
-  checkNonWeighted(x);
-  checkNonWeighted(y);
+  checkNonWeighted('x', x);
+  checkNonWeighted('y', y);
   checkCompatibleUnits(x, y);
   const [cx, cy] = convertToFiner(x, y);
   const resultUnit = cx.unit;
@@ -119,8 +119,8 @@ export function shift(x: Sample, y: Sample): Measurement {
  * @throws AssumptionError if either sample contains non-positive values
  */
 export function ratio(x: Sample, y: Sample): Measurement {
-  checkNonWeighted(x);
-  checkNonWeighted(y);
+  checkNonWeighted('x', x);
+  checkNonWeighted('y', y);
   checkCompatibleUnits(x, y);
   const [cx, cy] = convertToFiner(x, y);
 
@@ -147,8 +147,8 @@ export function ratio(x: Sample, y: Sample): Measurement {
  * @returns The combined spread measurement
  */
 function avgSpread(x: Sample, y: Sample): Measurement {
-  checkNonWeighted(x);
-  checkNonWeighted(y);
+  checkNonWeighted('x', x);
+  checkNonWeighted('y', y);
   checkCompatibleUnits(x, y);
   const [cx, cy] = convertToFiner(x, y);
   const resultUnit = cx.unit;
@@ -180,8 +180,8 @@ function avgSpread(x: Sample, y: Sample): Measurement {
  * @returns The disparity measurement
  */
 export function disparity(x: Sample, y: Sample): Measurement {
-  checkNonWeighted(x);
-  checkNonWeighted(y);
+  checkNonWeighted('x', x);
+  checkNonWeighted('y', y);
   checkCompatibleUnits(x, y);
   const [cx, cy] = convertToFiner(x, y);
 
@@ -215,8 +215,8 @@ export function disparity(x: Sample, y: Sample): Measurement {
  * @returns Bounds with lower, upper, and unit
  */
 export function shiftBounds(x: Sample, y: Sample, misrate: number = DEFAULT_MISRATE): Bounds {
-  checkNonWeighted(x);
-  checkNonWeighted(y);
+  checkNonWeighted('x', x);
+  checkNonWeighted('y', y);
   checkCompatibleUnits(x, y);
   const [cx, cy] = convertToFiner(x, y);
   const resultUnit = cx.unit;
@@ -275,8 +275,8 @@ export function shiftBounds(x: Sample, y: Sample, misrate: number = DEFAULT_MISR
  * @returns Bounds with lower, upper, and unit
  */
 export function ratioBounds(x: Sample, y: Sample, misrate: number = DEFAULT_MISRATE): Bounds {
-  checkNonWeighted(x);
-  checkNonWeighted(y);
+  checkNonWeighted('x', x);
+  checkNonWeighted('y', y);
   checkCompatibleUnits(x, y);
   const [cx, cy] = convertToFiner(x, y);
 
@@ -317,7 +317,7 @@ export function ratioBounds(x: Sample, y: Sample, misrate: number = DEFAULT_MISR
  * @returns Bounds with lower, upper, and unit
  */
 export function centerBounds(x: Sample, misrate: number = DEFAULT_MISRATE): Bounds {
-  checkNonWeighted(x);
+  checkNonWeighted('x', x);
 
   const xv = [...x.values];
 
@@ -363,7 +363,7 @@ export function centerBounds(x: Sample, misrate: number = DEFAULT_MISRATE): Boun
  * @returns Bounds with lower, upper, and unit
  */
 export function spreadBounds(x: Sample, misrate: number = DEFAULT_MISRATE, seed?: string): Bounds {
-  checkNonWeighted(x);
+  checkNonWeighted('x', x);
 
   const xv = [...x.values];
 
@@ -452,8 +452,8 @@ function avgSpreadBounds(
   misrate: number = DEFAULT_MISRATE,
   seed?: string,
 ): Bounds {
-  checkNonWeighted(x);
-  checkNonWeighted(y);
+  checkNonWeighted('x', x);
+  checkNonWeighted('y', y);
   checkCompatibleUnits(x, y);
   const [cx, cy] = convertToFiner(x, y);
   const resultUnit = cx.unit;
@@ -508,8 +508,8 @@ export function disparityBounds(
   misrate: number = DEFAULT_MISRATE,
   seed?: string,
 ): Bounds {
-  checkNonWeighted(x);
-  checkNonWeighted(y);
+  checkNonWeighted('x', x);
+  checkNonWeighted('y', y);
   checkCompatibleUnits(x, y);
   const [cx, cy] = convertToFiner(x, y);
 

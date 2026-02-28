@@ -120,9 +120,9 @@ export class Sample {
 }
 
 /** Checks that a sample is not weighted; throws AssumptionError if it is. */
-export function checkNonWeighted(s: Sample): void {
+export function checkNonWeighted(name: string, s: Sample): void {
   if (s.isWeighted) {
-    throw new AssumptionError('weighted samples are not supported');
+    throw new AssumptionError(`weighted samples are not supported for ${name}`);
   }
 }
 
