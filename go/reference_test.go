@@ -74,7 +74,7 @@ func TestReferenceData(t *testing.T) {
 		dirPath := filepath.Join("../tests", "pairwise-margin")
 		files, err := os.ReadDir(dirPath)
 		if err != nil {
-			t.Skipf("Skipping pairwise-margin tests: %v", err)
+			t.Fatalf("Test data directory not found for pairwise-margin: %v", err)
 		}
 
 		for _, file := range files {
@@ -146,7 +146,7 @@ func TestReferenceData(t *testing.T) {
 		dirPath := filepath.Join("../tests", "shift-bounds")
 		files, err := os.ReadDir(dirPath)
 		if err != nil {
-			t.Skipf("Skipping shift-bounds tests: %v", err)
+			t.Fatalf("Test data directory not found for shift-bounds: %v", err)
 		}
 
 		for _, file := range files {
@@ -174,7 +174,7 @@ func TestReferenceData(t *testing.T) {
 
 				// Handle error test cases
 				if len(testData.ExpectedError) > 0 {
-					_, err := ShiftBounds[float64](input.X, input.Y, BoundsConfig{Misrate: input.Misrate})
+					_, err := ShiftBounds[float64](input.X, input.Y, BoundsConfig{Misrate: &input.Misrate})
 					if err == nil {
 						t.Errorf("Expected error for ShiftBounds(%v, %v, %v), but got none", input.X, input.Y, input.Misrate)
 						return
@@ -200,7 +200,7 @@ func TestReferenceData(t *testing.T) {
 					t.Fatalf("Failed to parse output data: %v", err)
 				}
 
-				actual, err := ShiftBounds[float64](input.X, input.Y, BoundsConfig{Misrate: input.Misrate})
+				actual, err := ShiftBounds[float64](input.X, input.Y, BoundsConfig{Misrate: &input.Misrate})
 				if err != nil {
 					t.Fatalf("ShiftBounds(%v, %v, %v) error: %v",
 						input.X, input.Y, input.Misrate, err)
@@ -221,7 +221,7 @@ func TestReferenceData(t *testing.T) {
 		dirPath := filepath.Join("../tests", "ratio-bounds")
 		files, err := os.ReadDir(dirPath)
 		if err != nil {
-			t.Skipf("Skipping ratio-bounds tests: %v", err)
+			t.Fatalf("Test data directory not found for ratio-bounds: %v", err)
 		}
 
 		for _, file := range files {
@@ -249,7 +249,7 @@ func TestReferenceData(t *testing.T) {
 
 				// Handle error test cases
 				if len(testData.ExpectedError) > 0 {
-					_, err := RatioBounds(input.X, input.Y, BoundsConfig{Misrate: input.Misrate})
+					_, err := RatioBounds(input.X, input.Y, BoundsConfig{Misrate: &input.Misrate})
 					if err == nil {
 						t.Errorf("Expected error for RatioBounds(%v, %v, %v), but got none", input.X, input.Y, input.Misrate)
 						return
@@ -275,7 +275,7 @@ func TestReferenceData(t *testing.T) {
 					t.Fatalf("Failed to parse output data: %v", err)
 				}
 
-				actual, err := RatioBounds(input.X, input.Y, BoundsConfig{Misrate: input.Misrate})
+				actual, err := RatioBounds(input.X, input.Y, BoundsConfig{Misrate: &input.Misrate})
 				if err != nil {
 					t.Fatalf("RatioBounds(%v, %v, %v) error: %v",
 						input.X, input.Y, input.Misrate, err)
@@ -298,7 +298,7 @@ func TestReferenceData(t *testing.T) {
 		dirPath := filepath.Join(testDataPath, estimatorName)
 		files, err := os.ReadDir(dirPath)
 		if err != nil {
-			t.Skipf("Test directory not found for %s: %v", estimatorName, err)
+			t.Fatalf("Test data directory not found for %s: %v", estimatorName, err)
 			continue
 		}
 
@@ -399,7 +399,7 @@ func TestReferenceData(t *testing.T) {
 		dirPath := filepath.Join(testDataPath, estimatorName)
 		files, err := os.ReadDir(dirPath)
 		if err != nil {
-			t.Skipf("Test directory not found for %s: %v", estimatorName, err)
+			t.Fatalf("Test data directory not found for %s: %v", estimatorName, err)
 			continue
 		}
 
@@ -1282,7 +1282,7 @@ func TestSignedRankMarginReference(t *testing.T) {
 	dirPath := filepath.Join("../tests", "signed-rank-margin")
 	files, err := os.ReadDir(dirPath)
 	if err != nil {
-		t.Skipf("Skipping signed-rank-margin tests: %v", err)
+		t.Fatalf("Test data directory not found for signed-rank-margin: %v", err)
 	}
 
 	for _, file := range files {
@@ -1356,7 +1356,7 @@ func TestCenterBoundsReference(t *testing.T) {
 	dirPath := filepath.Join("../tests", "center-bounds")
 	files, err := os.ReadDir(dirPath)
 	if err != nil {
-		t.Skipf("Skipping center-bounds tests: %v", err)
+		t.Fatalf("Test data directory not found for center-bounds: %v", err)
 	}
 
 	for _, file := range files {
@@ -1384,7 +1384,7 @@ func TestCenterBoundsReference(t *testing.T) {
 
 			// Handle error test cases
 			if len(testData.ExpectedError) > 0 {
-				_, err := CenterBounds(input.X, BoundsConfig{Misrate: input.Misrate})
+				_, err := CenterBounds(input.X, BoundsConfig{Misrate: &input.Misrate})
 				if err == nil {
 					t.Errorf("CenterBounds(%v, %v) expected error but got nil",
 						input.X, input.Misrate)
@@ -1414,7 +1414,7 @@ func TestCenterBoundsReference(t *testing.T) {
 				t.Fatalf("Failed to parse output data: %v", err)
 			}
 
-			actual, err := CenterBounds(input.X, BoundsConfig{Misrate: input.Misrate})
+			actual, err := CenterBounds(input.X, BoundsConfig{Misrate: &input.Misrate})
 			if err != nil {
 				t.Fatalf("CenterBounds(%v, %v) error: %v",
 					input.X, input.Misrate, err)
@@ -1434,7 +1434,7 @@ func TestSpreadBoundsReference(t *testing.T) {
 	dirPath := filepath.Join("../tests", "spread-bounds")
 	files, err := os.ReadDir(dirPath)
 	if err != nil {
-		t.Skipf("Skipping spread-bounds tests: %v", err)
+		t.Fatalf("Test data directory not found for spread-bounds: %v", err)
 	}
 
 	for _, file := range files {
@@ -1462,7 +1462,7 @@ func TestSpreadBoundsReference(t *testing.T) {
 
 			// Handle error test cases
 			if len(testData.ExpectedError) > 0 {
-				_, err := SpreadBounds(input.X, BoundsConfig{Misrate: input.Misrate, Seed: input.Seed})
+				_, err := SpreadBounds(input.X, BoundsConfig{Misrate: &input.Misrate, Seed: input.Seed})
 				if err == nil {
 					t.Errorf("SpreadBounds(%v, %v, %q) expected error but got nil",
 						input.X, input.Misrate, input.Seed)
@@ -1491,7 +1491,7 @@ func TestSpreadBoundsReference(t *testing.T) {
 				t.Fatalf("Failed to parse output data: %v", err)
 			}
 
-			actual, err := SpreadBounds(input.X, BoundsConfig{Misrate: input.Misrate, Seed: input.Seed})
+			actual, err := SpreadBounds(input.X, BoundsConfig{Misrate: &input.Misrate, Seed: input.Seed})
 			if err != nil {
 				t.Fatalf("SpreadBounds(%v, %v, %q) error: %v",
 					input.X, input.Misrate, input.Seed, err)
@@ -1511,7 +1511,7 @@ func TestAvgSpreadBoundsReference(t *testing.T) {
 	dirPath := filepath.Join("../tests", "avg-spread-bounds")
 	files, err := os.ReadDir(dirPath)
 	if err != nil {
-		t.Skipf("Skipping avg-spread-bounds tests: %v", err)
+		t.Fatalf("Test data directory not found for avg-spread-bounds: %v", err)
 	}
 
 	for _, file := range files {
@@ -1588,7 +1588,7 @@ func TestDisparityBoundsReference(t *testing.T) {
 	dirPath := filepath.Join("../tests", "disparity-bounds")
 	files, err := os.ReadDir(dirPath)
 	if err != nil {
-		t.Skipf("Skipping disparity-bounds tests: %v", err)
+		t.Fatalf("Test data directory not found for disparity-bounds: %v", err)
 	}
 
 	for _, file := range files {
@@ -1616,7 +1616,7 @@ func TestDisparityBoundsReference(t *testing.T) {
 
 			// Handle error test cases
 			if len(testData.ExpectedError) > 0 {
-				_, err := DisparityBounds(input.X, input.Y, BoundsConfig{Misrate: input.Misrate, Seed: input.Seed})
+				_, err := DisparityBounds(input.X, input.Y, BoundsConfig{Misrate: &input.Misrate, Seed: input.Seed})
 				if err == nil {
 					t.Errorf("DisparityBounds(%v, %v, %v, %q) expected error but got nil",
 						input.X, input.Y, input.Misrate, input.Seed)
@@ -1645,7 +1645,7 @@ func TestDisparityBoundsReference(t *testing.T) {
 				t.Fatalf("Failed to parse output data: %v", err)
 			}
 
-			actual, err := DisparityBounds(input.X, input.Y, BoundsConfig{Misrate: input.Misrate, Seed: input.Seed})
+			actual, err := DisparityBounds(input.X, input.Y, BoundsConfig{Misrate: &input.Misrate, Seed: input.Seed})
 			if err != nil {
 				t.Fatalf("DisparityBounds(%v, %v, %v, %q) error: %v",
 					input.X, input.Y, input.Misrate, input.Seed, err)

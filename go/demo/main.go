@@ -14,6 +14,8 @@ func must[T any](val T, err error) T {
 	return val
 }
 
+func float64Ptr(v float64) *float64 { return &v }
+
 func main() {
 	// --- One-Sample ---
 
@@ -21,10 +23,10 @@ func main() {
 		1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
 		11, 12, 13, 14, 15, 16, 17, 18, 19, 20}
 
-	fmt.Println(must(pragmastat.Center(x)))                                                             // 10.5
-	fmt.Println(must(pragmastat.CenterBounds(x, pragmastat.BoundsConfig{Misrate: 0.05})))               // {7.5 13.5}
-	fmt.Println(must(pragmastat.Spread(x)))                                                             // 6
-	fmt.Println(must(pragmastat.SpreadBounds(x, pragmastat.BoundsConfig{Misrate: 0.05, Seed: "demo"}))) // {2 10}
+	fmt.Println(must(pragmastat.Center(x)))                                                                         // 10.5
+	fmt.Println(must(pragmastat.CenterBounds(x, pragmastat.BoundsConfig{Misrate: float64Ptr(0.05)})))               // {7.5 13.5}
+	fmt.Println(must(pragmastat.Spread(x)))                                                                         // 6
+	fmt.Println(must(pragmastat.SpreadBounds(x, pragmastat.BoundsConfig{Misrate: float64Ptr(0.05), Seed: "demo"}))) // {2 10}
 
 	// --- Two-Sample ---
 
@@ -35,12 +37,12 @@ func main() {
 		21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35,
 		36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50}
 
-	fmt.Println(must(pragmastat.Shift(x, y)))                                                                 // -20
-	fmt.Println(must(pragmastat.ShiftBounds(x, y, pragmastat.BoundsConfig{Misrate: 0.05})))                   // {-25 -15}
-	fmt.Println(must(pragmastat.Ratio(x, y)))                                                                 // 0.4366979828269513
-	fmt.Println(must(pragmastat.RatioBounds(x, y, pragmastat.BoundsConfig{Misrate: 0.05})))                   // {0.31250000000000006 0.5600000000000003}
-	fmt.Println(must(pragmastat.Disparity(x, y)))                                                             // -2.2222222222222223
-	fmt.Println(must(pragmastat.DisparityBounds(x, y, pragmastat.BoundsConfig{Misrate: 0.05, Seed: "demo"}))) // {-13 -0.8235294117647058}
+	fmt.Println(must(pragmastat.Shift(x, y)))                                                                             // -20
+	fmt.Println(must(pragmastat.ShiftBounds(x, y, pragmastat.BoundsConfig{Misrate: float64Ptr(0.05)})))                   // {-25 -15}
+	fmt.Println(must(pragmastat.Ratio(x, y)))                                                                             // 0.4366979828269513
+	fmt.Println(must(pragmastat.RatioBounds(x, y, pragmastat.BoundsConfig{Misrate: float64Ptr(0.05)})))                   // {0.31250000000000006 0.5600000000000003}
+	fmt.Println(must(pragmastat.Disparity(x, y)))                                                                         // -2.2222222222222223
+	fmt.Println(must(pragmastat.DisparityBounds(x, y, pragmastat.BoundsConfig{Misrate: float64Ptr(0.05), Seed: "demo"}))) // {-13 -0.8235294117647058}
 
 	// --- Randomization ---
 
