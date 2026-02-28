@@ -105,10 +105,14 @@ impl Sample {
                     }
                 }
                 if min_w < 0.0 {
-                    return Err(EstimatorError::Other("all weights must be non-negative".to_string()));
+                    return Err(EstimatorError::Other(
+                        "all weights must be non-negative".to_string(),
+                    ));
                 }
                 if total_w < 1e-9 {
-                    return Err(EstimatorError::Other("total weight must be positive".to_string()));
+                    return Err(EstimatorError::Other(
+                        "total weight must be positive".to_string(),
+                    ));
                 }
                 let ws = (total_w * total_w) / total_w_sq;
                 (true, total_w, ws, Some(w))
@@ -268,10 +272,7 @@ pub(crate) fn check_compatible_units(a: &Sample, b: &Sample) -> Result<(), Estim
 
 /// Prepares two samples for a two-sample estimator: sets subjects, checks
 /// unit compatibility, and converts both to the finer unit.
-pub(crate) fn prepare_pair(
-    a: &Sample,
-    b: &Sample,
-) -> Result<(Sample, Sample), EstimatorError> {
+pub(crate) fn prepare_pair(a: &Sample, b: &Sample) -> Result<(Sample, Sample), EstimatorError> {
     check_compatible_units(a, b)?;
     let (a, b) = convert_to_finer(a, b)?;
     Ok((a.with_subject(Subject::X), b.with_subject(Subject::Y)))
