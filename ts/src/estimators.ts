@@ -10,65 +10,82 @@ import { signedRankMargin } from './signedRankMargin';
 import { signMarginRandomized } from './signMargin';
 import { fastCenterQuantileBounds } from './fastCenterQuantiles';
 import { minAchievableMisrateOneSample, minAchievableMisrateTwoSample } from './minMisrate';
-import { checkValidity, checkPositivity, log, AssumptionError } from './assumptions';
+import { AssumptionError } from './assumptions';
+import { MeasurementUnit } from './measurement-unit';
+import { Measurement } from './measurement';
+import { Sample, checkNonWeighted, checkCompatibleUnits, convertToFiner } from './sample';
 import { Rng } from './rng';
+
+/**
+ * Represents an interval with lower and upper bounds and a unit.
+ */
+export class Bounds {
+  constructor(
+    readonly lower: number,
+    readonly upper: number,
+    readonly unit: MeasurementUnit,
+  ) {}
+
+  contains(value: number): boolean {
+    return this.lower <= value && value <= this.upper;
+  }
+}
+
+export const DEFAULT_MISRATE = 1e-3;
 
 /**
  * Calculate the Center - median of all pairwise averages (x[i] + x[j])/2
  * Uses fast O(n log n) algorithm.
- * @param x Array of sample values
- * @returns The center estimate
+ * @param x Sample
+ * @returns The center measurement
  */
-export function center(x: number[]): number {
-  // Check validity (priority 0)
-  checkValidity(x, 'x');
-  return fastCenter(x);
+export function center(x: Sample): Measurement {
+  checkNonWeighted(x);
+  const vals = [...x.values];
+  // fastCenter performs its own internal work on raw arrays
+  const result = fastCenter(vals);
+  return new Measurement(result, x.unit);
 }
 
 /**
  * Calculate the Spread - median of all pairwise absolute differences |x[i] - x[j]|
  * Uses fast O(n log n) algorithm.
  *
- * Assumptions:
- *   sparity(x) - sample must be non tie-dominant (Spread > 0)
- *
- * @param x Array of sample values
- * @returns The spread estimate
- * @throws AssumptionError if sample is empty, contains NaN/Inf, or is tie-dominant
+ * @param x Sample
+ * @returns The spread measurement
+ * @throws AssumptionError if sample is tie-dominant
  */
-export function spread(x: number[]): number {
-  // Check validity (priority 0)
-  checkValidity(x, 'x');
-  const spreadVal = fastSpread(x);
+export function spread(x: Sample): Measurement {
+  checkNonWeighted(x);
+  const vals = [...x.values];
+  const spreadVal = fastSpread(vals);
   if (spreadVal <= 0) {
     throw AssumptionError.sparity('x');
   }
-  return spreadVal;
+  return new Measurement(spreadVal, x.unit);
 }
 
 /**
  * Calculate the RelSpread - ratio of Spread to absolute Center
  *
- * @deprecated Use `spread(x) / Math.abs(center(x))` instead.
+ * @deprecated Use `spread(x).value / Math.abs(center(x).value)` instead.
  *
- * Assumptions:
- *   positivity(x) - all values must be strictly positive (ensures Center > 0)
- *
- * @param x Array of sample values
- * @returns The relative spread estimate
- * @throws AssumptionError if sample is empty, contains NaN/Inf, or contains non-positive values
+ * @param x Sample
+ * @returns The relative spread measurement
+ * @throws AssumptionError if sample contains non-positive values
  */
-export function relSpread(x: number[]): number {
-  // Check validity (priority 0)
-  checkValidity(x, 'x');
-  // Check positivity (priority 1)
-  checkPositivity(x, 'x');
-  // Calculate center (we know x is valid, center should succeed)
-  const c = fastCenter(x);
-  // Calculate spread (using internal implementation since we already validated)
-  const s = fastSpread(x);
-  // center is guaranteed positive because all values are positive
-  return s / Math.abs(c);
+export function relSpread(x: Sample): Measurement {
+  checkNonWeighted(x);
+  const vals = [...x.values];
+  // Check positivity
+  for (const v of vals) {
+    if (v <= 0) {
+      throw AssumptionError.positivity('x');
+    }
+  }
+  const c = fastCenter(vals);
+  const s = fastSpread(vals);
+  return new Measurement(s / Math.abs(c), MeasurementUnit.NUMBER);
 }
 
 /**
@@ -76,144 +93,139 @@ export function relSpread(x: number[]): number {
  * Uses fast O((m + n) * log(precision)) algorithm.
  * @param x First sample
  * @param y Second sample
- * @returns The shift estimate
+ * @returns The shift measurement
  */
-export function shift(x: number[], y: number[]): number {
-  // Check validity (priority 0)
-  checkValidity(x, 'x');
-  checkValidity(y, 'y');
+export function shift(x: Sample, y: Sample): Measurement {
+  checkNonWeighted(x);
+  checkNonWeighted(y);
+  checkCompatibleUnits(x, y);
+  const [cx, cy] = convertToFiner(x, y);
+  const resultUnit = cx.unit;
 
-  return fastShift(x, y, [0.5], false)[0];
+  const xv = [...cx.values];
+  const yv = [...cy.values];
+
+  const result = fastShift(xv, yv, [0.5], false)[0];
+  return new Measurement(result, resultUnit);
 }
 
 /**
  * Calculate the Ratio - median of all pairwise ratios (x[i] / y[j]) via log-transformation
  * Equivalent to: exp(Shift(log(x), log(y)))
- * Uses fast O((m + n) * log(precision)) algorithm.
- *
- * Assumptions:
- *   positivity(x) - all values in x must be strictly positive
- *   positivity(y) - all values in y must be strictly positive
  *
  * @param x First sample
  * @param y Second sample
- * @returns The ratio estimate
- * @throws AssumptionError if either sample is empty, contains NaN/Inf, or contains non-positive values
+ * @returns The ratio measurement
+ * @throws AssumptionError if either sample contains non-positive values
  */
-export function ratio(x: number[], y: number[]): number {
-  // Check validity for x (priority 0, subject x)
-  checkValidity(x, 'x');
-  // Check validity for y (priority 0, subject y)
-  checkValidity(y, 'y');
-  // Check positivity for x (priority 1, subject x)
-  checkPositivity(x, 'x');
-  // Check positivity for y (priority 1, subject y)
-  checkPositivity(y, 'y');
+export function ratio(x: Sample, y: Sample): Measurement {
+  checkNonWeighted(x);
+  checkNonWeighted(y);
+  checkCompatibleUnits(x, y);
+  const [cx, cy] = convertToFiner(x, y);
 
-  return fastRatio(x, y, [0.5], false)[0];
+  const xv = [...cx.values];
+  const yv = [...cy.values];
+  // Check positivity (not covered by Sample construction)
+  if (xv.some((v) => v <= 0)) {
+    throw AssumptionError.positivity('x');
+  }
+  if (yv.some((v) => v <= 0)) {
+    throw AssumptionError.positivity('y');
+  }
+
+  const result = fastRatio(xv, yv, [0.5], false)[0];
+  return new Measurement(result, MeasurementUnit.RATIO);
 }
 
 /**
  * Calculate the AvgSpread - weighted average of spreads: (n*Spread(x) + m*Spread(y))/(n+m)
  *
- * Assumptions:
- *   sparity(x) - first sample must be non tie-dominant (Spread > 0)
- *   sparity(y) - second sample must be non tie-dominant (Spread > 0)
- *
  * @internal
  * @param x First sample
  * @param y Second sample
- * @returns The combined spread estimate
- * @throws AssumptionError if either sample is empty, contains NaN/Inf, or is tie-dominant
+ * @returns The combined spread measurement
  */
-function avgSpread(x: number[], y: number[]): number {
-  // Check validity for x (priority 0, subject x)
-  checkValidity(x, 'x');
-  // Check validity for y (priority 0, subject y)
-  checkValidity(y, 'y');
+function avgSpread(x: Sample, y: Sample): Measurement {
+  checkNonWeighted(x);
+  checkNonWeighted(y);
+  checkCompatibleUnits(x, y);
+  const [cx, cy] = convertToFiner(x, y);
+  const resultUnit = cx.unit;
 
-  const nx = x.length;
-  const ny = y.length;
+  const xv = [...cx.values];
+  const yv = [...cy.values];
 
-  const spreadX = fastSpread(x);
+  const nx = xv.length;
+  const ny = yv.length;
+
+  const spreadX = fastSpread(xv);
   if (spreadX <= 0) {
     throw AssumptionError.sparity('x');
   }
-  const spreadY = fastSpread(y);
+  const spreadY = fastSpread(yv);
   if (spreadY <= 0) {
     throw AssumptionError.sparity('y');
   }
 
-  return (nx * spreadX + ny * spreadY) / (nx + ny);
+  const result = (nx * spreadX + ny * spreadY) / (nx + ny);
+  return new Measurement(result, resultUnit);
 }
 
 /**
  * Calculate the Disparity - Shift / AvgSpread
  *
- * Assumptions:
- *   sparity(x) - first sample must be non tie-dominant (Spread > 0)
- *   sparity(y) - second sample must be non tie-dominant (Spread > 0)
- *
  * @param x First sample
  * @param y Second sample
- * @returns The disparity estimate
- * @throws AssumptionError if either sample is empty, contains NaN/Inf, or is tie-dominant
+ * @returns The disparity measurement
  */
-export function disparity(x: number[], y: number[]): number {
-  // Check validity for x (priority 0, subject x)
-  checkValidity(x, 'x');
-  // Check validity for y (priority 0, subject y)
-  checkValidity(y, 'y');
+export function disparity(x: Sample, y: Sample): Measurement {
+  checkNonWeighted(x);
+  checkNonWeighted(y);
+  checkCompatibleUnits(x, y);
+  const [cx, cy] = convertToFiner(x, y);
 
-  const nx = x.length;
-  const ny = y.length;
+  const xv = [...cx.values];
+  const yv = [...cy.values];
 
-  const spreadX = fastSpread(x);
+  const nx = xv.length;
+  const ny = yv.length;
+
+  const spreadX = fastSpread(xv);
   if (spreadX <= 0) {
     throw AssumptionError.sparity('x');
   }
-  const spreadY = fastSpread(y);
+  const spreadY = fastSpread(yv);
   if (spreadY <= 0) {
     throw AssumptionError.sparity('y');
   }
 
-  // Calculate shift (we know inputs are valid)
-  const shiftVal = fastShift(x, y, [0.5], false)[0];
+  const shiftVal = fastShift(xv, yv, [0.5], false)[0];
   const avgSpreadVal = (nx * spreadX + ny * spreadY) / (nx + ny);
 
-  return shiftVal / avgSpreadVal;
-}
-
-export const DEFAULT_MISRATE = 1e-3;
-
-/**
- * Represents an interval with lower and upper bounds
- */
-export interface Bounds {
-  lower: number;
-  upper: number;
+  return new Measurement(shiftVal / avgSpreadVal, MeasurementUnit.DISPARITY);
 }
 
 /**
  * Provides bounds on the Shift estimator with specified misclassification rate (ShiftBounds)
  *
- * The misrate represents the probability that the true shift falls outside the computed bounds.
- * This is a pragmatic alternative to traditional confidence intervals for the Hodges-Lehmann estimator.
- *
  * @param x First sample
  * @param y Second sample
- * @param misrate Misclassification rate (probability that true shift falls outside bounds)
- * @returns An object containing the lower and upper bounds
- * @throws AssumptionError if either sample is empty or contains NaN/Inf
+ * @param misrate Misclassification rate
+ * @returns Bounds with lower, upper, and unit
  */
-export function shiftBounds(x: number[], y: number[], misrate: number = DEFAULT_MISRATE): Bounds {
-  // Check validity for x
-  checkValidity(x, 'x');
-  // Check validity for y
-  checkValidity(y, 'y');
+export function shiftBounds(x: Sample, y: Sample, misrate: number = DEFAULT_MISRATE): Bounds {
+  checkNonWeighted(x);
+  checkNonWeighted(y);
+  checkCompatibleUnits(x, y);
+  const [cx, cy] = convertToFiner(x, y);
+  const resultUnit = cx.unit;
 
-  const n = x.length;
-  const m = y.length;
+  const xv = [...cx.values];
+  const yv = [...cy.values];
+
+  const n = xv.length;
+  const m = yv.length;
 
   if (isNaN(misrate) || misrate < 0 || misrate > 1) {
     throw AssumptionError.domain('misrate');
@@ -224,16 +236,14 @@ export function shiftBounds(x: number[], y: number[], misrate: number = DEFAULT_
     throw AssumptionError.domain('misrate');
   }
 
-  // Sort both arrays
-  const xs = [...x].sort((a, b) => a - b);
-  const ys = [...y].sort((a, b) => a - b);
+  const xs = [...xv].sort((a, b) => a - b);
+  const ys = [...yv].sort((a, b) => a - b);
 
   const total = BigInt(n) * BigInt(m);
 
-  // Special case: when there's only one pairwise difference, bounds collapse to a single value
   if (total === 1n) {
     const value = xs[0] - ys[0];
-    return { lower: value, upper: value };
+    return new Bounds(value, value, resultUnit);
   }
 
   const margin = BigInt(pairwiseMargin(n, m, misrate));
@@ -245,95 +255,89 @@ export function shiftBounds(x: number[], y: number[], misrate: number = DEFAULT_
   const kLeft = halfMargin;
   const kRight = total - 1n - halfMargin;
 
-  // Compute quantile positions (convert to Number for float division)
   const denominator = Number(total - 1n) || 1;
   const pLeft = Number(kLeft) / denominator;
   const pRight = Number(kRight) / denominator;
 
-  // Use fastShift to compute quantiles of pairwise differences
   const [left, right] = fastShift(xs, ys, [pLeft, pRight], true);
   const lower = Math.min(left, right);
   const upper = Math.max(left, right);
 
-  return { lower, upper };
+  return new Bounds(lower, upper, resultUnit);
 }
 
 /**
  * Provides bounds on the Ratio estimator with specified misclassification rate (RatioBounds)
  *
- * Computes bounds via log-transformation and ShiftBounds delegation:
- * RatioBounds(x, y, misrate) = exp(ShiftBounds(log(x), log(y), misrate))
- *
- * Assumptions:
- *   positivity(x) - all values in x must be strictly positive
- *   positivity(y) - all values in y must be strictly positive
- *
  * @param x First sample
  * @param y Second sample
- * @param misrate Misclassification rate (probability that true ratio falls outside bounds)
- * @returns An object containing the lower and upper bounds
- * @throws AssumptionError if either sample is empty, contains NaN/Inf, or contains non-positive values
+ * @param misrate Misclassification rate
+ * @returns Bounds with lower, upper, and unit
  */
-export function ratioBounds(x: number[], y: number[], misrate: number = DEFAULT_MISRATE): Bounds {
-  checkValidity(x, 'x');
-  checkValidity(y, 'y');
+export function ratioBounds(x: Sample, y: Sample, misrate: number = DEFAULT_MISRATE): Bounds {
+  checkNonWeighted(x);
+  checkNonWeighted(y);
+  checkCompatibleUnits(x, y);
+  const [cx, cy] = convertToFiner(x, y);
 
+  const xv = [...cx.values];
+  const yv = [...cy.values];
   if (isNaN(misrate) || misrate < 0 || misrate > 1) {
     throw AssumptionError.domain('misrate');
   }
 
-  const minMisrate = minAchievableMisrateTwoSample(x.length, y.length);
+  const minMisrate = minAchievableMisrateTwoSample(xv.length, yv.length);
   if (misrate < minMisrate) {
     throw AssumptionError.domain('misrate');
   }
 
-  // Log-transform samples (includes positivity check)
-  const logX = log(x, 'x');
-  const logY = log(y, 'y');
+  // Check positivity and log-transform
+  const logX = new Array<number>(xv.length);
+  for (let i = 0; i < xv.length; i++) {
+    if (xv[i] <= 0) throw AssumptionError.positivity('x');
+    logX[i] = Math.log(xv[i]);
+  }
+  const logY = new Array<number>(yv.length);
+  for (let i = 0; i < yv.length; i++) {
+    if (yv[i] <= 0) throw AssumptionError.positivity('y');
+    logY[i] = Math.log(yv[i]);
+  }
 
-  // Delegate to shiftBounds in log-space
-  const logBounds = shiftBounds(logX, logY, misrate);
+  // Delegate to internal shiftBounds logic on log-space arrays
+  const logBounds = rawShiftBounds(logX, logY, misrate);
 
-  // Exp-transform back to ratio-space
-  return {
-    lower: Math.exp(logBounds.lower),
-    upper: Math.exp(logBounds.upper),
-  };
+  return new Bounds(Math.exp(logBounds.lower), Math.exp(logBounds.upper), MeasurementUnit.RATIO);
 }
 
 /**
- * Provides exact bounds on the Center (Hodges-Lehmann pseudomedian) with specified misclassification rate
+ * Provides exact bounds on the Center (Hodges-Lehmann pseudomedian)
  *
- * Uses SignedRankMargin to determine which pairwise averages form the bounds.
- *
- * @param x Sample array
- * @param misrate Misclassification rate (probability that true center falls outside bounds)
- * @returns An object containing the lower and upper bounds
- * @throws AssumptionError if sample is empty or contains NaN/Inf
+ * @param x Sample
+ * @param misrate Misclassification rate
+ * @returns Bounds with lower, upper, and unit
  */
-export function centerBounds(x: number[], misrate: number = DEFAULT_MISRATE): Bounds {
-  checkValidity(x, 'x');
+export function centerBounds(x: Sample, misrate: number = DEFAULT_MISRATE): Bounds {
+  checkNonWeighted(x);
+
+  const xv = [...x.values];
 
   if (isNaN(misrate) || misrate < 0 || misrate > 1) {
     throw AssumptionError.domain('misrate');
   }
 
-  const n = x.length;
+  const n = xv.length;
 
   if (n < 2) {
     throw AssumptionError.domain('x');
   }
 
-  // Validate misrate
   const minMisrate = minAchievableMisrateOneSample(n);
   if (misrate < minMisrate) {
     throw AssumptionError.domain('misrate');
   }
 
-  // Total number of pairwise averages (including self-pairs)
   const totalPairs = (BigInt(n) * BigInt(n + 1)) / 2n;
 
-  // Get signed-rank margin
   const margin = BigInt(signedRankMargin(n, misrate));
   const maxHalfMargin = (totalPairs - 1n) / 2n;
   let halfMargin = margin / 2n;
@@ -341,42 +345,37 @@ export function centerBounds(x: number[], misrate: number = DEFAULT_MISRATE): Bo
     halfMargin = maxHalfMargin;
   }
 
-  // k_left and k_right are 1-based ranks
   const kLeft = Number(halfMargin + 1n);
   const kRight = Number(totalPairs - halfMargin);
 
-  // Sort the input
-  const sorted = [...x].sort((a, b) => a - b);
+  const sorted = [...xv].sort((a, b) => a - b);
 
   const [lo, hi] = fastCenterQuantileBounds(sorted, kLeft, kRight);
-  return { lower: lo, upper: hi };
+  return new Bounds(lo, hi, x.unit);
 }
 
 /**
- * Provides distribution-free bounds for the Spread estimator using disjoint pairs
- * with sign-test inversion.
+ * Provides distribution-free bounds for the Spread estimator
  *
- * @param x Sample array
- * @param misrate Misclassification rate (probability that true spread falls outside bounds)
- * @param seed Optional string seed for deterministic randomization
- * @returns An object containing the lower and upper bounds
- * @throws AssumptionError if sample is invalid, misrate is out of domain, or sample is tie-dominant
+ * @param x Sample
+ * @param misrate Misclassification rate
+ * @param seed Optional string seed
+ * @returns Bounds with lower, upper, and unit
  */
-export function spreadBounds(
-  x: number[],
-  misrate: number = DEFAULT_MISRATE,
-  seed?: string,
-): Bounds {
-  checkValidity(x, 'x');
+export function spreadBounds(x: Sample, misrate: number = DEFAULT_MISRATE, seed?: string): Bounds {
+  checkNonWeighted(x);
+
+  const xv = [...x.values];
+
   if (isNaN(misrate) || misrate < 0 || misrate > 1) throw AssumptionError.domain('misrate');
-  const n = x.length;
+  const n = xv.length;
   const m = Math.floor(n / 2);
   const minMisrate = minAchievableMisrateOneSample(m);
   if (misrate < minMisrate) throw AssumptionError.domain('misrate');
-  if (x.length < 2) {
+  if (n < 2) {
     throw AssumptionError.sparity('x');
   }
-  if (fastSpread(x) <= 0) {
+  if (fastSpread(xv) <= 0) {
     throw AssumptionError.sparity('x');
   }
 
@@ -394,36 +393,78 @@ export function spreadBounds(
   for (let i = 0; i < m; i++) {
     const a = shuffled[2 * i];
     const b = shuffled[2 * i + 1];
-    diffs.push(Math.abs(x[a] - x[b]));
+    diffs.push(Math.abs(xv[a] - xv[b]));
   }
   diffs.sort((a, b) => a - b);
 
-  return { lower: diffs[kLeft - 1], upper: diffs[kRight - 1] };
+  return new Bounds(diffs[kLeft - 1], diffs[kRight - 1], x.unit);
 }
 
 /**
- * Provides distribution-free bounds for AvgSpread using Bonferroni combination.
+ * Internal raw shiftBounds that operates on number arrays (for ratioBounds delegation).
+ */
+function rawShiftBounds(
+  xv: number[],
+  yv: number[],
+  misrate: number,
+): { lower: number; upper: number } {
+  const n = xv.length;
+  const m = yv.length;
+
+  const xs = [...xv].sort((a, b) => a - b);
+  const ys = [...yv].sort((a, b) => a - b);
+
+  const total = BigInt(n) * BigInt(m);
+
+  if (total === 1n) {
+    const value = xs[0] - ys[0];
+    return { lower: value, upper: value };
+  }
+
+  const margin = BigInt(pairwiseMargin(n, m, misrate));
+  const maxHalfMargin = (total - 1n) / 2n;
+  let halfMargin = margin / 2n;
+  if (halfMargin > maxHalfMargin) {
+    halfMargin = maxHalfMargin;
+  }
+  const kLeft = halfMargin;
+  const kRight = total - 1n - halfMargin;
+
+  const denominator = Number(total - 1n) || 1;
+  const pLeft = Number(kLeft) / denominator;
+  const pRight = Number(kRight) / denominator;
+
+  const [left, right] = fastShift(xs, ys, [pLeft, pRight], true);
+  const lower = Math.min(left, right);
+  const upper = Math.max(left, right);
+
+  return { lower, upper };
+}
+
+/**
+ * Internal AvgSpreadBounds using Bonferroni combination.
  *
  * @internal
- * @param x First sample array
- * @param y Second sample array
- * @param misrate Misclassification rate (probability that true avg_spread falls outside bounds)
- * @param seed Optional string seed for deterministic randomization
- * @returns An object containing the lower and upper bounds
- * @throws AssumptionError if input is invalid, misrate is out of domain, or sample is tie-dominant
  */
 function avgSpreadBounds(
-  x: number[],
-  y: number[],
+  x: Sample,
+  y: Sample,
   misrate: number = DEFAULT_MISRATE,
   seed?: string,
 ): Bounds {
-  checkValidity(x, 'x');
-  checkValidity(y, 'y');
+  checkNonWeighted(x);
+  checkNonWeighted(y);
+  checkCompatibleUnits(x, y);
+  const [cx, cy] = convertToFiner(x, y);
+  const resultUnit = cx.unit;
+
+  const xv = [...cx.values];
+  const yv = [...cy.values];
+
   if (isNaN(misrate) || misrate < 0 || misrate > 1) throw AssumptionError.domain('misrate');
 
-  const n = x.length;
-  const m = y.length;
+  const n = xv.length;
+  const m = yv.length;
   if (n < 2) throw AssumptionError.domain('x');
   if (m < 2) throw AssumptionError.domain('y');
 
@@ -432,50 +473,53 @@ function avgSpreadBounds(
   const minY = minAchievableMisrateOneSample(Math.floor(m / 2));
   if (alpha < minX || alpha < minY) throw AssumptionError.domain('misrate');
 
-  if (fastSpread(x) <= 0) {
+  if (fastSpread(xv) <= 0) {
     throw AssumptionError.sparity('x');
   }
-  if (fastSpread(y) <= 0) {
+  if (fastSpread(yv) <= 0) {
     throw AssumptionError.sparity('y');
   }
 
-  const boundsX = spreadBounds(x, alpha, seed);
-  const boundsY = spreadBounds(y, alpha, seed);
+  const boundsX = spreadBounds(cx, alpha, seed);
+  const boundsY = spreadBounds(cy, alpha, seed);
 
   const weightX = n / (n + m);
   const weightY = m / (n + m);
 
-  return {
-    lower: weightX * boundsX.lower + weightY * boundsY.lower,
-    upper: weightX * boundsX.upper + weightY * boundsY.upper,
-  };
+  return new Bounds(
+    weightX * boundsX.lower + weightY * boundsY.lower,
+    weightX * boundsX.upper + weightY * boundsY.upper,
+    resultUnit,
+  );
 }
 
 /**
- * Provides distribution-free bounds for the Disparity estimator (Shift / AvgSpread)
- * using Bonferroni combination of ShiftBounds and AvgSpreadBounds.
+ * Provides distribution-free bounds for the Disparity estimator
  *
  * @param x First sample
  * @param y Second sample
  * @param misrate Misclassification rate
- * @param seed Optional string seed for deterministic randomization
- * @returns An object containing the lower and upper bounds
- * @throws AssumptionError if inputs are invalid, misrate is out of domain, or samples are tie-dominant
+ * @param seed Optional string seed
+ * @returns Bounds with lower, upper, and unit
  */
 export function disparityBounds(
-  x: number[],
-  y: number[],
+  x: Sample,
+  y: Sample,
   misrate: number = DEFAULT_MISRATE,
   seed?: string,
 ): Bounds {
-  // Check validity (priority 0)
-  checkValidity(x, 'x');
-  checkValidity(y, 'y');
+  checkNonWeighted(x);
+  checkNonWeighted(y);
+  checkCompatibleUnits(x, y);
+  const [cx, cy] = convertToFiner(x, y);
+
+  const xv = [...cx.values];
+  const yv = [...cy.values];
 
   if (isNaN(misrate) || misrate < 0 || misrate > 1) throw AssumptionError.domain('misrate');
 
-  const n = x.length;
-  const m = y.length;
+  const n = xv.length;
+  const m = yv.length;
   if (n < 2) throw AssumptionError.domain('x');
   if (m < 2) throw AssumptionError.domain('y');
 
@@ -490,46 +534,46 @@ export function disparityBounds(
   const alphaShift = minShift + extra / 2.0;
   const alphaAvg = minAvg + extra / 2.0;
 
-  if (fastSpread(x) <= 0) {
+  if (fastSpread(xv) <= 0) {
     throw AssumptionError.sparity('x');
   }
-  if (fastSpread(y) <= 0) {
+  if (fastSpread(yv) <= 0) {
     throw AssumptionError.sparity('y');
   }
 
-  const sb = shiftBounds(x, y, alphaShift);
-  const ab = avgSpreadBounds(x, y, alphaAvg, seed);
+  const sb = shiftBounds(cx, cy, alphaShift);
+  const ab = avgSpreadBounds(cx, cy, alphaAvg, seed);
 
   const la = ab.lower;
   const ua = ab.upper;
   const ls = sb.lower;
   const us = sb.upper;
 
+  const D = MeasurementUnit.DISPARITY;
+
   if (la > 0.0) {
     const r1 = ls / la;
     const r2 = ls / ua;
     const r3 = us / la;
     const r4 = us / ua;
-    const lower = Math.min(r1, r2, r3, r4);
-    const upper = Math.max(r1, r2, r3, r4);
-    return { lower, upper };
+    return new Bounds(Math.min(r1, r2, r3, r4), Math.max(r1, r2, r3, r4), D);
   }
 
   if (ua <= 0.0) {
-    if (ls === 0.0 && us === 0.0) return { lower: 0.0, upper: 0.0 };
-    if (ls >= 0.0) return { lower: 0.0, upper: Infinity };
-    if (us <= 0.0) return { lower: -Infinity, upper: 0.0 };
-    return { lower: -Infinity, upper: Infinity };
+    if (ls === 0.0 && us === 0.0) return new Bounds(0.0, 0.0, D);
+    if (ls >= 0.0) return new Bounds(0.0, Infinity, D);
+    if (us <= 0.0) return new Bounds(-Infinity, 0.0, D);
+    return new Bounds(-Infinity, Infinity, D);
   }
 
   // Default: ua > 0 && la <= 0
-  if (ls > 0.0) return { lower: ls / ua, upper: Infinity };
-  if (us < 0.0) return { lower: -Infinity, upper: us / ua };
-  if (ls === 0.0 && us === 0.0) return { lower: 0.0, upper: 0.0 };
-  if (ls === 0.0 && us > 0.0) return { lower: 0.0, upper: Infinity };
-  if (ls < 0.0 && us === 0.0) return { lower: -Infinity, upper: 0.0 };
+  if (ls > 0.0) return new Bounds(ls / ua, Infinity, D);
+  if (us < 0.0) return new Bounds(-Infinity, us / ua, D);
+  if (ls === 0.0 && us === 0.0) return new Bounds(0.0, 0.0, D);
+  if (ls === 0.0 && us > 0.0) return new Bounds(0.0, Infinity, D);
+  if (ls < 0.0 && us === 0.0) return new Bounds(-Infinity, 0.0, D);
 
-  return { lower: -Infinity, upper: Infinity };
+  return new Bounds(-Infinity, Infinity, D);
 }
 
 // Internal-only exports for testing (not part of public API)

@@ -28,13 +28,18 @@ export interface Violation {
 }
 
 export class AssumptionError extends Error {
-  readonly violation: Violation;
+  readonly violation: Violation | null;
 
-  constructor(violation: Violation) {
-    const violationStr = `${violation.id}(${violation.subject})`;
-    super(violationStr);
+  constructor(violationOrMessage: Violation | string) {
+    if (typeof violationOrMessage === 'string') {
+      super(violationOrMessage);
+      this.violation = null;
+    } else {
+      const violationStr = `${violationOrMessage.id}(${violationOrMessage.subject})`;
+      super(violationStr);
+      this.violation = violationOrMessage;
+    }
     this.name = 'AssumptionError';
-    this.violation = violation;
   }
 
   static validity(subject: Subject): AssumptionError {

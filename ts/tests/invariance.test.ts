@@ -8,6 +8,7 @@ import {
   disparity,
 } from '../src/estimators';
 import { Rng } from '../src';
+import { Sample } from '../src/sample';
 
 /**
  * Invariance tests for mathematical properties of estimators
@@ -49,22 +50,22 @@ describe('Invariance Tests', () => {
   describe('center', () => {
     it('should be shift equivariant', () => {
       performTestOne(
-        (x) => center(addScalar(x, 2)),
-        (x) => center(x) + 2,
+        (x) => center(Sample.of(addScalar(x, 2))).value,
+        (x) => center(Sample.of(x)).value + 2,
       );
     });
 
     it('should be scale equivariant', () => {
       performTestOne(
-        (x) => center(mulScalar(x, 2)),
-        (x) => 2 * center(x),
+        (x) => center(Sample.of(mulScalar(x, 2))).value,
+        (x) => 2 * center(Sample.of(x)).value,
       );
     });
 
     it('should be negate equivariant', () => {
       performTestOne(
-        (x) => center(mulScalar(x, -1)),
-        (x) => -1 * center(x),
+        (x) => center(Sample.of(mulScalar(x, -1))).value,
+        (x) => -1 * center(Sample.of(x)).value,
       );
     });
   });
@@ -73,22 +74,22 @@ describe('Invariance Tests', () => {
   describe('spread', () => {
     it('should be shift invariant', () => {
       performTestOne(
-        (x) => spread(addScalar(x, 2)),
-        (x) => spread(x),
+        (x) => spread(Sample.of(addScalar(x, 2))).value,
+        (x) => spread(Sample.of(x)).value,
       );
     });
 
     it('should be scale equivariant', () => {
       performTestOne(
-        (x) => spread(mulScalar(x, 2)),
-        (x) => 2 * spread(x),
+        (x) => spread(Sample.of(mulScalar(x, 2))).value,
+        (x) => 2 * spread(Sample.of(x)).value,
       );
     });
 
     it('should be negate invariant', () => {
       performTestOne(
-        (x) => spread(mulScalar(x, -1)),
-        (x) => spread(x),
+        (x) => spread(Sample.of(mulScalar(x, -1))).value,
+        (x) => spread(Sample.of(x)).value,
       );
     });
   });
@@ -97,8 +98,8 @@ describe('Invariance Tests', () => {
   describe('relSpread', () => {
     it('should be scale invariant', () => {
       performTestOne(
-        (x) => relSpread(mulScalar(x, 2)),
-        (x) => relSpread(x),
+        (x) => relSpread(Sample.of(mulScalar(x, 2))).value,
+        (x) => relSpread(Sample.of(x)).value,
       );
     });
   });
@@ -107,22 +108,22 @@ describe('Invariance Tests', () => {
   describe('shift', () => {
     it('should be shift equivariant', () => {
       performTestTwo(
-        (x, y) => shift(addScalar(x, 3), addScalar(y, 2)),
-        (x, y) => shift(x, y) + 1,
+        (x, y) => shift(Sample.of(addScalar(x, 3)), Sample.of(addScalar(y, 2))).value,
+        (x, y) => shift(Sample.of(x), Sample.of(y)).value + 1,
       );
     });
 
     it('should be scale equivariant', () => {
       performTestTwo(
-        (x, y) => shift(mulScalar(x, 2), mulScalar(y, 2)),
-        (x, y) => 2 * shift(x, y),
+        (x, y) => shift(Sample.of(mulScalar(x, 2)), Sample.of(mulScalar(y, 2))).value,
+        (x, y) => 2 * shift(Sample.of(x), Sample.of(y)).value,
       );
     });
 
     it('should be antisymmetric', () => {
       performTestTwo(
-        (x, y) => shift(x, y),
-        (x, y) => -1 * shift(y, x),
+        (x, y) => shift(Sample.of(x), Sample.of(y)).value,
+        (x, y) => -1 * shift(Sample.of(y), Sample.of(x)).value,
       );
     });
   });
@@ -131,8 +132,8 @@ describe('Invariance Tests', () => {
   describe('ratio', () => {
     it('should be scale equivariant', () => {
       performTestTwo(
-        (x, y) => ratio(mulScalar(x, 2), mulScalar(y, 3)),
-        (x, y) => (2.0 / 3) * ratio(x, y),
+        (x, y) => ratio(Sample.of(mulScalar(x, 2)), Sample.of(mulScalar(y, 3))).value,
+        (x, y) => (2.0 / 3) * ratio(Sample.of(x), Sample.of(y)).value,
       );
     });
   });
@@ -141,29 +142,29 @@ describe('Invariance Tests', () => {
   describe('avgSpread', () => {
     it('should equal spread for identical samples', () => {
       performTestOne(
-        (x) => avgSpread(x, x),
-        (x) => spread(x),
+        (x) => avgSpread(Sample.of(x), Sample.of(x)).value,
+        (x) => spread(Sample.of(x)).value,
       );
     });
 
     it('should be symmetric', () => {
       performTestTwo(
-        (x, y) => avgSpread(x, y),
-        (x, y) => avgSpread(y, x),
+        (x, y) => avgSpread(Sample.of(x), Sample.of(y)).value,
+        (x, y) => avgSpread(Sample.of(y), Sample.of(x)).value,
       );
     });
 
     it('should calculate average correctly', () => {
       performTestOne(
-        (x) => avgSpread(x, mulScalar(x, 5)),
-        (x) => 3 * spread(x),
+        (x) => avgSpread(Sample.of(x), Sample.of(mulScalar(x, 5))).value,
+        (x) => 3 * spread(Sample.of(x)).value,
       );
     });
 
     it('should be scale equivariant', () => {
       performTestTwo(
-        (x, y) => avgSpread(mulScalar(x, -2), mulScalar(y, -2)),
-        (x, y) => 2 * avgSpread(x, y),
+        (x, y) => avgSpread(Sample.of(mulScalar(x, -2)), Sample.of(mulScalar(y, -2))).value,
+        (x, y) => 2 * avgSpread(Sample.of(x), Sample.of(y)).value,
       );
     });
   });
@@ -172,29 +173,29 @@ describe('Invariance Tests', () => {
   describe('disparity', () => {
     it('should be shift invariant', () => {
       performTestTwo(
-        (x, y) => disparity(addScalar(x, 2), addScalar(y, 2)),
-        (x, y) => disparity(x, y),
+        (x, y) => disparity(Sample.of(addScalar(x, 2)), Sample.of(addScalar(y, 2))).value,
+        (x, y) => disparity(Sample.of(x), Sample.of(y)).value,
       );
     });
 
     it('should be scale invariant', () => {
       performTestTwo(
-        (x, y) => disparity(mulScalar(x, 2), mulScalar(y, 2)),
-        (x, y) => disparity(x, y),
+        (x, y) => disparity(Sample.of(mulScalar(x, 2)), Sample.of(mulScalar(y, 2))).value,
+        (x, y) => disparity(Sample.of(x), Sample.of(y)).value,
       );
     });
 
     it('should be scale antisymmetric with negative scale', () => {
       performTestTwo(
-        (x, y) => disparity(mulScalar(x, -2), mulScalar(y, -2)),
-        (x, y) => -1 * disparity(x, y),
+        (x, y) => disparity(Sample.of(mulScalar(x, -2)), Sample.of(mulScalar(y, -2))).value,
+        (x, y) => -1 * disparity(Sample.of(x), Sample.of(y)).value,
       );
     });
 
     it('should be antisymmetric', () => {
       performTestTwo(
-        (x, y) => disparity(x, y),
-        (x, y) => -1 * disparity(y, x),
+        (x, y) => disparity(Sample.of(x), Sample.of(y)).value,
+        (x, y) => -1 * disparity(Sample.of(y), Sample.of(x)).value,
       );
     });
   });

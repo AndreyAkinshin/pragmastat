@@ -20,32 +20,60 @@ import { AssumptionError } from '../src/assumptions';
 import { pairwiseMargin } from '../src/pairwiseMargin';
 import { Rng } from '../src/rng';
 import { Additive, Exp, Multiplic, Power, Uniform } from '../src/distributions';
+import { Sample } from '../src/sample';
+import { MeasurementUnit } from '../src/measurement-unit';
+import { Measurement } from '../src/measurement';
+import { UnitRegistry } from '../src/unit-registry';
 
 /**
  * Reference tests comparing against expected values from JSON files
  */
 
+/**
+ * Creates a Sample from raw values, remapping the AssumptionError subject
+ * from the default 'x' to the given subject (e.g. 'y').
+ */
+function sampleFromTestData(values: number[], subject: 'x' | 'y'): Sample {
+  try {
+    return Sample.of(values);
+  } catch (e) {
+    if (e instanceof AssumptionError && subject !== 'x') {
+      throw new AssumptionError({ id: e.violation!.id, subject });
+    }
+    throw e;
+  }
+}
+
 describe('Reference Tests', () => {
   const testDataPath = path.join(__dirname, '../../tests');
 
-  // Map estimator names to functions
-  type EstimatorFunction = (x: number[], y?: number[]) => number;
+  // Map estimator names to functions that work with raw test data
+  type OneSampleEstimator = (x: Sample) => Measurement;
+  type TwoSampleEstimator = (x: Sample, y: Sample) => Measurement;
 
-  const estimators: Record<string, EstimatorFunction> = {
+  const oneSampleEstimators: Record<string, OneSampleEstimator> = {
     center,
     spread,
     'rel-spread': relSpread,
-    shift: (x: number[], y?: number[]) => shift(x, y!),
-    ratio: (x: number[], y?: number[]) => ratio(x, y!),
-    'avg-spread': (x: number[], y?: number[]) => avgSpread(x, y!),
-    disparity: (x: number[], y?: number[]) => disparity(x, y!),
   };
+
+  const twoSampleEstimators: Record<string, TwoSampleEstimator> = {
+    shift,
+    ratio,
+    'avg-spread': avgSpread,
+    disparity,
+  };
+
+  const allEstimatorNames = new Set([
+    ...Object.keys(oneSampleEstimators),
+    ...Object.keys(twoSampleEstimators),
+  ]);
 
   // Get all test directories
   const testDirs = fs
     .readdirSync(testDataPath)
     .filter((dir) => fs.statSync(path.join(testDataPath, dir)).isDirectory())
-    .filter((dir) => estimators[dir] !== undefined);
+    .filter((dir) => allEstimatorNames.has(dir));
 
   testDirs.forEach((dirName) => {
     describe(dirName, () => {
@@ -61,24 +89,25 @@ describe('Reference Tests', () => {
 
         it(`should pass ${testName}`, () => {
           const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-          const estimatorFunc = estimators[dirName];
-
-          if (!estimatorFunc) {
-            throw new Error(`Unknown estimator: ${dirName}`);
-          }
 
           // Handle error test cases
           if (data.expected_error) {
             let thrownError: AssumptionError | null = null;
             try {
               if (data.input && typeof data.input === 'object' && 'x' in data.input) {
+                const sx = sampleFromTestData(data.input.x, 'x');
                 if ('y' in data.input) {
-                  estimatorFunc(data.input.x, data.input.y);
+                  const sy = sampleFromTestData(data.input.y, 'y');
+                  const fn = twoSampleEstimators[dirName];
+                  fn(sx, sy);
                 } else {
-                  estimatorFunc(data.input.x);
+                  const fn = oneSampleEstimators[dirName];
+                  fn(sx);
                 }
               } else if (Array.isArray(data.input)) {
-                estimatorFunc(data.input);
+                const sx = sampleFromTestData(data.input, 'x');
+                const fn = oneSampleEstimators[dirName];
+                fn(sx);
               }
             } catch (e) {
               if (e instanceof AssumptionError) {
@@ -88,8 +117,8 @@ describe('Reference Tests', () => {
               }
             }
             expect(thrownError).not.toBeNull();
-            expect(thrownError!.violation.id).toBe(data.expected_error.id);
-            expect(thrownError!.violation.subject).toBe(data.expected_error.subject);
+            expect(thrownError!.violation!.id).toBe(data.expected_error.id);
+            expect(thrownError!.violation!.subject).toBe(data.expected_error.subject);
 
             return;
           }
@@ -98,17 +127,24 @@ describe('Reference Tests', () => {
           if (data.input && typeof data.input === 'object' && 'x' in data.input) {
             if ('y' in data.input) {
               // Two-sample test
-              const result = estimatorFunc(data.input.x, data.input.y);
-              expect(result).toBeCloseTo(data.output, 9);
+              const sx = Sample.of(data.input.x);
+              const sy = Sample.of(data.input.y);
+              const fn = twoSampleEstimators[dirName];
+              const result = fn(sx, sy);
+              expect(result.value).toBeCloseTo(data.output, 9);
             } else {
               // One-sample test with x property
-              const result = estimatorFunc(data.input.x);
-              expect(result).toBeCloseTo(data.output, 9);
+              const sx = Sample.of(data.input.x);
+              const fn = oneSampleEstimators[dirName];
+              const result = fn(sx);
+              expect(result.value).toBeCloseTo(data.output, 9);
             }
           } else if (Array.isArray(data.input)) {
             // One-sample test with direct array
-            const result = estimatorFunc(data.input);
-            expect(result).toBeCloseTo(data.output, 9);
+            const sx = Sample.of(data.input);
+            const fn = oneSampleEstimators[dirName];
+            const result = fn(sx);
+            expect(result.value).toBeCloseTo(data.output, 9);
           } else {
             throw new Error(`Invalid test data format in ${filePath}`);
           }
@@ -146,8 +182,8 @@ describe('Reference Tests', () => {
               }
             }
             expect(thrownError).not.toBeNull();
-            expect(thrownError!.violation.id).toBe(data.expected_error.id);
-            expect(thrownError!.violation.subject).toBe(data.expected_error.subject);
+            expect(thrownError!.violation!.id).toBe(data.expected_error.id);
+            expect(thrownError!.violation!.subject).toBe(data.expected_error.subject);
 
             return;
           }
@@ -179,7 +215,9 @@ describe('Reference Tests', () => {
           if (data.expected_error) {
             let thrownError: AssumptionError | null = null;
             try {
-              shiftBounds(data.input.x, data.input.y, data.input.misrate);
+              const sx = sampleFromTestData(data.input.x, 'x');
+              const sy = sampleFromTestData(data.input.y, 'y');
+              shiftBounds(sx, sy, data.input.misrate);
             } catch (e) {
               if (e instanceof AssumptionError) {
                 thrownError = e;
@@ -188,13 +226,15 @@ describe('Reference Tests', () => {
               }
             }
             expect(thrownError).not.toBeNull();
-            expect(thrownError!.violation.id).toBe(data.expected_error.id);
-            expect(thrownError!.violation.subject).toBe(data.expected_error.subject);
+            expect(thrownError!.violation!.id).toBe(data.expected_error.id);
+            expect(thrownError!.violation!.subject).toBe(data.expected_error.subject);
 
             return;
           }
 
-          const result = shiftBounds(data.input.x, data.input.y, data.input.misrate);
+          const sx = Sample.of(data.input.x);
+          const sy = Sample.of(data.input.y);
+          const result = shiftBounds(sx, sy, data.input.misrate);
           expect(result.lower).toBeCloseTo(data.output.lower, 9);
           expect(result.upper).toBeCloseTo(data.output.upper, 9);
         });
@@ -222,7 +262,9 @@ describe('Reference Tests', () => {
           if (data.expected_error) {
             let thrownError: AssumptionError | null = null;
             try {
-              ratioBounds(data.input.x, data.input.y, data.input.misrate);
+              const sx = sampleFromTestData(data.input.x, 'x');
+              const sy = sampleFromTestData(data.input.y, 'y');
+              ratioBounds(sx, sy, data.input.misrate);
             } catch (e) {
               if (e instanceof AssumptionError) {
                 thrownError = e;
@@ -231,13 +273,15 @@ describe('Reference Tests', () => {
               }
             }
             expect(thrownError).not.toBeNull();
-            expect(thrownError!.violation.id).toBe(data.expected_error.id);
-            expect(thrownError!.violation.subject).toBe(data.expected_error.subject);
+            expect(thrownError!.violation!.id).toBe(data.expected_error.id);
+            expect(thrownError!.violation!.subject).toBe(data.expected_error.subject);
 
             return;
           }
 
-          const result = ratioBounds(data.input.x, data.input.y, data.input.misrate);
+          const sx = Sample.of(data.input.x);
+          const sy = Sample.of(data.input.y);
+          const result = ratioBounds(sx, sy, data.input.misrate);
           expect(result.lower).toBeCloseTo(data.output.lower, 9);
           expect(result.upper).toBeCloseTo(data.output.upper, 9);
         });
@@ -620,8 +664,8 @@ describe('Reference Tests', () => {
               }
             }
             expect(thrownError).not.toBeNull();
-            expect(thrownError!.violation.id).toBe(data.expected_error.id);
-            expect(thrownError!.violation.subject).toBe(data.expected_error.subject);
+            expect(thrownError!.violation!.id).toBe(data.expected_error.id);
+            expect(thrownError!.violation!.subject).toBe(data.expected_error.subject);
 
             return;
           }
@@ -653,7 +697,8 @@ describe('Reference Tests', () => {
           if (data.expected_error) {
             let thrownError: AssumptionError | null = null;
             try {
-              centerBounds(data.input.x, data.input.misrate);
+              const sx = sampleFromTestData(data.input.x, 'x');
+              centerBounds(sx, data.input.misrate);
             } catch (e) {
               if (e instanceof AssumptionError) {
                 thrownError = e;
@@ -662,13 +707,14 @@ describe('Reference Tests', () => {
               }
             }
             expect(thrownError).not.toBeNull();
-            expect(thrownError!.violation.id).toBe(data.expected_error.id);
-            expect(thrownError!.violation.subject).toBe(data.expected_error.subject);
+            expect(thrownError!.violation!.id).toBe(data.expected_error.id);
+            expect(thrownError!.violation!.subject).toBe(data.expected_error.subject);
 
             return;
           }
 
-          const result = centerBounds(data.input.x, data.input.misrate);
+          const sx = Sample.of(data.input.x);
+          const result = centerBounds(sx, data.input.misrate);
           expect(result.lower).toBeCloseTo(data.output.lower, 9);
           expect(result.upper).toBeCloseTo(data.output.upper, 9);
         });
@@ -695,7 +741,8 @@ describe('Reference Tests', () => {
           if (data.expected_error) {
             let thrownError: AssumptionError | null = null;
             try {
-              spreadBounds(data.input.x, data.input.misrate, data.input.seed);
+              const sx = sampleFromTestData(data.input.x, 'x');
+              spreadBounds(sx, data.input.misrate, data.input.seed);
             } catch (e) {
               if (e instanceof AssumptionError) {
                 thrownError = e;
@@ -704,12 +751,13 @@ describe('Reference Tests', () => {
               }
             }
             expect(thrownError).not.toBeNull();
-            expect(thrownError!.violation.id).toBe(data.expected_error.id);
-            expect(thrownError!.violation.subject).toBe(data.expected_error.subject);
+            expect(thrownError!.violation!.id).toBe(data.expected_error.id);
+            expect(thrownError!.violation!.subject).toBe(data.expected_error.subject);
             return;
           }
 
-          const result = spreadBounds(data.input.x, data.input.misrate, data.input.seed);
+          const sx = Sample.of(data.input.x);
+          const result = spreadBounds(sx, data.input.misrate, data.input.seed);
           expect(result.lower).toBeCloseTo(data.output.lower, 9);
           expect(result.upper).toBeCloseTo(data.output.upper, 9);
         });
@@ -740,7 +788,9 @@ describe('Reference Tests', () => {
           if (data.expected_error) {
             let thrownError: AssumptionError | null = null;
             try {
-              disparityBounds(data.input.x, data.input.y, data.input.misrate, data.input.seed);
+              const sx = sampleFromTestData(data.input.x, 'x');
+              const sy = sampleFromTestData(data.input.y, 'y');
+              disparityBounds(sx, sy, data.input.misrate, data.input.seed);
             } catch (e) {
               if (e instanceof AssumptionError) {
                 thrownError = e;
@@ -749,17 +799,14 @@ describe('Reference Tests', () => {
               }
             }
             expect(thrownError).not.toBeNull();
-            expect(thrownError!.violation.id).toBe(data.expected_error.id);
-            expect(thrownError!.violation.subject).toBe(data.expected_error.subject);
+            expect(thrownError!.violation!.id).toBe(data.expected_error.id);
+            expect(thrownError!.violation!.subject).toBe(data.expected_error.subject);
             return;
           }
 
-          const result = disparityBounds(
-            data.input.x,
-            data.input.y,
-            data.input.misrate,
-            data.input.seed,
-          );
+          const sx = Sample.of(data.input.x);
+          const sy = Sample.of(data.input.y);
+          const result = disparityBounds(sx, sy, data.input.misrate, data.input.seed);
           expect(result.lower).toBeCloseTo(data.output.lower, 9);
           expect(result.upper).toBeCloseTo(data.output.upper, 9);
         });
@@ -790,7 +837,9 @@ describe('Reference Tests', () => {
           if (data.expected_error) {
             let thrownError: AssumptionError | null = null;
             try {
-              avgSpreadBounds(data.input.x, data.input.y, data.input.misrate, data.input.seed);
+              const sx = sampleFromTestData(data.input.x, 'x');
+              const sy = sampleFromTestData(data.input.y, 'y');
+              avgSpreadBounds(sx, sy, data.input.misrate, data.input.seed);
             } catch (e) {
               if (e instanceof AssumptionError) {
                 thrownError = e;
@@ -799,19 +848,157 @@ describe('Reference Tests', () => {
               }
             }
             expect(thrownError).not.toBeNull();
-            expect(thrownError!.violation.id).toBe(data.expected_error.id);
-            expect(thrownError!.violation.subject).toBe(data.expected_error.subject);
+            expect(thrownError!.violation!.id).toBe(data.expected_error.id);
+            expect(thrownError!.violation!.subject).toBe(data.expected_error.subject);
             return;
           }
 
-          const result = avgSpreadBounds(
-            data.input.x,
-            data.input.y,
-            data.input.misrate,
-            data.input.seed,
-          );
+          const sx = Sample.of(data.input.x);
+          const sy = Sample.of(data.input.y);
+          const result = avgSpreadBounds(sx, sy, data.input.misrate, data.input.seed);
           expect(result.lower).toBeCloseTo(data.output.lower, 9);
           expect(result.upper).toBeCloseTo(data.output.upper, 9);
+        });
+      });
+    }
+  });
+
+  // Sample construction tests
+  describe('sample-construction', () => {
+    const dirPath = path.join(testDataPath, 'sample-construction');
+    if (fs.existsSync(dirPath)) {
+      const testFiles = fs
+        .readdirSync(dirPath)
+        .filter((f) => f.endsWith('.json'))
+        .sort();
+
+      testFiles.forEach((fileName) => {
+        const filePath = path.join(dirPath, fileName);
+        const testName = fileName.replace('.json', '');
+
+        it(`should pass ${testName}`, () => {
+          const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+
+          // Parse special float values (NaN, Infinity, -Infinity)
+          const rawValues: number[] = data.input.values.map((v: string | number) => {
+            if (v === 'NaN') return NaN;
+            if (v === 'Infinity') return Infinity;
+            if (v === '-Infinity') return -Infinity;
+            return v as number;
+          });
+
+          if (data.expected_error) {
+            expect(() => {
+              if (data.input.weights) {
+                Sample.weighted(rawValues, data.input.weights);
+              } else {
+                Sample.of(rawValues);
+              }
+            }).toThrow();
+            return;
+          }
+
+          let sample: Sample;
+          if (data.input.weights) {
+            sample = Sample.weighted(rawValues, data.input.weights);
+          } else {
+            sample = Sample.of(rawValues);
+          }
+
+          expect(sample.size).toBe(data.output.size);
+          expect(sample.isWeighted).toBe(data.output.is_weighted);
+        });
+      });
+    }
+  });
+
+  // Unit propagation tests
+  describe('unit-propagation', () => {
+    const dirPath = path.join(testDataPath, 'unit-propagation');
+    if (fs.existsSync(dirPath)) {
+      const registry = UnitRegistry.standard();
+      const testFiles = fs
+        .readdirSync(dirPath)
+        .filter((f) => f.endsWith('.json'))
+        .sort();
+
+      testFiles.forEach((fileName) => {
+        const filePath = path.join(dirPath, fileName);
+        const testName = fileName.replace('.json', '');
+
+        it(`should pass ${testName}`, () => {
+          const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+
+          // weighted-rejected test
+          if (data.expected_error === 'weighted_not_supported') {
+            const xUnit = data.input.x_unit
+              ? registry.resolve(data.input.x_unit)
+              : MeasurementUnit.NUMBER;
+            const sx = Sample.weighted(data.input.x, data.input.x_weights, xUnit);
+            expect(() => {
+              const estimatorName: string = data.input.estimator;
+              if (estimatorName === 'center') {
+                center(sx);
+              } else if (estimatorName === 'spread') {
+                spread(sx);
+              } else if (estimatorName === 'shift') {
+                const sy = Sample.of(data.input.y);
+                shift(sx, sy);
+              } else if (estimatorName === 'ratio') {
+                const sy = Sample.of(data.input.y);
+                ratio(sx, sy);
+              } else if (estimatorName === 'disparity') {
+                const sy = Sample.of(data.input.y);
+                disparity(sx, sy);
+              }
+            }).toThrow();
+            return;
+          }
+
+          const estimatorName: string = data.input.estimator;
+          const xUnit = data.input.x_unit
+            ? registry.resolve(data.input.x_unit)
+            : MeasurementUnit.NUMBER;
+          const sx = Sample.withUnit(data.input.x, xUnit);
+
+          if (data.input.y !== undefined) {
+            // Two-sample
+            const yUnit = data.input.y_unit
+              ? registry.resolve(data.input.y_unit)
+              : MeasurementUnit.NUMBER;
+            const sy = Sample.withUnit(data.input.y, yUnit);
+
+            let result: Measurement;
+            if (estimatorName === 'shift') {
+              result = shift(sx, sy);
+            } else if (estimatorName === 'ratio') {
+              result = ratio(sx, sy);
+            } else if (estimatorName === 'disparity') {
+              result = disparity(sx, sy);
+            } else {
+              throw new Error(`Unknown two-sample estimator: ${estimatorName}`);
+            }
+
+            expect(result.unit.id).toBe(data.output.unit);
+            if (data.output.value !== undefined) {
+              expect(result.value).toBeCloseTo(data.output.value, 9);
+            }
+          } else {
+            // One-sample
+            let result: Measurement;
+            if (estimatorName === 'center') {
+              result = center(sx);
+            } else if (estimatorName === 'spread') {
+              result = spread(sx);
+            } else {
+              throw new Error(`Unknown one-sample estimator: ${estimatorName}`);
+            }
+
+            expect(result.unit.id).toBe(data.output.unit);
+            if (data.output.value !== undefined) {
+              expect(result.value).toBeCloseTo(data.output.value, 9);
+            }
+          }
         });
       });
     }
