@@ -89,9 +89,6 @@ public class AssumptionException : ArgumentException
     Violation = violation;
   }
 
-  private static string FormatMessage(Violation violation) =>
-    violation.ToString();
-
   public static AssumptionException Validity(Subject subject) =>
     new(new Violation(AssumptionId.Validity, subject));
 
