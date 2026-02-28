@@ -4,11 +4,16 @@ from pathlib import Path
 import pytest
 
 from pragmastat import (
+    DISPARITY_UNIT,
+    NUMBER_UNIT,
+    RATIO_UNIT,
     Additive,
     Exp,
+    Measurement,
     Multiplic,
     Power,
     Rng,
+    Sample,
     Uniform,
     center,
     center_bounds,
@@ -35,6 +40,18 @@ from pragmastat.pairwise_margin import pairwise_margin
 from pragmastat.signed_rank_margin import signed_rank_margin
 
 
+def _assert_violation(err: AssumptionError, expected: dict, context: str = "") -> None:
+    """Assert that an AssumptionError has the expected violation fields."""
+    assert err.violation is not None, f"Expected violation, got message-only error: {err}{context}"
+    assert err.violation.id.value == expected["id"], (
+        f"Expected error id '{expected['id']}', got '{err.violation.id.value}'{context}"
+    )
+    if "subject" in expected:
+        assert err.violation.subject == expected["subject"], (
+            f"Expected error subject '{expected['subject']}', got '{err.violation.subject}'{context}"
+        )
+
+
 def find_repo_root():
     """Find the repository root by looking for CITATION.cff file."""
     current_dir = Path(__file__).parent
@@ -43,6 +60,22 @@ def find_repo_root():
             return current_dir
         current_dir = current_dir.parent
     raise RuntimeError("Could not find repository root (CITATION.cff not found)")
+
+
+def _call_estimator(estimator_func, test_case, is_two_sample):
+    """Build Sample objects and call the estimator."""
+    sx = Sample(test_case["input"]["x"])
+    if is_two_sample:
+        sy = Sample(test_case["input"]["y"], _subject="y")
+        return estimator_func(sx, sy)
+    return estimator_func(sx)
+
+
+def _call_two_sample_bounds(bounds_func, test_case, **kwargs):
+    """Build Sample objects and call a two-sample bounds estimator."""
+    sx = Sample(test_case["input"]["x"])
+    sy = Sample(test_case["input"]["y"], _subject="y")
+    return bounds_func(sx, sy, test_case["input"]["misrate"], **kwargs)
 
 
 def run_reference_tests(estimator_name, estimator_func, is_two_sample=False):
@@ -57,34 +90,38 @@ def run_reference_tests(estimator_name, estimator_func, is_two_sample=False):
         with open(json_file, "r") as f:
             test_case = json.load(f)
 
-        input_x = test_case["input"]["x"]
-
         if "expected_error" in test_case:
             expected_error = test_case["expected_error"]
-            call_args = (input_x, test_case["input"]["y"]) if is_two_sample else (input_x,)
             with pytest.raises(AssumptionError) as exc_info:
-                estimator_func(*call_args)
-            assert exc_info.value.violation.id.value == expected_error["id"], (
-                f"Expected error id '{expected_error['id']}', "
-                f"got '{exc_info.value.violation.id.value}' for {json_file.name}"
-            )
-            if "subject" in expected_error:
-                assert exc_info.value.violation.subject == expected_error["subject"], (
-                    f"Expected error subject '{expected_error['subject']}', "
-                    f"got '{exc_info.value.violation.subject}' for {json_file.name}"
-                )
+                _call_estimator(estimator_func, test_case, is_two_sample)
+            _assert_violation(exc_info.value, expected_error, f" for {json_file.name}")
             continue
 
         expected_output = test_case["output"]
-
-        if is_two_sample:
-            actual_output = estimator_func(input_x, test_case["input"]["y"])
-        else:
-            actual_output = estimator_func(input_x)
+        actual_result = _call_estimator(estimator_func, test_case, is_two_sample)
+        actual_output = actual_result.value
 
         assert abs(actual_output - expected_output) < 1e-9, (
             f"Failed for test file: {json_file.name}, expected: {expected_output}, got: {actual_output}"
         )
+
+
+def _parse_sample_values(raw_values):
+    """Convert JSON values (which may contain 'NaN', 'Infinity', '-Infinity') to floats."""
+    result = []
+    for v in raw_values:
+        if isinstance(v, str):
+            if v == "NaN":
+                result.append(float("nan"))
+            elif v == "Infinity":
+                result.append(float("inf"))
+            elif v == "-Infinity":
+                result.append(float("-inf"))
+            else:
+                result.append(float(v))
+        else:
+            result.append(float(v))
+    return result
 
 
 def run_distribution_tests(dist_name, dist_factory):
@@ -157,15 +194,7 @@ class TestReference:
                 expected_error = test_case["expected_error"]
                 with pytest.raises(AssumptionError) as exc_info:
                     pairwise_margin(n, m, misrate)
-                assert exc_info.value.violation.id.value == expected_error["id"], (
-                    f"Expected error id '{expected_error['id']}', "
-                    f"got '{exc_info.value.violation.id.value}' for {json_file.name}"
-                )
-                if "subject" in expected_error:
-                    assert exc_info.value.violation.subject == expected_error["subject"], (
-                        f"Expected error subject '{expected_error['subject']}', "
-                        f"got '{exc_info.value.violation.subject}' for {json_file.name}"
-                    )
+                _assert_violation(exc_info.value, expected_error, f" for {json_file.name}")
                 continue
 
             expected_output = test_case["output"]
@@ -195,22 +224,14 @@ class TestReference:
             if "expected_error" in test_case:
                 expected_error = test_case["expected_error"]
                 with pytest.raises(AssumptionError) as exc_info:
-                    shift_bounds(input_x, input_y, misrate)
-                assert exc_info.value.violation.id.value == expected_error["id"], (
-                    f"Expected error id '{expected_error['id']}', "
-                    f"got '{exc_info.value.violation.id.value}' for {json_file.name}"
-                )
-                if "subject" in expected_error:
-                    assert exc_info.value.violation.subject == expected_error["subject"], (
-                        f"Expected error subject '{expected_error['subject']}', "
-                        f"got '{exc_info.value.violation.subject}' for {json_file.name}"
-                    )
+                    _call_two_sample_bounds(shift_bounds, test_case)
+                _assert_violation(exc_info.value, expected_error, f" for {json_file.name}")
                 continue
 
             expected_lower = test_case["output"]["lower"]
             expected_upper = test_case["output"]["upper"]
 
-            result = shift_bounds(input_x, input_y, misrate)
+            result = shift_bounds(Sample(input_x), Sample(input_y, _subject="y"), misrate)
 
             assert abs(result.lower - expected_lower) < 1e-9, (
                 f"Failed lower bound for test file: {json_file.name}, expected: {expected_lower}, got: {result.lower}"
@@ -242,22 +263,14 @@ class TestReference:
             if "expected_error" in test_case:
                 expected_error = test_case["expected_error"]
                 with pytest.raises(AssumptionError) as exc_info:
-                    ratio_bounds(input_x, input_y, misrate)
-                assert exc_info.value.violation.id.value == expected_error["id"], (
-                    f"Expected error id '{expected_error['id']}', "
-                    f"got '{exc_info.value.violation.id.value}' for {json_file.name}"
-                )
-                if "subject" in expected_error:
-                    assert exc_info.value.violation.subject == expected_error["subject"], (
-                        f"Expected error subject '{expected_error['subject']}', "
-                        f"got '{exc_info.value.violation.subject}' for {json_file.name}"
-                    )
+                    _call_two_sample_bounds(ratio_bounds, test_case)
+                _assert_violation(exc_info.value, expected_error, f" for {json_file.name}")
                 continue
 
             expected_lower = test_case["output"]["lower"]
             expected_upper = test_case["output"]["upper"]
 
-            result = ratio_bounds(input_x, input_y, misrate)
+            result = ratio_bounds(Sample(input_x), Sample(input_y, _subject="y"), misrate)
 
             assert abs(result.lower - expected_lower) < 1e-9, (
                 f"Failed lower bound for test file: {json_file.name}, expected: {expected_lower}, got: {result.lower}"
@@ -496,8 +509,6 @@ class TestReference:
 
     def test_sample_negative_k_raises(self):
         """Test that sample with negative k raises ValueError."""
-        import pytest
-
         rng = Rng("test-sample-validation")
         with pytest.raises(ValueError):
             rng.sample([1, 2, 3], -1)
@@ -522,15 +533,7 @@ class TestReference:
                 expected_error = test_case["expected_error"]
                 with pytest.raises(AssumptionError) as exc_info:
                     signed_rank_margin(n, misrate)
-                assert exc_info.value.violation.id.value == expected_error["id"], (
-                    f"Expected error id '{expected_error['id']}', "
-                    f"got '{exc_info.value.violation.id.value}' for {json_file.name}"
-                )
-                if "subject" in expected_error:
-                    assert exc_info.value.violation.subject == expected_error["subject"], (
-                        f"Expected error subject '{expected_error['subject']}', "
-                        f"got '{exc_info.value.violation.subject}' for {json_file.name}"
-                    )
+                _assert_violation(exc_info.value, expected_error, f" for {json_file.name}")
                 continue
 
             expected_output = test_case["output"]
@@ -560,22 +563,14 @@ class TestReference:
             if "expected_error" in test_case:
                 expected_error = test_case["expected_error"]
                 with pytest.raises(AssumptionError) as exc_info:
-                    center_bounds(input_x, misrate)
-                assert exc_info.value.violation.id.value == expected_error["id"], (
-                    f"Expected error id '{expected_error['id']}', "
-                    f"got '{exc_info.value.violation.id.value}' for {json_file.name}"
-                )
-                if "subject" in expected_error:
-                    assert exc_info.value.violation.subject == expected_error["subject"], (
-                        f"Expected error subject '{expected_error['subject']}', "
-                        f"got '{exc_info.value.violation.subject}' for {json_file.name}"
-                    )
+                    center_bounds(Sample(input_x), misrate)
+                _assert_violation(exc_info.value, expected_error, f" for {json_file.name}")
                 continue
 
             expected_lower = test_case["output"]["lower"]
             expected_upper = test_case["output"]["upper"]
 
-            result = center_bounds(input_x, misrate)
+            result = center_bounds(Sample(input_x), misrate)
 
             assert abs(result.lower - expected_lower) < 1e-9, (
                 f"Failed lower bound for test file: {json_file.name}, expected: {expected_lower}, got: {result.lower}"
@@ -604,22 +599,14 @@ class TestReference:
             if "expected_error" in test_case:
                 expected_error = test_case["expected_error"]
                 with pytest.raises(AssumptionError) as exc_info:
-                    spread_bounds(input_x, misrate, seed=seed)
-                assert exc_info.value.violation.id.value == expected_error["id"], (
-                    f"Expected error id '{expected_error['id']}', "
-                    f"got '{exc_info.value.violation.id.value}' for {json_file.name}"
-                )
-                if "subject" in expected_error:
-                    assert exc_info.value.violation.subject == expected_error["subject"], (
-                        f"Expected error subject '{expected_error['subject']}', "
-                        f"got '{exc_info.value.violation.subject}' for {json_file.name}"
-                    )
+                    spread_bounds(Sample(input_x), misrate, seed=seed)
+                _assert_violation(exc_info.value, expected_error, f" for {json_file.name}")
                 continue
 
             expected_lower = test_case["output"]["lower"]
             expected_upper = test_case["output"]["upper"]
 
-            result = spread_bounds(input_x, misrate, seed=seed)
+            result = spread_bounds(Sample(input_x), misrate, seed=seed)
 
             assert abs(result.lower - expected_lower) < 1e-9, (
                 f"Failed lower bound for test file: {json_file.name}, expected: {expected_lower}, got: {result.lower}"
@@ -652,22 +639,14 @@ class TestReference:
             if "expected_error" in test_case:
                 expected_error = test_case["expected_error"]
                 with pytest.raises(AssumptionError) as exc_info:
-                    avg_spread_bounds(input_x, input_y, misrate, seed=seed)
-                assert exc_info.value.violation.id.value == expected_error["id"], (
-                    f"Expected error id '{expected_error['id']}', "
-                    f"got '{exc_info.value.violation.id.value}' for {json_file.name}"
-                )
-                if "subject" in expected_error:
-                    assert exc_info.value.violation.subject == expected_error["subject"], (
-                        f"Expected error subject '{expected_error['subject']}', "
-                        f"got '{exc_info.value.violation.subject}' for {json_file.name}"
-                    )
+                    _call_two_sample_bounds(avg_spread_bounds, test_case, seed=seed)
+                _assert_violation(exc_info.value, expected_error, f" for {json_file.name}")
                 continue
 
             expected_lower = test_case["output"]["lower"]
             expected_upper = test_case["output"]["upper"]
 
-            result = avg_spread_bounds(input_x, input_y, misrate, seed=seed)
+            result = avg_spread_bounds(Sample(input_x), Sample(input_y, _subject="y"), misrate, seed=seed)
 
             assert abs(result.lower - expected_lower) < 1e-9, (
                 f"Failed lower bound for test file: {json_file.name}, expected: {expected_lower}, got: {result.lower}"
@@ -700,22 +679,14 @@ class TestReference:
             if "expected_error" in test_case:
                 expected_error = test_case["expected_error"]
                 with pytest.raises(AssumptionError) as exc_info:
-                    disparity_bounds(input_x, input_y, misrate, seed=seed)
-                assert exc_info.value.violation.id.value == expected_error["id"], (
-                    f"Expected error id '{expected_error['id']}', "
-                    f"got '{exc_info.value.violation.id.value}' for {json_file.name}"
-                )
-                if "subject" in expected_error:
-                    assert exc_info.value.violation.subject == expected_error["subject"], (
-                        f"Expected error subject '{expected_error['subject']}', "
-                        f"got '{exc_info.value.violation.subject}' for {json_file.name}"
-                    )
+                    _call_two_sample_bounds(disparity_bounds, test_case, seed=seed)
+                _assert_violation(exc_info.value, expected_error, f" for {json_file.name}")
                 continue
 
             expected_lower = test_case["output"]["lower"]
             expected_upper = test_case["output"]["upper"]
 
-            result = disparity_bounds(input_x, input_y, misrate, seed=seed)
+            result = disparity_bounds(Sample(input_x), Sample(input_y, _subject="y"), misrate, seed=seed)
 
             assert abs(result.lower - expected_lower) < 1e-9, (
                 f"Failed lower bound for test file: {json_file.name}, expected: {expected_lower}, got: {result.lower}"
@@ -723,3 +694,93 @@ class TestReference:
             assert abs(result.upper - expected_upper) < 1e-9, (
                 f"Failed upper bound for test file: {json_file.name}, expected: {expected_upper}, got: {result.upper}"
             )
+
+
+class TestSampleConstruction:
+    """Tests from tests/sample-construction/ cross-language test data."""
+
+    def test_valid_single(self):
+        s = Sample([42.0])
+        assert s.size == 1
+        assert s.is_weighted is False
+
+    def test_valid_multiple(self):
+        s = Sample([1.0, 2.0, 3.0, 4.0, 5.0])
+        assert s.size == 5
+        assert s.is_weighted is False
+
+    def test_valid_weighted(self):
+        s = Sample([1.0, 2.0, 3.0], weights=[0.5, 0.3, 0.2])
+        assert s.size == 3
+        assert s.is_weighted is True
+
+    def test_error_empty(self):
+        with pytest.raises(AssumptionError) as exc_info:
+            Sample([])
+        assert exc_info.value.violation is not None
+        assert exc_info.value.violation.id.value == "validity"
+        assert exc_info.value.violation.subject == "x"
+
+    def test_error_nan(self):
+        with pytest.raises(AssumptionError) as exc_info:
+            Sample([1.0, float("nan"), 3.0])
+        assert exc_info.value.violation is not None
+        assert exc_info.value.violation.id.value == "validity"
+        assert exc_info.value.violation.subject == "x"
+
+    def test_error_inf(self):
+        with pytest.raises(AssumptionError) as exc_info:
+            Sample([1.0, float("inf"), 3.0])
+        assert exc_info.value.violation is not None
+        assert exc_info.value.violation.id.value == "validity"
+        assert exc_info.value.violation.subject == "x"
+
+    def test_error_neg_inf(self):
+        with pytest.raises(AssumptionError) as exc_info:
+            Sample([1.0, float("-inf"), 3.0])
+        assert exc_info.value.violation is not None
+        assert exc_info.value.violation.id.value == "validity"
+        assert exc_info.value.violation.subject == "x"
+
+
+class TestUnitPropagation:
+    """Tests from tests/unit-propagation/ cross-language test data."""
+
+    def test_center_preserves_unit(self):
+        s = Sample([1, 2, 3, 4, 5], unit=NUMBER_UNIT)
+        result = center(s)
+        assert isinstance(result, Measurement)
+        assert abs(result.value - 3) < 1e-9
+        assert result.unit == NUMBER_UNIT
+
+    def test_spread_preserves_unit(self):
+        s = Sample([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], unit=NUMBER_UNIT)
+        result = spread(s)
+        assert isinstance(result, Measurement)
+        assert result.unit == NUMBER_UNIT
+
+    def test_shift_preserves_unit(self):
+        sx = Sample([1, 2, 3, 4, 5], unit=NUMBER_UNIT)
+        sy = Sample([6, 7, 8, 9, 10], unit=NUMBER_UNIT)
+        result = shift(sx, sy)
+        assert isinstance(result, Measurement)
+        assert result.unit == NUMBER_UNIT
+
+    def test_ratio_returns_ratio_unit(self):
+        sx = Sample([1, 2, 3, 4, 5], unit=NUMBER_UNIT)
+        sy = Sample([6, 7, 8, 9, 10], unit=NUMBER_UNIT)
+        result = ratio(sx, sy)
+        assert isinstance(result, Measurement)
+        assert result.unit == RATIO_UNIT
+
+    def test_disparity_returns_disparity_unit(self):
+        sx = Sample([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], unit=NUMBER_UNIT)
+        sy = Sample([11, 12, 13, 14, 15, 16, 17, 18, 19, 20], unit=NUMBER_UNIT)
+        result = disparity(sx, sy)
+        assert isinstance(result, Measurement)
+        assert result.unit == DISPARITY_UNIT
+
+    def test_weighted_rejected(self):
+        s = Sample([1, 2, 3], weights=[0.5, 0.3, 0.2])
+        with pytest.raises(AssumptionError, match="weighted samples are not supported"):
+            center(s)

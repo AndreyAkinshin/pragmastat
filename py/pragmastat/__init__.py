@@ -4,6 +4,7 @@ from .assumptions import (
     Subject,
     Violation,
 )
+from .bounds import Bounds
 from .distributions import (
     Additive,
     Distribution,
@@ -14,7 +15,6 @@ from .distributions import (
 )
 from .estimators import (
     DEFAULT_MISRATE,
-    Bounds,
     center,
     center_bounds,
     disparity,
@@ -27,7 +27,16 @@ from .estimators import (
     spread,
     spread_bounds,
 )
+from .measurement import Measurement
+from .measurement_unit import (
+    DISPARITY_UNIT,
+    NUMBER_UNIT,
+    RATIO_UNIT,
+    MeasurementUnit,
+)
 from .rng import Rng
+from .sample import Sample
+from .unit_registry import UnitRegistry
 
 __all__ = [
     # Assumptions
@@ -35,6 +44,15 @@ __all__ = [
     "AssumptionError",
     "Subject",
     "Violation",
+    # Metrology
+    "MeasurementUnit",
+    "Measurement",
+    "Bounds",
+    "Sample",
+    "UnitRegistry",
+    "NUMBER_UNIT",
+    "RATIO_UNIT",
+    "DISPARITY_UNIT",
     # Estimators
     "DEFAULT_MISRATE",
     "center",
@@ -48,7 +66,6 @@ __all__ = [
     "center_bounds",
     "spread_bounds",
     "disparity_bounds",
-    "Bounds",
     # Random
     "Rng",
     # Distributions

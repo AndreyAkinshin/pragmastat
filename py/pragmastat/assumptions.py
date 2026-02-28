@@ -44,11 +44,21 @@ class Violation:
 
 
 class AssumptionError(Exception):
-    """Error type for assumption violations."""
+    """Error type for assumption violations and other estimator errors.
 
-    def __init__(self, violation: Violation) -> None:
-        self.violation = violation
-        super().__init__(str(violation))
+    When constructed with a Violation, ``violation`` is set accordingly.
+    When constructed with a plain message string, ``violation`` is None.
+    """
+
+    violation: Violation | None
+
+    def __init__(self, violation_or_msg: Violation | str) -> None:
+        if isinstance(violation_or_msg, Violation):
+            self.violation = violation_or_msg
+            super().__init__(str(violation_or_msg))
+        else:
+            self.violation = None
+            super().__init__(violation_or_msg)
 
     @classmethod
     def validity(cls, subject: Subject) -> "AssumptionError":

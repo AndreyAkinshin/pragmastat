@@ -1,336 +1,252 @@
+from __future__ import annotations
+
 import math
 import warnings
-from typing import NamedTuple, Sequence, Union
 
 import numpy as np
-from numpy.typing import NDArray
 
 from ._fast_center_quantiles import fast_center_quantile_bounds
-from .assumptions import (
-    AssumptionError,
-    check_positivity,
-    check_validity,
-    log,
-)
+from .assumptions import AssumptionError, check_positivity
+from .bounds import Bounds
 from .fast_center import _fast_center
 from .fast_shift import _fast_shift
 from .fast_spread import _fast_spread
+from .measurement import Measurement
+from .measurement_unit import DISPARITY_UNIT, NUMBER_UNIT, RATIO_UNIT
 from .min_misrate import (
     min_achievable_misrate_one_sample,
     min_achievable_misrate_two_sample,
 )
 from .pairwise_margin import pairwise_margin
 from .rng import Rng
+from .sample import Sample, _check_non_weighted, _prepare_pair
 from .sign_margin import sign_margin_randomized
 from .signed_rank_margin import signed_rank_margin
 
 DEFAULT_MISRATE = 1e-3
 
 
-class Bounds(NamedTuple):
-    """Represents an interval with lower and upper bounds."""
-
-    lower: float
-    upper: float
-
-
-def center(x: Union[Sequence[float], NDArray]) -> float:
-    """
-    Estimate the central value using Hodges-Lehmann estimator.
-
-    Calculates the median of all pairwise averages (x[i] + x[j])/2.
-    More robust than the mean and more efficient than the median.
+def center(x: Sample) -> Measurement:
+    """Estimate the central value using Hodges-Lehmann estimator.
 
     Args:
         x: Input sample.
 
     Returns:
-        Center estimate (median of pairwise averages).
+        Measurement with the center estimate and the sample's unit.
 
     Raises:
         AssumptionError: If input is empty or contains NaN/Inf.
+        AssumptionError: If sample is weighted.
     """
-    x = np.asarray(x)
-    check_validity(x, "x")
-    # Use fast O(n log n) algorithm
-    return _fast_center(x)
+    _check_non_weighted("center", x)
+    result = _fast_center(x.values)
+    return Measurement(result, x.unit)
 
 
-def spread(x: Union[Sequence[float], NDArray]) -> float:
-    """
-    Estimate data dispersion using Shamos estimator.
-
-    Calculates the median of all pairwise absolute differences |x[i] - x[j]|.
-    More robust than standard deviation and more efficient than MAD.
-
-    Assumptions:
-        sparity(x) - sample must be non tie-dominant (Spread > 0)
+def spread(x: Sample) -> Measurement:
+    """Estimate data dispersion using Shamos estimator.
 
     Args:
         x: Input sample.
 
     Returns:
-        Spread estimate (median of pairwise absolute differences).
+        Measurement with the spread estimate and the sample's unit.
 
     Raises:
-        AssumptionError: If sample is empty, contains NaN/Inf,
-            or is tie-dominant.
+        AssumptionError: If sample is empty, contains NaN/Inf, or is tie-dominant.
+        AssumptionError: If sample is weighted.
     """
-    x = np.asarray(x)
-    # Check validity (priority 0)
-    check_validity(x, "x")
-    spread_val = _fast_spread(x)
+    _check_non_weighted("spread", x)
+    spread_val = _fast_spread(x.values)
     if spread_val <= 0:
         raise AssumptionError.sparity("x")
-    return spread_val
+    return Measurement(spread_val, x.unit)
 
 
-def rel_spread(x: Union[Sequence[float], NDArray]) -> float:
-    """
-    Measure relative dispersion of a sample.
+def rel_spread(x: Sample) -> Measurement:
+    """Measure relative dispersion of a sample.
 
     .. deprecated::
-        Use ``spread(x) / abs(center(x))`` instead.
-
-    Calculates the ratio of Spread to absolute Center.
-    Robust alternative to the coefficient of variation.
-
-    Assumptions:
-        positivity(x) - all values must be strictly positive (ensures Center > 0)
+        Use ``spread(x).value / abs(center(x).value)`` instead.
 
     Args:
         x: Input sample.
 
     Returns:
-        Relative spread (Spread / |Center|).
+        Measurement with the relative spread and NumberUnit.
 
     Raises:
-        AssumptionError: If sample is empty, contains NaN/Inf,
-            or contains non-positive values.
+        AssumptionError: If sample is empty, contains NaN/Inf, or contains non-positive values.
+        AssumptionError: If sample is weighted.
     """
     warnings.warn(
-        "rel_spread is deprecated. Use spread(x) / abs(center(x)) instead.",
+        "rel_spread is deprecated. Use spread(x).value / abs(center(x).value) instead.",
         DeprecationWarning,
         stacklevel=2,
     )
-    x = np.asarray(x)
-    # Check validity (priority 0)
-    check_validity(x, "x")
-    # Check positivity (priority 1)
-    check_positivity(x, "x")
-    # Calculate center (we know x is valid, center should succeed)
-    center_val = _fast_center(x)
-    # Calculate spread (using internal implementation since we already validated)
-    spread_val = _fast_spread(x)
-    # center_val is guaranteed positive because all values are positive
-    return spread_val / abs(center_val)
+    _check_non_weighted("rel_spread", x)
+    check_positivity(x.values, "x")
+    center_val = _fast_center(x.values)
+    spread_val = _fast_spread(x.values)
+    return Measurement(spread_val / abs(center_val), NUMBER_UNIT)
 
 
-def shift(x: Union[Sequence[float], NDArray], y: Union[Sequence[float], NDArray]) -> float:
-    """
-    Measure the typical difference between elements of x and y.
-
-    Calculates the median of all pairwise differences (x[i] - y[j]).
-    Positive values mean x is typically larger, negative means y is typically larger.
+def shift(x: Sample, y: Sample) -> Measurement:
+    """Measure the typical difference between elements of x and y.
 
     Args:
         x: First sample.
         y: Second sample.
 
     Returns:
-        Shift estimate (median of pairwise differences).
+        Measurement with the shift estimate and the finer unit.
 
     Raises:
         AssumptionError: If either input is empty or contains NaN/Inf.
+        AssumptionError: If either sample is weighted or units are incompatible.
     """
-    x = np.asarray(x)
-    y = np.asarray(y)
-    check_validity(x, "x")
-    check_validity(y, "y")
-    # Use fast O((m+n) log L) algorithm instead of materializing all m*n differences
-    return float(_fast_shift(x, y, p=0.5))
+    _check_non_weighted("shift", x)
+    _check_non_weighted("shift", y)
+    x, y = _prepare_pair(x, y)
+    result = float(_fast_shift(x.values, y.values, p=0.5))
+    return Measurement(result, x.unit)
 
 
-def ratio(x: Union[Sequence[float], NDArray], y: Union[Sequence[float], NDArray]) -> float:
-    """
-    Measure how many times larger x is compared to y.
-
-    Calculates the median of all pairwise ratios (x[i] / y[j]) via log-transformation.
-    Equivalent to: exp(Shift(log(x), log(y)))
-    For example, ratio = 1.2 means x is typically 20% larger than y.
-    Uses fast O((m+n) log L) algorithm.
-
-    Assumptions:
-        positivity(x) - all values in x must be strictly positive
-        positivity(y) - all values in y must be strictly positive
+def ratio(x: Sample, y: Sample) -> Measurement:
+    """Measure how many times larger x is compared to y.
 
     Args:
         x: First sample.
         y: Second sample (must be strictly positive).
 
     Returns:
-        Ratio estimate (median of pairwise ratios).
+        Measurement with the ratio estimate and RATIO_UNIT.
 
     Raises:
-        AssumptionError: If either sample is empty, contains NaN/Inf,
-            or contains non-positive values.
+        AssumptionError: If either sample is empty, contains NaN/Inf, or contains non-positive values.
+        AssumptionError: If either sample is weighted or units are incompatible.
     """
-    x = np.asarray(x)
-    y = np.asarray(y)
-    # Check validity for x (priority 0, subject x)
-    check_validity(x, "x")
-    # Check validity for y (priority 0, subject y)
-    check_validity(y, "y")
-    # Check positivity for x (priority 1, subject x)
-    check_positivity(x, "x")
-    # Check positivity for y (priority 1, subject y)
-    check_positivity(y, "y")
-    # Log-transform, compute shift, exp-transform back
-    log_x = np.log(x)
-    log_y = np.log(y)
+    _check_non_weighted("ratio", x)
+    _check_non_weighted("ratio", y)
+    x, y = _prepare_pair(x, y)
+    check_positivity(x.values, "x")
+    check_positivity(y.values, "y")
+    log_x = np.log(x.values)
+    log_y = np.log(y.values)
     log_result = _fast_shift(log_x, log_y, p=0.5)
-    return float(np.exp(log_result))
+    return Measurement(float(np.exp(log_result)), RATIO_UNIT)
 
 
-def _avg_spread(x: Union[Sequence[float], NDArray], y: Union[Sequence[float], NDArray]) -> float:
-    """
-    Measure the typical variability when considering both samples together.
+def _avg_spread(x: Sample, y: Sample) -> Measurement:
+    """Measure the typical variability considering both samples together.
 
-    Computes the weighted average of individual spreads:
-    (n * Spread(x) + m * Spread(y)) / (n + m).
-
-    Assumptions:
-        sparity(x) - first sample must be non tie-dominant (Spread > 0)
-        sparity(y) - second sample must be non tie-dominant (Spread > 0)
+    Internal estimator used by Disparity.
 
     Args:
         x: First sample.
         y: Second sample.
 
     Returns:
-        Weighted average of individual spreads.
+        Measurement with the average spread and the finer unit.
 
     Raises:
-        AssumptionError: If either sample is empty, contains NaN/Inf,
-            or is tie-dominant.
+        AssumptionError: If either sample is empty, contains NaN/Inf, or is tie-dominant.
+        AssumptionError: If either sample is weighted or units are incompatible.
     """
-    x = np.asarray(x)
-    y = np.asarray(y)
-    # Check validity for x (priority 0, subject x)
-    check_validity(x, "x")
-    # Check validity for y (priority 0, subject y)
-    check_validity(y, "y")
-    n = len(x)
-    m = len(y)
-    spread_x = _fast_spread(x)
+    _check_non_weighted("avg_spread", x)
+    _check_non_weighted("avg_spread", y)
+    x, y = _prepare_pair(x, y)
+    n = len(x.values)
+    m = len(y.values)
+    spread_x = _fast_spread(x.values)
     if spread_x <= 0:
         raise AssumptionError.sparity("x")
-    spread_y = _fast_spread(y)
+    spread_y = _fast_spread(y.values)
     if spread_y <= 0:
         raise AssumptionError.sparity("y")
-    return (n * spread_x + m * spread_y) / (n + m)
+    return Measurement((n * spread_x + m * spread_y) / (n + m), x.unit)
 
 
-def disparity(x: Union[Sequence[float], NDArray], y: Union[Sequence[float], NDArray]) -> float:
-    """
-    Measure effect size: a normalized difference between x and y.
-
-    Calculated as Shift / AvgSpread. Robust alternative to Cohen's d.
-
-    Assumptions:
-        sparity(x) - first sample must be non tie-dominant (Spread > 0)
-        sparity(y) - second sample must be non tie-dominant (Spread > 0)
+def disparity(x: Sample, y: Sample) -> Measurement:
+    """Measure effect size: a normalized difference between x and y.
 
     Args:
         x: First sample.
         y: Second sample.
 
     Returns:
-        Effect size (Shift / AvgSpread).
+        Measurement with the disparity and DISPARITY_UNIT.
 
     Raises:
-        AssumptionError: If either sample is empty, contains NaN/Inf,
-            or is tie-dominant.
+        AssumptionError: If either sample is empty, contains NaN/Inf, or is tie-dominant.
+        AssumptionError: If either sample is weighted or units are incompatible.
     """
-    x = np.asarray(x)
-    y = np.asarray(y)
-    # Check validity for x (priority 0, subject x)
-    check_validity(x, "x")
-    # Check validity for y (priority 0, subject y)
-    check_validity(y, "y")
-    n = len(x)
-    m = len(y)
-    spread_x = _fast_spread(x)
+    _check_non_weighted("disparity", x)
+    _check_non_weighted("disparity", y)
+    x, y = _prepare_pair(x, y)
+    n = len(x.values)
+    m = len(y.values)
+    spread_x = _fast_spread(x.values)
     if spread_x <= 0:
         raise AssumptionError.sparity("x")
-    spread_y = _fast_spread(y)
+    spread_y = _fast_spread(y.values)
     if spread_y <= 0:
         raise AssumptionError.sparity("y")
-    # Calculate shift (we know inputs are valid)
-    shift_val = float(_fast_shift(x, y, p=0.5))
+    shift_val = float(_fast_shift(x.values, y.values, p=0.5))
     avg_spread_val = (n * spread_x + m * spread_y) / (n + m)
-    return shift_val / avg_spread_val
+    return Measurement(shift_val / avg_spread_val, DISPARITY_UNIT)
 
 
 def shift_bounds(
-    x: Union[Sequence[float], NDArray],
-    y: Union[Sequence[float], NDArray],
+    x: Sample,
+    y: Sample,
     misrate: float = DEFAULT_MISRATE,
 ) -> Bounds:
-    """
-    Provides bounds on the Shift estimator with specified misclassification rate.
-
-    The misrate represents the probability that the true shift falls outside
-    the computed bounds. This is a pragmatic alternative to traditional confidence
-    intervals for the Hodges-Lehmann estimator.
+    """Provides bounds on the Shift estimator with specified misclassification rate.
 
     Args:
-        x: First sample
-        y: Second sample
-        misrate: Misclassification rate (probability that true shift falls outside bounds)
+        x: First sample.
+        y: Second sample.
+        misrate: Misclassification rate.
 
     Returns:
-        A Bounds object containing the lower and upper bounds
+        Bounds with lower, upper, and the finer unit.
 
     Raises:
-        AssumptionError: If either sample is empty or contains NaN/Inf.
-        AssumptionError: If misrate is out of range.
+        AssumptionError: If either sample is empty or contains NaN/Inf, or misrate is out of range.
+        AssumptionError: If either sample is weighted or units are incompatible.
     """
-    x = np.asarray(x)
-    y = np.asarray(y)
+    _check_non_weighted("shift_bounds", x)
+    _check_non_weighted("shift_bounds", y)
+    x, y = _prepare_pair(x, y)
 
-    # Check validity for x
-    check_validity(x, "x")
-    # Check validity for y
-    check_validity(y, "y")
+    xv = x.values
+    yv = y.values
 
     if math.isnan(misrate) or misrate < 0 or misrate > 1:
         raise AssumptionError.domain("misrate")
 
-    n = len(x)
-    m = len(y)
+    n = len(xv)
+    m = len(yv)
 
     min_misrate = min_achievable_misrate_two_sample(n, m)
     if misrate < min_misrate:
         raise AssumptionError.domain("misrate")
 
-    # Sort both arrays
-    xs = sorted(x)
-    ys = sorted(y)
-
+    xs = sorted(xv)
+    ys = sorted(yv)
     total = n * m
 
-    # Special case: when there's only one pairwise difference, bounds collapse to a single value
     if total == 1:
         value = xs[0] - ys[0]
-        return Bounds(value, value)
+        return Bounds(value, value, x.unit)
 
     margin = pairwise_margin(n, m, misrate)
     half_margin = min(margin // 2, (total - 1) // 2)
     k_left = half_margin
     k_right = (total - 1) - half_margin
 
-    # Compute quantile positions
     denominator = total - 1 if total > 1 else 1
     p = [k_left / denominator, k_right / denominator]
 
@@ -338,143 +254,118 @@ def shift_bounds(
 
     lower = min(bounds)
     upper = max(bounds)
-    return Bounds(lower, upper)
+    return Bounds(lower, upper, x.unit)
 
 
 def ratio_bounds(
-    x: Union[Sequence[float], NDArray],
-    y: Union[Sequence[float], NDArray],
+    x: Sample,
+    y: Sample,
     misrate: float = DEFAULT_MISRATE,
 ) -> Bounds:
-    """
-    Provides bounds on the Ratio estimator with specified misclassification rate.
-
-    Computes bounds via log-transformation and shift_bounds delegation:
-    ratio_bounds(x, y, misrate) = exp(shift_bounds(log(x), log(y), misrate))
-
-    Assumptions:
-        positivity(x) - all values in x must be strictly positive
-        positivity(y) - all values in y must be strictly positive
+    """Provides bounds on the Ratio estimator with specified misclassification rate.
 
     Args:
-        x: First sample (must be strictly positive)
-        y: Second sample (must be strictly positive)
-        misrate: Misclassification rate (probability that true ratio falls outside bounds)
+        x: First sample (must be strictly positive).
+        y: Second sample (must be strictly positive).
+        misrate: Misclassification rate.
 
     Returns:
-        A Bounds object containing the lower and upper bounds
+        Bounds with lower, upper, and RATIO_UNIT.
 
     Raises:
-        AssumptionError: If either sample is empty, contains NaN/Inf,
-            or contains non-positive values.
-        AssumptionError: If misrate is out of range.
+        AssumptionError: If either sample is empty, contains NaN/Inf, non-positive values,
+            or misrate is out of range.
+        AssumptionError: If either sample is weighted or units are incompatible.
     """
-    x = np.asarray(x)
-    y = np.asarray(y)
-
-    check_validity(x, "x")
-    check_validity(y, "y")
+    _check_non_weighted("ratio_bounds", x)
+    _check_non_weighted("ratio_bounds", y)
+    x, y = _prepare_pair(x, y)
 
     if math.isnan(misrate) or misrate < 0 or misrate > 1:
         raise AssumptionError.domain("misrate")
 
-    min_misrate = min_achievable_misrate_two_sample(len(x), len(y))
+    min_misrate = min_achievable_misrate_two_sample(len(x.values), len(y.values))
     if misrate < min_misrate:
         raise AssumptionError.domain("misrate")
 
-    # Log-transform samples (includes positivity check)
-    log_x = log(x, "x")
-    log_y = log(y, "y")
+    log_x = x.log()
+    log_y = y.log()
 
-    # Delegate to shift_bounds in log-space
     log_bounds = shift_bounds(log_x, log_y, misrate)
 
-    # Exp-transform back to ratio-space
-    return Bounds(np.exp(log_bounds.lower), np.exp(log_bounds.upper))
+    return Bounds(np.exp(log_bounds.lower), np.exp(log_bounds.upper), RATIO_UNIT)
 
 
 def center_bounds(
-    x: Union[Sequence[float], NDArray],
+    x: Sample,
     misrate: float = DEFAULT_MISRATE,
 ) -> Bounds:
-    """
-    Provides exact bounds on the Center (Hodges-Lehmann pseudomedian) with specified misrate.
-
-    Uses SignedRankMargin to determine which pairwise averages form the bounds.
+    """Provides exact bounds on the Center with specified misrate.
 
     Args:
-        x: Sample array
-        misrate: Misclassification rate (probability that true center falls outside bounds)
+        x: Input sample.
+        misrate: Misclassification rate.
 
     Returns:
-        A Bounds object containing the lower and upper bounds
+        Bounds with lower, upper, and the sample's unit.
 
     Raises:
-        AssumptionError: If sample is empty or contains NaN/Inf.
-        AssumptionError: If misrate is below minimum achievable.
+        AssumptionError: If sample is empty or contains NaN/Inf, or misrate is below minimum.
+        AssumptionError: If sample is weighted.
     """
-    x = np.asarray(x)
-    check_validity(x, "x")
+    _check_non_weighted("center_bounds", x)
 
     if math.isnan(misrate) or misrate < 0 or misrate > 1:
         raise AssumptionError.domain("misrate")
 
-    n = len(x)
+    n = len(x.values)
 
     if n < 2:
         raise AssumptionError.domain("x")
 
-    # Validate misrate
     min_misrate = min_achievable_misrate_one_sample(n)
     if misrate < min_misrate:
         raise AssumptionError.domain("misrate")
 
-    # Total number of pairwise averages (including self-pairs)
     total_pairs = n * (n + 1) // 2
 
-    # Get signed-rank margin
     margin = signed_rank_margin(n, misrate)
     half_margin = min(margin // 2, (total_pairs - 1) // 2)
 
-    # k_left and k_right are 1-based ranks
     k_left = half_margin + 1
     k_right = total_pairs - half_margin
 
-    # Sort the input
-    sorted_x = sorted(x)
+    sorted_x = sorted(x.values)
 
     lo, hi = fast_center_quantile_bounds(sorted_x, k_left, k_right)
-    return Bounds(lo, hi)
+    return Bounds(lo, hi, x.unit)
 
 
 def spread_bounds(
-    x: Union[Sequence[float], NDArray],
+    x: Sample,
     misrate: float = DEFAULT_MISRATE,
-    seed: Union[str, None] = None,
+    seed: str | None = None,
 ) -> Bounds:
-    """
-    Provides distribution-free bounds for Spread using disjoint pairs with sign-test inversion.
+    """Provides distribution-free bounds for Spread using disjoint pairs.
 
     Args:
         x: Input sample.
-        misrate: Misclassification rate (probability that true spread falls outside bounds).
+        misrate: Misclassification rate.
         seed: Optional string seed for deterministic randomization.
 
     Returns:
-        A Bounds object containing the lower and upper bounds.
+        Bounds with lower, upper, and the sample's unit.
 
     Raises:
-        AssumptionError: If sample is empty or contains NaN/Inf.
-        AssumptionError: If misrate is out of range or below minimum achievable.
-        AssumptionError: If sample is tie-dominant.
+        AssumptionError: If sample is empty, contains NaN/Inf, misrate out of range, or tie-dominant.
+        AssumptionError: If sample is weighted.
     """
-    x = np.asarray(x)
-    check_validity(x, "x")
+    _check_non_weighted("spread_bounds", x)
 
     if math.isnan(misrate) or misrate < 0 or misrate > 1:
         raise AssumptionError.domain("misrate")
 
-    n = len(x)
+    n = len(x.values)
     m = n // 2
     min_misrate_val = min_achievable_misrate_one_sample(m)
     if misrate < min_misrate_val:
@@ -482,7 +373,7 @@ def spread_bounds(
 
     if n < 2:
         raise AssumptionError.sparity("x")
-    if _fast_spread(x) <= 0:
+    if _fast_spread(x.values) <= 0:
         raise AssumptionError.sparity("x")
 
     rng = Rng(seed) if seed is not None else Rng()
@@ -496,20 +387,18 @@ def spread_bounds(
 
     indices = list(range(n))
     shuffled = rng.shuffle(indices)
-    diffs = sorted(abs(float(x[shuffled[2 * i]]) - float(x[shuffled[2 * i + 1]])) for i in range(m))
+    diffs = sorted(abs(float(x.values[shuffled[2 * i]]) - float(x.values[shuffled[2 * i + 1]])) for i in range(m))
 
-    return Bounds(diffs[k_left - 1], diffs[k_right - 1])
+    return Bounds(diffs[k_left - 1], diffs[k_right - 1], x.unit)
 
 
 def disparity_bounds(
-    x: Union[Sequence[float], NDArray],
-    y: Union[Sequence[float], NDArray],
+    x: Sample,
+    y: Sample,
     misrate: float = DEFAULT_MISRATE,
-    seed: Union[str, None] = None,
+    seed: str | None = None,
 ) -> Bounds:
-    """
-    Provides distribution-free bounds for the Disparity estimator (Shift / AvgSpread)
-    using Bonferroni combination of ShiftBounds and AvgSpreadBounds.
+    """Provides distribution-free bounds for the Disparity estimator.
 
     Args:
         x: First input sample.
@@ -518,23 +407,21 @@ def disparity_bounds(
         seed: Optional string seed for deterministic randomization.
 
     Returns:
-        A Bounds object containing the lower and upper bounds.
+        Bounds with lower, upper, and DISPARITY_UNIT.
 
     Raises:
-        AssumptionError: If inputs are invalid, misrate is out of range, or samples are tie-dominant.
+        AssumptionError: If inputs are invalid, misrate out of range, or samples are tie-dominant.
+        AssumptionError: If either sample is weighted or units are incompatible.
     """
-    x = np.asarray(x)
-    y = np.asarray(y)
-
-    # Check validity (priority 0)
-    check_validity(x, "x")
-    check_validity(y, "y")
+    _check_non_weighted("disparity_bounds", x)
+    _check_non_weighted("disparity_bounds", y)
+    x, y = _prepare_pair(x, y)
 
     if math.isnan(misrate) or misrate < 0 or misrate > 1:
         raise AssumptionError.domain("misrate")
 
-    n = len(x)
-    m = len(y)
+    n = len(x.values)
+    m = len(y.values)
     if n < 2:
         raise AssumptionError.domain("x")
     if m < 2:
@@ -552,9 +439,9 @@ def disparity_bounds(
     alpha_shift = min_shift + extra / 2.0
     alpha_avg = min_avg + extra / 2.0
 
-    if _fast_spread(x) <= 0:
+    if _fast_spread(x.values) <= 0:
         raise AssumptionError.sparity("x")
-    if _fast_spread(y) <= 0:
+    if _fast_spread(y.values) <= 0:
         raise AssumptionError.sparity("y")
 
     sb = shift_bounds(x, y, alpha_shift)
@@ -565,70 +452,69 @@ def disparity_bounds(
     ls = sb.lower
     us = sb.upper
 
+    unit = DISPARITY_UNIT
+
     if la > 0.0:
         r1 = ls / la
         r2 = ls / ua
         r3 = us / la
         r4 = us / ua
-        return Bounds(min(r1, r2, r3, r4), max(r1, r2, r3, r4))
+        return Bounds(min(r1, r2, r3, r4), max(r1, r2, r3, r4), unit)
 
     if ua <= 0.0:
         if ls == 0.0 and us == 0.0:
-            return Bounds(0.0, 0.0)
+            return Bounds(0.0, 0.0, unit)
         if ls >= 0.0:
-            return Bounds(0.0, math.inf)
+            return Bounds(0.0, math.inf, unit)
         if us <= 0.0:
-            return Bounds(-math.inf, 0.0)
-        return Bounds(-math.inf, math.inf)
+            return Bounds(-math.inf, 0.0, unit)
+        return Bounds(-math.inf, math.inf, unit)
 
     # Default: ua > 0 and la <= 0
     if ls > 0.0:
-        return Bounds(ls / ua, math.inf)
+        return Bounds(ls / ua, math.inf, unit)
     if us < 0.0:
-        return Bounds(-math.inf, us / ua)
+        return Bounds(-math.inf, us / ua, unit)
     if ls == 0.0 and us == 0.0:
-        return Bounds(0.0, 0.0)
+        return Bounds(0.0, 0.0, unit)
     if ls == 0.0 and us > 0.0:
-        return Bounds(0.0, math.inf)
+        return Bounds(0.0, math.inf, unit)
     if ls < 0.0 and us == 0.0:
-        return Bounds(-math.inf, 0.0)
+        return Bounds(-math.inf, 0.0, unit)
 
-    return Bounds(-math.inf, math.inf)
+    return Bounds(-math.inf, math.inf, unit)
 
 
 def _avg_spread_bounds(
-    x: Union[Sequence[float], NDArray],
-    y: Union[Sequence[float], NDArray],
+    x: Sample,
+    y: Sample,
     misrate: float = DEFAULT_MISRATE,
-    seed: Union[str, None] = None,
+    seed: str | None = None,
 ) -> Bounds:
-    """
-    Provides distribution-free bounds for AvgSpread using Bonferroni combination.
+    """Provides distribution-free bounds for AvgSpread using Bonferroni combination.
 
     Args:
         x: First input sample.
         y: Second input sample.
-        misrate: Misclassification rate (probability that true avg_spread falls outside bounds).
+        misrate: Misclassification rate.
         seed: Optional string seed for deterministic randomization.
 
     Returns:
-        A Bounds object containing the lower and upper bounds.
+        Bounds with lower, upper, and the finer unit.
 
     Raises:
-        AssumptionError: If sample is empty or contains NaN/Inf.
-        AssumptionError: If misrate is out of range or below minimum achievable.
-        AssumptionError: If either sample is tie-dominant.
+        AssumptionError: If sample is empty, contains NaN/Inf, misrate out of range, or tie-dominant.
+        AssumptionError: If either sample is weighted or units are incompatible.
     """
-    x = np.asarray(x)
-    y = np.asarray(y)
-    check_validity(x, "x")
-    check_validity(y, "y")
+    _check_non_weighted("avg_spread_bounds", x)
+    _check_non_weighted("avg_spread_bounds", y)
+    x, y = _prepare_pair(x, y)
 
     if math.isnan(misrate) or misrate < 0 or misrate > 1:
         raise AssumptionError.domain("misrate")
 
-    n = len(x)
-    m = len(y)
+    n = len(x.values)
+    m = len(y.values)
     if n < 2:
         raise AssumptionError.domain("x")
     if m < 2:
@@ -640,9 +526,9 @@ def _avg_spread_bounds(
     if alpha < min_x or alpha < min_y:
         raise AssumptionError.domain("misrate")
 
-    if _fast_spread(x) <= 0:
+    if _fast_spread(x.values) <= 0:
         raise AssumptionError.sparity("x")
-    if _fast_spread(y) <= 0:
+    if _fast_spread(y.values) <= 0:
         raise AssumptionError.sparity("y")
 
     bounds_x = spread_bounds(x, alpha, seed=seed)
@@ -654,4 +540,5 @@ def _avg_spread_bounds(
     return Bounds(
         weight_x * bounds_x.lower + weight_y * bounds_y.lower,
         weight_x * bounds_x.upper + weight_y * bounds_y.upper,
+        x.unit,
     )

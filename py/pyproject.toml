@@ -88,5 +88,6 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
+"pragmastat/estimators.py" = ["SLF001"]  # Cross-module private access for package-internal _with_subject
 "tests/*" = ["ANN", "D", "S101", "PLR2004"]
 "examples/*" = ["ANN", "D", "T201", "INP001"]
