@@ -35,7 +35,7 @@ pragmastat/
 
 ## Architecture
 
-**Version flow:** `manual/definitions.typ` → `mise run docs:sync` → all language manifests
+**Version flow:** `VERSION` → `mise run docs:sync` → `manual/version.typ` + all language manifests
 
 **Content flow:** `manual/*.typ` → `typst` → `manual/pragmastat.pdf` and `tools/` → `web/` (Astro)
 
@@ -50,6 +50,8 @@ All implementations expose:
 **Two-sample estimators:** `shift`, `ratio`, `disparity`
 
 **Bounds estimators:** `shiftBounds`, `ratioBounds`, `centerBounds`, `spreadBounds`, `disparityBounds`
+
+**Internal/auxiliary estimators:** `avgSpread`, `avgSpreadBounds`, `pairwiseMargin`, `signedRankMargin`, `signMargin`
 
 **Randomization:** `Rng`, `sample`, `shuffle`, `resample`
 
