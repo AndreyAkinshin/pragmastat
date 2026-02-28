@@ -57,7 +57,6 @@ ts/
 ```typescript
 function center(x: number[]): number
 function spread(x: number[]): number
-function relSpread(x: number[]): number  // Deprecated
 function shift(x: number[], y: number[]): number
 function ratio(x: number[], y: number[]): number
 function disparity(x: number[], y: number[]): number
@@ -112,7 +111,6 @@ Error conditions:
 - `misrate` outside valid range (`domain`)
 - Non-positive values for `ratio` (`positivity`)
 - Tie-dominant sample (`sparity`)
-- `relSpread` is deprecated; use `spread(x) / Math.abs(center(x))` instead
 
 ## Determinism
 

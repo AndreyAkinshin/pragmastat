@@ -26,7 +26,6 @@ r/pragmastat/
 │   ├── center_bounds.R          # Center confidence bounds
 │   ├── spread.R                 # Spread estimator
 │   ├── spread_bounds.R          # Spread confidence bounds
-│   ├── rel_spread.R             # Relative spread
 │   ├── shift.R                  # Shift estimator
 │   ├── shift_bounds.R           # Shift confidence bounds
 │   ├── ratio.R                  # Ratio estimator
@@ -74,7 +73,6 @@ r/pragmastat/
 ```r
 center(x)                              # Hodges-Lehmann estimator
 spread(x)                              # Shamos estimator
-rel_spread(x)                          # Spread / |Center| [DEPRECATED]
 shift(x, y)                            # Median of pairwise differences
 ratio(x, y)                            # Geometric median of pairwise ratios
 disparity(x, y)                        # Shift / AvgSpread
@@ -84,10 +82,6 @@ disparity_bounds(x, y, misrate = 1e-3, seed = NULL) # Confidence bounds on dispa
 center_bounds(x, misrate = 1e-3)       # Confidence bounds on center
 spread_bounds(x, misrate = 1e-3, seed = NULL)       # Confidence bounds on spread
 ```
-
-## Deprecated Functions
-
-- `rel_spread(x)` is deprecated. Use `spread(x) / abs(center(x))` instead.
 
 ## Testing
 

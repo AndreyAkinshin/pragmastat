@@ -94,7 +94,6 @@ Error conditions:
 - Invalid `misrate` (`Domain`)
 - Non-positive values for `ratio` (`Positivity`)
 - Tie-dominant sample (`Sparity`)
-- `rel_spread` is deprecated; use `spread(x) / center(x).abs()` instead
 
 ## Determinism
 

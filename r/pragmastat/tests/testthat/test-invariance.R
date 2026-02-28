@@ -57,12 +57,6 @@ test_that("invariance tests work correctly", {
     function(x) spread(x)
   )
 
-  # RelSpread tests
-  perform_test_one(
-    function(x) rel_spread(2 * x),
-    function(x) rel_spread(x)
-  )
-
   # Shift tests
   perform_test_two(
     function(x, y) shift(x + 3, y + 2),

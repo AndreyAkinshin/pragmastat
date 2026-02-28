@@ -74,7 +74,6 @@ All estimator functions accept `Sample` objects and return `Measurement` or `Bou
 ```python
 def center(x: Sample) -> Measurement
 def spread(x: Sample) -> Measurement
-def rel_spread(x: Sample) -> Measurement  # Deprecated
 def shift(x: Sample, y: Sample) -> Measurement
 def ratio(x: Sample, y: Sample) -> Measurement
 def disparity(x: Sample, y: Sample) -> Measurement
@@ -150,7 +149,6 @@ Error conditions:
 - `misrate` outside valid range (`domain`)
 - Non-positive values for `ratio` (`positivity`)
 - Tie-dominant sample (`sparity`)
-- `rel_spread` is deprecated; use `spread(x).value / abs(center(x).value)` instead
 
 ## Determinism
 

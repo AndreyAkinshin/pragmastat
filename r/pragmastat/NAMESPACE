@@ -1,6 +1,5 @@
 export(center)
 export(spread)
-export(rel_spread)
 export(shift)
 export(ratio)
 export(disparity)

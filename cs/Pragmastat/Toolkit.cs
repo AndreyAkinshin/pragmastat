@@ -11,9 +11,6 @@ public static class Toolkit
   public static Measurement Center(Sample x) => CenterEstimator.Instance.Estimate(x);
   /// <summary>Estimates data dispersion using the Shamos estimator.</summary>
   public static Measurement Spread(Sample x) => SpreadEstimator.Instance.Estimate(x);
-  /// <summary>Measures relative dispersion as spread divided by absolute center.</summary>
-  [Obsolete("Use Spread(x) / Math.Abs(Center(x)) instead.")]
-  public static Measurement RelSpread(Sample x) => RelSpreadEstimator.Instance.Estimate(x);
 
   /// <summary>Measures the typical difference between two samples using the Hodges-Lehmann shift estimator.</summary>
   public static Measurement Shift(Sample x, Sample y) => ShiftEstimator.Instance.Estimate(x, y);

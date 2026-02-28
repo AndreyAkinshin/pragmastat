@@ -47,19 +47,6 @@ fn spread_infinite_input() {
 }
 
 #[test]
-#[allow(deprecated)]
-fn rel_spread_empty_input() {
-    assert!(raw::rel_spread(&[]).is_err());
-}
-
-#[test]
-#[allow(deprecated)]
-fn rel_spread_zero_center() {
-    // Values centered around zero: spread/|center| is undefined
-    assert!(raw::rel_spread(&[-1.0, 0.0, 1.0]).is_err());
-}
-
-#[test]
 fn shift_empty_x() {
     assert!(raw::shift(&[], &[1.0, 2.0]).is_err());
 }

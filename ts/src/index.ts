@@ -18,7 +18,6 @@ export {
   DEFAULT_MISRATE,
   center,
   spread,
-  relSpread,
   shift,
   ratio,
   disparity,

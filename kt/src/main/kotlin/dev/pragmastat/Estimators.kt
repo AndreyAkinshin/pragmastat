@@ -38,29 +38,6 @@ internal fun spread(x: List<Double>): Double {
 }
 
 /**
- * Measures the relative dispersion of a sample (RelSpread)
- *
- * Calculates the ratio of Spread to absolute Center.
- * Robust alternative to the coefficient of variation.
- *
- * Assumptions:
- *   - positivity(x) - all values must be strictly positive (ensures Center > 0)
- */
-@Deprecated("Use spread(x) / abs(center(x)) instead.", ReplaceWith("spread(x) / abs(center(x))"))
-internal fun relSpread(x: List<Double>): Double {
-    // Check validity (priority 0)
-    checkValidity(x, Subject.X)
-    // Check positivity (priority 1)
-    checkPositivity(x, Subject.X)
-
-    val centerVal = fastCenter(x)
-    // Calculate spread (using internal implementation since we already validated)
-    val spreadVal = fastSpread(x)
-    // center is guaranteed positive because all values are positive
-    return spreadVal / abs(centerVal)
-}
-
-/**
  * Measures the typical difference between elements of x and y (Shift)
  *
  * Calculates the median of all pairwise differences (x[i] - y[j]).

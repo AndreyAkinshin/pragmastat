@@ -103,12 +103,10 @@ class ReferenceTest {
 
     @TestFactory
     fun testOneSampleEstimators(): List<DynamicTest> {
-        @Suppress("DEPRECATION")
         val estimators =
             mapOf<String, (List<Double>) -> Double>(
                 "center" to { x -> center(Sample.of(x)).value },
                 "spread" to { x -> spread(Sample.of(x)).value },
-                "rel-spread" to ::relSpread,
             )
 
         val tests = mutableListOf<DynamicTest>()

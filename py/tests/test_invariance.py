@@ -1,6 +1,6 @@
 import pytest
 
-from pragmastat import Rng, Sample, center, disparity, ratio, rel_spread, shift, spread
+from pragmastat import Rng, Sample, center, disparity, ratio, shift, spread
 from pragmastat.estimators import _avg_spread as avg_spread
 
 
@@ -45,14 +45,6 @@ class TestInvariance:
 
     def test_spread_negate(self):
         self.perform_test_one(lambda x: spread(-1 * x).value, lambda x: spread(x).value)
-
-    # RelSpread tests
-    def test_rel_spread_scale(self):
-        import warnings
-
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", DeprecationWarning)
-            self.perform_test_one(lambda x: rel_spread(2 * x).value, lambda x: rel_spread(x).value)
 
     # Shift tests
     def test_shift_shift(self):

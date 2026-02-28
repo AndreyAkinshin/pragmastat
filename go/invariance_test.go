@@ -145,15 +145,6 @@ func TestSpreadNegate(t *testing.T) {
 	)
 }
 
-// RelSpread invariance tests
-
-func TestRelSpreadScale(t *testing.T) {
-	performTestOne(t,
-		func(x []float64) float64 { return mustVal(RelSpread(mustSampleOf(mulScalar(x, 2)))) },
-		func(x []float64) float64 { return mustVal(RelSpread(mustSampleOf(x))) },
-	)
-}
-
 // Shift invariance tests
 
 func TestShiftShift(t *testing.T) {

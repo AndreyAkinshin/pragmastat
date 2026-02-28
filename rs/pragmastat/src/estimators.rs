@@ -9,7 +9,7 @@ use crate::assumptions::{
 };
 use crate::bounds::Bounds;
 use crate::measurement::Measurement;
-use crate::measurement_unit::{DisparityUnit, NumberUnit, RatioUnit};
+use crate::measurement_unit::{DisparityUnit, RatioUnit};
 use crate::sample::{check_non_weighted, prepare_pair, Sample};
 
 /// Default misclassification rate for bounds estimators.
@@ -44,15 +44,6 @@ pub mod raw {
             return Err(EstimatorError::from(AssumptionError::sparity(Subject::X)));
         }
         Ok(spread_val)
-    }
-
-    #[deprecated(since = "10.0.0", note = "use spread(x) / center(x).abs() instead")]
-    pub fn rel_spread(x: &[f64]) -> Result<f64, EstimatorError> {
-        check_validity(x, Subject::X)?;
-        check_positivity(x, Subject::X)?;
-        let center_val = crate::fast_center::fast_center(x).map_err(EstimatorError::from)?;
-        let spread_val = crate::fast_spread::fast_spread(x).map_err(EstimatorError::from)?;
-        Ok(spread_val / center_val.abs())
     }
 
     pub fn shift(x: &[f64], y: &[f64]) -> Result<f64, EstimatorError> {
@@ -514,30 +505,6 @@ pub fn spread(x: &Sample) -> Result<Measurement, EstimatorError> {
         return Err(EstimatorError::from(AssumptionError::sparity(x.subject())));
     }
     Ok(Measurement::new(spread_val, x.unit().clone_box()))
-}
-
-/// Measures the relative dispersion of a sample (rel_spread).
-///
-/// Deprecated: use `spread(x).value / center(x).value.abs()` instead.
-#[deprecated(
-    since = "10.0.0",
-    note = "use spread(x).value / center(x).value.abs() instead"
-)]
-pub fn rel_spread(x: &Sample) -> Result<Measurement, EstimatorError> {
-    check_non_weighted("x", x)?;
-    for &v in x.values() {
-        if v <= 0.0 {
-            return Err(EstimatorError::from(AssumptionError::positivity(
-                x.subject(),
-            )));
-        }
-    }
-    let center_val = crate::fast_center::fast_center(x.values()).map_err(EstimatorError::from)?;
-    let spread_val = crate::fast_spread::fast_spread(x.values()).map_err(EstimatorError::from)?;
-    Ok(Measurement::new(
-        spread_val / center_val.abs(),
-        Box::new(NumberUnit),
-    ))
 }
 
 /// Measures the typical difference between elements of x and y (shift).

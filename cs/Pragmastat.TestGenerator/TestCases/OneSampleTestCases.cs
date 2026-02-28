@@ -1,4 +1,3 @@
-#pragma warning disable CS0618
 using Pragmastat.Estimators;
 using Pragmastat.TestGenerator.Framework.OneSample;
 using Spectre.Console;
@@ -87,25 +86,6 @@ public static class OneSampleTestCases
         .AddUnsortedPattern("duplicates-unsorted-10", new Sample(2, 3, 1, 3, 2, 1, 2, 3, 1, 3))  // Duplicates mixed
         .AddUnsortedShuffle("extreme-wide-unsorted-5", 1000, 0.001, 1000000, 100, 1));  // Wide range unsorted
 
-    // RelSpread: 18 test cases (requires positivity: all values > 0)
-    GenerateTests("rel-spread", input => RelSpreadEstimator.Instance.Estimate(input.ToSample()),
-      new OneSampleInputBuilder()
-        // Demo examples (n = 5) - 2 tests (positive only)
-        .Add("demo-1", new Sample(1, 3, 5, 7, 9))
-        .Add("demo-2", new Sample(5, 15, 25, 35, 45))
-        // Natural sequences (n = 2, 3, 4) - 3 tests (n=1 excluded: spread=0)
-        .AddNatural([2, 3, 4])
-        // Note: Negative values excluded (violates positivity)
-        // Uniform distribution (n = 5, 10, 20, 30, 100) - 5 tests
-        .AddUniform([5, 10, 20, 30, 100], count: 1)
-        // Composite estimator stress tests - 3 tests
-        .Add("composite-small-center", new Sample(0.001, 0.002, 0.003, 0.004, 0.005))
-        .Add("composite-large-spread", new Sample(1, 100, 200, 300, 1000))
-        .Add("composite-extreme-ratio", new Sample(1, 1.0001, 1.0002, 1.0003, 1.0004))
-        // Unsorted tests - 5 tests (excluded: negative and zero values)
-        .AddUnsortedReverse([3, 4, 5])  // 3 tests: reverse sorted
-        .AddUnsortedPattern("composite-small-unsorted", new Sample(0.005, 0.001, 0.003, 0.002, 0.004))  // Small center unsorted
-        .AddUnsortedPattern("composite-large-unsorted", new Sample(1000, 1, 300, 100, 200)));  // Large spread unsorted
   }
 
   private static void GenerateTests(string suiteName, Func<OneSampleInput, double> estimate,

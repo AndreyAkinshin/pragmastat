@@ -1,7 +1,6 @@
 import {
   center,
   spread,
-  relSpread,
   shift,
   ratio,
   _avgSpread as avgSpread,
@@ -90,16 +89,6 @@ describe('Invariance Tests', () => {
       performTestOne(
         (x) => spread(Sample.of(mulScalar(x, -1))).value,
         (x) => spread(Sample.of(x)).value,
-      );
-    });
-  });
-
-  // RelSpread invariance tests
-  describe('relSpread', () => {
-    it('should be scale invariant', () => {
-      performTestOne(
-        (x) => relSpread(Sample.of(mulScalar(x, 2))).value,
-        (x) => relSpread(Sample.of(x)).value,
       );
     });
   });

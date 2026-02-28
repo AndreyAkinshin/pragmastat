@@ -45,7 +45,7 @@ pragmastat/
 
 All implementations expose:
 
-**One-sample estimators:** `center`, `spread`, `relSpread` (deprecated)
+**One-sample estimators:** `center`, `spread`
 
 **Two-sample estimators:** `shift`, `ratio`, `disparity`
 

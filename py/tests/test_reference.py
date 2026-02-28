@@ -20,7 +20,6 @@ from pragmastat import (
     disparity,
     ratio,
     ratio_bounds,
-    rel_spread,
     shift,
     shift_bounds,
     spread,
@@ -153,13 +152,6 @@ class TestReference:
 
     def test_spread_reference(self):
         run_reference_tests("spread", spread)
-
-    def test_rel_spread_reference(self):
-        import warnings
-
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", DeprecationWarning)
-            run_reference_tests("rel-spread", rel_spread)
 
     def test_shift_reference(self):
         run_reference_tests("shift", shift, is_two_sample=True)

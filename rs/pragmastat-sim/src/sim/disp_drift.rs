@@ -117,13 +117,17 @@ impl Simulation for DispDriftSim {
             progress((i + 1) as f64 / input.sample_count as f64);
         }
 
-        // Compute drift: sqrt(n) * rel_spread(sampling)
+        // Compute drift: sqrt(n) * spread(sampling) / |center(sampling)|
         let n = input.sample_size as f64;
         let mut drifts = IndexMap::new();
 
         for name in &input.estimator_names {
             let values = &sampling[name];
-            let rs = pragmastat::rel_spread(values).map_err(|e| SimError(format!("{e}")))?;
+            let s = pragmastat::estimators::raw::spread(values)
+                .map_err(|e| SimError(format!("{e}")))?;
+            let c = pragmastat::estimators::raw::center(values)
+                .map_err(|e| SimError(format!("{e}")))?;
+            let rs = s / c.abs();
             drifts.insert(name.clone(), n.sqrt() * rs);
         }
 

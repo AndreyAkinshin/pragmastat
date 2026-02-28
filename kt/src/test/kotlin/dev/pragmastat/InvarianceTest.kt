@@ -70,18 +70,6 @@ class InvarianceTest {
         }
     }
 
-    @Suppress("DEPRECATION")
-    @Test
-    fun testRelSpreadScaleInvariance() {
-        val rng = Rng(1729)
-        for (n in sampleSizes) {
-            val x = uniformVec(rng, n)
-            val scale = 2.5
-            val xScaled = x.map { it * scale }
-            assertClose(relSpread(x), relSpread(xScaled))
-        }
-    }
-
     @Test
     fun testShiftLocationInvariance() {
         val rng = Rng(1729)

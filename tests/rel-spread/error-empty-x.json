@@ -1,9 +1,0 @@
-{
-  "input": {
-    "x": []
-  },
-  "expected_error": {
-    "id": "validity",
-    "subject": "x"
-  }
-}

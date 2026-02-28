@@ -83,16 +83,6 @@ public class EstimatorInvarianceTests
     PerformTestOne(x => Toolkit.Spread(x * -1), x => Toolkit.Spread(x));
   }
 
-  // RelSpread tests
-
-  [Fact]
-#pragma warning disable CS0618 // Obsolete
-  public void RelSpreadScale()
-  {
-    PerformTestOne(x => Toolkit.RelSpread(x * 2), x => Toolkit.RelSpread(x));
-  }
-#pragma warning restore CS0618
-
   // Shift tests
 
   [Fact]

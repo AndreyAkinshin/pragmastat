@@ -56,7 +56,6 @@ go/
 // Point estimators (generic over Number constraint)
 func Center[T Number](x []T) (float64, error)
 func Spread[T Number](x []T) (float64, error)
-func RelSpread[T Number](x []T) (float64, error)  // Deprecated
 func Shift[T Number](x, y []T) (float64, error)
 func Ratio[T Number](x, y []T) (float64, error)
 func Disparity[T Number](x, y []T) (float64, error)

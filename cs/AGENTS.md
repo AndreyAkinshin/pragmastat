@@ -68,10 +68,6 @@ Toolkit.RatioBounds(x, y, misrate)
 Toolkit.DisparityBounds(x, y, misrate)
 ```
 
-## Obsolete API
-
-- `RelSpread` (class, extension method, and static method) is obsolete. Use `Spread(x) / Math.Abs(Center(x))` instead.
-
 ## Testing
 
 - **Reference tests**: Load JSON fixtures from `../tests/` directory via TestGenerator

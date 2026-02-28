@@ -68,9 +68,8 @@ func mustSample(t *testing.T, values []float64) *Sample {
 func TestReferenceData(t *testing.T) {
 	// Map estimator names to functions
 	oneSampleEstimators := map[string]func(*Sample) (Measurement, error){
-		"center":     Center,
-		"spread":     Spread,
-		"rel-spread": RelSpread,
+		"center": Center,
+		"spread": Spread,
 	}
 
 	twoSampleEstimators := map[string]func(*Sample, *Sample) (Measurement, error){

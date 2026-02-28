@@ -13,7 +13,6 @@ tests/
 ├── center-bounds/       # CenterBounds estimator tests
 ├── spread/              # Spread estimator tests
 ├── spread-bounds/       # SpreadBounds estimator tests
-├── rel-spread/          # RelSpread estimator tests
 │
 │   # Two-Sample Estimators
 ├── shift/               # Shift estimator tests
@@ -50,7 +49,7 @@ Each test file is a JSON object with `input` and `output` fields:
 }
 ```
 
-### One-sample estimators (center, spread, rel-spread)
+### One-sample estimators (center, spread)
 
 ```json
 {

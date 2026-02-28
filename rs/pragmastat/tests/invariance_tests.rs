@@ -113,17 +113,6 @@ mod invariance_tests {
         );
     }
 
-    // RelSpread invariance tests
-
-    #[test]
-    #[allow(deprecated)]
-    fn rel_spread_scale() {
-        perform_test_one(
-            |x| raw::rel_spread(&vec_mul_scalar(x, 2.0)).unwrap(),
-            |x| raw::rel_spread(x).unwrap(),
-        );
-    }
-
     // Shift invariance tests
 
     #[test]

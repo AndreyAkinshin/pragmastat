@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import math
-import warnings
 
 import numpy as np
 
@@ -12,7 +11,7 @@ from .fast_center import _fast_center
 from .fast_shift import _fast_shift
 from .fast_spread import _fast_spread
 from .measurement import Measurement
-from .measurement_unit import DISPARITY_UNIT, NUMBER_UNIT, RATIO_UNIT
+from .measurement_unit import DISPARITY_UNIT, RATIO_UNIT
 from .min_misrate import (
     min_achievable_misrate_one_sample,
     min_achievable_misrate_two_sample,
@@ -62,34 +61,6 @@ def spread(x: Sample) -> Measurement:
     if spread_val <= 0:
         raise AssumptionError.sparity("x")
     return Measurement(spread_val, x.unit)
-
-
-def rel_spread(x: Sample) -> Measurement:
-    """Measure relative dispersion of a sample.
-
-    .. deprecated::
-        Use ``spread(x).value / abs(center(x).value)`` instead.
-
-    Args:
-        x: Input sample.
-
-    Returns:
-        Measurement with the relative spread and NumberUnit.
-
-    Raises:
-        AssumptionError: If sample is empty, contains NaN/Inf, or contains non-positive values.
-        AssumptionError: If sample is weighted.
-    """
-    warnings.warn(
-        "rel_spread is deprecated. Use spread(x).value / abs(center(x).value) instead.",
-        DeprecationWarning,
-        stacklevel=2,
-    )
-    _check_non_weighted("rel_spread", x)
-    check_positivity(x.values, "x")
-    center_val = _fast_center(x.values)
-    spread_val = _fast_spread(x.values)
-    return Measurement(spread_val / abs(center_val), NUMBER_UNIT)
 
 
 def shift(x: Sample, y: Sample) -> Measurement:

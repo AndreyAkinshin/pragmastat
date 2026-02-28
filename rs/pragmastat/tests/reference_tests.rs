@@ -290,12 +290,6 @@ fn test_spread() {
 }
 
 #[test]
-#[allow(deprecated)]
-fn test_rel_spread() {
-    run_one_sample_tests("rel-spread", raw::rel_spread);
-}
-
-#[test]
 fn test_shift() {
     run_two_sample_tests("shift", raw::shift);
 }

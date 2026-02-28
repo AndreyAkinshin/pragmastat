@@ -66,29 +66,6 @@ export function spread(x: Sample): Measurement {
 }
 
 /**
- * Calculate the RelSpread - ratio of Spread to absolute Center
- *
- * @deprecated Use `spread(x).value / Math.abs(center(x).value)` instead.
- *
- * @param x Sample
- * @returns The relative spread measurement
- * @throws AssumptionError if sample contains non-positive values
- */
-export function relSpread(x: Sample): Measurement {
-  checkNonWeighted('x', x);
-  const vals = [...x.values];
-  // Check positivity
-  for (const v of vals) {
-    if (v <= 0) {
-      throw AssumptionError.positivity('x');
-    }
-  }
-  const c = fastCenter(vals);
-  const s = fastSpread(vals);
-  return new Measurement(s / Math.abs(c), MeasurementUnit.NUMBER);
-}
-
-/**
  * Calculate the Shift - median of all pairwise differences (x[i] - y[j])
  * Uses fast O((m + n) * log(precision)) algorithm.
  * @param x First sample

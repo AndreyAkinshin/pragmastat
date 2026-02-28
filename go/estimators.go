@@ -67,33 +67,6 @@ func Spread(x *Sample) (Measurement, error) {
 	return NewMeasurement(spreadVal, x.Unit), nil
 }
 
-// RelSpread measures the relative dispersion of a sample.
-// Calculates the ratio of Spread to absolute Center.
-//
-// Deprecated: Use Spread(x).Value / math.Abs(Center(x).Value) instead.
-//
-// Assumptions:
-//   - positivity(x) - all values must be strictly positive
-func RelSpread(x *Sample) (Measurement, error) {
-	if err := checkNonWeighted("x", x); err != nil {
-		return Measurement{}, err
-	}
-	for _, v := range x.Values {
-		if v <= 0 {
-			return Measurement{}, NewPositivityError(x.subject)
-		}
-	}
-	centerVal, err := fastCenter(x.Values)
-	if err != nil {
-		return Measurement{}, err
-	}
-	spreadVal, err := fastSpread(x.Values)
-	if err != nil {
-		return Measurement{}, err
-	}
-	return NewMeasurement(spreadVal/math.Abs(centerVal), NumberUnit), nil
-}
-
 // Shift measures the typical difference between elements of x and y.
 // Calculates the median of all pairwise differences (x[i] - y[j]).
 func Shift(x, y *Sample) (Measurement, error) {

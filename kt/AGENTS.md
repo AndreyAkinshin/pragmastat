@@ -57,7 +57,6 @@ kt/
 ```kotlin
 fun center(x: List<Double>): Double
 fun spread(x: List<Double>): Double
-fun relSpread(x: List<Double>): Double  // deprecated: use spread(x) / abs(center(x))
 fun shift(x: List<Double>, y: List<Double>): Double
 fun ratio(x: List<Double>, y: List<Double>): Double
 fun disparity(x: List<Double>, y: List<Double>): Double

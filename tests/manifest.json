@@ -93,13 +93,6 @@
       "description": "SpreadBounds confidence interval tests",
       "languages": ["cs", "go", "kt", "py", "r", "rs", "ts"]
     },
-    "rel-spread": {
-      "directory": "rel-spread",
-      "generator": "cs/Pragmastat.TestGenerator",
-      "pattern": "*.json",
-      "description": "Relative spread estimator tests",
-      "languages": ["cs", "go", "kt", "py", "r", "rs", "ts"]
-    },
     "shift": {
       "directory": "shift",
       "generator": "cs/Pragmastat.TestGenerator",

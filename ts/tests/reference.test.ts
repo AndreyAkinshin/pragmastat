@@ -3,7 +3,6 @@ import * as path from 'path';
 import {
   center,
   spread,
-  relSpread,
   shift,
   ratio,
   _avgSpread as avgSpread,
@@ -54,7 +53,6 @@ describe('Reference Tests', () => {
   const oneSampleEstimators: Record<string, OneSampleEstimator> = {
     center,
     spread,
-    'rel-spread': relSpread,
   };
 
   const twoSampleEstimators: Record<string, TwoSampleEstimator> = {

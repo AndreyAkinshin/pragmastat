@@ -47,8 +47,6 @@ mod signed_rank_margin_tests;
 pub use assumptions::{AssumptionError, AssumptionId, EstimatorError, Subject, Violation};
 pub use bounds::Bounds;
 pub use distributions::{Additive, Distribution, Exp, Multiplic, Power, Uniform};
-#[allow(deprecated)]
-pub use estimators::rel_spread;
 pub use estimators::{
     center, center_bounds, disparity, disparity_bounds, disparity_bounds_with_seed, ratio,
     ratio_bounds, shift, shift_bounds, spread, spread_bounds, spread_bounds_with_seed,
