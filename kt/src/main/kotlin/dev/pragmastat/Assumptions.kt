@@ -20,9 +20,17 @@ data class Violation(
     override fun toString(): String = "${id.id}(${subject.id})"
 }
 
-class AssumptionException(
-    val violation: Violation,
-) : IllegalArgumentException(violation.toString())
+class AssumptionException : IllegalArgumentException {
+    val violation: Violation?
+
+    constructor(violation: Violation) : super(violation.toString()) {
+        this.violation = violation
+    }
+
+    constructor(message: String) : super(message) {
+        this.violation = null
+    }
+}
 
 internal fun checkValidity(
     values: List<Double>,

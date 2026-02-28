@@ -135,14 +135,14 @@ class ReferenceTest {
                                 }
                             assertEquals(
                                 testData.expectedError["id"],
-                                exception.violation.id.id,
-                                "Expected error id ${testData.expectedError["id"]}, got ${exception.violation.id.id}",
+                                exception.violation!!.id.id,
+                                "Expected error id ${testData.expectedError["id"]}, got ${exception.violation!!.id.id}",
                             )
                             if (testData.expectedError.containsKey("subject")) {
                                 assertEquals(
                                     testData.expectedError["subject"],
-                                    exception.violation.subject.id,
-                                    "Expected error subject ${testData.expectedError["subject"]}, got ${exception.violation.subject.id}",
+                                    exception.violation!!.subject.id,
+                                    "Expected error subject ${testData.expectedError["subject"]}, got ${exception.violation!!.subject.id}",
                                 )
                             }
                             return@dynamicTest
@@ -195,14 +195,14 @@ class ReferenceTest {
                                 }
                             assertEquals(
                                 testData.expectedError["id"],
-                                exception.violation.id.id,
-                                "Expected error id ${testData.expectedError["id"]}, got ${exception.violation.id.id}",
+                                exception.violation!!.id.id,
+                                "Expected error id ${testData.expectedError["id"]}, got ${exception.violation!!.id.id}",
                             )
                             if (testData.expectedError.containsKey("subject")) {
                                 assertEquals(
                                     testData.expectedError["subject"],
-                                    exception.violation.subject.id,
-                                    "Expected error subject ${testData.expectedError["subject"]}, got ${exception.violation.subject.id}",
+                                    exception.violation!!.subject.id,
+                                    "Expected error subject ${testData.expectedError["subject"]}, got ${exception.violation!!.subject.id}",
                                 )
                             }
                             return@dynamicTest
@@ -242,14 +242,14 @@ class ReferenceTest {
                             }
                         kotlin.test.assertEquals(
                             testData.expectedError["id"],
-                            exception.violation.id.id,
-                            "Expected error id ${testData.expectedError["id"]}, got ${exception.violation.id.id}",
+                            exception.violation!!.id.id,
+                            "Expected error id ${testData.expectedError["id"]}, got ${exception.violation!!.id.id}",
                         )
                         if (testData.expectedError.containsKey("subject")) {
                             kotlin.test.assertEquals(
                                 testData.expectedError["subject"],
-                                exception.violation.subject.id,
-                                "Expected error subject ${testData.expectedError["subject"]}, got ${exception.violation.subject.id}",
+                                exception.violation!!.subject.id,
+                                "Expected error subject ${testData.expectedError["subject"]}, got ${exception.violation!!.subject.id}",
                             )
                         }
                         return@dynamicTest
@@ -296,14 +296,14 @@ class ReferenceTest {
                             }
                         kotlin.test.assertEquals(
                             testData.expectedError["id"],
-                            exception.violation.id.id,
-                            "Expected error id ${testData.expectedError["id"]}, got ${exception.violation.id.id}",
+                            exception.violation!!.id.id,
+                            "Expected error id ${testData.expectedError["id"]}, got ${exception.violation!!.id.id}",
                         )
                         if (testData.expectedError.containsKey("subject")) {
                             kotlin.test.assertEquals(
                                 testData.expectedError["subject"],
-                                exception.violation.subject.id,
-                                "Expected error subject ${testData.expectedError["subject"]}, got ${exception.violation.subject.id}",
+                                exception.violation!!.subject.id,
+                                "Expected error subject ${testData.expectedError["subject"]}, got ${exception.violation!!.subject.id}",
                             )
                         }
                         return@dynamicTest
@@ -348,14 +348,14 @@ class ReferenceTest {
                             }
                         kotlin.test.assertEquals(
                             testData.expectedError["id"],
-                            exception.violation.id.id,
-                            "Expected error id ${testData.expectedError["id"]}, got ${exception.violation.id.id}",
+                            exception.violation!!.id.id,
+                            "Expected error id ${testData.expectedError["id"]}, got ${exception.violation!!.id.id}",
                         )
                         if (testData.expectedError.containsKey("subject")) {
                             kotlin.test.assertEquals(
                                 testData.expectedError["subject"],
-                                exception.violation.subject.id,
-                                "Expected error subject ${testData.expectedError["subject"]}, got ${exception.violation.subject.id}",
+                                exception.violation!!.subject.id,
+                                "Expected error subject ${testData.expectedError["subject"]}, got ${exception.violation!!.subject.id}",
                             )
                         }
                         return@dynamicTest
@@ -950,14 +950,14 @@ class ReferenceTest {
                             }
                         kotlin.test.assertEquals(
                             testData.expectedError["id"],
-                            exception.violation.id.id,
-                            "Expected error id ${testData.expectedError["id"]}, got ${exception.violation.id.id}",
+                            exception.violation!!.id.id,
+                            "Expected error id ${testData.expectedError["id"]}, got ${exception.violation!!.id.id}",
                         )
                         if (testData.expectedError.containsKey("subject")) {
                             kotlin.test.assertEquals(
                                 testData.expectedError["subject"],
-                                exception.violation.subject.id,
-                                "Expected error subject ${testData.expectedError["subject"]}, got ${exception.violation.subject.id}",
+                                exception.violation!!.subject.id,
+                                "Expected error subject ${testData.expectedError["subject"]}, got ${exception.violation!!.subject.id}",
                             )
                         }
                         return@dynamicTest
@@ -1003,14 +1003,14 @@ class ReferenceTest {
                             }
                         assertEquals(
                             testData.expectedError["id"],
-                            exception.violation.id.id,
-                            "Expected error id ${testData.expectedError["id"]}, got ${exception.violation.id.id}",
+                            exception.violation!!.id.id,
+                            "Expected error id ${testData.expectedError["id"]}, got ${exception.violation!!.id.id}",
                         )
                         if (testData.expectedError.containsKey("subject")) {
                             assertEquals(
                                 testData.expectedError["subject"],
-                                exception.violation.subject.id,
-                                "Expected error subject ${testData.expectedError["subject"]}, got ${exception.violation.subject.id}",
+                                exception.violation!!.subject.id,
+                                "Expected error subject ${testData.expectedError["subject"]}, got ${exception.violation!!.subject.id}",
                             )
                         }
                         return@dynamicTest
@@ -1053,14 +1053,14 @@ class ReferenceTest {
                             }
                         assertEquals(
                             testData.expectedError["id"],
-                            exception.violation.id.id,
-                            "Expected error id ${testData.expectedError["id"]}, got ${exception.violation.id.id}",
+                            exception.violation!!.id.id,
+                            "Expected error id ${testData.expectedError["id"]}, got ${exception.violation!!.id.id}",
                         )
                         if (testData.expectedError.containsKey("subject")) {
                             assertEquals(
                                 testData.expectedError["subject"],
-                                exception.violation.subject.id,
-                                "Expected error subject ${testData.expectedError["subject"]}, got ${exception.violation.subject.id}",
+                                exception.violation!!.subject.id,
+                                "Expected error subject ${testData.expectedError["subject"]}, got ${exception.violation!!.subject.id}",
                             )
                         }
                         return@dynamicTest
@@ -1104,14 +1104,14 @@ class ReferenceTest {
                             }
                         assertEquals(
                             testData.expectedError["id"],
-                            exception.violation.id.id,
-                            "Expected error id ${testData.expectedError["id"]}, got ${exception.violation.id.id}",
+                            exception.violation!!.id.id,
+                            "Expected error id ${testData.expectedError["id"]}, got ${exception.violation!!.id.id}",
                         )
                         if (testData.expectedError.containsKey("subject")) {
                             assertEquals(
                                 testData.expectedError["subject"],
-                                exception.violation.subject.id,
-                                "Expected error subject ${testData.expectedError["subject"]}, got ${exception.violation.subject.id}",
+                                exception.violation!!.subject.id,
+                                "Expected error subject ${testData.expectedError["subject"]}, got ${exception.violation!!.subject.id}",
                             )
                         }
                         return@dynamicTest
@@ -1156,14 +1156,14 @@ class ReferenceTest {
                             }
                         assertEquals(
                             testData.expectedError["id"],
-                            exception.violation.id.id,
-                            "Expected error id ${testData.expectedError["id"]}, got ${exception.violation.id.id}",
+                            exception.violation!!.id.id,
+                            "Expected error id ${testData.expectedError["id"]}, got ${exception.violation!!.id.id}",
                         )
                         if (testData.expectedError.containsKey("subject")) {
                             assertEquals(
                                 testData.expectedError["subject"],
-                                exception.violation.subject.id,
-                                "Expected error subject ${testData.expectedError["subject"]}, got ${exception.violation.subject.id}",
+                                exception.violation!!.subject.id,
+                                "Expected error subject ${testData.expectedError["subject"]}, got ${exception.violation!!.subject.id}",
                             )
                         }
                         return@dynamicTest

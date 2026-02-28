@@ -177,9 +177,23 @@ fun disparity(
 const val DEFAULT_MISRATE = 1e-3
 
 /**
- * Represents an interval with lower and upper bounds
+ * Represents an interval with lower and upper bounds and an associated measurement unit.
+ *
+ * @property lower The lower bound of the interval
+ * @property upper The upper bound of the interval
+ * @property unit The measurement unit associated with these bounds
  */
-data class Bounds(val lower: Double, val upper: Double)
+data class Bounds(
+    val lower: Double,
+    val upper: Double,
+    val unit: MeasurementUnit = NumberUnit,
+) {
+    /** Returns true if [value] is within [lower, upper]. */
+    fun contains(value: Double): Boolean = lower <= value && value <= upper
+
+    /** Returns a copy of this Bounds with the given [unit]. */
+    internal fun withUnit(unit: MeasurementUnit): Bounds = copy(unit = unit)
+}
 
 /**
  * Provides bounds on the Shift estimator with specified misclassification rate (ShiftBounds)
