@@ -2,24 +2,8 @@
 /// Based on Monahan's Algorithm 616 (1984).
 ///
 /// Internal implementation - not part of public API.
+use crate::fnv1a::hash_f64_slice;
 use crate::rng::Rng;
-
-/// Derive a deterministic seed from input values using FNV-1a hash.
-fn derive_seed(values: &[f64]) -> i64 {
-    const FNV_OFFSET_BASIS: u64 = 0xcbf29ce484222325;
-    const FNV_PRIME: u64 = 0x00000100000001b3;
-
-    let mut hash = FNV_OFFSET_BASIS;
-    for v in values {
-        let bits = v.to_bits();
-        // Hash each byte of the f64 representation
-        for i in 0..8 {
-            hash ^= (bits >> (i * 8)) & 0xff;
-            hash = hash.wrapping_mul(FNV_PRIME);
-        }
-    }
-    hash as i64
-}
 
 pub(crate) fn fast_center(values: &[f64]) -> Result<f64, &'static str> {
     let n = values.len();
@@ -56,7 +40,7 @@ pub(crate) fn fast_center(values: &[f64]) -> Result<f64, &'static str> {
     let mut active_set_size = total_pairs;
     let mut previous_count = 0;
 
-    let mut rng = Rng::from_seed(derive_seed(values));
+    let mut rng = Rng::from_seed(hash_f64_slice(values));
 
     loop {
         // === PARTITION STEP ===

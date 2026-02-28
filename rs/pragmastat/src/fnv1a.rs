@@ -14,6 +14,19 @@ pub(crate) fn fnv1a_hash(s: &str) -> u64 {
     hash
 }
 
+/// Compute FNV-1a 64-bit hash of an f64 slice, returning it as i64 for use as an RNG seed.
+pub(crate) fn hash_f64_slice(values: &[f64]) -> i64 {
+    let mut hash = FNV_OFFSET_BASIS;
+    for v in values {
+        let bits = v.to_bits();
+        for i in 0..8 {
+            hash ^= (bits >> (i * 8)) & 0xff;
+            hash = hash.wrapping_mul(FNV_PRIME);
+        }
+    }
+    hash as i64
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
