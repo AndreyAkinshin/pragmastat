@@ -1,30 +1,45 @@
 library(pragmastat)
 
-# --- One-Sample ---
+# --- One-Sample (legacy vector interface) ---
 
 x <- 1:22
 
 print(center(x)) # 11.5
 bounds <- center_bounds(x, 1e-3)
-print(paste("[", bounds$lower, ", ", bounds$upper, "]", sep="")) # [6, 17]
+print(paste("[", bounds$lower, ", ", bounds$upper, "]", sep = "")) # [6, 17]
 print(spread(x)) # 7
 bounds <- spread_bounds(x, 1e-3, seed = "demo")
-print(paste("[", bounds$lower, ", ", bounds$upper, "]", sep="")) # [1, 18]
+print(paste("[", bounds$lower, ", ", bounds$upper, "]", sep = "")) # [1, 18]
 
-# --- Two-Sample ---
+# --- Two-Sample (legacy vector interface) ---
 
 x <- 1:30
 y <- 21:50
 
 print(shift(x, y)) # -20
 bounds <- shift_bounds(x, y, 1e-3)
-print(paste("[", bounds$lower, ", ", bounds$upper, "]", sep="")) # [-28, -12]
+print(paste("[", bounds$lower, ", ", bounds$upper, "]", sep = "")) # [-28, -12]
 print(ratio(x, y)) # 0.436698
 bounds <- ratio_bounds(x, y, 1e-3)
-print(paste("[", bounds$lower, ", ", bounds$upper, "]", sep="")) # [0.232558139534884, 0.642857142857143]
+print(paste("[", bounds$lower, ", ", bounds$upper, "]", sep = "")) # [0.232558139534884, 0.642857142857143]
 print(disparity(x, y)) # -2.222222
 bounds <- disparity_bounds(x, y, 1e-3, seed = "demo")
-print(paste("[", bounds$lower, ", ", bounds$upper, "]", sep="")) # [-29, -0.478260869565217]
+print(paste("[", bounds$lower, ", ", bounds$upper, "]", sep = "")) # [-29, -0.478260869565217]
+
+# --- Sample-based interface ---
+
+sx <- Sample$new(1:22)
+m <- center(sx)
+print(paste("center:", m$value, "unit:", m$unit$id))
+b <- center_bounds(sx, 1e-3)
+print(paste("center_bounds: [", b$lower, ", ", b$upper, "] unit:", b$unit$id, sep = ""))
+
+sx <- Sample$new(1:30)
+sy <- Sample$new(21:50, subject = "y")
+m <- shift(sx, sy)
+print(paste("shift:", m$value, "unit:", m$unit$id))
+m <- ratio(sx, sy)
+print(paste("ratio:", m$value, "unit:", m$unit$id))
 
 # --- Randomization ---
 
