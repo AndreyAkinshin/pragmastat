@@ -1,5 +1,5 @@
-use crate::assumptions::{AssumptionId, EstimatorError, Subject};
-use crate::estimators::avg_spread;
+use crate::assumptions::{EstimatorError, Subject};
+use crate::estimators::raw::{avg_spread, spread};
 use float_cmp::approx_eq;
 use serde::Deserialize;
 use std::fs;
@@ -149,7 +149,6 @@ fn avg_spread_empty_y() {
 
 #[test]
 fn avg_spread_equal() {
-    use crate::estimators::spread;
     let samples: Vec<Vec<f64>> = vec![
         vec![1.0, 2.0, 3.0, 4.0, 5.0],
         vec![10.0, 20.0, 30.0],
@@ -183,7 +182,6 @@ fn avg_spread_symmetry() {
 
 #[test]
 fn avg_spread_average() {
-    use crate::estimators::spread;
     use crate::rng::Rng;
     let mut rng = Rng::from_seed(1729);
     for n in 2..=10 {

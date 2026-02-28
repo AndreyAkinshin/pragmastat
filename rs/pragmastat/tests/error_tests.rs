@@ -1,135 +1,134 @@
 //! Tests for error handling and input validation
 
 use pragmastat::assumptions::{AssumptionId, EstimatorError, Subject};
-#[allow(deprecated)]
-use pragmastat::estimators::{
-    center, center_bounds, disparity, ratio, rel_spread, shift, shift_bounds, spread,
-};
+use pragmastat::estimators::raw;
 
 #[test]
 fn center_empty_input() {
-    assert!(center(&[]).is_err());
+    assert!(raw::center(&[]).is_err());
 }
 
 #[test]
 fn center_nan_input() {
-    assert!(center(&[1.0, f64::NAN, 3.0]).is_err());
+    assert!(raw::center(&[1.0, f64::NAN, 3.0]).is_err());
 }
 
 #[test]
 fn center_infinite_input() {
-    assert!(center(&[1.0, f64::INFINITY, 3.0]).is_err());
+    assert!(raw::center(&[1.0, f64::INFINITY, 3.0]).is_err());
 }
 
 #[test]
 fn spread_empty_input() {
     // spread now requires sparity (Spread > 0), which implies at least 2 elements
-    assert!(spread(&[]).is_err());
+    assert!(raw::spread(&[]).is_err());
 }
 
 #[test]
 fn spread_single_input() {
     // single element fails sparity (Spread = 0)
-    assert!(spread(&[5.0]).is_err());
+    assert!(raw::spread(&[5.0]).is_err());
 }
 
 #[test]
 fn spread_constant_input() {
     // constant values fail sparity (Spread = 0)
-    assert!(spread(&[5.0, 5.0, 5.0]).is_err());
+    assert!(raw::spread(&[5.0, 5.0, 5.0]).is_err());
 }
 
 #[test]
 fn spread_nan_input() {
-    assert!(spread(&[1.0, f64::NAN, 3.0]).is_err());
+    assert!(raw::spread(&[1.0, f64::NAN, 3.0]).is_err());
 }
 
 #[test]
 fn spread_infinite_input() {
-    assert!(spread(&[1.0, f64::INFINITY, 3.0]).is_err());
+    assert!(raw::spread(&[1.0, f64::INFINITY, 3.0]).is_err());
 }
 
 #[test]
+#[allow(deprecated)]
 fn rel_spread_empty_input() {
-    assert!(rel_spread(&[]).is_err());
+    assert!(raw::rel_spread(&[]).is_err());
 }
 
 #[test]
+#[allow(deprecated)]
 fn rel_spread_zero_center() {
     // Values centered around zero: spread/|center| is undefined
-    assert!(rel_spread(&[-1.0, 0.0, 1.0]).is_err());
+    assert!(raw::rel_spread(&[-1.0, 0.0, 1.0]).is_err());
 }
 
 #[test]
 fn shift_empty_x() {
-    assert!(shift(&[], &[1.0, 2.0]).is_err());
+    assert!(raw::shift(&[], &[1.0, 2.0]).is_err());
 }
 
 #[test]
 fn shift_empty_y() {
-    assert!(shift(&[1.0, 2.0], &[]).is_err());
+    assert!(raw::shift(&[1.0, 2.0], &[]).is_err());
 }
 
 #[test]
 fn shift_nan_x() {
-    assert!(shift(&[1.0, f64::NAN], &[1.0, 2.0]).is_err());
+    assert!(raw::shift(&[1.0, f64::NAN], &[1.0, 2.0]).is_err());
 }
 
 #[test]
 fn shift_nan_y() {
-    assert!(shift(&[1.0, 2.0], &[f64::NAN, 2.0]).is_err());
+    assert!(raw::shift(&[1.0, 2.0], &[f64::NAN, 2.0]).is_err());
 }
 
 #[test]
 fn ratio_empty_x() {
-    assert!(ratio(&[], &[1.0, 2.0]).is_err());
+    assert!(raw::ratio(&[], &[1.0, 2.0]).is_err());
 }
 
 #[test]
 fn ratio_empty_y() {
-    assert!(ratio(&[1.0, 2.0], &[]).is_err());
+    assert!(raw::ratio(&[1.0, 2.0], &[]).is_err());
 }
 
 #[test]
 fn ratio_nonpositive_y() {
     // y must be strictly positive for ratio calculation
-    assert!(ratio(&[1.0, 2.0], &[0.0, 1.0]).is_err());
-    assert!(ratio(&[1.0, 2.0], &[-1.0, 1.0]).is_err());
+    assert!(raw::ratio(&[1.0, 2.0], &[0.0, 1.0]).is_err());
+    assert!(raw::ratio(&[1.0, 2.0], &[-1.0, 1.0]).is_err());
 }
 
 #[test]
 fn disparity_empty_x() {
-    assert!(disparity(&[], &[1.0, 2.0]).is_err());
+    assert!(raw::disparity(&[], &[1.0, 2.0]).is_err());
 }
 
 #[test]
 fn disparity_empty_y() {
-    assert!(disparity(&[1.0, 2.0], &[]).is_err());
+    assert!(raw::disparity(&[1.0, 2.0], &[]).is_err());
 }
 
 #[test]
 fn shift_bounds_empty_x() {
-    assert!(shift_bounds(&[], &[1.0, 2.0], 0.05).is_err());
+    assert!(raw::shift_bounds(&[], &[1.0, 2.0], 0.05).is_err());
 }
 
 #[test]
 fn shift_bounds_empty_y() {
-    assert!(shift_bounds(&[1.0, 2.0], &[], 0.05).is_err());
+    assert!(raw::shift_bounds(&[1.0, 2.0], &[], 0.05).is_err());
 }
 
 #[test]
 fn shift_bounds_nan_misrate() {
-    assert!(shift_bounds(&[1.0, 2.0], &[3.0, 4.0], f64::NAN).is_err());
+    assert!(raw::shift_bounds(&[1.0, 2.0], &[3.0, 4.0], f64::NAN).is_err());
 }
 
 #[test]
 fn shift_bounds_negative_misrate() {
-    assert!(shift_bounds(&[1.0, 2.0], &[3.0, 4.0], -0.1).is_err());
+    assert!(raw::shift_bounds(&[1.0, 2.0], &[3.0, 4.0], -0.1).is_err());
 }
 
 #[test]
 fn shift_bounds_misrate_greater_than_one() {
-    assert!(shift_bounds(&[1.0, 2.0], &[3.0, 4.0], 1.5).is_err());
+    assert!(raw::shift_bounds(&[1.0, 2.0], &[3.0, 4.0], 1.5).is_err());
 }
 
 // --- Helper functions for error testing ---
@@ -143,8 +142,8 @@ fn unwrap_estimator_error(err: EstimatorError) -> (AssumptionId, Subject) {
 
 #[test]
 fn shift_bounds_misrate_below_min() {
-    // n=2, m=2: min_misrate = 2/C(4,2) = 1/3 ≈ 0.333
-    let result = shift_bounds(&[1.0, 2.0], &[3.0, 4.0], 0.05);
+    // n=2, m=2: min_misrate = 2/C(4,2) = 1/3 ~ 0.333
+    let result = raw::shift_bounds(&[1.0, 2.0], &[3.0, 4.0], 0.05);
     assert!(result.is_err());
     let (id, subject) = unwrap_estimator_error(result.unwrap_err());
     assert_eq!(id, AssumptionId::Domain);
@@ -155,7 +154,7 @@ fn shift_bounds_misrate_below_min() {
 
 #[test]
 fn center_bounds_single_element() {
-    let result = center_bounds(&[1.0], 0.05);
+    let result = raw::center_bounds(&[1.0], 0.05);
     assert!(result.is_err());
     let (id, subject) = unwrap_estimator_error(result.unwrap_err());
     assert_eq!(id, AssumptionId::Domain);
@@ -164,7 +163,7 @@ fn center_bounds_single_element() {
 
 #[test]
 fn center_bounds_invalid_misrate() {
-    let result = center_bounds(&[1.0, 2.0, 3.0, 4.0, 5.0], 1e-20);
+    let result = raw::center_bounds(&[1.0, 2.0, 3.0, 4.0, 5.0], 1e-20);
     assert!(result.is_err());
     let (id, subject) = unwrap_estimator_error(result.unwrap_err());
     assert_eq!(id, AssumptionId::Domain);

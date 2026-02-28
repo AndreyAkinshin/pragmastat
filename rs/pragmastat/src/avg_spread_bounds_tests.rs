@@ -1,5 +1,5 @@
 use crate::assumptions::{AssumptionId, EstimatorError, Subject};
-use crate::estimators::{avg_spread_bounds, avg_spread_bounds_with_seed};
+use crate::estimators::raw::{avg_spread_bounds, avg_spread_bounds_with_seed, RawBounds};
 use float_cmp::approx_eq;
 use serde::Deserialize;
 use std::fs;

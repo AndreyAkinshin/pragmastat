@@ -2,31 +2,36 @@ use pragmastat::distributions::{Additive, Distribution, Exp, Multiplic, Power, U
 use pragmastat::*;
 
 fn main() {
-    // --- One-Sample ---
+    // --- One-Sample (Sample-based API) ---
 
-    let x: Vec<f64> = (1..=22).map(|i| i as f64).collect();
+    let x = Sample::new((1..=22).map(|i| i as f64).collect()).unwrap();
 
-    println!("{}", center(&x).unwrap()); // 11.5
+    println!("{}", center(&x).unwrap().value); // 11.5
     let bounds = center_bounds(&x, 1e-3).unwrap();
     println!("{{lower: {}, upper: {}}}", bounds.lower, bounds.upper); // {lower: 6, upper: 17}
-    println!("{}", spread(&x).unwrap()); // 7
+    println!("{}", spread(&x).unwrap().value); // 7
     let bounds = spread_bounds_with_seed(&x, 1e-3, "demo").unwrap();
     println!("{{lower: {}, upper: {}}}", bounds.lower, bounds.upper); // {lower: 1, upper: 18}
 
-    // --- Two-Sample ---
+    // --- Two-Sample (Sample-based API) ---
 
-    let x: Vec<f64> = (1..=30).map(|i| i as f64).collect();
-    let y: Vec<f64> = (21..=50).map(|i| i as f64).collect();
+    let x = Sample::new((1..=30).map(|i| i as f64).collect()).unwrap();
+    let y = Sample::new((21..=50).map(|i| i as f64).collect()).unwrap();
 
-    println!("{}", shift(&x, &y).unwrap()); // -20
+    println!("{}", shift(&x, &y).unwrap().value); // -20
     let bounds = shift_bounds(&x, &y, 1e-3).unwrap();
     println!("{{lower: {}, upper: {}}}", bounds.lower, bounds.upper); // {lower: -28, upper: -12}
-    println!("{}", ratio(&x, &y).unwrap()); // 0.43669798282695127
+    println!("{}", ratio(&x, &y).unwrap().value); // 0.43669798282695127
     let bounds = ratio_bounds(&x, &y, 1e-3).unwrap();
     println!("{{lower: {}, upper: {}}}", bounds.lower, bounds.upper); // {lower: 0.23255813953488377, upper: 0.6428571428571428}
-    println!("{}", disparity(&x, &y).unwrap()); // -2.2222222222222223
+    println!("{}", disparity(&x, &y).unwrap().value); // -2.2222222222222223
     let bounds = disparity_bounds_with_seed(&x, &y, 1e-3, "demo").unwrap();
     println!("{{lower: {}, upper: {}}}", bounds.lower, bounds.upper); // {lower: -29, upper: -0.4782608695652174}
+
+    // --- Raw slice API (backward-compatible) ---
+
+    let x_raw: Vec<f64> = (1..=22).map(|i| i as f64).collect();
+    println!("{}", estimators::raw::center(&x_raw).unwrap()); // 11.5
 
     // --- Randomization ---
 
@@ -65,4 +70,17 @@ fn main() {
 
     let mut rng = Rng::from_string("demo-dist-uniform");
     println!("{}", Uniform::new(0.0, 10.0).sample(&mut rng)); // 6.54043657816832
+
+    // --- Unit system ---
+
+    let ms = CustomUnit::new("ms", "Time", "ms", "Millisecond", 1_000_000);
+    let ns = CustomUnit::new("ns", "Time", "ns", "Nanosecond", 1);
+
+    let s = Sample::with_unit(vec![1.0, 2.0, 3.0], Box::new(ms)).unwrap();
+    let converted = s.convert_to(&ns).unwrap();
+    println!("Converted: {:?}", converted.values()); // [1000000.0, 2000000.0, 3000000.0]
+
+    let registry = UnitRegistry::standard();
+    let unit = registry.resolve("number").unwrap();
+    println!("Resolved: {}", unit.full_name()); // Number
 }

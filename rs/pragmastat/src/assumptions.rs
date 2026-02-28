@@ -155,7 +155,7 @@ pub enum EstimatorError {
     /// An assumption violation occurred.
     Assumption(AssumptionError),
     /// A generic error (e.g., parameter out of range).
-    Other(&'static str),
+    Other(String),
 }
 
 impl fmt::Display for EstimatorError {
@@ -175,9 +175,9 @@ impl From<AssumptionError> for EstimatorError {
     }
 }
 
-impl From<&'static str> for EstimatorError {
-    fn from(msg: &'static str) -> Self {
-        EstimatorError::Other(msg)
+impl From<&str> for EstimatorError {
+    fn from(msg: &str) -> Self {
+        EstimatorError::Other(msg.to_string())
     }
 }
 

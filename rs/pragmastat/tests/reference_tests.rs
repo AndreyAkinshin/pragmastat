@@ -1,5 +1,6 @@
 use float_cmp::approx_eq;
 use pragmastat::assumptions::EstimatorError;
+use pragmastat::estimators::raw;
 use pragmastat::*;
 use serde::{Deserialize, Serialize};
 use std::fs;
@@ -280,33 +281,33 @@ where
 
 #[test]
 fn test_center() {
-    run_one_sample_tests("center", center);
+    run_one_sample_tests("center", raw::center);
 }
 
 #[test]
 fn test_spread() {
-    run_one_sample_tests("spread", spread);
+    run_one_sample_tests("spread", raw::spread);
 }
 
 #[test]
 #[allow(deprecated)]
 fn test_rel_spread() {
-    run_one_sample_tests("rel-spread", rel_spread);
+    run_one_sample_tests("rel-spread", raw::rel_spread);
 }
 
 #[test]
 fn test_shift() {
-    run_two_sample_tests("shift", shift);
+    run_two_sample_tests("shift", raw::shift);
 }
 
 #[test]
 fn test_ratio() {
-    run_two_sample_tests("ratio", ratio);
+    run_two_sample_tests("ratio", raw::ratio);
 }
 
 #[test]
 fn test_disparity() {
-    run_two_sample_tests("disparity", disparity);
+    run_two_sample_tests("disparity", raw::disparity);
 }
 
 fn run_shift_bounds_tests() {
@@ -345,7 +346,7 @@ fn run_shift_bounds_tests() {
 
         // Handle error test cases
         if let Some(ref expected_error) = test_case.expected_error {
-            let result = shift_bounds(
+            let result = raw::shift_bounds(
                 &test_case.input.x,
                 &test_case.input.y,
                 test_case.input.misrate,
@@ -360,7 +361,7 @@ fn run_shift_bounds_tests() {
         }
 
         let expected_output = test_case.output.expect("Test case must have output");
-        let actual_output = match shift_bounds(
+        let actual_output = match raw::shift_bounds(
             &test_case.input.x,
             &test_case.input.y,
             test_case.input.misrate,
@@ -439,7 +440,7 @@ fn run_ratio_bounds_tests() {
 
         // Handle error test cases
         if let Some(ref expected_error) = test_case.expected_error {
-            let result = ratio_bounds(
+            let result = raw::ratio_bounds(
                 &test_case.input.x,
                 &test_case.input.y,
                 test_case.input.misrate,
@@ -454,7 +455,7 @@ fn run_ratio_bounds_tests() {
         }
 
         let expected_output = test_case.output.expect("Test case must have output");
-        let actual_output = match ratio_bounds(
+        let actual_output = match raw::ratio_bounds(
             &test_case.input.x,
             &test_case.input.y,
             test_case.input.misrate,
@@ -1483,7 +1484,7 @@ fn run_center_bounds_tests() {
 
         // Handle error test cases
         if let Some(ref expected_error) = test_case.expected_error {
-            let result = center_bounds(&test_case.input.x, test_case.input.misrate);
+            let result = raw::center_bounds(&test_case.input.x, test_case.input.misrate);
             match result {
                 Ok(_) => failures.push(format!("{file_name:?}: expected error, got Ok")),
                 Err(err) => {
@@ -1493,7 +1494,7 @@ fn run_center_bounds_tests() {
             continue;
         }
 
-        let actual_output = match center_bounds(&test_case.input.x, test_case.input.misrate) {
+        let actual_output = match raw::center_bounds(&test_case.input.x, test_case.input.misrate) {
             Ok(val) => val,
             Err(e) => {
                 failures.push(format!("{file_name:?}: unexpected error {e:?}"));
@@ -1591,8 +1592,10 @@ fn run_spread_bounds_tests() {
         // Handle error test cases
         if let Some(ref expected_error) = test_case.expected_error {
             let result = match seed {
-                Some(s) => spread_bounds_with_seed(&test_case.input.x, test_case.input.misrate, s),
-                None => spread_bounds(&test_case.input.x, test_case.input.misrate),
+                Some(s) => {
+                    raw::spread_bounds_with_seed(&test_case.input.x, test_case.input.misrate, s)
+                }
+                None => raw::spread_bounds(&test_case.input.x, test_case.input.misrate),
             };
             match result {
                 Ok(_) => failures.push(format!("{file_name:?}: expected error, got Ok")),
@@ -1604,8 +1607,8 @@ fn run_spread_bounds_tests() {
         }
 
         let actual_output = match seed {
-            Some(s) => spread_bounds_with_seed(&test_case.input.x, test_case.input.misrate, s),
-            None => spread_bounds(&test_case.input.x, test_case.input.misrate),
+            Some(s) => raw::spread_bounds_with_seed(&test_case.input.x, test_case.input.misrate, s),
+            None => raw::spread_bounds(&test_case.input.x, test_case.input.misrate),
         };
         let actual_output = match actual_output {
             Ok(val) => val,

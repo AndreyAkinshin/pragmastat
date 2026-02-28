@@ -1,4 +1,4 @@
-use pragmastat::{center, shift, spread};
+use pragmastat::estimators::raw;
 use std::time::Instant;
 
 #[test]
@@ -7,7 +7,7 @@ fn test_center_performance() {
     let x: Vec<f64> = (1..=n).map(|i| i as f64).collect();
 
     let start = Instant::now();
-    let result = center(&x).unwrap();
+    let result = raw::center(&x).unwrap();
     let elapsed = start.elapsed();
 
     println!("\nCenter for n={}: {:.6}", n, result);
@@ -30,7 +30,7 @@ fn test_spread_performance() {
     let x: Vec<f64> = (1..=n).map(|i| i as f64).collect();
 
     let start = Instant::now();
-    let result = spread(&x).unwrap();
+    let result = raw::spread(&x).unwrap();
     let elapsed = start.elapsed();
 
     println!("\nSpread for n={}: {:.6}", n, result);
@@ -54,7 +54,7 @@ fn test_shift_performance() {
     let y: Vec<f64> = (1..=n).map(|i| i as f64).collect();
 
     let start = Instant::now();
-    let result = shift(&x, &y).unwrap();
+    let result = raw::shift(&x, &y).unwrap();
     let elapsed = start.elapsed();
 
     println!("\nShift for n=m={}: {:.6}", n, result);

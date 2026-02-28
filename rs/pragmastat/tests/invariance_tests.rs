@@ -1,4 +1,5 @@
 use float_cmp::approx_eq;
+use pragmastat::estimators::raw;
 use pragmastat::*;
 
 /// Tests mathematical invariance properties of the estimators
@@ -65,24 +66,24 @@ mod invariance_tests {
     #[test]
     fn center_shift() {
         perform_test_one(
-            |x| center(&vec_add_scalar(x, 2.0)).unwrap(),
-            |x| center(x).unwrap() + 2.0,
+            |x| raw::center(&vec_add_scalar(x, 2.0)).unwrap(),
+            |x| raw::center(x).unwrap() + 2.0,
         );
     }
 
     #[test]
     fn center_scale() {
         perform_test_one(
-            |x| center(&vec_mul_scalar(x, 2.0)).unwrap(),
-            |x| 2.0 * center(x).unwrap(),
+            |x| raw::center(&vec_mul_scalar(x, 2.0)).unwrap(),
+            |x| 2.0 * raw::center(x).unwrap(),
         );
     }
 
     #[test]
     fn center_negate() {
         perform_test_one(
-            |x| center(&vec_mul_scalar(x, -1.0)).unwrap(),
-            |x| -1.0 * center(x).unwrap(),
+            |x| raw::center(&vec_mul_scalar(x, -1.0)).unwrap(),
+            |x| -1.0 * raw::center(x).unwrap(),
         );
     }
 
@@ -91,24 +92,24 @@ mod invariance_tests {
     #[test]
     fn spread_shift() {
         perform_test_one(
-            |x| spread(&vec_add_scalar(x, 2.0)).unwrap(),
-            |x| spread(x).unwrap(),
+            |x| raw::spread(&vec_add_scalar(x, 2.0)).unwrap(),
+            |x| raw::spread(x).unwrap(),
         );
     }
 
     #[test]
     fn spread_scale() {
         perform_test_one(
-            |x| spread(&vec_mul_scalar(x, 2.0)).unwrap(),
-            |x| 2.0 * spread(x).unwrap(),
+            |x| raw::spread(&vec_mul_scalar(x, 2.0)).unwrap(),
+            |x| 2.0 * raw::spread(x).unwrap(),
         );
     }
 
     #[test]
     fn spread_negate() {
         perform_test_one(
-            |x| spread(&vec_mul_scalar(x, -1.0)).unwrap(),
-            |x| spread(x).unwrap(),
+            |x| raw::spread(&vec_mul_scalar(x, -1.0)).unwrap(),
+            |x| raw::spread(x).unwrap(),
         );
     }
 
@@ -118,8 +119,8 @@ mod invariance_tests {
     #[allow(deprecated)]
     fn rel_spread_scale() {
         perform_test_one(
-            |x| rel_spread(&vec_mul_scalar(x, 2.0)).unwrap(),
-            |x| rel_spread(x).unwrap(),
+            |x| raw::rel_spread(&vec_mul_scalar(x, 2.0)).unwrap(),
+            |x| raw::rel_spread(x).unwrap(),
         );
     }
 
@@ -128,24 +129,24 @@ mod invariance_tests {
     #[test]
     fn shift_shift() {
         perform_test_two(
-            |x, y| shift(&vec_add_scalar(x, 3.0), &vec_add_scalar(y, 2.0)).unwrap(),
-            |x, y| shift(x, y).unwrap() + 1.0,
+            |x, y| raw::shift(&vec_add_scalar(x, 3.0), &vec_add_scalar(y, 2.0)).unwrap(),
+            |x, y| raw::shift(x, y).unwrap() + 1.0,
         );
     }
 
     #[test]
     fn shift_scale() {
         perform_test_two(
-            |x, y| shift(&vec_mul_scalar(x, 2.0), &vec_mul_scalar(y, 2.0)).unwrap(),
-            |x, y| 2.0 * shift(x, y).unwrap(),
+            |x, y| raw::shift(&vec_mul_scalar(x, 2.0), &vec_mul_scalar(y, 2.0)).unwrap(),
+            |x, y| 2.0 * raw::shift(x, y).unwrap(),
         );
     }
 
     #[test]
     fn shift_antisymmetry() {
         perform_test_two(
-            |x, y| shift(x, y).unwrap(),
-            |x, y| -1.0 * shift(y, x).unwrap(),
+            |x, y| raw::shift(x, y).unwrap(),
+            |x, y| -1.0 * raw::shift(y, x).unwrap(),
         );
     }
 
@@ -154,8 +155,8 @@ mod invariance_tests {
     #[test]
     fn ratio_scale() {
         perform_test_two(
-            |x, y| ratio(&vec_mul_scalar(x, 2.0), &vec_mul_scalar(y, 3.0)).unwrap(),
-            |x, y| (2.0 / 3.0) * ratio(x, y).unwrap(),
+            |x, y| raw::ratio(&vec_mul_scalar(x, 2.0), &vec_mul_scalar(y, 3.0)).unwrap(),
+            |x, y| (2.0 / 3.0) * raw::ratio(x, y).unwrap(),
         );
     }
 
@@ -164,32 +165,32 @@ mod invariance_tests {
     #[test]
     fn disparity_shift() {
         perform_test_two(
-            |x, y| disparity(&vec_add_scalar(x, 2.0), &vec_add_scalar(y, 2.0)).unwrap(),
-            |x, y| disparity(x, y).unwrap(),
+            |x, y| raw::disparity(&vec_add_scalar(x, 2.0), &vec_add_scalar(y, 2.0)).unwrap(),
+            |x, y| raw::disparity(x, y).unwrap(),
         );
     }
 
     #[test]
     fn disparity_scale() {
         perform_test_two(
-            |x, y| disparity(&vec_mul_scalar(x, 2.0), &vec_mul_scalar(y, 2.0)).unwrap(),
-            |x, y| disparity(x, y).unwrap(),
+            |x, y| raw::disparity(&vec_mul_scalar(x, 2.0), &vec_mul_scalar(y, 2.0)).unwrap(),
+            |x, y| raw::disparity(x, y).unwrap(),
         );
     }
 
     #[test]
     fn disparity_scale_neg() {
         perform_test_two(
-            |x, y| disparity(&vec_mul_scalar(x, -2.0), &vec_mul_scalar(y, -2.0)).unwrap(),
-            |x, y| -1.0 * disparity(x, y).unwrap(),
+            |x, y| raw::disparity(&vec_mul_scalar(x, -2.0), &vec_mul_scalar(y, -2.0)).unwrap(),
+            |x, y| -1.0 * raw::disparity(x, y).unwrap(),
         );
     }
 
     #[test]
     fn disparity_antisymmetry() {
         perform_test_two(
-            |x, y| disparity(x, y).unwrap(),
-            |x, y| -1.0 * disparity(y, x).unwrap(),
+            |x, y| raw::disparity(x, y).unwrap(),
+            |x, y| -1.0 * raw::disparity(y, x).unwrap(),
         );
     }
 }

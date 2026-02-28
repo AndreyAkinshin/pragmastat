@@ -7,8 +7,14 @@
 //! - Provide clear explanations accessible to practitioners without deep statistical training
 
 pub mod assumptions;
+pub mod bounds;
 pub mod distributions;
 pub mod estimators;
+pub mod measurement;
+pub mod measurement_unit;
+pub mod sample;
+pub mod unit_registry;
+
 pub(crate) mod gauss_cdf;
 pub(crate) mod min_misrate;
 pub(crate) mod pairwise_margin;
@@ -37,13 +43,22 @@ mod pairwise_margin_tests;
 #[cfg(test)]
 mod signed_rank_margin_tests;
 
+// Re-exports for convenient access
 pub use assumptions::{AssumptionError, AssumptionId, EstimatorError, Subject, Violation};
+pub use bounds::Bounds;
 pub use distributions::{Additive, Distribution, Exp, Multiplic, Power, Uniform};
 #[allow(deprecated)]
+pub use estimators::rel_spread;
 pub use estimators::{
     center, center_bounds, disparity, disparity_bounds, disparity_bounds_with_seed, ratio,
-    ratio_bounds, rel_spread, shift, shift_bounds, spread, spread_bounds, spread_bounds_with_seed,
-    Bounds, DEFAULT_MISRATE,
+    ratio_bounds, shift, shift_bounds, spread, spread_bounds, spread_bounds_with_seed,
+    DEFAULT_MISRATE,
 };
-
+pub use measurement::Measurement;
+pub use measurement_unit::{
+    conversion_factor, finer, is_compatible, CustomUnit, DisparityUnit, MeasurementUnit,
+    NumberUnit, RatioUnit, UnitMismatchError,
+};
 pub use rng::Rng;
+pub use sample::Sample;
+pub use unit_registry::UnitRegistry;
