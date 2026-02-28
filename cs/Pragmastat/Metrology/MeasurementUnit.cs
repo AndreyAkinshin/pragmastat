@@ -23,7 +23,7 @@ public abstract class MeasurementUnit(string id, string family, string abbreviat
   {
     if (ReferenceEquals(null, other)) return false;
     if (ReferenceEquals(this, other)) return true;
-    return Id == other.Id;
+    return Id == other.Id && Family == other.Family && BaseUnits == other.BaseUnits;
   }
 
   public override bool Equals(object? obj)
@@ -33,7 +33,16 @@ public abstract class MeasurementUnit(string id, string family, string abbreviat
     return obj is MeasurementUnit other && Equals(other);
   }
 
-  public override int GetHashCode() => Id.GetHashCode();
+  public override int GetHashCode()
+  {
+    unchecked
+    {
+      var hash = Id.GetHashCode();
+      hash = hash * 397 ^ Family.GetHashCode();
+      hash = hash * 397 ^ BaseUnits.GetHashCode();
+      return hash;
+    }
+  }
   public static bool operator ==(MeasurementUnit? left, MeasurementUnit? right) => Equals(left, right);
   public static bool operator !=(MeasurementUnit? left, MeasurementUnit? right) => !Equals(left, right);
 }
