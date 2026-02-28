@@ -147,8 +147,8 @@ func selectKthPairwiseDiff[T Number](x, y []T, k int64) (float64, error) {
 		return 0, fmt.Errorf("k out of range: k=%d, total=%d", k, total)
 	}
 
-	searchMin := float64(x[0] - y[n-1])
-	searchMax := float64(x[m-1] - y[0])
+	searchMin := float64(x[0]) - float64(y[n-1])
+	searchMax := float64(x[m-1]) - float64(y[0])
 
 	if math.IsNaN(searchMin) || math.IsNaN(searchMax) {
 		return 0, errors.New("NaN in input values")
@@ -203,7 +203,7 @@ func countAndNeighbors[T Number](x, y []T, threshold float64) (int64, float64, f
 	j := 0
 	for i := 0; i < m; i++ {
 		// Move j forward while x[i] - y[j] > threshold
-		for j < n && float64(x[i]-y[j]) > threshold {
+		for j < n && float64(x[i])-float64(y[j]) > threshold {
 			j++
 		}
 
@@ -212,7 +212,7 @@ func countAndNeighbors[T Number](x, y []T, threshold float64) (int64, float64, f
 
 		// Track closest difference <= threshold
 		if j < n {
-			diff := float64(x[i] - y[j])
+			diff := float64(x[i]) - float64(y[j])
 			if diff > maxBelow {
 				maxBelow = diff
 			}
@@ -220,7 +220,7 @@ func countAndNeighbors[T Number](x, y []T, threshold float64) (int64, float64, f
 
 		// Track closest difference > threshold
 		if j > 0 {
-			diff := float64(x[i] - y[j-1])
+			diff := float64(x[i]) - float64(y[j-1])
 			if diff < minAbove {
 				minAbove = diff
 			}
@@ -229,10 +229,10 @@ func countAndNeighbors[T Number](x, y []T, threshold float64) (int64, float64, f
 
 	// Fallback to actual min/max if no boundaries found (shouldn't happen in normal operation)
 	if math.IsInf(maxBelow, -1) {
-		maxBelow = float64(x[0] - y[n-1])
+		maxBelow = float64(x[0]) - float64(y[n-1])
 	}
 	if math.IsInf(minAbove, 1) {
-		minAbove = float64(x[m-1] - y[0])
+		minAbove = float64(x[m-1]) - float64(y[0])
 	}
 
 	return count, maxBelow, minAbove

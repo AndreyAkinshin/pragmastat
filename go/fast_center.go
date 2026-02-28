@@ -33,7 +33,7 @@ func fastCenter[T Number](values []T) (float64, error) {
 		return float64(values[0]), nil
 	}
 	if n == 2 {
-		return (float64(values[0] + values[1])) / 2, nil
+		return (float64(values[0]) + float64(values[1])) / 2, nil
 	}
 
 	// Create deterministic RNG from input values
@@ -58,7 +58,7 @@ func fastCenter[T Number](values []T) (float64, error) {
 	}
 
 	// Start with a good pivot: sum of middle elements
-	pivot := float64(sortedValues[(n-1)/2] + sortedValues[n/2])
+	pivot := float64(sortedValues[(n-1)/2]) + float64(sortedValues[n/2])
 	activeSetSize := totalPairs
 	previousCount := int64(0)
 
@@ -70,7 +70,7 @@ func fastCenter[T Number](values []T) (float64, error) {
 
 		for row := 1; row <= n; row++ {
 			// Move left from current column until we find sums < pivot
-			for currentColumn >= int64(row) && float64(sortedValues[row-1]+sortedValues[currentColumn-1]) >= pivot {
+			for currentColumn >= int64(row) && float64(sortedValues[row-1])+float64(sortedValues[currentColumn-1]) >= pivot {
 				currentColumn--
 			}
 
@@ -93,8 +93,8 @@ func fastCenter[T Number](values []T) (float64, error) {
 					continue
 				}
 
-				smallestInRow := float64(sortedValues[leftBounds[i]-1] + sortedValues[i])
-				largestInRow := float64(sortedValues[rightBounds[i]-1] + sortedValues[i])
+				smallestInRow := float64(sortedValues[leftBounds[i]-1]) + float64(sortedValues[i])
+				largestInRow := float64(sortedValues[rightBounds[i]-1]) + float64(sortedValues[i])
 
 				minActiveSum = math.Min(minActiveSum, smallestInRow)
 				maxActiveSum = math.Max(maxActiveSum, largestInRow)
@@ -127,14 +127,14 @@ func fastCenter[T Number](values []T) (float64, error) {
 				// Find largest sum in this row that's < pivot
 				if countInRow > 0 {
 					lastBelowIndex := int64(i) + countInRow
-					lastBelowValue := float64(rowValue + sortedValues[lastBelowIndex-1])
+					lastBelowValue := float64(rowValue) + float64(sortedValues[lastBelowIndex-1])
 					largestBelowPivot = math.Max(largestBelowPivot, lastBelowValue)
 				}
 
 				// Find smallest sum in this row that's >= pivot
 				if countInRow < totalInRow {
 					firstAtOrAboveIndex := int64(i) + countInRow + 1
-					firstAtOrAboveValue := float64(rowValue + sortedValues[firstAtOrAboveIndex-1])
+					firstAtOrAboveValue := float64(rowValue) + float64(sortedValues[firstAtOrAboveIndex-1])
 					smallestAtOrAbovePivot = math.Min(smallestAtOrAbovePivot, firstAtOrAboveValue)
 				}
 			}
@@ -197,7 +197,7 @@ func fastCenter[T Number](values []T) (float64, error) {
 
 			// Use median element of the selected row as pivot
 			medianColumnInRow := (leftBounds[selectedRow] + rightBounds[selectedRow]) / 2
-			pivot = float64(sortedValues[selectedRow] + sortedValues[medianColumnInRow-1])
+			pivot = float64(sortedValues[selectedRow]) + float64(sortedValues[medianColumnInRow-1])
 		} else {
 			// Few elements remain - use midrange strategy
 			minRemainingSum := math.Inf(1)
@@ -208,8 +208,8 @@ func fastCenter[T Number](values []T) (float64, error) {
 					continue
 				}
 
-				minInRow := float64(sortedValues[leftBounds[i]-1] + sortedValues[i])
-				maxInRow := float64(sortedValues[rightBounds[i]-1] + sortedValues[i])
+				minInRow := float64(sortedValues[leftBounds[i]-1]) + float64(sortedValues[i])
+				maxInRow := float64(sortedValues[rightBounds[i]-1]) + float64(sortedValues[i])
 
 				minRemainingSum = math.Min(minRemainingSum, minInRow)
 				maxRemainingSum = math.Max(maxRemainingSum, maxInRow)

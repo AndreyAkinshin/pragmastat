@@ -17,7 +17,7 @@ func fastSpread[T Number](values []T) (float64, error) {
 		return 0.0, nil
 	}
 	if n == 2 {
-		return math.Abs(float64(values[1] - values[0])), nil
+		return math.Abs(float64(values[1]) - float64(values[0])), nil
 	}
 
 	// Create deterministic RNG from input values
@@ -52,7 +52,7 @@ func fastSpread[T Number](values []T) (float64, error) {
 	rowCounts := make([]int64, n)
 
 	// Initial pivot: a central gap
-	pivot := float64(a[n/2] - a[(n-1)/2])
+	pivot := float64(a[n/2]) - float64(a[(n-1)/2])
 	prevCountBelow := int64(-1)
 
 	for {
@@ -66,7 +66,7 @@ func fastSpread[T Number](values []T) (float64, error) {
 			if j < i+1 {
 				j = i + 1
 			}
-			for j < n && float64(a[j]-a[i]) < pivot {
+			for j < n && float64(a[j])-float64(a[i]) < pivot {
 				j++
 			}
 
@@ -79,12 +79,12 @@ func fastSpread[T Number](values []T) (float64, error) {
 
 			// boundary elements for this row
 			if cntRow > 0 {
-				candBelow := float64(a[j-1] - a[i])
+				candBelow := float64(a[j-1]) - float64(a[i])
 				largestBelow = math.Max(largestBelow, candBelow)
 			}
 
 			if j < n {
-				candAtOrAbove := float64(a[j] - a[i])
+				candAtOrAbove := float64(a[j]) - float64(a[i])
 				smallestAtOrAbove = math.Min(smallestAtOrAbove, candAtOrAbove)
 			}
 		}
@@ -117,8 +117,8 @@ func fastSpread[T Number](values []T) (float64, error) {
 					continue
 				}
 
-				rowMin := float64(a[Li] - a[i])
-				rowMax := float64(a[Ri] - a[i])
+				rowMin := float64(a[Li]) - float64(a[i])
+				rowMax := float64(a[Ri]) - float64(a[i])
 				minActive = math.Min(minActive, rowMin)
 				maxActive = math.Max(maxActive, rowMax)
 				active += int64(Ri - Li + 1)
@@ -193,8 +193,8 @@ func fastSpread[T Number](values []T) (float64, error) {
 				if L[i] > R[i] {
 					continue
 				}
-				lo := float64(a[L[i]] - a[i])
-				hi := float64(a[R[i]] - a[i])
+				lo := float64(a[L[i]]) - float64(a[i])
+				hi := float64(a[R[i]]) - float64(a[i])
 				minRem = math.Min(minRem, lo)
 				maxRem = math.Max(maxRem, hi)
 			}
@@ -212,10 +212,9 @@ func fastSpread[T Number](values []T) (float64, error) {
 			if kLow < kHigh {
 				return 0.5 * (minRem + maxRem), nil
 			}
-			if math.Abs(float64(kLow-1)-float64(countBelow)) <= math.Abs(float64(countBelow)-float64(kLow)) {
-				return minRem, nil
-			}
-			return maxRem, nil
+			// In this code path countBelow < kLow, so minRem is always the correct result:
+			// |kLow-1-countBelow| = d-1 <= d = |countBelow-kLow| for all d > 0.
+			return minRem, nil
 		}
 
 		// Weighted random row selection
@@ -235,6 +234,6 @@ func fastSpread[T Number](values []T) (float64, error) {
 
 		// Median column of the selected row
 		col := (L[row] + R[row]) / 2
-		pivot = float64(a[col] - a[row])
+		pivot = float64(a[col]) - float64(a[row])
 	}
 }
