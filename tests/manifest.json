@@ -179,31 +179,31 @@
           "directory": "distributions/uniform",
           "pattern": "*.json",
           "description": "Uniform distribution tests",
-          "languages": ["rs"]
+          "languages": ["cs", "go", "kt", "py", "r", "rs", "ts"]
         },
         "additive": {
           "directory": "distributions/additive",
           "pattern": "*.json",
           "description": "Additive (normal) distribution tests",
-          "languages": ["rs"]
+          "languages": ["cs", "go", "kt", "py", "r", "rs", "ts"]
         },
         "multiplic": {
           "directory": "distributions/multiplic",
           "pattern": "*.json",
           "description": "Multiplicative (log-normal) distribution tests",
-          "languages": ["rs"]
+          "languages": ["cs", "go", "kt", "py", "r", "rs", "ts"]
         },
         "exp": {
           "directory": "distributions/exp",
           "pattern": "*.json",
           "description": "Exponential distribution tests",
-          "languages": ["rs"]
+          "languages": ["cs", "go", "kt", "py", "r", "rs", "ts"]
         },
         "power": {
           "directory": "distributions/power",
           "pattern": "*.json",
           "description": "Power distribution tests",
-          "languages": ["rs"]
+          "languages": ["cs", "go", "kt", "py", "r", "rs", "ts"]
         }
       }
     }
