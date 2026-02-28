@@ -87,6 +87,9 @@ class ReferenceTest {
     private val mapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
     private val epsilon = 1e-9
 
+    /** Create a y-sample with Subject.Y so validation errors report the correct subject. */
+    private fun sampleY(values: List<Double>): Sample = Sample.create(values, null, NumberUnit, Subject.Y)
+
     private fun assertClose(
         expected: Double,
         actual: Double,
@@ -102,9 +105,9 @@ class ReferenceTest {
     fun testOneSampleEstimators(): List<DynamicTest> {
         @Suppress("DEPRECATION")
         val estimators =
-            mapOf(
-                "center" to ::center,
-                "spread" to ::spread,
+            mapOf<String, (List<Double>) -> Double>(
+                "center" to { x -> center(Sample.of(x)).value },
+                "spread" to { x -> spread(Sample.of(x)).value },
                 "rel-spread" to ::relSpread,
             )
 
@@ -161,11 +164,11 @@ class ReferenceTest {
     @TestFactory
     fun testTwoSampleEstimators(): List<DynamicTest> {
         val estimators =
-            mapOf(
-                "shift" to ::shift,
-                "ratio" to ::ratio,
+            mapOf<String, (List<Double>, List<Double>) -> Double>(
+                "shift" to { x, y -> shift(Sample.of(x), sampleY(y)).value },
+                "ratio" to { x, y -> ratio(Sample.of(x), sampleY(y)).value },
                 "avg-spread" to ::avgSpread,
-                "disparity" to ::disparity,
+                "disparity" to { x, y -> disparity(Sample.of(x), sampleY(y)).value },
             )
 
         val tests = mutableListOf<DynamicTest>()
@@ -292,7 +295,7 @@ class ReferenceTest {
                     if (testData.expectedError != null) {
                         val exception =
                             assertThrows<AssumptionException> {
-                                shiftBounds(testData.input.x, testData.input.y, testData.input.misrate)
+                                shiftBounds(Sample.of(testData.input.x), sampleY(testData.input.y), testData.input.misrate)
                             }
                         kotlin.test.assertEquals(
                             testData.expectedError["id"],
@@ -311,8 +314,8 @@ class ReferenceTest {
 
                     val result =
                         shiftBounds(
-                            testData.input.x,
-                            testData.input.y,
+                            Sample.of(testData.input.x),
+                            sampleY(testData.input.y),
                             testData.input.misrate,
                         )
                     assertClose(testData.output!!.lower, result.lower)
@@ -344,7 +347,7 @@ class ReferenceTest {
                     if (testData.expectedError != null) {
                         val exception =
                             assertThrows<AssumptionException> {
-                                ratioBounds(testData.input.x, testData.input.y, testData.input.misrate)
+                                ratioBounds(Sample.of(testData.input.x), sampleY(testData.input.y), testData.input.misrate)
                             }
                         kotlin.test.assertEquals(
                             testData.expectedError["id"],
@@ -363,8 +366,8 @@ class ReferenceTest {
 
                     val result =
                         ratioBounds(
-                            testData.input.x,
-                            testData.input.y,
+                            Sample.of(testData.input.x),
+                            sampleY(testData.input.y),
                             testData.input.misrate,
                         )
                     assertClose(testData.output!!.lower, result.lower)
@@ -999,7 +1002,7 @@ class ReferenceTest {
                     if (testData.expectedError != null) {
                         val exception =
                             assertThrows<AssumptionException> {
-                                centerBounds(testData.input.x, testData.input.misrate)
+                                centerBounds(Sample.of(testData.input.x), testData.input.misrate)
                             }
                         assertEquals(
                             testData.expectedError["id"],
@@ -1018,7 +1021,7 @@ class ReferenceTest {
 
                     val result =
                         centerBounds(
-                            testData.input.x,
+                            Sample.of(testData.input.x),
                             testData.input.misrate,
                         )
                     assertClose(testData.output!!.lower, result.lower)
@@ -1049,7 +1052,7 @@ class ReferenceTest {
                     if (testData.expectedError != null) {
                         val exception =
                             assertThrows<AssumptionException> {
-                                spreadBounds(testData.input.x, testData.input.misrate, testData.input.seed)
+                                spreadBounds(Sample.of(testData.input.x), testData.input.misrate, testData.input.seed)
                             }
                         assertEquals(
                             testData.expectedError["id"],
@@ -1068,7 +1071,7 @@ class ReferenceTest {
 
                     val result =
                         spreadBounds(
-                            testData.input.x,
+                            Sample.of(testData.input.x),
                             testData.input.misrate,
                             testData.input.seed,
                         )
@@ -1152,7 +1155,12 @@ class ReferenceTest {
                     if (testData.expectedError != null) {
                         val exception =
                             assertThrows<AssumptionException> {
-                                disparityBounds(testData.input.x, testData.input.y, testData.input.misrate, testData.input.seed)
+                                disparityBounds(
+                                    Sample.of(testData.input.x),
+                                    sampleY(testData.input.y),
+                                    testData.input.misrate,
+                                    testData.input.seed,
+                                )
                             }
                         assertEquals(
                             testData.expectedError["id"],
@@ -1171,8 +1179,8 @@ class ReferenceTest {
 
                     val result =
                         disparityBounds(
-                            testData.input.x,
-                            testData.input.y,
+                            Sample.of(testData.input.x),
+                            sampleY(testData.input.y),
                             testData.input.misrate,
                             testData.input.seed,
                         )

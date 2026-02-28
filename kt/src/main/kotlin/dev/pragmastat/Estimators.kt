@@ -11,7 +11,7 @@ import kotlin.math.min
  * More robust than the mean and more efficient than the median.
  * Uses fast O(n log n) algorithm.
  */
-fun center(x: List<Double>): Double {
+internal fun center(x: List<Double>): Double {
     // Check validity (priority 0)
     checkValidity(x, Subject.X)
     return fastCenter(x)
@@ -27,7 +27,7 @@ fun center(x: List<Double>): Double {
  * Assumptions:
  *   - sparity(x) - sample must be non tie-dominant (Spread > 0)
  */
-fun spread(x: List<Double>): Double {
+internal fun spread(x: List<Double>): Double {
     // Check validity (priority 0)
     checkValidity(x, Subject.X)
     val spreadVal = fastSpread(x)
@@ -47,7 +47,7 @@ fun spread(x: List<Double>): Double {
  *   - positivity(x) - all values must be strictly positive (ensures Center > 0)
  */
 @Deprecated("Use spread(x) / abs(center(x)) instead.", ReplaceWith("spread(x) / abs(center(x))"))
-fun relSpread(x: List<Double>): Double {
+internal fun relSpread(x: List<Double>): Double {
     // Check validity (priority 0)
     checkValidity(x, Subject.X)
     // Check positivity (priority 1)
@@ -67,7 +67,7 @@ fun relSpread(x: List<Double>): Double {
  * Positive values mean x is typically larger, negative means y is typically larger.
  * Uses fast O((m + n) * log(precision)) algorithm.
  */
-fun shift(
+internal fun shift(
     x: List<Double>,
     y: List<Double>,
 ): Double {
@@ -89,7 +89,7 @@ fun shift(
  *   - positivity(x) - all values in x must be strictly positive
  *   - positivity(y) - all values in y must be strictly positive
  */
-fun ratio(
+internal fun ratio(
     x: List<Double>,
     y: List<Double>,
 ): Double {
@@ -146,7 +146,7 @@ internal fun avgSpread(
  *   - sparity(x) - first sample must be non tie-dominant (Spread > 0)
  *   - sparity(y) - second sample must be non tie-dominant (Spread > 0)
  */
-fun disparity(
+internal fun disparity(
     x: List<Double>,
     y: List<Double>,
 ): Double {
@@ -206,7 +206,7 @@ data class Bounds(
  * @param misrate Misclassification rate (probability that true shift falls outside bounds)
  * @return A Bounds object containing the lower and upper bounds
  */
-fun shiftBounds(
+internal fun shiftBounds(
     x: List<Double>,
     y: List<Double>,
     misrate: Double = DEFAULT_MISRATE,
@@ -272,7 +272,7 @@ fun shiftBounds(
  * @param misrate Misclassification rate (probability that true ratio falls outside bounds)
  * @return A Bounds object containing the lower and upper bounds
  */
-fun ratioBounds(
+internal fun ratioBounds(
     x: List<Double>,
     y: List<Double>,
     misrate: Double = DEFAULT_MISRATE,
@@ -315,7 +315,7 @@ fun ratioBounds(
  * @return A Bounds object containing the lower and upper bounds
  * @throws AssumptionException if sample size < 2 or misrate is below minimum achievable
  */
-fun centerBounds(
+internal fun centerBounds(
     x: List<Double>,
     misrate: Double = DEFAULT_MISRATE,
 ): Bounds {
@@ -362,7 +362,7 @@ fun centerBounds(
  * @param seed Optional string seed for deterministic randomization
  * @return A Bounds object containing the lower and upper bounds
  */
-fun spreadBounds(
+internal fun spreadBounds(
     x: List<Double>,
     misrate: Double = DEFAULT_MISRATE,
     seed: String? = null,
@@ -418,7 +418,7 @@ fun spreadBounds(
  * @param seed Optional string seed for deterministic randomization
  * @return A Bounds object containing the lower and upper bounds
  */
-fun disparityBounds(
+internal fun disparityBounds(
     x: List<Double>,
     y: List<Double>,
     misrate: Double = DEFAULT_MISRATE,
