@@ -2,24 +2,8 @@
 /// Based on Monahan's selection algorithm adapted for pairwise differences.
 ///
 /// Internal implementation - not part of public API.
+use crate::fnv1a::hash_f64_slice;
 use crate::rng::Rng;
-
-/// Derive a deterministic seed from input values using FNV-1a hash.
-fn derive_seed(values: &[f64]) -> i64 {
-    const FNV_OFFSET_BASIS: u64 = 0xcbf29ce484222325;
-    const FNV_PRIME: u64 = 0x00000100000001b3;
-
-    let mut hash = FNV_OFFSET_BASIS;
-    for v in values {
-        let bits = v.to_bits();
-        // Hash each byte of the f64 representation
-        for i in 0..8 {
-            hash ^= (bits >> (i * 8)) & 0xff;
-            hash = hash.wrapping_mul(FNV_PRIME);
-        }
-    }
-    hash as i64
-}
 
 pub(crate) fn fast_spread(values: &[f64]) -> Result<f64, &'static str> {
     let n = values.len();
@@ -66,7 +50,7 @@ pub(crate) fn fast_spread(values: &[f64]) -> Result<f64, &'static str> {
     let mut pivot = a[n / 2] - a[(n - 1) / 2];
     let mut prev_count_below = -1i64;
 
-    let mut rng = Rng::from_seed(derive_seed(values));
+    let mut rng = Rng::from_seed(hash_f64_slice(values));
 
     loop {
         // === PARTITION: count how many differences are < pivot ===
@@ -250,15 +234,9 @@ pub(crate) fn fast_spread(values: &[f64]) -> Result<f64, &'static str> {
             if k_low < k_high {
                 return Ok(0.5 * (min_rem + max_rem));
             }
-            return Ok(
-                if ((k_low - 1) as i64 - count_below as i64).abs()
-                    <= (count_below as i64 - k_low as i64).abs()
-                {
-                    min_rem
-                } else {
-                    max_rem
-                },
-            );
+            // In this code path count_below < k_low, so min_rem is always the correct result:
+            // |k_low-1-count_below| = d-1 <= d = |count_below-k_low| for all d > 0.
+            return Ok(min_rem);
         } else {
             // Weighted random row selection
             let t = rng.uniform_i64(0, active_size as i64) as u64;
