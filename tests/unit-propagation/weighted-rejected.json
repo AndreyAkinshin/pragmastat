@@ -1,0 +1,8 @@
+{
+  "input": {
+    "estimator": "center",
+    "x": [1, 2, 3],
+    "x_weights": [0.5, 0.3, 0.2]
+  },
+  "expected_error": "weighted_not_supported"
+}

@@ -1,0 +1,9 @@
+{
+  "input": {
+    "values": [42.0]
+  },
+  "output": {
+    "size": 1,
+    "is_weighted": false
+  }
+}

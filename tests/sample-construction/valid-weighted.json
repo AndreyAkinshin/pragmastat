@@ -1,0 +1,10 @@
+{
+  "input": {
+    "values": [1.0, 2.0, 3.0],
+    "weights": [0.5, 0.3, 0.2]
+  },
+  "output": {
+    "size": 3,
+    "is_weighted": true
+  }
+}

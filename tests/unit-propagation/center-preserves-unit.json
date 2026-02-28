@@ -1,0 +1,11 @@
+{
+  "input": {
+    "estimator": "center",
+    "x": [1, 2, 3, 4, 5],
+    "x_unit": "number"
+  },
+  "output": {
+    "value": 3,
+    "unit": "number"
+  }
+}

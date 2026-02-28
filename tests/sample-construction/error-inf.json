@@ -1,0 +1,9 @@
+{
+  "input": {
+    "values": [1.0, "Infinity", 3.0]
+  },
+  "expected_error": {
+    "id": "validity",
+    "subject": "x"
+  }
+}

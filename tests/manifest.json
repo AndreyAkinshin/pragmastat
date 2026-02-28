@@ -170,6 +170,20 @@
       "description": "SignedRankMargin function tests",
       "languages": ["cs", "go", "kt", "py", "r", "rs", "ts"]
     },
+    "sample-construction": {
+      "directory": "sample-construction",
+      "generator": "manual",
+      "pattern": "*.json",
+      "description": "Sample construction and validation tests",
+      "languages": ["cs", "go", "kt", "py", "r", "rs", "ts"]
+    },
+    "unit-propagation": {
+      "directory": "unit-propagation",
+      "generator": "manual",
+      "pattern": "*.json",
+      "description": "Estimator unit output propagation tests",
+      "languages": ["cs", "go", "kt", "py", "r", "rs", "ts"]
+    },
     "distributions": {
       "directory": "distributions",
       "generator": "rs/pragmastat/examples/gen_rng_tests.rs",
