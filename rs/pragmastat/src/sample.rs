@@ -6,7 +6,7 @@
 
 use crate::assumptions::{AssumptionError, EstimatorError, Subject};
 use crate::measurement_unit::{
-    conversion_factor, finer, is_compatible, MeasurementUnit, NumberUnit, UnitMismatchError,
+    conversion_factor, finer, is_compatible, MeasurementUnit, UnitMismatchError,
 };
 use std::cell::OnceCell;
 use std::ops::Mul;
@@ -19,7 +19,7 @@ use std::ops::Mul;
 pub struct Sample {
     values: Vec<f64>,
     weights: Option<Vec<f64>>,
-    unit: Box<dyn MeasurementUnit>,
+    unit: MeasurementUnit,
     is_weighted: bool,
     total_weight: f64,
     weighted_size: f64,
@@ -28,13 +28,13 @@ pub struct Sample {
 }
 
 impl Sample {
-    /// Creates an unweighted sample from numeric values with the default [`NumberUnit`].
+    /// Creates an unweighted sample from numeric values with the default number unit.
     ///
     /// # Errors
     ///
     /// Returns [`EstimatorError`] if `values` is empty or contains NaN/infinite values.
     pub fn new(values: Vec<f64>) -> Result<Self, EstimatorError> {
-        Self::with_unit(values, Box::new(NumberUnit))
+        Self::with_unit(values, MeasurementUnit::number())
     }
 
     /// Creates an unweighted sample with a specified unit.
@@ -42,10 +42,7 @@ impl Sample {
     /// # Errors
     ///
     /// Returns [`EstimatorError`] if `values` is empty or contains NaN/infinite values.
-    pub fn with_unit(
-        values: Vec<f64>,
-        unit: Box<dyn MeasurementUnit>,
-    ) -> Result<Self, EstimatorError> {
+    pub fn with_unit(values: Vec<f64>, unit: MeasurementUnit) -> Result<Self, EstimatorError> {
         Self::build(values, None, unit, Subject::X)
     }
 
@@ -61,7 +58,7 @@ impl Sample {
     pub fn weighted(
         values: Vec<f64>,
         weights: Vec<f64>,
-        unit: Box<dyn MeasurementUnit>,
+        unit: MeasurementUnit,
     ) -> Result<Self, EstimatorError> {
         Self::build(values, Some(weights), unit, Subject::X)
     }
@@ -75,7 +72,7 @@ impl Sample {
     fn build(
         values: Vec<f64>,
         weights: Option<Vec<f64>>,
-        unit: Box<dyn MeasurementUnit>,
+        unit: MeasurementUnit,
         subject: Subject,
     ) -> Result<Self, EstimatorError> {
         if values.is_empty() {
@@ -158,8 +155,8 @@ impl Sample {
     }
 
     /// Returns a reference to the unit.
-    pub fn unit(&self) -> &dyn MeasurementUnit {
-        self.unit.as_ref()
+    pub fn unit(&self) -> &MeasurementUnit {
+        &self.unit
     }
 
     /// Returns the subject label (X or Y) for error reporting.
@@ -181,19 +178,19 @@ impl Sample {
     /// # Errors
     ///
     /// Returns an error if the target unit is in a different family.
-    pub fn convert_to(&self, target: &dyn MeasurementUnit) -> Result<Self, UnitMismatchError> {
-        if !is_compatible(self.unit.as_ref(), target) {
-            return Err(UnitMismatchError::new(self.unit.as_ref(), target));
+    pub fn convert_to(&self, target: &MeasurementUnit) -> Result<Self, UnitMismatchError> {
+        if !is_compatible(&self.unit, target) {
+            return Err(UnitMismatchError::new(&self.unit, target));
         }
         if self.unit.id() == target.id() && self.unit.base_units() == target.base_units() {
             return Ok(self.clone());
         }
-        let factor = conversion_factor(self.unit.as_ref(), target);
+        let factor = conversion_factor(&self.unit, target);
         let converted: Vec<f64> = self.values.iter().map(|&v| v * factor).collect();
         Ok(Self {
             values: converted,
             weights: self.weights.clone(),
-            unit: target.clone_box(),
+            unit: target.clone(),
             is_weighted: self.is_weighted,
             total_weight: self.total_weight,
             weighted_size: self.weighted_size,
@@ -202,7 +199,7 @@ impl Sample {
         })
     }
 
-    /// Log-transforms the values. Returns a new sample with NumberUnit.
+    /// Log-transforms the values. Returns a new sample with number unit.
     ///
     /// # Errors
     ///
@@ -219,7 +216,7 @@ impl Sample {
         Ok(Self {
             values: log_values,
             weights: self.weights.clone(),
-            unit: Box::new(NumberUnit),
+            unit: MeasurementUnit::number(),
             is_weighted: self.is_weighted,
             total_weight: self.total_weight,
             weighted_size: self.weighted_size,
@@ -297,7 +294,6 @@ pub(crate) fn convert_to_finer(a: &Sample, b: &Sample) -> Result<(Sample, Sample
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::measurement_unit::CustomUnit;
 
     #[test]
     fn new_valid() {
@@ -327,16 +323,15 @@ mod tests {
         let s = Sample::new(vec![3.0, 1.0, 2.0]).unwrap();
         let sorted = s.sorted_values();
         assert_eq!(sorted, &[1.0, 2.0, 3.0]);
-        // Second call returns same cached result
         let sorted2 = s.sorted_values();
         assert_eq!(sorted, sorted2);
     }
 
     #[test]
     fn convert_to_compatible() {
-        let ms = CustomUnit::new("ms", "Time", "ms", "Millisecond", 1_000_000);
-        let ns = CustomUnit::new("ns", "Time", "ns", "Nanosecond", 1);
-        let s = Sample::with_unit(vec![1.0, 2.0], Box::new(ms)).unwrap();
+        let ms = MeasurementUnit::new("ms", "Time", "ms", "Millisecond", 1_000_000);
+        let ns = MeasurementUnit::new("ns", "Time", "ns", "Nanosecond", 1);
+        let s = Sample::with_unit(vec![1.0, 2.0], ms).unwrap();
         let converted = s.convert_to(&ns).unwrap();
         assert!((converted.values()[0] - 1_000_000.0).abs() < 1e-6);
         assert!((converted.values()[1] - 2_000_000.0).abs() < 1e-6);
@@ -345,9 +340,8 @@ mod tests {
 
     #[test]
     fn convert_to_incompatible_fails() {
-        use crate::measurement_unit::RatioUnit;
         let s = Sample::new(vec![1.0, 2.0]).unwrap();
-        assert!(s.convert_to(&RatioUnit).is_err());
+        assert!(s.convert_to(&MeasurementUnit::ratio()).is_err());
     }
 
     #[test]
@@ -362,7 +356,7 @@ mod tests {
         let s = Sample::weighted(
             vec![1.0, 2.0, 3.0],
             vec![1.0, 2.0, 1.0],
-            Box::new(NumberUnit),
+            MeasurementUnit::number(),
         )
         .unwrap();
         assert!(s.is_weighted());
@@ -371,19 +365,19 @@ mod tests {
 
     #[test]
     fn weighted_negative_fails() {
-        let result = Sample::weighted(vec![1.0, 2.0], vec![1.0, -1.0], Box::new(NumberUnit));
+        let result = Sample::weighted(vec![1.0, 2.0], vec![1.0, -1.0], MeasurementUnit::number());
         assert!(result.is_err());
     }
 
     #[test]
     fn weighted_zero_total_fails() {
-        let result = Sample::weighted(vec![1.0, 2.0], vec![0.0, 0.0], Box::new(NumberUnit));
+        let result = Sample::weighted(vec![1.0, 2.0], vec![0.0, 0.0], MeasurementUnit::number());
         assert!(result.is_err());
     }
 
     #[test]
     fn weighted_length_mismatch_fails() {
-        let result = Sample::weighted(vec![1.0, 2.0], vec![1.0], Box::new(NumberUnit));
+        let result = Sample::weighted(vec![1.0, 2.0], vec![1.0], MeasurementUnit::number());
         assert!(result.is_err());
     }
 

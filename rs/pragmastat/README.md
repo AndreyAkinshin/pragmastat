@@ -95,10 +95,10 @@ fn main() {
 
     // --- Unit system ---
 
-    let ms = CustomUnit::new("ms", "Time", "ms", "Millisecond", 1_000_000);
-    let ns = CustomUnit::new("ns", "Time", "ns", "Nanosecond", 1);
+    let ms = MeasurementUnit::new("ms", "Time", "ms", "Millisecond", 1_000_000);
+    let ns = MeasurementUnit::new("ns", "Time", "ns", "Nanosecond", 1);
 
-    let s = Sample::with_unit(vec![1.0, 2.0, 3.0], Box::new(ms)).unwrap();
+    let s = Sample::with_unit(vec![1.0, 2.0, 3.0], ms).unwrap();
     let converted = s.convert_to(&ns).unwrap();
     println!("Converted: {:?}", converted.values()); // [1000000.0, 2000000.0, 3000000.0]
 

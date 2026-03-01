@@ -79,7 +79,7 @@ fn test_sample_construction() {
 
         if raw.get("expected_error").is_some() {
             let result = if let Some(ref w) = weights {
-                Sample::weighted(values, w.clone(), Box::new(NumberUnit))
+                Sample::weighted(values, w.clone(), MeasurementUnit::number())
             } else {
                 Sample::new(values)
             };
@@ -94,7 +94,7 @@ fn test_sample_construction() {
         let expected_is_weighted = output["is_weighted"].as_bool().unwrap();
 
         let result = if let Some(ref w) = weights {
-            Sample::weighted(values, w.clone(), Box::new(NumberUnit))
+            Sample::weighted(values, w.clone(), MeasurementUnit::number())
         } else {
             Sample::new(values)
         };
@@ -179,7 +179,7 @@ fn test_unit_propagation() {
                 .iter()
                 .map(|v| v.as_f64().unwrap())
                 .collect();
-            let sx = Sample::weighted(x_values, x_weights, Box::new(NumberUnit));
+            let sx = Sample::weighted(x_values, x_weights, MeasurementUnit::number());
             match sx {
                 Ok(sx) => {
                     let result = match estimator {
@@ -214,7 +214,7 @@ fn test_unit_propagation() {
         let x_unit_id = input["x_unit"].as_str().unwrap();
         let x_unit = registry.resolve(x_unit_id).unwrap();
 
-        let sx = Sample::with_unit(x_values, x_unit.clone_box()).unwrap();
+        let sx = Sample::with_unit(x_values, x_unit.clone()).unwrap();
 
         let output = &raw["output"];
         let expected_unit = output["unit"].as_str().unwrap();
@@ -257,7 +257,7 @@ fn test_unit_propagation() {
                     .collect();
                 let y_unit_id = input["y_unit"].as_str().unwrap();
                 let y_unit = registry.resolve(y_unit_id).unwrap();
-                let sy = Sample::with_unit(y_values, y_unit.clone_box()).unwrap();
+                let sy = Sample::with_unit(y_values, y_unit.clone()).unwrap();
                 match shift(&sx, &sy) {
                     Ok(m) => {
                         if m.unit.id() != expected_unit {
@@ -279,7 +279,7 @@ fn test_unit_propagation() {
                     .collect();
                 let y_unit_id = input["y_unit"].as_str().unwrap();
                 let y_unit = registry.resolve(y_unit_id).unwrap();
-                let sy = Sample::with_unit(y_values, y_unit.clone_box()).unwrap();
+                let sy = Sample::with_unit(y_values, y_unit.clone()).unwrap();
                 match ratio(&sx, &sy) {
                     Ok(m) => {
                         if m.unit.id() != expected_unit {
@@ -301,7 +301,7 @@ fn test_unit_propagation() {
                     .collect();
                 let y_unit_id = input["y_unit"].as_str().unwrap();
                 let y_unit = registry.resolve(y_unit_id).unwrap();
-                let sy = Sample::with_unit(y_values, y_unit.clone_box()).unwrap();
+                let sy = Sample::with_unit(y_values, y_unit.clone()).unwrap();
                 match disparity(&sx, &sy) {
                     Ok(m) => {
                         if m.unit.id() != expected_unit {

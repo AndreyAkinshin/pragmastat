@@ -54,8 +54,7 @@ pub use estimators::{
 };
 pub use measurement::Measurement;
 pub use measurement_unit::{
-    conversion_factor, finer, is_compatible, CustomUnit, DisparityUnit, MeasurementUnit,
-    NumberUnit, RatioUnit, UnitMismatchError,
+    conversion_factor, finer, is_compatible, MeasurementUnit, UnitMismatchError,
 };
 pub use rng::Rng;
 pub use sample::Sample;

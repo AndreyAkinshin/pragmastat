@@ -1,26 +1,26 @@
 //! Measurement: a value paired with a unit.
 
-use crate::measurement_unit::{MeasurementUnit, NumberUnit};
+use crate::measurement_unit::MeasurementUnit;
 use std::fmt;
 
 /// A numeric value paired with its measurement unit.
 #[derive(Debug, Clone)]
 pub struct Measurement {
     pub value: f64,
-    pub unit: Box<dyn MeasurementUnit>,
+    pub unit: MeasurementUnit,
 }
 
 impl Measurement {
     /// Creates a new measurement with the given value and unit.
-    pub fn new(value: f64, unit: Box<dyn MeasurementUnit>) -> Self {
+    pub fn new(value: f64, unit: MeasurementUnit) -> Self {
         Self { value, unit }
     }
 
-    /// Creates a new measurement with the default [`NumberUnit`].
+    /// Creates a new measurement with the default number unit.
     pub fn unitless(value: f64) -> Self {
         Self {
             value,
-            unit: Box::new(NumberUnit),
+            unit: MeasurementUnit::number(),
         }
     }
 }
@@ -45,7 +45,6 @@ impl fmt::Display for Measurement {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::measurement_unit::CustomUnit;
 
     #[test]
     fn display_unitless() {
@@ -55,8 +54,8 @@ mod tests {
 
     #[test]
     fn display_with_abbreviation() {
-        let unit = CustomUnit::new("ms", "Time", "ms", "Millisecond", 1_000_000);
-        let m = Measurement::new(3.14, Box::new(unit));
+        let unit = MeasurementUnit::new("ms", "Time", "ms", "Millisecond", 1_000_000);
+        let m = Measurement::new(3.14, unit);
         assert_eq!(format!("{m}"), "3.14 ms");
     }
 

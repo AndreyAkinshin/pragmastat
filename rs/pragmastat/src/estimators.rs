@@ -9,7 +9,7 @@ use crate::assumptions::{
 };
 use crate::bounds::Bounds;
 use crate::measurement::Measurement;
-use crate::measurement_unit::{DisparityUnit, RatioUnit};
+use crate::measurement_unit::MeasurementUnit;
 use crate::sample::{check_non_weighted, prepare_pair, Sample};
 
 /// Default misclassification rate for bounds estimators.
@@ -486,7 +486,7 @@ pub mod raw {
 pub fn center(x: &Sample) -> Result<Measurement, EstimatorError> {
     check_non_weighted("x", x)?;
     let result = crate::fast_center::fast_center(x.values()).map_err(EstimatorError::from)?;
-    Ok(Measurement::new(result, x.unit().clone_box()))
+    Ok(Measurement::new(result, x.unit().clone()))
 }
 
 /// Estimates data dispersion (spread).
@@ -504,7 +504,7 @@ pub fn spread(x: &Sample) -> Result<Measurement, EstimatorError> {
     if spread_val <= 0.0 {
         return Err(EstimatorError::from(AssumptionError::sparity(x.subject())));
     }
-    Ok(Measurement::new(spread_val, x.unit().clone_box()))
+    Ok(Measurement::new(spread_val, x.unit().clone()))
 }
 
 /// Measures the typical difference between elements of x and y (shift).
@@ -516,12 +516,12 @@ pub fn shift(x: &Sample, y: &Sample) -> Result<Measurement, EstimatorError> {
     let (x, y) = prepare_pair(x, y)?;
     let result =
         crate::fast_shift::fast_shift(x.values(), y.values()).map_err(EstimatorError::from)?;
-    Ok(Measurement::new(result, x.unit().clone_box()))
+    Ok(Measurement::new(result, x.unit().clone()))
 }
 
 /// Measures how many times larger x is compared to y (ratio).
 ///
-/// Returns a [`Measurement`] with [`RatioUnit`].
+/// Returns a [`Measurement`] with the ratio unit.
 ///
 /// # Assumptions
 ///
@@ -547,7 +547,7 @@ pub fn ratio(x: &Sample, y: &Sample) -> Result<Measurement, EstimatorError> {
     }
     let result =
         crate::fast_shift::fast_ratio(x.values(), y.values()).map_err(EstimatorError::from)?;
-    Ok(Measurement::new(result, Box::new(RatioUnit)))
+    Ok(Measurement::new(result, MeasurementUnit::ratio()))
 }
 
 /// Measures the typical variability when considering both samples together (avg_spread).
@@ -570,13 +570,13 @@ pub(crate) fn avg_spread(x: &Sample, y: &Sample) -> Result<Measurement, Estimato
     }
     Ok(Measurement::new(
         (n * spread_x + m * spread_y) / (n + m),
-        x.unit().clone_box(),
+        x.unit().clone(),
     ))
 }
 
 /// Measures effect size: a normalized difference between x and y (disparity).
 ///
-/// Returns a [`Measurement`] with [`DisparityUnit`].
+/// Returns a [`Measurement`] with the disparity unit.
 ///
 /// # Assumptions
 ///
@@ -601,7 +601,7 @@ pub fn disparity(x: &Sample, y: &Sample) -> Result<Measurement, EstimatorError> 
     let avg_spread_val = (n * spread_x + m * spread_y) / (n + m);
     Ok(Measurement::new(
         shift_val / avg_spread_val,
-        Box::new(DisparityUnit),
+        MeasurementUnit::disparity(),
     ))
 }
 
@@ -613,18 +613,18 @@ pub fn shift_bounds(x: &Sample, y: &Sample, misrate: f64) -> Result<Bounds, Esti
     check_non_weighted("y", y)?;
     let (x, y) = prepare_pair(x, y)?;
     let rb = raw::shift_bounds(x.values(), y.values(), misrate)?;
-    Ok(Bounds::new(rb.lower, rb.upper, x.unit().clone_box()))
+    Ok(Bounds::new(rb.lower, rb.upper, x.unit().clone()))
 }
 
 /// Provides bounds on the ratio estimator.
 ///
-/// Returns [`Bounds`] with [`RatioUnit`].
+/// Returns [`Bounds`] with the ratio unit.
 pub fn ratio_bounds(x: &Sample, y: &Sample, misrate: f64) -> Result<Bounds, EstimatorError> {
     check_non_weighted("x", x)?;
     check_non_weighted("y", y)?;
     let (x, y) = prepare_pair(x, y)?;
     let rb = raw::ratio_bounds(x.values(), y.values(), misrate)?;
-    Ok(Bounds::new(rb.lower, rb.upper, Box::new(RatioUnit)))
+    Ok(Bounds::new(rb.lower, rb.upper, MeasurementUnit::ratio()))
 }
 
 /// Provides exact distribution-free bounds for center.
@@ -633,7 +633,7 @@ pub fn ratio_bounds(x: &Sample, y: &Sample, misrate: f64) -> Result<Bounds, Esti
 pub fn center_bounds(x: &Sample, misrate: f64) -> Result<Bounds, EstimatorError> {
     check_non_weighted("x", x)?;
     let rb = raw::center_bounds(x.values(), misrate)?;
-    Ok(Bounds::new(rb.lower, rb.upper, x.unit().clone_box()))
+    Ok(Bounds::new(rb.lower, rb.upper, x.unit().clone()))
 }
 
 /// Provides distribution-free bounds for spread.
@@ -642,7 +642,7 @@ pub fn center_bounds(x: &Sample, misrate: f64) -> Result<Bounds, EstimatorError>
 pub fn spread_bounds(x: &Sample, misrate: f64) -> Result<Bounds, EstimatorError> {
     check_non_weighted("x", x)?;
     let rb = raw::spread_bounds(x.values(), misrate)?;
-    Ok(Bounds::new(rb.lower, rb.upper, x.unit().clone_box()))
+    Ok(Bounds::new(rb.lower, rb.upper, x.unit().clone()))
 }
 
 /// Provides distribution-free spread bounds with a deterministic seed.
@@ -653,18 +653,22 @@ pub fn spread_bounds_with_seed(
 ) -> Result<Bounds, EstimatorError> {
     check_non_weighted("x", x)?;
     let rb = raw::spread_bounds_with_seed(x.values(), misrate, seed)?;
-    Ok(Bounds::new(rb.lower, rb.upper, x.unit().clone_box()))
+    Ok(Bounds::new(rb.lower, rb.upper, x.unit().clone()))
 }
 
 /// Provides distribution-free bounds for disparity.
 ///
-/// Returns [`Bounds`] with [`DisparityUnit`].
+/// Returns [`Bounds`] with the disparity unit.
 pub fn disparity_bounds(x: &Sample, y: &Sample, misrate: f64) -> Result<Bounds, EstimatorError> {
     check_non_weighted("x", x)?;
     check_non_weighted("y", y)?;
     let (x, y) = prepare_pair(x, y)?;
     let rb = raw::disparity_bounds(x.values(), y.values(), misrate)?;
-    Ok(Bounds::new(rb.lower, rb.upper, Box::new(DisparityUnit)))
+    Ok(Bounds::new(
+        rb.lower,
+        rb.upper,
+        MeasurementUnit::disparity(),
+    ))
 }
 
 /// Provides distribution-free disparity bounds with a deterministic seed.
@@ -678,7 +682,11 @@ pub fn disparity_bounds_with_seed(
     check_non_weighted("y", y)?;
     let (x, y) = prepare_pair(x, y)?;
     let rb = raw::disparity_bounds_with_seed(x.values(), y.values(), misrate, seed)?;
-    Ok(Bounds::new(rb.lower, rb.upper, Box::new(DisparityUnit)))
+    Ok(Bounds::new(
+        rb.lower,
+        rb.upper,
+        MeasurementUnit::disparity(),
+    ))
 }
 
 // Internal avg_spread_bounds functions for tests
@@ -692,7 +700,7 @@ pub(crate) fn avg_spread_bounds(
     check_non_weighted("y", y)?;
     let (x, y) = prepare_pair(x, y)?;
     let rb = raw::avg_spread_bounds(x.values(), y.values(), misrate)?;
-    Ok(Bounds::new(rb.lower, rb.upper, x.unit().clone_box()))
+    Ok(Bounds::new(rb.lower, rb.upper, x.unit().clone()))
 }
 
 #[cfg(test)]
@@ -706,5 +714,5 @@ pub(crate) fn avg_spread_bounds_with_seed(
     check_non_weighted("y", y)?;
     let (x, y) = prepare_pair(x, y)?;
     let rb = raw::avg_spread_bounds_with_seed(x.values(), y.values(), misrate, seed)?;
-    Ok(Bounds::new(rb.lower, rb.upper, x.unit().clone_box()))
+    Ok(Bounds::new(rb.lower, rb.upper, x.unit().clone()))
 }
