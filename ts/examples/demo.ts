@@ -16,7 +16,7 @@ import {
   Power,
   Uniform,
   Sample,
-} from '../src';
+} from '..';
 
 function main(): void {
   // --- One-Sample ---

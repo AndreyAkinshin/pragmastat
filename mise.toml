@@ -190,7 +190,7 @@ run = "./gradlew clean"
 [tasks."kt:demo"]
 description = "Run Kotlin demo"
 dir = "kt"
-run = "./gradlew run"
+run = "./gradlew :demo:run"
 
 [tasks."kt:pack"]
 description = "Package Kotlin JAR"
@@ -544,7 +544,7 @@ run = "pnpm install --frozen-lockfile"
 [tasks."ts:demo"]
 description = "Run TypeScript demo"
 dir = "ts"
-run = "pnpm exec ts-node examples/demo.ts"
+run = "pnpm build && pnpm exec ts-node examples/demo.ts"
 
 [tasks."ts:coverage"]
 description = "Run TypeScript tests with coverage"
