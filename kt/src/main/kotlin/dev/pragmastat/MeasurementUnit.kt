@@ -7,74 +7,30 @@ package dev.pragmastat
  * The [baseUnits] value determines the conversion factor: a unit with smaller baseUnits
  * represents a finer (higher precision) measurement.
  */
-interface MeasurementUnit {
+data class MeasurementUnit(
     /** Unique identifier for this unit (e.g., "ns", "us", "ms"). */
-    val id: String
-
+    val id: String,
     /** Unit family for compatibility checking (e.g., "Time", "Number"). */
-    val family: String
-
+    val family: String,
     /** Short display label (e.g., "ns", "ms"). Empty for dimensionless units. */
-    val abbreviation: String
-
+    val abbreviation: String,
     /** Human-readable name (e.g., "Nanosecond", "Number"). */
-    val fullName: String
-
+    val fullName: String,
     /** Number of base units this unit represents. Used for conversion factor calculation. */
-    val baseUnits: Long
-
+    val baseUnits: Long,
+) {
     /** Returns true if this unit is compatible (same family) with [other]. */
     fun isCompatible(other: MeasurementUnit): Boolean = family == other.family
 }
 
-/**
- * Sealed interface for the standard built-in units (Number, Ratio, Disparity).
- */
-sealed interface StandardUnit : MeasurementUnit
-
 /** Dimensionless numeric unit. Default unit for raw numeric samples. */
-data object NumberUnit : StandardUnit {
-    override val id: String = "number"
-    override val family: String = "Number"
-    override val abbreviation: String = ""
-    override val fullName: String = "Number"
-    override val baseUnits: Long = 1L
-}
+val NumberUnit = MeasurementUnit("number", "Number", "", "Number", 1)
 
 /** Dimensionless ratio unit. Used by the Ratio estimator. */
-data object RatioUnit : StandardUnit {
-    override val id: String = "ratio"
-    override val family: String = "Ratio"
-    override val abbreviation: String = ""
-    override val fullName: String = "Ratio"
-    override val baseUnits: Long = 1L
-}
+val RatioUnit = MeasurementUnit("ratio", "Ratio", "", "Ratio", 1)
 
 /** Dimensionless disparity (effect size) unit. Used by the Disparity estimator. */
-data object DisparityUnit : StandardUnit {
-    override val id: String = "disparity"
-    override val family: String = "Disparity"
-    override val abbreviation: String = ""
-    override val fullName: String = "Disparity"
-    override val baseUnits: Long = 1L
-}
-
-/**
- * A user-defined measurement unit.
- *
- * @property id Unique identifier
- * @property family Unit family for compatibility checking
- * @property abbreviation Short display label
- * @property fullName Human-readable name
- * @property baseUnits Number of base units (for conversion factor calculation)
- */
-data class CustomUnit(
-    override val id: String,
-    override val family: String,
-    override val abbreviation: String,
-    override val fullName: String,
-    override val baseUnits: Long,
-) : MeasurementUnit
+val DisparityUnit = MeasurementUnit("disparity", "Disparity", "", "Disparity", 1)
 
 /**
  * Returns the finer (higher precision) of two compatible units.

@@ -40,9 +40,9 @@ fun main() {
 
     // --- Custom units ---
 
-    val ns = CustomUnit("ns", "Time", "ns", "Nanosecond", 1)
-    val us = CustomUnit("us", "Time", "us", "Microsecond", 1000)
-    val ms = CustomUnit("ms", "Time", "ms", "Millisecond", 1_000_000)
+    val ns = MeasurementUnit("ns", "Time", "ns", "Nanosecond", 1)
+    val us = MeasurementUnit("us", "Time", "us", "Microsecond", 1000)
+    val ms = MeasurementUnit("ms", "Time", "ms", "Millisecond", 1_000_000)
 
     val registry = UnitRegistry.standard()
     registry.register(ns)
