@@ -1,6 +1,6 @@
 namespace Pragmastat.Metrology;
 
-public abstract class MeasurementUnit(string id, string family, string abbreviation, string fullName, long baseUnits = 1)
+public class MeasurementUnit(string id, string family, string abbreviation, string fullName, long baseUnits = 1)
   : IEquatable<MeasurementUnit>
 {
   public string Id { get; } = id;
