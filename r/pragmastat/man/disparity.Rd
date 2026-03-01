@@ -5,8 +5,8 @@
 disparity(x, y)
 }
 \arguments{
-\item{x}{A numeric vector representing the first sample.}
-\item{y}{A numeric vector representing the second sample.}
+\item{x}{A numeric vector or \code{\link{Sample}} representing the first sample.}
+\item{y}{A numeric vector or \code{\link{Sample}} representing the second sample.}
 }
 \description{
 Computes the Disparity estimator - defined as Shift(x,y) / AvgSpread(x,y).
@@ -15,7 +15,8 @@ expressed in standardized spread units. It serves as a robust alternative to
 traditional effect size measures like Cohen's d.
 }
 \value{
-A single numeric value representing the Disparity estimation.
+A \code{\link{Measurement}} when given \code{\link{Sample}} input,
+or a single numeric value when given numeric vectors.
 }
 \examples{
 # Basic usage

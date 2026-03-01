@@ -5,7 +5,7 @@
 spread_bounds(x, misrate = DEFAULT_MISRATE, seed = NULL)
 }
 \arguments{
-\item{x}{Numeric vector of values (at least 2 elements).}
+\item{x}{A numeric vector or \code{\link{Sample}} (at least 2 elements).}
 \item{misrate}{Misclassification rate. Must satisfy \code{misrate >= 2^(1 - floor(n/2))}.}
 \item{seed}{Optional string seed for deterministic randomization.}
 }
@@ -26,9 +26,8 @@ With ties or small samples, the bounds may be conservative (wider than necessary
 Conservatism decreases as the sample size grows.
 }
 \value{
-A list with components:
-\item{lower}{The lower bound on the spread estimator.}
-\item{upper}{The upper bound on the spread estimator.}
+A \code{\link{Bounds}} object when given \code{\link{Sample}} input,
+or a list with components \code{lower} and \code{upper} when given a numeric vector.
 }
 \seealso{
 \code{\link{spread}} for the point estimator.

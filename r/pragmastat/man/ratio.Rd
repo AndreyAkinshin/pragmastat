@@ -5,8 +5,8 @@
 ratio(x, y)
 }
 \arguments{
-\item{x}{A numeric vector representing the first sample (must be strictly positive).}
-\item{y}{A numeric vector representing the second sample (must be strictly positive).}
+\item{x}{A numeric vector or \code{\link{Sample}} representing the first sample (must be strictly positive).}
+\item{y}{A numeric vector or \code{\link{Sample}} representing the second sample (must be strictly positive).}
 }
 \description{
 Computes the Ratio estimator - the geometric median of pairwise ratios via log-space
@@ -16,7 +16,8 @@ This measure estimates how many times larger x is compared to y and provides
 a robust alternative to the ratio of means.
 }
 \value{
-A single numeric value representing the Ratio estimation.
+A \code{\link{Measurement}} when given \code{\link{Sample}} input,
+or a single numeric value when given numeric vectors.
 }
 \examples{
 # Basic usage

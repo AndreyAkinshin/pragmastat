@@ -5,7 +5,7 @@
 center(x)
 }
 \arguments{
-\item{x}{A numeric vector for which to compute the Center estimator.}
+\item{x}{A numeric vector or \code{\link{Sample}} for which to compute the Center estimator.}
 }
 \description{
 Computes the Center estimator - the median of all pairwise averages (xi + xj)/2
@@ -14,7 +14,8 @@ robust than the mean while being more efficient than the median.
 This estimator is also known as the Hodges-Lehmann location estimator.
 }
 \value{
-A single numeric value representing the Center estimation.
+A \code{\link{Measurement}} when given \code{\link{Sample}} input,
+or a single numeric value when given a numeric vector.
 }
 \examples{
 # Basic usage

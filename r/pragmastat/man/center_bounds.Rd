@@ -5,7 +5,7 @@
 center_bounds(x, misrate = DEFAULT_MISRATE)
 }
 \arguments{
-\item{x}{Numeric vector of values (at least 2 elements).}
+\item{x}{A numeric vector or \code{\link{Sample}} (at least 2 elements).}
 \item{misrate}{Misclassification rate, probability that the true center falls outside bounds. Must satisfy \code{misrate >= 2^(1-n)}.}
 }
 \description{
@@ -14,7 +14,8 @@ Uses SignedRankMargin to determine which pairwise averages form the bounds.
 Requires weak symmetry and weak continuity assumptions.
 }
 \value{
-A list with components \code{lower} and \code{upper}.
+A \code{\link{Bounds}} object when given \code{\link{Sample}} input,
+or a list with components \code{lower} and \code{upper} when given a numeric vector.
 }
 \seealso{
 \code{\link{center}}

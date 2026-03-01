@@ -5,7 +5,7 @@
 spread(x)
 }
 \arguments{
-\item{x}{A numeric vector for which to compute the Spread estimator.}
+\item{x}{A numeric vector or \code{\link{Sample}} for which to compute the Spread estimator.}
 }
 \description{
 Computes the Spread estimator - the median of all pairwise absolute differences |xi - xj|
@@ -14,7 +14,8 @@ provides a robust alternative to standard deviation.
 This estimator is also known as the Shamos scale estimator.
 }
 \value{
-A single numeric value representing the Spread estimation.
+A \code{\link{Measurement}} when given \code{\link{Sample}} input,
+or a single numeric value when given a numeric vector.
 }
 \examples{
 # Single sample usage

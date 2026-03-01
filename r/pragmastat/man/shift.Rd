@@ -5,8 +5,8 @@
 shift(x, y)
 }
 \arguments{
-\item{x}{A numeric vector representing the first sample.}
-\item{y}{A numeric vector representing the second sample.}
+\item{x}{A numeric vector or \code{\link{Sample}} representing the first sample.}
+\item{y}{A numeric vector or \code{\link{Sample}} representing the second sample.}
 }
 \description{
 Computes the Shift estimator - the median of all pairwise differences (xi - yj)
@@ -16,7 +16,8 @@ provides a robust alternative to the difference of means.
 This estimator is also known as the Hodges-Lehmann shift estimator.
 }
 \value{
-A single numeric value representing the Shift estimation.
+A \code{\link{Measurement}} when given \code{\link{Sample}} input,
+or a single numeric value when given numeric vectors.
 }
 \examples{
 # Basic usage

@@ -5,8 +5,8 @@
 disparity_bounds(x, y, misrate = DEFAULT_MISRATE, seed = NULL)
 }
 \arguments{
-\item{x}{Numeric vector of values (at least 2 elements).}
-\item{y}{Numeric vector of values (at least 2 elements).}
+\item{x}{A numeric vector or \code{\link{Sample}} (at least 2 elements).}
+\item{y}{A numeric vector or \code{\link{Sample}} (at least 2 elements).}
 \item{misrate}{Misclassification rate. Uses Bonferroni split between shift and avg_spread components.}
 \item{seed}{Optional string seed for deterministic randomization.}
 }
@@ -19,9 +19,8 @@ Splits the misrate budget between a \code{shift_bounds} call and an \code{avg_sp
 then combines the resulting intervals to bound the ratio Shift / AvgSpread.
 }
 \value{
-A list with components:
-\item{lower}{The lower bound on the disparity estimator.}
-\item{upper}{The upper bound on the disparity estimator.}
+A \code{\link{Bounds}} object when given \code{\link{Sample}} input,
+or a list with components \code{lower} and \code{upper} when given numeric vectors.
 }
 \seealso{
 \code{\link{shift_bounds}} for shift bounds,

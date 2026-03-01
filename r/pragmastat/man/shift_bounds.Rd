@@ -5,8 +5,8 @@
 shift_bounds(x, y, misrate = DEFAULT_MISRATE)
 }
 \arguments{
-\item{x}{A numeric vector representing the first sample.}
-\item{y}{A numeric vector representing the second sample.}
+\item{x}{A numeric vector or \code{\link{Sample}} representing the first sample.}
+\item{y}{A numeric vector or \code{\link{Sample}} representing the second sample.}
 \item{misrate}{Misclassification rate, the probability that the true shift falls outside bounds.}
 }
 \description{
@@ -15,9 +15,8 @@ The misrate represents the probability that the true shift falls outside the com
 This is a pragmatic alternative to traditional confidence intervals for the Hodges-Lehmann estimator.
 }
 \value{
-A list with components:
-\item{lower}{The lower bound on the shift estimator.}
-\item{upper}{The upper bound on the shift estimator.}
+A \code{\link{Bounds}} object when given \code{\link{Sample}} input,
+or a list with components \code{lower} and \code{upper} when given numeric vectors.
 }
 \examples{
 # Basic usage
