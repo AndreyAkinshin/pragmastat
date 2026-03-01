@@ -1,6 +1,5 @@
 plugins {
     kotlin("jvm") version "2.0.21"
-    application
     `maven-publish`
     signing
     id("org.jetbrains.dokka") version "2.0.0"
@@ -13,10 +12,6 @@ version = "10.0.6"
 
 repositories {
     mavenCentral()
-}
-
-application {
-    mainClass.set("dev.pragmastat.demo.MainKt")
 }
 
 dependencies {
