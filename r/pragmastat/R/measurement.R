@@ -24,6 +24,6 @@ Measurement <- R6::R6Class(
 )
 
 #' @export
-as.numeric.Measurement <- function(x, ...) {
+as.double.Measurement <- function(x, ...) {
   x$value
 }

@@ -1,6 +1,6 @@
 \name{Measurement}
 \alias{Measurement}
-\alias{as.numeric.Measurement}
+\alias{as.double.Measurement}
 \title{Measurement Value with Unit}
 \description{
 An R6 class representing a numeric value paired with a \code{\link{MeasurementUnit}}.
