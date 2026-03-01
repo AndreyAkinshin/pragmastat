@@ -31,7 +31,7 @@
   kt: (
     title: "Kotlin",
     code: "kotlin",
-    demo: "/kt/src/main/kotlin/dev/pragmastat/demo/Main.kt",
+    demo: "/kt/demo/src/main/kotlin/dev/pragmastat/demo/Main.kt",
     package: "Pragmastat on Maven Central Repository: https://central.sonatype.com/artifact/dev.pragmastat/pragmastat/overview",
   ),
   py: (

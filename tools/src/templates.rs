@@ -51,7 +51,7 @@ go get github.com/AndreyAkinshin/pragmastat/go/v{major}@v{version}
         slug: "kt",
         title: "Kotlin",
         code_language: "kotlin",
-        demo_path: "kt/src/main/kotlin/dev/pragmastat/demo/Main.kt",
+        demo_path: "kt/demo/src/main/kotlin/dev/pragmastat/demo/Main.kt",
         readme_path: "kt/README.md",
         package_url: "Pragmastat on Maven Central Repository: https://central.sonatype.com/artifact/dev.pragmastat/pragmastat/overview",
         install_md: r#"Install from Maven Central Repository via Apache Maven:
@@ -151,7 +151,7 @@ pub fn sync_templates(base_path: &Path, version: &str) -> Result<()> {
             .with_context(|| format!("Failed to read {}", demo_path.display()))?;
         let demo_code = demo_code.trim_end();
         // Replace relative imports with package names for README (user-facing)
-        let demo_code = demo_code.replace("from '../src'", "from 'pragmastat'");
+        let demo_code = demo_code.replace("from '..'", "from 'pragmastat'");
 
         let readme_content = generate_readme(lang, version, &demo_code);
         let readme_output = base_path.join(lang.readme_path);
