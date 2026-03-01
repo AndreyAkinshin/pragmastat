@@ -28,16 +28,16 @@ public class UnitRegistry
   {
     if (_byId.TryGetValue(id, out unit!))
       return true;
-    unit = NumberUnit.Instance;
+    unit = MeasurementUnit.Number;
     return false;
   }
 
   public static UnitRegistry Standard()
   {
     var registry = new UnitRegistry();
-    registry.Register(NumberUnit.Instance);
-    registry.Register(RatioUnit.Instance);
-    registry.Register(DisparityUnit.Instance);
+    registry.Register(MeasurementUnit.Number);
+    registry.Register(MeasurementUnit.Ratio);
+    registry.Register(MeasurementUnit.Disparity);
     return registry;
   }
 }

@@ -3,6 +3,10 @@ namespace Pragmastat.Metrology;
 public class MeasurementUnit(string id, string family, string abbreviation, string fullName, long baseUnits = 1)
   : IEquatable<MeasurementUnit>
 {
+  public static readonly MeasurementUnit Number = new("number", "Number", "", "Number", 1);
+  public static readonly MeasurementUnit Ratio = new("ratio", "Ratio", "", "Ratio", 1);
+  public static readonly MeasurementUnit Disparity = new("disparity", "Disparity", "", "Disparity", 1);
+
   public string Id { get; } = id;
   public string Family { get; } = family;
   public string Abbreviation { get; } = abbreviation;

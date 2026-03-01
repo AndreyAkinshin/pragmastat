@@ -26,6 +26,6 @@ public class DisparityEstimator : ITwoSampleEstimator
     var shiftVal = FastShift.Estimate(x.SortedValues, y.SortedValues, [0.5], true)[0];
     var avgSpreadVal = (x.Size * spreadX + y.Size * spreadY) / (x.Size + y.Size);
 
-    return (shiftVal / avgSpreadVal).WithUnit(DisparityUnit.Instance);
+    return (shiftVal / avgSpreadVal).WithUnit(MeasurementUnit.Disparity);
   }
 }

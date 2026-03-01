@@ -20,6 +20,6 @@ public class RatioEstimator : ITwoSampleEstimator
     return FastRatio
       .Estimate(x.SortedValues, y.SortedValues, [0.5], assumeSorted: true)
       .Single()
-      .WithUnit(RatioUnit.Instance);
+      .WithUnit(MeasurementUnit.Ratio);
   }
 }

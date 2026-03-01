@@ -71,31 +71,31 @@ public class DisparityBoundsEstimator : ITwoSampleBoundsEstimator
       double r4 = us / ua;
       double lower = Math.Min(Math.Min(r1, r2), Math.Min(r3, r4));
       double upper = Math.Max(Math.Max(r1, r2), Math.Max(r3, r4));
-      return new Bounds(lower, upper, DisparityUnit.Instance);
+      return new Bounds(lower, upper, MeasurementUnit.Disparity);
     }
 
     if (ua <= 0.0)
     {
       if (ls == 0.0 && us == 0.0)
-        return new Bounds(0.0, 0.0, DisparityUnit.Instance);
+        return new Bounds(0.0, 0.0, MeasurementUnit.Disparity);
       if (ls >= 0.0)
-        return new Bounds(0.0, double.PositiveInfinity, DisparityUnit.Instance);
+        return new Bounds(0.0, double.PositiveInfinity, MeasurementUnit.Disparity);
       if (us <= 0.0)
-        return new Bounds(double.NegativeInfinity, 0.0, DisparityUnit.Instance);
-      return new Bounds(double.NegativeInfinity, double.PositiveInfinity, DisparityUnit.Instance);
+        return new Bounds(double.NegativeInfinity, 0.0, MeasurementUnit.Disparity);
+      return new Bounds(double.NegativeInfinity, double.PositiveInfinity, MeasurementUnit.Disparity);
     }
 
     if (ls > 0.0)
-      return new Bounds(ls / ua, double.PositiveInfinity, DisparityUnit.Instance);
+      return new Bounds(ls / ua, double.PositiveInfinity, MeasurementUnit.Disparity);
     if (us < 0.0)
-      return new Bounds(double.NegativeInfinity, us / ua, DisparityUnit.Instance);
+      return new Bounds(double.NegativeInfinity, us / ua, MeasurementUnit.Disparity);
     if (ls == 0.0 && us == 0.0)
-      return new Bounds(0.0, 0.0, DisparityUnit.Instance);
+      return new Bounds(0.0, 0.0, MeasurementUnit.Disparity);
     if (ls == 0.0 && us > 0.0)
-      return new Bounds(0.0, double.PositiveInfinity, DisparityUnit.Instance);
+      return new Bounds(0.0, double.PositiveInfinity, MeasurementUnit.Disparity);
     if (ls < 0.0 && us == 0.0)
-      return new Bounds(double.NegativeInfinity, 0.0, DisparityUnit.Instance);
+      return new Bounds(double.NegativeInfinity, 0.0, MeasurementUnit.Disparity);
 
-    return new Bounds(double.NegativeInfinity, double.PositiveInfinity, DisparityUnit.Instance);
+    return new Bounds(double.NegativeInfinity, double.PositiveInfinity, MeasurementUnit.Disparity);
   }
 }

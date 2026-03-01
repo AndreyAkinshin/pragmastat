@@ -42,7 +42,7 @@ public class RatioBoundsEstimator : ITwoSampleBoundsEstimator
     return new Bounds(
       Math.Exp(logBounds.Lower),
       Math.Exp(logBounds.Upper),
-      RatioUnit.Instance
+      MeasurementUnit.Ratio
     );
   }
 }

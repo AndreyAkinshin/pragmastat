@@ -55,7 +55,7 @@ public class Sample
     }
 
     Values = values;
-    Unit = unit ?? NumberUnit.Instance;
+    Unit = unit ?? MeasurementUnit.Number;
     Weights = null;
     TotalWeight = 1.0;
     WeightedSize = values.Count;
@@ -104,7 +104,7 @@ public class Sample
 
     Values = values;
     Weights = weights;
-    Unit = measurementUnit ?? NumberUnit.Instance;
+    Unit = measurementUnit ?? MeasurementUnit.Number;
     TotalWeight = totalWeight;
     WeightedSize = totalWeight.Sqr() / totalWeightSquared;
     IsWeighted = true;
@@ -257,7 +257,7 @@ public class Sample
       logValues[i] = Math.Log(Values[i]);
     }
     return IsWeighted
-      ? new Sample(logValues, Weights!, NumberUnit.Instance)
-      : new Sample(logValues, NumberUnit.Instance);
+      ? new Sample(logValues, Weights!, MeasurementUnit.Number)
+      : new Sample(logValues, MeasurementUnit.Number);
   }
 }
