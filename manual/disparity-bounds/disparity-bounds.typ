@@ -2,38 +2,11 @@
 
 == DisparityBounds <sec-disparity-bounds>
 
-$ DisparityBounds(vx, vy, misrate) = [L_D, U_D] $
+$ DisparityBounds(vx, vy, misrate) = [L_S, U_S] / [L_A, U_A] $
 
-Let
-$min_S = 2 / binom(n + m, n)$ and
-$min_A = 2 dot max(2^(1-floor(n/2)), 2^(1-floor(m/2)))$.
-Require $misrate >= min_S + min_A$.
-Let $"extra" = misrate - (min_S + min_A)$,
-$alpha_S = min_S + "extra" / 2$,
-$alpha_A = min_A + "extra" / 2$.
-Compute
-$[L_S, U_S] = ShiftBounds(vx, vy, alpha_S)$ and
-$[L_A, U_A] = AvgSpreadBounds(vx, vy, alpha_A)$.
-
-If $L_A > 0$, return
-$[L_D, U_D] = [min(L_S/L_A, L_S/U_A, U_S/L_A, U_S/U_A), max(L_S/L_A, L_S/U_A, U_S/L_A, U_S/U_A)]$.
-
-If $L_A = 0$, return the tightest single interval that is always valid:
-
-#v(0.2em)
-#list(marker: none, tight: true,
-  [$L_S > 0$: $[L_S / U_A, +infinity)$],
-  [$U_S < 0$: $(-infinity, U_S / U_A]$],
-  [$L_S = 0$ and $U_S = 0$: $[0, 0]$],
-  [$L_S = 0$ and $U_S > 0$: $[0, +infinity)$],
-  [$L_S < 0$ and $U_S = 0$: $(-infinity, 0]$],
-  [otherwise: $(-infinity, +infinity)$],
-)
-
-If $U_A = 0$, use the sign-only rule:
-$[0, +infinity)$ if $L_S >= 0$,
-$(-infinity, 0]$ if $U_S <= 0$,
-$(-infinity, +infinity)$ otherwise (with $[0, 0]$ when $L_S = U_S = 0$).
+where $[L_S, U_S] = ShiftBounds(vx, vy, alpha_S)$,
+$[L_A, U_A] = AvgSpreadBounds(vx, vy, alpha_A)$,
+and $alpha_S + alpha_A = misrate$ (Bonferroni split).
 
 Robust bounds on #link(<sec-disparity>)[$Disparity(vx, vy)$] with specified coverage.
 
@@ -43,7 +16,7 @@ Robust bounds on #link(<sec-disparity>)[$Disparity(vx, vy)$] with specified cove
 #list(marker: none, tight: true,
   [$vx = (x_1, x_2, ..., x_n)$ — first sample of measurements, where $n >= 2$, requires #link(<sec-sparity>)[`sparity(x)`]],
   [$vy = (y_1, y_2, ..., y_m)$ — second sample of measurements, where $m >= 2$, requires #link(<sec-sparity>)[`sparity(y)`]],
-  [$misrate >= min_S + min_A$ — probability that true disparity falls outside bounds in the long run],
+  [$misrate$ — probability that true disparity falls outside bounds in the long run (minimum depends on $n$, $m$; see Algorithm)],
 )
 
 #v(0.3em)
