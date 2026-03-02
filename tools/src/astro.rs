@@ -144,7 +144,7 @@ fn convert_typst_event_to_mdx(
         }
         TypstEvent::Math { display, content } => {
             // Convert Typst math to LaTeX for KaTeX
-            let latex = typst_to_latex(content, definitions);
+            let latex = typst_to_latex(content, definitions, *display);
             if *display {
                 // Ensure display math starts on its own line for proper MDX parsing
                 if !output.is_empty() && !output.ends_with('\n') {
@@ -339,7 +339,7 @@ fn convert_inline_math_in_text(text: &str, definitions: &Definitions) -> String 
         let after_dollar = &rest[start + 1..];
         if let Some(end) = after_dollar.find('$') {
             let math_content = &after_dollar[..end];
-            let latex = typst_to_latex(math_content, definitions);
+            let latex = typst_to_latex(math_content, definitions, false);
             let _ = write!(result, "${latex}$");
             rest = &after_dollar[end + 1..];
         } else {

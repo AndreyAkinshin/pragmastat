@@ -7,12 +7,17 @@ use std::collections::HashMap;
 use std::fmt::Write;
 
 /// Convert Typst math content to LaTeX string
-pub fn typst_to_latex(typst_math: &str, definitions: &HashMap<String, String>) -> String {
+pub fn typst_to_latex(typst_math: &str, definitions: &HashMap<String, String>, display: bool) -> String {
     let mut result = typst_math.to_string();
 
-    // Convert Typst \/ (explicit fraction) to a marker that won't be confused with regular /
-    // Use Unicode fraction slash (U+2044) as temporary marker
-    result = result.replace("\\/", "\u{2044}");
+    // Convert Typst \/ (explicit fraction) depending on display mode
+    if display {
+        // Display mode: convert \/ to U+2044 marker for \frac conversion
+        result = result.replace("\\/", "\u{2044}");
+    } else {
+        // Inline mode: convert \/ to plain slash (flat fraction)
+        result = result.replace("\\/", "/");
+    }
 
     // Handle Typst op() function before other processing
     result = convert_op(&result);
@@ -37,7 +42,7 @@ pub fn typst_to_latex(typst_math: &str, definitions: &HashMap<String, String>) -
     result = apply_definitions_outside_text(&result, definitions);
 
     // Convert Typst-specific syntax to LaTeX
-    result = convert_syntax(&result);
+    result = convert_syntax(&result, display);
 
     // Convert Typst line breaks and handle alignment
     result = convert_alignment(&result);
@@ -544,7 +549,7 @@ fn convert_sqrt(input: &str) -> String {
 
 /// Convert Typst math syntax patterns to LaTeX equivalents
 #[allow(clippy::too_many_lines)]
-fn convert_syntax(input: &str) -> String {
+fn convert_syntax(input: &str, display: bool) -> String {
     let mut result = input.to_string();
 
     // sqrt needs special handling: sqrt(...) -> \sqrt{...}
@@ -821,9 +826,11 @@ fn convert_syntax(input: &str) -> String {
     // as part of the denominator
     result = convert_superscripts(&result);
 
-    // Handle fractions: a/b -> \frac{a}{b}
-    // Must run AFTER subscript/superscript conversion for proper parsing
-    result = convert_fractions(&result);
+    // Handle fractions: a/b -> \frac{a}{b} (display mode only)
+    // Inline mode keeps flat a/b notation
+    if display {
+        result = convert_fractions(&result);
+    }
 
     // Convert Typst lr() for auto-sizing delimiters
     result = convert_lr(&result);
@@ -1732,14 +1739,14 @@ mod tests {
         let mut defs = HashMap::new();
         defs.insert("Center".to_string(), "\\operatorname{Center}".to_string());
 
-        let result = typst_to_latex("Center(x)", &defs);
+        let result = typst_to_latex("Center(x)", &defs, true);
         assert!(result.contains("\\operatorname{Center}"));
     }
 
     #[test]
     fn convert_comparison_operators() {
         let defs = HashMap::new();
-        let result = typst_to_latex("1 <= i <= n", &defs);
+        let result = typst_to_latex("1 <= i <= n", &defs, true);
         // Should produce single backslash: \leq
         assert_eq!(result, "1 \\leq i \\leq n");
     }
@@ -1747,7 +1754,7 @@ mod tests {
     #[test]
     fn convert_attach_with_comparison() {
         let defs = HashMap::new();
-        let result = typst_to_latex("attach(Median, b: 1 <= i <= n)", &defs);
+        let result = typst_to_latex("attach(Median, b: 1 <= i <= n)", &defs, true);
         // Should produce \underset{1 \leq i \leq n}{Median}
         assert!(result.contains("\\underset{1 \\leq i \\leq n}{Median}"));
     }
@@ -1756,7 +1763,7 @@ mod tests {
     fn convert_explicit_fraction_in_subscript() {
         let defs = HashMap::new();
         // Typst: x_(((n+1)\/2)) should become x_{(\frac{n+1}{2})}
-        let result = typst_to_latex("x_(((n+1)\\/2))", &defs);
+        let result = typst_to_latex("x_(((n+1)\\/2))", &defs, true);
         assert_eq!(result, "x_{(\\frac{n+1}{2})}");
     }
 
@@ -1764,7 +1771,7 @@ mod tests {
     fn convert_complex_expression_with_fractions() {
         let defs = HashMap::new();
         // Typst: (x_((n\/2)) + x_((n\/2+1))) / 2
-        let result = typst_to_latex("(x_((n\\/2)) + x_((n\\/2+1))) / 2", &defs);
+        let result = typst_to_latex("(x_((n\\/2)) + x_((n\\/2+1))) / 2", &defs, true);
         // Should convert the \/ inside subscripts to \frac, and the outer / to \frac too
         // Expected: \frac{(x_{(\frac{n}{2})} + x_{(\frac{n}{2}+1)})}{2}
         // Or simpler: (x_{(\frac{n}{2})} + x_{(\frac{n}{2}+1)}) / 2
@@ -1788,7 +1795,7 @@ mod tests {
   x & "if" n "is odd",
   y & "if" n "is even"
 )"#;
-        let result = typst_to_latex(input, &defs);
+        let result = typst_to_latex(input, &defs, true);
         eprintln!("Cases result: {result}");
         assert!(
             result.contains("\\begin{cases}"),
@@ -1817,7 +1824,7 @@ mod tests {
   x_(((n+1)\/2)) & "if" n "is odd",
   (x_((n\/2)) + x_((n\/2+1))) / 2 & "if" n "is even"
 )"#;
-        let result = typst_to_latex(input, &defs);
+        let result = typst_to_latex(input, &defs, true);
         eprintln!("Median result: {result}");
         // Check structure is correct
         assert!(
@@ -1866,7 +1873,7 @@ mod tests {
         let defs = HashMap::new();
         // Using explicit fraction marker (from \/)
         let input = "\\mathbf{x} \u{2044} \\mathbf{y}";
-        let result = typst_to_latex(input, &defs);
+        let result = typst_to_latex(input, &defs, true);
         eprintln!("Explicit mathbf fraction result: {result}");
         // Should NOT produce \mathbf{\frac{...
         assert!(
@@ -1885,7 +1892,7 @@ mod tests {
 
         // "Dominance" in quotes should become \text{Dominance}, NOT \text{\operatorname{Dominance}}
         let input = r#""Dominance""#;
-        let result = typst_to_latex(input, &defs);
+        let result = typst_to_latex(input, &defs, true);
         assert_eq!(
             result, "\\text{Dominance}",
             "Definitions should not be applied inside \\text{{}}"
@@ -1893,7 +1900,7 @@ mod tests {
 
         // But unquoted Dominance should get the definition applied
         let input2 = "Dominance(x, y)";
-        let result2 = typst_to_latex(input2, &defs);
+        let result2 = typst_to_latex(input2, &defs, true);
         assert!(
             result2.contains("\\operatorname{Dominance}"),
             "Definitions should be applied outside \\text{{}}"
@@ -1903,14 +1910,14 @@ mod tests {
     #[test]
     fn convert_blackboard_bold() {
         let defs = HashMap::new();
-        let result = typst_to_latex("bb(1)", &defs);
+        let result = typst_to_latex("bb(1)", &defs, true);
         assert_eq!(result, "\\mathbb{1}");
     }
 
     #[test]
     fn convert_blackboard_bold_in_sum() {
         let defs = HashMap::new();
-        let result = typst_to_latex("sum bb(1)(x > y)", &defs);
+        let result = typst_to_latex("sum bb(1)(x > y)", &defs, true);
         assert!(
             result.contains("\\mathbb{1}"),
             "Should convert bb(1): {result}"
@@ -1920,28 +1927,28 @@ mod tests {
     #[test]
     fn convert_binomial() {
         let defs = HashMap::new();
-        let result = typst_to_latex("binom(n, k)", &defs);
+        let result = typst_to_latex("binom(n, k)", &defs, true);
         assert_eq!(result, "\\binom{n}{k}");
     }
 
     #[test]
     fn convert_binomial_complex() {
         let defs = HashMap::new();
-        let result = typst_to_latex("binom(n+m, n)", &defs);
+        let result = typst_to_latex("binom(n+m, n)", &defs, true);
         assert_eq!(result, "\\binom{n+m}{n}");
     }
 
     #[test]
     fn convert_floor() {
         let defs = HashMap::new();
-        let result = typst_to_latex("floor(x)", &defs);
+        let result = typst_to_latex("floor(x)", &defs, true);
         assert_eq!(result, "\\lfloor x \\rfloor");
     }
 
     #[test]
     fn convert_floor_complex() {
         let defs = HashMap::new();
-        let result = typst_to_latex("floor((N+1)/2)", &defs);
+        let result = typst_to_latex("floor((N+1)/2)", &defs, true);
         assert!(result.contains("\\lfloor"), "Should have lfloor: {result}");
         assert!(result.contains("\\rfloor"), "Should have rfloor: {result}");
     }
@@ -1949,21 +1956,21 @@ mod tests {
     #[test]
     fn convert_ceil() {
         let defs = HashMap::new();
-        let result = typst_to_latex("ceil(x)", &defs);
+        let result = typst_to_latex("ceil(x)", &defs, true);
         assert_eq!(result, "\\lceil x \\rceil");
     }
 
     #[test]
     fn convert_abs() {
         let defs = HashMap::new();
-        let result = typst_to_latex("abs(x)", &defs);
+        let result = typst_to_latex("abs(x)", &defs, true);
         assert_eq!(result, "\\lvert x \\rvert");
     }
 
     #[test]
     fn convert_abs_complex() {
         let defs = HashMap::new();
-        let result = typst_to_latex("abs(x_i - x_j)", &defs);
+        let result = typst_to_latex("abs(x_i - x_j)", &defs, true);
         assert!(result.contains("\\lvert"), "Should have lvert: {result}");
         assert!(result.contains("\\rvert"), "Should have rvert: {result}");
     }
@@ -1973,7 +1980,7 @@ mod tests {
         // Test that abs() in fraction denominator stays intact
         // This was a bug where \lvert...\rvert got split by fraction conversion
         let defs = HashMap::new();
-        let result = typst_to_latex("a / abs(b)", &defs);
+        let result = typst_to_latex("a / abs(b)", &defs, true);
         eprintln!("Result: {result}");
         assert!(
             result.contains("\\lvert") && result.contains("\\rvert"),
@@ -1984,14 +1991,14 @@ mod tests {
     #[test]
     fn convert_pr_function() {
         let defs = HashMap::new();
-        let result = typst_to_latex("Pr(X > 0)", &defs);
+        let result = typst_to_latex("Pr(X > 0)", &defs, true);
         assert!(result.contains("\\Pr("), "Should have \\Pr(: {result}");
     }
 
     #[test]
     fn convert_phi_function() {
         let defs = HashMap::new();
-        let result = typst_to_latex("Phi(z)", &defs);
+        let result = typst_to_latex("Phi(z)", &defs, true);
         assert!(result.contains("\\Phi("), "Should have \\Phi(: {result}");
     }
 
@@ -1999,7 +2006,7 @@ mod tests {
     fn convert_phi_standalone() {
         let defs = HashMap::new();
         // Standalone Phi without parentheses should also be converted
-        let result = typst_to_latex("where Phi denotes", &defs);
+        let result = typst_to_latex("where Phi denotes", &defs, true);
         assert!(result.contains("\\Phi"), "Should have \\Phi: {result}");
         assert!(
             !result.contains("\\\\Phi"),
@@ -2011,7 +2018,7 @@ mod tests {
     fn convert_phi_no_double_convert() {
         let defs = HashMap::new();
         // Phi( is converted first, then standalone Phi shouldn't double-convert the \Phi
-        let result = typst_to_latex("Phi(z) and Phi", &defs);
+        let result = typst_to_latex("Phi(z) and Phi", &defs, true);
         eprintln!("Result: {result}");
         assert!(
             result.contains("\\Phi("),
@@ -2027,7 +2034,7 @@ mod tests {
     fn convert_fraction_with_brackets() {
         let defs = HashMap::new();
         // Test fraction with bracket notation like Var[...] / Var[...]
-        let result = typst_to_latex("\"Var\"[X] / \"Var\"[Y]", &defs);
+        let result = typst_to_latex("\"Var\"[X] / \"Var\"[Y]", &defs, true);
         eprintln!("Bracket fraction result: {result}");
         assert!(result.contains("\\frac"), "Should have \\frac: {result}");
         assert!(
@@ -2039,14 +2046,14 @@ mod tests {
     #[test]
     fn convert_upright() {
         let defs = HashMap::new();
-        let result = typst_to_latex("upright(\"mean\")", &defs);
+        let result = typst_to_latex("upright(\"mean\")", &defs, true);
         assert_eq!(result, "\\mathrm{mean}");
     }
 
     #[test]
     fn convert_upright_no_quotes() {
         let defs = HashMap::new();
-        let result = typst_to_latex("upright(stdDev)", &defs);
+        let result = typst_to_latex("upright(stdDev)", &defs, true);
         assert_eq!(result, "\\mathrm{stdDev}");
     }
 
@@ -2054,7 +2061,7 @@ mod tests {
     fn convert_subscript_with_text() {
         let defs = HashMap::new();
         // k_"left" -> first converts to k_\text{left}, then should wrap in braces
-        let result = typst_to_latex("k_\"left\"", &defs);
+        let result = typst_to_latex("k_\"left\"", &defs, true);
         assert_eq!(result, "k_{\\text{left}}");
     }
 
@@ -2062,7 +2069,7 @@ mod tests {
     fn convert_fraction_with_binom() {
         let defs = HashMap::new();
         // Test the problematic case: 1\/binom(12, 6) should become \frac{1}{\binom{12}{6}}
-        let result = typst_to_latex("1\\/binom(12, 6)", &defs);
+        let result = typst_to_latex("1\\/binom(12, 6)", &defs, true);
         eprintln!("Result: {result}");
         assert!(
             result.contains("\\binom{12}{6}"),
@@ -2078,7 +2085,7 @@ mod tests {
 
         // Drift_"baseline" should have Drift converted to \operatorname{Drift}
         // even though _ is a word character in regex
-        let result = typst_to_latex("Drift_\"baseline\"(T, X)", &defs);
+        let result = typst_to_latex("Drift_\"baseline\"(T, X)", &defs, true);
         eprintln!("Result: {result}");
         assert!(
             result.contains("\\operatorname{Drift}"),
@@ -2092,7 +2099,7 @@ mod tests {
         defs.insert("Drift".to_string(), "\\operatorname{Drift}".to_string());
 
         // Drift^2 should have Drift converted to \operatorname{Drift}
-        let result = typst_to_latex("Drift^2", &defs);
+        let result = typst_to_latex("Drift^2", &defs, true);
         eprintln!("Result: {result}");
         assert!(
             result.contains("\\operatorname{Drift}"),
@@ -2105,7 +2112,7 @@ mod tests {
         let mut defs = HashMap::new();
         defs.insert("pmean".to_string(), "\\mathrm{mean}".to_string());
 
-        let result = typst_to_latex("pmean", &defs);
+        let result = typst_to_latex("pmean", &defs, true);
         assert_eq!(result, "\\mathrm{mean}");
     }
 
@@ -2114,7 +2121,7 @@ mod tests {
         let mut defs = HashMap::new();
         defs.insert("pstddev".to_string(), "\\mathrm{stdDev}".to_string());
 
-        let result = typst_to_latex("pstddev", &defs);
+        let result = typst_to_latex("pstddev", &defs, true);
         assert_eq!(result, "\\mathrm{stdDev}");
     }
 
@@ -2129,7 +2136,7 @@ mod tests {
         defs.insert("pstddev".to_string(), "\\mathrm{stdDev}".to_string());
 
         // Test Additive(pmean, pstddev) conversion
-        let result = typst_to_latex("Additive(pmean, pstddev)", &defs);
+        let result = typst_to_latex("Additive(pmean, pstddev)", &defs, true);
         eprintln!("Result: {result}");
         assert!(
             result.contains("\\underline{\\operatorname{Additive}}"),
@@ -2151,7 +2158,7 @@ mod tests {
         defs.insert("pstddev".to_string(), "\\mathrm{stdDev}".to_string());
 
         // pstddev^2 should convert pstddev correctly
-        let result = typst_to_latex("pstddev^2", &defs);
+        let result = typst_to_latex("pstddev^2", &defs, true);
         eprintln!("Result: {result}");
         assert!(
             result.contains("\\mathrm{stdDev}"),
@@ -2164,7 +2171,7 @@ mod tests {
         let mut defs = HashMap::new();
         defs.insert("cmad".to_string(), "c_{\\mathrm{mad}}".to_string());
 
-        let result = typst_to_latex("cmad", &defs);
+        let result = typst_to_latex("cmad", &defs, true);
         assert_eq!(result, "c_{\\mathrm{mad}}");
     }
 
@@ -2173,7 +2180,7 @@ mod tests {
         let mut defs = HashMap::new();
         defs.insert("cspr".to_string(), "c_{\\mathrm{spr}}".to_string());
 
-        let result = typst_to_latex("cspr", &defs);
+        let result = typst_to_latex("cspr", &defs, true);
         assert_eq!(result, "c_{\\mathrm{spr}}");
     }
 
@@ -2183,7 +2190,7 @@ mod tests {
         // Use \text{approx} to avoid word_mappings converting approx to \approx
         defs.insert("approxdist".to_string(), "\\sim\\text{approx}".to_string());
 
-        let result = typst_to_latex("X approxdist Y", &defs);
+        let result = typst_to_latex("X approxdist Y", &defs, true);
         eprintln!("Result: {result}");
         assert!(
             result.contains("\\sim\\text{approx}"),
@@ -2204,14 +2211,14 @@ mod tests {
         defs.insert("prate".to_string(), "\\mathrm{rate}".to_string());
 
         // Test each parameter
-        assert_eq!(typst_to_latex("pmean", &defs), "\\mathrm{mean}");
-        assert_eq!(typst_to_latex("pstddev", &defs), "\\mathrm{stdDev}");
-        assert_eq!(typst_to_latex("plogmean", &defs), "\\mathrm{logMean}");
-        assert_eq!(typst_to_latex("plogstddev", &defs), "\\mathrm{logStdDev}");
-        assert_eq!(typst_to_latex("pmin", &defs), "\\mathrm{min}");
-        assert_eq!(typst_to_latex("pmax", &defs), "\\mathrm{max}");
-        assert_eq!(typst_to_latex("pshape", &defs), "\\mathrm{shape}");
-        assert_eq!(typst_to_latex("prate", &defs), "\\mathrm{rate}");
+        assert_eq!(typst_to_latex("pmean", &defs, true), "\\mathrm{mean}");
+        assert_eq!(typst_to_latex("pstddev", &defs, true), "\\mathrm{stdDev}");
+        assert_eq!(typst_to_latex("plogmean", &defs, true), "\\mathrm{logMean}");
+        assert_eq!(typst_to_latex("plogstddev", &defs, true), "\\mathrm{logStdDev}");
+        assert_eq!(typst_to_latex("pmin", &defs, true), "\\mathrm{min}");
+        assert_eq!(typst_to_latex("pmax", &defs, true), "\\mathrm{max}");
+        assert_eq!(typst_to_latex("pshape", &defs, true), "\\mathrm{shape}");
+        assert_eq!(typst_to_latex("prate", &defs, true), "\\mathrm{rate}");
     }
 
     #[test]
@@ -2222,7 +2229,7 @@ mod tests {
         // Test pstddev/sqrt(n) pattern - note that fraction conversion doesn't work
         // when the numerator is a LaTeX command result (the converter sees \mathrm{...}
         // and doesn't recognize it as a valid numerator for fractions)
-        let result = typst_to_latex("pstddev/sqrt(n)", &defs);
+        let result = typst_to_latex("pstddev/sqrt(n)", &defs, true);
         eprintln!("Result: {result}");
         assert!(
             result.contains("\\mathrm{stdDev}"),
@@ -2240,7 +2247,7 @@ mod tests {
         defs.insert("pstddev".to_string(), "\\mathrm{stdDev}".to_string());
 
         // From the notes chapter: sqrt(2) dot pstddev
-        let result = typst_to_latex("sqrt(2) dot pstddev", &defs);
+        let result = typst_to_latex("sqrt(2) dot pstddev", &defs, true);
         eprintln!("Result: {result}");
         assert!(
             result.contains("\\mathrm{stdDev}"),
@@ -2267,7 +2274,7 @@ mod tests {
         defs.insert("pstddev".to_string(), "\\mathrm{stdDev}".to_string());
 
         // From notes: Additive(0, sqrt(2) dot pstddev)
-        let result = typst_to_latex("Additive(0, sqrt(2) dot pstddev)", &defs);
+        let result = typst_to_latex("Additive(0, sqrt(2) dot pstddev)", &defs, true);
         eprintln!("Result: {result}");
         assert!(
             result.contains("\\underline{\\operatorname{Additive}}"),
@@ -2293,28 +2300,28 @@ mod tests {
         defs.insert("pmean".to_string(), "\\mathrm{mean}".to_string());
 
         // pmean in quotes should NOT be converted (it becomes \text{pmean})
-        let result = typst_to_latex("\"pmean\"", &defs);
+        let result = typst_to_latex("\"pmean\"", &defs, true);
         assert_eq!(
             result, "\\text{pmean}",
             "pmean inside quotes should not be converted: {result}"
         );
 
         // But pmean outside quotes should be converted
-        let result2 = typst_to_latex("pmean", &defs);
+        let result2 = typst_to_latex("pmean", &defs, true);
         assert_eq!(result2, "\\mathrm{mean}");
     }
 
     #[test]
     fn convert_assignment_arrow() {
         let defs = HashMap::new();
-        let result = typst_to_latex("x <- x + 1", &defs);
+        let result = typst_to_latex("x <- x + 1", &defs, true);
         assert_eq!(result, "x \\leftarrow x + 1");
     }
 
     #[test]
     fn convert_xor_operator() {
         let defs = HashMap::new();
-        let result = typst_to_latex("x xor y", &defs);
+        let result = typst_to_latex("x xor y", &defs, true);
         assert_eq!(result, "x \\operatorname{xor} y");
     }
 
@@ -2322,11 +2329,11 @@ mod tests {
     fn convert_log_operator() {
         let defs = HashMap::new();
         // Standalone log should become \log
-        let result = typst_to_latex("O(n log n)", &defs);
+        let result = typst_to_latex("O(n log n)", &defs, true);
         assert_eq!(result, "O(n \\log n)");
 
         // log with parentheses should also work
-        let result2 = typst_to_latex("log(x)", &defs);
+        let result2 = typst_to_latex("log(x)", &defs, true);
         assert_eq!(result2, "\\log(x)");
     }
 
@@ -2334,32 +2341,32 @@ mod tests {
     fn convert_math_operators() {
         let defs = HashMap::new();
         // Test various math operators
-        assert_eq!(typst_to_latex("sin x", &defs), "\\sin x");
-        assert_eq!(typst_to_latex("cos x", &defs), "\\cos x");
-        assert_eq!(typst_to_latex("max(a, b)", &defs), "\\max(a, b)");
-        assert_eq!(typst_to_latex("min(a, b)", &defs), "\\min(a, b)");
-        assert_eq!(typst_to_latex("ln x", &defs), "\\ln x");
-        assert_eq!(typst_to_latex("exp x", &defs), "\\exp x");
+        assert_eq!(typst_to_latex("sin x", &defs, true), "\\sin x");
+        assert_eq!(typst_to_latex("cos x", &defs, true), "\\cos x");
+        assert_eq!(typst_to_latex("max(a, b)", &defs, true), "\\max(a, b)");
+        assert_eq!(typst_to_latex("min(a, b)", &defs, true), "\\min(a, b)");
+        assert_eq!(typst_to_latex("ln x", &defs, true), "\\ln x");
+        assert_eq!(typst_to_latex("exp x", &defs, true), "\\exp x");
     }
 
     #[test]
     fn convert_quad_spacing() {
         let defs = HashMap::new();
-        let result = typst_to_latex("a quad b", &defs);
+        let result = typst_to_latex("a quad b", &defs, true);
         assert_eq!(result, "a \\quad b");
     }
 
     #[test]
     fn convert_right_shift() {
         let defs = HashMap::new();
-        let result = typst_to_latex("x >> 30", &defs);
+        let result = typst_to_latex("x >> 30", &defs, true);
         assert_eq!(result, "x \\gg 30");
     }
 
     #[test]
     fn convert_left_shift() {
         let defs = HashMap::new();
-        let result = typst_to_latex("x << 3", &defs);
+        let result = typst_to_latex("x << 3", &defs, true);
         assert_eq!(result, "x \\ll 3");
     }
 
@@ -2367,7 +2374,7 @@ mod tests {
     fn convert_splitmix64_formula() {
         let defs = HashMap::new();
         // Test the actual formula from the randomization chapter
-        let result = typst_to_latex("x <- (x xor (x >> 30)) times \"0xbf58476d1ce4e5b9\"", &defs);
+        let result = typst_to_latex("x <- (x xor (x >> 30)) times \"0xbf58476d1ce4e5b9\"", &defs, true);
         eprintln!("Result: {result}");
         assert!(
             result.contains("\\leftarrow"),
@@ -2388,6 +2395,7 @@ mod tests {
         let result = typst_to_latex(
             "\"hash\" <- \"0xcbf29ce484222325\" quad \"(offset basis)\"",
             &defs,
+            true,
         );
         eprintln!("Result: {result}");
         assert!(
@@ -2402,7 +2410,7 @@ mod tests {
         // Test that p_{n,m}(c) / x creates a proper fraction with p_{n,m}(c) as numerator
         // This was a bug where (c) alone became the numerator
         let defs = HashMap::new();
-        let result = typst_to_latex("p_(n,m)(c) / binom(n+m, n)", &defs);
+        let result = typst_to_latex("p_(n,m)(c) / binom(n+m, n)", &defs, true);
         eprintln!("Result: {result}");
         // The result should have p_{n,m}(c) as the numerator
         assert!(
@@ -2419,7 +2427,7 @@ mod tests {
     fn convert_fraction_with_superscript_in_denominator() {
         // Test that (1-U)^{2} stays together as denominator
         let defs = HashMap::new();
-        let result = typst_to_latex("x_min \\/ (1 - U)^(2)", &defs);
+        let result = typst_to_latex("x_min \\/ (1 - U)^(2)", &defs, true);
         eprintln!("Result: {result}");
         // The entire (1 - U)^{2} should be in the denominator
         assert!(
@@ -2432,7 +2440,7 @@ mod tests {
     fn convert_fraction_with_nested_fraction_exponent() {
         // Test x_min \/ (1 - U)^(1\/alpha) - the exponent has a fraction inside
         let defs = HashMap::new();
-        let result = typst_to_latex("x_min \\/ (1 - U)^(1\\/alpha)", &defs);
+        let result = typst_to_latex("x_min \\/ (1 - U)^(1\\/alpha)", &defs, true);
         eprintln!("Result: {result}");
         // The denominator should include the entire (1-U)^{...} expression
         // Note: alpha gets converted to \alpha by Greek letter conversion
@@ -2446,7 +2454,7 @@ mod tests {
     fn convert_factorial_in_denominator() {
         // Test that (n+m)! has the factorial as part of the term
         let defs = HashMap::new();
-        let result = typst_to_latex("(n! dot m!) / (n+m)!", &defs);
+        let result = typst_to_latex("(n! dot m!) / (n+m)!", &defs, true);
         eprintln!("Result: {result}");
         // The factorial should be inside the fraction, not outside
         assert!(
@@ -2469,7 +2477,7 @@ mod tests {
     fn convert_explicit_fraction_factorial() {
         // Test explicit fraction with factorial
         let defs = HashMap::new();
-        let result = typst_to_latex("(n! dot m!) \\/ (n+m)!", &defs);
+        let result = typst_to_latex("(n! dot m!) \\/ (n+m)!", &defs, true);
         eprintln!("Result: {result}");
         // Should be \frac{n! \cdot m!}{(n+m)!}
         assert!(
@@ -2485,7 +2493,7 @@ mod tests {
         let mut defs = HashMap::new();
         defs.insert("Drift".to_string(), "\\operatorname{Drift}".to_string());
 
-        let result = typst_to_latex("Drift^2(T_2, X) / Drift^2(T_1, X)", &defs);
+        let result = typst_to_latex("Drift^2(T_2, X) / Drift^2(T_1, X)", &defs, true);
         eprintln!("Result: {result}");
 
         // Should create a proper fraction with superscripts intact
@@ -2508,7 +2516,7 @@ mod tests {
         defs.insert("Drift".to_string(), "\\operatorname{Drift}".to_string());
 
         let result =
-            typst_to_latex("n_\"new\" = n_\"original\" dot Drift^2(T_2, X) / Drift^2(T_1, X)", &defs);
+            typst_to_latex("n_\"new\" = n_\"original\" dot Drift^2(T_2, X) / Drift^2(T_1, X)", &defs, true);
         eprintln!("Result: {result}");
 
         // Should have proper text subscripts
@@ -2532,7 +2540,7 @@ mod tests {
     fn convert_greek_with_subscript_parens() {
         // Greek letters followed by subscript in parentheses: sigma_(n,m)
         let defs = HashMap::new();
-        let result = typst_to_latex("sigma_(n,m)(d)", &defs);
+        let result = typst_to_latex("sigma_(n,m)(d)", &defs, true);
         assert_eq!(
             result, "\\sigma_{n,m}(d)",
             "sigma with subscript parens should convert: {result}"
@@ -2543,7 +2551,7 @@ mod tests {
     fn convert_greek_with_simple_subscript() {
         // Greek letters followed by simple subscript: epsilon_k
         let defs = HashMap::new();
-        let result = typst_to_latex("epsilon_k", &defs);
+        let result = typst_to_latex("epsilon_k", &defs, true);
         assert_eq!(
             result, "\\epsilon_k",
             "epsilon with subscript should convert: {result}"
@@ -2554,7 +2562,7 @@ mod tests {
     fn convert_greek_with_superscript() {
         // Greek letters followed by superscript: sigma^2
         let defs = HashMap::new();
-        let result = typst_to_latex("sigma^2", &defs);
+        let result = typst_to_latex("sigma^2", &defs, true);
         assert_eq!(
             result, "\\sigma^2",
             "sigma with superscript should convert: {result}"
@@ -2565,7 +2573,7 @@ mod tests {
     fn convert_pairwise_margin_formula() {
         // Test the actual formula from fast-pairwise-margin.typ
         let defs = HashMap::new();
-        let result = typst_to_latex("sigma_(n,m)(d) = sum_(k|d) epsilon_k dot k", &defs);
+        let result = typst_to_latex("sigma_(n,m)(d) = sum_(k|d) epsilon_k dot k", &defs, true);
         eprintln!("Result: {result}");
         assert!(
             result.contains("\\sigma_{n,m}(d)"),
@@ -2587,15 +2595,15 @@ mod tests {
         let defs = HashMap::new();
 
         // "thesigma" should stay as-is (sigma is embedded)
-        let result = typst_to_latex("thesigma", &defs);
+        let result = typst_to_latex("thesigma", &defs, true);
         assert_eq!(result, "thesigma", "Embedded sigma should not convert: {result}");
 
         // "sigmaX" should stay as-is (sigma followed by letter)
-        let result = typst_to_latex("sigmaX", &defs);
+        let result = typst_to_latex("sigmaX", &defs, true);
         assert_eq!(result, "sigmaX", "sigma followed by letter should not convert: {result}");
 
         // But "sigma X" should convert (space separator)
-        let result = typst_to_latex("sigma X", &defs);
+        let result = typst_to_latex("sigma X", &defs, true);
         assert_eq!(result, "\\sigma X", "sigma with space should convert: {result}");
     }
 
@@ -2603,19 +2611,19 @@ mod tests {
     fn greek_standalone_converts() {
         // Standalone Greek letters should convert
         let defs = HashMap::new();
-        assert_eq!(typst_to_latex("sigma", &defs), "\\sigma");
-        assert_eq!(typst_to_latex("epsilon", &defs), "\\epsilon");
-        assert_eq!(typst_to_latex("alpha", &defs), "\\alpha");
-        assert_eq!(typst_to_latex("beta", &defs), "\\beta");
+        assert_eq!(typst_to_latex("sigma", &defs, true), "\\sigma");
+        assert_eq!(typst_to_latex("epsilon", &defs, true), "\\epsilon");
+        assert_eq!(typst_to_latex("alpha", &defs, true), "\\alpha");
+        assert_eq!(typst_to_latex("beta", &defs, true), "\\beta");
     }
 
     #[test]
     fn greek_with_operators_converts() {
         // Greek letters adjacent to operators should convert
         let defs = HashMap::new();
-        assert_eq!(typst_to_latex("sigma + tau", &defs), "\\sigma + \\tau");
-        assert_eq!(typst_to_latex("(sigma)", &defs), "(\\sigma)");
-        assert_eq!(typst_to_latex("sigma,tau", &defs), "\\sigma,\\tau");
+        assert_eq!(typst_to_latex("sigma + tau", &defs, true), "\\sigma + \\tau");
+        assert_eq!(typst_to_latex("(sigma)", &defs, true), "(\\sigma)");
+        assert_eq!(typst_to_latex("sigma,tau", &defs, true), "\\sigma,\\tau");
     }
 
     #[test]
@@ -2628,11 +2636,40 @@ mod tests {
         defs.insert("pstddev".to_string(), "\\mathrm{stdDev}".to_string());
         let input =
             "(sqrt(2) dot z_(0.75) dot cmad dot pstddev\\/sqrt(n))\\/(z_(0.75) dot pstddev)";
-        let result = typst_to_latex(input, &defs);
+        let result = typst_to_latex(input, &defs, true);
         eprintln!("chained explicit fractions: {result}");
         assert!(
             !result.contains("\\sqrt{2\\frac"),
             "sqrt brace must close before frac: {result}"
         );
+    }
+
+    #[test]
+    fn inline_simple_fraction_stays_flat() {
+        let defs = HashMap::new();
+        let result = typst_to_latex("a/b", &defs, false);
+        assert_eq!(result, "a/b");
+    }
+
+    #[test]
+    fn inline_explicit_fraction_stays_flat() {
+        let defs = HashMap::new();
+        let result = typst_to_latex("a\\/b", &defs, false);
+        assert_eq!(result, "a/b");
+    }
+
+    #[test]
+    fn inline_complex_fraction_stays_flat() {
+        let defs = HashMap::new();
+        let result = typst_to_latex("(a + b) / 2", &defs, false);
+        assert!(!result.contains("\\frac"), "Inline should not produce \\frac: {result}");
+        assert!(result.contains("/"), "Inline should keep flat slash: {result}");
+    }
+
+    #[test]
+    fn display_fraction_still_uses_frac() {
+        let defs = HashMap::new();
+        let result = typst_to_latex("a/b", &defs, true);
+        assert_eq!(result, "\\frac{a}{b}");
     }
 }
