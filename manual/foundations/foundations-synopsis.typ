@@ -92,11 +92,8 @@ $ AvgDrift(T, X, n) = (n^"instability" dot Spread[T(X_1, ..., X_n)]) / Spread[X]
 $ DispDrift(T, X, n) = n^"instability" dot RelSpread[T(X_1, ..., X_n)] $
 
 The instability parameter adapts to estimator convergence rates.
-The toolkit uses $"instability" = 1\/2$ throughout because this choice provides natural intuition
-  and mental representation for the $Additive$ (Normal) distribution.
-Rather than introduce additional complexity through variable instability parameters,
-  the fixed $sqrt(n)$ scaling offers practical convenience while maintaining theoretical rigor
-  for the distribution classes most common in applications.
+The toolkit uses $"instability" = 1\/2$ throughout;
+  see #link(<sec-convergence-conventions>)[Convergence Conventions] for rationale.
 
 == From Confidence Level to Misrate
 

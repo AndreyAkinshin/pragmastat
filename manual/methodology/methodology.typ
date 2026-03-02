@@ -134,7 +134,7 @@ This represents the practical optimum: enough robustness for realistic contamina
 enough efficiency to compete with traditional methods when data is clean.
 
 #pagebreak()
-== Convergence Conventions
+== Convergence Conventions <sec-convergence-conventions>
 
 Drift normalizes estimator variability by $sqrt(n)$, making precision comparable across sample sizes:
 
