@@ -2,7 +2,7 @@
 
 $ SignedRankMargin(n, misrate) $
 
-The $SignedRankMargin$ test suite contains 39 correctness test cases (4 demo + 6 boundary + 7 exact + 20 medium + 2 error).
+The $SignedRankMargin$ test suite contains 37 correctness test cases (4 demo + 6 boundary + 7 exact + 20 medium).
 
 *Demo examples* ($n = 30$) — from manual introduction:
 
@@ -18,7 +18,7 @@ These demo cases match the reference values used throughout the manual to illust
 - `boundary-n2-min`: $n=2$, $misrate=0.5$ (minimum misrate for $n=2$, expected output: $0$)
 - `boundary-n3-min`: $n=3$, $misrate=0.25$ (minimum misrate for $n=3$)
 - `boundary-n4-min`: $n=4$, $misrate=0.125$ (minimum misrate for $n=4$)
-- `boundary-loose`: $n=5$, $misrate=0.5$ (permissive misrate)
+- `boundary-loose`: $n=5$, $misrate=0.9$ (permissive misrate)
 - `boundary-tight`: $n=10$, $misrate=0.01$ (strict misrate)
 - `boundary-very-tight`: $n=20$, $misrate=0.001$ (very strict misrate)
 
@@ -28,7 +28,9 @@ These boundary cases validate correct handling of minimum achievable misrate (fo
 
 - `exact-n5-mr1e1`: $n=5$, $misrate=0.1$
 - `exact-n6-mr1e1`: $n=6$, $misrate=0.1$
+- `exact-n6-mr5e2`: $n=6$, $misrate=0.05$
 - `exact-n10-mr1e1`: $n=10$, $misrate=0.1$, expected output: $22$
+- `exact-n10-mr5e2`: $n=10$, $misrate=0.05$
 - `exact-n10-mr1e2`: $n=10$, $misrate=0.01$
 - `exact-n10-mr5e3`: $n=10$, $misrate=0.005$
 
@@ -45,10 +47,3 @@ These cases exercise the exact Wilcoxon signed-rank CDF computation for small sa
   - `medium-n100-mr1e4`: $n=100$, $misrate=0.0001$
 
 The medium sample tests validate the transition region between exact computation ($n <= 63$) and approximate computation, ensuring consistent results across sample sizes and misrate values.
-
-*Error case* — domain violation:
-
-- `error-n1`: $n=1$, $misrate=0.5$ (invalid: misrate below minimum achievable $2^(1-1) = 1.0$)
-- `error-n0`: $n=0$, $misrate=1e-3$ (invalid: n must be positive)
-
-This error case verifies that implementations correctly reject $n=1$ with $misrate=0.5$ as invalid input, since the minimum achievable misrate for $n=1$ is $2^0 = 1.0$.

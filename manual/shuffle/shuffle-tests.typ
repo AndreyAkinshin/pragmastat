@@ -14,7 +14,7 @@ All tests verify reproducibility: the same seed and input must produce the same 
 
 These tests validate that different seeds produce different permutations of the same input.
 
-*Fixed seed* (seed $= 1729$) --- 9 tests exploring different input sizes and content:
+*Fixed seed* (seed $= 1729$) --- 8 tests exploring different input sizes and content:
 
 - `seed-1729-n1-single`: $vx = (1)$ (trivial case, single element)
 - `seed-1729-n2-basic`: $vx = (1, 2)$ (minimum non-trivial case)
@@ -24,6 +24,9 @@ These tests validate that different seeds produce different permutations of the 
 - `seed-1729-n10-seq`: $vx = (0, 1, ..., 9)$ (10-element sequential)
 - `seed-1729-n20-seq`: $vx = (0, 1, ..., 19)$ (20-element sequential)
 - `seed-1729-n100-seq`: $vx = (0, 1, ..., 99)$ (large array)
+
+*Cross-seed comparison* --- 1 test:
+
 - `seed-123-n10-seq`: seed $= 123$, $vx = (0, 1, ..., 9)$ (different seed, same size as n10-seq)
 
 The progression from $n = 1$ to $n = 100$ validates that the Fisher--Yates implementation scales correctly.

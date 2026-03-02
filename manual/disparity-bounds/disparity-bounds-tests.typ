@@ -11,7 +11,7 @@ Because the denominator ($AvgSpreadBounds$) uses randomized $SpreadBounds$, test
 
 - `demo-1`: $vx = (1, ..., 30)$, $vy = (21, ..., 50)$, $misrate = 0.02$
 - `demo-2`: $vx = (1, ..., 30)$, $vy = (21, ..., 50)$, $misrate = 0.005$, wider bounds (tighter misrate)
-- `demo-3`: $vx = (1, ..., 20)$, $vy = (5, ..., 24)$
+- `demo-3`: $vx = (1, ..., 20)$, $vy = (5, ..., 24)$, $misrate = 0.05$
 
 These cases illustrate how tighter misrates produce wider bounds.
 
@@ -25,10 +25,10 @@ These cases illustrate how tighter misrates produce wider bounds.
 
 *Property validation* ($n = m = 10$, $misrate = 0.2$) --- 6 tests:
 
-- `property-identity`: $vx = (0, 2, ..., 18)$, $vy = (0, 2, ..., 18)$, bounds must contain $0$
-- `property-location-shift`: $vx$ and $vy$ shifted by constant, same bounds as identity (location invariance)
-- `property-scale-2x`: $vx$ and $vy$ scaled by 2, same bounds as identity (scale invariance)
-- `property-scale-neg`: $vx$ and $vy$ negated, bounds preserved ($"abs"$ scaling)
+- `property-identity`: $vx = (0, 2, ..., 18)$, $vy = (0, 2, ..., 18)$, expected output: $[-1.5, 1.5]$
+- `property-location-shift`: $vx = (10, 12, ..., 28)$, $vy = (12, 14, ..., 30)$, expected output: $[-2, 1]$
+- `property-scale-2x`: $vx = (0, 4, ..., 36)$, $vy = (4, 8, ..., 40)$ (= 2× location-shift), expected output: $[-2, 1]$ (scale invariance of disparity)
+- `property-scale-neg`: $vx = (0, -2, ..., -18)$, $vy = (-2, -4, ..., -20)$ (negated), expected output: $[-1, 2]$ (anti-symmetry under sign flip)
 - `property-symmetry`: $vx = (1, ..., 10)$, $vy = (6, ..., 15)$, observed bounds
 - `property-symmetry-swapped`: $vx$ and $vy$ swapped, bounds negated (anti-symmetry)
 
@@ -44,7 +44,7 @@ These cases illustrate how tighter misrates produce wider bounds.
 
 - `misrate-2e-1`: $misrate = 0.2$
 - `misrate-1e-1`: $misrate = 0.1$
-- one intermediate-misrate case between $0.1$ and $0.02$
+- `misrate-5e-2`: $misrate = 0.05$
 - `misrate-2e-2`: $misrate = 0.02$
 - `misrate-1e-2`: $misrate = 0.01$
 

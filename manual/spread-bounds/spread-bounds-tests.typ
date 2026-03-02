@@ -15,7 +15,7 @@ Define $k_L = r + 1$ and $k_U = m - r$.
 
 Return $[L, U] = [d_((k_L)), d_((k_U))]$.
 
-The $SpreadBounds$ test suite contains 46 test cases (3 demo + 4 natural + 4 property + 7 edge + 3 additive + 2 uniform + 5 misrate + 5 conservatism + 8 unsorted + 5 error cases).
+The $SpreadBounds$ test suite contains 43 test cases (3 demo + 4 natural + 4 property + 7 edge + 3 additive + 2 uniform + 5 misrate + 5 conservatism + 8 unsorted + 2 error).
 Since $SpreadBounds$ returns bounds rather than a point estimate, tests validate that bounds are well-formed and satisfy equivariance properties under a fixed seed.
 Each test case output is a JSON object with `lower` and `upper` fields representing the interval bounds.
 Because pairing and cutoff selection are randomized, tests fix `seed` to keep outputs deterministic.
@@ -28,12 +28,12 @@ Because pairing and cutoff selection are randomized, tests fix `seed` to keep ou
 
 These cases illustrate how tighter misrates produce wider bounds and how sample size affects bound width.
 
-*Natural sequences* (misrate varies by size) --- 4 tests:
+*Natural sequences* --- 4 tests:
 
 - `natural-10`: $vx = (1, 2, ..., 10)$, $misrate = 0.15$
-- `natural-15`: $vx = (1, 2, ..., 15)$
-- `natural-20`: $vx = (1, 2, ..., 20)$
-- `natural-30`: $vx = (1, 2, ..., 30)$
+- `natural-15`: $vx = (1, 2, ..., 15)$, $misrate = 0.05$
+- `natural-20`: $vx = (1, 2, ..., 20)$, $misrate = 0.05$
+- `natural-30`: $vx = (1, 2, ..., 30)$, $misrate = 0.05$
 
 *Property validation* ($n = 10$, $misrate = 0.2$) --- 4 tests:
 
@@ -67,7 +67,7 @@ These cases illustrate how tighter misrates produce wider bounds and how sample 
 
 - `misrate-5e-1`: $misrate = 0.5$
 - `misrate-1e-1`: $misrate = 0.1$
-- one intermediate-misrate case between $0.1$ and $0.01$
+- `misrate-5e-2`: $misrate = 0.05$
 - `misrate-1e-2`: $misrate = 0.01$
 - `misrate-2e-3`: $misrate = 0.002$
 
@@ -98,13 +98,10 @@ For large $n$, bounds tighten to a practical interval around $Spread$.
 
 These tests validate that $SpreadBounds$ produces sensible bounds for arbitrary input order under a fixed seed.
 
-*Error cases* --- inputs that violate assumptions (5 tests):
+*Error cases* --- inputs that violate assumptions (2 tests):
 
-- `error-empty-array`: $vx = ()$, $misrate = 0.5$ — empty array violates validity
-- `error-single-element`: $vx = (1)$, $misrate = 0.5$ — $m = 0$ violates domain ($n$ too small to form pairs)
-- `error-misrate-zero`: $vx = (1, 2, ..., 10)$, $misrate = 0$ — below minimum achievable misrate
-- `error-invalid-misrate`: $vx = (1, 2, 3, 4, 5)$, $misrate = 0.001$ — below minimum achievable misrate ($2^(1-2) = 0.5$)
-- `error-constant-sample`: $vx = (1, 1, 1, 1, 1)$, $misrate = 0.5$ — constant sample violates sparity ($Spread = 0$)
+- `error-empty-x`: $vx = ()$, $misrate = 0.2$ — empty array violates validity
+- `error-constant-x`: $vx = (5, 5, ..., 5)$ ($n = 20$), $misrate = 0.2$ — constant sample violates sparity ($Spread = 0$)
 
 Note: $SpreadBounds$ has a minimum misrate constraint.
 The sign-test inversion requires $misrate >= 2^(1-m)$.

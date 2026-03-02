@@ -42,6 +42,6 @@ Seeds can be integers or strings (string seeds are hashed to produce an integer 
 
 *uniform-string* (11 tests) --- string-seeded $Uniform(0, 1)$ generation:
 
-- Seeds: `""` (empty), `"a"`, `"abc"`, `"test"`, `"hello_world"`, `"pragmastat"`, `"Rng"`, `"experiment-1"`, plus 3 UTF-8 seeds ($pi$, `"hello"` in Chinese, `"hello"` in German)
+- Seeds: `""` (empty), `"a"`, `"abc"`, `"test"`, `"hello world"`, `"pragmastat"`, `"Rng"`, `"experiment-1"`, plus 3 UTF-8 seeds ($pi$, `"hello"` in Chinese, `"héllo"` with accented é)
 - Each generates 20 values in $[0, 1)$
 - Validates string-to-seed hashing, including empty strings, case sensitivity, and multi-byte UTF-8
