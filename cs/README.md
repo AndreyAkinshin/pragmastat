@@ -36,10 +36,10 @@ class Program
       11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
       21, 22);
 
-    WriteLine(Toolkit.Center(x));             // 11.5
-    WriteLine(Toolkit.CenterBounds(x, 1e-3)); // [6;17]
-    WriteLine(Toolkit.Spread(x));             // 7
-    WriteLine(Toolkit.SpreadBounds(x, 1e-3, "demo")); // [1;18]
+    WriteLine(x.Center());                    // 11.5
+    WriteLine(x.CenterBounds());              // [6;17]
+    WriteLine(x.Spread());                    // 7
+    WriteLine(x.SpreadBounds(1e-3, "demo")); // [1;18]
 
     // --- Two-Sample ---
 
@@ -50,12 +50,12 @@ class Program
       21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35,
       36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50);
 
-    WriteLine(Toolkit.Shift(x, y));             // -20
-    WriteLine(Toolkit.ShiftBounds(x, y, 1e-3)); // [-28;-12]
-    WriteLine(Toolkit.Ratio(x, y));             // 0.43669798282695127
-    WriteLine(Toolkit.RatioBounds(x, y, 1e-3)); // [0.23255813953488377;0.6428571428571428]
-    WriteLine(Toolkit.Disparity(x, y));         // -2.2222222222222223
-    WriteLine(Toolkit.DisparityBounds(x, y, 1e-3, "demo")); // [-29;-0.4782608695652174]
+    WriteLine(x.Shift(y));                        // -20
+    WriteLine(x.ShiftBounds(y));                  // [-28;-12]
+    WriteLine(x.Ratio(y));                        // 0.43669798282695127
+    WriteLine(x.RatioBounds(y));                  // [0.23255813953488377;0.6428571428571428]
+    WriteLine(x.Disparity(y));                    // -2.2222222222222223
+    WriteLine(x.DisparityBounds(y, 1e-3, "demo")); // [-29;-0.4782608695652174]
 
     // --- Randomization ---
 
