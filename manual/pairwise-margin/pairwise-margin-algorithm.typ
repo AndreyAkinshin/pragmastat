@@ -182,7 +182,11 @@ The logarithmic scaling ensures that doubling the sample size adds only one addi
 
 The toolkit selects between exact and approximate computation based on combined sample size:
   exact method for $n + m <= 400$, approximate method for $n + m > 400$.
-The exact method guarantees correctness but scales as $O(n m)$ memory and $O((n m)^2)$ time.
+Let $c^*$ denote the first index where the cumulative probability reaches $misrate\/2$.
+The exact implementation performs $O(c^*(n+m))$ divisor checks and
+  $O(sum_(u=1)^(c^*) u) = O((c^*)^2)$ recurrence updates,
+  so total time is $O((c^*)^2 + c^*(n+m))$ with $O(c^*)$ memory.
+In the worst case $c^* = Theta(n m)$, giving $O((n m)^2)$ time and $O(n m)$ memory.
 For $n = m = 200$, this requires 40,000 memory locations.
 The approximate method achieves 1% accuracy with $O(log(n m))$ constant-time evaluations.
 For $n = m = 10000$, the approximate method completes in milliseconds versus minutes for exact computation.

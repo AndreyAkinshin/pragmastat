@@ -106,7 +106,9 @@ The table below maps each toolkit function to the underlying algorithm and its c
   [$AvgSpreadBounds$], [Bonferroni combination of two SpreadBounds], [$O(n log n + m log m)$],
   [$Median$], [Sort + pick middle], [$O(n log n)$],
   [$SignMargin$], [Binomial CDF inversion + randomized cutoff], [$O(n)$],
-  [$PairwiseMargin$], [Löffler recurrence (exact) / Edgeworth (approx)], [$O(n m)$ / $O(log(n m))$],
+  [$PairwiseMargin$], [Löffler recurrence (exact) / Edgeworth (approx)], [$O((c^*)^2 + c^*(n+m))$ (worst case $O((n m)^2)$) / $O(log(n m))$],
   [$SignedRankMargin$], [Dynamic programming (exact) / Edgeworth (approx)], [$O(n^3)$ / $O(log n)$],
   table.hline(),
 )
+
+Here $c^*$ denotes the first dominance index where the exact CDF reaches $misrate\/2$.
