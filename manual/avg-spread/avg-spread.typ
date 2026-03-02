@@ -26,7 +26,7 @@ Weighted average of dispersions (pooled scale).
 *Notes*
 
 #list(marker: none, tight: true,
-  [*Also known as* — robust pooled standard deviation],
+  [*Robust alternative to* — pooled standard deviation],
   [*Caveat* — $AvgSpread(vx, vy) != Spread(vx union vy)$ (pooled scale, not concatenated spread)],
 )
 

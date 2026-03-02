@@ -28,7 +28,7 @@ Robust effect size (shift normalized by pooled spread).
 *Notes*
 
 #list(marker: none, tight: true,
-  [*Also known as* — robust Cohen's d (@cohen1988; estimates differ due to robust construction)],
+  [*Robust alternative to* — Cohen's d (@cohen1988; uses robust shift and spread instead of mean difference and pooled standard deviation)],
 )
 
 #v(0.5em)
