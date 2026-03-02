@@ -10,7 +10,7 @@ package dev.pragmastat
  */
 data class Measurement(
     val value: Double,
-    val unit: MeasurementUnit,
+    val unit: MeasurementUnit = NumberUnit,
 ) {
     /** Returns the numeric value (alias for [value]). */
     fun toDouble(): Double = value

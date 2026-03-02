@@ -4,12 +4,12 @@ using Pragmastat.Internal;
 
 namespace Pragmastat.Metrology;
 
-public class Measurement(double nominalValue, MeasurementUnit unit) : IComparable<Measurement>, IComparable
+public class Measurement(double nominalValue, MeasurementUnit? unit = null) : IComparable<Measurement>, IComparable
 {
   public static Measurement Zero(MeasurementUnit? unit = null) => new(0, unit ?? MeasurementUnit.Number);
 
   public double NominalValue { get; } = nominalValue;
-  public MeasurementUnit Unit { get; } = unit;
+  public MeasurementUnit Unit { get; } = unit ?? MeasurementUnit.Number;
 
   public static implicit operator double(Measurement measurement) => measurement.NominalValue;
 

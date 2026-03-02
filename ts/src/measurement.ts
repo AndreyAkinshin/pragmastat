@@ -7,6 +7,6 @@ import { MeasurementUnit } from './measurement-unit';
 export class Measurement {
   constructor(
     readonly value: number,
-    readonly unit: MeasurementUnit,
+    readonly unit: MeasurementUnit = MeasurementUnit.NUMBER,
   ) {}
 }

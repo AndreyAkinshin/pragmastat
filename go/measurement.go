@@ -19,6 +19,11 @@ func NewMeasurement(value float64, unit *MeasurementUnit) Measurement {
 	return Measurement{Value: value, Unit: unit}
 }
 
+// NewNumberMeasurement creates a new Measurement with the given value and NumberUnit.
+func NewNumberMeasurement(value float64) Measurement {
+	return Measurement{Value: value, Unit: NumberUnit}
+}
+
 func (m Measurement) String() string {
 	s := strconv.FormatFloat(m.Value, 'G', -1, 64)
 	if m.Unit != nil && len(m.Unit.Abbreviation) > 0 {

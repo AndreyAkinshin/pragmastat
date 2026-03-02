@@ -17,7 +17,7 @@ impl Measurement {
     }
 
     /// Creates a new measurement with the default number unit.
-    pub fn unitless(value: f64) -> Self {
+    pub fn number(value: f64) -> Self {
         Self {
             value,
             unit: MeasurementUnit::number(),
@@ -47,8 +47,8 @@ mod tests {
     use super::*;
 
     #[test]
-    fn display_unitless() {
-        let m = Measurement::unitless(42.5);
+    fn display_number() {
+        let m = Measurement::number(42.5);
         assert_eq!(format!("{m}"), "42.5");
     }
 
@@ -61,7 +61,7 @@ mod tests {
 
     #[test]
     fn into_f64() {
-        let m = Measurement::unitless(2.718);
+        let m = Measurement::number(2.718);
         let v: f64 = m.into();
         assert!((v - 2.718).abs() < 1e-15);
     }

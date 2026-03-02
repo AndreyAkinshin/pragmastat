@@ -18,7 +18,7 @@ impl Bounds {
     }
 
     /// Creates new bounds with the default number unit.
-    pub fn unitless(lower: f64, upper: f64) -> Self {
+    pub fn number(lower: f64, upper: f64) -> Self {
         Self {
             lower,
             upper,
@@ -49,27 +49,27 @@ mod tests {
 
     #[test]
     fn contains_inside() {
-        let b = Bounds::unitless(1.0, 5.0);
+        let b = Bounds::number(1.0, 5.0);
         assert!(b.contains(3.0));
     }
 
     #[test]
     fn contains_boundary() {
-        let b = Bounds::unitless(1.0, 5.0);
+        let b = Bounds::number(1.0, 5.0);
         assert!(b.contains(1.0));
         assert!(b.contains(5.0));
     }
 
     #[test]
     fn contains_outside() {
-        let b = Bounds::unitless(1.0, 5.0);
+        let b = Bounds::number(1.0, 5.0);
         assert!(!b.contains(0.99));
         assert!(!b.contains(5.01));
     }
 
     #[test]
-    fn display_unitless() {
-        let b = Bounds::unitless(1.0, 5.0);
+    fn display_number() {
+        let b = Bounds::number(1.0, 5.0);
         assert_eq!(format!("{b}"), "[1;5]");
     }
 
