@@ -1,6 +1,6 @@
 #import "/manual/definitions.typ": *
 
-== Multiplic
+== Multiplic ('Log-Normal')
 
 $ Multiplic(plogmean, plogstddev) $
 
