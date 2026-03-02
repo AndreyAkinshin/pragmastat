@@ -14,11 +14,26 @@ $[L_A, U_A] = [w_x L_x + w_y L_y, w_x U_x + w_y U_y]$.
 Robust bounds on #link(<sec-avg-spread>)[$AvgSpread(vx, vy)$] with specified coverage.
 
 #v(0.3em)
+*Input*
+
 #list(marker: none, tight: true,
-  [*Interpretation* --- $misrate$ is probability that true avg spread falls outside bounds],
-  [*Domain* --- any real numbers, $n >= 2$, $m >= 2$, $alpha >= 2^(1-floor(n/2))$ and $alpha >= 2^(1-floor(m/2))$],
-  [*Assumptions* --- #link(<sec-sparity>)[`sparity(x)`], #link(<sec-sparity>)[`sparity(y)`]],
-  [*Unit* --- same as measurements],
+  [$vx = (x_1, x_2, ..., x_n)$ — first sample of measurements, where $n >= 2$, requires #link(<sec-sparity>)[`sparity(x)`]],
+  [$vy = (y_1, y_2, ..., y_m)$ — second sample of measurements, where $m >= 2$, requires #link(<sec-sparity>)[`sparity(y)`]],
+  [$misrate >= 2 dot max(2^(1-floor(n/2)), 2^(1-floor(m/2)))$ — probability that true avg spread falls outside bounds in the long run],
+)
+
+#v(0.3em)
+*Output*
+
+#list(marker: none, tight: true,
+  [*Value* --- interval $[L, U]$ bounding $AvgSpread(vx, vy)$],
+  [*Unit* --- same unit as $vx$, $vy$],
+)
+
+#v(0.3em)
+*Notes*
+
+#list(marker: none, tight: true,
   [*Note* --- Bonferroni combination of two #link(<sec-spread-bounds>)[$SpreadBounds$] calls with equal split $alpha = misrate/2$; no independence assumption needed; randomized pairing and cutoff, conservative with ties],
 )
 

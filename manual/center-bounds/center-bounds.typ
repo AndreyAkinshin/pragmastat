@@ -11,11 +11,26 @@ $k_"right" = N - floor(SignedRankMargin \/ 2)$, and $N = n(n+1)\/2$
 Robust bounds on #link(<sec-center>)[$Center(vx)$] with specified coverage.
 
 #v(0.3em)
+*Input*
+
+#list(marker: none, tight: true,
+  [$vx = (x_1, x_2, ..., x_n)$ — input sample of measurements, where $n >= 2$],
+  [$misrate >= 2^(1-n)$ — probability that true center falls outside bounds in the long run],
+)
+
+#v(0.3em)
+*Output*
+
+#list(marker: none, tight: true,
+  [*Value* — interval $[L, U]$ bounding $Center(vx)$],
+  [*Unit* — same unit as $vx$],
+)
+
+#v(0.3em)
+*Notes*
+
 #list(marker: none, tight: true,
   [*Also known as* — Wilcoxon signed-rank confidence interval for Hodges-Lehmann pseudomedian],
-  [*Interpretation* — $misrate$ is probability that true center falls outside bounds],
-  [*Domain* — any real numbers, $n >= 2$, $misrate >= 2^(1-n)$],
-  [*Unit* — same as measurements],
   [*Note* — assumes #link(<sec-weak-symmetry>)[weak symmetry] and weak continuity; exact for $n <= 63$, Edgeworth approximation for $n > 63$],
 )
 

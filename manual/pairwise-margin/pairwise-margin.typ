@@ -7,14 +7,29 @@ $ PairwiseMargin(n, m, misrate) $
 Exclusion count for dominance-based bounds.
 
 #v(0.3em)
+*Input*
+
+#list(marker: none, tight: true,
+  [$n, m >= 1$ — sample sizes],
+  [$misrate > 2 / binom(n+m, n)$ — error rate (minimum achievable)],
+)
+
+#v(0.3em)
+*Output*
+
+#list(marker: none, tight: true,
+  [*Value* — total margin split evenly between lower and upper tails],
+  [*Unit* — count],
+)
+
+#v(0.3em)
+*Notes*
+
 #list(marker: none, tight: true,
   [*Purpose* — determines extreme pairwise differences to exclude when constructing bounds],
   [*Based on* — distribution of $Dominance(vx, vy) = sum_(i=1)^n sum_(j=1)^m bb(1)(x_i > y_j)$ under random sampling],
-  [*Returns* — total margin split evenly between lower and upper tails],
   [*Used by* — #link(<sec-shift-bounds>)[$ShiftBounds$] to select appropriate order statistics],
   [*Complexity* — exact for small samples, approximated for large],
-  [*Domain* — $n, m >= 1$, $misrate > 2 / binom(n+m, n)$ (minimum achievable)],
-  [*Unit* — count],
   [*Note* — assumes weak continuity (ties from measurement resolution are tolerated)],
 )
 

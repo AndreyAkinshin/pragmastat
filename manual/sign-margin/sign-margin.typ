@@ -7,14 +7,29 @@ $ SignMargin(n, misrate) $
 Randomized exclusion count for disjoint-pair sign-test bounds.
 
 #v(0.3em)
+*Input*
+
+#list(marker: none, tight: true,
+  [$n >= 1$ — number of pairs],
+  [$misrate >= 2^(1-n)$ — error rate],
+)
+
+#v(0.3em)
+*Output*
+
+#list(marker: none, tight: true,
+  [*Value* --- total margin split evenly between lower and upper tails],
+  [*Unit* --- count],
+)
+
+#v(0.3em)
+*Notes*
+
 #list(marker: none, tight: true,
   [*Purpose* --- determines extreme pairwise absolute differences to exclude when constructing bounds],
   [*Based on* --- $"Binomial"(n, 1 / 2)$ CDF inversion with randomized cutoff between adjacent grid points],
-  [*Returns* --- total margin split evenly between lower and upper tails],
   [*Used by* --- #link(<sec-spread-bounds>)[$SpreadBounds$] to select appropriate order statistics of disjoint-pair differences],
   [*Complexity* --- exact for all $n$],
-  [*Domain* --- $n >= 1$, $misrate >= 2^(1-n)$],
-  [*Unit* --- count],
   [*Note* --- randomized to match the requested misrate exactly (deterministic rounding is conservative)],
 )
 

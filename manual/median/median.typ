@@ -10,12 +10,26 @@ $ Median(vx) = cases(
 The value splitting a sorted sample into two equal parts.
 
 #v(0.3em)
+*Input*
+
+#list(marker: none, tight: true,
+  [$vx = (x_1, x_2, ..., x_n)$ — input sample of measurements],
+)
+
+#v(0.3em)
+*Output*
+
+#list(marker: none, tight: true,
+  [*Value* — estimation of the value where $P(X <= Median) = 0.5$],
+  [*Unit* — same unit as $vx$],
+)
+
+#v(0.3em)
+*Notes*
+
 #list(marker: none, tight: true,
   [*Also known as* — 50th percentile, second quartile (Q2)],
-  [*Asymptotic* — value where $P(X <= Median) = 0.5$],
   [*Complexity* — $O(n)$],
-  [*Domain* — any real numbers],
-  [*Unit* — same as measurements],
 )
 
 #v(0.5em)

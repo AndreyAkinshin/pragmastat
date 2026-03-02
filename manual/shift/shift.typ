@@ -7,12 +7,27 @@ $ Shift(vx, vy) = attach(Median, b: 1 <= i <= n\, 1 <= j <= m) (x_i - y_j) $
 Robust measure of location difference between two samples.
 
 #v(0.3em)
+*Input*
+
+#list(marker: none, tight: true,
+  [$vx = (x_1, x_2, ..., x_n)$ — first sample of measurements],
+  [$vy = (y_1, y_2, ..., y_m)$ — second sample of measurements],
+)
+
+#v(0.3em)
+*Output*
+
+#list(marker: none, tight: true,
+  [*Value* — estimation of the median of the difference between random measurements from $X$ and $Y$],
+  [*Unit* — same unit as $vx$, $vy$],
+)
+
+#v(0.3em)
+*Notes*
+
 #list(marker: none, tight: true,
   [*Also known as* — Hodges-Lehmann estimator for two samples],
-  [*Asymptotic* — median of the difference between random measurements from $X$ and $Y$],
   [*Complexity* — $O((m+n) log L)$],
-  [*Domain* — any real numbers],
-  [*Unit* — same as measurements],
 )
 
 #v(0.5em)

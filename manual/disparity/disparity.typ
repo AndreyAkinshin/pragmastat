@@ -9,11 +9,26 @@ where $AvgSpread(vx, vy) = (n dot Spread(vx) + m dot Spread(vy)) / (n + m)$ is t
 Robust effect size (shift normalized by pooled dispersion).
 
 #v(0.3em)
+*Input*
+
+#list(marker: none, tight: true,
+  [$vx = (x_1, x_2, ..., x_n)$ — first sample of measurements, requires #link(<sec-sparity>)[`sparity(x)`]],
+  [$vy = (y_1, y_2, ..., y_m)$ — second sample of measurements, requires #link(<sec-sparity>)[`sparity(y)`]],
+)
+
+#v(0.3em)
+*Output*
+
+#list(marker: none, tight: true,
+  [*Value* — $Shift(vx, vy) / AvgSpread(vx, vy)$],
+  [*Unit* — spread units],
+)
+
+#v(0.3em)
+*Notes*
+
 #list(marker: none, tight: true,
   [*Also known as* — robust Cohen's d (@cohen1988; estimates differ due to robust construction)],
-  [*Domain* — $AvgSpread(vx, vy) > 0$],
-  [*Assumptions* — #link(<sec-sparity>)[`sparity(x)`], #link(<sec-sparity>)[`sparity(y)`]],
-  [*Unit* — spread units],
 )
 
 #v(0.5em)

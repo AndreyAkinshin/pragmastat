@@ -38,11 +38,26 @@ $(-infinity, +infinity)$ otherwise (with $[0, 0]$ when $L_S = U_S = 0$).
 Robust bounds on #link(<sec-disparity>)[$Disparity(vx, vy)$] with specified coverage.
 
 #v(0.3em)
+*Input*
+
 #list(marker: none, tight: true,
-  [*Interpretation* --- $misrate$ is probability that true disparity falls outside bounds],
-  [*Domain* --- any real numbers, $n >= 2$, $m >= 2$, $misrate >= min_S + min_A$],
-  [*Assumptions* --- #link(<sec-sparity>)[`sparity(x)`], #link(<sec-sparity>)[`sparity(y)`]],
+  [$vx = (x_1, x_2, ..., x_n)$ — first sample of measurements, where $n >= 2$, requires #link(<sec-sparity>)[`sparity(x)`]],
+  [$vy = (y_1, y_2, ..., y_m)$ — second sample of measurements, where $m >= 2$, requires #link(<sec-sparity>)[`sparity(y)`]],
+  [$misrate >= min_S + min_A$ — probability that true disparity falls outside bounds in the long run],
+)
+
+#v(0.3em)
+*Output*
+
+#list(marker: none, tight: true,
+  [*Value* --- interval $[L, U]$ bounding $Disparity(vx, vy)$],
   [*Unit* --- dimensionless (spread units)],
+)
+
+#v(0.3em)
+*Notes*
+
+#list(marker: none, tight: true,
   [*Note* --- Bonferroni split between shift and avg-spread bounds; no independence assumption needed; bounds may be unbounded when pooled spread cannot be certified positive],
 )
 

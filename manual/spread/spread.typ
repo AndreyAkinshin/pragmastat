@@ -7,13 +7,26 @@ $ Spread(vx) = attach(Median, b: 1 <= i < j <= n) abs(x_i - x_j) $
 Robust measure of dispersion (variability, scatter).
 
 #v(0.3em)
+*Input*
+
+#list(marker: none, tight: true,
+  [$vx = (x_1, x_2, ..., x_n)$ — input sample of measurements, requires #link(<sec-sparity>)[`sparity(x)`]],
+)
+
+#v(0.3em)
+*Output*
+
+#list(marker: none, tight: true,
+  [*Value* — estimation of the median of the absolute difference between two random measurements from $X$],
+  [*Unit* — same unit as $vx$],
+)
+
+#v(0.3em)
+*Notes*
+
 #list(marker: none, tight: true,
   [*Also known as* — Shamos scale estimator],
-  [*Asymptotic* — median of the absolute difference between two random measurements from $X$],
   [*Complexity* — $O(n log n)$],
-  [*Domain* — any real numbers],
-  [*Assumptions* — #link(<sec-sparity>)[`sparity(x)`]],
-  [*Unit* — same as measurements],
 )
 
 #v(0.5em)

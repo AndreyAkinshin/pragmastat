@@ -7,14 +7,29 @@ $ SignedRankMargin(n, misrate) $
 Exclusion count for one-sample signed-rank based bounds.
 
 #v(0.3em)
+*Input*
+
+#list(marker: none, tight: true,
+  [$n >= 2$ — sample size],
+  [$misrate >= 2^(1-n)$ — error rate],
+)
+
+#v(0.3em)
+*Output*
+
+#list(marker: none, tight: true,
+  [*Value* — total margin split evenly between lower and upper tails],
+  [*Unit* — count],
+)
+
+#v(0.3em)
+*Notes*
+
 #list(marker: none, tight: true,
   [*Purpose* — determines extreme pairwise averages to exclude when constructing bounds],
   [*Based on* — Wilcoxon signed-rank distribution under weak symmetry],
-  [*Returns* — total margin split evenly between lower and upper tails],
   [*Used by* — #link(<sec-center-bounds>)[$CenterBounds$] to select appropriate order statistics],
   [*Complexity* — exact for $n <= 63$, approximated for larger],
-  [*Domain* — $n >= 2$, $misrate >= 2^(1-n)$],
-  [*Unit* — count],
   [*Note* — assumes weak symmetry and weak continuity],
 )
 

@@ -7,11 +7,26 @@ $ AvgSpread(vx, vy) = (n dot Spread(vx) + m dot Spread(vy)) / (n + m) $
 Weighted average of dispersions (pooled scale).
 
 #v(0.3em)
+*Input*
+
+#list(marker: none, tight: true,
+  [$vx = (x_1, x_2, ..., x_n)$ — first sample of measurements, requires #link(<sec-sparity>)[`sparity(x)`]],
+  [$vy = (y_1, y_2, ..., y_m)$ — second sample of measurements, requires #link(<sec-sparity>)[`sparity(y)`]],
+)
+
+#v(0.3em)
+*Output*
+
+#list(marker: none, tight: true,
+  [*Value* — $(n dot Spread(vx) + m dot Spread(vy)) / (n + m)$],
+  [*Unit* — same unit as $vx$, $vy$],
+)
+
+#v(0.3em)
+*Notes*
+
 #list(marker: none, tight: true,
   [*Also known as* — robust pooled standard deviation],
-  [*Domain* — any real numbers],
-  [*Assumptions* — #link(<sec-sparity>)[`sparity(x)`], #link(<sec-sparity>)[`sparity(y)`]],
-  [*Unit* — same as measurements],
   [*Caveat* — $AvgSpread(vx, vy) != Spread(vx union vy)$ (pooled scale, not concatenated spread)],
 )
 

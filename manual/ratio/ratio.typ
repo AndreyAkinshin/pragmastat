@@ -7,11 +7,25 @@ $ Ratio(vx, vy) = exp(Shift(log vx, log vy)) $
 Robust measure of scale ratio between two samples — the multiplicative dual of #link(<sec-shift>)[$Shift$].
 
 #v(0.3em)
+*Input*
+
 #list(marker: none, tight: true,
-  [*Asymptotic* — geometric median of pairwise ratios $x_i / y_j$ (via log-space aggregation)],
-  [*Domain* — $x_i > 0$, $y_j > 0$],
-  [*Assumptions* — #link(<sec-positivity>)[`positivity(x)`], #link(<sec-positivity>)[`positivity(y)`]],
+  [$vx = (x_1, x_2, ..., x_n)$ — first sample of measurements, where $x_i > 0$, requires #link(<sec-positivity>)[`positivity(x)`]],
+  [$vy = (y_1, y_2, ..., y_m)$ — second sample of measurements, where $y_j > 0$, requires #link(<sec-positivity>)[`positivity(y)`]],
+)
+
+#v(0.3em)
+*Output*
+
+#list(marker: none, tight: true,
+  [*Value* — estimation of the geometric median of pairwise ratios $x_i / y_j$ (via log-space aggregation)],
   [*Unit* — dimensionless],
+)
+
+#v(0.3em)
+*Notes*
+
+#list(marker: none, tight: true,
   [*Complexity* — $O((m + n) log L)$],
 )
 

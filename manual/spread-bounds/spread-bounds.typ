@@ -10,11 +10,25 @@ $k_L = r + 1$, $k_U = m - r$, and $r$ is the randomized sign-test cutoff for $"B
 Robust bounds on #link(<sec-spread>)[$Spread(vx)$] with specified coverage.
 
 #v(0.3em)
+*Input*
+
 #list(marker: none, tight: true,
-  [*Interpretation* --- $misrate$ is probability that true spread falls outside bounds],
-  [*Domain* --- any real numbers, $n >= 2$, $misrate >= 2^(1-m)$],
-  [*Assumptions* --- #link(<sec-sparity>)[`sparity(x)`]],
-  [*Unit* --- same as measurements],
+  [$vx = (x_1, x_2, ..., x_n)$ — input sample of measurements, where $n >= 2$, requires #link(<sec-sparity>)[`sparity(x)`]],
+  [$misrate >= 2^(1-m)$ — probability that true spread falls outside bounds in the long run],
+)
+
+#v(0.3em)
+*Output*
+
+#list(marker: none, tight: true,
+  [*Value* --- interval $[L, U]$ bounding $Spread(vx)$],
+  [*Unit* --- same unit as $vx$],
+)
+
+#v(0.3em)
+*Notes*
+
+#list(marker: none, tight: true,
   [*Note* --- disjoint-pair sign-test inversion; randomized cutoff matches requested misrate exactly under weak continuity; conservative with ties],
 )
 

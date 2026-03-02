@@ -11,11 +11,27 @@ $k_"right" = n m - floor(PairwiseMargin / 2)$
 Robust bounds on #link(<sec-shift>)[$Shift(vx, vy)$] with specified coverage.
 
 #v(0.3em)
+*Input*
+
+#list(marker: none, tight: true,
+  [$vx = (x_1, x_2, ..., x_n)$ — first sample of measurements],
+  [$vy = (y_1, y_2, ..., y_m)$ — second sample of measurements],
+  [$misrate >= 2 / binom(n+m, n)$ — probability that true shift falls outside bounds in the long run],
+)
+
+#v(0.3em)
+*Output*
+
+#list(marker: none, tight: true,
+  [*Value* — interval $[L, U]$ bounding $Shift(vx, vy)$],
+  [*Unit* — same unit as $vx$, $vy$],
+)
+
+#v(0.3em)
+*Notes*
+
 #list(marker: none, tight: true,
   [*Also known as* — distribution-free confidence interval for Hodges-Lehmann],
-  [*Interpretation* — $misrate$ is probability that true shift falls outside bounds],
-  [*Domain* — any real numbers, $misrate >= 2 / binom(n+m, n)$],
-  [*Unit* — same as measurements],
   [*Note* — assumes weak continuity (ties from measurement resolution are tolerated but may yield conservative bounds)],
 )
 

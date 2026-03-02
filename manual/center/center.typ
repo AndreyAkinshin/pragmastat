@@ -7,12 +7,26 @@ $ Center(vx) = attach(Median, b: 1 <= i <= j <= n) (x_i + x_j) / 2 $
 Robust measure of location (central tendency).
 
 #v(0.3em)
+*Input*
+
+#list(marker: none, tight: true,
+  [$vx = (x_1, x_2, ..., x_n)$ — input sample of measurements],
+)
+
+#v(0.3em)
+*Output*
+
+#list(marker: none, tight: true,
+  [*Value* — estimation of the median of the average of two random measurements from $X$],
+  [*Unit* — same unit as $vx$],
+)
+
+#v(0.3em)
+*Notes*
+
 #list(marker: none, tight: true,
   [*Also known as* — Hodges-Lehmann estimator, pseudomedian],
-  [*Asymptotic* — median of the average of two random measurements from $X$],
   [*Complexity* — $O(n log n)$],
-  [*Domain* — any real numbers],
-  [*Unit* — same as measurements],
 )
 
 #v(0.5em)
