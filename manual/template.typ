@@ -37,6 +37,16 @@
 // Lists: no bullet markers, indented like standard definition list continuation
 #set list(marker: none, indent: 0em, body-indent: 2em)
 
+// Inline math: flat fractions (a/b) instead of stacked two-story fractions
+#show math.equation.where(block: false): it => {
+  show math.frac: frac => {
+    frac.num
+    math.class("binary", sym.slash)
+    frac.denom
+  }
+  it
+}
+
 // Abstract (no title in PDF - web has separate abstract page)
 #include "abstract.typ"
 
