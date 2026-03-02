@@ -12,7 +12,7 @@
 [![NuGet](https://img.shields.io/nuget/v/Pragmastat?color=009E73)](https://www.nuget.org/packages/Pragmastat/)
 [![maven](https://img.shields.io/maven-central/v/dev.pragmastat/pragmastat?label=maven&color=009E73)](https://central.sonatype.com/artifact/dev.pragmastat/pragmastat)
 [![Crates.io](https://img.shields.io/crates/v/pragmastat.svg?color=009E73)](https://crates.io/crates/pragmastat)
-[![go](https://img.shields.io/github/v/release/AndreyAkinshin/pragmastat?display_name=tag&label=go&color=009E73)](https://pkg.go.dev/github.com/AndreyAkinshin/pragmastat/go/v10)
+[![go](https://img.shields.io/github/v/release/AndreyAkinshin/pragmastat?display_name=tag&label=go&color=009E73)](https://pkg.go.dev/github.com/AndreyAkinshin/pragmastat/go/v11)
 
 [![tests](https://img.shields.io/github/v/release/AndreyAkinshin/pragmastat?display_name=tag&label=tests&color=CC79A7)](https://github.com/AndreyAkinshin/pragmastat/releases/latest)
 [![simulations](https://img.shields.io/github/v/release/AndreyAkinshin/pragmastat?display_name=tag&label=simulations&color=CC79A7)](https://github.com/AndreyAkinshin/pragmastat/releases/latest)

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	pragmastat "github.com/AndreyAkinshin/pragmastat/go/v10"
+	pragmastat "github.com/AndreyAkinshin/pragmastat/go/v11"
 )
 
 func mustM(val pragmastat.Measurement, err error) pragmastat.Measurement {

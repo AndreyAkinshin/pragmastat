@@ -3,10 +3,10 @@
 Install from GitHub:
 
 ```bash
-go get github.com/AndreyAkinshin/pragmastat/go/v10@v10.0.6
+go get github.com/AndreyAkinshin/pragmastat/go/v11@v11.0.0
 ```
 
-Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v10.0.6/go
+Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v11.0.0/go
 
 ## Demo
 
@@ -17,7 +17,7 @@ import (
 	"fmt"
 	"log"
 
-	pragmastat "github.com/AndreyAkinshin/pragmastat/go/v10"
+	pragmastat "github.com/AndreyAkinshin/pragmastat/go/v11"
 )
 
 func mustM(val pragmastat.Measurement, err error) pragmastat.Measurement {
