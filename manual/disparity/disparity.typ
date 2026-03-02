@@ -6,7 +6,7 @@ $ Disparity(vx, vy) = Shift(vx, vy) / AvgSpread(vx, vy) $
 
 where $AvgSpread(vx, vy) = (n dot Spread(vx) + m dot Spread(vy)) / (n + m)$ is the weighted average of dispersions (pooled scale).
 
-Robust effect size (shift normalized by pooled dispersion).
+Robust effect size (shift normalized by pooled spread).
 
 #v(0.3em)
 *Input*
