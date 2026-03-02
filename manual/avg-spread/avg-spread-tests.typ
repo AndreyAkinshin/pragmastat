@@ -2,7 +2,7 @@
 
 $ AvgSpread(vx, vy) = (n dot Spread(vx) + m dot Spread(vy)) / (n + m) $
 
-The $AvgSpread$ test suite contains 36 test cases (5 demo + 4 natural + 1 negative + 9 additive + 4 uniform + 1 composite + 12 unsorted).
+The $AvgSpread$ test suite contains 38 test cases (5 demo + 4 natural + 1 negative + 9 additive + 4 uniform + 1 composite + 12 unsorted + 2 error).
 Since $AvgSpread$ is a weighted average of two $Spread$ estimates, tests validate both the individual spread calculations and the weighting formula.
 
 *Demo examples* ($n = m = 5$) --- from manual introduction, validating properties:
@@ -52,3 +52,8 @@ Since $AvgSpread$ is a weighted average of two $Spread$ estimates, tests validat
 
 As a composite estimator, $AvgSpread$ tests both individual $Spread$ computations and the weighted combination.
 Unsorted variants verify end-to-end correctness including the weighting formula.
+
+*Error cases* — input validation (2 tests):
+
+- `error-empty-x`: $vx = ()$, $vy = (1, 2, 3, 4, 5)$ — empty X array violates validity
+- `error-empty-y`: $vx = (1, 2, 3, 4, 5)$, $vy = ()$ — empty Y array violates validity

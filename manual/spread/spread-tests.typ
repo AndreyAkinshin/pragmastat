@@ -2,7 +2,7 @@
 
 $ Spread(vx) = median_(1 <= i < j <= n) abs(x_i - x_j) $
 
-The $Spread$ test suite contains 30 correctness test cases stored in the repository (20 original + 10 unsorted), plus 1 performance test that should be implemented manually (see #link(<sec-test-framework>)[Test Framework]).
+The $Spread$ test suite contains 32 test cases stored in the repository (20 original + 10 unsorted + 2 error), plus 1 performance test that should be implemented manually (see #link(<sec-test-framework>)[Test Framework]).
 
 *Demo examples* ($n = 5$) — from manual introduction, validating properties:
 
@@ -56,6 +56,11 @@ Constant samples and $n = 1$ are excluded because $Spread$ requires $Spread(vx) 
 
 These tests verify that implementations correctly sort input before computing pairwise differences.
 Since $Spread$ uses absolute differences, order-dependent bugs would manifest differently than in $Center$.
+
+*Error cases* — input validation (2 tests):
+
+- `error-empty-x`: $vx = ()$ — empty array violates validity
+- `error-constant-x`: $vx = (5, 5, 5, 5, 5)$ — constant sample violates sparity ($Spread = 0$)
 
 *Performance test* — validates the fast $O(n log n)$ algorithm:
 

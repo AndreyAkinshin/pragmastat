@@ -2,7 +2,7 @@
 
 $ Disparity(vx, vy) = Shift(vx, vy) / AvgSpread(vx, vy) $
 
-The $Disparity$ test suite contains 28 test cases (16 original + 12 unsorted).
+The $Disparity$ test suite contains 30 test cases (16 original + 12 unsorted + 2 error).
 Since $Disparity$ combines $Shift$ and $AvgSpread$, unsorted tests verify both components handle sorting correctly.
 
 *Demo examples* ($n = m = 5$) — from manual introduction, validating properties:
@@ -50,3 +50,8 @@ The test cases validate the division operation and confirm scale-free properties
 
 As a composite estimator, $Disparity$ tests both the numerator ($Shift$) and denominator ($AvgSpread$).
 Unsorted variants verify end-to-end correctness including invariance properties.
+
+*Error cases* — input validation (2 tests):
+
+- `error-empty-x`: $vx = ()$, $vy = (1, 2, 3, 4, 5)$ — empty X array violates validity
+- `error-empty-y`: $vx = (1, 2, 3, 4, 5)$, $vy = ()$ — empty Y array violates validity

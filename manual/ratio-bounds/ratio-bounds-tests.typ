@@ -2,7 +2,7 @@
 
 $ RatioBounds(vx, vy, misrate) = exp(ShiftBounds(log vx, log vy, misrate)) $
 
-The $RatioBounds$ test suite contains 61 correctness test cases (3 demo + 9 natural + 6 property + 10 edge + 9 multiplic + 4 uniform + 5 misrate + 15 unsorted).
+The $RatioBounds$ test suite contains 63 test cases (3 demo + 9 natural + 6 property + 10 edge + 9 multiplic + 4 uniform + 5 misrate + 15 unsorted + 2 error).
 Since $RatioBounds$ returns bounds rather than a point estimate, tests validate that the bounds contain $Ratio(vx, vy)$ and satisfy equivariance properties.
 Each test case output is a JSON object with `lower` and `upper` fields representing the interval bounds.
 All samples must contain strictly positive values.
@@ -106,6 +106,11 @@ The sequence demonstrates how bound width increases as misrate decreases, helpin
 These unsorted tests are critical because $RatioBounds$ computes bounds from pairwise ratios, requiring both samples to be sorted independently.
 The variety ensures implementations don't incorrectly assume pre-sorted input or sort samples together.
 Each test must produce identical output to its sorted counterpart, validating that the implementation correctly handles the sorting step.
+
+*Error cases* — input validation (2 tests):
+
+- `error-empty-x`: $vx = ()$, $vy = (1, 2, 3, 4, 5)$ — empty X array violates validity
+- `error-empty-y`: $vx = (1, 2, 3, 4, 5)$, $vy = ()$ — empty Y array violates validity
 
 *No performance test* — $RatioBounds$ uses the $"FastRatio"$ algorithm internally, which delegates to $"FastShift"$ in log-space.
 Since bounds computation involves only two quantile calculations from the pairwise differences (at positions determined by $PairwiseMargin$),

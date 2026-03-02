@@ -2,7 +2,7 @@
 
 $ Shift(vx, vy) = median_(1 <= i <= n, 1 <= j <= m) (x_i - y_j) $
 
-The $Shift$ test suite contains 60 correctness test cases stored in the repository (42 original + 18 unsorted), plus 1 performance test that should be implemented manually (see #link(<sec-test-framework>)[Test Framework]).
+The $Shift$ test suite contains 62 test cases stored in the repository (42 original + 18 unsorted + 2 error), plus 1 performance test that should be implemented manually (see #link(<sec-test-framework>)[Test Framework]).
 
 *Demo examples* ($n = m = 5$) — from manual introduction, validating properties:
 
@@ -83,6 +83,11 @@ The asymmetric size combinations test the two-sample algorithm with unbalanced i
 
 These tests are critical for two-sample estimators because they verify that $vx$ and $vy$ are sorted *independently*.
 The variety includes cases where only one sample is unsorted, ensuring implementations don't incorrectly assume pre-sorted input or sort samples together.
+
+*Error cases* — input validation (2 tests):
+
+- `error-empty-x`: $vx = ()$, $vy = (1, 2, 3, 4, 5)$ — empty X array violates validity
+- `error-empty-y`: $vx = (1, 2, 3, 4, 5)$, $vy = ()$ — empty Y array violates validity
 
 *Performance test* — validates the fast $O((m+n) log L)$ binary search algorithm:
 

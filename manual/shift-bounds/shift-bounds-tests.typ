@@ -10,7 +10,7 @@ $ k_"left" = floor(PairwiseMargin(n, m, misrate) / 2) + 1 $
 
 $ k_"right" = n m - floor(PairwiseMargin(n, m, misrate) / 2) $
 
-The $ShiftBounds$ test suite contains 61 correctness test cases (3 demo + 9 natural + 6 property + 10 edge + 9 additive + 4 uniform + 5 misrate + 15 unsorted).
+The $ShiftBounds$ test suite contains 63 test cases (3 demo + 9 natural + 6 property + 10 edge + 9 additive + 4 uniform + 5 misrate + 15 unsorted + 2 error).
 Since $ShiftBounds$ returns bounds rather than a point estimate, tests validate that the bounds contain $Shift(vx, vy)$ and satisfy equivariance properties.
 Each test case output is a JSON object with `lower` and `upper` fields representing the interval bounds.
 The domain constraint $misrate >= 2 / binom(n+m, n)$ is enforced; inputs violating this return a domain error.
@@ -114,6 +114,11 @@ The sequence demonstrates how bound width increases as misrate decreases, helpin
 These unsorted tests are critical because $ShiftBounds$ computes bounds from pairwise differences, requiring both samples to be sorted independently.
 The variety ensures implementations don't incorrectly assume pre-sorted input or sort samples together.
 Each test must produce identical output to its sorted counterpart, validating that the implementation correctly handles the sorting step.
+
+*Error cases* — input validation (2 tests):
+
+- `error-empty-x`: $vx = ()$, $vy = (1, 2, 3, 4, 5)$ — empty X array violates validity
+- `error-empty-y`: $vx = (1, 2, 3, 4, 5)$, $vy = ()$ — empty Y array violates validity
 
 *No performance test* — $ShiftBounds$ uses the $"FastShift"$ algorithm internally, which is already validated by the $Shift$ performance test.
 Since bounds computation involves only two quantile calculations from the pairwise differences (at positions determined by $PairwiseMargin$),

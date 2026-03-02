@@ -2,7 +2,7 @@
 
 $ Center(vx) = median_(1 <= i <= j <= n) (x_i + x_j) / 2 $
 
-The $Center$ test suite contains 38 correctness test cases stored in the repository (24 original + 14 unsorted), plus 1 performance test that should be implemented manually (see #link(<sec-test-framework>)[Test Framework]).
+The $Center$ test suite contains 39 test cases stored in the repository (24 original + 14 unsorted + 1 error), plus 1 performance test that should be implemented manually (see #link(<sec-test-framework>)[Test Framework]).
 
 *Demo examples* ($n = 5$) — from manual introduction, validating properties:
 
@@ -67,6 +67,10 @@ The progression from small ($n = 5$) to large ($n = 100$) samples helps identify
 
 These tests ensure implementations correctly sort input data before computing pairwise averages.
 The variety of shuffle patterns (reverse, rotation, interleaving, single element displacement) catches common sorting bugs.
+
+*Error case* — input validation:
+
+- `error-empty-x`: $vx = ()$ — empty array violates validity
 
 *Performance test* — validates the fast $O(n log n)$ algorithm:
 

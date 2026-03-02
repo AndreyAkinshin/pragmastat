@@ -2,7 +2,7 @@
 
 $ Ratio(vx, vy) = exp(Shift(log vx, log vy)) $
 
-The $Ratio$ test suite contains 37 test cases (25 original + 12 unsorted), excluding zero values due to division constraints.
+The $Ratio$ test suite contains 40 test cases (25 original + 12 unsorted + 3 error), excluding zero values due to division constraints.
 The new definition uses geometric interpolation (via log-space), which affects expected values for even $m times n$ cases.
 
 *Demo examples* ($n = m = 5$) — from manual introduction, validating properties:
@@ -50,3 +50,9 @@ Note that implementations should handle the practical constraint of avoiding div
 - `unsorted-identity-unsorted`: $vx = (4, 1, 8, 2, 16)$, $vy = (16, 1, 8, 4, 2)$ (identity property, both unsorted)
 - `unsorted-asymmetric-unsorted-2-3`: $vx = (2, 1)$, $vy = (3, 1, 2)$ (asymmetric, both unsorted)
 - `unsorted-power-unsorted-5`: $vx = (16, 2, 8, 1, 4)$, $vy = (32, 4, 16, 2, 8)$ (powers of 2 unsorted)
+
+*Error cases* — input validation (3 tests):
+
+- `error-empty-x`: $vx = ()$, $vy = (1, 2, 3, 4, 5)$ — empty X array violates validity
+- `error-empty-y`: $vx = (1, 2, 3, 4, 5)$, $vy = ()$ — empty Y array violates validity
+- `error-nonpositive-y`: $vx = (1, 2, 3, 4, 5)$, $vy = (-1, 2, 3, 4, 5)$ — non-positive Y values violate positivity
