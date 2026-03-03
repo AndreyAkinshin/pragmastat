@@ -33,32 +33,34 @@ from pragmastat.distributions import Additive, Exp, Multiplic, Power, Uniform
 def main():
     # --- One-Sample ---
 
-    x = Sample(list(range(1, 23)))
+    x = Sample(list(range(1, 201)))
 
     result = center(x)
-    print(result.value)  # 11.5
+    print(result.value)  # 100.5
     bounds = center_bounds(x, 1e-3)
-    print(f"Bounds(lower={bounds.lower}, upper={bounds.upper})")  # Bounds(lower=6.0, upper=17.0)
-    print(spread(x).value)  # 7.0
+    print(f"Bounds(lower={bounds.lower}, upper={bounds.upper})")  # Bounds(lower=86.0, upper=115.0)
+    print(spread(x).value)  # 59.0
     bounds = spread_bounds(x, 1e-3, seed="demo")
-    print(f"Bounds(lower={bounds.lower}, upper={bounds.upper})")  # Bounds(lower=1.0, upper=18.0)
+    print(f"Bounds(lower={bounds.lower}, upper={bounds.upper})")  # Bounds(lower=44.0, upper=87.0)
 
     # --- Two-Sample ---
 
-    x = Sample(list(range(1, 31)))
-    y = Sample(list(range(21, 51)))
+    x = Sample(list(range(1, 201)))
+    y = Sample(list(range(101, 301)))
 
-    print(shift(x, y).value)  # -20.0
+    print(shift(x, y).value)  # -100.0
     bounds = shift_bounds(x, y, 1e-3)
-    print(f"Bounds(lower={bounds.lower}, upper={bounds.upper})")  # Bounds(lower=-28.0, upper=-12.0)
-    print(ratio(x, y).value)  # 0.43669798282695127
+    print(f"Bounds(lower={bounds.lower}, upper={bounds.upper})")  # Bounds(lower=-120.0, upper=-80.0)
+    print(ratio(x, y).value)  # 0.5008354224706334
     bounds = ratio_bounds(x, y, 1e-3)
     print(
         f"Bounds(lower={bounds.lower}, upper={bounds.upper})"
-    )  # Bounds(lower=0.23255813953488377, upper=0.6428571428571428)
-    print(disparity(x, y).value)  # -2.2222222222222223
+    )  # Bounds(lower=0.4066666666666668, upper=0.5958333333333332)
+    print(disparity(x, y).value)  # -1.694915254237288
     bounds = disparity_bounds(x, y, 1e-3, seed="demo")
-    print(f"Bounds(lower={bounds.lower}, upper={bounds.upper})")  # Bounds(lower=-29.0, upper=-0.4782608695652174)
+    print(
+        f"Bounds(lower={bounds.lower}, upper={bounds.upper})"
+    )  # Bounds(lower=-3.1025641025641026, upper=-0.8494623655913979)
 
     # --- Randomization ---
 

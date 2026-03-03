@@ -37,22 +37,22 @@ import dev.pragmastat.distributions.*
 fun main() {
     // --- One-Sample ---
 
-    val x = Sample.of((1..22).map { it.toDouble() })
-    println(center(x)) // Measurement(value=11.5, unit=NumberUnit)
-    println(spread(x)) // Measurement(value=7.0, unit=NumberUnit)
-    println(centerBounds(x, 1e-3)) // Bounds(lower=6.0, upper=17.0, unit=NumberUnit)
-    println(spreadBounds(x, 1e-3, "demo")) // Bounds(lower=1.0, upper=18.0, unit=NumberUnit)
+    val x = Sample.of((1..200).map { it.toDouble() })
+    println(center(x)) // 100.5
+    println(spread(x)) // 59.0
+    println(centerBounds(x, 1e-3)) // Bounds(lower=86.0, upper=115.0, unit=...)
+    println(spreadBounds(x, 1e-3, "demo")) // Bounds(lower=44.0, upper=87.0, unit=...)
 
     // --- Two-Sample ---
 
-    val sx = Sample.of((1..30).map { it.toDouble() })
-    val sy = Sample.of((21..50).map { it.toDouble() })
-    println(shift(sx, sy)) // Measurement(value=-20.0, unit=NumberUnit)
-    println(shiftBounds(sx, sy, 1e-3)) // Bounds(lower=-28.0, upper=-12.0, unit=NumberUnit)
-    println(ratio(sx, sy)) // Measurement(value=0.436..., unit=RatioUnit)
-    println(ratioBounds(sx, sy, 1e-3)) // Bounds(lower=0.232..., upper=0.642..., unit=RatioUnit)
-    println(disparity(sx, sy)) // Measurement(value=-2.222..., unit=DisparityUnit)
-    println(disparityBounds(sx, sy, 1e-3, "demo")) // Bounds(lower=-29.0, upper=-0.478..., unit=DisparityUnit)
+    val sx = Sample.of((1..200).map { it.toDouble() })
+    val sy = Sample.of((101..300).map { it.toDouble() })
+    println(shift(sx, sy)) // -100.0
+    println(shiftBounds(sx, sy, 1e-3)) // Bounds(lower=-120.0, upper=-80.0, unit=...)
+    println(ratio(sx, sy)) // 0.5008354224706336
+    println(ratioBounds(sx, sy, 1e-3)) // Bounds(lower=0.4066..., upper=0.5958..., unit=...)
+    println(disparity(sx, sy)) // -1.694915254237288
+    println(disparityBounds(sx, sy, 1e-3, "demo")) // Bounds(lower=-3.1025..., upper=-0.8494..., unit=...)
 
     // --- Custom units ---
 

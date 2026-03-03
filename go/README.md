@@ -44,31 +44,36 @@ func mustS(val *pragmastat.Sample, err error) *pragmastat.Sample {
 func main() {
 	// --- One-Sample ---
 
-	x := mustS(pragmastat.NewSample([]float64{
-		1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
-		11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-		21, 22}))
+	xVals := make([]float64, 200)
+	for i := range xVals {
+		xVals[i] = float64(i + 1)
+	}
+	x := mustS(pragmastat.NewSample(xVals))
 
-	fmt.Println(mustM(pragmastat.Center(x)).Value)                       // 11.5
-	fmt.Println(mustB(pragmastat.CenterBounds(x, 1e-3)))                 // [6;17]
-	fmt.Println(mustM(pragmastat.Spread(x)).Value)                       // 7
-	fmt.Println(mustB(pragmastat.SpreadBoundsWithSeed(x, 1e-3, "demo"))) // [1;18]
+	fmt.Println(mustM(pragmastat.Center(x)).Value)                       // 100.5
+	fmt.Println(mustB(pragmastat.CenterBounds(x, 1e-3)))                 // [86;115]
+	fmt.Println(mustM(pragmastat.Spread(x)).Value)                       // 59
+	fmt.Println(mustB(pragmastat.SpreadBoundsWithSeed(x, 1e-3, "demo"))) // [44;87]
 
 	// --- Two-Sample ---
 
-	sx := mustS(pragmastat.NewSample([]float64{
-		1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
-		16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30}))
-	sy := mustS(pragmastat.NewSample([]float64{
-		21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35,
-		36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50}))
+	sxVals := make([]float64, 200)
+	for i := range sxVals {
+		sxVals[i] = float64(i + 1)
+	}
+	syVals := make([]float64, 200)
+	for i := range syVals {
+		syVals[i] = float64(i + 101)
+	}
+	sx := mustS(pragmastat.NewSample(sxVals))
+	sy := mustS(pragmastat.NewSample(syVals))
 
-	fmt.Println(mustM(pragmastat.Shift(sx, sy)).Value)                           // -20
-	fmt.Println(mustB(pragmastat.ShiftBounds(sx, sy, 1e-3)))                     // [-28;-12]
-	fmt.Println(mustM(pragmastat.Ratio(sx, sy)).Value)                           // 0.4366979828269513
-	fmt.Println(mustB(pragmastat.RatioBounds(sx, sy, 1e-3)))                     // [0.23...;0.64...]
-	fmt.Println(mustM(pragmastat.Disparity(sx, sy)).Value)                       // -2.2222222222222223
-	fmt.Println(mustB(pragmastat.DisparityBoundsWithSeed(sx, sy, 1e-3, "demo"))) // [-29;-0.47...]
+	fmt.Println(mustM(pragmastat.Shift(sx, sy)).Value)                           // -100
+	fmt.Println(mustB(pragmastat.ShiftBounds(sx, sy, 1e-3)))                     // [-120;-80]
+	fmt.Println(mustM(pragmastat.Ratio(sx, sy)).Value)                           // 0.5008354224706336
+	fmt.Println(mustB(pragmastat.RatioBounds(sx, sy, 1e-3)))                     // [0.4066666666666668;0.5958333333333332]
+	fmt.Println(mustM(pragmastat.Disparity(sx, sy)).Value)                       // -1.694915254237288
+	fmt.Println(mustB(pragmastat.DisparityBoundsWithSeed(sx, sy, 1e-3, "demo"))) // [-3.1025641025641026;-0.8494623655913979]
 
 	// --- Randomization ---
 

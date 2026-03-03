@@ -26,34 +26,34 @@ use pragmastat::*;
 fn main() {
     // --- One-Sample (Sample-based API) ---
 
-    let x = Sample::new((1..=22).map(|i| i as f64).collect()).unwrap();
+    let x = Sample::new((1..=200).map(|i| i as f64).collect()).unwrap();
 
-    println!("{}", center(&x).unwrap().value); // 11.5
+    println!("{}", center(&x).unwrap().value); // 100.5
     let bounds = center_bounds(&x, 1e-3).unwrap();
-    println!("{{lower: {}, upper: {}}}", bounds.lower, bounds.upper); // {lower: 6, upper: 17}
-    println!("{}", spread(&x).unwrap().value); // 7
+    println!("{{lower: {}, upper: {}}}", bounds.lower, bounds.upper); // {lower: 86, upper: 115}
+    println!("{}", spread(&x).unwrap().value); // 59
     let bounds = spread_bounds_with_seed(&x, 1e-3, "demo").unwrap();
-    println!("{{lower: {}, upper: {}}}", bounds.lower, bounds.upper); // {lower: 1, upper: 18}
+    println!("{{lower: {}, upper: {}}}", bounds.lower, bounds.upper); // {lower: 44, upper: 87}
 
     // --- Two-Sample (Sample-based API) ---
 
-    let x = Sample::new((1..=30).map(|i| i as f64).collect()).unwrap();
-    let y = Sample::new((21..=50).map(|i| i as f64).collect()).unwrap();
+    let x = Sample::new((1..=200).map(|i| i as f64).collect()).unwrap();
+    let y = Sample::new((101..=300).map(|i| i as f64).collect()).unwrap();
 
-    println!("{}", shift(&x, &y).unwrap().value); // -20
+    println!("{}", shift(&x, &y).unwrap().value); // -100
     let bounds = shift_bounds(&x, &y, 1e-3).unwrap();
-    println!("{{lower: {}, upper: {}}}", bounds.lower, bounds.upper); // {lower: -28, upper: -12}
-    println!("{}", ratio(&x, &y).unwrap().value); // 0.43669798282695127
+    println!("{{lower: {}, upper: {}}}", bounds.lower, bounds.upper); // {lower: -120, upper: -80}
+    println!("{}", ratio(&x, &y).unwrap().value); // 0.5008354224706334
     let bounds = ratio_bounds(&x, &y, 1e-3).unwrap();
-    println!("{{lower: {}, upper: {}}}", bounds.lower, bounds.upper); // {lower: 0.23255813953488377, upper: 0.6428571428571428}
-    println!("{}", disparity(&x, &y).unwrap().value); // -2.2222222222222223
+    println!("{{lower: {}, upper: {}}}", bounds.lower, bounds.upper); // {lower: 0.4066666666666668, upper: 0.5958333333333332}
+    println!("{}", disparity(&x, &y).unwrap().value); // -1.694915254237288
     let bounds = disparity_bounds_with_seed(&x, &y, 1e-3, "demo").unwrap();
-    println!("{{lower: {}, upper: {}}}", bounds.lower, bounds.upper); // {lower: -29, upper: -0.4782608695652174}
+    println!("{{lower: {}, upper: {}}}", bounds.lower, bounds.upper); // {lower: -3.1025641025641026, upper: -0.8494623655913979}
 
     // --- Raw slice API (backward-compatible) ---
 
-    let x_raw: Vec<f64> = (1..=22).map(|i| i as f64).collect();
-    println!("{}", estimators::raw::center(&x_raw).unwrap()); // 11.5
+    let x_raw: Vec<f64> = (1..=200).map(|i| i as f64).collect();
+    println!("{}", estimators::raw::center(&x_raw).unwrap()); // 100.5
 
     // --- Randomization ---
 
