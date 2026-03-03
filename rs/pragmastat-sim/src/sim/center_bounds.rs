@@ -84,23 +84,24 @@ impl Simulation for CenterBoundsSim {
         input: &BoundsInput,
         progress: &dyn Fn(f64),
     ) -> Result<BoundsRow, SimError> {
-        let dist_entry =
-            find_distributions(std::slice::from_ref(&input.distribution_name))
-                .into_iter()
-                .next()
-                .expect("distribution not found");
+        let dist_entry = find_distributions(std::slice::from_ref(&input.distribution_name))
+            .into_iter()
+            .next()
+            .expect("distribution not found");
         let dist = dist_entry.create();
         let mut rng = Rng::from_string(&format!(
             "{}-{}-{}",
             input.base_seed, input.distribution_name, input.sample_size
         ));
 
-        let true_value = dist_entry.center.expect("center must be set for symmetric distributions");
+        let true_value = dist_entry
+            .center
+            .expect("center must be set for symmetric distributions");
         let mut coverage = 0_usize;
 
         for i in 0..input.sample_count {
             let sample: Vec<f64> = dist.samples(&mut rng, input.sample_size);
-            let bounds = pragmastat::center_bounds(&sample, input.misrate)
+            let bounds = pragmastat::estimators::raw::center_bounds(&sample, input.misrate)
                 .map_err(|e| SimError(format!("{e}")))?;
 
             if bounds.lower <= true_value && true_value <= bounds.upper {

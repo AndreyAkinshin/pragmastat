@@ -13,7 +13,7 @@ fn lookup_estimator(name: &str) -> EstimatorFn {
     match name {
         "StdDev" => estimators::std_dev,
         "MAD" => estimators::mad,
-        "Spread" => |v| pragmastat::spread(v).unwrap(),
+        "Spread" => |v| pragmastat::estimators::raw::spread(v).unwrap(),
         _ => panic!("Unknown dispersion estimator: {name}"),
     }
 }

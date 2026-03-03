@@ -216,8 +216,7 @@ pub mod raw {
         spread_bounds_with_rng(x, misrate, &mut rng)
     }
 
-    #[cfg(test)]
-    pub(crate) fn avg_spread_bounds(
+    pub fn avg_spread_bounds(
         x: &[f64],
         y: &[f64],
         misrate: f64,

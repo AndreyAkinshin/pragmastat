@@ -102,7 +102,7 @@ impl Simulation for RatioBoundsSim {
             let x: Vec<f64> = dist.samples(&mut rng, input.sample_size);
             let y: Vec<f64> = dist.samples(&mut rng, input.sample_size);
 
-            let bounds = pragmastat::ratio_bounds(&x, &y, input.misrate)
+            let bounds = pragmastat::estimators::raw::ratio_bounds(&x, &y, input.misrate)
                 .map_err(|e| SimError(format!("{e}")))?;
 
             if bounds.lower <= true_value && true_value <= bounds.upper {
