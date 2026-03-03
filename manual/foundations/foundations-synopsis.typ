@@ -157,6 +157,52 @@ Traditional confidence intervals become "bounds" in this framework,
   it provides bounds on the shift, with a specified error rate.
 No background in classical statistics required to understand the concept.
 
+== From Sample Size to Reliability Tiers <sec-sample-size-defaults>
+
+After choosing $misrate$, the second practical default is sample size.
+For bounds estimators, reliability is reflected by interval width:
+
+$ "Width" = U - L $
+
+Smaller width means tighter uncertainty and more actionable conclusions.
+
+To set practical defaults, the toolkit uses the same deterministic benchmark
+as the bounds width-convergence analysis:
+
+- $misrate = 10^(-3)$ (everyday default)
+- $vx = vy = (1, 1 + 1/(N-1), ..., 2)$
+- all public bounds estimators across $N = 2..10000$
+
+Because finite-sample cutoffs are discrete, single-$N$ values can oscillate
+(especially for $SpreadBounds$ and derived quantities).
+Therefore, defaults are selected from the stable trend rather than from one isolated point.
+
+This yields two recommended reliability tiers:
+
+#align(center,
+  table(
+    columns: 3,
+    align: center,
+    table.header[*Tier*][*Recommended sample size*][*When to use*],
+    [Everyday default], [$n = 200$ (or $n = m = 200$)], [General analysis where reliability and data cost must be balanced],
+    [Higher precision], [$n = 500$ (or $n = m = 500$)], [Sensitivity-critical analysis where materially tighter bounds are needed],
+  )
+)
+
+The benchmark table below shows widths of all public bounds estimators
+for the default candidates evaluated in this section.
+
+#include "bounds-width-benchmark-table.typ"
+
+The $n = 200$ tier marks the first robust region where all primary bounds
+are consistently informative at $misrate = 10^(-3)$.
+Moving to $n = 500$ provides a second substantial tightening step,
+especially for effect-size bounds, while keeping data requirements practical.
+
+This mirrors the $misrate$ policy:
+one pragmatic default for everyday work and one stricter recommended level
+for higher-stakes decisions.
+
 == Invariance
 
 Invariance properties determine how estimators respond to data transformations.
