@@ -362,8 +362,40 @@ def regenerate_figures():
         save_plot(name, plot_func=func)
 
 
+def generate_bounds_width():
+    """Generate bounds width convergence plots from sim/bounds-width.json."""
+    raw = load_json("../sim/bounds-width.json")
+
+    specs = [
+        ('centerBounds',    'bounds-width-center',    'CenterBounds'),
+        ('spreadBounds',    'bounds-width-spread',    'SpreadBounds'),
+        ('shiftBounds',     'bounds-width-shift',     'ShiftBounds'),
+        ('ratioBounds',     'bounds-width-ratio',     'RatioBounds'),
+        ('disparityBounds', 'bounds-width-disparity', 'DisparityBounds'),
+    ]
+
+    for field, name, title in specs:
+        points = [(item['n'], item[field]) for item in raw if item[field] is not None]
+        n_values = [p[0] for p in points]
+        w_values = [p[1] for p in points]
+
+        def make_plot():
+            fig, ax = plt.subplots(figsize=(8, 4.8))
+            ax.plot(n_values, w_values, color=CBP['navy'], linewidth=1.5)
+            ax.set_xlabel('n')
+            ax.set_ylabel('Width')
+            ax.set_title(title)
+            ax.set_xscale('log')
+            ax.set_ylim(bottom=0)
+            ax.grid(True, alpha=0.3, zorder=0)
+            return fig
+
+        save_plot(name, plot_func=make_plot)
+
+
 if __name__ == '__main__':
     regenerate_figures()
     generate_avg_drift()
     generate_disp_drift()
+    generate_bounds_width()
     print("\nAll images generated successfully!")
