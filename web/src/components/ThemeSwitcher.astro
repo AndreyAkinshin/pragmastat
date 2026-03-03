@@ -4,7 +4,6 @@
 <div class="theme-switcher">
   <button
     class="theme-button"
-    id="theme-button"
     aria-label="Toggle theme"
     aria-haspopup="true"
   >
@@ -28,7 +27,7 @@
     </svg>
   </button>
 
-  <div class="theme-dropdown" id="theme-dropdown">
+  <div class="theme-dropdown">
     <button class="theme-option" data-theme="system">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <circle cx="12" cy="12" r="10"/>
@@ -60,24 +59,22 @@
 </div>
 
 <script>
-  const button = document.getElementById('theme-button');
-  const dropdown = document.getElementById('theme-dropdown');
-  const options = document.querySelectorAll('.theme-option');
-  const root = document.documentElement;
-
   function getEffectiveTheme(setting: string | null): string {
     if (setting === 'light' || setting === 'dark') return setting;
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   }
 
-  function updateIcons(setting: string | null) {
-    const switcher = document.querySelector('.theme-switcher');
-    switcher?.setAttribute('data-setting', setting || 'system');
+  function updateAllIcons(setting: string | null) {
+    document.querySelectorAll<HTMLElement>('.theme-switcher').forEach((sw) => {
+      sw.setAttribute('data-setting', setting || 'system');
+    });
   }
 
   function applyTheme(setting: string | null) {
+    const root = document.documentElement;
     const effective = getEffectiveTheme(setting);
     root.setAttribute('data-theme', effective);
+    root.style.backgroundColor = effective === 'light' ? '#fcfcfc' : '#242936';
     if (setting) {
       root.setAttribute('data-theme-setting', setting);
       localStorage.setItem('pragmastat-theme', setting);
@@ -85,41 +82,50 @@
       root.removeAttribute('data-theme-setting');
       localStorage.removeItem('pragmastat-theme');
     }
-    updateIcons(setting);
+    updateAllIcons(setting);
   }
 
-  // Initialize
-  const stored = localStorage.getItem('pragmastat-theme');
-  updateIcons(stored);
+  function initThemeSwitchers() {
+    // Sync icon state for all instances (including persisted sidebar)
+    updateAllIcons(localStorage.getItem('pragmastat-theme'));
 
-  // Toggle dropdown
-  button?.addEventListener('click', () => {
-    dropdown?.classList.toggle('open');
-  });
+    // Initialize only new (non-persisted) instances
+    document.querySelectorAll<HTMLElement>('.theme-switcher:not([data-initialized])').forEach((sw) => {
+      sw.setAttribute('data-initialized', '');
 
-  // Close dropdown on outside click
-  document.addEventListener('click', (e) => {
-    if (!button?.contains(e.target as Node) && !dropdown?.contains(e.target as Node)) {
-      dropdown?.classList.remove('open');
-    }
-  });
+      const button = sw.querySelector<HTMLElement>('.theme-button');
+      const dropdown = sw.querySelector<HTMLElement>('.theme-dropdown');
+      if (!button || !dropdown) return;
 
-  // Handle option selection
-  options.forEach((option) => {
-    option.addEventListener('click', () => {
-      const theme = option.getAttribute('data-theme');
-      applyTheme(theme === 'system' ? null : theme);
-      dropdown?.classList.remove('open');
+      button.addEventListener('click', () => {
+        dropdown.classList.toggle('open');
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!sw.contains(e.target as Node)) {
+          dropdown.classList.remove('open');
+        }
+      });
+
+      sw.querySelectorAll<HTMLElement>('.theme-option').forEach((option) => {
+        option.addEventListener('click', () => {
+          const theme = option.getAttribute('data-theme');
+          applyTheme(theme === 'system' ? null : theme);
+          dropdown.classList.remove('open');
+        });
+      });
     });
-  });
+  }
 
   // Listen for system theme changes
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-    const setting = localStorage.getItem('pragmastat-theme');
-    if (!setting) {
+    if (!localStorage.getItem('pragmastat-theme')) {
       applyTheme(null);
     }
   });
+
+  // astro:page-load fires after initial load and after every View Transitions navigation
+  document.addEventListener('astro:page-load', initThemeSwitchers);
 </script>
 
 <style>
