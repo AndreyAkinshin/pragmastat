@@ -227,3 +227,14 @@ For the distributions practitioners typically encounter,
 When symmetry is severely violated, the coverage drift of $CenterBounds$ is gradual —
   mild asymmetry produces mild drift — making it a robust default
   without the efficiency penalty inherent to the sign test approach.
+
+==== Width Convergence
+
+The table below shows how $"Width" = U - L$ narrows as $N$ grows,
+for $vx = (1, 1 + 1\/(N-1), ..., 2)$ ($N$ evenly spaced points on $[1, 2]$)
+and $misrate = 10^(-3)$.
+Dashes indicate $N$ too small to achieve the target misrate.
+
+#include "center-bounds-width-table.typ"
+
+#image("/img/bounds-width-center_light.png")

@@ -55,6 +55,11 @@ Robust bounds on #link(<sec-disparity>)[$Disparity(vx, vy)$] with specified cove
 #include "disparity-bounds-algorithm.typ"
 
 #pagebreak()
+=== Notes
+
+#include "disparity-bounds-notes.typ"
+
+#pagebreak()
 === Tests
 
 #include "disparity-bounds-tests.typ"

@@ -62,6 +62,11 @@ If the bounds exclude zero, that suggests a reliable difference between the two 
 #include "shift-bounds-algorithm.typ"
 
 #pagebreak()
+=== Notes
+
+#include "shift-bounds-notes.typ"
+
+#pagebreak()
 === Tests
 
 #include "shift-bounds-tests.typ"

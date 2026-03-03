@@ -69,6 +69,11 @@ If the bounds exclude $1$, that suggests a reliable multiplicative difference be
 #include "ratio-bounds-algorithm.typ"
 
 #pagebreak()
+=== Notes
+
+#include "ratio-bounds-notes.typ"
+
+#pagebreak()
 === Tests
 
 #include "ratio-bounds-tests.typ"

@@ -122,3 +122,14 @@ so the distribution-free property is preserved.
   because dependence destroys the binomial pivot.
 - *Any data-dependent choice of pairing or cutoff* breaks unconditional coverage
   and can make the method arbitrarily anti-conservative.
+
+==== Width Convergence
+
+The table below shows how $"Width" = U - L$ narrows as $N$ grows,
+for $vx = (1, 1 + 1\/(N-1), ..., 2)$ ($N$ evenly spaced points on $[1, 2]$)
+and $misrate = 10^(-3)$.
+Dashes indicate $N$ too small to achieve the target misrate.
+
+#include "spread-bounds-width-table.typ"
+
+#image("/img/bounds-width-spread_light.png")
