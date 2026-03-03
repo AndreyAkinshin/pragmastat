@@ -21,24 +21,24 @@ import {
 function main(): void {
   // --- One-Sample ---
 
-  let sx = Sample.of(Array.from({ length: 22 }, (_, i) => i + 1));
+  let sx = Sample.of(Array.from({ length: 200 }, (_, i) => i + 1));
 
-  console.log(center(sx).value); // 11.5
-  console.log(centerBounds(sx, 1e-3)); // { lower: 6, upper: 17, unit: ... }
-  console.log(spread(sx).value); // 7
-  console.log(spreadBounds(sx, 1e-3, 'demo')); // { lower: 1, upper: 18, unit: ... }
+  console.log(center(sx).value); // 100.5
+  console.log(centerBounds(sx, 1e-3)); // { lower: 86, upper: 115, unit: ... }
+  console.log(spread(sx).value); // 59
+  console.log(spreadBounds(sx, 1e-3, 'demo')); // { lower: 44, upper: 87, unit: ... }
 
   // --- Two-Sample ---
 
-  sx = Sample.of(Array.from({ length: 30 }, (_, i) => i + 1));
-  const sy = Sample.of(Array.from({ length: 30 }, (_, i) => i + 21));
+  sx = Sample.of(Array.from({ length: 200 }, (_, i) => i + 1));
+  const sy = Sample.of(Array.from({ length: 200 }, (_, i) => i + 101));
 
-  console.log(shift(sx, sy).value); // -20
-  console.log(shiftBounds(sx, sy, 1e-3)); // { lower: -28, upper: -12, unit: ... }
-  console.log(ratio(sx, sy).value); // 0.4366979828269513
-  console.log(ratioBounds(sx, sy, 1e-3)); // { lower: 0.2325..., upper: 0.6428..., unit: ... }
-  console.log(disparity(sx, sy).value); // -2.2222222222222223
-  console.log(disparityBounds(sx, sy, 1e-3, 'demo')); // { lower: -29, upper: -0.478..., unit: ... }
+  console.log(shift(sx, sy).value); // -100
+  console.log(shiftBounds(sx, sy, 1e-3)); // { lower: -120, upper: -80, unit: ... }
+  console.log(ratio(sx, sy).value); // 0.5008354224706336
+  console.log(ratioBounds(sx, sy, 1e-3)); // { lower: 0.4066..., upper: 0.5958..., unit: ... }
+  console.log(disparity(sx, sy).value); // -1.694915254237288
+  console.log(disparityBounds(sx, sy, 1e-3, 'demo')); // { lower: -3.1025..., upper: -0.8494..., unit: ... }
 
   // --- Randomization ---
 

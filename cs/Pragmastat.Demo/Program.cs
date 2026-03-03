@@ -10,31 +10,24 @@ class Program
   {
     // --- One-Sample ---
 
-    var x = new Sample(
-      1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
-      11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-      21, 22);
+    var x = new Sample(Enumerable.Range(1, 200).Select(i => (double)i).ToArray());
 
-    WriteLine(x.Center());                    // 11.5
-    WriteLine(x.CenterBounds());              // [6;17]
-    WriteLine(x.Spread());                    // 7
-    WriteLine(x.SpreadBounds(1e-3, "demo")); // [1;18]
+    WriteLine(x.Center());                    // 100.5
+    WriteLine(x.CenterBounds());              // [86;115]
+    WriteLine(x.Spread());                    // 59
+    WriteLine(x.SpreadBounds(1e-3, "demo")); // [44;87]
 
     // --- Two-Sample ---
 
-    x = new Sample(
-      1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
-      16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30);
-    var y = new Sample(
-      21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35,
-      36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50);
+    x = new Sample(Enumerable.Range(1, 200).Select(i => (double)i).ToArray());
+    var y = new Sample(Enumerable.Range(101, 200).Select(i => (double)i).ToArray());
 
-    WriteLine(x.Shift(y));                        // -20
-    WriteLine(x.ShiftBounds(y));                  // [-28;-12]
-    WriteLine(x.Ratio(y));                        // 0.43669798282695127
-    WriteLine(x.RatioBounds(y));                  // [0.23255813953488377;0.6428571428571428]
-    WriteLine(x.Disparity(y));                    // -2.2222222222222223
-    WriteLine(x.DisparityBounds(y, 1e-3, "demo")); // [-29;-0.4782608695652174]
+    WriteLine(x.Shift(y));                        // -100
+    WriteLine(x.ShiftBounds(y));                  // [-120;-80]
+    WriteLine(x.Ratio(y));                        // 0.5008354224706334
+    WriteLine(x.RatioBounds(y));                  // [0.4066666666666668;0.5958333333333332]
+    WriteLine(x.Disparity(y));                    // -1.694915254237288
+    WriteLine(x.DisparityBounds(y, 1e-3, "demo")); // [-3.1025641025641026;-0.8494623655913979]
 
     // --- Randomization ---
 
