@@ -43,7 +43,9 @@ def main():
     )  # Bounds(lower=0.4066666666666668, upper=0.5958333333333332)
     print(disparity(x, y).value)  # -1.694915254237288
     bounds = disparity_bounds(x, y, 1e-3, seed="demo")
-    print(f"Bounds(lower={bounds.lower}, upper={bounds.upper})")  # Bounds(lower=-3.1025641025641026, upper=-0.8494623655913979)
+    print(
+        f"Bounds(lower={bounds.lower}, upper={bounds.upper})"
+    )  # Bounds(lower=-3.1025641025641026, upper=-0.8494623655913979)
 
     # --- Randomization ---
 
