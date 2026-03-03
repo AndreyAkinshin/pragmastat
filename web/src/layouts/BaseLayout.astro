@@ -22,7 +22,7 @@ const { title, description = 'Pragmatic Statistical Toolkit' } = Astro.props;
 
     <!-- Prevent flash of wrong theme / sidebar state / background color -->
     <script is:inline>
-      (function() {
+      function applyStoredTheme() {
         const stored = localStorage.getItem('pragmastat-theme');
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         const theme = stored || (prefersDark ? 'dark' : 'light');
@@ -31,12 +31,17 @@ const { title, description = 'Pragmatic Statistical Toolkit' } = Astro.props;
         document.documentElement.style.backgroundColor = theme === 'light' ? '#fcfcfc' : '#242936';
         if (stored) {
           document.documentElement.setAttribute('data-theme-setting', stored);
+        } else {
+          document.documentElement.removeAttribute('data-theme-setting');
         }
         // Pre-set sidebar collapsed state to prevent layout shift
         if (localStorage.getItem('pragmastat-sidebar-collapsed') === 'true') {
           document.documentElement.setAttribute('data-sidebar-collapsed', '');
         }
-      })();
+      }
+      applyStoredTheme();
+      // Re-apply after View Transitions swap (Astro resets <html> attributes on navigation)
+      document.addEventListener('astro:after-swap', applyStoredTheme);
     </script>
 
     <style>
