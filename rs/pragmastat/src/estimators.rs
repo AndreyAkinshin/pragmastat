@@ -216,6 +216,7 @@ pub mod raw {
         spread_bounds_with_rng(x, misrate, &mut rng)
     }
 
+    #[doc(hidden)] // internal estimator, pub only for pragmastat-sim (cross-crate)
     pub fn avg_spread_bounds(
         x: &[f64],
         y: &[f64],
