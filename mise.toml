@@ -488,7 +488,13 @@ cargo run --release -- disp-drift -e StdDev,MAD,Spread -p "$P"
 cargo run --release -- center-bounds -p "$P"
 cargo run --release -- shift-bounds -p "$P"
 cargo run --release -- ratio-bounds -p "$P"
+cargo run --release -- bounds-width --publish
 """
+
+[tasks."rs:sim:bounds-width"]
+description = "Compute bounds width convergence for linspace(1,2,N)"
+dir = "rs/pragmastat-sim"
+run = "cargo run --release -- bounds-width --publish"
 
 [tasks."rs:sim:check"]
 description = "Check Rust simulation code (clippy, fmt)"
@@ -613,6 +619,10 @@ run = "cargo run --manifest-path tools/Cargo.toml --release -- sync templates"
 [tasks."docs:sync"]
 description = "Sync versions and templated docs"
 run = "cargo run --manifest-path tools/Cargo.toml --release -- sync all"
+
+[tasks."docs:sync:bounds-width"]
+description = "Generate static width-convergence tables from sim/bounds-width.json"
+run = "cargo run --manifest-path tools/Cargo.toml --release -- sync bounds-width"
 
 [tasks."pdf:restore"]
 description = "Download required fonts for PDF generation"

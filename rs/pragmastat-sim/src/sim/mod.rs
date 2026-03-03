@@ -1,6 +1,7 @@
 pub mod avg_drift;
 pub mod avg_spread_bounds;
 pub mod bounds;
+pub mod bounds_width;
 pub mod center_bounds;
 pub mod disp_drift;
 pub mod disparity_bounds;

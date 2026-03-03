@@ -40,6 +40,17 @@ pub enum Command {
     /// Run avg-spread-bounds simulation
     #[command(name = "avg-spread-bounds")]
     AvgSpreadBounds(TwoSampleBoundsArgs),
+
+    /// Compute bounds width convergence for linspace(1, 2, N), N=2..10000
+    #[command(name = "bounds-width")]
+    BoundsWidth(BoundsWidthArgs),
+}
+
+#[derive(Parser)]
+pub struct BoundsWidthArgs {
+    /// Publish results to sim/ root
+    #[arg(long = "publish")]
+    pub publish: bool,
 }
 
 #[derive(Parser)]
@@ -104,11 +115,7 @@ pub struct BoundsArgs {
     pub distributions: String,
 
     /// Comma-separated list of misrates
-    #[arg(
-        short = 'r',
-        long = "misrates",
-        default_value = "1e-2,1e-3,1e-6"
-    )]
+    #[arg(short = 'r', long = "misrates", default_value = "1e-2,1e-3,1e-6")]
     pub misrates: String,
 
     /// Seed for random number generation (defaults to simulation name)
@@ -131,19 +138,11 @@ pub struct BoundsArgs {
 #[derive(Parser)]
 pub struct TwoSampleBoundsArgs {
     /// Sample sizes for x (e.g. "2,3,5,10,20,50")
-    #[arg(
-        short = 'n',
-        long = "sizes-x",
-        default_value = "2,3,5,10,20,50"
-    )]
+    #[arg(short = 'n', long = "sizes-x", default_value = "2,3,5,10,20,50")]
     pub sizes_x: String,
 
     /// Sample sizes for y (e.g. "2,3,5,10,20,50")
-    #[arg(
-        short = 'k',
-        long = "sizes-y",
-        default_value = "2,3,5,10,20,50"
-    )]
+    #[arg(short = 'k', long = "sizes-y", default_value = "2,3,5,10,20,50")]
     pub sizes_y: String,
 
     /// Number of samples per combination (default: 100/misrate)
@@ -159,11 +158,7 @@ pub struct TwoSampleBoundsArgs {
     pub distributions: String,
 
     /// Comma-separated list of misrates
-    #[arg(
-        short = 'r',
-        long = "misrates",
-        default_value = "1e-2,1e-3,1e-6"
-    )]
+    #[arg(short = 'r', long = "misrates", default_value = "1e-2,1e-3,1e-6")]
     pub misrates: String,
 
     /// Seed for random number generation (defaults to simulation name)
