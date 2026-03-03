@@ -1,4 +1,5 @@
 mod astro;
+mod bounds_width;
 mod definitions;
 mod hayagriva;
 mod img;
@@ -56,11 +57,15 @@ fn main() -> Result<()> {
         Commands::Sync { target } => match target.as_str() {
             "version" => sync_version(&base_path)?,
             "templates" => sync_templates(&base_path)?,
+            "bounds-width" => bounds_width::generate(&base_path)?,
             "all" => {
                 sync_version(&base_path)?;
                 sync_templates(&base_path)?;
+                bounds_width::generate(&base_path)?;
             }
-            _ => anyhow::bail!("Unknown target: {target}. Use 'version', 'templates', or 'all'"),
+            _ => anyhow::bail!(
+                "Unknown target: {target}. Use 'version', 'templates', 'bounds-width', or 'all'"
+            ),
         },
         Commands::Clean => clean(&base_path)?,
     }
@@ -315,6 +320,15 @@ fn clean(base_path: &Path) -> Result<()> {
         if path.exists() {
             std::fs::remove_file(&path)?;
             println!("  Removed: {file}");
+        }
+    }
+
+    // Clean bounds-width table files
+    for rel_path in bounds_width::generated_paths() {
+        let path = base_path.join(rel_path);
+        if path.exists() {
+            std::fs::remove_file(&path)?;
+            println!("  Removed: {rel_path}");
         }
     }
 
