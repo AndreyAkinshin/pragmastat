@@ -149,6 +149,20 @@
       "description": "AvgSpreadBounds confidence interval tests",
       "languages": ["cs", "go", "kt", "py", "r", "rs", "ts"]
     },
+    "compare1": {
+      "directory": "compare1",
+      "generator": "cs/Pragmastat.TestGenerator",
+      "pattern": "*.json",
+      "description": "Compare1 one-sample confirmatory analysis tests",
+      "languages": ["cs", "go", "kt", "py", "r", "rs", "ts"]
+    },
+    "compare2": {
+      "directory": "compare2",
+      "generator": "cs/Pragmastat.TestGenerator",
+      "pattern": "*.json",
+      "description": "Compare2 two-sample confirmatory analysis tests",
+      "languages": ["cs", "go", "kt", "py", "r", "rs", "ts"]
+    },
     "pairwise-margin": {
       "directory": "pairwise-margin",
       "generator": "cs/Pragmastat.TestGenerator",

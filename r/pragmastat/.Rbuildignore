@@ -3,3 +3,5 @@
 ^\.gitignore$
 ^\.\.Rcheck$
 ^.*\.Rcheck$
+^src/.*\.(o|so|dll|dylib|a)$
+^src/symbols\.rds$

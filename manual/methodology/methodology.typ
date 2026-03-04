@@ -213,7 +213,7 @@ $Multiplic$ distributions arise from multiplicative processes.
 The name itself encodes the formation mechanism.
 
 #pagebreak()
-== The Inversion Principle
+== The Inversion Principle <sec-inversion-principle>
 
 Traditional statistical outputs often require mental transformation before use.
 This toolkit inverts such framings to present information in directly actionable form,
@@ -239,6 +239,11 @@ The shift from confidence intervals to bounds, and from hypothesis testing to in
 moves from frequentist theology toward decision-relevant inference.
 The practitioner asks "What values are plausible for this parameter?"
 rather than "Can I reject the hypothesis that this parameter equals zero?"
+
+The Compare1 and Compare2 functions (#link(<sec-compare1>)[Section "Compare1"], #link(<sec-compare2>)[Section "Compare2"])
+extend this inversion by providing explicit threshold comparison:
+rather than asking practitioners to manually compare bounds against practical thresholds,
+these functions return verdicts (Less, Greater, Inconclusive) directly.
 
 #pagebreak()
 == Multi-Audience Design
@@ -436,8 +441,8 @@ look like valid statistical inference but actually have much lower coverage.
 
 #v(0.3em)
 #list(marker: none, tight: true,
-  [*Making impossible requests impossible* — If $n=5$ cannot achieve 99% confidence,
-  the function rejects $misrate=0.01$ rather than returning meaningless bounds.],
+  [*Making impossible requests impossible* — If $n=5$ cannot achieve 99.9% confidence,
+  the function rejects $misrate=10^(-3)$ rather than returning meaningless bounds.],
   [*Actionable errors* — Messages explain WHY the request failed and HOW to fix it.],
   [*Explicit tradeoffs* — Practitioners learn their data's actual resolution limits.],
 )
@@ -467,8 +472,7 @@ For one-sample bounds, minimum achievable misrate $= 2^(1-n)$:
 *Practical implications*
 
 #list(marker: none, tight: true,
-  [$n < 11$: Cannot achieve 99.9% confidence ($misrate = 1e-3$)],
-  [$n < 7$: Cannot achieve 99% confidence ($misrate = 0.01$)],
+  [$n < 11$: Cannot achieve 99.9% confidence ($misrate = 10^(-3)$)],
   [$n >= 20$: $misrate = 10^(-6)$ is achievable],
 )
 

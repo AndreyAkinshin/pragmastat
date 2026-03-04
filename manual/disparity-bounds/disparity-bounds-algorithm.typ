@@ -10,15 +10,15 @@ Let $min_S = 2 / binom(n + m, n)$ (minimum for $ShiftBounds$) and
 $min_A = 2 dot max(2^(1-floor(n slash 2)), 2^(1-floor(m slash 2)))$ (minimum for $AvgSpreadBounds$).
 The extra budget beyond the minimums is split equally:
 
-$ alpha_S = min_S + (misrate - min_S - min_A) / 2, quad
-  alpha_A = min_A + (misrate - min_S - min_A) / 2 $
+$ misrate_S = min_S + (misrate - min_S - min_A) / 2, quad
+  misrate_A = min_A + (misrate - min_S - min_A) / 2 $
 
 *Component bounds*
 
-Compute $[L_S, U_S] = ShiftBounds(vx, vy, alpha_S)$ and
-$[L_A, U_A] = AvgSpreadBounds(vx, vy, alpha_A)$.
+Compute $[L_S, U_S] = ShiftBounds(vx, vy, misrate_S)$ and
+$[L_A, U_A] = AvgSpreadBounds(vx, vy, misrate_A)$.
 By Bonferroni's inequality, the probability that both intervals simultaneously contain
-  their respective true values is at least $1 - alpha_S - alpha_A = 1 - misrate$.
+  their respective true values is at least $1 - misrate_S - misrate_A = 1 - misrate$.
 
 *Interval division*
 

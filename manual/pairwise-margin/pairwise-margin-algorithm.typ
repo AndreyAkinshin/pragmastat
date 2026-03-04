@@ -226,7 +226,7 @@ For small samples, $misrate_min$ can exceed commonly used values.
 With $n = m = 6$, the minimum misrate equals $2\/binom(12, 6) approx 0.00217$,
   making the typical choice of $misrate = 10^(-3)$ impossible.
 With $n = m = 4$, the minimum becomes $2\/binom(8, 4) approx 0.0286$,
-  exceeding even $misrate = 0.01$.
+  exceeding even $misrate = 10^(-2)$.
 
 The table below shows $misrate_min$ for small sample sizes:
 

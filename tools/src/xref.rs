@@ -33,6 +33,14 @@ impl XRefMap {
             "sec-test-framework".into(),
             "/methodology#test-framework".into(),
         );
+        mappings.insert(
+            "sec-inversion-principle".into(),
+            "/methodology#the-inversion-principle".into(),
+        );
+        mappings.insert(
+            "sec-convergence-conventions".into(),
+            "/methodology#convergence-conventions".into(),
+        );
 
         // Function page labels
         mappings.insert("sec-center".into(), "/center".into());
@@ -46,6 +54,8 @@ impl XRefMap {
         mappings.insert("sec-ratio-bounds".into(), "/ratio-bounds".into());
         mappings.insert("sec-disparity".into(), "/disparity".into());
         mappings.insert("sec-disparity-bounds".into(), "/disparity-bounds".into());
+        mappings.insert("sec-compare1".into(), "/compare1".into());
+        mappings.insert("sec-compare2".into(), "/compare2".into());
         mappings.insert("sec-avg-spread".into(), "/avg-spread".into());
         mappings.insert("sec-avg-spread-bounds".into(), "/avg-spread-bounds".into());
         mappings.insert("sec-median".into(), "/median".into());
@@ -91,6 +101,14 @@ impl XRefMap {
         mappings.insert(
             "sec-alg-disparity-bounds".into(),
             "/disparity-bounds#algorithm".into(),
+        );
+        mappings.insert(
+            "sec-alg-compare1".into(),
+            "/compare1#algorithm".into(),
+        );
+        mappings.insert(
+            "sec-alg-compare2".into(),
+            "/compare2#algorithm".into(),
         );
         mappings.insert("sec-alg-rng".into(), "/rng#algorithm".into());
         mappings.insert(

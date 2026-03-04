@@ -10,13 +10,18 @@ from pragmastat import (
     Additive,
     Exp,
     Measurement,
+    MeasurementUnit,
+    Metric,
     Multiplic,
     Power,
     Rng,
     Sample,
+    Threshold,
     Uniform,
     center,
     center_bounds,
+    compare1,
+    compare2,
     disparity,
     ratio,
     ratio_bounds,
@@ -776,3 +781,157 @@ class TestUnitPropagation:
         s = Sample([1, 2, 3], weights=[0.5, 0.3, 0.2])
         with pytest.raises(AssumptionError, match="weighted samples are not supported"):
             center(s)
+
+
+class TestCompare1:
+    """Tests from tests/compare1/ cross-language test data."""
+
+    def test_compare1_reference(self):
+        """Test compare1 against reference data."""
+        repo_root = find_repo_root()
+        test_data_dir = repo_root / "tests" / "compare1"
+
+        json_files = list(test_data_dir.glob("*.json"))
+        assert len(json_files) > 0, f"No JSON test files found in {test_data_dir}"
+
+        for json_file in json_files:
+            with open(json_file, "r") as f:
+                test_case = json.load(f)
+
+            input_data = test_case["input"]
+            x_values = input_data["x"]
+            seed = input_data.get("seed")
+            thresholds_data = input_data["thresholds"]
+
+            # Build thresholds
+            thresholds = []
+            for t_data in thresholds_data:
+                metric = Metric(t_data["metric"])
+                thresholds.append(Threshold(metric, t_data["value"], t_data["misrate"]))
+
+            # Handle error test cases
+            if "expected_error" in test_case:
+                expected_error = test_case["expected_error"]
+                # Sample creation itself may raise AssumptionError (e.g., empty x)
+                with pytest.raises(AssumptionError) as exc_info:  # noqa: PT012
+                    sx = Sample(x_values)
+                    compare1(sx, thresholds, seed=seed)
+                _assert_violation(exc_info.value, expected_error, f" for {json_file.name}")
+                continue
+
+            # Normal test case
+            expected_projections = test_case["output"]["projections"]
+
+            sx = Sample(x_values)
+            projections = compare1(sx, thresholds, seed=seed)
+
+            assert len(projections) == len(expected_projections), (
+                f"Projection count mismatch for {json_file.name}: {len(projections)} vs {len(expected_projections)}"
+            )
+
+            for i, (actual, expected) in enumerate(zip(projections, expected_projections)):
+                context = f" for {json_file.name}, projection {i}"
+                assert abs(actual.estimate.value - expected["estimate"]) < 1e-9, (
+                    f"Estimate mismatch{context}: expected {expected['estimate']}, got {actual.estimate.value}"
+                )
+                assert abs(actual.bounds.lower - expected["lower"]) < 1e-9, (
+                    f"Lower bound mismatch{context}: expected {expected['lower']}, got {actual.bounds.lower}"
+                )
+                assert abs(actual.bounds.upper - expected["upper"]) < 1e-9, (
+                    f"Upper bound mismatch{context}: expected {expected['upper']}, got {actual.bounds.upper}"
+                )
+                assert actual.verdict.value == expected["verdict"], (
+                    f"Verdict mismatch{context}: expected {expected['verdict']}, got {actual.verdict.value}"
+                )
+
+    def test_compare1_supports_measurement_threshold_units(self):
+        ms = MeasurementUnit("ms", "Time", "ms", "Millisecond", 1_000_000)
+        ns = MeasurementUnit("ns", "Time", "ns", "Nanosecond", 1)
+        sx = Sample(list(range(1, 11)), unit=ms)
+        thresholds = [Threshold(Metric.CENTER, Measurement(3_000_000, ns), 0.05)]
+
+        [projection] = compare1(sx, thresholds)
+
+        assert abs(projection.estimate.value - 5.5) < 1e-9
+        assert projection.estimate.unit == ms
+        assert projection.bounds.unit == ms
+        assert projection.verdict.value == "greater"
+
+
+class TestCompare2:
+    """Tests from tests/compare2/ cross-language test data."""
+
+    def test_compare2_reference(self):
+        """Test compare2 against reference data."""
+        repo_root = find_repo_root()
+        test_data_dir = repo_root / "tests" / "compare2"
+
+        json_files = list(test_data_dir.glob("*.json"))
+        assert len(json_files) > 0, f"No JSON test files found in {test_data_dir}"
+
+        for json_file in json_files:
+            with open(json_file, "r") as f:
+                test_case = json.load(f)
+
+            input_data = test_case["input"]
+            x_values = input_data["x"]
+            y_values = input_data["y"]
+            seed = input_data.get("seed")
+            thresholds_data = input_data["thresholds"]
+
+            # Build thresholds
+            thresholds = []
+            for t_data in thresholds_data:
+                metric = Metric(t_data["metric"])
+                thresholds.append(Threshold(metric, t_data["value"], t_data["misrate"]))
+
+            # Handle error test cases
+            if "expected_error" in test_case:
+                expected_error = test_case["expected_error"]
+                # Sample creation itself may raise AssumptionError (e.g., empty x or y)
+                with pytest.raises(AssumptionError) as exc_info:  # noqa: PT012
+                    sx = Sample(x_values)
+                    sy = Sample(y_values, _subject="y")
+                    compare2(sx, sy, thresholds, seed=seed)
+                _assert_violation(exc_info.value, expected_error, f" for {json_file.name}")
+                continue
+
+            # Normal test case
+            expected_projections = test_case["output"]["projections"]
+
+            sx = Sample(x_values)
+            sy = Sample(y_values, _subject="y")
+            projections = compare2(sx, sy, thresholds, seed=seed)
+
+            assert len(projections) == len(expected_projections), (
+                f"Projection count mismatch for {json_file.name}: {len(projections)} vs {len(expected_projections)}"
+            )
+
+            for i, (actual, expected) in enumerate(zip(projections, expected_projections)):
+                context = f" for {json_file.name}, projection {i}"
+                assert abs(actual.estimate.value - expected["estimate"]) < 1e-9, (
+                    f"Estimate mismatch{context}: expected {expected['estimate']}, got {actual.estimate.value}"
+                )
+                assert abs(actual.bounds.lower - expected["lower"]) < 1e-9, (
+                    f"Lower bound mismatch{context}: expected {expected['lower']}, got {actual.bounds.lower}"
+                )
+                assert abs(actual.bounds.upper - expected["upper"]) < 1e-9, (
+                    f"Upper bound mismatch{context}: expected {expected['upper']}, got {actual.bounds.upper}"
+                )
+                assert actual.verdict.value == expected["verdict"], (
+                    f"Verdict mismatch{context}: expected {expected['verdict']}, got {actual.verdict.value}"
+                )
+
+    def test_compare2_supports_measurement_threshold_units(self):
+        ms = MeasurementUnit("ms", "Time", "ms", "Millisecond", 1_000_000)
+        ns = MeasurementUnit("ns", "Time", "ns", "Nanosecond", 1)
+        sx = Sample(list(range(1, 31)), unit=ms)
+        sy = Sample([value * 1_000_000 for value in range(21, 51)], unit=ns, _subject="y")
+        thresholds = [Threshold(Metric.SHIFT, Measurement(-14, ms), 0.05)]
+
+        [projection] = compare2(sx, sy, thresholds)
+
+        assert abs(projection.estimate.value + 20_000_000) < 1e-9
+        assert projection.estimate.unit == ns
+        assert projection.bounds.unit == ns
+        assert projection.verdict.value == "less"

@@ -5,6 +5,14 @@ from .assumptions import (
     Violation,
 )
 from .bounds import Bounds
+from .compare import (
+    ComparisonVerdict,
+    Metric,
+    Projection,
+    Threshold,
+    compare1,
+    compare2,
+)
 from .distributions import (
     Additive,
     Distribution,
@@ -64,6 +72,13 @@ __all__ = [
     "center_bounds",
     "spread_bounds",
     "disparity_bounds",
+    # Compare
+    "Metric",
+    "ComparisonVerdict",
+    "Threshold",
+    "Projection",
+    "compare1",
+    "compare2",
     # Random
     "Rng",
     # Distributions

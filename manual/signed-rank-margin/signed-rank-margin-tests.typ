@@ -15,34 +15,26 @@ These demo cases match the reference values used throughout the manual to illust
 
 *Boundary cases* — minimum achievable misrate validation:
 
-- `boundary-n2-min`: $n=2$, $misrate=0.5$ (minimum misrate for $n=2$, expected output: $0$)
-- `boundary-n3-min`: $n=3$, $misrate=0.25$ (minimum misrate for $n=3$)
-- `boundary-n4-min`: $n=4$, $misrate=0.125$ (minimum misrate for $n=4$)
-- `boundary-loose`: $n=5$, $misrate=0.9$ (permissive misrate)
-- `boundary-tight`: $n=10$, $misrate=0.01$ (strict misrate)
+- `boundary-n2-min`: $n=2$, minimum misrate for $n=2$ (expected output: $0$)
+- `boundary-n3-min`: $n=3$, minimum misrate for $n=3$
+- `boundary-n4-min`: $n=4$, minimum misrate for $n=4$
+- `boundary-loose`: $n=5$, very loose achievable misrate
+- `boundary-tight`: $n=10$, stricter achievable misrate
 - `boundary-very-tight`: $n=20$, $misrate=0.001$ (very strict misrate)
 
 These boundary cases validate correct handling of minimum achievable misrate (formula: $2^(1-n)$) and edge conditions.
 
 *Exact computation* ($n <= 10$) — validates dynamic programming path (selected cases shown):
 
-- `exact-n5-mr1e1`: $n=5$, $misrate=0.1$
-- `exact-n6-mr1e1`: $n=6$, $misrate=0.1$
-- `exact-n6-mr5e2`: $n=6$, $misrate=0.05$
-- `exact-n10-mr1e1`: $n=10$, $misrate=0.1$, expected output: $22$
-- `exact-n10-mr5e2`: $n=10$, $misrate=0.05$
-- `exact-n10-mr1e2`: $n=10$, $misrate=0.01$
-- `exact-n10-mr5e3`: $n=10$, $misrate=0.005$
+Selected cases cover several achievable small-sample misrates, from loose settings down to the strict end of the exact grid.
 
 These cases exercise the exact Wilcoxon signed-rank CDF computation for small samples where dynamic programming is used.
 
 *Medium samples* ($n in {15, 20, 30, 50, 100}$ × 4 misrates) — 20 tests:
 
-- Misrate values: $misrate in {10^(-1), 10^(-2), 10^(-3), 10^(-4)}$
+- Misrates range from loose achievable values down to $10^(-4)$.
 - Test naming: `medium-n{n}-mr{k}` where $k$ encodes the misrate
 - Examples:
-  - `medium-n15-mr1e1`: $n=15$, $misrate=0.1$
-  - `medium-n30-mr1e2`: $n=30$, $misrate=0.01$, expected output: $220$
   - `medium-n50-mr1e3`: $n=50$, $misrate=0.001$
   - `medium-n100-mr1e4`: $n=100$, $misrate=0.0001$
 

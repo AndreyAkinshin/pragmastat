@@ -2,10 +2,10 @@
 
 $ AvgSpreadBounds(vx, vy, misrate) = [L_A, U_A] $
 
-Let $alpha = misrate / 2$ (equal Bonferroni split).
+Use an equal Bonferroni split.
 Compute
-$[L_x, U_x] = SpreadBounds(vx, alpha)$ and
-$[L_y, U_y] = SpreadBounds(vy, alpha)$
+$[L_x, U_x] = SpreadBounds(vx, misrate / 2)$ and
+$[L_y, U_y] = SpreadBounds(vy, misrate / 2)$
 using disjoint-pair sign-test inversion (see $SpreadBounds$).
 Let $w_x = n / (n + m)$ and $w_y = m / (n + m)$.
 Return
@@ -20,7 +20,7 @@ Both $SpreadBounds$ calls use the same seed (two identical RNG streams).
 *Minimum misrate constraint* ---
 the equal split requires
 
-$ alpha >= 2^(1-floor(n/2)) $ and $ alpha >= 2^(1-floor(m/2)) $,
+$ misrate / 2 >= 2^(1-floor(n/2)) $ and $ misrate / 2 >= 2^(1-floor(m/2)) $,
 
 so
 
@@ -28,21 +28,21 @@ $ misrate >= 2 dot max(2^(1-floor(n/2)), 2^(1-floor(m/2))) $.
 
 *Demo examples* ($n = m = 30$, $n = m = 20$) --- from manual introduction:
 
-- `demo-1`: $vx = (1, ..., 30)$, $vy = (21, ..., 50)$, $misrate = 0.02$
-- `demo-2`: $vx = (1, ..., 30)$, $vy = (21, ..., 50)$, $misrate = 0.005$, wider bounds (tighter misrate)
-- `demo-3`: $vx = (1, ..., 20)$, $vy = (5, ..., 24)$, $misrate = 0.05$
+- `demo-1`: $vx = (1, ..., 30)$, $vy = (21, ..., 50)$, baseline fixture misrate
+- `demo-2`: $vx = (1, ..., 30)$, $vy = (21, ..., 50)$, stricter fixture misrate, wider bounds
+- `demo-3`: $vx = (1, ..., 20)$, $vy = (5, ..., 24)$, looser fixture misrate
 
 These cases illustrate how tighter misrates produce wider bounds.
 
-*Natural sequences* ($misrate$ varies) --- 5 tests:
+*Natural sequences* ($misrate$ varies across achievable fixture levels) --- 5 tests:
 
-- `natural-10-10`: $vx = (1, ..., 10)$, $vy = (1, ..., 10)$, $misrate = 0.2$
-- `natural-10-15`: $vx = (1, ..., 10)$, $vy = (1, ..., 15)$, $misrate = 0.2$
-- `natural-15-10`: $vx = (1, ..., 15)$, $vy = (1, ..., 10)$, $misrate = 0.2$
-- `natural-15-15`: $vx = (1, ..., 15)$, $vy = (1, ..., 15)$, $misrate = 0.2$
-- `natural-20-20`: $vx = (1, ..., 20)$, $vy = (1, ..., 20)$, $misrate = 0.1$
+- `natural-10-10`: $vx = (1, ..., 10)$, $vy = (1, ..., 10)$
+- `natural-10-15`: $vx = (1, ..., 10)$, $vy = (1, ..., 15)$
+- `natural-15-10`: $vx = (1, ..., 15)$, $vy = (1, ..., 10)$
+- `natural-15-15`: $vx = (1, ..., 15)$, $vy = (1, ..., 15)$
+- `natural-20-20`: $vx = (1, ..., 20)$, $vy = (1, ..., 20)$
 
-*Property validation* ($n = m = 10$, $misrate = 0.2$) --- 6 tests:
+*Property validation* ($n = m = 10$) --- 6 tests:
 
 - `property-identity`: $vx = (0, 2, ..., 18)$, $vy = (0, 2, ..., 18)$, expected output: $[2, 16]$
 - `property-location-shift`: $vx = (10, 12, ..., 28)$, $vy = (12, 14, ..., 30)$, expected output: $[2, 16]$ (shift invariance)
@@ -53,25 +53,19 @@ These cases illustrate how tighter misrates produce wider bounds.
 
 *Edge cases* --- boundary conditions and extreme scenarios (6 tests):
 
-- `edge-small`: $n = m = 4$, $misrate = 1.0$ (minimum non-trivial)
-- `edge-negative`: $vx = (-10, ..., -1)$, $vy = (-20, ..., -11)$, $misrate = 0.2$ (negative values)
-- `edge-mixed-signs`: mixed positive/negative values, $misrate = 0.2$
-- `edge-wide-range`: powers of 10 from $1$ to $10^9$, $misrate = 0.2$ (extreme value range)
-- `edge-asymmetric-8-30`: $n = 8$, $m = 30$, $misrate = 0.3$ (unbalanced sizes)
-- `edge-duplicates-mixed`: $vx = (1, 1, 1, 2, 3, 4)$, $vy = (2, 2, 2, 3, 4, 5)$, $misrate = 0.6$ (partial ties)
+- `edge-small`: $n = m = 4$, minimum non-trivial fixture misrate
+- `edge-negative`: $vx = (-10, ..., -1)$, $vy = (-20, ..., -11)$ (negative values)
+- `edge-mixed-signs`: mixed positive/negative values
+- `edge-wide-range`: powers of 10 from $1$ to $10^9$ (extreme value range)
+- `edge-asymmetric-8-30`: $n = 8$, $m = 30$ (unbalanced sizes)
+- `edge-duplicates-mixed`: $vx = (1, 1, 1, 2, 3, 4)$, $vy = (2, 2, 2, 3, 4, 5)$ (partial ties)
 
-*Distribution tests* ($misrate = 0.05$) --- 2 tests:
+*Distribution tests* (reference fixture misrates) --- 2 tests:
 
 - `additive-20-20`: $n = m = 20$, $Additive(10, 1)$
 - `uniform-20-20`: $n = m = 20$, $Uniform(0, 1)$
 
-*Misrate variation* ($vx = (1, ..., 20)$, $vy = (5, ..., 24)$) --- 5 tests:
-
-- `misrate-2e-1`: $misrate = 0.2$
-- `misrate-1e-1`: $misrate = 0.1$
-- `misrate-5e-2`: $misrate = 0.05$
-- `misrate-2e-2`: $misrate = 0.02$
-- `misrate-1e-2`: $misrate = 0.01$
+*Misrate variation* ($vx = (1, ..., 20)$, $vy = (5, ..., 24)$) --- 5 tests spanning progressively stricter fixture misrates:
 
 These tests validate monotonicity: smaller misrates produce wider bounds.
 

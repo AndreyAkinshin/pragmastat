@@ -22,20 +22,20 @@ Because pairing and cutoff selection are randomized, tests fix `seed` to keep ou
 
 *Demo examples* --- from manual introduction, validating basic bounds:
 
-- `demo-1`: $vx = (1, 2, ..., 30)$, $misrate = 0.01$, bounds containing $Spread = 9$
-- `demo-2`: $vx = (1, 2, ..., 30)$, $misrate = 0.002$, wider bounds (tighter misrate)
-- `demo-3`: $vx = (1, 2, ..., 15)$, $misrate = 0.07$
+- `demo-1`: $vx = (1, 2, ..., 30)$, bounds containing $Spread = 9$
+- `demo-2`: $vx = (1, 2, ..., 30)$, stricter fixture misrate, wider bounds
+- `demo-3`: $vx = (1, 2, ..., 15)$, looser fixture misrate
 
 These cases illustrate how tighter misrates produce wider bounds and how sample size affects bound width.
 
 *Natural sequences* --- 4 tests:
 
-- `natural-10`: $vx = (1, 2, ..., 10)$, $misrate = 0.15$
-- `natural-15`: $vx = (1, 2, ..., 15)$, $misrate = 0.05$
-- `natural-20`: $vx = (1, 2, ..., 20)$, $misrate = 0.05$
-- `natural-30`: $vx = (1, 2, ..., 30)$, $misrate = 0.05$
+- `natural-10`: $vx = (1, 2, ..., 10)$
+- `natural-15`: $vx = (1, 2, ..., 15)$
+- `natural-20`: $vx = (1, 2, ..., 20)$
+- `natural-30`: $vx = (1, 2, ..., 30)$
 
-*Property validation* ($n = 10$, $misrate = 0.2$) --- 4 tests:
+*Property validation* ($n = 10$) --- 4 tests:
 
 - `property-identity`: $vx = (1, 2, ..., 10)$, bounds must contain $Spread$
 - `property-location-shift`: $vx = (11, 12, ..., 20)$ (= identity + 10), bounds must equal identity bounds (shift invariance)
@@ -44,36 +44,30 @@ These cases illustrate how tighter misrates produce wider bounds and how sample 
 
 *Edge cases* --- boundary conditions and extreme scenarios (7 tests):
 
-- `edge-small-non-trivial`: $vx = (1, 2, 3, 4, 5)$, $misrate = 0.8$ (small but non-trivial bounds)
-- `edge-large-misrate`: $vx = (1, 2, ..., 10)$, $misrate = 0.5$ (permissive bounds)
-- `edge-duplicates-mixed`: $vx = (1, 1, 1, 2, 3, 4, 5)$, $misrate = 0.5$ (partial ties)
-- `edge-wide-range`: $vx = (1, 10, 100, 1000, 10000)$, $misrate = 0.8$ (extreme value range)
-- `edge-negative`: $vx = (-5, -4, -3, -2, -1)$, $misrate = 0.8$ (negative values)
-- `edge-large-n`: $vx = (1, 2, ..., 100)$, $misrate = 0.01$ (large sample, tighter sign-test bounds)
-- `edge-n2`: $vx = (1, 3)$, $misrate = 1.0$ (minimum sample size, only valid misrate is 1.0)
+- `edge-small-non-trivial`: $vx = (1, 2, 3, 4, 5)$ (small but non-trivial bounds)
+- `edge-large-misrate`: $vx = (1, 2, ..., 10)$ (permissive bounds)
+- `edge-duplicates-mixed`: $vx = (1, 1, 1, 2, 3, 4, 5)$ (partial ties)
+- `edge-wide-range`: $vx = (1, 10, 100, 1000, 10000)$ (extreme value range)
+- `edge-negative`: $vx = (-5, -4, -3, -2, -1)$ (negative values)
+- `edge-large-n`: $vx = (1, 2, ..., 100)$ (large sample, tighter sign-test bounds)
+- `edge-n2`: $vx = (1, 3)$ (minimum sample size, only the maximal achievable misrate is valid)
 
-*Additive distribution* (misrate varies by size) --- 3 tests with $Additive(10, 1)$:
+*Additive distribution* (reference fixture misrates) --- 3 tests with $Additive(10, 1)$:
 
-- `additive-20`: $n = 20$, $misrate = 0.02$
-- `additive-30`: $n = 30$, $misrate = 0.01$
-- `additive-50`: $n = 50$, $misrate = 0.01$
+- `additive-20`: $n = 20$
+- `additive-30`: $n = 30$
+- `additive-50`: $n = 50$
 
-*Uniform distribution* (misrate varies by size) --- 2 tests with $Uniform(0, 1)$:
+*Uniform distribution* (reference fixture misrates) --- 2 tests with $Uniform(0, 1)$:
 
-- `uniform-20`: $n = 20$, $misrate = 0.02$
-- `uniform-50`: $n = 50$, $misrate = 0.01$
+- `uniform-20`: $n = 20$
+- `uniform-50`: $n = 50$
 
-*Misrate variation* ($vx = (1, 2, ..., 25)$) --- 5 tests with varying misrates:
-
-- `misrate-5e-1`: $misrate = 0.5$
-- `misrate-1e-1`: $misrate = 0.1$
-- `misrate-5e-2`: $misrate = 0.05$
-- `misrate-1e-2`: $misrate = 0.01$
-- `misrate-2e-3`: $misrate = 0.002$
+*Misrate variation* ($vx = (1, 2, ..., 25)$) --- 5 tests with varying fixture misrates:
 
 These tests validate monotonicity: smaller misrates produce wider bounds.
 
-*Conservatism tests* ($misrate = 0.1$) --- 5 tests unique to $SpreadBounds$:
+*Conservatism tests* (loose achievable fixture misrates) --- 5 tests unique to $SpreadBounds$:
 
 - `conservatism-12`: $vx = (1, 2, ..., 12)$, sign-test bounds are wide relative to $Spread$
 - `conservatism-15`: $vx = (1, 2, ..., 15)$
@@ -87,21 +81,21 @@ For large $n$, bounds tighten to a practical interval around $Spread$.
 
 *Unsorted tests* --- verify stable behavior on non-sorted inputs (8 tests):
 
-- `unsorted-reverse-10`: $vx = (10, 9, ..., 1)$, $misrate = 0.2$
+- `unsorted-reverse-10`: $vx = (10, 9, ..., 1)$
 - `unsorted-reverse-15`: $vx = (15, 14, ..., 1)$, $misrate = 0.07$
-- `unsorted-shuffle-10`: $vx$ shuffled, $misrate = 0.2$
+- `unsorted-shuffle-10`: $vx$ shuffled
 - `unsorted-shuffle-15`: $vx$ shuffled, $misrate = 0.07$
-- `unsorted-negative-5`: negative values unsorted ($misrate = 0.8$)
-- `unsorted-mixed-signs-5`: mixed signs unsorted ($misrate = 0.8$)
-- `unsorted-duplicates`: $vx = (1, 3, 1, 3, 2)$, unsorted with duplicates ($misrate = 0.8$)
-- `unsorted-wide-range`: $vx = (1000, 1, 100, 10, 10000)$, unsorted wide range ($misrate = 0.8$)
+- `unsorted-negative-5`: negative values unsorted
+- `unsorted-mixed-signs-5`: mixed signs unsorted
+- `unsorted-duplicates`: $vx = (1, 3, 1, 3, 2)$, unsorted with duplicates
+- `unsorted-wide-range`: $vx = (1000, 1, 100, 10, 10000)$, unsorted wide range
 
 These tests validate that $SpreadBounds$ produces sensible bounds for arbitrary input order under a fixed seed.
 
 *Error cases* --- inputs that violate assumptions (2 tests):
 
-- `error-empty-x`: $vx = ()$, $misrate = 0.2$ — empty array violates validity
-- `error-constant-x`: $vx = (5, 5, ..., 5)$ ($n = 20$), $misrate = 0.2$ — constant sample violates sparity ($Spread = 0$)
+- `error-empty-x`: $vx = ()$ — empty array violates validity
+- `error-constant-x`: $vx = (5, 5, ..., 5)$ ($n = 20$) — constant sample violates sparity ($Spread = 0$)
 
 Note: $SpreadBounds$ has a minimum misrate constraint.
 The sign-test inversion requires $misrate >= 2^(1-m)$.

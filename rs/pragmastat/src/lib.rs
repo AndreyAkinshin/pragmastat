@@ -8,6 +8,7 @@
 
 pub mod assumptions;
 pub mod bounds;
+pub mod compare;
 pub mod distributions;
 pub mod estimators;
 pub mod measurement;
@@ -46,6 +47,10 @@ mod signed_rank_margin_tests;
 // Re-exports for convenient access
 pub use assumptions::{AssumptionError, AssumptionId, EstimatorError, Subject, Violation};
 pub use bounds::Bounds;
+pub use compare::{
+    compare1, compare1_with_seed, compare2, compare2_with_seed, ComparisonVerdict, Metric,
+    Projection, Threshold,
+};
 pub use distributions::{Additive, Distribution, Exp, Multiplic, Power, Uniform};
 pub use estimators::{
     center, center_bounds, disparity, disparity_bounds, disparity_bounds_with_seed, ratio,

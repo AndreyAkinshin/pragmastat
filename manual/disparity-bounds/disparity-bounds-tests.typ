@@ -9,13 +9,13 @@ Because the denominator ($AvgSpreadBounds$) uses randomized $SpreadBounds$, test
 
 *Demo examples* ($n = m = 30$, $n = m = 20$) --- from manual introduction:
 
-- `demo-1`: $vx = (1, ..., 30)$, $vy = (21, ..., 50)$, $misrate = 0.02$
-- `demo-2`: $vx = (1, ..., 30)$, $vy = (21, ..., 50)$, $misrate = 0.005$, wider bounds (tighter misrate)
-- `demo-3`: $vx = (1, ..., 20)$, $vy = (5, ..., 24)$, $misrate = 0.05$
+- `demo-1`: $vx = (1, ..., 30)$, $vy = (21, ..., 50)$, baseline fixture misrate
+- `demo-2`: $vx = (1, ..., 30)$, $vy = (21, ..., 50)$, stricter fixture misrate, wider bounds
+- `demo-3`: $vx = (1, ..., 20)$, $vy = (5, ..., 24)$, looser fixture misrate
 
 These cases illustrate how tighter misrates produce wider bounds.
 
-*Natural sequences* ($misrate = 0.2$) --- 5 tests:
+*Natural sequences* (reference fixture misrates) --- 5 tests:
 
 - `natural-10-10`: $vx = (1, ..., 10)$, $vy = (1, ..., 10)$, bounds containing $0$
 - `natural-10-15`: $vx = (1, ..., 10)$, $vy = (1, ..., 15)$
@@ -23,7 +23,7 @@ These cases illustrate how tighter misrates produce wider bounds.
 - `natural-15-15`: $vx = (1, ..., 15)$, $vy = (1, ..., 15)$, bounds containing $0$
 - `natural-20-20`: $vx = (1, ..., 20)$, $vy = (1, ..., 20)$, bounds containing $0$
 
-*Property validation* ($n = m = 10$, $misrate = 0.2$) --- 6 tests:
+*Property validation* ($n = m = 10$) --- 6 tests:
 
 - `property-identity`: $vx = (0, 2, ..., 18)$, $vy = (0, 2, ..., 18)$, expected output: $[-1.5, 1.5]$
 - `property-location-shift`: $vx = (10, 12, ..., 28)$, $vy = (12, 14, ..., 30)$, expected output: $[-2, 1]$
@@ -34,19 +34,13 @@ These cases illustrate how tighter misrates produce wider bounds.
 
 *Edge cases* --- boundary conditions (5 tests):
 
-- `edge-small`: $n = m = 6$, $misrate = 0.6$ (small samples)
+- `edge-small`: $n = m = 6$ (small samples)
 - `edge-negative`: negative values for both samples
 - `edge-mixed-signs`: mixed positive/negative values
 - `edge-wide-range`: extreme value range
 - `edge-asymmetric-10-20`: $n = 10$, $m = 20$ (unbalanced sizes)
 
-*Misrate variation* ($vx = (1, ..., 20)$, $vy = (5, ..., 24)$) --- 5 tests:
-
-- `misrate-2e-1`: $misrate = 0.2$
-- `misrate-1e-1`: $misrate = 0.1$
-- `misrate-5e-2`: $misrate = 0.05$
-- `misrate-2e-2`: $misrate = 0.02$
-- `misrate-1e-2`: $misrate = 0.01$
+*Misrate variation* ($vx = (1, ..., 20)$, $vy = (5, ..., 24)$) --- 5 tests spanning progressively stricter fixture misrates:
 
 These tests validate monotonicity: smaller misrates produce wider bounds.
 

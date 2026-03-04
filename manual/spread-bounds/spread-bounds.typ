@@ -45,7 +45,7 @@ Robust bounds on #link(<sec-spread>)[$Spread(vx)$] with specified coverage.
 #v(0.3em)
 *Example*
 
-- `SpreadBounds([1..30], 0.01)` where `Spread = 9`
+- `SpreadBounds([1..30], 10^(-3))` returns bounds containing `Spread = 9`
 - Bounds fail to cover true spread with probability $approx misrate$
 
 #v(0.5em)
@@ -66,10 +66,13 @@ the sign test on $m = floor(n / 2)$ pairs has minimum achievable misrate $2^(1-m
   table(
     columns: 5,
     align: center,
-    table.header[$misrate$][$10^(-1)$][$10^(-2)$][$10^(-3)$][$10^(-6)$],
-    [$n_min$], [10], [16], [22], [42],
+    table.header[$misrate$][$10^(-3)$][$10^(-4)$][$10^(-5)$][$10^(-6)$],
+    [$n_min$], [22], [30], [36], [42],
   )
 )
+
+#v(0.5em)
+*See also:* #link(<sec-compare1>)[$Compare1$] for comparing Spread against practical thresholds with automatic verdict generation.
 
 #pagebreak()
 === Algorithm <sec-alg-spread-bounds>

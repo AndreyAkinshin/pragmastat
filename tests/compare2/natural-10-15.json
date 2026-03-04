@@ -1,0 +1,51 @@
+{
+  "input": {
+    "x": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "y": [
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25
+    ],
+    "seed": "compare2-tests",
+    "thresholds": [
+      {
+        "metric": "shift",
+        "value": 0,
+        "misrate": 0.2
+      }
+    ]
+  },
+  "output": {
+    "projections": [
+      {
+        "estimate": -12.5,
+        "lower": -15,
+        "upper": -10,
+        "verdict": "less"
+      }
+    ]
+  }
+}

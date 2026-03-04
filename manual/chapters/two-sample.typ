@@ -18,3 +18,6 @@
 
 #pagebreak()
 #include "../disparity-bounds/disparity-bounds.typ"
+
+#pagebreak()
+#include "../compare2/compare2.typ"

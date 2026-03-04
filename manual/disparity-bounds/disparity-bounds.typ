@@ -4,9 +4,9 @@
 
 $ DisparityBounds(vx, vy, misrate) = [L_S, U_S] / [L_A, U_A] $
 
-where $[L_S, U_S] = ShiftBounds(vx, vy, alpha_S)$,
-$[L_A, U_A] = AvgSpreadBounds(vx, vy, alpha_A)$,
-and $alpha_S + alpha_A = misrate$ (Bonferroni split).
+where $[L_S, U_S] = ShiftBounds(vx, vy, misrate_S)$,
+$[L_A, U_A] = AvgSpreadBounds(vx, vy, misrate_A)$,
+and $misrate_S + misrate_A = misrate$ (Bonferroni split).
 
 Robust bounds on #link(<sec-disparity>)[$Disparity(vx, vy)$] with specified coverage.
 
@@ -47,7 +47,10 @@ Robust bounds on #link(<sec-disparity>)[$Disparity(vx, vy)$] with specified cove
 #v(0.3em)
 *Example*
 
-- `DisparityBounds([1..30], [21..50], 0.02)` returns bounds containing `Disparity`
+- `DisparityBounds([1..30], [21..50], 10^(-3))` returns bounds containing `Disparity`
+
+#v(0.5em)
+*See also:* #link(<sec-compare2>)[$Compare2$] for comparing Disparity against practical thresholds with automatic verdict generation.
 
 #pagebreak()
 === Algorithm <sec-alg-disparity-bounds>

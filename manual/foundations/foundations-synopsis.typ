@@ -129,12 +129,12 @@ $ misrate = 1 - "confidence level" $
 This simple inversion provides several advantages:
 
 - *Direct interpretation*.
-  $misrate = 0.01$ means "1% chance of error" or "wrong 1 time in 100".
+  $misrate = 10^(-3)$ means "0.1% chance of error" or "wrong 1 time in 1000".
   $misrate = 10^(-6)$ means "wrong 1 time in a million".
   No mental arithmetic required.
 - *Linear scale for practical values*.
-  $misrate = 0.1$ (10%), $misrate = 0.01$ (1%), $misrate = 0.001$ (0.1%)
-  form a natural sequence.
+  $misrate = 10^(-3)$, $misrate = 10^(-4)$, $misrate = 10^(-6)$
+  form a natural sequence of progressively stricter requirements.
   Scientific notation handles extreme values cleanly: $10^(-3)$, $10^(-6)$, $10^(-9)$.
 - *Clear comparisons*.
   $10^(-5)$ versus $10^(-6)$ immediately shows a 10× difference in error tolerance.

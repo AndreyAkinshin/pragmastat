@@ -1,4 +1,5 @@
 using Pragmastat.Estimators;
+using Pragmastat.Internal;
 using Pragmastat.Metrology;
 
 namespace Pragmastat;
@@ -61,4 +62,24 @@ public static class Toolkit
   /// <summary>Provides distribution-free bounds for the spread estimator.</summary>
   public static Bounds SpreadBounds(Sample x, Probability misrate, string seed) =>
     SpreadBoundsEstimator.Instance.Estimate(x, misrate, seed);
+
+  /// <summary>One-sample confirmatory analysis: compares Center/Spread against practical thresholds.</summary>
+  public static IReadOnlyList<Projection> Compare1(Sample x, IReadOnlyList<Threshold> thresholds)
+    => CompareEngine.Compare1(x, thresholds, null);
+  /// <summary>One-sample confirmatory analysis with seed for reproducibility.</summary>
+  public static IReadOnlyList<Projection> Compare1(Sample x, IReadOnlyList<Threshold> thresholds, string seed)
+  {
+    Assertion.NotNull("seed", seed);
+    return CompareEngine.Compare1(x, thresholds, seed);
+  }
+
+  /// <summary>Two-sample confirmatory analysis: compares Shift/Ratio/Disparity against practical thresholds.</summary>
+  public static IReadOnlyList<Projection> Compare2(Sample x, Sample y, IReadOnlyList<Threshold> thresholds)
+    => CompareEngine.Compare2(x, y, thresholds, null);
+  /// <summary>Two-sample confirmatory analysis with seed for reproducibility.</summary>
+  public static IReadOnlyList<Projection> Compare2(Sample x, Sample y, IReadOnlyList<Threshold> thresholds, string seed)
+  {
+    Assertion.NotNull("seed", seed);
+    return CompareEngine.Compare2(x, y, thresholds, seed);
+  }
 }

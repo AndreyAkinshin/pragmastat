@@ -83,6 +83,50 @@ data class RatioBoundsTestData(
     @JsonProperty("expected_error") val expectedError: Map<String, String>? = null,
 )
 
+data class CompareThresholdInput(
+    val metric: String,
+    val value: Double,
+    val misrate: Double,
+)
+
+data class Compare1Input(
+    val x: List<Double>,
+    val seed: String? = null,
+    val thresholds: List<CompareThresholdInput>,
+)
+
+data class ProjectionOutput(
+    val estimate: Double,
+    val lower: Double,
+    val upper: Double,
+    val verdict: String,
+)
+
+data class Compare1Output(val projections: List<ProjectionOutput>)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class Compare1TestData(
+    val input: Compare1Input,
+    val output: Compare1Output? = null,
+    @JsonProperty("expected_error") val expectedError: Map<String, String>? = null,
+)
+
+data class Compare2Input(
+    val x: List<Double>,
+    val y: List<Double>,
+    val seed: String? = null,
+    val thresholds: List<CompareThresholdInput>,
+)
+
+data class Compare2Output(val projections: List<ProjectionOutput>)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class Compare2TestData(
+    val input: Compare2Input,
+    val output: Compare2Output? = null,
+    @JsonProperty("expected_error") val expectedError: Map<String, String>? = null,
+)
+
 class ReferenceTest {
     private val mapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
     private val epsilon = 1e-9
@@ -1184,6 +1228,155 @@ class ReferenceTest {
                         )
                     assertClose(testData.output!!.lower, result.lower)
                     assertClose(testData.output!!.upper, result.upper)
+                },
+            )
+        }
+
+        return tests
+    }
+
+    @TestFactory
+    fun testCompare1(): List<DynamicTest> {
+        val tests = mutableListOf<DynamicTest>()
+        val testDir = File("../tests/compare1")
+
+        if (!testDir.exists() || !testDir.isDirectory) {
+            Assumptions.assumeTrue(false, "Skipping compare1 tests: directory not found")
+            return tests
+        }
+
+        testDir.listFiles { _, name -> name.endsWith(".json") }?.forEach { file ->
+            val testName = "compare1/${file.nameWithoutExtension}"
+            tests.add(
+                DynamicTest.dynamicTest(testName) {
+                    val testData = mapper.readValue<Compare1TestData>(file)
+
+                    val thresholds =
+                        testData.input.thresholds.map { t ->
+                            val metric =
+                                when (t.metric) {
+                                    "center" -> Metric.Center
+                                    "spread" -> Metric.Spread
+                                    else -> throw IllegalArgumentException("Unknown metric: ${t.metric}")
+                                }
+                            Threshold(metric, Measurement(t.value), t.misrate)
+                        }
+
+                    if (testData.expectedError != null) {
+                        val exception =
+                            assertThrows<AssumptionException> {
+                                if (testData.input.seed != null) {
+                                    compare1(Sample.of(testData.input.x), thresholds, testData.input.seed)
+                                } else {
+                                    compare1(Sample.of(testData.input.x), thresholds)
+                                }
+                            }
+                        assertEquals(
+                            testData.expectedError["id"],
+                            exception.violation!!.id.id,
+                            "Expected error id ${testData.expectedError["id"]}, got ${exception.violation!!.id.id}",
+                        )
+                        if (testData.expectedError.containsKey("subject")) {
+                            assertEquals(
+                                testData.expectedError["subject"],
+                                exception.violation!!.subject.id,
+                                "Expected error subject ${testData.expectedError["subject"]}, got ${exception.violation!!.subject.id}",
+                            )
+                        }
+                        return@dynamicTest
+                    }
+
+                    val result =
+                        if (testData.input.seed != null) {
+                            compare1(Sample.of(testData.input.x), thresholds, testData.input.seed)
+                        } else {
+                            compare1(Sample.of(testData.input.x), thresholds)
+                        }
+
+                    assertEquals(testData.output!!.projections.size, result.size)
+                    for (i in result.indices) {
+                        val expected = testData.output.projections[i]
+                        val actual = result[i]
+                        assertClose(expected.estimate, actual.estimate.value)
+                        assertClose(expected.lower, actual.bounds.lower)
+                        assertClose(expected.upper, actual.bounds.upper)
+                        assertEquals(expected.verdict, actual.verdict.name.lowercase())
+                    }
+                },
+            )
+        }
+
+        return tests
+    }
+
+    @TestFactory
+    fun testCompare2(): List<DynamicTest> {
+        val tests = mutableListOf<DynamicTest>()
+        val testDir = File("../tests/compare2")
+
+        if (!testDir.exists() || !testDir.isDirectory) {
+            Assumptions.assumeTrue(false, "Skipping compare2 tests: directory not found")
+            return tests
+        }
+
+        testDir.listFiles { _, name -> name.endsWith(".json") }?.forEach { file ->
+            val testName = "compare2/${file.nameWithoutExtension}"
+            tests.add(
+                DynamicTest.dynamicTest(testName) {
+                    val testData = mapper.readValue<Compare2TestData>(file)
+
+                    val thresholds =
+                        testData.input.thresholds.map { t ->
+                            val metric =
+                                when (t.metric) {
+                                    "shift" -> Metric.Shift
+                                    "ratio" -> Metric.Ratio
+                                    "disparity" -> Metric.Disparity
+                                    else -> throw IllegalArgumentException("Unknown metric: ${t.metric}")
+                                }
+                            Threshold(metric, Measurement(t.value), t.misrate)
+                        }
+
+                    if (testData.expectedError != null) {
+                        val exception =
+                            assertThrows<AssumptionException> {
+                                if (testData.input.seed != null) {
+                                    compare2(Sample.of(testData.input.x), sampleY(testData.input.y), thresholds, testData.input.seed)
+                                } else {
+                                    compare2(Sample.of(testData.input.x), sampleY(testData.input.y), thresholds)
+                                }
+                            }
+                        assertEquals(
+                            testData.expectedError["id"],
+                            exception.violation!!.id.id,
+                            "Expected error id ${testData.expectedError["id"]}, got ${exception.violation!!.id.id}",
+                        )
+                        if (testData.expectedError.containsKey("subject")) {
+                            assertEquals(
+                                testData.expectedError["subject"],
+                                exception.violation!!.subject.id,
+                                "Expected error subject ${testData.expectedError["subject"]}, got ${exception.violation!!.subject.id}",
+                            )
+                        }
+                        return@dynamicTest
+                    }
+
+                    val result =
+                        if (testData.input.seed != null) {
+                            compare2(Sample.of(testData.input.x), sampleY(testData.input.y), thresholds, testData.input.seed)
+                        } else {
+                            compare2(Sample.of(testData.input.x), sampleY(testData.input.y), thresholds)
+                        }
+
+                    assertEquals(testData.output!!.projections.size, result.size)
+                    for (i in result.indices) {
+                        val expected = testData.output.projections[i]
+                        val actual = result[i]
+                        assertClose(expected.estimate, actual.estimate.value)
+                        assertClose(expected.lower, actual.bounds.lower)
+                        assertClose(expected.upper, actual.bounds.upper)
+                        assertEquals(expected.verdict, actual.verdict.name.lowercase())
+                    }
                 },
             )
         }

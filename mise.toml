@@ -303,7 +303,7 @@ run = [
 description = "Build R source package"
 dir = "r"
 run = """
-rm -rf pragmastat/src/*.o pragmastat/src/*.so pragmastat/src/*.dll 2>/dev/null || true
+rm -rf pragmastat/src/*.o pragmastat/src/*.so pragmastat/src/*.dll pragmastat/src/*.dylib pragmastat/src/*.a pragmastat/src/symbols.rds 2>/dev/null || true
 R CMD build pragmastat
 """
 
@@ -327,7 +327,10 @@ if [ ! -d "pragmastat/tests/tests" ]; then
     mkdir -p pragmastat/tests/tests
     cp -r ../tests/* pragmastat/tests/tests/
 fi
-_R_CHECK_FORCE_SUGGESTS_=false R CMD check --no-tests --no-manual pragmastat
+rm -rf pragmastat.Rcheck pragmastat_*.tar.gz
+rm -rf pragmastat/src/*.o pragmastat/src/*.so pragmastat/src/*.dll pragmastat/src/*.dylib pragmastat/src/*.a pragmastat/src/symbols.rds 2>/dev/null || true
+R CMD build pragmastat
+_R_CHECK_FORCE_SUGGESTS_=false R CMD check --no-tests --no-manual pragmastat_*.tar.gz
 """
 
 [tasks."r:check:fix"]
@@ -340,7 +343,7 @@ description = "Clean R build artifacts"
 dir = "r"
 run = """
 rm -rf pragmastat.Rcheck pragmastat_*.tar.gz pragmastat/..Rcheck ..Rcheck
-rm -rf pragmastat/src/*.o pragmastat/src/*.so pragmastat/src/*.dll
+rm -rf pragmastat/src/*.o pragmastat/src/*.so pragmastat/src/*.dll pragmastat/src/*.dylib pragmastat/src/*.a pragmastat/src/symbols.rds
 rm -rf pragmastat/inst/testdata pragmastat/tests/tests
 """
 

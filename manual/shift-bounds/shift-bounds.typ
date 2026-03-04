@@ -56,6 +56,9 @@ Set $misrate$ to control how often the bounds might fail to contain the true shi
 These bounds require no assumptions about your data distribution, so they remain valid for any continuous measurements.
 If the bounds exclude zero, that suggests a reliable difference between the two groups.
 
+#v(0.5em)
+*See also:* #link(<sec-compare2>)[$Compare2$] for comparing Shift against practical thresholds with automatic verdict generation.
+
 #pagebreak()
 === Algorithm <sec-alg-shift-bounds>
 

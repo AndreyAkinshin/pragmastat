@@ -81,6 +81,20 @@ public abstract class ReferenceTestController<TInput, TOutput>
     }
   }
 
+  public void SaveErrorTestCase(string testName, TInput input, string errorId, string subject)
+  {
+    if (!Directory.Exists(testSuiteDirectory))
+      Directory.CreateDirectory(testSuiteDirectory);
+    var errorTestCase = new ErrorTestCase<TInput>
+    {
+      Input = input,
+      ExpectedError = new ExpectedError { Id = errorId, Subject = subject }
+    };
+    string filePath = Path.Combine(testSuiteDirectory, testName + ".json");
+    string json = Serialize(errorTestCase);
+    File.WriteAllText(filePath, json);
+  }
+
 
   private readonly JsonSerializerOptions jsonOptions = new()
   {

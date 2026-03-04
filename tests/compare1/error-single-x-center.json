@@ -1,0 +1,19 @@
+{
+  "input": {
+    "x": [
+      5
+    ],
+    "seed": "compare1-tests",
+    "thresholds": [
+      {
+        "metric": "center",
+        "value": 5,
+        "misrate": 0.5
+      }
+    ]
+  },
+  "expected_error": {
+    "id": "domain",
+    "subject": "x"
+  }
+}

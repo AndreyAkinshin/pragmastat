@@ -45,7 +45,7 @@ Robust bounds on #link(<sec-center>)[$Center(vx)$] with specified coverage.
 #v(0.3em)
 *Example*
 
-- `CenterBounds([1..10], 0.01) = [2.5, 8.5]` where `Center = 5.5`
+- `CenterBounds([1..10], 10^(-3))` returns bounds containing `Center = 5.5`
 - Bounds fail to cover true center with probability $approx misrate$
 
 #v(0.5em)
@@ -55,6 +55,9 @@ Set $misrate$ to control how often the bounds might fail to contain the true cen
 use $10^(-3)$ for everyday analysis or $10^(-6)$ for critical decisions where errors are costly.
 These bounds require #link(<sec-weak-symmetry>)[weak symmetry] but no specific distributional form.
 If the bounds exclude some reference value, that suggests the true center differs reliably from that value.
+
+#v(0.5em)
+*See also:* #link(<sec-compare1>)[$Compare1$] for comparing Center against practical thresholds with automatic verdict generation.
 
 #pagebreak()
 === Algorithm <sec-alg-center-bounds>

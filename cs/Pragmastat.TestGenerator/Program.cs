@@ -36,5 +36,7 @@ CenterBoundsTestCases.Generate();
 SpreadBoundsTestCases.Generate();
 AvgSpreadBoundsTestCases.Generate();
 DisparityBoundsTestCases.Generate();
+Compare1TestCases.Generate();
+Compare2TestCases.Generate();
 AnsiConsole.MarkupLine("");
 AnsiConsole.Write(new Rule("[bold green]Generation Completed Successfully![/]").RuleStyle("green"));

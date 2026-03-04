@@ -19,6 +19,8 @@ CenterBounds: \operatorname{CenterBounds}
 SpreadBounds: \operatorname{SpreadBounds}
 AvgSpreadBounds: \operatorname{AvgSpreadBounds}
 DisparityBounds: \operatorname{DisparityBounds}
+Compare1: \operatorname{Compare1}
+Compare2: \operatorname{Compare2}
 Dominance: \operatorname{Dominance}
 
 # Traditional Estimators

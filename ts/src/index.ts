@@ -29,6 +29,9 @@ export {
   type Bounds,
 } from './estimators';
 
+// Compare
+export { Metric, ComparisonVerdict, Threshold, Projection, compare1, compare2 } from './compare';
+
 export { Rng } from './rng';
 
 export { type Distribution, Uniform, Additive, Multiplic, Exp, Power } from './distributions/index';

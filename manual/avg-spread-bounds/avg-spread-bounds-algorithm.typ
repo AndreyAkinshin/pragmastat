@@ -6,12 +6,12 @@ The $AvgSpreadBounds$ estimator constructs bounds on the pooled spread
 The algorithm proceeds as follows:
 
 + *Equal Bonferroni split* ---
-  Set $alpha = misrate / 2$.
-  Each per-sample bounds call uses half the total error budget.
+  Use $misrate / 2$ for each per-sample bounds call.
+  Each call uses half the total error budget.
 
 + *Per-sample bounds* ---
-  Compute $[L_x, U_x] = SpreadBounds(vx, alpha)$ and
-  $[L_y, U_y] = SpreadBounds(vy, alpha)$
+  Compute $[L_x, U_x] = SpreadBounds(vx, misrate / 2)$ and
+  $[L_y, U_y] = SpreadBounds(vy, misrate / 2)$
   (see #link(<sec-alg-spread-bounds>)[SpreadBounds]).
 
 + *Weighted linear combination* ---
@@ -19,7 +19,7 @@ The algorithm proceeds as follows:
   $ [L_A, U_A] = [w_x L_x + w_y L_y, w_x U_x + w_y U_y] $
 
 By Bonferroni's inequality, the probability that both per-sample bounds simultaneously cover
-  their respective true spreads is at least $1 - 2 alpha = 1 - misrate$.
+  their respective true spreads is at least $1 - misrate$.
 Since $AvgSpread$ is a weighted average of the individual spreads,
   the linear combination of the bounds covers the true $AvgSpread$ whenever both individual bounds hold.
 

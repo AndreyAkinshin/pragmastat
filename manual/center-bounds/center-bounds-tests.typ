@@ -12,20 +12,20 @@ Each test case output is a JSON object with `lower` and `upper` fields represent
 
 *Demo examples* — from manual introduction, validating basic bounds:
 
-- `demo-1`: $vx = (1, 2, 3, 4, 5)$, $misrate = 0.1$, expected output: $[1.5, 4.5]$
-- `demo-2`: $vx = (1, ..., 10)$, $misrate = 0.01$, expected output: $[2.5, 8.5]$
-- `demo-3`: $vx = (0, 2, 4, 6, 8)$, $misrate = 0.1$, expected output: $[1, 7]$
+- `demo-1`: $vx = (1, 2, 3, 4, 5)$, expected output: $[1.5, 4.5]$
+- `demo-2`: $vx = (1, ..., 10)$, stricter fixture misrate, expected output: $[2.5, 8.5]$
+- `demo-3`: $vx = (0, 2, 4, 6, 8)$, expected output: $[1, 7]$
 
 These cases illustrate how tighter misrates produce wider bounds.
 
 *Natural sequences* — 4 tests:
 
-- `natural-5`: $vx = (1, 2, 3, 4, 5)$, $misrate = 0.1$, expected output: $[1.5, 4.5]$
-- `natural-7`: $vx = (1, ..., 7)$, $misrate = 0.05$, expected output: $[2, 6]$
-- `natural-10`: $vx = (1, ..., 10)$, $misrate = 0.01$, expected output: $[2.5, 8.5]$
-- `natural-20`: $vx = (1, ..., 20)$, $misrate = 0.01$, bounds containing $Center = 10.5$
+- `natural-5`: $vx = (1, 2, 3, 4, 5)$, expected output: $[1.5, 4.5]$
+- `natural-7`: $vx = (1, ..., 7)$, expected output: $[2, 6]$
+- `natural-10`: $vx = (1, ..., 10)$, expected output: $[2.5, 8.5]$
+- `natural-20`: $vx = (1, ..., 20)$, bounds containing $Center = 10.5$
 
-*Property validation* ($n = 5$, $misrate = 0.1$) — 5 tests:
+*Property validation* ($n = 5$) — 5 tests:
 
 - `property-identity`: $vx = (0, 2, 4, 6, 8)$, expected output: $[1, 7]$
 - `property-centered`: $vx = (-3, -1, 0, 1, 3)$, expected output: $[-2, 2]$
@@ -35,39 +35,34 @@ These cases illustrate how tighter misrates produce wider bounds.
 
 *Edge cases* — boundary conditions and extreme scenarios (7 tests):
 
-- `edge-two-elements`: $vx = (1, 3)$, $misrate = 0.5$, expected output: $[1, 3]$
-- `edge-three-elements`: $vx = (1, 2, 3)$, $misrate = 0.25$ (small sample)
-- `edge-loose-misrate`: $vx = (1, 2, 3, 4, 5)$, $misrate = 0.5$ (permissive bounds)
-- `edge-strict-misrate`: $vx = (1, ..., 10)$, $misrate = 0.01$
-- `edge-duplicates-10`: $vx = (5, 5, 5, 5, 5, 5, 5, 5, 5, 5)$, $misrate = 0.01$ (all identical, bounds $= [5, 5]$)
-- `edge-negative`: $vx = (-5, -4, -3, -2, -1)$, $misrate = 0.1$ (negative values)
-- `edge-wide-range`: $vx = (0.001, 1, 100, 1000, 10000)$, $misrate = 0.1$ (extreme value range)
+- `edge-two-elements`: $vx = (1, 3)$, minimum achievable misrate, expected output: $[1, 3]$
+- `edge-three-elements`: $vx = (1, 2, 3)$ (small sample)
+- `edge-loose-misrate`: $vx = (1, 2, 3, 4, 5)$ (permissive bounds)
+- `edge-strict-misrate`: $vx = (1, ..., 10)$, stricter fixture misrate
+- `edge-duplicates-10`: $vx = (5, 5, 5, 5, 5, 5, 5, 5, 5, 5)$ (all identical, bounds $= [5, 5]$)
+- `edge-negative`: $vx = (-5, -4, -3, -2, -1)$ (negative values)
+- `edge-wide-range`: $vx = (0.001, 1, 100, 1000, 10000)$ (extreme value range)
 
-*Symmetric distributions* (mixed misrates) — 4 tests with symmetric data:
+*Symmetric distributions* (varying fixture misrates) — 4 tests with symmetric data:
 
-- `symmetric-5`: $vx = (-2, -1, 0, 1, 2)$, $misrate = 0.1$, bounds centered around $0$
-- `symmetric-7`: $vx = (-3, -2, -1, 0, 1, 2, 3)$, $misrate = 0.05$, bounds centered around $0$
-- `symmetric-10`: $n = 10$ symmetric around $0$, $misrate = 0.01$
-- `symmetric-15`: $n = 15$ symmetric around $0$, $misrate = 0.01$
+- `symmetric-5`: $vx = (-2, -1, 0, 1, 2)$, bounds centered around $0$
+- `symmetric-7`: $vx = (-3, -2, -1, 0, 1, 2, 3)$, bounds centered around $0$
+- `symmetric-10`: $n = 10$ symmetric around $0$
+- `symmetric-15`: $n = 15$ symmetric around $0$
 
 These tests validate that symmetric data produces symmetric bounds around the center.
 
-*Additive distribution* ($misrate = 0.05$) — 2 tests with $Additive(10, 1)$:
+*Additive distribution* (reference fixture misrates) — 2 tests with $Additive(10, 1)$:
 
 - `additive-10`: $n = 10$, seed 0
 - `additive-20`: $n = 20$, seed 0
 
-*Uniform distribution* ($misrate = 0.05$) — 2 tests with $Uniform(0, 1)$:
+*Uniform distribution* (reference fixture misrates) — 2 tests with $Uniform(0, 1)$:
 
 - `uniform-10`: $n = 10$, seed 1
 - `uniform-20`: $n = 20$, seed 1
 
-*Misrate variation* ($vx = (1, ..., 10)$) — 4 tests with varying misrates:
-
-- `misrate-1e-1`: $misrate = 0.1$
-- `misrate-5e-2`: $misrate = 0.05$
-- `misrate-1e-2`: $misrate = 0.01$
-- `misrate-5e-3`: $misrate = 0.005$
+*Misrate variation* ($vx = (1, ..., 10)$) — 4 tests with progressively stricter fixture misrates:
 
 These tests validate monotonicity: smaller misrates produce wider bounds.
 
@@ -84,4 +79,4 @@ These tests validate that $CenterBounds$ produces identical results regardless o
 
 *Error case* — input validation:
 
-- `error-empty-x`: $vx = ()$, $misrate = 0.2$ — empty array violates validity
+- `error-empty-x`: $vx = ()$ — empty array violates validity

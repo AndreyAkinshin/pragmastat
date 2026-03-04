@@ -23,6 +23,7 @@ import { Sample } from '../src/sample';
 import { MeasurementUnit } from '../src/measurement-unit';
 import { Measurement } from '../src/measurement';
 import { UnitRegistry } from '../src/unit-registry';
+import { Metric, Threshold, compare1, compare2 } from '../src/compare';
 
 /**
  * Reference tests comparing against expected values from JSON files
@@ -996,6 +997,124 @@ describe('Reference Tests', () => {
             if (data.output.value !== undefined) {
               expect(result.value).toBeCloseTo(data.output.value, 9);
             }
+          }
+        });
+      });
+    }
+  });
+
+  // Compare1 tests
+  describe('compare1', () => {
+    const dirPath = path.join(testDataPath, 'compare1');
+    if (fs.existsSync(dirPath)) {
+      const testFiles = fs
+        .readdirSync(dirPath)
+        .filter((f) => f.endsWith('.json'))
+        .sort();
+
+      testFiles.forEach((fileName) => {
+        const filePath = path.join(dirPath, fileName);
+        const testName = fileName.replace('.json', '');
+
+        it(`should pass ${testName}`, () => {
+          const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+
+          // Handle error test cases
+          if (data.expected_error) {
+            let thrownError: AssumptionError | null = null;
+            try {
+              const sx = sampleFromTestData(data.input.x, 'x');
+              const thresholds = data.input.thresholds.map(
+                (t: { metric: string; value: number; misrate: number }) =>
+                  new Threshold(t.metric as Metric, new Measurement(t.value), t.misrate),
+              );
+              compare1(sx, thresholds, data.input.seed);
+            } catch (e) {
+              if (e instanceof AssumptionError) {
+                thrownError = e;
+              } else {
+                throw e;
+              }
+            }
+            expect(thrownError).not.toBeNull();
+            expect(thrownError!.violation!.id).toBe(data.expected_error.id);
+            expect(thrownError!.violation!.subject).toBe(data.expected_error.subject);
+            return;
+          }
+
+          const sx = Sample.of(data.input.x);
+          const thresholds = data.input.thresholds.map(
+            (t: { metric: string; value: number; misrate: number }) =>
+              new Threshold(t.metric as Metric, new Measurement(t.value), t.misrate),
+          );
+          const results = compare1(sx, thresholds, data.input.seed);
+
+          expect(results.length).toBe(data.output.projections.length);
+          for (let i = 0; i < results.length; i++) {
+            expect(results[i].estimate.value).toBeCloseTo(data.output.projections[i].estimate, 9);
+            expect(results[i].bounds.lower).toBeCloseTo(data.output.projections[i].lower, 9);
+            expect(results[i].bounds.upper).toBeCloseTo(data.output.projections[i].upper, 9);
+            expect(results[i].verdict).toBe(data.output.projections[i].verdict);
+          }
+        });
+      });
+    }
+  });
+
+  // Compare2 tests
+  describe('compare2', () => {
+    const dirPath = path.join(testDataPath, 'compare2');
+    if (fs.existsSync(dirPath)) {
+      const testFiles = fs
+        .readdirSync(dirPath)
+        .filter((f) => f.endsWith('.json'))
+        .sort();
+
+      testFiles.forEach((fileName) => {
+        const filePath = path.join(dirPath, fileName);
+        const testName = fileName.replace('.json', '');
+
+        it(`should pass ${testName}`, () => {
+          const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+
+          // Handle error test cases
+          if (data.expected_error) {
+            let thrownError: AssumptionError | null = null;
+            try {
+              const sx = sampleFromTestData(data.input.x, 'x');
+              const sy = sampleFromTestData(data.input.y, 'y');
+              const thresholds = data.input.thresholds.map(
+                (t: { metric: string; value: number; misrate: number }) =>
+                  new Threshold(t.metric as Metric, new Measurement(t.value), t.misrate),
+              );
+              compare2(sx, sy, thresholds, data.input.seed);
+            } catch (e) {
+              if (e instanceof AssumptionError) {
+                thrownError = e;
+              } else {
+                throw e;
+              }
+            }
+            expect(thrownError).not.toBeNull();
+            expect(thrownError!.violation!.id).toBe(data.expected_error.id);
+            expect(thrownError!.violation!.subject).toBe(data.expected_error.subject);
+            return;
+          }
+
+          const sx = Sample.of(data.input.x);
+          const sy = Sample.of(data.input.y);
+          const thresholds = data.input.thresholds.map(
+            (t: { metric: string; value: number; misrate: number }) =>
+              new Threshold(t.metric as Metric, new Measurement(t.value), t.misrate),
+          );
+          const results = compare2(sx, sy, thresholds, data.input.seed);
+
+          expect(results.length).toBe(data.output.projections.length);
+          for (let i = 0; i < results.length; i++) {
+            expect(results[i].estimate.value).toBeCloseTo(data.output.projections[i].estimate, 9);
+            expect(results[i].bounds.lower).toBeCloseTo(data.output.projections[i].lower, 9);
+            expect(results[i].bounds.upper).toBeCloseTo(data.output.projections[i].upper, 9);
+            expect(results[i].verdict).toBe(data.output.projections[i].verdict);
           }
         });
       });

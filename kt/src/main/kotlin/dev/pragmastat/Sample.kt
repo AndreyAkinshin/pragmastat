@@ -280,7 +280,7 @@ class Sample private constructor(
         // Validation helpers
         // ====================================================================
 
-        private fun checkNonWeighted(
+        internal fun checkNonWeighted(
             name: String,
             s: Sample,
         ) {
@@ -289,7 +289,7 @@ class Sample private constructor(
             }
         }
 
-        private fun checkCompatibleUnits(
+        internal fun checkCompatibleUnits(
             a: Sample,
             b: Sample,
         ) {
@@ -386,3 +386,25 @@ fun disparityBounds(
     misrate: Double = DEFAULT_MISRATE,
     seed: String? = null,
 ): Bounds = Sample.disparityBounds(x, y, misrate, seed)
+
+/** One-sample confirmatory analysis against practical thresholds. */
+fun Sample.compare1(thresholds: List<Threshold>): List<Projection> = CompareEngine.compare1(this, thresholds, null)
+
+/** One-sample confirmatory analysis with seed for reproducibility. */
+fun Sample.compare1(
+    thresholds: List<Threshold>,
+    seed: String,
+): List<Projection> = CompareEngine.compare1(this, thresholds, seed)
+
+/** Two-sample confirmatory analysis against practical thresholds. */
+fun Sample.compare2(
+    y: Sample,
+    thresholds: List<Threshold>,
+): List<Projection> = CompareEngine.compare2(this, y, thresholds, null)
+
+/** Two-sample confirmatory analysis with seed for reproducibility. */
+fun Sample.compare2(
+    y: Sample,
+    thresholds: List<Threshold>,
+    seed: String,
+): List<Projection> = CompareEngine.compare2(this, y, thresholds, seed)

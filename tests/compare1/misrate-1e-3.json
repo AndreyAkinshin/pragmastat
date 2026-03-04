@@ -1,0 +1,44 @@
+{
+  "input": {
+    "x": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20
+    ],
+    "seed": "compare1-tests",
+    "thresholds": [
+      {
+        "metric": "center",
+        "value": 10,
+        "misrate": 0.001
+      }
+    ]
+  },
+  "output": {
+    "projections": [
+      {
+        "estimate": 10.5,
+        "lower": 5,
+        "upper": 16,
+        "verdict": "inconclusive"
+      }
+    ]
+  }
+}

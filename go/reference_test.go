@@ -2027,3 +2027,304 @@ func TestUnitPropagation(t *testing.T) {
 		})
 	}
 }
+
+// Compare1Input represents input for compare1 tests
+type Compare1Input struct {
+	X          []float64 `json:"x"`
+	Seed       string    `json:"seed"`
+	Thresholds []struct {
+		Metric  string  `json:"metric"`
+		Value   float64 `json:"value"`
+		Misrate float64 `json:"misrate"`
+	} `json:"thresholds"`
+}
+
+// Compare2Input represents input for compare2 tests
+type Compare2Input struct {
+	X          []float64 `json:"x"`
+	Y          []float64 `json:"y"`
+	Seed       string    `json:"seed"`
+	Thresholds []struct {
+		Metric  string  `json:"metric"`
+		Value   float64 `json:"value"`
+		Misrate float64 `json:"misrate"`
+	} `json:"thresholds"`
+}
+
+// ProjectionOutput represents expected projection output
+type ProjectionOutput struct {
+	Estimate float64 `json:"estimate"`
+	Lower    float64 `json:"lower"`
+	Upper    float64 `json:"upper"`
+	Verdict  string  `json:"verdict"`
+}
+
+// CompareOutput represents expected output for compare tests
+type CompareOutput struct {
+	Projections []ProjectionOutput `json:"projections"`
+}
+
+// mustParseMetric parses a metric string into Metric type
+func mustParseMetric(t *testing.T, s string) Metric {
+	t.Helper()
+	switch s {
+	case "center":
+		return MetricCenter
+	case "spread":
+		return MetricSpread
+	case "shift":
+		return MetricShift
+	case "ratio":
+		return MetricRatio
+	case "disparity":
+		return MetricDisparity
+	default:
+		t.Fatalf("Unknown metric: %q", s)
+		return -1
+	}
+}
+
+// mustParseVerdict parses a verdict string into ComparisonVerdict type
+func mustParseVerdict(t *testing.T, s string) ComparisonVerdict {
+	t.Helper()
+	switch s {
+	case "less":
+		return VerdictLess
+	case "greater":
+		return VerdictGreater
+	case "inconclusive":
+		return VerdictInconclusive
+	default:
+		t.Fatalf("Unknown verdict: %q", s)
+		return -1
+	}
+}
+
+func TestCompare1Reference(t *testing.T) {
+	dirPath := filepath.Join("../tests", "compare1")
+	files, err := os.ReadDir(dirPath)
+	if err != nil {
+		t.Fatalf("Test data directory not found for compare1: %v", err)
+	}
+
+	for _, file := range files {
+		if !strings.HasSuffix(file.Name(), ".json") {
+			continue
+		}
+
+		testName := strings.TrimSuffix(file.Name(), ".json")
+		t.Run(testName, func(t *testing.T) {
+			filePath := filepath.Join(dirPath, file.Name())
+			data, err := os.ReadFile(filePath)
+			if err != nil {
+				t.Fatalf("Failed to read test file: %v", err)
+			}
+
+			var testData TestData
+			if err := json.Unmarshal(data, &testData); err != nil {
+				t.Fatalf("Failed to parse test data: %v", err)
+			}
+
+			var input Compare1Input
+			if err := json.Unmarshal(testData.Input, &input); err != nil {
+				t.Fatalf("Failed to parse input data: %v", err)
+			}
+
+			if len(testData.ExpectedError) > 0 {
+				sx, sErr := NewSample(input.X)
+				if sErr != nil {
+					// Sample construction error counts as expected error
+					return
+				}
+
+				thresholds := make([]*Threshold, len(input.Thresholds))
+				for i, th := range input.Thresholds {
+					thresholds[i] = &Threshold{
+						Metric:  mustParseMetric(t, th.Metric),
+						Value:   NewNumberMeasurement(th.Value),
+						Misrate: th.Misrate,
+					}
+				}
+
+				_, err := Compare1WithSeed(sx, thresholds, input.Seed)
+				if err == nil {
+					t.Errorf("Expected error for Compare1, but got none")
+					return
+				}
+				var expectedError map[string]string
+				if jsonErr := json.Unmarshal(testData.ExpectedError, &expectedError); jsonErr == nil {
+					if ae, ok := err.(*AssumptionError); ok {
+						if string(ae.Violation.ID) != expectedError["id"] {
+							t.Errorf("Expected error id %q, got %q", expectedError["id"], ae.Violation.ID)
+						}
+						if subj, ok := expectedError["subject"]; ok {
+							if string(ae.Violation.Subject) != subj {
+								t.Errorf("Expected error subject %q, got %q", subj, ae.Violation.Subject)
+							}
+						}
+					}
+				}
+				return
+			}
+
+			var expected CompareOutput
+			if err := json.Unmarshal(testData.Output, &expected); err != nil {
+				t.Fatalf("Failed to parse output data: %v", err)
+			}
+
+			sx := mustSample(t, input.X)
+
+			thresholds := make([]*Threshold, len(input.Thresholds))
+			for i, th := range input.Thresholds {
+				thresholds[i] = &Threshold{
+					Metric:  mustParseMetric(t, th.Metric),
+					Value:   NewNumberMeasurement(th.Value),
+					Misrate: th.Misrate,
+				}
+			}
+
+			actual, err := Compare1WithSeed(sx, thresholds, input.Seed)
+			if err != nil {
+				t.Fatalf("Compare1 error: %v", err)
+			}
+
+			if len(actual) != len(expected.Projections) {
+				t.Fatalf("Expected %d projections, got %d", len(expected.Projections), len(actual))
+			}
+
+			for i, proj := range actual {
+				exp := expected.Projections[i]
+				if !floatEquals(proj.Estimate.Value, exp.Estimate, 1e-9) {
+					t.Errorf("Projection %d: Estimate = %v, want %v", i, proj.Estimate.Value, exp.Estimate)
+				}
+				if !floatEquals(proj.Bounds.Lower, exp.Lower, 1e-9) {
+					t.Errorf("Projection %d: Lower = %v, want %v", i, proj.Bounds.Lower, exp.Lower)
+				}
+				if !floatEquals(proj.Bounds.Upper, exp.Upper, 1e-9) {
+					t.Errorf("Projection %d: Upper = %v, want %v", i, proj.Bounds.Upper, exp.Upper)
+				}
+				if proj.Verdict != mustParseVerdict(t, exp.Verdict) {
+					t.Errorf("Projection %d: Verdict = %v, want %v", i, proj.Verdict, exp.Verdict)
+				}
+			}
+		})
+	}
+}
+
+func TestCompare2Reference(t *testing.T) {
+	dirPath := filepath.Join("../tests", "compare2")
+	files, err := os.ReadDir(dirPath)
+	if err != nil {
+		t.Fatalf("Test data directory not found for compare2: %v", err)
+	}
+
+	for _, file := range files {
+		if !strings.HasSuffix(file.Name(), ".json") {
+			continue
+		}
+
+		testName := strings.TrimSuffix(file.Name(), ".json")
+		t.Run(testName, func(t *testing.T) {
+			filePath := filepath.Join(dirPath, file.Name())
+			data, err := os.ReadFile(filePath)
+			if err != nil {
+				t.Fatalf("Failed to read test file: %v", err)
+			}
+
+			var testData TestData
+			if err := json.Unmarshal(data, &testData); err != nil {
+				t.Fatalf("Failed to parse test data: %v", err)
+			}
+
+			var input Compare2Input
+			if err := json.Unmarshal(testData.Input, &input); err != nil {
+				t.Fatalf("Failed to parse input data: %v", err)
+			}
+
+			if len(testData.ExpectedError) > 0 {
+				sx, sxErr := NewSample(input.X)
+				if sxErr != nil {
+					return
+				}
+				sy, syErr := newSample(input.Y, nil, nil, SubjectY)
+				if syErr != nil {
+					return
+				}
+
+				thresholds := make([]*Threshold, len(input.Thresholds))
+				for i, th := range input.Thresholds {
+					thresholds[i] = &Threshold{
+						Metric:  mustParseMetric(t, th.Metric),
+						Value:   NewNumberMeasurement(th.Value),
+						Misrate: th.Misrate,
+					}
+				}
+
+				_, err := Compare2WithSeed(sx, sy, thresholds, input.Seed)
+				if err == nil {
+					t.Errorf("Expected error for Compare2, but got none")
+					return
+				}
+				var expectedError map[string]string
+				if jsonErr := json.Unmarshal(testData.ExpectedError, &expectedError); jsonErr == nil {
+					if ae, ok := err.(*AssumptionError); ok {
+						if string(ae.Violation.ID) != expectedError["id"] {
+							t.Errorf("Expected error id %q, got %q", expectedError["id"], ae.Violation.ID)
+						}
+						if subj, ok := expectedError["subject"]; ok {
+							if string(ae.Violation.Subject) != subj {
+								t.Errorf("Expected error subject %q, got %q", subj, ae.Violation.Subject)
+							}
+						}
+					}
+				}
+				return
+			}
+
+			var expected CompareOutput
+			if err := json.Unmarshal(testData.Output, &expected); err != nil {
+				t.Fatalf("Failed to parse output data: %v", err)
+			}
+
+			sx := mustSample(t, input.X)
+			sy, err := newSample(input.Y, nil, nil, SubjectY)
+			if err != nil {
+				t.Fatalf("Failed to create sample Y: %v", err)
+			}
+
+			thresholds := make([]*Threshold, len(input.Thresholds))
+			for i, th := range input.Thresholds {
+				thresholds[i] = &Threshold{
+					Metric:  mustParseMetric(t, th.Metric),
+					Value:   NewNumberMeasurement(th.Value),
+					Misrate: th.Misrate,
+				}
+			}
+
+			actual, err := Compare2WithSeed(sx, sy, thresholds, input.Seed)
+			if err != nil {
+				t.Fatalf("Compare2 error: %v", err)
+			}
+
+			if len(actual) != len(expected.Projections) {
+				t.Fatalf("Expected %d projections, got %d", len(expected.Projections), len(actual))
+			}
+
+			for i, proj := range actual {
+				exp := expected.Projections[i]
+				if !floatEquals(proj.Estimate.Value, exp.Estimate, 1e-9) {
+					t.Errorf("Projection %d: Estimate = %v, want %v", i, proj.Estimate.Value, exp.Estimate)
+				}
+				if !floatEquals(proj.Bounds.Lower, exp.Lower, 1e-9) {
+					t.Errorf("Projection %d: Lower = %v, want %v", i, proj.Bounds.Lower, exp.Lower)
+				}
+				if !floatEquals(proj.Bounds.Upper, exp.Upper, 1e-9) {
+					t.Errorf("Projection %d: Upper = %v, want %v", i, proj.Bounds.Upper, exp.Upper)
+				}
+				if proj.Verdict != mustParseVerdict(t, exp.Verdict) {
+					t.Errorf("Projection %d: Verdict = %v, want %v", i, proj.Verdict, exp.Verdict)
+				}
+			}
+		})
+	}
+}

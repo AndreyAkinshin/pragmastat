@@ -9,6 +9,7 @@
   [#link(<sec-center-bounds>)[$CenterBounds(vx, misrate)$] — confidence interval for center],
   [#link(<sec-spread>)[$Spread(vx)$] — robust spread],
   [#link(<sec-spread-bounds>)[$SpreadBounds(vx, misrate)$] — confidence interval for spread],
+  [#link(<sec-compare1>)[$Compare1(vx, "thresholds")$] — confirmatory analysis against practical thresholds],
 )
 
 #v(0.5em)
@@ -21,6 +22,7 @@
   [#link(<sec-ratio-bounds>)[$RatioBounds(vx, vy, misrate)$] — confidence interval for ratio],
   [#link(<sec-disparity>)[$Disparity(vx, vy)$] — robust effect size $= Shift"/"AvgSpread$],
   [#link(<sec-disparity-bounds>)[$DisparityBounds(vx, vy, misrate)$] — confidence interval for disparity],
+  [#link(<sec-compare2>)[$Compare2(vx, vy, "thresholds")$] — confirmatory analysis against practical thresholds],
 )
 
 #v(0.5em)
@@ -52,6 +54,7 @@ The table below maps each toolkit function to the underlying algorithm and its c
   [$CenterBounds$], [Binary search over pairwise averages + SignedRankMargin], [$O(n log n)$],
   [$Spread$], [Monahan's selection adapted for differences], [$O(n log n)$],
   [$SpreadBounds$], [Disjoint-pair sign-test inversion], [$O(n log n)$],
+  [$Compare1$], [Composition: CenterBounds/SpreadBounds + threshold validation + verdict logic], [Depends on bounds complexity],
   table.hline(),
 )
 
@@ -71,6 +74,7 @@ The table below maps each toolkit function to the underlying algorithm and its c
   [$RatioBounds$], [Log-exp transform + ShiftBounds], [$O((n+m) log L)$],
   [$Disparity$], [Composition: $Shift / AvgSpread$], [$O((n+m) log L + n log n + m log m)$],
   [$DisparityBounds$], [Bonferroni split: ShiftBounds + AvgSpreadBounds], [$O((n+m) log L + n log n + m log m)$],
+  [$Compare2$], [Composition: ShiftBounds/RatioBounds/DisparityBounds + threshold validation + verdict logic], [Depends on bounds complexity],
   table.hline(),
 )
 

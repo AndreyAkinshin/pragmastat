@@ -12,3 +12,6 @@
 
 #pagebreak()
 #include "../spread-bounds/spread-bounds.typ"
+
+#pagebreak()
+#include "../compare1/compare1.typ"

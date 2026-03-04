@@ -11,12 +11,12 @@ The domain constraint $misrate >= 2 / binom(n+m, n)$ is enforced; inputs violati
 *Demo examples* ($n = m = 5$, positive samples) — 3 tests:
 
 - `demo-1`: $vx = (1, 2, 3, 4, 5)$, $vy = (2, 3, 4, 5, 6)$
-- `demo-2`: $vx = (1, 2, 3, 4, 5)$, $vy = (2, 3, 4, 5, 6)$, $misrate = 0.01$, expected: wider bounds than demo-1
+- `demo-2`: $vx = (1, 2, 3, 4, 5)$, $vy = (2, 3, 4, 5, 6)$, stricter fixture misrate, expected: wider bounds than demo-1
 - `demo-3`: $vx = (2, 3, 4, 5, 6)$, $vy = (2, 3, 4, 5, 6)$, expected: bounds containing $1$ (identity case)
 
 These cases illustrate how tighter misrates produce wider bounds and validate the identity property where identical samples yield bounds containing one.
 
-*Natural sequences* ($[n, m] in {5, 8, 10} times {5, 8, 10}$, $misrate = 10^(-2)$) — 9 combinations:
+*Natural sequences* ($[n, m] in {5, 8, 10} times {5, 8, 10}$, achievable fixture misrates) — 9 combinations:
 
 - `natural-5-5`: $vx = (1, ..., 5)$, $vy = (1, ..., 5)$, expected bounds containing $1$
 - `natural-5-8`: $vx = (1, ..., 5)$, $vy = (1, ..., 8)$
@@ -45,12 +45,12 @@ These sizes are chosen to satisfy $misrate >= 2 / binom(n+m, n)$ for all combina
 *Edge cases* — boundary conditions and extreme scenarios (10 tests):
 
 - `edge-min-samples`: $vx = (2, 3, 4, 5, 6)$, $vy = (3, 4, 5, 6, 7)$
-- `edge-permissive-misrate`: $vx = (1, 2, 3, 4, 5)$, $vy = (2, 3, 4, 5, 6)$, $misrate = 0.5$ (very wide bounds)
+- `edge-permissive-misrate`: $vx = (1, 2, 3, 4, 5)$, $vy = (2, 3, 4, 5, 6)$, very loose fixture misrate (very wide bounds)
 - `edge-strict-misrate`: $n = m = 20$, $misrate = 10^(-6)$ (very narrow bounds)
 - `edge-unity-ratio`: $n = m = 10$, all values $= 5$, $misrate = 10^(-3)$ (bounds around 1)
-- `edge-asymmetric-3-100`: $n = 3$, $m = 100$, $misrate = 10^(-2)$ (extreme size difference)
+- `edge-asymmetric-3-100`: $n = 3$, $m = 100$ (extreme size difference)
 - `edge-asymmetric-5-50`: $n = 5$, $m = 50$, $misrate = 10^(-3)$ (highly unbalanced)
-- `edge-duplicates`: $vx = (3, 3, 3, 3, 3)$, $vy = (5, 5, 5, 5, 5)$, $misrate = 10^(-2)$ (all duplicates, bounds around 0.6)
+- `edge-duplicates`: $vx = (3, 3, 3, 3, 3)$, $vy = (5, 5, 5, 5, 5)$ (all duplicates, bounds around 0.6)
 - `edge-wide-range`: $n = m = 10$, values spanning $10^(-3)$ to $10^8$, $misrate = 10^(-3)$ (extreme value range)
 - `edge-tiny-values`: $n = m = 10$, values $approx 10^(-6)$, $misrate = 10^(-3)$ (numerical precision)
 - `edge-large-values`: $n = m = 10$, values $approx 10^8$, $misrate = 10^(-3)$ (large magnitude)
@@ -74,34 +74,28 @@ These fuzzy tests validate that bounds properly encompass the ratio estimate for
 
 The asymmetric size combinations are particularly important for testing margin calculation with unbalanced samples.
 
-*Misrate variation* ($n = m = 20$, $vx = (1, 2, ..., 20)$, $vy = (2, 4, ..., 40)$) — 5 tests with varying misrates:
+*Misrate variation* ($n = m = 20$, $vx = (1, 2, ..., 20)$, $vy = (2, 4, ..., 40)$) — 5 tests from a loose achievable fixture misrate down to $10^(-6)$:
 
-- `misrate-1e-2`: $misrate = 10^(-2)$
-- `misrate-1e-3`: $misrate = 10^(-3)$
-- `misrate-1e-4`: $misrate = 10^(-4)$
-- `misrate-1e-5`: $misrate = 10^(-5)$
-- `misrate-1e-6`: $misrate = 10^(-6)$
-
-These tests use identical samples with varying misrates to validate the monotonicity property: smaller misrates (higher confidence) produce wider bounds.
+These tests use identical samples with varying misrates to validate the monotonicity property: smaller misrates produce wider bounds.
 The sequence demonstrates how bound width increases as misrate decreases, helping implementations verify correct margin calculation.
 
 *Unsorted tests* — verify independent sorting of $vx$ and $vy$ (15 tests):
 
-- `unsorted-x-natural-5-5`: $vx = (5, 3, 1, 4, 2)$, $vy = (1, 2, 3, 4, 5)$, $misrate = 10^(-2)$ (X reversed, Y sorted)
-- `unsorted-y-natural-5-5`: $vx = (1, 2, 3, 4, 5)$, $vy = (5, 3, 1, 4, 2)$, $misrate = 10^(-2)$ (X sorted, Y reversed)
-- `unsorted-both-natural-5-5`: $vx = (5, 3, 1, 4, 2)$, $vy = (5, 3, 1, 4, 2)$, $misrate = 10^(-2)$ (both reversed)
-- `unsorted-x-shuffle-5-5`: $vx = (3, 1, 5, 4, 2)$, $vy = (1, 2, 3, 4, 5)$, $misrate = 10^(-2)$ (X shuffled)
-- `unsorted-y-shuffle-5-5`: $vx = (1, 2, 3, 4, 5)$, $vy = (4, 2, 5, 1, 3)$, $misrate = 10^(-2)$ (Y shuffled)
-- `unsorted-both-shuffle-5-5`: $vx = (3, 1, 5, 4, 2)$, $vy = (2, 4, 1, 5, 3)$, $misrate = 10^(-2)$ (both shuffled)
+- `unsorted-x-natural-5-5`: $vx = (5, 3, 1, 4, 2)$, $vy = (1, 2, 3, 4, 5)$ (X reversed, Y sorted)
+- `unsorted-y-natural-5-5`: $vx = (1, 2, 3, 4, 5)$, $vy = (5, 3, 1, 4, 2)$ (X sorted, Y reversed)
+- `unsorted-both-natural-5-5`: $vx = (5, 3, 1, 4, 2)$, $vy = (5, 3, 1, 4, 2)$ (both reversed)
+- `unsorted-x-shuffle-5-5`: $vx = (3, 1, 5, 4, 2)$, $vy = (1, 2, 3, 4, 5)$ (X shuffled)
+- `unsorted-y-shuffle-5-5`: $vx = (1, 2, 3, 4, 5)$, $vy = (4, 2, 5, 1, 3)$ (Y shuffled)
+- `unsorted-both-shuffle-5-5`: $vx = (3, 1, 5, 4, 2)$, $vy = (2, 4, 1, 5, 3)$ (both shuffled)
 - `unsorted-demo-unsorted-x`: $vx = (5, 1, 4, 2, 3)$, $vy = (2, 3, 4, 5, 6)$ (demo-1 X unsorted)
 - `unsorted-demo-unsorted-y`: $vx = (1, 2, 3, 4, 5)$, $vy = (6, 2, 5, 3, 4)$ (demo-1 Y unsorted)
 - `unsorted-demo-both-unsorted`: $vx = (4, 1, 5, 2, 3)$, $vy = (5, 2, 6, 3, 4)$ (demo-1 both unsorted)
-- `unsorted-identity-unsorted`: $vx = (4, 1, 5, 2, 3)$, $vy = (5, 1, 4, 3, 2)$, $misrate = 10^(-2)$ (identity property, both unsorted)
-- `unsorted-scale-unsorted`: $vx = (10, 30, 20)$, $vy = (15, 5, 10)$, $misrate = 0.5$ (scale relationship, both unsorted)
-- `unsorted-asymmetric-5-10`: $vx = (2, 5, 1, 3, 4)$, $vy = (10, 5, 2, 8, 4, 1, 9, 3, 7, 6)$, $misrate = 10^(-2)$ (asymmetric sizes, both unsorted)
-- `unsorted-duplicates`: $vx = (3, 3, 3, 3, 3)$, $vy = (5, 5, 5, 5, 5)$, $misrate = 10^(-2)$ (all duplicates, any order)
-- `unsorted-mixed-duplicates-x`: $vx = (2, 1, 3, 2, 1)$, $vy = (1, 1, 2, 2, 3)$, $misrate = 10^(-2)$ (X has unsorted duplicates)
-- `unsorted-mixed-duplicates-y`: $vx = (1, 1, 2, 2, 3)$, $vy = (3, 2, 1, 3, 2)$, $misrate = 10^(-2)$ (Y has unsorted duplicates)
+- `unsorted-identity-unsorted`: $vx = (4, 1, 5, 2, 3)$, $vy = (5, 1, 4, 3, 2)$ (identity property, both unsorted)
+- `unsorted-scale-unsorted`: $vx = (10, 30, 20)$, $vy = (15, 5, 10)$ (scale relationship, both unsorted)
+- `unsorted-asymmetric-5-10`: $vx = (2, 5, 1, 3, 4)$, $vy = (10, 5, 2, 8, 4, 1, 9, 3, 7, 6)$ (asymmetric sizes, both unsorted)
+- `unsorted-duplicates`: $vx = (3, 3, 3, 3, 3)$, $vy = (5, 5, 5, 5, 5)$ (all duplicates, any order)
+- `unsorted-mixed-duplicates-x`: $vx = (2, 1, 3, 2, 1)$, $vy = (1, 1, 2, 2, 3)$ (X has unsorted duplicates)
+- `unsorted-mixed-duplicates-y`: $vx = (1, 1, 2, 2, 3)$, $vy = (3, 2, 1, 3, 2)$ (Y has unsorted duplicates)
 
 These unsorted tests are critical because $RatioBounds$ computes bounds from pairwise ratios, requiring both samples to be sorted independently.
 The variety ensures implementations don't incorrectly assume pre-sorted input or sort samples together.

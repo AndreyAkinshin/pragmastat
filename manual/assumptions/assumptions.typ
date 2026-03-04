@@ -93,6 +93,7 @@ It motivates ratio-based and log-space estimators that respect multiplicative sc
 #list(marker: none, tight: true,
   [#link(<sec-ratio>)[`Ratio(x, y)`] — both samples must be strictly positive.],
   [#link(<sec-ratio-bounds>)[`RatioBounds(x, y, misrate)`] — both samples must be strictly positive.],
+  [#link(<sec-compare2>)[`Compare2(x, y, thresholds)`] — inherits positivity when a threshold uses the Ratio metric.],
 )
 
 #pagebreak()
@@ -210,6 +211,9 @@ A sample with $n = 1$ fails sparity because `Spread(x) = 0`, not because of a se
   [#link(<sec-spread-bounds>)[`SpreadBounds(x, misrate)`] — sample must have sparity.],
   [#link(<sec-avg-spread-bounds>)[`AvgSpreadBounds(x, y, misrate)`] — both samples must have sparity.],
   [#link(<sec-disparity>)[`Disparity(x, y)`] — both samples must have sparity.],
+  [#link(<sec-disparity-bounds>)[`DisparityBounds(x, y, misrate)`] — both samples must have sparity.],
+  [#link(<sec-compare1>)[`Compare1(x, thresholds)`] — inherits sparity when a threshold uses the Spread metric.],
+  [#link(<sec-compare2>)[`Compare2(x, y, thresholds)`] — inherits sparity when a threshold uses the Disparity metric.],
 )
 
 *Naming*
@@ -281,3 +285,10 @@ Weak assumptions (e.g., weak continuity) are documented in the chapter but are n
 ```
 positivity(x)
 ```
+
+*Examples in Compare1/Compare2*
+
+#list(marker: none, tight: true,
+  [Passing a Shift threshold to Compare1: validation error for unsupported metric (Compare1 supports only Center and Spread).],
+  [Passing a Center threshold to Compare2: validation error for unsupported metric (Compare2 supports only Shift, Ratio, and Disparity).],
+)

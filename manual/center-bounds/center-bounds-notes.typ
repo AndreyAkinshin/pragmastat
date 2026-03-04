@@ -50,8 +50,9 @@ Refined methods (BCa, bootstrap-$t$) partially address this
   but add complexity and still provide only asymptotic guarantees.
 
 Meanwhile, $CenterBounds$ provides exact distribution-free coverage under symmetry.
-For $n = 5$ requesting $misrate = 0.1$, the signed-rank method delivers exactly $10%$ misrate.
-A bootstrap method, requesting the same $10%$, typically delivers $12$–$15%$ misrate.
+When the requested misrate matches an achievable signed-rank level,
+the method attains that level exactly.
+A bootstrap method targeting the same nominal misrate can materially undercover on small samples.
 The exact method is simultaneously faster and more accurate.
 
 *Behavior under asymmetry*
@@ -143,50 +144,37 @@ The gap between consecutive achievable misrates is:
 
 $ Delta m_k = m_(k+1) - m_k = 2 dot Pr(B = k+1) = 2 dot binom(n, k+1) \/ 2^n $
 
-For a target misrate $alpha$, the relevant index $k$ satisfies $m_k approx alpha$.
+For a target $misrate$, the relevant index $k$ satisfies $m_k approx misrate$.
 By the normal approximation to the binomial, $B approx cal(N)(n\/2, n\/4)$,
   the binomial CDF near this index changes by approximately:
 
-$ Delta m approx (4 phi(z_alpha)) / sqrt(n) $
+$ Delta m approx (4 phi(z)) / sqrt(n) $
 
-where $z_alpha = Phi^(-1)(alpha\/2)$ is the corresponding standard normal quantile
+where $z = Phi^(-1)(misrate\/2)$ is the corresponding standard normal quantile
   and $phi$ is the standard normal density.
 This spacing governs how coarsely the achievable misrates are distributed near the target.
 
 *Expected efficiency*
 
-The requested misrate $alpha$ falls at a uniformly random position within a gap of width $Delta m$.
+The requested $misrate$ falls at a uniformly random position within a gap of width $Delta m$.
 On average, the algorithm wastes $Delta m \/ 2$, giving expected efficiency:
 
-$ EE[eta] approx 1 - (Delta m) / (2 alpha) = 1 - (2 phi(z_alpha)) / (alpha sqrt(n)) $
+$ EE[eta] approx 1 - (Delta m) / (2 misrate) = 1 - (2 phi(z)) / (misrate sqrt(n)) $
 
 Define the misrate-dependent constant:
 
-$ C(alpha) = (2 phi(Phi^(-1)(alpha\/2))) / alpha $
+$ C(misrate) = (2 phi(Phi^(-1)(misrate\/2))) / misrate $
 
 Then the expected efficiency has the form:
 
-$ EE[eta] approx 1 - C(alpha) / sqrt(n) $
+$ EE[eta] approx 1 - C(misrate) / sqrt(n) $
 
 The convergence rate is $O(n^(-1\/2))$: efficiency improves as the square root of sample size.
 
-*Values of $C(alpha)$*
-
-The constant $C(alpha)$ increases for smaller misrates,
-  meaning tighter error tolerances require proportionally larger samples for efficient bounds:
-
-#table(
-  columns: 5,
-  align: (center,) * 5,
-  [$alpha$], [$0.1$], [$0.01$], [$0.005$], [$0.001$],
-  [$z_alpha$], [$-1.64$], [$-2.58$], [$-2.81$], [$-3.29$],
-  [$phi(z_alpha)$], [$0.103$], [$0.015$], [$0.008$], [$0.002$],
-  [$C(alpha)$], [$2.06$], [$2.94$], [$3.17$], [$3.45$],
-)
-
-For $alpha = 0.1$ and $n = 50$: $EE[eta] approx 1 - 2.06 \/ sqrt(50) approx 0.71$.
-Achieving $90%$ efficiency on average requires $n > (C(alpha) \/ 0.1)^2$.
-For $alpha = 0.1$ this gives $n > 424$; for $alpha = 0.001$ this gives $n > 1190$.
+The constant $C(misrate)$ increases for smaller misrates,
+  meaning tighter error tolerances require proportionally larger samples for efficient bounds.
+This is one reason why the finer signed-rank resolution matters most
+  when practitioners request $misrate = 10^(-3)$ or stricter.
 
 *Comparison with CenterBounds*
 
@@ -194,11 +182,11 @@ $CenterBounds$ uses the signed-rank statistic $W$ with range $[0, n(n+1)\/2]$.
 Under the null hypothesis, $W$ has variance $sigma^2 = n(n+1)(2n+1)\/24 approx n^3\/12$.
 The CDF spacing at the relevant quantile is:
 
-$ Delta m_W approx (2 sqrt(12) dot phi(z_alpha)) / n^(3\/2) $
+$ Delta m_W approx (2 sqrt(12) dot phi(z)) / n^(3\/2) $
 
 The expected efficiency for $CenterBounds$ is therefore:
 
-$ EE[eta_W] approx 1 - (sqrt(12) dot phi(z_alpha)) / (alpha dot n^(3\/2)) $
+$ EE[eta_W] approx 1 - (sqrt(12) dot phi(z)) / (misrate dot n^(3\/2)) $
 
 This converges at rate $O(n^(-3\/2))$ — three polynomial orders faster than $MedianBounds$.
 The difference arises because the signed-rank distribution has $n(n+1)\/2$ discrete levels

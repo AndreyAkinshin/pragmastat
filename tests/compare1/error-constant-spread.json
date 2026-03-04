@@ -1,0 +1,24 @@
+{
+  "input": {
+    "x": [
+      5,
+      5,
+      5,
+      5,
+      5,
+      5
+    ],
+    "seed": "compare1-tests",
+    "thresholds": [
+      {
+        "metric": "spread",
+        "value": 1,
+        "misrate": 0.2
+      }
+    ]
+  },
+  "expected_error": {
+    "id": "sparity",
+    "subject": "x"
+  }
+}

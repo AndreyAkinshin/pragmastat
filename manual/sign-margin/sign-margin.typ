@@ -47,8 +47,8 @@ Randomized exclusion count for disjoint-pair sign-test bounds.
 Each call returns one of two adjacent grid points (randomized):
 
 - `SignMargin(15, 1e-3)` returns 2 or 4
-- `SignMargin(15, 0.01)` returns 4 or 6
 - `SignMargin(30, 1e-4)` returns 8 or 10
+- Smaller `misrate` values return smaller margins
 
 #v(0.5em)
 This is a supporting function that #link(<sec-spread-bounds>)[$SpreadBounds$] uses internally, so most users do not need to call it directly.

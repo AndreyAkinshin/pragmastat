@@ -52,4 +52,22 @@ public static class SampleExtensions
   public static Bounds DisparityBounds(this Sample x, Sample y, Probability misrate) => Toolkit.DisparityBounds(x, y, misrate);
   /// <summary>Provides distribution-free bounds for the disparity estimator.</summary>
   public static Bounds DisparityBounds(this Sample x, Sample y, Probability misrate, string seed) => Toolkit.DisparityBounds(x, y, misrate, seed);
+
+  // ── Compare1 ──────────────────────────────────────────────────────────────
+
+  /// <summary>One-sample confirmatory analysis.</summary>
+  public static IReadOnlyList<Projection> Compare1(this Sample x, IReadOnlyList<Threshold> thresholds)
+    => Toolkit.Compare1(x, thresholds);
+  /// <summary>One-sample confirmatory analysis with seed for reproducibility.</summary>
+  public static IReadOnlyList<Projection> Compare1(this Sample x, IReadOnlyList<Threshold> thresholds, string seed)
+    => Toolkit.Compare1(x, thresholds, seed);
+
+  // ── Compare2 ──────────────────────────────────────────────────────────────
+
+  /// <summary>Two-sample confirmatory analysis.</summary>
+  public static IReadOnlyList<Projection> Compare2(this Sample x, Sample y, IReadOnlyList<Threshold> thresholds)
+    => Toolkit.Compare2(x, y, thresholds);
+  /// <summary>Two-sample confirmatory analysis with seed for reproducibility.</summary>
+  public static IReadOnlyList<Projection> Compare2(this Sample x, Sample y, IReadOnlyList<Threshold> thresholds, string seed)
+    => Toolkit.Compare2(x, y, thresholds, seed);
 }

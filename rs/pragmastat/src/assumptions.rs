@@ -181,6 +181,12 @@ impl From<&str> for EstimatorError {
     }
 }
 
+impl From<crate::measurement_unit::UnitMismatchError> for EstimatorError {
+    fn from(e: crate::measurement_unit::UnitMismatchError) -> Self {
+        EstimatorError::Other(e.to_string())
+    }
+}
+
 // =============================================================================
 // Validation helpers
 // =============================================================================
