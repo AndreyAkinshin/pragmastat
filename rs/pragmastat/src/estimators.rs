@@ -278,8 +278,8 @@ pub mod raw {
             return Err(EstimatorError::from(AssumptionError::sparity(Subject::Y)));
         }
         // Use inner variant to skip redundant fast_spread validation
-        let bounds_x = spread_bounds_with_rng_inner(x, n, n / 2, alpha, rng_x)?;
-        let bounds_y = spread_bounds_with_rng_inner(y, m, m / 2, alpha, rng_y)?;
+        let bounds_x = spread_bounds_with_rng_inner(x, n / 2, alpha, rng_x)?;
+        let bounds_y = spread_bounds_with_rng_inner(y, m / 2, alpha, rng_y)?;
         let weight_x = n as f64 / (n + m) as f64;
         let weight_y = m as f64 / (n + m) as f64;
         Ok(RawBounds {
@@ -308,8 +308,8 @@ pub mod raw {
                 Subject::Misrate,
             )));
         }
-        let bounds_x = spread_bounds_with_rng_inner(x, n, mx, alpha, rng_x)?;
-        let bounds_y = spread_bounds_with_rng_inner(y, m, my, alpha, rng_y)?;
+        let bounds_x = spread_bounds_with_rng_inner(x, mx, alpha, rng_x)?;
+        let bounds_y = spread_bounds_with_rng_inner(y, my, alpha, rng_y)?;
         let weight_x = n as f64 / (n + m) as f64;
         let weight_y = m as f64 / (n + m) as f64;
         Ok(RawBounds {
@@ -483,13 +483,12 @@ pub mod raw {
         if crate::fast_spread::fast_spread(x).map_err(EstimatorError::from)? <= 0.0 {
             return Err(EstimatorError::from(AssumptionError::sparity(Subject::X)));
         }
-        spread_bounds_with_rng_inner(x, n, m, misrate, rng)
+        spread_bounds_with_rng_inner(x, m, misrate, rng)
     }
 
     /// Inner implementation that skips the spread validation (already done by caller).
     fn spread_bounds_with_rng_inner(
         x: &[f64],
-        n: usize,
         m: usize,
         misrate: f64,
         rng: &mut crate::rng::Rng,
@@ -503,17 +502,17 @@ pub mod raw {
         }
         let k_left = half_margin + 1;
         let k_right = m - half_margin;
-        let mut indices: Vec<usize> = (0..n).collect();
-        rng.shuffle_mut(&mut indices);
-        let mut diffs = Vec::with_capacity(m);
+        // Shuffle a copy of x and compute pairwise diffs in-place,
+        // avoiding a separate indices allocation and improving cache locality.
+        let mut buf = x.to_vec();
+        rng.shuffle_mut(&mut buf);
         for i in 0..m {
-            let a = indices[2 * i];
-            let b = indices[2 * i + 1];
-            diffs.push((x[a] - x[b]).abs());
+            buf[i] = (buf[2 * i] - buf[2 * i + 1]).abs();
         }
-        diffs.sort_by(|a, b| a.total_cmp(b));
-        let lower = diffs[k_left - 1];
-        let upper = diffs[k_right - 1];
+        buf.truncate(m);
+        buf.sort_by(|a, b| a.total_cmp(b));
+        let lower = buf[k_left - 1];
+        let upper = buf[k_right - 1];
         Ok(RawBounds { lower, upper })
     }
 }

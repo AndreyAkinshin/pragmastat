@@ -15,6 +15,7 @@
 /// # Returns
 ///
 /// Area under the Standard Normal Curve from -infinity to x
+#[inline]
 pub fn gauss_cdf(x: f64) -> f64 {
     let z: f64;
     if x.abs() < 1e-9 {
