@@ -179,43 +179,21 @@ fn edgeworth_cdf(n: usize, m: usize, u: u64) -> f64 {
         ))
         / 240.0;
 
+    #[allow(clippy::suboptimal_flops)]
     let mu6 = (n_f64
         * m_f64
         * (n_f64 + m_f64 + 1.0)
-        * 8.0f64.mul_add(
-            -(n_f64 + m_f64),
-            (16.0 * n_f64).mul_add(
-                m_f64,
-                8.0f64.mul_add(
-                    n2 + m2,
-                    (14.0 * m_f64 * n_f64).mul_add(
-                        n_f64 + m_f64,
-                        32.0f64.mul_add(
-                            m3 + n3,
-                            (43.0 * n2).mul_add(
-                                -m2,
-                                (52.0 * n_f64 * m_f64).mul_add(
-                                    -(n2 + m2),
-                                    16.0f64.mul_add(
-                                        n4 + m4,
-                                        (14.0 * m2 * n2).mul_add(
-                                            -(n_f64 + m_f64),
-                                            (42.0 * m_f64 * n_f64).mul_add(
-                                                -(m3 + n3),
-                                                (70.0 * m3).mul_add(
-                                                    n3,
-                                                    35.0 * m2 * n2 * (m2 + n2),
-                                                ),
-                                            ),
-                                        ),
-                                    ),
-                                ),
-                            ),
-                        ),
-                    ),
-                ),
-            ),
-        ))
+        * (35.0 * m2 * n2 * (m2 + n2) + 70.0 * m3 * n3
+            - 42.0 * m_f64 * n_f64 * (m3 + n3)
+            - 14.0 * m2 * n2 * (n_f64 + m_f64)
+            + 16.0 * (n4 + m4)
+            - 52.0 * n_f64 * m_f64 * (n2 + m2)
+            - 43.0 * n2 * m2
+            + 32.0 * (m3 + n3)
+            + 14.0 * m_f64 * n_f64 * (n_f64 + m_f64)
+            + 8.0 * (n2 + m2)
+            + 16.0 * n_f64 * m_f64
+            - 8.0 * (n_f64 + m_f64)))
         / 4032.0;
 
     // Pre-compute powers of mu2 and related terms
@@ -225,7 +203,8 @@ fn edgeworth_cdf(n: usize, m: usize, u: u64) -> f64 {
 
     // Factorial constants: 4! = 24, 6! = 720, 8! = 40320
     let e3 = (mu4_mu2_2 - 3.0) / 24.0;
-    let e5 = (15.0f64.mul_add(-mu4_mu2_2, mu6 / mu2_3) + 30.0) / 720.0;
+    #[allow(clippy::suboptimal_flops)]
+    let e5 = (mu6 / mu2_3 - 15.0 * mu4_mu2_2 + 30.0) / 720.0;
     let e7 = 35.0 * (mu4_mu2_2 - 3.0) * (mu4_mu2_2 - 3.0) / 40320.0;
 
     // Pre-compute powers of z for Hermite polynomials
