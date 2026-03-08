@@ -114,8 +114,8 @@ pub mod raw {
         }
         let mut xs = x.to_vec();
         let mut ys = y.to_vec();
-        xs.sort_by(|a, b| a.total_cmp(b));
-        ys.sort_by(|a, b| a.total_cmp(b));
+        xs.sort_unstable_by(|a, b| a.total_cmp(b));
+        ys.sort_unstable_by(|a, b| a.total_cmp(b));
         let total = n as u64 * m as u64;
         if total == 1 {
             let value = xs[0] - ys[0];
@@ -193,7 +193,7 @@ pub mod raw {
         let k_left = half_margin + 1;
         let k_right = total_pairs - half_margin;
         let mut sorted = x.to_vec();
-        sorted.sort_by(|a, b| a.total_cmp(b));
+        sorted.sort_unstable_by(|a, b| a.total_cmp(b));
         let (lo, hi) =
             crate::fast_center_quantiles::fast_center_quantile_bounds(&sorted, k_left, k_right);
         Ok(RawBounds {
@@ -510,7 +510,7 @@ pub mod raw {
             buf[i] = (buf[2 * i] - buf[2 * i + 1]).abs();
         }
         buf.truncate(m);
-        buf.sort_by(|a, b| a.total_cmp(b));
+        buf.sort_unstable_by(|a, b| a.total_cmp(b));
         let lower = buf[k_left - 1];
         let upper = buf[k_right - 1];
         Ok(RawBounds { lower, upper })

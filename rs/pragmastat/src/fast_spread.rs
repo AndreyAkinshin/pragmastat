@@ -25,7 +25,7 @@ pub(crate) fn fast_spread(values: &[f64]) -> Result<f64, &'static str> {
 
     // Sort the values
     let mut a = values.to_vec();
-    a.sort_by(|x, y| x.total_cmp(y));
+    a.sort_unstable_by(|x, y| x.total_cmp(y));
 
     // Total number of pairwise differences with i < j
     let total_pairs = (n as u64) * ((n - 1) as u64) / 2;
