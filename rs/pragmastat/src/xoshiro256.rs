@@ -21,6 +21,7 @@ impl Xoshiro256PlusPlus {
     }
 
     /// Generate the next 64-bit random value
+    #[inline]
     pub fn next_u64(&mut self) -> u64 {
         let result = (self.state[0].wrapping_add(self.state[3]))
             .rotate_left(23)
