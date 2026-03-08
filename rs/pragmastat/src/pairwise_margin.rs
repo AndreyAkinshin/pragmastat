@@ -167,16 +167,12 @@ fn edgeworth_cdf(n: usize, m: usize, u: u64) -> f64 {
 
     // Compute moments
     let mu2 = (n_f64 * m_f64 * (n_f64 + m_f64 + 1.0)) / 12.0;
+    #[allow(clippy::suboptimal_flops)]
     let mu4 = (n_f64
         * m_f64
         * (n_f64 + m_f64 + 1.0)
-        * 2.0f64.mul_add(
-            -(n_f64 + m_f64),
-            (3.0 * m_f64).mul_add(
-                n_f64,
-                2.0f64.mul_add(-(m2 + n2), 5.0 * m_f64 * n_f64 * (m_f64 + n_f64)),
-            ),
-        ))
+        * (5.0 * m_f64 * n_f64 * (m_f64 + n_f64) - 2.0 * (m2 + n2) + 3.0 * m_f64 * n_f64
+            - 2.0 * (n_f64 + m_f64)))
         / 240.0;
 
     #[allow(clippy::suboptimal_flops)]
@@ -214,9 +210,12 @@ fn edgeworth_cdf(n: usize, m: usize, u: u64) -> f64 {
     let z7 = z5 * z2;
 
     // Hermite polynomial derivatives: f_n = -phi * H_n(z)
-    let f3 = -phi * 3.0f64.mul_add(-z, z3);
-    let f5 = -phi * 15.0f64.mul_add(z, 10.0f64.mul_add(-z3, z5));
-    let f7 = -phi * 105.0f64.mul_add(-z, 105.0f64.mul_add(z3, 21.0f64.mul_add(-z5, z7)));
+    #[allow(clippy::suboptimal_flops)]
+    let f3 = -phi * (z3 - 3.0 * z);
+    #[allow(clippy::suboptimal_flops)]
+    let f5 = -phi * (z5 - 10.0 * z3 + 15.0 * z);
+    #[allow(clippy::suboptimal_flops)]
+    let f7 = -phi * (z7 - 21.0 * z5 + 105.0 * z3 - 105.0 * z);
 
     // Edgeworth expansion
     let edgeworth = big_phi + e3 * f3 + e5 * f5 + e7 * f7;
