@@ -14,7 +14,7 @@ pub(crate) fn fast_center(values: &[f64]) -> Result<f64, &'static str> {
         return Ok(values[0]);
     }
     if n == 2 {
-        return Ok((values[0] + values[1]) / 2.0);
+        return Ok(f64::midpoint(values[0], values[1]));
     }
 
     // Validate for NaN/infinite values
@@ -29,7 +29,7 @@ pub(crate) fn fast_center(values: &[f64]) -> Result<f64, &'static str> {
     // Calculate target median rank(s) among all pairwise sums
     let total_pairs = (n * (n + 1)) / 2;
     let median_rank_low = total_pairs.div_ceil(2); // 1-based rank
-    let median_rank_high = (total_pairs + 2) / 2;
+    let median_rank_high = usize::midpoint(total_pairs, 2);
 
     // Initialize search bounds for each row (1-based indexing)
     let mut left_bounds: Vec<usize> = (0..n).map(|i| i + 1).collect();
@@ -86,7 +86,7 @@ pub(crate) fn fast_center(values: &[f64]) -> Result<f64, &'static str> {
                 max_active_sum = max_active_sum.max(largest_in_row);
             }
 
-            pivot = (min_active_sum + max_active_sum) / 2.0;
+            pivot = f64::midpoint(min_active_sum, max_active_sum);
             if pivot <= min_active_sum || pivot > max_active_sum {
                 pivot = max_active_sum;
             }
@@ -187,7 +187,7 @@ pub(crate) fn fast_center(values: &[f64]) -> Result<f64, &'static str> {
             }
 
             // Use median element of the selected row as pivot
-            let median_column_in_row = (left_bounds[selected_row] + right_bounds[selected_row]) / 2;
+            let median_column_in_row = usize::midpoint(left_bounds[selected_row], right_bounds[selected_row]);
             pivot = sorted_values[selected_row] + sorted_values[median_column_in_row - 1];
         } else {
             // Few elements remain - use midrange strategy
@@ -207,7 +207,7 @@ pub(crate) fn fast_center(values: &[f64]) -> Result<f64, &'static str> {
                 max_remaining_sum = max_remaining_sum.max(max_in_row);
             }
 
-            pivot = (min_remaining_sum + max_remaining_sum) / 2.0;
+            pivot = f64::midpoint(min_remaining_sum, max_remaining_sum);
             if pivot <= min_remaining_sum || pivot > max_remaining_sum {
                 pivot = max_remaining_sum;
             }

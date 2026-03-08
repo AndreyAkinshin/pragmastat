@@ -126,7 +126,7 @@ fn pairwise_margin_approx_raw(n: usize, m: usize, misrate: f64) -> u64 {
     let mut a: u64 = 0;
     let mut b: u64 = n as u64 * m as u64;
     while a < b - 1 {
-        let c = (a + b) / 2;
+        let c = u64::midpoint(a, b);
         let p = edgeworth_cdf(n, m, c);
         if p < misrate {
             a = c;

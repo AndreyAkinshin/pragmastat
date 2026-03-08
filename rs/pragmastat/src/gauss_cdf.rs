@@ -70,7 +70,7 @@ pub fn gauss_cdf(x: f64) -> f64 {
     }
 
     if x > 0.0 {
-        (z + 1.0) / 2.0
+        f64::midpoint(z, 1.0)
     } else {
         (1.0 - z) / 2.0
     }
