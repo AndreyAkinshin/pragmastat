@@ -120,7 +120,7 @@ fn signed_rank_edgeworth_cdf(n: usize, w: usize) -> f64 {
     let big_phi = gauss_cdf(z);
 
     let kappa4 =
-        -n_f64 * (n_f64 + 1.0) * 2.0f64.mul_add(n_f64, 1.0) * (3.0f64.mul_add(n_f64, 3.0 * n_f64 * n_f64) - 1.0)
+        -n_f64 * (n_f64 + 1.0) * 2.0f64.mul_add(n_f64, 1.0) * (3.0 * n_f64 * n_f64 + 3.0 * n_f64 - 1.0)
             / 240.0;
 
     let e3 = kappa4 / (24.0 * sigma2 * sigma2);
