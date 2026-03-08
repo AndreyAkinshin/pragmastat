@@ -168,7 +168,7 @@ impl Sample {
     pub fn sorted_values(&self) -> &[f64] {
         self.sorted_values.get_or_init(|| {
             let mut sorted = self.values.clone();
-            sorted.sort_by(|a, b| a.total_cmp(b));
+            sorted.sort_unstable_by(|a, b| a.total_cmp(b));
             sorted
         })
     }

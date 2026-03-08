@@ -24,7 +24,7 @@ pub(crate) fn fast_center(values: &[f64]) -> Result<f64, &'static str> {
 
     // Sort the values
     let mut sorted_values = values.to_vec();
-    sorted_values.sort_by(|a, b| a.total_cmp(b));
+    sorted_values.sort_unstable_by(|a, b| a.total_cmp(b));
 
     // Calculate target median rank(s) among all pairwise sums
     let total_pairs = (n * (n + 1)) / 2;

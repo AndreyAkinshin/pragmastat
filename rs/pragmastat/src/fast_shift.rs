@@ -49,8 +49,8 @@ pub(crate) fn fast_shift_quantiles(
     } else {
         x_sorted_buf = x.to_vec();
         y_sorted_buf = y.to_vec();
-        x_sorted_buf.sort_by(|a, b| a.total_cmp(b));
-        y_sorted_buf.sort_by(|a, b| a.total_cmp(b));
+        x_sorted_buf.sort_unstable_by(|a, b| a.total_cmp(b));
+        y_sorted_buf.sort_unstable_by(|a, b| a.total_cmp(b));
         (&x_sorted_buf, &y_sorted_buf)
     };
 

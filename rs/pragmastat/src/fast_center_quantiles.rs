@@ -122,7 +122,7 @@ fn fast_center_find_exact_quantile(sorted: &[f64], k: i64) -> f64 {
         return target;
     }
 
-    candidates.sort_by(|a, b| a.partial_cmp(b).unwrap());
+    candidates.sort_unstable_by(|a, b| a.total_cmp(b));
 
     for candidate in &candidates {
         let count_at_candidate = count_pairs_less_or_equal(sorted, *candidate);
