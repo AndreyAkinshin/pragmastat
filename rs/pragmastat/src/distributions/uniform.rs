@@ -34,6 +34,6 @@ impl Uniform {
 
 impl Distribution for Uniform {
     fn sample(&self, rng: &mut Rng) -> f64 {
-        self.min + rng.uniform_f64() * (self.max - self.min)
+        rng.uniform_f64().mul_add(self.max - self.min, self.min)
     }
 }

@@ -96,7 +96,7 @@ impl Sample {
                 let mut min_w = f64::MAX;
                 for &wi in &w {
                     total_w += wi;
-                    total_w_sq += wi * wi;
+                    total_w_sq = wi.mul_add(wi, total_w_sq);
                     if wi < min_w {
                         min_w = wi;
                     }

@@ -57,7 +57,7 @@ impl Xoshiro256PlusPlus {
         if min >= max {
             return min;
         }
-        min + (max - min) * self.uniform_f64()
+        (max - min).mul_add(self.uniform_f64(), min)
     }
 
     /// Generate a uniform f32 in [0, 1)
@@ -73,7 +73,7 @@ impl Xoshiro256PlusPlus {
         if min >= max {
             return min;
         }
-        min + (max - min) * self.uniform_f32()
+        (max - min).mul_add(self.uniform_f32(), min)
     }
 
     /// Generate a uniform i64 in [min, max)

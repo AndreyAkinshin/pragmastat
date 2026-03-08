@@ -69,7 +69,7 @@ pub(crate) fn fast_shift_quantiles(
     let mut required_ranks = BTreeSet::new();
 
     for &pk in p {
-        let h = 1.0 + (total - 1) as f64 * pk;
+        let h = ((total - 1) as f64).mul_add(pk, 1.0);
         let mut lower_rank = h.floor() as i64;
         let mut upper_rank = h.ceil() as i64;
         let weight = h - lower_rank as f64;
@@ -106,7 +106,7 @@ pub(crate) fn fast_shift_quantiles(
             if param.weight == 0.0 {
                 lower
             } else {
-                (1.0 - param.weight) * lower + param.weight * upper
+                param.weight.mul_add(upper, (1.0 - param.weight) * lower)
             }
         })
         .collect();
@@ -223,7 +223,7 @@ fn count_and_neighbors(x: &[f64], y: &[f64], threshold: f64) -> (i64, f64, f64) 
 
 /// Computes the midpoint of two numbers, avoiding overflow
 fn midpoint(a: f64, b: f64) -> f64 {
-    a + (b - a) * 0.5
+    (b - a).mul_add(0.5, a)
 }
 
 /// Fast O((m+n) log precision) implementation of the Ratio estimator via log-transformation.
