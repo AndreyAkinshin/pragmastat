@@ -74,7 +74,7 @@ pub mod raw {
         if spread_y <= 0.0 {
             return Err(EstimatorError::from(AssumptionError::sparity(Subject::Y)));
         }
-        Ok((n as f64 * spread_x + m as f64 * spread_y) / (n + m) as f64)
+        Ok((m as f64).mul_add(spread_y, n as f64 * spread_x) / (n + m) as f64)
     }
 
     pub fn disparity(x: &[f64], y: &[f64]) -> Result<f64, EstimatorError> {
@@ -91,7 +91,7 @@ pub mod raw {
             return Err(EstimatorError::from(AssumptionError::sparity(Subject::Y)));
         }
         let shift_val = crate::fast_shift::fast_shift(x, y).map_err(EstimatorError::from)?;
-        let avg_spread_val = (n as f64 * spread_x + m as f64 * spread_y) / (n + m) as f64;
+        let avg_spread_val = (m as f64).mul_add(spread_y, n as f64 * spread_x) / (n + m) as f64;
         Ok(shift_val / avg_spread_val)
     }
 
@@ -283,8 +283,8 @@ pub mod raw {
         let weight_x = n as f64 / (n + m) as f64;
         let weight_y = m as f64 / (n + m) as f64;
         Ok(RawBounds {
-            lower: weight_x * bounds_x.lower + weight_y * bounds_y.lower,
-            upper: weight_x * bounds_x.upper + weight_y * bounds_y.upper,
+            lower: weight_y.mul_add(bounds_y.lower, weight_x * bounds_x.lower),
+            upper: weight_y.mul_add(bounds_y.upper, weight_x * bounds_x.upper),
         })
     }
 
@@ -313,8 +313,8 @@ pub mod raw {
         let weight_x = n as f64 / (n + m) as f64;
         let weight_y = m as f64 / (n + m) as f64;
         Ok(RawBounds {
-            lower: weight_x * bounds_x.lower + weight_y * bounds_y.lower,
-            upper: weight_x * bounds_x.upper + weight_y * bounds_y.upper,
+            lower: weight_y.mul_add(bounds_y.lower, weight_x * bounds_x.lower),
+            upper: weight_y.mul_add(bounds_y.upper, weight_x * bounds_x.upper),
         })
     }
 
@@ -614,7 +614,7 @@ pub(crate) fn avg_spread(x: &Sample, y: &Sample) -> Result<Measurement, Estimato
         return Err(EstimatorError::from(AssumptionError::sparity(y.subject())));
     }
     Ok(Measurement::new(
-        (n * spread_x + m * spread_y) / (n + m),
+        m.mul_add(spread_y, n * spread_x) / (n + m),
         x.unit().clone(),
     ))
 }
@@ -643,7 +643,7 @@ pub fn disparity(x: &Sample, y: &Sample) -> Result<Measurement, EstimatorError> 
     }
     let shift_val =
         crate::fast_shift::fast_shift(x.values(), y.values()).map_err(EstimatorError::from)?;
-    let avg_spread_val = (n * spread_x + m * spread_y) / (n + m);
+    let avg_spread_val = m.mul_add(spread_y, n * spread_x) / (n + m);
     Ok(Measurement::new(
         shift_val / avg_spread_val,
         MeasurementUnit::disparity(),

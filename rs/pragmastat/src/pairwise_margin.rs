@@ -104,7 +104,7 @@ fn pairwise_margin_exact_raw(n: usize, m: usize, p: f64) -> usize {
         // Compute pmf[u] using Loeffler recurrence
         let mut sum = 0.0;
         for i in 0..u {
-            sum += pmf[i] * sigma[u - i];
+            sum = f64::mul_add(pmf[i], sigma[u - i], sum);
         }
         sum /= u as f64;
         pmf.push(sum);
@@ -170,24 +170,52 @@ fn edgeworth_cdf(n: usize, m: usize, u: u64) -> f64 {
     let mu4 = (n_f64
         * m_f64
         * (n_f64 + m_f64 + 1.0)
-        * (5.0 * m_f64 * n_f64 * (m_f64 + n_f64) - 2.0 * (m2 + n2) + 3.0 * m_f64 * n_f64
-            - 2.0 * (n_f64 + m_f64)))
+        * 2.0f64.mul_add(
+            -(n_f64 + m_f64),
+            (3.0 * m_f64).mul_add(
+                n_f64,
+                2.0f64.mul_add(-(m2 + n2), 5.0 * m_f64 * n_f64 * (m_f64 + n_f64)),
+            ),
+        ))
         / 240.0;
 
     let mu6 = (n_f64
         * m_f64
         * (n_f64 + m_f64 + 1.0)
-        * (35.0 * m2 * n2 * (m2 + n2) + 70.0 * m3 * n3
-            - 42.0 * m_f64 * n_f64 * (m3 + n3)
-            - 14.0 * m2 * n2 * (n_f64 + m_f64)
-            + 16.0 * (n4 + m4)
-            - 52.0 * n_f64 * m_f64 * (n2 + m2)
-            - 43.0 * n2 * m2
-            + 32.0 * (m3 + n3)
-            + 14.0 * m_f64 * n_f64 * (n_f64 + m_f64)
-            + 8.0 * (n2 + m2)
-            + 16.0 * n_f64 * m_f64
-            - 8.0 * (n_f64 + m_f64)))
+        * 8.0f64.mul_add(
+            -(n_f64 + m_f64),
+            (16.0 * n_f64).mul_add(
+                m_f64,
+                8.0f64.mul_add(
+                    n2 + m2,
+                    (14.0 * m_f64 * n_f64).mul_add(
+                        n_f64 + m_f64,
+                        32.0f64.mul_add(
+                            m3 + n3,
+                            (43.0 * n2).mul_add(
+                                -m2,
+                                (52.0 * n_f64 * m_f64).mul_add(
+                                    -(n2 + m2),
+                                    16.0f64.mul_add(
+                                        n4 + m4,
+                                        (14.0 * m2 * n2).mul_add(
+                                            -(n_f64 + m_f64),
+                                            (42.0 * m_f64 * n_f64).mul_add(
+                                                -(m3 + n3),
+                                                (70.0 * m3).mul_add(
+                                                    n3,
+                                                    35.0 * m2 * n2 * (m2 + n2),
+                                                ),
+                                            ),
+                                        ),
+                                    ),
+                                ),
+                            ),
+                        ),
+                    ),
+                ),
+            ),
+        ))
         / 4032.0;
 
     // Pre-compute powers of mu2 and related terms
@@ -197,7 +225,7 @@ fn edgeworth_cdf(n: usize, m: usize, u: u64) -> f64 {
 
     // Factorial constants: 4! = 24, 6! = 720, 8! = 40320
     let e3 = (mu4_mu2_2 - 3.0) / 24.0;
-    let e5 = (mu6 / mu2_3 - 15.0 * mu4_mu2_2 + 30.0) / 720.0;
+    let e5 = (15.0f64.mul_add(-mu4_mu2_2, mu6 / mu2_3) + 30.0) / 720.0;
     let e7 = 35.0 * (mu4_mu2_2 - 3.0) * (mu4_mu2_2 - 3.0) / 40320.0;
 
     // Pre-compute powers of z for Hermite polynomials
@@ -207,9 +235,9 @@ fn edgeworth_cdf(n: usize, m: usize, u: u64) -> f64 {
     let z7 = z5 * z2;
 
     // Hermite polynomial derivatives: f_n = -phi * H_n(z)
-    let f3 = -phi * (z3 - 3.0 * z);
-    let f5 = -phi * (z5 - 10.0 * z3 + 15.0 * z);
-    let f7 = -phi * (z7 - 21.0 * z5 + 105.0 * z3 - 105.0 * z);
+    let f3 = -phi * 3.0f64.mul_add(-z, z3);
+    let f5 = -phi * 15.0f64.mul_add(z, 10.0f64.mul_add(-z3, z5));
+    let f7 = -phi * 105.0f64.mul_add(-z, 105.0f64.mul_add(z3, 21.0f64.mul_add(-z5, z7)));
 
     // Edgeworth expansion
     let edgeworth = big_phi + e3 * f3 + e5 * f5 + e7 * f7;
@@ -284,7 +312,7 @@ fn log_factorial(n: usize) -> f64 {
 
 /// Stirling's approximation with Bernoulli correction
 fn stirling_approx_log(x: f64) -> f64 {
-    let mut result = x * x.ln() - x + (2.0 * std::f64::consts::PI / x).ln() / 2.0;
+    let mut result = x.mul_add(x.ln(), -x) + (2.0 * std::f64::consts::PI / x).ln() / 2.0;
 
     // Bernoulli correction series
     const B2: f64 = 1.0 / 6.0;

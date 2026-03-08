@@ -111,7 +111,7 @@ fn signed_rank_margin_approx_raw(n: usize, misrate: f64) -> usize {
 fn signed_rank_edgeworth_cdf(n: usize, w: usize) -> f64 {
     let n_f64 = n as f64;
     let mu = n_f64 * (n_f64 + 1.0) / 4.0;
-    let sigma2 = n_f64 * (n_f64 + 1.0) * (2.0 * n_f64 + 1.0) / 24.0;
+    let sigma2 = n_f64 * (n_f64 + 1.0) * 2.0f64.mul_add(n_f64, 1.0) / 24.0;
     let sigma = sigma2.sqrt();
 
     // +0.5 continuity correction: computing P(W ≤ w) for a left-tail discrete CDF
@@ -120,14 +120,14 @@ fn signed_rank_edgeworth_cdf(n: usize, w: usize) -> f64 {
     let big_phi = gauss_cdf(z);
 
     let kappa4 =
-        -n_f64 * (n_f64 + 1.0) * (2.0 * n_f64 + 1.0) * (3.0 * n_f64 * n_f64 + 3.0 * n_f64 - 1.0)
+        -n_f64 * (n_f64 + 1.0) * 2.0f64.mul_add(n_f64, 1.0) * (3.0f64.mul_add(n_f64, 3.0 * n_f64 * n_f64) - 1.0)
             / 240.0;
 
     let e3 = kappa4 / (24.0 * sigma2 * sigma2);
 
     let z2 = z * z;
     let z3 = z2 * z;
-    let f3 = -phi * (z3 - 3.0 * z);
+    let f3 = -phi * 3.0f64.mul_add(-z, z3);
 
     let edgeworth = big_phi + e3 * f3;
     edgeworth.clamp(0.0, 1.0)
