@@ -277,8 +277,39 @@ pub mod raw {
         if crate::fast_spread::fast_spread(y).map_err(EstimatorError::from)? <= 0.0 {
             return Err(EstimatorError::from(AssumptionError::sparity(Subject::Y)));
         }
-        let bounds_x = spread_bounds_with_rng(x, alpha, rng_x)?;
-        let bounds_y = spread_bounds_with_rng(y, alpha, rng_y)?;
+        // Use inner variant to skip redundant fast_spread validation
+        let bounds_x = spread_bounds_with_rng_inner(x, n, n / 2, alpha, rng_x)?;
+        let bounds_y = spread_bounds_with_rng_inner(y, m, m / 2, alpha, rng_y)?;
+        let weight_x = n as f64 / (n + m) as f64;
+        let weight_y = m as f64 / (n + m) as f64;
+        Ok(RawBounds {
+            lower: weight_x * bounds_x.lower + weight_y * bounds_y.lower,
+            upper: weight_x * bounds_x.upper + weight_y * bounds_y.upper,
+        })
+    }
+
+    /// Unchecked variant that skips validity/spread checks (caller already verified).
+    fn avg_spread_bounds_with_rngs_unchecked(
+        x: &[f64],
+        y: &[f64],
+        n: usize,
+        m: usize,
+        misrate: f64,
+        rng_x: &mut crate::rng::Rng,
+        rng_y: &mut crate::rng::Rng,
+    ) -> Result<RawBounds, EstimatorError> {
+        let mx = n / 2;
+        let my = m / 2;
+        let min_x = crate::min_misrate::min_achievable_misrate_one_sample(mx)?;
+        let min_y = crate::min_misrate::min_achievable_misrate_one_sample(my)?;
+        let alpha = misrate / 2.0;
+        if alpha < min_x || alpha < min_y {
+            return Err(EstimatorError::from(AssumptionError::domain(
+                Subject::Misrate,
+            )));
+        }
+        let bounds_x = spread_bounds_with_rng_inner(x, n, mx, alpha, rng_x)?;
+        let bounds_y = spread_bounds_with_rng_inner(y, m, my, alpha, rng_y)?;
         let weight_x = n as f64 / (n + m) as f64;
         let weight_y = m as f64 / (n + m) as f64;
         Ok(RawBounds {
@@ -343,14 +374,17 @@ pub mod raw {
         let extra = misrate - (min_shift + min_avg);
         let alpha_shift = min_shift + extra / 2.0;
         let alpha_avg = min_avg + extra / 2.0;
-        if crate::fast_spread::fast_spread(x).map_err(EstimatorError::from)? <= 0.0 {
+        let spread_x = crate::fast_spread::fast_spread(x).map_err(EstimatorError::from)?;
+        if spread_x <= 0.0 {
             return Err(EstimatorError::from(AssumptionError::sparity(Subject::X)));
         }
-        if crate::fast_spread::fast_spread(y).map_err(EstimatorError::from)? <= 0.0 {
+        let spread_y = crate::fast_spread::fast_spread(y).map_err(EstimatorError::from)?;
+        if spread_y <= 0.0 {
             return Err(EstimatorError::from(AssumptionError::sparity(Subject::Y)));
         }
         let sb = shift_bounds(x, y, alpha_shift)?;
-        let ab = avg_spread_bounds_with_rngs(x, y, alpha_avg, rng_x, rng_y)?;
+        // avg_spread_bounds_with_rngs would re-check spreads; call inner directly
+        let ab = avg_spread_bounds_with_rngs_unchecked(x, y, n, m, alpha_avg, rng_x, rng_y)?;
         let la = ab.lower;
         let ua = ab.upper;
         let ls = sb.lower;
@@ -449,6 +483,17 @@ pub mod raw {
         if crate::fast_spread::fast_spread(x).map_err(EstimatorError::from)? <= 0.0 {
             return Err(EstimatorError::from(AssumptionError::sparity(Subject::X)));
         }
+        spread_bounds_with_rng_inner(x, n, m, misrate, rng)
+    }
+
+    /// Inner implementation that skips the spread validation (already done by caller).
+    fn spread_bounds_with_rng_inner(
+        x: &[f64],
+        n: usize,
+        m: usize,
+        misrate: f64,
+        rng: &mut crate::rng::Rng,
+    ) -> Result<RawBounds, EstimatorError> {
         let margin = crate::sign_margin::sign_margin_randomized(m, misrate, rng)
             .map_err(EstimatorError::from)?;
         let mut half_margin = margin / 2;
@@ -458,12 +503,12 @@ pub mod raw {
         }
         let k_left = half_margin + 1;
         let k_right = m - half_margin;
-        let indices: Vec<usize> = (0..n).collect();
-        let shuffled = rng.shuffle(&indices);
+        let mut indices: Vec<usize> = (0..n).collect();
+        rng.shuffle_mut(&mut indices);
         let mut diffs = Vec::with_capacity(m);
         for i in 0..m {
-            let a = shuffled[2 * i];
-            let b = shuffled[2 * i + 1];
+            let a = indices[2 * i];
+            let b = indices[2 * i + 1];
             diffs.push((x[a] - x[b]).abs());
         }
         diffs.sort_by(|a, b| a.total_cmp(b));

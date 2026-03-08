@@ -5,6 +5,7 @@ const FNV_OFFSET_BASIS: u64 = 0xcbf29ce484222325;
 const FNV_PRIME: u64 = 0x00000100000001b3;
 
 /// Compute FNV-1a 64-bit hash of a string
+#[inline]
 pub(crate) fn fnv1a_hash(s: &str) -> u64 {
     let mut hash = FNV_OFFSET_BASIS;
     for byte in s.bytes() {
@@ -15,6 +16,7 @@ pub(crate) fn fnv1a_hash(s: &str) -> u64 {
 }
 
 /// Compute FNV-1a 64-bit hash of an f64 slice, returning it as i64 for use as an RNG seed.
+#[inline]
 pub(crate) fn hash_f64_slice(values: &[f64]) -> i64 {
     let mut hash = FNV_OFFSET_BASIS;
     for v in values {

@@ -42,14 +42,16 @@ pub(crate) fn fast_shift_quantiles(
         return Err("Input contains NaN or infinite values");
     }
 
-    let (xs, ys) = if assume_sorted {
-        (x.to_vec(), y.to_vec())
+    let mut x_sorted_buf;
+    let mut y_sorted_buf;
+    let (xs, ys): (&[f64], &[f64]) = if assume_sorted {
+        (x, y)
     } else {
-        let mut x_sorted = x.to_vec();
-        let mut y_sorted = y.to_vec();
-        x_sorted.sort_by(|a, b| a.total_cmp(b));
-        y_sorted.sort_by(|a, b| a.total_cmp(b));
-        (x_sorted, y_sorted)
+        x_sorted_buf = x.to_vec();
+        y_sorted_buf = y.to_vec();
+        x_sorted_buf.sort_by(|a, b| a.total_cmp(b));
+        y_sorted_buf.sort_by(|a, b| a.total_cmp(b));
+        (&x_sorted_buf, &y_sorted_buf)
     };
 
     let m = xs.len();
@@ -89,17 +91,18 @@ pub(crate) fn fast_shift_quantiles(
     }
 
     // Compute values for all required ranks
-    let mut rank_values = std::collections::HashMap::new();
+    let mut rank_values: Vec<(i64, f64)> = Vec::with_capacity(required_ranks.len());
     for rank in required_ranks {
-        rank_values.insert(rank, select_kth_pairwise_diff(&xs, &ys, rank)?);
+        rank_values.push((rank, select_kth_pairwise_diff(xs, ys, rank)?));
     }
 
     // Interpolate to get final results
+    let find_rank = |r: i64| -> f64 { rank_values.iter().find(|(rank, _)| *rank == r).unwrap().1 };
     let result: Vec<f64> = params
         .iter()
         .map(|param| {
-            let lower = rank_values[&param.lower_rank];
-            let upper = rank_values[&param.upper_rank];
+            let lower = find_rank(param.lower_rank);
+            let upper = find_rank(param.upper_rank);
             if param.weight == 0.0 {
                 lower
             } else {

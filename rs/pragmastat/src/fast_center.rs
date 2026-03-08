@@ -42,11 +42,13 @@ pub(crate) fn fast_center(values: &[f64]) -> Result<f64, &'static str> {
 
     let mut rng = Rng::from_seed(hash_f64_slice(values));
 
+    let mut partition_counts = vec![0; n];
+
     loop {
         // === PARTITION STEP ===
         let mut count_below_pivot = 0;
         let mut current_column = n;
-        let mut partition_counts = vec![0; n];
+        partition_counts.fill(0);
 
         for row in 1..=n {
             // Move left from current column until we find sums < pivot

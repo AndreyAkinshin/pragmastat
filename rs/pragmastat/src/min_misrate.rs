@@ -11,7 +11,7 @@ pub fn min_achievable_misrate_one_sample(n: usize) -> Result<f64, AssumptionErro
             Subject::X,
         )));
     }
-    Ok(2.0_f64.powf(1.0 - n as f64))
+    Ok(0.5_f64.powi((n - 1) as i32))
 }
 
 /// Computes the minimum achievable misrate for two-sample Mann-Whitney based bounds.

@@ -415,15 +415,24 @@ impl Rng {
     pub fn shuffle<T: Clone>(&mut self, x: &[T]) -> Vec<T> {
         assert!(!x.is_empty(), "Cannot shuffle empty slice");
         let mut result: Vec<T> = x.to_vec();
-        let n = result.len();
+        self.shuffle_mut(&mut result);
+        result
+    }
+
+    /// Shuffle a mutable slice in-place using the Fisher-Yates algorithm
+    ///
+    /// # Panics
+    ///
+    /// Panics if `x` is empty.
+    pub fn shuffle_mut<T>(&mut self, x: &mut [T]) {
+        assert!(!x.is_empty(), "Cannot shuffle empty slice");
+        let n = x.len();
 
         // Fisher-Yates shuffle (inside-out variant, backwards)
         for i in (1..n).rev() {
             let j = self.uniform_i64(0, (i + 1) as i64) as usize;
-            result.swap(i, j);
+            x.swap(i, j);
         }
-
-        result
     }
 }
 
