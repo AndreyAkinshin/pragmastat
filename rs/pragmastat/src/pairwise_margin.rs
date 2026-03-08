@@ -69,8 +69,11 @@ fn pairwise_margin_exact_raw(n: usize, m: usize, p: f64) -> usize {
         binomial_coefficient_float(n + m, m)
     };
 
-    let mut pmf = vec![1.0]; // pmf[0] = 1
-    let mut sigma = vec![0.0]; // sigma[0] is unused
+    let capacity = n * m + 1;
+    let mut pmf = Vec::with_capacity(capacity);
+    pmf.push(1.0); // pmf[0] = 1
+    let mut sigma = Vec::with_capacity(capacity);
+    sigma.push(0.0); // sigma[0] is unused
 
     let mut u: usize = 0;
     let mut cdf = 1.0 / total;
