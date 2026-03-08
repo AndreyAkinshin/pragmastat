@@ -91,7 +91,7 @@ fn signed_rank_margin_approx_raw(n: usize, misrate: f64) -> usize {
     let mut b = max_w;
 
     while a < b - 1 {
-        let c = (a + b) / 2;
+        let c = usize::midpoint(a, b);
         let cdf = signed_rank_edgeworth_cdf(n, c);
         if cdf < misrate {
             a = c;

@@ -73,7 +73,7 @@ fn fast_center_find_exact_quantile(sorted: &[f64], k: i64) -> f64 {
     const EPS: f64 = RELATIVE_EPSILON;
 
     while hi - lo > EPS * 1.0_f64.max(lo.abs().max(hi.abs())) {
-        let mid = (lo + hi) / 2.0;
+        let mid = f64::midpoint(lo, hi);
         let count_less_or_equal = count_pairs_less_or_equal(sorted, mid);
 
         if count_less_or_equal >= k {
@@ -83,7 +83,7 @@ fn fast_center_find_exact_quantile(sorted: &[f64], k: i64) -> f64 {
         }
     }
 
-    let target = (lo + hi) / 2.0;
+    let target = f64::midpoint(lo, hi);
     let mut candidates: Vec<f64> = Vec::new();
 
     for i in 0..n {
@@ -93,7 +93,7 @@ fn fast_center_find_exact_quantile(sorted: &[f64], k: i64) -> f64 {
         let mut right = n;
 
         while left < right {
-            let m = (left + right) / 2;
+            let m = usize::midpoint(left, right);
             if sorted[m] < threshold - EPS {
                 left = m + 1;
             } else {
@@ -105,11 +105,11 @@ fn fast_center_find_exact_quantile(sorted: &[f64], k: i64) -> f64 {
             && left >= i
             && (sorted[left] - threshold).abs() < EPS * 1.0_f64.max(threshold.abs())
         {
-            candidates.push((sorted[i] + sorted[left]) / 2.0);
+            candidates.push(f64::midpoint(sorted[i], sorted[left]));
         }
 
         if left > i {
-            let avg_before = (sorted[i] + sorted[left - 1]) / 2.0;
+            let avg_before = f64::midpoint(sorted[i], sorted[left - 1]);
             if avg_before <= target + EPS {
                 candidates.push(avg_before);
             }
