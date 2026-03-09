@@ -30,7 +30,7 @@ pub(crate) fn fast_spread(values: &[f64]) -> Result<f64, &'static str> {
     // Total number of pairwise differences with i < j
     let total_pairs = (n as u64) * ((n - 1) as u64) / 2;
     let k_low = total_pairs.div_ceil(2); // 1-based rank of lower middle
-    let k_high = u64::midpoint(total_pairs, 2); // 1-based rank of upper middle
+    let k_high = (total_pairs + 2) / 2; // 1-based rank of upper middle
 
     // Per-row active bounds over columns j (0-based indices)
     // Row i allows j in [i+1, n-1] initially
