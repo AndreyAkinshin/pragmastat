@@ -75,7 +75,7 @@ fn log_gamma(x: f64) -> f64 {
     }
 
     // Stirling's approximation: log(Gamma(x)) ≈ (x - 0.5) * ln(x) - x + 0.5 * ln(2π)
-    let mut result =  (x - 0.5) * x.ln() - x + 0.5 * std::f64::consts::TAU.ln();
+    let mut result = (x - 0.5) * x.ln() - x + 0.5 * std::f64::consts::TAU.ln();
 
     // Add Bernoulli correction terms for improved accuracy
     let x2 = x * x;
