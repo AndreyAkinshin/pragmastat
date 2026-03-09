@@ -29,7 +29,7 @@ pub(crate) fn fast_center(values: &[f64]) -> Result<f64, &'static str> {
     // Calculate target median rank(s) among all pairwise sums
     let total_pairs = (n * (n + 1)) / 2;
     let median_rank_low = total_pairs.div_ceil(2); // 1-based rank
-    let median_rank_high = usize::midpoint(total_pairs, 2);
+    let median_rank_high = (total_pairs + 2) / 2;
 
     // Initialize search bounds for each row (1-based indexing)
     let mut left_bounds: Vec<usize> = (0..n).map(|i| i + 1).collect();
@@ -187,7 +187,8 @@ pub(crate) fn fast_center(values: &[f64]) -> Result<f64, &'static str> {
             }
 
             // Use median element of the selected row as pivot
-            let median_column_in_row = usize::midpoint(left_bounds[selected_row], right_bounds[selected_row]);
+            let median_column_in_row =
+                usize::midpoint(left_bounds[selected_row], right_bounds[selected_row]);
             pivot = sorted_values[selected_row] + sorted_values[median_column_in_row - 1];
         } else {
             // Few elements remain - use midrange strategy
