@@ -167,7 +167,6 @@ fn edgeworth_cdf(n: usize, m: usize, u: u64) -> f64 {
 
     // Compute moments
     let mu2 = (n_f64 * m_f64 * (n_f64 + m_f64 + 1.0)) / 12.0;
-    #[allow(clippy::suboptimal_flops)]
     let mu4 = (n_f64
         * m_f64
         * (n_f64 + m_f64 + 1.0)
@@ -175,7 +174,6 @@ fn edgeworth_cdf(n: usize, m: usize, u: u64) -> f64 {
             - 2.0 * (n_f64 + m_f64)))
         / 240.0;
 
-    #[allow(clippy::suboptimal_flops)]
     let mu6 = (n_f64
         * m_f64
         * (n_f64 + m_f64 + 1.0)
@@ -199,7 +197,6 @@ fn edgeworth_cdf(n: usize, m: usize, u: u64) -> f64 {
 
     // Factorial constants: 4! = 24, 6! = 720, 8! = 40320
     let e3 = (mu4_mu2_2 - 3.0) / 24.0;
-    #[allow(clippy::suboptimal_flops)]
     let e5 = (mu6 / mu2_3 - 15.0 * mu4_mu2_2 + 30.0) / 720.0;
     let e7 = 35.0 * (mu4_mu2_2 - 3.0) * (mu4_mu2_2 - 3.0) / 40320.0;
 
@@ -210,11 +207,8 @@ fn edgeworth_cdf(n: usize, m: usize, u: u64) -> f64 {
     let z7 = z5 * z2;
 
     // Hermite polynomial derivatives: f_n = -phi * H_n(z)
-    #[allow(clippy::suboptimal_flops)]
     let f3 = -phi * (z3 - 3.0 * z);
-    #[allow(clippy::suboptimal_flops)]
     let f5 = -phi * (z5 - 10.0 * z3 + 15.0 * z);
-    #[allow(clippy::suboptimal_flops)]
     let f7 = -phi * (z7 - 21.0 * z5 + 105.0 * z3 - 105.0 * z);
 
     // Edgeworth expansion
@@ -290,7 +284,7 @@ fn log_factorial(n: usize) -> f64 {
 
 /// Stirling's approximation with Bernoulli correction
 fn stirling_approx_log(x: f64) -> f64 {
-    let mut result = x.mul_add(x.ln(), -x) + (2.0 * std::f64::consts::PI / x).ln() / 2.0;
+    let mut result = x * x.ln() - x + (2.0 * std::f64::consts::PI / x).ln() / 2.0;
 
     // Bernoulli correction series
     const B2: f64 = 1.0 / 6.0;

@@ -111,7 +111,6 @@ fn signed_rank_margin_approx_raw(n: usize, misrate: f64) -> usize {
 fn signed_rank_edgeworth_cdf(n: usize, w: usize) -> f64 {
     let n_f64 = n as f64;
     let mu = n_f64 * (n_f64 + 1.0) / 4.0;
-    #[allow(clippy::suboptimal_flops)]
     let sigma2 = n_f64 * (n_f64 + 1.0) * (2.0 * n_f64 + 1.0) / 24.0;
     let sigma = sigma2.sqrt();
 
@@ -120,7 +119,6 @@ fn signed_rank_edgeworth_cdf(n: usize, w: usize) -> f64 {
     let phi = (-z * z / 2.0).exp() / (2.0 * std::f64::consts::PI).sqrt();
     let big_phi = gauss_cdf(z);
 
-    #[allow(clippy::suboptimal_flops)]
     let kappa4 =
         -n_f64 * (n_f64 + 1.0) * (2.0 * n_f64 + 1.0) * (3.0 * n_f64 * n_f64 + 3.0 * n_f64 - 1.0)
             / 240.0;
@@ -129,7 +127,6 @@ fn signed_rank_edgeworth_cdf(n: usize, w: usize) -> f64 {
 
     let z2 = z * z;
     let z3 = z2 * z;
-    #[allow(clippy::suboptimal_flops)]
     let f3 = -phi * (z3 - 3.0 * z);
 
     let edgeworth = big_phi + e3 * f3;

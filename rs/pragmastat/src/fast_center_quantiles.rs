@@ -37,7 +37,6 @@ fn count_pairs_less_or_equal(sorted: &[f64], target: f64) -> i64 {
     let mut j = n as i64 - 1;
 
     for i in 0..n {
-        #[allow(clippy::suboptimal_flops)]
         let threshold = 2.0 * target - sorted[i];
 
         while j >= 0 && sorted[j as usize] > threshold {
@@ -88,7 +87,6 @@ fn fast_center_find_exact_quantile(sorted: &[f64], k: i64) -> f64 {
     let mut candidates: Vec<f64> = Vec::new();
 
     for i in 0..n {
-        #[allow(clippy::suboptimal_flops)]
         let threshold = 2.0 * target - sorted[i];
 
         let mut left = i;
