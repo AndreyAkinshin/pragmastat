@@ -22,9 +22,20 @@ pub(crate) fn fast_center(values: &[f64]) -> Result<f64, &'static str> {
         return Err("Input contains NaN or infinite values");
     }
 
+    let seed = hash_f64_slice(values);
+
     // Sort the values
     let mut sorted_values = values.to_vec();
     sorted_values.sort_unstable_by(|a, b| a.total_cmp(b));
+
+    fast_center_presorted(&sorted_values, seed)
+}
+
+/// Core Monahan algorithm on pre-sorted input.
+/// `seed` should be `hash_f64_slice(original_unsorted_values)` to preserve deterministic pivot sequences.
+pub(crate) fn fast_center_presorted(sorted_values: &[f64], seed: i64) -> Result<f64, &'static str> {
+    let n = sorted_values.len();
+    debug_assert!(n >= 3, "fast_center_presorted requires n >= 3");
 
     // Calculate target median rank(s) among all pairwise sums
     let total_pairs = (n * (n + 1)) / 2;
@@ -40,7 +51,7 @@ pub(crate) fn fast_center(values: &[f64]) -> Result<f64, &'static str> {
     let mut active_set_size = total_pairs;
     let mut previous_count = 0;
 
-    let mut rng = Rng::from_seed(hash_f64_slice(values));
+    let mut rng = Rng::from_seed(seed);
 
     let mut partition_counts = vec![0; n];
 

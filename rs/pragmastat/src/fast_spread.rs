@@ -23,9 +23,24 @@ pub(crate) fn fast_spread(values: &[f64]) -> Result<f64, &'static str> {
         return Err("fast_spread: input too large");
     }
 
+    let seed = hash_f64_slice(values);
+
     // Sort the values
     let mut a = values.to_vec();
     a.sort_unstable_by(|x, y| x.total_cmp(y));
+
+    fast_spread_presorted(&a, seed)
+}
+
+/// Core Shamos algorithm on pre-sorted input.
+/// `seed` should be `hash_f64_slice(original_unsorted_values)` to preserve deterministic pivot sequences.
+pub(crate) fn fast_spread_presorted(a: &[f64], seed: i64) -> Result<f64, &'static str> {
+    let n = a.len();
+    debug_assert!(n >= 3, "fast_spread_presorted requires n >= 3");
+
+    if n > u32::MAX as usize {
+        return Err("fast_spread: input too large");
+    }
 
     // Total number of pairwise differences with i < j
     let total_pairs = (n as u64) * ((n - 1) as u64) / 2;
@@ -50,7 +65,7 @@ pub(crate) fn fast_spread(values: &[f64]) -> Result<f64, &'static str> {
     let mut pivot = a[n / 2] - a[(n - 1) / 2];
     let mut prev_count_below = -1i64;
 
-    let mut rng = Rng::from_seed(hash_f64_slice(values));
+    let mut rng = Rng::from_seed(seed);
 
     loop {
         // === PARTITION: count how many differences are < pivot ===
