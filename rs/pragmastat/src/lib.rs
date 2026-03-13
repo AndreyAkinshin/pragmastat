@@ -53,9 +53,9 @@ pub use compare::{
 };
 pub use distributions::{Additive, Distribution, Exp, Multiplic, Power, Uniform};
 pub use estimators::{
-    center, center_bounds, disparity, disparity_bounds, disparity_bounds_with_seed, ratio,
-    ratio_bounds, shift, shift_bounds, spread, spread_bounds, spread_bounds_with_seed,
-    DEFAULT_MISRATE,
+    center, center_bounds, disparity, disparity_bounds, disparity_bounds_with_seed,
+    one_sample_summary, one_sample_summary_with_seed, ratio, ratio_bounds, shift, shift_bounds,
+    spread, spread_bounds, spread_bounds_with_seed, OneSampleResult, DEFAULT_MISRATE,
 };
 pub use measurement::Measurement;
 pub use measurement_unit::{
