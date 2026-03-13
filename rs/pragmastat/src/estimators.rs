@@ -561,7 +561,10 @@ pub mod raw {
         check_validity(x, Subject::X)?;
 
         let n = x.len();
-        if n < 2 {
+        // The presorted algorithms (`fast_center_presorted`, `fast_spread_presorted`)
+        // require n >= 3. Unlike the wrapper functions (`fast_center`, `fast_spread`)
+        // which handle n <= 2 as special cases, we call the presorted variants directly.
+        if n < 3 {
             return Err(EstimatorError::from(AssumptionError::domain(Subject::X)));
         }
 
@@ -625,11 +628,14 @@ pub mod raw {
         #[cfg(feature = "parallel")]
         let (cb_result, sb_result) = rayon::join(
             || crate::fast_center_quantiles::fast_center_quantile_bounds(&sorted, k_left, k_right),
+            // Uses original unsorted `x` because `spread_bounds_with_rng_inner`
+            // shuffles internally to form random pairwise differences.
             || spread_bounds_with_rng_inner(x, m, misrate, rng),
         );
         #[cfg(not(feature = "parallel"))]
         let (cb_result, sb_result) = (
             crate::fast_center_quantiles::fast_center_quantile_bounds(&sorted, k_left, k_right),
+            // Uses original unsorted `x` — see parallel branch comment above.
             spread_bounds_with_rng_inner(x, m, misrate, rng),
         );
 
