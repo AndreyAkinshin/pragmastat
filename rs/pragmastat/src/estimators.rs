@@ -488,7 +488,7 @@ pub mod raw {
     }
 
     /// Inner implementation that skips the spread validation (already done by caller).
-    fn spread_bounds_with_rng_inner(
+    pub(crate) fn spread_bounds_with_rng_inner(
         x: &[f64],
         m: usize,
         misrate: f64,
@@ -515,6 +515,142 @@ pub mod raw {
         let lower = buf[k_left - 1];
         let upper = buf[k_right - 1];
         Ok(RawBounds { lower, upper })
+    }
+
+    // =========================================================================
+    // Batch one-sample summary — eliminates redundant sorting, validation,
+    // hashing, and spread computation when all four one-sample estimators
+    // are needed together.
+    // =========================================================================
+
+    /// Combined result of all four one-sample estimators.
+    #[derive(Debug, Clone, Copy, PartialEq)]
+    pub struct OneSampleSummary {
+        pub center: f64,
+        pub spread: f64,
+        pub center_bounds: RawBounds,
+        pub spread_bounds: RawBounds,
+    }
+
+    /// Compute all four one-sample estimators in a single pass, eliminating
+    /// redundant sorting, validation, hashing, and spread computation.
+    ///
+    /// With the `parallel` feature enabled, independent computations run
+    /// concurrently via `rayon::join`.
+    pub fn one_sample_summary(x: &[f64], misrate: f64) -> Result<OneSampleSummary, EstimatorError> {
+        let mut rng = crate::rng::Rng::new();
+        one_sample_summary_with_rng(x, misrate, &mut rng)
+    }
+
+    /// Compute all four one-sample estimators with a deterministic seed.
+    pub fn one_sample_summary_with_seed(
+        x: &[f64],
+        misrate: f64,
+        seed: &str,
+    ) -> Result<OneSampleSummary, EstimatorError> {
+        let mut rng = crate::rng::Rng::from_string(seed);
+        one_sample_summary_with_rng(x, misrate, &mut rng)
+    }
+
+    fn one_sample_summary_with_rng(
+        x: &[f64],
+        misrate: f64,
+        rng: &mut crate::rng::Rng,
+    ) -> Result<OneSampleSummary, EstimatorError> {
+        // --- 1. Validate once ---
+        check_validity(x, Subject::X)?;
+
+        let n = x.len();
+        // The presorted algorithms (`fast_center_presorted`, `fast_spread_presorted`)
+        // require n >= 3. Unlike the wrapper functions (`fast_center`, `fast_spread`)
+        // which handle n <= 2 as special cases, we call the presorted variants directly.
+        if n < 3 {
+            return Err(EstimatorError::from(AssumptionError::domain(Subject::X)));
+        }
+
+        // --- 2. Validate misrate domain ---
+        if misrate.is_nan() || !(0.0..=1.0).contains(&misrate) {
+            return Err(EstimatorError::from(AssumptionError::domain(
+                Subject::Misrate,
+            )));
+        }
+
+        // Check min misrate for both center_bounds and spread_bounds
+        let m = n / 2;
+        let min_misrate_center = crate::min_misrate::min_achievable_misrate_one_sample(n)?;
+        let min_misrate_spread = crate::min_misrate::min_achievable_misrate_one_sample(m)?;
+        let min_misrate = min_misrate_center.max(min_misrate_spread);
+        if misrate < min_misrate {
+            return Err(EstimatorError::from(AssumptionError::domain(
+                Subject::Misrate,
+            )));
+        }
+
+        // --- 3. Hash once ---
+        let input_hash = crate::fnv1a::hash_f64_slice(x);
+
+        // --- 4. Sort once ---
+        let mut sorted = x.to_vec();
+        sorted.sort_unstable_by(|a, b| a.total_cmp(b));
+
+        // --- 5. Compute spread + center (possibly in parallel) ---
+        #[cfg(feature = "parallel")]
+        let (spread_result, center_result) = rayon::join(
+            || crate::fast_spread::fast_spread_presorted(&sorted, input_hash),
+            || crate::fast_center::fast_center_presorted(&sorted, input_hash),
+        );
+        #[cfg(not(feature = "parallel"))]
+        let (spread_result, center_result) = (
+            crate::fast_spread::fast_spread_presorted(&sorted, input_hash),
+            crate::fast_center::fast_center_presorted(&sorted, input_hash),
+        );
+
+        let spread_val = spread_result.map_err(EstimatorError::from)?;
+        let center_val = center_result.map_err(EstimatorError::from)?;
+
+        // --- 6. Sparity check ---
+        if spread_val <= 0.0 {
+            return Err(EstimatorError::from(AssumptionError::sparity(Subject::X)));
+        }
+
+        // --- 7. Compute center_bounds margins ---
+        let margin = crate::signed_rank_margin::signed_rank_margin(n, misrate)?;
+        let total_pairs = (n as i64) * (n as i64 + 1) / 2;
+        let mut half_margin = (margin / 2) as i64;
+        let max_half_margin = (total_pairs - 1) / 2;
+        if half_margin > max_half_margin {
+            half_margin = max_half_margin;
+        }
+        let k_left = half_margin + 1;
+        let k_right = total_pairs - half_margin;
+
+        // --- 8. Compute center_bounds + spread_bounds (possibly in parallel) ---
+        #[cfg(feature = "parallel")]
+        let (cb_result, sb_result) = rayon::join(
+            || crate::fast_center_quantiles::fast_center_quantile_bounds(&sorted, k_left, k_right),
+            // Uses original unsorted `x` because `spread_bounds_with_rng_inner`
+            // shuffles internally to form random pairwise differences.
+            || spread_bounds_with_rng_inner(x, m, misrate, rng),
+        );
+        #[cfg(not(feature = "parallel"))]
+        let (cb_result, sb_result) = (
+            crate::fast_center_quantiles::fast_center_quantile_bounds(&sorted, k_left, k_right),
+            // Uses original unsorted `x` — see parallel branch comment above.
+            spread_bounds_with_rng_inner(x, m, misrate, rng),
+        );
+
+        let (lo, hi) = cb_result;
+        let sb = sb_result?;
+
+        Ok(OneSampleSummary {
+            center: center_val,
+            spread: spread_val,
+            center_bounds: RawBounds {
+                lower: lo,
+                upper: hi,
+            },
+            spread_bounds: sb,
+        })
     }
 }
 
@@ -732,6 +868,65 @@ pub fn disparity_bounds_with_seed(
         rb.upper,
         MeasurementUnit::disparity(),
     ))
+}
+
+/// Combined result of all four one-sample estimators at the [`Sample`] level.
+#[derive(Debug, Clone)]
+pub struct OneSampleResult {
+    pub center: Measurement,
+    pub spread: Measurement,
+    pub center_bounds: Bounds,
+    pub spread_bounds: Bounds,
+}
+
+/// Compute all four one-sample estimators in a single pass.
+///
+/// Eliminates redundant sorting, validation, hashing, and spread computation
+/// compared to calling `center`, `spread`, `center_bounds`, and `spread_bounds`
+/// individually.
+pub fn one_sample_summary(x: &Sample, misrate: f64) -> Result<OneSampleResult, EstimatorError> {
+    check_non_weighted("x", x)?;
+    let summary = raw::one_sample_summary(x.values(), misrate)?;
+    let unit = x.unit().clone();
+    Ok(OneSampleResult {
+        center: Measurement::new(summary.center, unit.clone()),
+        spread: Measurement::new(summary.spread, unit.clone()),
+        center_bounds: Bounds::new(
+            summary.center_bounds.lower,
+            summary.center_bounds.upper,
+            unit.clone(),
+        ),
+        spread_bounds: Bounds::new(
+            summary.spread_bounds.lower,
+            summary.spread_bounds.upper,
+            unit,
+        ),
+    })
+}
+
+/// Compute all four one-sample estimators with a deterministic seed.
+pub fn one_sample_summary_with_seed(
+    x: &Sample,
+    misrate: f64,
+    seed: &str,
+) -> Result<OneSampleResult, EstimatorError> {
+    check_non_weighted("x", x)?;
+    let summary = raw::one_sample_summary_with_seed(x.values(), misrate, seed)?;
+    let unit = x.unit().clone();
+    Ok(OneSampleResult {
+        center: Measurement::new(summary.center, unit.clone()),
+        spread: Measurement::new(summary.spread, unit.clone()),
+        center_bounds: Bounds::new(
+            summary.center_bounds.lower,
+            summary.center_bounds.upper,
+            unit.clone(),
+        ),
+        spread_bounds: Bounds::new(
+            summary.spread_bounds.lower,
+            summary.spread_bounds.upper,
+            unit,
+        ),
+    })
 }
 
 // Internal avg_spread_bounds functions for tests
