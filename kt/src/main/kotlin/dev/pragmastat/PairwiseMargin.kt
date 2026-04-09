@@ -3,7 +3,7 @@ package dev.pragmastat
 import kotlin.math.*
 
 private const val MAX_EXACT_SIZE = 400
-private const val MAX_ACCEPTABLE_BINOM_N = 65
+private const val MAX_ACCEPTABLE_BINOM_N = 62
 
 /**
  * PairwiseMargin determines how many extreme pairwise differences to exclude

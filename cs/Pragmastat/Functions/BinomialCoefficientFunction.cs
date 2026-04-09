@@ -4,7 +4,7 @@ namespace Pragmastat.Functions;
 
 public static class BinomialCoefficientFunction
 {
-  public const int MaxAcceptableN = 65;
+  public const int MaxAcceptableN = 62;
 
   private static readonly Lazy<long[,]> PascalTriangle = new(BuildPascalTriangle);
 

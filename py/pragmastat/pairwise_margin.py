@@ -13,7 +13,7 @@ from .gauss_cdf import gauss_cdf as _gauss_cdf
 from .min_misrate import min_achievable_misrate_two_sample
 
 MAX_EXACT_SIZE = 400
-MAX_ACCEPTABLE_BINOM_N = 65
+MAX_ACCEPTABLE_BINOM_N = 62
 
 
 def pairwise_margin(n: int, m: int, misrate: float) -> int:

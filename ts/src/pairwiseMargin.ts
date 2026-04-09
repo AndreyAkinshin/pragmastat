@@ -10,7 +10,7 @@ import { gaussCdf } from './gaussCdf';
 import { minAchievableMisrateTwoSample } from './minMisrate';
 
 const MAX_EXACT_SIZE = 400;
-const MAX_ACCEPTABLE_BINOM_N = 65;
+const MAX_ACCEPTABLE_BINOM_N = 62;
 
 /**
  * PairwiseMargin determines how many extreme pairwise differences to exclude

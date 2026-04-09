@@ -49,6 +49,27 @@ public static class PairwiseMarginTestCases
     inputBuilder.Add("asymmetry-extreme-100-1", new PairwiseMarginInput(100, 1, 0.1));
     inputBuilder.Add("asymmetry-extreme-2-50", new PairwiseMarginInput(2, 50, 0.05));
 
+    // Overflow boundary: n+m in [60, 66], symmetric and asymmetric splits
+    int[] boundarySizes = [60, 61, 62, 63, 64, 65, 66];
+    double[] boundaryMisrates = [1e-1, 1e-3];
+    foreach (var total in boundarySizes)
+    {
+      foreach (var misrate in boundaryMisrates)
+      {
+        int n1 = total / 2;
+        int m1 = total - n1;
+        if (misrate >= MinAchievableMisrate.TwoSample(n1, m1))
+          inputBuilder.Add($"boundary-overflow-n{n1}_m{m1}_mr{FormatMisrate(misrate)}",
+            new PairwiseMarginInput(n1, m1, misrate));
+
+        int n2 = total / 3;
+        int m2 = total - n2;
+        if (n2 >= 1 && m2 >= 1 && misrate >= MinAchievableMisrate.TwoSample(n2, m2))
+          inputBuilder.Add($"boundary-overflow-n{n2}_m{m2}_mr{FormatMisrate(misrate)}",
+            new PairwiseMarginInput(n2, m2, misrate));
+      }
+    }
+
     // Comprehensive grid, filtered by min_misrate
     // Misrates to test
     double[] misrates = [1e-1, 1e-2, 1e-3, 1e-4, 1e-5, 1e-6];
