@@ -6,7 +6,7 @@
 use crate::assumptions::{AssumptionError, Subject};
 
 const MAX_EXACT_SIZE: usize = 400;
-const MAX_ACCEPTABLE_BINOM_N: usize = 65;
+const MAX_ACCEPTABLE_BINOM_N: usize = 62;
 
 /// PairwiseMargin determines how many extreme pairwise differences to exclude
 /// when constructing bounds based on the distribution of dominance statistics.

@@ -7,7 +7,7 @@ import (
 
 const (
 	maxExactSize        = 400
-	maxAcceptableBinomN = 65
+	maxAcceptableBinomN = 62
 )
 
 // pairwiseMargin determines how many extreme pairwise differences to exclude

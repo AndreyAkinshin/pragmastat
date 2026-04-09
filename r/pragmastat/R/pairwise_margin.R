@@ -46,7 +46,7 @@ pairwise_margin_approx <- function(n, m, misrate) {
 pairwise_margin_exact_raw <- function(n, m, p) {
   # Use R's built-in choose() function for binomial coefficient
   # For large values, use logarithmic calculation
-  if (n + m < 65) {
+  if (n + m < 62) {
     total <- choose(n + m, m)
   } else {
     total <- exp(lchoose(n + m, m))
