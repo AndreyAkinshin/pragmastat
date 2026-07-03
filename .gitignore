@@ -53,3 +53,8 @@ node_modules/
 *.sln
 *.sw?
 # OS specific
+
+# AI
+# Track shared agent config (.claude/rules, .claude/settings.json); ignore only
+# personal local overrides.
+.claude/settings.local.json
