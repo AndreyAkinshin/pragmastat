@@ -15,11 +15,11 @@ func TestCenterPerformance(t *testing.T) {
 	}
 
 	start := time.Now()
-	result, err := fastCenter(x)
+	result, err := centerImpl(x)
 	elapsed := time.Since(start)
 
 	if err != nil {
-		t.Fatalf("fastCenter failed: %v", err)
+		t.Fatalf("centerImpl failed: %v", err)
 	}
 
 	expected := 50000.5
@@ -44,11 +44,11 @@ func TestSpreadPerformance(t *testing.T) {
 	}
 
 	start := time.Now()
-	result, err := fastSpread(x)
+	result, err := spreadImpl(x)
 	elapsed := time.Since(start)
 
 	if err != nil {
-		t.Fatalf("fastSpread failed: %v", err)
+		t.Fatalf("spreadImpl failed: %v", err)
 	}
 
 	expected := 29290.0
@@ -75,11 +75,11 @@ func TestShiftPerformance(t *testing.T) {
 	}
 
 	start := time.Now()
-	result, err := fastShift(x, y)
+	result, err := shiftImpl(x, y)
 	elapsed := time.Since(start)
 
 	if err != nil {
-		t.Fatalf("fastShift failed: %v", err)
+		t.Fatalf("shiftImpl failed: %v", err)
 	}
 
 	expected := 0.0

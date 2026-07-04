@@ -21,10 +21,10 @@ func deriveSeed[T Number](values []T) int64 {
 	return int64(hash)
 }
 
-// fastCenter computes the median of all pairwise averages efficiently.
+// centerImpl computes the median of all pairwise averages efficiently.
 // Time complexity: O(n log n) expected
 // Space complexity: O(n)
-func fastCenter[T Number](values []T) (float64, error) {
+func centerImpl[T Number](values []T) (float64, error) {
 	n := len(values)
 	if n == 0 {
 		return 0, errEmptyInput

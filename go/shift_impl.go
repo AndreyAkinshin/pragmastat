@@ -7,10 +7,10 @@ import (
 	"sort"
 )
 
-// fastRatioQuantiles computes quantiles of all pairwise ratios {x[i] / y[j]} via log-transformation.
+// ratioQuantilesImpl computes quantiles of all pairwise ratios {x[i] / y[j]} via log-transformation.
 // Time complexity: O((m + n) * log(precision)) per unique rank
 // Space complexity: O(m + n) for log-transformed arrays
-func fastRatioQuantiles[T Number](x, y []T, p []float64, assumeSorted bool) ([]float64, error) {
+func ratioQuantilesImpl[T Number](x, y []T, p []float64, assumeSorted bool) ([]float64, error) {
 	if len(x) == 0 || len(y) == 0 {
 		return nil, errEmptyInput
 	}
@@ -25,8 +25,8 @@ func fastRatioQuantiles[T Number](x, y []T, p []float64, assumeSorted bool) ([]f
 		return nil, err
 	}
 
-	// Delegate to fastShiftQuantiles in log-space
-	logResult, err := fastShiftQuantiles(logX, logY, p, assumeSorted)
+	// Delegate to shiftQuantilesImpl in log-space
+	logResult, err := shiftQuantilesImpl(logX, logY, p, assumeSorted)
 	if err != nil {
 		return nil, err
 	}
@@ -40,21 +40,21 @@ func fastRatioQuantiles[T Number](x, y []T, p []float64, assumeSorted bool) ([]f
 	return result, nil
 }
 
-// fastShift computes the median of all pairwise differences {x[i] - y[j]}.
+// shiftImpl computes the median of all pairwise differences {x[i] - y[j]}.
 // Time complexity: O((m + n) * log(precision)) per quantile
 // Space complexity: O(1) - avoids materializing all m*n differences
-func fastShift[T Number](x, y []T) (float64, error) {
-	result, err := fastShiftQuantiles(x, y, []float64{0.5}, false)
+func shiftImpl[T Number](x, y []T) (float64, error) {
+	result, err := shiftQuantilesImpl(x, y, []float64{0.5}, false)
 	if err != nil {
 		return 0, err
 	}
 	return result[0], nil
 }
 
-// fastShiftQuantiles computes quantiles of all pairwise differences {x[i] - y[j]}.
+// shiftQuantilesImpl computes quantiles of all pairwise differences {x[i] - y[j]}.
 // Time complexity: O((m + n) * log(precision)) per unique rank
 // Space complexity: O(1) - avoids materializing all m*n differences
-func fastShiftQuantiles[T Number](x, y []T, p []float64, assumeSorted bool) ([]float64, error) {
+func shiftQuantilesImpl[T Number](x, y []T, p []float64, assumeSorted bool) ([]float64, error) {
 	m := len(x)
 	n := len(y)
 	if m == 0 || n == 0 {

@@ -41,7 +41,7 @@ func Center(x *Sample) (Measurement, error) {
 	if err := checkNonWeighted("x", x); err != nil {
 		return Measurement{}, err
 	}
-	result, err := fastCenter(x.Values)
+	result, err := centerImpl(x.Values)
 	if err != nil {
 		return Measurement{}, err
 	}
@@ -57,7 +57,7 @@ func Spread(x *Sample) (Measurement, error) {
 	if err := checkNonWeighted("x", x); err != nil {
 		return Measurement{}, err
 	}
-	spreadVal, err := fastSpread(x.Values)
+	spreadVal, err := spreadImpl(x.Values)
 	if err != nil {
 		return Measurement{}, err
 	}
@@ -85,7 +85,7 @@ func Shift(x, y *Sample) (Measurement, error) {
 	if err != nil {
 		return Measurement{}, err
 	}
-	result, err := fastShift(x.Values, y.Values)
+	result, err := shiftImpl(x.Values, y.Values)
 	if err != nil {
 		return Measurement{}, err
 	}
@@ -124,7 +124,7 @@ func Ratio(x, y *Sample) (Measurement, error) {
 			return Measurement{}, NewPositivityError(y.subject)
 		}
 	}
-	result, err := fastRatioQuantiles(x.Values, y.Values, []float64{0.5}, false)
+	result, err := ratioQuantilesImpl(x.Values, y.Values, []float64{0.5}, false)
 	if err != nil {
 		return Measurement{}, err
 	}
@@ -153,14 +153,14 @@ func avgSpread(x, y *Sample) (Measurement, error) {
 	n := float64(x.Size())
 	m := float64(y.Size())
 
-	spreadX, err := fastSpread(x.Values)
+	spreadX, err := spreadImpl(x.Values)
 	if err != nil {
 		return Measurement{}, err
 	}
 	if spreadX <= 0 {
 		return Measurement{}, NewSparityError(x.subject)
 	}
-	spreadY, err := fastSpread(y.Values)
+	spreadY, err := spreadImpl(y.Values)
 	if err != nil {
 		return Measurement{}, err
 	}
@@ -197,14 +197,14 @@ func Disparity(x, y *Sample) (Measurement, error) {
 	n := float64(x.Size())
 	m := float64(y.Size())
 
-	spreadX, err := fastSpread(x.Values)
+	spreadX, err := spreadImpl(x.Values)
 	if err != nil {
 		return Measurement{}, err
 	}
 	if spreadX <= 0 {
 		return Measurement{}, NewSparityError(x.subject)
 	}
-	spreadY, err := fastSpread(y.Values)
+	spreadY, err := spreadImpl(y.Values)
 	if err != nil {
 		return Measurement{}, err
 	}
@@ -212,7 +212,7 @@ func Disparity(x, y *Sample) (Measurement, error) {
 		return Measurement{}, NewSparityError(y.subject)
 	}
 
-	shiftVal, err := fastShift(x.Values, y.Values)
+	shiftVal, err := shiftImpl(x.Values, y.Values)
 	if err != nil {
 		return Measurement{}, err
 	}
@@ -282,7 +282,7 @@ func ShiftBounds(x, y *Sample, misrate float64) (Bounds, error) {
 	}
 
 	p := []float64{float64(kLeft) / denominator, float64(kRight) / denominator}
-	bounds, err := fastShiftQuantiles(xSorted, ySorted, p, true)
+	bounds, err := shiftQuantilesImpl(xSorted, ySorted, p, true)
 	if err != nil {
 		return Bounds{}, err
 	}
@@ -391,7 +391,7 @@ func CenterBounds(x *Sample, misrate float64) (Bounds, error) {
 	kLeft := halfMargin + 1
 	kRight := totalPairs - halfMargin
 
-	lo, hi := fastCenterQuantileBounds(x.SortedValues(), kLeft, kRight)
+	lo, hi := centerQuantileBoundsImpl(x.SortedValues(), kLeft, kRight)
 	return Bounds{Lower: lo, Upper: hi, Unit: x.Unit}, nil
 }
 
@@ -428,7 +428,7 @@ func spreadBoundsWithRng(x *Sample, misrate float64, rng *Rng) (Bounds, error) {
 	if n < 2 {
 		return Bounds{}, NewSparityError(x.subject)
 	}
-	spreadVal, err := fastSpread(x.Values)
+	spreadVal, err := spreadImpl(x.Values)
 	if err != nil {
 		return Bounds{}, err
 	}
@@ -508,14 +508,14 @@ func avgSpreadBoundsWithRngs(x, y *Sample, misrate float64, rngX, rngY *Rng) (Bo
 		return Bounds{}, NewDomainError(SubjectMisrate)
 	}
 
-	spreadX, err := fastSpread(x.Values)
+	spreadX, err := spreadImpl(x.Values)
 	if err != nil {
 		return Bounds{}, err
 	}
 	if spreadX <= 0 {
 		return Bounds{}, NewSparityError(x.subject)
 	}
-	spreadY, err := fastSpread(y.Values)
+	spreadY, err := spreadImpl(y.Values)
 	if err != nil {
 		return Bounds{}, err
 	}
@@ -604,14 +604,14 @@ func disparityBoundsWithRngs(x, y *Sample, misrate float64, rngX, rngY *Rng) (Bo
 	alphaShift := minShift + extra/2.0
 	alphaAvg := minAvg + extra/2.0
 
-	spreadXVal, err := fastSpread(x.Values)
+	spreadXVal, err := spreadImpl(x.Values)
 	if err != nil {
 		return Bounds{}, err
 	}
 	if spreadXVal <= 0 {
 		return Bounds{}, NewSparityError(x.subject)
 	}
-	spreadYVal, err := fastSpread(y.Values)
+	spreadYVal, err := spreadImpl(y.Values)
 	if err != nil {
 		return Bounds{}, err
 	}

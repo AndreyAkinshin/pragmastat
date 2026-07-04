@@ -5,10 +5,10 @@ import (
 	"sort"
 )
 
-// fastSpread computes the median of all pairwise absolute differences efficiently.
+// spreadImpl computes the median of all pairwise absolute differences efficiently.
 // Time complexity: O(n log n) expected
 // Space complexity: O(n)
-func fastSpread[T Number](values []T) (float64, error) {
+func spreadImpl[T Number](values []T) (float64, error) {
 	n := len(values)
 	if n == 0 {
 		return 0.0, errEmptyInput

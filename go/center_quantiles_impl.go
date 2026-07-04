@@ -8,9 +8,9 @@ import (
 // relativeEpsilon is the tolerance for floating-point comparisons in binary search convergence.
 const relativeEpsilon = 1e-14
 
-// fastCenterQuantileBounds computes both lower and upper bounds from pairwise averages.
+// centerQuantileBoundsImpl computes both lower and upper bounds from pairwise averages.
 // Uses binary search with counting function to avoid materializing all N(N+1)/2 pairs.
-func fastCenterQuantileBounds(sorted []float64, marginLo, marginHi int64) (lo, hi float64) {
+func centerQuantileBoundsImpl(sorted []float64, marginLo, marginHi int64) (lo, hi float64) {
 	n := len(sorted)
 	totalPairs := int64(n) * int64(n+1) / 2
 
@@ -27,8 +27,8 @@ func fastCenterQuantileBounds(sorted []float64, marginLo, marginHi int64) (lo, h
 		marginHi = totalPairs
 	}
 
-	lo = fastCenterFindExactQuantile(sorted, marginLo)
-	hi = fastCenterFindExactQuantile(sorted, marginHi)
+	lo = centerFindExactQuantileImpl(sorted, marginLo)
+	hi = centerFindExactQuantileImpl(sorted, marginHi)
 
 	if lo > hi {
 		lo, hi = hi, lo
@@ -36,9 +36,9 @@ func fastCenterQuantileBounds(sorted []float64, marginLo, marginHi int64) (lo, h
 	return lo, hi
 }
 
-// fastCenterCountPairsLessOrEqual counts pairwise averages <= target value.
+// centerCountPairsLessOrEqualImpl counts pairwise averages <= target value.
 // Uses O(n) two-pointer algorithm.
-func fastCenterCountPairsLessOrEqual(sorted []float64, target float64) int64 {
+func centerCountPairsLessOrEqualImpl(sorted []float64, target float64) int64 {
 	n := len(sorted)
 	var count int64
 	// j is not reset: as i increases, threshold decreases monotonically
@@ -59,8 +59,8 @@ func fastCenterCountPairsLessOrEqual(sorted []float64, target float64) int64 {
 	return count
 }
 
-// fastCenterFindExactQuantile finds the exact k-th pairwise average using selection algorithm.
-func fastCenterFindExactQuantile(sorted []float64, k int64) float64 {
+// centerFindExactQuantileImpl finds the exact k-th pairwise average using selection algorithm.
+func centerFindExactQuantileImpl(sorted []float64, k int64) float64 {
 	n := len(sorted)
 	totalPairs := int64(n) * int64(n+1) / 2
 
@@ -82,7 +82,7 @@ func fastCenterFindExactQuantile(sorted []float64, k int64) float64 {
 
 	for hi-lo > eps*math.Max(1.0, math.Max(math.Abs(lo), math.Abs(hi))) {
 		mid := (lo + hi) / 2
-		countLessOrEqual := fastCenterCountPairsLessOrEqual(sorted, mid)
+		countLessOrEqual := centerCountPairsLessOrEqualImpl(sorted, mid)
 
 		if countLessOrEqual >= k {
 			hi = mid
@@ -129,7 +129,7 @@ func fastCenterFindExactQuantile(sorted []float64, k int64) float64 {
 	sort.Float64s(candidates)
 
 	for _, candidate := range candidates {
-		countAtCandidate := fastCenterCountPairsLessOrEqual(sorted, candidate)
+		countAtCandidate := centerCountPairsLessOrEqualImpl(sorted, candidate)
 		if countAtCandidate >= k {
 			return candidate
 		}
