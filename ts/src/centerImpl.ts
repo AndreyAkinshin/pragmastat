@@ -1,5 +1,5 @@
 /**
- * Fast O(n log n) implementation of the Center (Hodges-Lehmann) estimator.
+ * O(n log n) implementation of the Center (Hodges-Lehmann) estimator.
  * Based on Monahan's Algorithm 616 (1984).
  *
  * Internal implementation - not part of public API.
@@ -46,7 +46,7 @@ function deriveSeed(values: number[]): bigint {
  * @returns The center estimate (Hodges-Lehmann estimator)
  * @internal
  */
-export function fastCenter(values: number[]): number {
+export function centerImpl(values: number[]): number {
   const n = values.length;
   if (n === 0) {
     throw new Error('Input array cannot be empty');

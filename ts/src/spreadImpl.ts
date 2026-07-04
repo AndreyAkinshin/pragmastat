@@ -1,5 +1,5 @@
 /**
- * Fast O(n log n) implementation of the Spread (Shamos) estimator.
+ * O(n log n) implementation of the Spread (Shamos) estimator.
  * Based on Monahan's selection algorithm adapted for pairwise differences.
  *
  * Internal implementation - not part of public API.
@@ -46,7 +46,7 @@ function deriveSeed(values: number[]): bigint {
  * @returns The spread estimate (Shamos estimator)
  * @internal
  */
-export function fastSpread(values: number[]): number {
+export function spreadImpl(values: number[]): number {
   const n = values.length;
   if (n === 0) {
     throw new Error('Input array cannot be empty');

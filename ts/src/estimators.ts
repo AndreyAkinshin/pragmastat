@@ -2,13 +2,13 @@
  * Pragmastat estimators implementation
  */
 
-import { fastCenter } from './fastCenter';
-import { fastSpread } from './fastSpread';
-import { fastShift, fastRatio } from './fastShift';
+import { centerImpl } from './centerImpl';
+import { spreadImpl } from './spreadImpl';
+import { shiftImpl, ratioImpl } from './shiftImpl';
 import { pairwiseMargin } from './pairwiseMargin';
 import { signedRankMargin } from './signedRankMargin';
 import { signMarginRandomized } from './signMargin';
-import { fastCenterQuantileBounds } from './fastCenterQuantiles';
+import { centerQuantileBoundsImpl } from './centerQuantilesImpl';
 import { minAchievableMisrateOneSample, minAchievableMisrateTwoSample } from './minMisrate';
 import { AssumptionError } from './assumptions';
 import { MeasurementUnit } from './measurement-unit';
@@ -42,8 +42,8 @@ export const DEFAULT_MISRATE = 1e-3;
 export function center(x: Sample): Measurement {
   checkNonWeighted('x', x);
   const vals = [...x.values];
-  // fastCenter performs its own internal work on raw arrays
-  const result = fastCenter(vals);
+  // centerImpl performs its own internal work on raw arrays
+  const result = centerImpl(vals);
   return new Measurement(result, x.unit);
 }
 
@@ -58,7 +58,7 @@ export function center(x: Sample): Measurement {
 export function spread(x: Sample): Measurement {
   checkNonWeighted('x', x);
   const vals = [...x.values];
-  const spreadVal = fastSpread(vals);
+  const spreadVal = spreadImpl(vals);
   if (spreadVal <= 0) {
     throw AssumptionError.sparity('x');
   }
@@ -82,7 +82,7 @@ export function shift(x: Sample, y: Sample): Measurement {
   const xv = [...cx.values];
   const yv = [...cy.values];
 
-  const result = fastShift(xv, yv, [0.5], false)[0];
+  const result = shiftImpl(xv, yv, [0.5], false)[0];
   return new Measurement(result, resultUnit);
 }
 
@@ -111,7 +111,7 @@ export function ratio(x: Sample, y: Sample): Measurement {
     throw AssumptionError.positivity('y');
   }
 
-  const result = fastRatio(xv, yv, [0.5], false)[0];
+  const result = ratioImpl(xv, yv, [0.5], false)[0];
   return new Measurement(result, MeasurementUnit.RATIO);
 }
 
@@ -136,11 +136,11 @@ function avgSpread(x: Sample, y: Sample): Measurement {
   const nx = xv.length;
   const ny = yv.length;
 
-  const spreadX = fastSpread(xv);
+  const spreadX = spreadImpl(xv);
   if (spreadX <= 0) {
     throw AssumptionError.sparity('x');
   }
-  const spreadY = fastSpread(yv);
+  const spreadY = spreadImpl(yv);
   if (spreadY <= 0) {
     throw AssumptionError.sparity('y');
   }
@@ -168,16 +168,16 @@ export function disparity(x: Sample, y: Sample): Measurement {
   const nx = xv.length;
   const ny = yv.length;
 
-  const spreadX = fastSpread(xv);
+  const spreadX = spreadImpl(xv);
   if (spreadX <= 0) {
     throw AssumptionError.sparity('x');
   }
-  const spreadY = fastSpread(yv);
+  const spreadY = spreadImpl(yv);
   if (spreadY <= 0) {
     throw AssumptionError.sparity('y');
   }
 
-  const shiftVal = fastShift(xv, yv, [0.5], false)[0];
+  const shiftVal = shiftImpl(xv, yv, [0.5], false)[0];
   const avgSpreadVal = (nx * spreadX + ny * spreadY) / (nx + ny);
 
   return new Measurement(shiftVal / avgSpreadVal, MeasurementUnit.DISPARITY);
@@ -236,7 +236,7 @@ export function shiftBounds(x: Sample, y: Sample, misrate: number = DEFAULT_MISR
   const pLeft = Number(kLeft) / denominator;
   const pRight = Number(kRight) / denominator;
 
-  const [left, right] = fastShift(xs, ys, [pLeft, pRight], true);
+  const [left, right] = shiftImpl(xs, ys, [pLeft, pRight], true);
   const lower = Math.min(left, right);
   const upper = Math.max(left, right);
 
@@ -327,7 +327,7 @@ export function centerBounds(x: Sample, misrate: number = DEFAULT_MISRATE): Boun
 
   const sorted = [...xv].sort((a, b) => a - b);
 
-  const [lo, hi] = fastCenterQuantileBounds(sorted, kLeft, kRight);
+  const [lo, hi] = centerQuantileBoundsImpl(sorted, kLeft, kRight);
   return new Bounds(lo, hi, x.unit);
 }
 
@@ -352,7 +352,7 @@ export function spreadBounds(x: Sample, misrate: number = DEFAULT_MISRATE, seed?
   if (n < 2) {
     throw AssumptionError.sparity('x');
   }
-  if (fastSpread(xv) <= 0) {
+  if (spreadImpl(xv) <= 0) {
     throw AssumptionError.sparity('x');
   }
 
@@ -411,7 +411,7 @@ function rawShiftBounds(
   const pLeft = Number(kLeft) / denominator;
   const pRight = Number(kRight) / denominator;
 
-  const [left, right] = fastShift(xs, ys, [pLeft, pRight], true);
+  const [left, right] = shiftImpl(xs, ys, [pLeft, pRight], true);
   const lower = Math.min(left, right);
   const upper = Math.max(left, right);
 
@@ -450,10 +450,10 @@ function avgSpreadBounds(
   const minY = minAchievableMisrateOneSample(Math.floor(m / 2));
   if (alpha < minX || alpha < minY) throw AssumptionError.domain('misrate');
 
-  if (fastSpread(xv) <= 0) {
+  if (spreadImpl(xv) <= 0) {
     throw AssumptionError.sparity('x');
   }
-  if (fastSpread(yv) <= 0) {
+  if (spreadImpl(yv) <= 0) {
     throw AssumptionError.sparity('y');
   }
 
@@ -511,10 +511,10 @@ export function disparityBounds(
   const alphaShift = minShift + extra / 2.0;
   const alphaAvg = minAvg + extra / 2.0;
 
-  if (fastSpread(xv) <= 0) {
+  if (spreadImpl(xv) <= 0) {
     throw AssumptionError.sparity('x');
   }
-  if (fastSpread(yv) <= 0) {
+  if (spreadImpl(yv) <= 0) {
     throw AssumptionError.sparity('y');
   }
 

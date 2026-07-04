@@ -1,5 +1,5 @@
 /**
- * Fast O((m + n) * log(precision)) implementation for computing quantiles
+ * O((m + n) * log(precision)) implementation for computing quantiles
  * of all pairwise differences {x_i - y_j}.
  *
  * Based on binary search with two-pointer counting algorithm.
@@ -19,7 +19,7 @@ import { log } from './assumptions';
  * @returns Array of quantile values corresponding to probabilities in p
  * @internal
  */
-export function fastShift(
+export function shiftImpl(
   x: number[],
   y: number[],
   p: number[],
@@ -225,7 +225,7 @@ function midpoint(a: number, b: number): number {
  * @returns Array of quantile values corresponding to probabilities in p
  * @internal
  */
-export function fastRatio(
+export function ratioImpl(
   x: number[],
   y: number[],
   p: number[],
@@ -242,8 +242,8 @@ export function fastRatio(
   const logX = log(x, 'x');
   const logY = log(y, 'y');
 
-  // Delegate to fastShift in log-space
-  const logResult = fastShift(logX, logY, p, assumeSorted);
+  // Delegate to shiftImpl in log-space
+  const logResult = shiftImpl(logX, logY, p, assumeSorted);
 
   // Exp-transform back to ratio-space
   return logResult.map((v) => Math.exp(v));

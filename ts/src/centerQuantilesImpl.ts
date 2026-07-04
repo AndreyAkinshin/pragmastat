@@ -1,5 +1,5 @@
 /**
- * Fast algorithm for finding quantiles of pairwise averages (x[i] + x[j])/2.
+ * Algorithm for finding quantiles of pairwise averages (x[i] + x[j])/2.
  *
  * Uses binary search with counting function to find exact quantiles in O(n log(range)) time.
  */
@@ -124,7 +124,7 @@ function findExactQuantile(sorted: number[], k: number): number {
  * @param kHi 1-based rank for upper bound
  * @returns Tuple of [lower bound, upper bound]
  */
-export function fastCenterQuantileBounds(
+export function centerQuantileBoundsImpl(
   sorted: number[],
   kLo: number,
   kHi: number,
