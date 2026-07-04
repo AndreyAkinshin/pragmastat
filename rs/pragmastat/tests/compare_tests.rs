@@ -7,10 +7,9 @@ use float_cmp::approx_eq;
 use pragmastat::assumptions::EstimatorError;
 use pragmastat::compare::{
     compare1, compare1_with_seed, compare2, compare2_with_seed, ComparisonVerdict, Metric,
-    Projection, Threshold,
+    Threshold,
 };
 use pragmastat::measurement::Measurement;
-use pragmastat::measurement_unit::MeasurementUnit;
 use pragmastat::sample::Sample;
 use serde::{Deserialize, Serialize};
 use std::fs;
