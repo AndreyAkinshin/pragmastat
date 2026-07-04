@@ -33,7 +33,11 @@ func centerImpl[T Number](values []T) (float64, error) {
 		return float64(values[0]), nil
 	}
 	if n == 2 {
-		return (float64(values[0]) + float64(values[1])) / 2, nil
+		a := float64(values[0])
+		b := float64(values[1])
+		// Overflow-safe, order-symmetric midpoint: 0.5*a + 0.5*b (halve before
+		// summing; never overflows; operand order is irrelevant).
+		return 0.5*a + 0.5*b, nil
 	}
 
 	// Create deterministic RNG from input values
@@ -100,7 +104,7 @@ func centerImpl[T Number](values []T) (float64, error) {
 				maxActiveSum = math.Max(maxActiveSum, largestInRow)
 			}
 
-			pivot = (minActiveSum + maxActiveSum) / 2
+			pivot = 0.5*minActiveSum + 0.5*maxActiveSum
 			if pivot <= minActiveSum || pivot > maxActiveSum {
 				pivot = maxActiveSum
 			}
@@ -215,7 +219,7 @@ func centerImpl[T Number](values []T) (float64, error) {
 				maxRemainingSum = math.Max(maxRemainingSum, maxInRow)
 			}
 
-			pivot = (minRemainingSum + maxRemainingSum) / 2
+			pivot = 0.5*minRemainingSum + 0.5*maxRemainingSum
 			if pivot <= minRemainingSum || pivot > maxRemainingSum {
 				pivot = maxRemainingSum
 			}

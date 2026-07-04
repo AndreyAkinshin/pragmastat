@@ -95,7 +95,7 @@ func spreadImpl[T Number](values []T) (float64, error) {
 		if atTarget {
 			if kLow < kHigh {
 				// Even N: average the two central order stats
-				return 0.5 * (largestBelow + smallestAtOrAbove), nil
+				return 0.5*largestBelow + 0.5*smallestAtOrAbove, nil
 			}
 			// Odd N: pick the single middle
 			needLargest := countBelow == kLow
@@ -126,7 +126,7 @@ func spreadImpl[T Number](values []T) (float64, error) {
 
 			if active <= 0 {
 				if kLow < kHigh {
-					return 0.5 * (largestBelow + smallestAtOrAbove), nil
+					return 0.5*largestBelow + 0.5*smallestAtOrAbove, nil
 				}
 				if countBelow >= kLow {
 					return largestBelow, nil
@@ -138,7 +138,7 @@ func spreadImpl[T Number](values []T) (float64, error) {
 				return minActive, nil
 			}
 
-			mid := 0.5 * (minActive + maxActive)
+			mid := 0.5*minActive + 0.5*maxActive
 			if mid > minActive && mid <= maxActive {
 				pivot = mid
 			} else {
@@ -201,7 +201,7 @@ func spreadImpl[T Number](values []T) (float64, error) {
 
 			if activeSize <= 0 {
 				if kLow < kHigh {
-					return 0.5 * (largestBelow + smallestAtOrAbove), nil
+					return 0.5*largestBelow + 0.5*smallestAtOrAbove, nil
 				}
 				if countBelow >= kLow {
 					return largestBelow, nil
@@ -210,7 +210,7 @@ func spreadImpl[T Number](values []T) (float64, error) {
 			}
 
 			if kLow < kHigh {
-				return 0.5 * (minRem + maxRem), nil
+				return 0.5*minRem + 0.5*maxRem, nil
 			}
 			// In this code path countBelow < kLow, so minRem is always the correct result:
 			// |kLow-1-countBelow| = d-1 <= d = |countBelow-kLow| for all d > 0.

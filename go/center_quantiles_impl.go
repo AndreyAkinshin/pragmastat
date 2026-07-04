@@ -81,7 +81,7 @@ func centerFindExactQuantileImpl(sorted []float64, k int64) float64 {
 	const eps = relativeEpsilon
 
 	for hi-lo > eps*math.Max(1.0, math.Max(math.Abs(lo), math.Abs(hi))) {
-		mid := (lo + hi) / 2
+		mid := 0.5*lo + 0.5*hi
 		countLessOrEqual := centerCountPairsLessOrEqualImpl(sorted, mid)
 
 		if countLessOrEqual >= k {
@@ -91,7 +91,7 @@ func centerFindExactQuantileImpl(sorted []float64, k int64) float64 {
 		}
 	}
 
-	target := (lo + hi) / 2
+	target := 0.5*lo + 0.5*hi
 	var candidates []float64
 
 	for i := 0; i < n; i++ {
@@ -114,7 +114,7 @@ func centerFindExactQuantileImpl(sorted []float64, k int64) float64 {
 		}
 
 		if left > i {
-			avgBefore := (sorted[i] + sorted[left-1]) / 2
+			avgBefore := 0.5*sorted[i] + 0.5*sorted[left-1]
 			if avgBefore <= target+eps {
 				candidates = append(candidates, avgBefore)
 			}
