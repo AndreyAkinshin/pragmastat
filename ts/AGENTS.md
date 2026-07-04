@@ -28,15 +28,21 @@ ts/
 │   ├── gaussCdf.ts            # Standard normal CDF (ACM Algorithm 209)
 │   ├── rng.ts                 # Deterministic xoshiro256++ PRNG
 │   ├── xoshiro256.ts          # PRNG core implementation
-│   ├── fastCenter.ts          # O(n log n) Hodges-Lehmann algorithm
-│   ├── fastCenterQuantiles.ts # Center quantile binary search
-│   ├── fastSpread.ts          # O(n log n) Shamos algorithm
-│   ├── fastShift.ts           # O((m+n) log L) shift quantiles
+│   ├── centerImpl.ts          # O(n log n) Hodges-Lehmann algorithm
+│   ├── centerQuantilesImpl.ts # Center quantile binary search
+│   ├── spreadImpl.ts          # O(n log n) Shamos algorithm
+│   ├── shiftImpl.ts           # O((m+n) log L) shift quantiles
 │   ├── constants.ts           # Internal constants
 │   └── distributions/         # Uniform, Additive, Exp, Power, Multiplic
 ├── tests/
-│   ├── reference.test.ts      # JSON fixture validation
-│   ├── invariance.test.ts     # Mathematical property tests
+│   ├── reference.test.ts          # JSON fixture validation
+│   ├── invariance.test.ts         # Mathematical property tests
+│   ├── assumeSorted.test.ts       # assumeSorted=true vs default-path equivalence
+│   ├── centerImplGuard.test.ts    # centerImpl convergence guard + Bounds.contains
+│   ├── spreadImplGuard.test.ts    # spreadImpl convergence guard
+│   ├── mutation.test.ts           # Caller arrays and Samples are never mutated
+│   ├── ratioBoundsErrors.test.ts  # ratioBounds assumption-error priority
+│   ├── properties.test.ts         # Unit propagation, misrate domain, n==2 symmetry
 │   └── performance.test.ts
 ├── examples/
 │   └── demo.ts
@@ -54,18 +60,48 @@ ts/
 
 ## Public Functions
 
+Each estimator is overloaded with TWO public entry points (one shared impl, no
+duplicated logic):
+
+**(a) Typed Sample API** — accepts a `Sample`, returns a `Measurement` (or
+`Bounds`) carrying the propagated unit:
+
 ```typescript
-function center(x: number[]): number
-function spread(x: number[]): number
-function shift(x: number[], y: number[]): number
-function ratio(x: number[], y: number[]): number
-function disparity(x: number[], y: number[]): number
-function shiftBounds(x: number[], y: number[], misrate?: number): Bounds
-function ratioBounds(x: number[], y: number[], misrate?: number): Bounds
-function disparityBounds(x: number[], y: number[], misrate?: number, seed?: string): Bounds
-function centerBounds(x: number[], misrate?: number): Bounds
-function spreadBounds(x: number[], misrate?: number, seed?: string): Bounds
+function center(x: Sample): Measurement
+function spread(x: Sample): Measurement
+function shift(x: Sample, y: Sample): Measurement
+function ratio(x: Sample, y: Sample): Measurement
+function disparity(x: Sample, y: Sample): Measurement
+function centerBounds(x: Sample, misrate?: number): Bounds
+function spreadBounds(x: Sample, misrate?: number, seed?: string): Bounds
+function shiftBounds(x: Sample, y: Sample, misrate?: number): Bounds
+function ratioBounds(x: Sample, y: Sample, misrate?: number): Bounds
+function disparityBounds(x: Sample, y: Sample, misrate?: number, seed?: string): Bounds
 ```
+
+**(b) Raw native-array API** — accepts `number[]`, returns a plain `number` (or
+unitless `Bounds`), and takes an `assumeSorted` flag:
+
+```typescript
+function center(x: number[], assumeSorted?: boolean): number
+function spread(x: number[], assumeSorted?: boolean): number
+function shift(x: number[], y: number[], assumeSorted?: boolean): number
+function ratio(x: number[], y: number[], assumeSorted?: boolean): number
+function disparity(x: number[], y: number[], assumeSorted?: boolean): number
+function centerBounds(x: number[], misrate?: number, assumeSorted?: boolean): Bounds
+function spreadBounds(x: number[], misrate?: number, seed?: string, assumeSorted?: boolean): Bounds
+function shiftBounds(x: number[], y: number[], misrate?: number, assumeSorted?: boolean): Bounds
+function ratioBounds(x: number[], y: number[], misrate?: number, assumeSorted?: boolean): Bounds
+function disparityBounds(x: number[], y: number[], misrate?: number, seed?: string, assumeSorted?: boolean): Bounds
+```
+
+`assumeSorted` (default `false`) skips the internal ascending sort. Passing
+`true` on UNSORTED input is undefined behavior — it feeds unsorted data to a
+sorted-only kernel and may produce a wrong result or ERROR. This holds for
+`spreadBounds`/`disparityBounds` too: their disjoint-pair shuffle always runs on
+the passed order (so the flag never affects the shuffle), but the sparity check
+runs the sorted-only spread kernel under `assumeSorted`, so the flag is inert
+only on genuinely SORTED input.
 
 ## Distributions
 
@@ -114,7 +150,7 @@ Error conditions:
 
 ## Determinism
 
-The `fastCenter` and `fastSpread` functions use deterministic pivot selection via FNV-1a hash. Uses the library's own `Rng` class instead of `Math.random()`.
+The `centerImpl` and `spreadImpl` functions use deterministic pivot selection via FNV-1a hash. Uses the library's own `Rng` class instead of `Math.random()`.
 
 ## Linting
 
