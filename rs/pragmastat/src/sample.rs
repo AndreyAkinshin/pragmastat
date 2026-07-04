@@ -8,8 +8,8 @@ use crate::assumptions::{AssumptionError, EstimatorError, Subject};
 use crate::measurement_unit::{
     conversion_factor, finer, is_compatible, MeasurementUnit, UnitMismatchError,
 };
-use std::cell::OnceCell;
 use std::ops::Mul;
+use std::sync::OnceLock;
 
 /// A validated collection of numeric values with optional weights and a measurement unit.
 ///
@@ -24,7 +24,7 @@ pub struct Sample {
     total_weight: f64,
     weighted_size: f64,
     subject: Subject,
-    sorted_values: OnceCell<Vec<f64>>,
+    sorted_values: OnceLock<Vec<f64>>,
 }
 
 impl Sample {
@@ -125,7 +125,7 @@ impl Sample {
             total_weight,
             weighted_size,
             subject,
-            sorted_values: OnceCell::new(),
+            sorted_values: OnceLock::new(),
         })
     }
 
@@ -195,7 +195,7 @@ impl Sample {
             total_weight: self.total_weight,
             weighted_size: self.weighted_size,
             subject: self.subject,
-            sorted_values: OnceCell::new(),
+            sorted_values: OnceLock::new(),
         })
     }
 
@@ -221,7 +221,7 @@ impl Sample {
             total_weight: self.total_weight,
             weighted_size: self.weighted_size,
             subject: self.subject,
-            sorted_values: OnceCell::new(),
+            sorted_values: OnceLock::new(),
         })
     }
 }
