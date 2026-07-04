@@ -198,32 +198,6 @@ impl Sample {
             sorted_values: OnceLock::new(),
         })
     }
-
-    /// Log-transforms the values. Returns a new sample with number unit.
-    ///
-    /// # Errors
-    ///
-    /// Returns a positivity error if any value is non-positive.
-    #[allow(dead_code)] // Part of the Sample API; used by ratio estimators in other languages
-    pub(crate) fn log_transform(&self) -> Result<Self, AssumptionError> {
-        let mut log_values = Vec::with_capacity(self.values.len());
-        for &v in &self.values {
-            if v <= 0.0 {
-                return Err(AssumptionError::positivity(self.subject));
-            }
-            log_values.push(v.ln());
-        }
-        Ok(Self {
-            values: log_values,
-            weights: self.weights.clone(),
-            unit: MeasurementUnit::number(),
-            is_weighted: self.is_weighted,
-            total_weight: self.total_weight,
-            weighted_size: self.weighted_size,
-            subject: self.subject,
-            sorted_values: OnceLock::new(),
-        })
-    }
 }
 
 /// Multiplies all values in the sample by a scalar.
@@ -379,20 +353,5 @@ mod tests {
     fn weighted_length_mismatch_fails() {
         let result = Sample::weighted(vec![1.0, 2.0], vec![1.0], MeasurementUnit::number());
         assert!(result.is_err());
-    }
-
-    #[test]
-    fn log_transform_positive() {
-        let s = Sample::new(vec![1.0, std::f64::consts::E]).unwrap();
-        let log_s = s.log_transform().unwrap();
-        assert!((log_s.values()[0] - 0.0).abs() < 1e-15);
-        assert!((log_s.values()[1] - 1.0).abs() < 1e-15);
-        assert_eq!(log_s.unit().id(), "number");
-    }
-
-    #[test]
-    fn log_transform_non_positive_fails() {
-        let s = Sample::new(vec![1.0, 0.0]).unwrap();
-        assert!(s.log_transform().is_err());
     }
 }
