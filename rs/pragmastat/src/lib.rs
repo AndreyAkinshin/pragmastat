@@ -23,7 +23,7 @@ pub mod rng;
 pub(crate) mod sign_margin;
 pub(crate) mod signed_rank_margin;
 
-// Internal fast algorithm implementations
+// Internal algorithm implementations
 mod center_impl;
 mod center_quantiles_impl;
 mod shift_impl;
@@ -41,6 +41,8 @@ mod avg_spread_tests;
 mod disparity_bounds_tests;
 #[cfg(test)]
 mod pairwise_margin_tests;
+#[cfg(test)]
+mod ratio_bounds_tests;
 #[cfg(test)]
 mod signed_rank_margin_tests;
 
