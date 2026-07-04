@@ -101,7 +101,7 @@ impl Simulation for CenterBoundsSim {
 
         for i in 0..input.sample_count {
             let sample: Vec<f64> = dist.samples(&mut rng, input.sample_size);
-            let bounds = pragmastat::estimators::raw::center_bounds(&sample, input.misrate)
+            let bounds = pragmastat::estimators::raw::center_bounds(&sample, input.misrate, false)
                 .map_err(|e| SimError(format!("{e}")))?;
 
             if bounds.lower <= true_value && true_value <= bounds.upper {

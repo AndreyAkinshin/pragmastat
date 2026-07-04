@@ -13,7 +13,7 @@ fn lookup_estimator(name: &str) -> EstimatorFn {
     match name {
         "Mean" => estimators::mean,
         "Median" => |v| crate::estimators::median(v),
-        "Center" => |v| pragmastat::estimators::raw::center(v).unwrap(),
+        "Center" => |v| pragmastat::estimators::raw::center(v, false).unwrap(),
         _ => panic!("Unknown average estimator: {name}"),
     }
 }
@@ -124,7 +124,7 @@ impl Simulation for AvgDriftSim {
 
         for name in &input.estimator_names {
             let values = &sampling[name];
-            let sp = pragmastat::estimators::raw::spread(values)
+            let sp = pragmastat::estimators::raw::spread(values, false)
                 .map_err(|e| SimError(format!("{e}")))?;
             drifts.insert(name.clone(), n.sqrt() * sp / asymptotic);
         }

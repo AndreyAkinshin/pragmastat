@@ -107,8 +107,9 @@ impl Simulation for AvgSpreadBoundsSim {
         for i in 0..input.sample_count {
             let x: Vec<f64> = dist.samples(&mut rng, input.sample_size_x);
             let y: Vec<f64> = dist.samples(&mut rng, input.sample_size_y);
-            let bounds = pragmastat::estimators::raw::avg_spread_bounds(&x, &y, input.misrate)
-                .map_err(|e| SimError(format!("{e}")))?;
+            let bounds =
+                pragmastat::estimators::raw::avg_spread_bounds(&x, &y, input.misrate, false)
+                    .map_err(|e| SimError(format!("{e}")))?;
 
             if bounds.lower <= true_value && true_value <= bounds.upper {
                 coverage += 1;

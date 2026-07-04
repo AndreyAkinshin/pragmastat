@@ -13,7 +13,7 @@ fn lookup_estimator(name: &str) -> EstimatorFn {
     match name {
         "StdDev" => estimators::std_dev,
         "MAD" => estimators::mad,
-        "Spread" => |v| pragmastat::estimators::raw::spread(v).unwrap(),
+        "Spread" => |v| pragmastat::estimators::raw::spread(v, false).unwrap(),
         _ => panic!("Unknown dispersion estimator: {name}"),
     }
 }
@@ -123,9 +123,9 @@ impl Simulation for DispDriftSim {
 
         for name in &input.estimator_names {
             let values = &sampling[name];
-            let s = pragmastat::estimators::raw::spread(values)
+            let s = pragmastat::estimators::raw::spread(values, false)
                 .map_err(|e| SimError(format!("{e}")))?;
-            let c = pragmastat::estimators::raw::center(values)
+            let c = pragmastat::estimators::raw::center(values, false)
                 .map_err(|e| SimError(format!("{e}")))?;
             let rs = s / c.abs();
             drifts.insert(name.clone(), n.sqrt() * rs);

@@ -24,23 +24,23 @@ fn compute_row(n: usize) -> BoundsWidthRow {
     let x = linspace(n);
     let y = x.clone();
 
-    let center_bounds = raw::center_bounds(&x, MISRATE)
+    let center_bounds = raw::center_bounds(&x, MISRATE, false)
         .ok()
         .map(|b| b.upper - b.lower);
 
-    let spread_bounds = raw::spread_bounds_with_seed(&x, MISRATE, SEED)
+    let spread_bounds = raw::spread_bounds_with_seed(&x, MISRATE, SEED, false)
         .ok()
         .map(|b| b.upper - b.lower);
 
-    let shift_bounds = raw::shift_bounds(&x, &y, MISRATE)
+    let shift_bounds = raw::shift_bounds(&x, &y, MISRATE, false)
         .ok()
         .map(|b| b.upper - b.lower);
 
-    let ratio_bounds = raw::ratio_bounds(&x, &y, MISRATE)
+    let ratio_bounds = raw::ratio_bounds(&x, &y, MISRATE, false)
         .ok()
         .map(|b| b.upper - b.lower);
 
-    let disparity_bounds = raw::disparity_bounds_with_seed(&x, &y, MISRATE, SEED)
+    let disparity_bounds = raw::disparity_bounds_with_seed(&x, &y, MISRATE, SEED, false)
         .ok()
         .map(|b| b.upper - b.lower);
 
