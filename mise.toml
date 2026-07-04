@@ -96,12 +96,12 @@ run = "go build ./..."
 [tasks."go:test"]
 description = "Run Go tests"
 dir = "go"
-run = "go test ./..."
+run = "go test -race ./..."
 
 [tasks."go:test:verbose"]
 description = "Run Go tests with verbose output"
 dir = "go"
-run = "go test -v ./..."
+run = "go test -race -v ./..."
 
 [tasks."go:check"]
 description = "Check Go code (format and lint)"
