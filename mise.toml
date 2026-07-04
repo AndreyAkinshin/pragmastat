@@ -408,7 +408,7 @@ dir = "rs/pragmastat"
 run = """
 cargo clippy -- -D warnings
 cargo fmt -- --check
-cargo check
+RUSTFLAGS="-D warnings" cargo check --all-targets
 """
 
 [tasks."rs:check:fix"]
@@ -465,6 +465,7 @@ run = [
     { task = "rs:clean" },
     { task = "rs:restore" },
     { task = "rs:check" },
+    { task = "rs:sim:check" },
     { task = "rs:build" },
     { task = "rs:test" },
 ]
@@ -504,6 +505,7 @@ dir = "rs/pragmastat-sim"
 run = """
 cargo clippy -- -D warnings
 cargo fmt -- --check
+RUSTFLAGS="-D warnings" cargo check --all-targets
 """
 
 [tasks."rs:sim:check:fix"]
