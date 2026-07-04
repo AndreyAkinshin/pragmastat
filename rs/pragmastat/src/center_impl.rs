@@ -5,7 +5,7 @@
 use crate::fnv1a::hash_f64_slice;
 use crate::rng::Rng;
 
-pub(crate) fn center_impl(values: &[f64]) -> Result<f64, &'static str> {
+pub(crate) fn center_impl(values: &[f64], assume_sorted: bool) -> Result<f64, &'static str> {
     let n = values.len();
     if n == 0 {
         return Err("Input slice cannot be empty");
@@ -22,9 +22,17 @@ pub(crate) fn center_impl(values: &[f64]) -> Result<f64, &'static str> {
         return Err("Input contains NaN or infinite values");
     }
 
-    // Sort the values
-    let mut sorted_values = values.to_vec();
-    sorted_values.sort_unstable_by(|a, b| a.total_cmp(b));
+    let owned_sorted;
+    let sorted_values: &[f64] = if assume_sorted {
+        values
+    } else {
+        owned_sorted = {
+            let mut v = values.to_vec();
+            v.sort_unstable_by(|a, b| a.total_cmp(b));
+            v
+        };
+        &owned_sorted
+    };
 
     // Calculate target median rank(s) among all pairwise sums
     let total_pairs = (n * (n + 1)) / 2;
@@ -248,4 +256,58 @@ pub(crate) fn center_impl(values: &[f64]) -> Result<f64, &'static str> {
     }
 
     Err("Convergence failure (pathological input)")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn sorted_input_converges() {
+        // Valid sorted input must converge well within the iteration cap.
+        let values: Vec<f64> = (0..101).map(|i| i as f64).collect();
+        let result = center_impl(&values, true).unwrap();
+        assert!((result - 50.0).abs() < 1e-9);
+    }
+
+    #[test]
+    fn unsorted_with_assume_sorted_does_not_hang() {
+        // assume_sorted=true on UNSORTED input violates the contract (UB).
+        // Without the iteration cap and stall detection, the Monahan selection
+        // loop could spin forever on such input (an unkillable process wedge).
+        // This test pins the guard: the call must terminate quickly with a
+        // deterministic convergence-failure error rather than hang.
+        //
+        // This adversarial input is crafted to defeat the selection invariant so
+        // the active set fails to shrink; we assert the bailout, not any value.
+        let values = vec![
+            0.0, 100.0, 1.0, 99.0, 2.0, 98.0, 3.0, 97.0, 50.0, 4.0, 96.0, 5.0, 95.0, 49.0, 51.0,
+        ];
+        let result = center_impl(&values, true);
+        // The contract is "does not hang"; if the loop were uncapped this test
+        // would never complete. Assert the bailout unconditionally.
+        assert!(result.is_err());
+        assert!(
+            result.unwrap_err().contains("Convergence failure"),
+            "expected convergence-failure error"
+        );
+    }
+
+    #[test]
+    fn pathological_unsorted_returns_convergence_error() {
+        // A strongly anti-sorted sequence under assume_sorted=true. The stall
+        // guard detects that the active set fails to shrink and bails out with
+        // a deterministic convergence-failure error instead of spinning.
+        let n = 64;
+        let mut values = Vec::with_capacity(n);
+        for i in 0..n {
+            if i % 2 == 0 {
+                values.push((n - i) as f64);
+            } else {
+                values.push(i as f64);
+            }
+        }
+        let result = center_impl(&values, true);
+        assert_eq!(result, Err("Convergence failure (pathological input)"));
+    }
 }

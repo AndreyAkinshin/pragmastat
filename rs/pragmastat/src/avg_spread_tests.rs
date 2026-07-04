@@ -1,4 +1,4 @@
-use crate::assumptions::{EstimatorError, Subject};
+use crate::assumptions::EstimatorError;
 use crate::estimators::raw::{avg_spread, spread};
 use float_cmp::approx_eq;
 use serde::Deserialize;
@@ -75,7 +75,7 @@ fn test_avg_spread_reference() {
 
         // Handle error test cases
         if let Some(ref expected_error) = test_case.expected_error {
-            match avg_spread(&test_case.input.x, &test_case.input.y) {
+            match avg_spread(&test_case.input.x, &test_case.input.y, false) {
                 Ok(_) => failures.push(format!("{file_name:?}: expected error, got Ok")),
                 Err(EstimatorError::Assumption(ae)) => {
                     let violation = ae.violation();
@@ -104,7 +104,7 @@ fn test_avg_spread_reference() {
         }
 
         let expected_output = test_case.output.expect("Test case must have output");
-        let actual_output = match avg_spread(&test_case.input.x, &test_case.input.y) {
+        let actual_output = match avg_spread(&test_case.input.x, &test_case.input.y, false) {
             Ok(val) => val,
             Err(e) => {
                 failures.push(format!("{file_name:?}: unexpected error {e:?}"));
@@ -139,12 +139,12 @@ fn test_avg_spread_reference() {
 
 #[test]
 fn avg_spread_empty_x() {
-    assert!(avg_spread(&[], &[1.0, 2.0]).is_err());
+    assert!(avg_spread(&[], &[1.0, 2.0], false).is_err());
 }
 
 #[test]
 fn avg_spread_empty_y() {
-    assert!(avg_spread(&[1.0, 2.0], &[]).is_err());
+    assert!(avg_spread(&[1.0, 2.0], &[], false).is_err());
 }
 
 #[test]
@@ -155,8 +155,8 @@ fn avg_spread_equal() {
         vec![1.0, 1.0, 2.0, 3.0, 5.0, 8.0, 13.0],
     ];
     for x in &samples {
-        let as_val = avg_spread(x, x).unwrap();
-        let s_val = spread(x).unwrap();
+        let as_val = avg_spread(x, x, false).unwrap();
+        let s_val = spread(x, false).unwrap();
         assert!(
             approx_eq!(f64, as_val, s_val, epsilon = 1e-9),
             "avg_spread(x, x) = {} != spread(x) = {}",
@@ -170,8 +170,8 @@ fn avg_spread_equal() {
 fn avg_spread_symmetry() {
     let x = vec![1.0, 2.0, 3.0, 4.0, 5.0];
     let y = vec![10.0, 20.0, 30.0];
-    let xy = avg_spread(&x, &y).unwrap();
-    let yx = avg_spread(&y, &x).unwrap();
+    let xy = avg_spread(&x, &y, false).unwrap();
+    let yx = avg_spread(&y, &x, false).unwrap();
     assert!(
         approx_eq!(f64, xy, yx, epsilon = 1e-9),
         "avg_spread(x, y) = {} != avg_spread(y, x) = {}",
@@ -187,8 +187,8 @@ fn avg_spread_average() {
     for n in 2..=10 {
         let x: Vec<f64> = (0..n).map(|_| rng.uniform_f64()).collect();
         let x5: Vec<f64> = x.iter().map(|&v| v * 5.0).collect();
-        let as_val = avg_spread(&x, &x5).unwrap();
-        let expected = 3.0 * spread(&x).unwrap();
+        let as_val = avg_spread(&x, &x5, false).unwrap();
+        let expected = 3.0 * spread(&x, false).unwrap();
         assert!(
             approx_eq!(f64, as_val, expected, epsilon = 1e-9),
             "n={}: avg_spread(x, 5*x) = {} != 3*spread(x) = {}",
@@ -208,8 +208,8 @@ fn avg_spread_scale() {
         let y: Vec<f64> = (0..n).map(|_| rng.uniform_f64()).collect();
         let x2: Vec<f64> = x.iter().map(|&v| v * -2.0).collect();
         let y2: Vec<f64> = y.iter().map(|&v| v * -2.0).collect();
-        let scaled = avg_spread(&x2, &y2).unwrap();
-        let expected = 2.0 * avg_spread(&x, &y).unwrap();
+        let scaled = avg_spread(&x2, &y2, false).unwrap();
+        let expected = 2.0 * avg_spread(&x, &y, false).unwrap();
         assert!(
             approx_eq!(f64, scaled, expected, epsilon = 1e-9),
             "n={}: avg_spread(-2x, -2y) = {} != 2*avg_spread(x, y) = {}",

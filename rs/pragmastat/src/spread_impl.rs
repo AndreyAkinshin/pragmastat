@@ -5,7 +5,7 @@
 use crate::fnv1a::hash_f64_slice;
 use crate::rng::Rng;
 
-pub(crate) fn spread_impl(values: &[f64]) -> Result<f64, &'static str> {
+pub(crate) fn spread_impl(values: &[f64], assume_sorted: bool) -> Result<f64, &'static str> {
     let n = values.len();
     if n <= 1 {
         return Ok(0.0);
@@ -23,9 +23,17 @@ pub(crate) fn spread_impl(values: &[f64]) -> Result<f64, &'static str> {
         return Err("spread_impl: input too large");
     }
 
-    // Sort the values
-    let mut a = values.to_vec();
-    a.sort_unstable_by(|x, y| x.total_cmp(y));
+    let owned_sorted;
+    let a: &[f64] = if assume_sorted {
+        values
+    } else {
+        owned_sorted = {
+            let mut v = values.to_vec();
+            v.sort_unstable_by(|x, y| x.total_cmp(y));
+            v
+        };
+        &owned_sorted
+    };
 
     // Total number of pairwise differences with i < j
     let total_pairs = (n as u64) * ((n - 1) as u64) / 2;
@@ -297,4 +305,41 @@ pub(crate) fn spread_impl(values: &[f64]) -> Result<f64, &'static str> {
     }
 
     Err("Convergence failure (pathological input)")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn sorted_input_converges() {
+        // Valid sorted input must converge well within the iteration cap.
+        let values: Vec<f64> = (0..101).map(|i| i as f64).collect();
+        let result = spread_impl(&values, true).unwrap();
+        assert!(result.is_finite());
+        assert!(result > 0.0);
+    }
+
+    #[test]
+    fn unsorted_with_assume_sorted_does_not_hang() {
+        // assume_sorted=true on UNSORTED input violates the contract (UB).
+        // Without the iteration cap and stall detection, the Monahan selection
+        // loop could spin forever on such input (an unkillable process wedge).
+        // This test pins the guard: the call must terminate quickly with a
+        // deterministic convergence-failure error rather than hang.
+        //
+        // This adversarial input is crafted to defeat the selection invariant so
+        // the active set fails to shrink; we assert the bailout, not any value.
+        let values = vec![
+            0.0, 100.0, 1.0, 99.0, 2.0, 98.0, 3.0, 97.0, 50.0, 4.0, 96.0, 5.0, 95.0, 49.0, 51.0,
+        ];
+        let result = spread_impl(&values, true);
+        // The contract is "does not hang"; if the loop were uncapped this test
+        // would never complete. Assert the bailout unconditionally.
+        assert!(result.is_err());
+        assert!(
+            result.unwrap_err().contains("Convergence failure"),
+            "expected convergence-failure error"
+        );
+    }
 }

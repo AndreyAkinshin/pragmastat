@@ -1,5 +1,5 @@
 use crate::assumptions::{AssumptionId, EstimatorError, Subject};
-use crate::estimators::raw::{avg_spread_bounds, avg_spread_bounds_with_seed, RawBounds};
+use crate::estimators::raw::{avg_spread_bounds, avg_spread_bounds_with_seed};
 use float_cmp::approx_eq;
 use serde::Deserialize;
 use std::fs;
@@ -82,11 +82,13 @@ fn test_avg_spread_bounds_reference() {
                     &test_case.input.y,
                     test_case.input.misrate,
                     s,
+                    false,
                 ),
                 None => avg_spread_bounds(
                     &test_case.input.x,
                     &test_case.input.y,
                     test_case.input.misrate,
+                    false,
                 ),
             };
             match result {
@@ -117,11 +119,13 @@ fn test_avg_spread_bounds_reference() {
                 &test_case.input.y,
                 test_case.input.misrate,
                 s,
+                false,
             ),
             None => avg_spread_bounds(
                 &test_case.input.x,
                 &test_case.input.y,
                 test_case.input.misrate,
+                false,
             ),
         };
         let actual_output = match actual_output {
@@ -166,17 +170,17 @@ fn test_avg_spread_bounds_reference() {
 
 #[test]
 fn avg_spread_bounds_empty_x() {
-    assert!(avg_spread_bounds(&[], &[1.0, 2.0], 0.1).is_err());
+    assert!(avg_spread_bounds(&[], &[1.0, 2.0], 0.1, false).is_err());
 }
 
 #[test]
 fn avg_spread_bounds_empty_y() {
-    assert!(avg_spread_bounds(&[1.0, 2.0], &[], 0.1).is_err());
+    assert!(avg_spread_bounds(&[1.0, 2.0], &[], 0.1, false).is_err());
 }
 
 #[test]
 fn avg_spread_bounds_misrate_below_min() {
-    let result = avg_spread_bounds(&[1.0, 2.0, 3.0, 4.0], &[1.0, 2.0, 3.0, 4.0], 0.5);
+    let result = avg_spread_bounds(&[1.0, 2.0, 3.0, 4.0], &[1.0, 2.0, 3.0, 4.0], 0.5, false);
     assert!(result.is_err());
     if let Err(EstimatorError::Assumption(ref ae)) = result {
         assert_eq!(ae.violation().id, AssumptionId::Domain);

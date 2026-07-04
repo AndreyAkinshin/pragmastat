@@ -23,7 +23,6 @@ pub struct Sample {
     is_weighted: bool,
     total_weight: f64,
     weighted_size: f64,
-    subject: Subject,
     sorted_values: OnceLock<Vec<f64>>,
 }
 
@@ -43,7 +42,7 @@ impl Sample {
     ///
     /// Returns [`EstimatorError`] if `values` is empty or contains NaN/infinite values.
     pub fn with_unit(values: Vec<f64>, unit: MeasurementUnit) -> Result<Self, EstimatorError> {
-        Self::build(values, None, unit, Subject::X)
+        Self::build(values, None, unit)
     }
 
     /// Creates a weighted sample with a specified unit.
@@ -60,27 +59,22 @@ impl Sample {
         weights: Vec<f64>,
         unit: MeasurementUnit,
     ) -> Result<Self, EstimatorError> {
-        Self::build(values, Some(weights), unit, Subject::X)
-    }
-
-    /// Internal constructor with configurable subject (used for two-sample estimators).
-    pub(crate) fn with_subject(mut self, subject: Subject) -> Self {
-        self.subject = subject;
-        self
+        Self::build(values, Some(weights), unit)
     }
 
     fn build(
         values: Vec<f64>,
         weights: Option<Vec<f64>>,
         unit: MeasurementUnit,
-        subject: Subject,
     ) -> Result<Self, EstimatorError> {
+        // Construction can't know argument position, so validity errors here always
+        // report subject "x" (matches the sample-construction fixtures across languages).
         if values.is_empty() {
-            return Err(EstimatorError::from(AssumptionError::validity(subject)));
+            return Err(EstimatorError::from(AssumptionError::validity(Subject::X)));
         }
         for &v in &values {
             if !v.is_finite() {
-                return Err(EstimatorError::from(AssumptionError::validity(subject)));
+                return Err(EstimatorError::from(AssumptionError::validity(Subject::X)));
             }
         }
 
@@ -124,7 +118,6 @@ impl Sample {
             is_weighted,
             total_weight,
             weighted_size,
-            subject,
             sorted_values: OnceLock::new(),
         })
     }
@@ -159,11 +152,6 @@ impl Sample {
         &self.unit
     }
 
-    /// Returns the subject label (X or Y) for error reporting.
-    pub(crate) fn subject(&self) -> Subject {
-        self.subject
-    }
-
     /// Returns a sorted copy of the values (lazily computed, cached).
     pub fn sorted_values(&self) -> &[f64] {
         self.sorted_values.get_or_init(|| {
@@ -194,7 +182,6 @@ impl Sample {
             is_weighted: self.is_weighted,
             total_weight: self.total_weight,
             weighted_size: self.weighted_size,
-            subject: self.subject,
             sorted_values: OnceLock::new(),
         })
     }
@@ -206,12 +193,7 @@ impl Mul<f64> for &Sample {
 
     fn mul(self, rhs: f64) -> Self::Output {
         let scaled: Vec<f64> = self.values.iter().map(|&v| v * rhs).collect();
-        Sample::build(
-            scaled,
-            self.weights.clone(),
-            self.unit.clone(),
-            self.subject,
-        )
+        Sample::build(scaled, self.weights.clone(), self.unit.clone())
     }
 }
 
@@ -241,19 +223,22 @@ pub(crate) fn check_compatible_units(a: &Sample, b: &Sample) -> Result<(), Estim
     Ok(())
 }
 
-/// Prepares two samples for a two-sample estimator: sets subjects, checks
-/// unit compatibility, and converts both to the finer unit.
-pub(crate) fn prepare_pair(a: &Sample, b: &Sample) -> Result<(Sample, Sample), EstimatorError> {
+/// Prepares two samples for a two-sample estimator: checks unit compatibility
+/// and converts both to the finer unit.
+///
+/// When both samples already share the same unit, the originals are borrowed
+/// (via [`Cow::Borrowed`]) so their warm sorted-value caches are reused — no
+/// clone or re-sort. Only when a unit conversion is required are new samples
+/// materialized. The error "subject" is supplied positionally by the estimator
+/// (it is not stored on a sample), so no relabeling happens here.
+pub(crate) fn prepare_pair<'a>(
+    a: &'a Sample,
+    b: &'a Sample,
+) -> Result<(std::borrow::Cow<'a, Sample>, std::borrow::Cow<'a, Sample>), EstimatorError> {
+    use std::borrow::Cow;
     check_compatible_units(a, b)?;
-    let (a, b) = convert_to_finer(a, b)?;
-    Ok((a.with_subject(Subject::X), b.with_subject(Subject::Y)))
-}
-
-/// Converts both samples to the finer (more precise) unit.
-/// Returns clones if they already share the same unit identity.
-pub(crate) fn convert_to_finer(a: &Sample, b: &Sample) -> Result<(Sample, Sample), EstimatorError> {
     if a.unit().id() == b.unit().id() && a.unit().base_units() == b.unit().base_units() {
-        return Ok((a.clone(), b.clone()));
+        return Ok((Cow::Borrowed(a), Cow::Borrowed(b)));
     }
     let target = finer(a.unit(), b.unit());
     let new_a = a
@@ -262,12 +247,21 @@ pub(crate) fn convert_to_finer(a: &Sample, b: &Sample) -> Result<(Sample, Sample
     let new_b = b
         .convert_to(target)
         .map_err(|e| EstimatorError::Other(e.to_string()))?;
-    Ok((new_a, new_b))
+    Ok((Cow::Owned(new_a), Cow::Owned(new_b)))
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    // Sample must stay shareable across threads (e.g. Arc<Sample>, rayon &Sample).
+    // The lazily-cached sorted view uses OnceLock (Sync), not OnceCell (!Sync) — this
+    // compile-time guard fails if that ever regresses.
+    #[test]
+    fn sample_is_send_and_sync() {
+        fn assert_send_sync<T: Send + Sync>() {}
+        assert_send_sync::<Sample>();
+    }
 
     #[test]
     fn new_valid() {
@@ -299,6 +293,14 @@ mod tests {
         assert_eq!(sorted, &[1.0, 2.0, 3.0]);
         let sorted2 = s.sorted_values();
         assert_eq!(sorted, sorted2);
+        // The cache must be REUSED, not recomputed: both calls must hand back the
+        // exact same backing allocation. Value-equality alone would pass even with
+        // no caching, so assert pointer-identity of the slices.
+        assert!(
+            std::ptr::eq(sorted, sorted2),
+            "sorted_values() returned a freshly computed slice; cache was not reused"
+        );
+        assert_eq!(sorted.as_ptr(), sorted2.as_ptr());
     }
 
     #[test]

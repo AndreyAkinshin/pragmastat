@@ -1,5 +1,5 @@
 use crate::assumptions::{AssumptionId, EstimatorError, Subject};
-use crate::estimators::raw::{disparity_bounds, disparity_bounds_with_seed, RawBounds};
+use crate::estimators::raw::{disparity_bounds, disparity_bounds_with_seed};
 use float_cmp::approx_eq;
 use serde::Deserialize;
 use std::fs;
@@ -82,11 +82,13 @@ fn test_disparity_bounds_reference() {
                     &test_case.input.y,
                     test_case.input.misrate,
                     s,
+                    false,
                 ),
                 None => disparity_bounds(
                     &test_case.input.x,
                     &test_case.input.y,
                     test_case.input.misrate,
+                    false,
                 ),
             };
             match result {
@@ -117,11 +119,13 @@ fn test_disparity_bounds_reference() {
                 &test_case.input.y,
                 test_case.input.misrate,
                 s,
+                false,
             ),
             None => disparity_bounds(
                 &test_case.input.x,
                 &test_case.input.y,
                 test_case.input.misrate,
+                false,
             ),
         };
         let actual_output = match actual_output {
@@ -166,17 +170,17 @@ fn test_disparity_bounds_reference() {
 
 #[test]
 fn disparity_bounds_empty_x() {
-    assert!(disparity_bounds(&[], &[1.0, 2.0], 0.1).is_err());
+    assert!(disparity_bounds(&[], &[1.0, 2.0], 0.1, false).is_err());
 }
 
 #[test]
 fn disparity_bounds_empty_y() {
-    assert!(disparity_bounds(&[1.0, 2.0], &[], 0.1).is_err());
+    assert!(disparity_bounds(&[1.0, 2.0], &[], 0.1, false).is_err());
 }
 
 #[test]
 fn disparity_bounds_misrate_below_min() {
-    let result = disparity_bounds(&[1.0, 2.0, 3.0, 4.0], &[1.0, 2.0, 3.0, 4.0], 0.1);
+    let result = disparity_bounds(&[1.0, 2.0, 3.0, 4.0], &[1.0, 2.0, 3.0, 4.0], 0.1, false);
     assert!(result.is_err());
     if let Err(EstimatorError::Assumption(ref ae)) = result {
         assert_eq!(ae.violation().id, AssumptionId::Domain);

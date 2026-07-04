@@ -31,7 +31,7 @@ fn main() {
     // --- Raw slice API (backward-compatible) ---
 
     let x_raw: Vec<f64> = (1..=200).map(|i| i as f64).collect();
-    println!("{}", estimators::raw::center(&x_raw).unwrap()); // 100.5
+    println!("{}", estimators::raw::center(&x_raw, false).unwrap()); // 100.5
 
     // --- Randomization ---
 

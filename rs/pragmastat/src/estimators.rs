@@ -1,8 +1,8 @@
 //! Statistical estimators for one-sample and two-sample analysis.
 //!
 //! Public API accepts [`Sample`] and returns [`Measurement`] or [`Bounds`].
-//! Raw `&[f64]`-based helpers are available via the `raw` submodule for
-//! backward compatibility and internal tests.
+//! Raw `&[f64]`-based helpers are available via the `raw` submodule as a
+//! lightweight numeric interface and for internal tests.
 
 use crate::assumptions::{
     check_positivity, check_validity, log, AssumptionError, EstimatorError, Subject,
@@ -16,12 +16,27 @@ use crate::sample::{check_non_weighted, prepare_pair, Sample};
 pub const DEFAULT_MISRATE: f64 = 1e-3;
 
 // =============================================================================
-// Raw (slice-based) estimator functions — backward-compatible internal API
+// Raw (slice-based) estimator functions — low-level public slice API
 // =============================================================================
 
-/// Raw slice-based estimator functions for backward compatibility and internal tests.
+/// Low-level public slice API for the estimators.
 ///
-/// These accept `&[f64]` and return raw `f64` or the legacy `RawBounds` struct.
+/// This module is a stable, supported entry point for callers that work directly
+/// with `&[f64]` rather than the [`Sample`]/[`Measurement`]/[`Bounds`] metrology
+/// types. It is a lightweight numeric interface for performance-sensitive or
+/// unit-agnostic callers (it also backs the cross-language test suite).
+///
+/// Functions accept `&[f64]` and return a raw `f64` or the legacy [`RawBounds`]
+/// struct (lower/upper without a unit). The `assume_sorted` parameter lets callers
+/// that already hold pre-sorted data skip a redundant sort.
+///
+/// # Safety / contract
+///
+/// Passing `assume_sorted = true` with input that is NOT actually sorted ascending
+/// is a contract violation (undefined behavior): the result is unspecified and may
+/// differ from the sorted answer. Termination is nonetheless guaranteed: the
+/// selection loops are bounded and fail with a deterministic convergence error on
+/// pathological input.
 pub mod raw {
     use super::*;
 
@@ -32,70 +47,91 @@ pub mod raw {
         pub upper: f64,
     }
 
-    pub fn center(x: &[f64]) -> Result<f64, EstimatorError> {
+    pub fn center(x: &[f64], assume_sorted: bool) -> Result<f64, EstimatorError> {
         check_validity(x, Subject::X)?;
-        crate::center_impl::center_impl(x).map_err(EstimatorError::from)
+        crate::center_impl::center_impl(x, assume_sorted).map_err(EstimatorError::from)
     }
 
-    pub fn spread(x: &[f64]) -> Result<f64, EstimatorError> {
+    pub fn spread(x: &[f64], assume_sorted: bool) -> Result<f64, EstimatorError> {
         check_validity(x, Subject::X)?;
-        let spread_val = crate::spread_impl::spread_impl(x).map_err(EstimatorError::from)?;
+        let spread_val =
+            crate::spread_impl::spread_impl(x, assume_sorted).map_err(EstimatorError::from)?;
         if spread_val <= 0.0 {
             return Err(EstimatorError::from(AssumptionError::sparity(Subject::X)));
         }
         Ok(spread_val)
     }
 
-    pub fn shift(x: &[f64], y: &[f64]) -> Result<f64, EstimatorError> {
+    pub fn shift(x: &[f64], y: &[f64], assume_sorted: bool) -> Result<f64, EstimatorError> {
         check_validity(x, Subject::X)?;
         check_validity(y, Subject::Y)?;
-        crate::shift_impl::shift_impl(x, y).map_err(EstimatorError::from)
+        Ok(
+            crate::shift_impl::shift_quantiles_impl(x, y, &[0.5], assume_sorted)
+                .map_err(EstimatorError::from)?[0],
+        )
     }
 
-    pub fn ratio(x: &[f64], y: &[f64]) -> Result<f64, EstimatorError> {
+    pub fn ratio(x: &[f64], y: &[f64], assume_sorted: bool) -> Result<f64, EstimatorError> {
         check_validity(x, Subject::X)?;
         check_validity(y, Subject::Y)?;
         check_positivity(x, Subject::X)?;
         check_positivity(y, Subject::Y)?;
-        crate::shift_impl::ratio_impl(x, y).map_err(EstimatorError::from)
+        Ok(
+            crate::shift_impl::ratio_quantiles_impl(x, y, &[0.5], assume_sorted)
+                .map_err(EstimatorError::from)?[0],
+        )
     }
 
     #[cfg(test)]
-    pub(crate) fn avg_spread(x: &[f64], y: &[f64]) -> Result<f64, EstimatorError> {
+    pub(crate) fn avg_spread(
+        x: &[f64],
+        y: &[f64],
+        assume_sorted: bool,
+    ) -> Result<f64, EstimatorError> {
         check_validity(x, Subject::X)?;
         check_validity(y, Subject::Y)?;
         let n = x.len();
         let m = y.len();
-        let spread_x = crate::spread_impl::spread_impl(x).map_err(EstimatorError::from)?;
+        let spread_x =
+            crate::spread_impl::spread_impl(x, assume_sorted).map_err(EstimatorError::from)?;
         if spread_x <= 0.0 {
             return Err(EstimatorError::from(AssumptionError::sparity(Subject::X)));
         }
-        let spread_y = crate::spread_impl::spread_impl(y).map_err(EstimatorError::from)?;
+        let spread_y =
+            crate::spread_impl::spread_impl(y, assume_sorted).map_err(EstimatorError::from)?;
         if spread_y <= 0.0 {
             return Err(EstimatorError::from(AssumptionError::sparity(Subject::Y)));
         }
         Ok((n as f64 * spread_x + m as f64 * spread_y) / (n + m) as f64)
     }
 
-    pub fn disparity(x: &[f64], y: &[f64]) -> Result<f64, EstimatorError> {
+    pub fn disparity(x: &[f64], y: &[f64], assume_sorted: bool) -> Result<f64, EstimatorError> {
         check_validity(x, Subject::X)?;
         check_validity(y, Subject::Y)?;
         let n = x.len();
         let m = y.len();
-        let spread_x = crate::spread_impl::spread_impl(x).map_err(EstimatorError::from)?;
+        let spread_x =
+            crate::spread_impl::spread_impl(x, assume_sorted).map_err(EstimatorError::from)?;
         if spread_x <= 0.0 {
             return Err(EstimatorError::from(AssumptionError::sparity(Subject::X)));
         }
-        let spread_y = crate::spread_impl::spread_impl(y).map_err(EstimatorError::from)?;
+        let spread_y =
+            crate::spread_impl::spread_impl(y, assume_sorted).map_err(EstimatorError::from)?;
         if spread_y <= 0.0 {
             return Err(EstimatorError::from(AssumptionError::sparity(Subject::Y)));
         }
-        let shift_val = crate::shift_impl::shift_impl(x, y).map_err(EstimatorError::from)?;
+        let shift_val = crate::shift_impl::shift_quantiles_impl(x, y, &[0.5], assume_sorted)
+            .map_err(EstimatorError::from)?[0];
         let avg_spread_val = (n as f64 * spread_x + m as f64 * spread_y) / (n + m) as f64;
         Ok(shift_val / avg_spread_val)
     }
 
-    pub fn shift_bounds(x: &[f64], y: &[f64], misrate: f64) -> Result<RawBounds, EstimatorError> {
+    pub fn shift_bounds(
+        x: &[f64],
+        y: &[f64],
+        misrate: f64,
+        assume_sorted: bool,
+    ) -> Result<RawBounds, EstimatorError> {
         check_validity(x, Subject::X)?;
         check_validity(y, Subject::Y)?;
         if misrate.is_nan() || !(0.0..=1.0).contains(&misrate) {
@@ -112,13 +148,10 @@ pub mod raw {
                 Subject::Misrate,
             )));
         }
-        let mut xs = x.to_vec();
-        let mut ys = y.to_vec();
-        xs.sort_unstable_by(|a, b| a.total_cmp(b));
-        ys.sort_unstable_by(|a, b| a.total_cmp(b));
         let total = n as u64 * m as u64;
         if total == 1 {
-            let value = xs[0] - ys[0];
+            let (xv, yv) = sorted_pair(x, y, assume_sorted);
+            let value = xv[0] - yv[0];
             return Ok(RawBounds {
                 lower: value,
                 upper: value,
@@ -135,6 +168,7 @@ pub mod raw {
         let k_right = total - 1 - half_margin;
         let denominator = (total - 1) as f64;
         let p = vec![k_left as f64 / denominator, k_right as f64 / denominator];
+        let (xs, ys) = sorted_pair(x, y, assume_sorted);
         let bounds = crate::shift_impl::shift_quantiles_impl(&xs, &ys, &p, true)
             .map_err(EstimatorError::from)?;
         let lower = bounds[0].min(bounds[1]);
@@ -142,7 +176,12 @@ pub mod raw {
         Ok(RawBounds { lower, upper })
     }
 
-    pub fn ratio_bounds(x: &[f64], y: &[f64], misrate: f64) -> Result<RawBounds, EstimatorError> {
+    pub fn ratio_bounds(
+        x: &[f64],
+        y: &[f64],
+        misrate: f64,
+        assume_sorted: bool,
+    ) -> Result<RawBounds, EstimatorError> {
         check_validity(x, Subject::X)?;
         check_validity(y, Subject::Y)?;
         if misrate.is_nan() || !(0.0..=1.0).contains(&misrate) {
@@ -159,14 +198,19 @@ pub mod raw {
         }
         let log_x = log(x, Subject::X)?;
         let log_y = log(y, Subject::Y)?;
-        let log_bounds = shift_bounds(&log_x, &log_y, misrate)?;
+        // log is monotonic: sorted positive input → sorted log output
+        let log_bounds = shift_bounds(&log_x, &log_y, misrate, assume_sorted)?;
         Ok(RawBounds {
             lower: log_bounds.lower.exp(),
             upper: log_bounds.upper.exp(),
         })
     }
 
-    pub fn center_bounds(x: &[f64], misrate: f64) -> Result<RawBounds, EstimatorError> {
+    pub fn center_bounds(
+        x: &[f64],
+        misrate: f64,
+        assume_sorted: bool,
+    ) -> Result<RawBounds, EstimatorError> {
         check_validity(x, Subject::X)?;
         if misrate.is_nan() || !(0.0..=1.0).contains(&misrate) {
             return Err(EstimatorError::from(AssumptionError::domain(
@@ -192,8 +236,7 @@ pub mod raw {
         }
         let k_left = half_margin + 1;
         let k_right = total_pairs - half_margin;
-        let mut sorted = x.to_vec();
-        sorted.sort_unstable_by(|a, b| a.total_cmp(b));
+        let sorted = sorted_one(x, assume_sorted);
         let (lo, hi) =
             crate::center_quantiles_impl::center_quantile_bounds_impl(&sorted, k_left, k_right);
         Ok(RawBounds {
@@ -202,18 +245,23 @@ pub mod raw {
         })
     }
 
-    pub fn spread_bounds(x: &[f64], misrate: f64) -> Result<RawBounds, EstimatorError> {
+    pub fn spread_bounds(
+        x: &[f64],
+        misrate: f64,
+        assume_sorted: bool,
+    ) -> Result<RawBounds, EstimatorError> {
         let mut rng = crate::rng::Rng::new();
-        spread_bounds_with_rng(x, misrate, &mut rng)
+        spread_bounds_with_rng(x, sorted_view(x, assume_sorted), misrate, &mut rng)
     }
 
     pub fn spread_bounds_with_seed(
         x: &[f64],
         misrate: f64,
         seed: &str,
+        assume_sorted: bool,
     ) -> Result<RawBounds, EstimatorError> {
         let mut rng = crate::rng::Rng::from_string(seed);
-        spread_bounds_with_rng(x, misrate, &mut rng)
+        spread_bounds_with_rng(x, sorted_view(x, assume_sorted), misrate, &mut rng)
     }
 
     #[doc(hidden)] // internal estimator, pub only for pragmastat-sim (cross-crate)
@@ -221,10 +269,19 @@ pub mod raw {
         x: &[f64],
         y: &[f64],
         misrate: f64,
+        assume_sorted: bool,
     ) -> Result<RawBounds, EstimatorError> {
         let mut rng_x = crate::rng::Rng::new();
         let mut rng_y = crate::rng::Rng::new();
-        avg_spread_bounds_with_rngs(x, y, misrate, &mut rng_x, &mut rng_y)
+        avg_spread_bounds_with_rngs(
+            x,
+            sorted_view(x, assume_sorted),
+            y,
+            sorted_view(y, assume_sorted),
+            misrate,
+            &mut rng_x,
+            &mut rng_y,
+        )
     }
 
     #[cfg(test)]
@@ -233,15 +290,45 @@ pub mod raw {
         y: &[f64],
         misrate: f64,
         seed: &str,
+        assume_sorted: bool,
     ) -> Result<RawBounds, EstimatorError> {
         let mut rng_x = crate::rng::Rng::from_string(seed);
         let mut rng_y = crate::rng::Rng::from_string(seed);
-        avg_spread_bounds_with_rngs(x, y, misrate, &mut rng_x, &mut rng_y)
+        avg_spread_bounds_with_rngs(
+            x,
+            sorted_view(x, assume_sorted),
+            y,
+            sorted_view(y, assume_sorted),
+            misrate,
+            &mut rng_x,
+            &mut rng_y,
+        )
     }
 
+    /// Maps the public `assume_sorted` flag to the internal optional pre-sorted
+    /// view: when the caller's slice is already sorted, it doubles as the sorted
+    /// view for the order-independent sub-computations (the sparity check, and
+    /// for disparity bounds also the embedded shift bounds), skipping a re-sort.
+    /// The disjoint-pair shuffle always runs on the caller's slice regardless,
+    /// so on a genuinely sorted slice the flag never changes the result.
+    fn sorted_view(x: &[f64], assume_sorted: bool) -> Option<&[f64]> {
+        if assume_sorted {
+            Some(x)
+        } else {
+            None
+        }
+    }
+
+    /// Computes weighted-average spread bounds.
+    ///
+    /// `x`/`y` are always in ORIGINAL order (the disjoint-pair shuffle is
+    /// order-dependent). `sorted_x`/`sorted_y`, when provided, are pre-sorted
+    /// views used only to speed up the order-independent sparity check.
     pub(crate) fn avg_spread_bounds_with_rngs(
         x: &[f64],
+        sorted_x: Option<&[f64]>,
         y: &[f64],
+        sorted_y: Option<&[f64]>,
         misrate: f64,
         rng_x: &mut crate::rng::Rng,
         rng_y: &mut crate::rng::Rng,
@@ -271,46 +358,15 @@ pub mod raw {
                 Subject::Misrate,
             )));
         }
-        if crate::spread_impl::spread_impl(x).map_err(EstimatorError::from)? <= 0.0 {
+        if spread_for_sparity(x, sorted_x).map_err(EstimatorError::from)? <= 0.0 {
             return Err(EstimatorError::from(AssumptionError::sparity(Subject::X)));
         }
-        if crate::spread_impl::spread_impl(y).map_err(EstimatorError::from)? <= 0.0 {
+        if spread_for_sparity(y, sorted_y).map_err(EstimatorError::from)? <= 0.0 {
             return Err(EstimatorError::from(AssumptionError::sparity(Subject::Y)));
         }
-        // Use inner variant to skip redundant spread_impl validation
+        // The shuffle operates on the ORIGINAL order; sorted views are sparity-only.
         let bounds_x = spread_bounds_with_rng_inner(x, n / 2, alpha, rng_x)?;
         let bounds_y = spread_bounds_with_rng_inner(y, m / 2, alpha, rng_y)?;
-        let weight_x = n as f64 / (n + m) as f64;
-        let weight_y = m as f64 / (n + m) as f64;
-        Ok(RawBounds {
-            lower: weight_x * bounds_x.lower + weight_y * bounds_y.lower,
-            upper: weight_x * bounds_x.upper + weight_y * bounds_y.upper,
-        })
-    }
-
-    /// Unchecked variant that skips validity/spread checks (caller already verified).
-    /// NOTE: misrate validation mirrors avg_spread_bounds_with_rngs — keep in sync
-    fn avg_spread_bounds_with_rngs_unchecked(
-        x: &[f64],
-        y: &[f64],
-        n: usize,
-        m: usize,
-        misrate: f64,
-        rng_x: &mut crate::rng::Rng,
-        rng_y: &mut crate::rng::Rng,
-    ) -> Result<RawBounds, EstimatorError> {
-        let mx = n / 2;
-        let my = m / 2;
-        let min_x = crate::min_misrate::min_achievable_misrate_one_sample(mx)?;
-        let min_y = crate::min_misrate::min_achievable_misrate_one_sample(my)?;
-        let alpha = misrate / 2.0;
-        if alpha < min_x || alpha < min_y {
-            return Err(EstimatorError::from(AssumptionError::domain(
-                Subject::Misrate,
-            )));
-        }
-        let bounds_x = spread_bounds_with_rng_inner(x, mx, alpha, rng_x)?;
-        let bounds_y = spread_bounds_with_rng_inner(y, my, alpha, rng_y)?;
         let weight_x = n as f64 / (n + m) as f64;
         let weight_y = m as f64 / (n + m) as f64;
         Ok(RawBounds {
@@ -323,10 +379,19 @@ pub mod raw {
         x: &[f64],
         y: &[f64],
         misrate: f64,
+        assume_sorted: bool,
     ) -> Result<RawBounds, EstimatorError> {
         let mut rng_x = crate::rng::Rng::new();
         let mut rng_y = crate::rng::Rng::new();
-        disparity_bounds_with_rngs(x, y, misrate, &mut rng_x, &mut rng_y)
+        disparity_bounds_with_rngs(
+            x,
+            sorted_view(x, assume_sorted),
+            y,
+            sorted_view(y, assume_sorted),
+            misrate,
+            &mut rng_x,
+            &mut rng_y,
+        )
     }
 
     pub fn disparity_bounds_with_seed(
@@ -334,15 +399,29 @@ pub mod raw {
         y: &[f64],
         misrate: f64,
         seed: &str,
+        assume_sorted: bool,
     ) -> Result<RawBounds, EstimatorError> {
         let mut rng_x = crate::rng::Rng::from_string(seed);
         let mut rng_y = crate::rng::Rng::from_string(seed);
-        disparity_bounds_with_rngs(x, y, misrate, &mut rng_x, &mut rng_y)
+        disparity_bounds_with_rngs(
+            x,
+            sorted_view(x, assume_sorted),
+            y,
+            sorted_view(y, assume_sorted),
+            misrate,
+            &mut rng_x,
+            &mut rng_y,
+        )
     }
 
-    fn disparity_bounds_with_rngs(
+    /// `x`/`y` are always in ORIGINAL order; `sorted_x`/`sorted_y`, when present,
+    /// are pre-sorted views used only for the order-independent sparity and
+    /// shift-bounds sub-computations.
+    pub(crate) fn disparity_bounds_with_rngs(
         x: &[f64],
+        sorted_x: Option<&[f64]>,
         y: &[f64],
+        sorted_y: Option<&[f64]>,
         misrate: f64,
         rng_x: &mut crate::rng::Rng,
         rng_y: &mut crate::rng::Rng,
@@ -375,21 +454,100 @@ pub mod raw {
         let extra = misrate - (min_shift + min_avg);
         let alpha_shift = min_shift + extra / 2.0;
         let alpha_avg = min_avg + extra / 2.0;
-        let spread_x = crate::spread_impl::spread_impl(x).map_err(EstimatorError::from)?;
-        if spread_x <= 0.0 {
+        // The spread > 0 sparity check is performed by avg_spread_bounds_with_rngs
+        // below (identical predicate and Subject::X/Y order). shift_bounds runs
+        // first but cannot raise an error for these inputs (alpha_shift >= the
+        // two-sample minimum), so it cannot mask that sparity error.
+        // shift_bounds is order-independent given sorted input; use sorted views when present.
+        let sb = match (sorted_x, sorted_y) {
+            (Some(sx), Some(sy)) => shift_bounds(sx, sy, alpha_shift, true)?,
+            _ => shift_bounds(x, y, alpha_shift, false)?,
+        };
+        let ab = avg_spread_bounds_with_rngs(x, sorted_x, y, sorted_y, alpha_avg, rng_x, rng_y)?;
+        disparity_bounds_from_components(sb.lower, sb.upper, ab.lower, ab.upper)
+    }
+
+    /// `x` is always in ORIGINAL order (the disjoint-pair shuffle is
+    /// order-dependent). `sorted_x`, when provided, is a pre-sorted view used
+    /// only to speed up the order-independent sparity check.
+    pub(crate) fn spread_bounds_with_rng(
+        x: &[f64],
+        sorted_x: Option<&[f64]>,
+        misrate: f64,
+        rng: &mut crate::rng::Rng,
+    ) -> Result<RawBounds, EstimatorError> {
+        check_validity(x, Subject::X)?;
+        if misrate.is_nan() || !(0.0..=1.0).contains(&misrate) {
+            return Err(EstimatorError::from(AssumptionError::domain(
+                Subject::Misrate,
+            )));
+        }
+        let n = x.len();
+        if n < 2 {
             return Err(EstimatorError::from(AssumptionError::sparity(Subject::X)));
         }
-        let spread_y = crate::spread_impl::spread_impl(y).map_err(EstimatorError::from)?;
-        if spread_y <= 0.0 {
-            return Err(EstimatorError::from(AssumptionError::sparity(Subject::Y)));
+        let m = n / 2;
+        let min_misrate = crate::min_misrate::min_achievable_misrate_one_sample(m)?;
+        if misrate < min_misrate {
+            return Err(EstimatorError::from(AssumptionError::domain(
+                Subject::Misrate,
+            )));
         }
-        let sb = shift_bounds(x, y, alpha_shift)?;
-        // avg_spread_bounds_with_rngs would re-check spreads; call inner directly
-        let ab = avg_spread_bounds_with_rngs_unchecked(x, y, n, m, alpha_avg, rng_x, rng_y)?;
-        let la = ab.lower;
-        let ua = ab.upper;
-        let ls = sb.lower;
-        let us = sb.upper;
+        if spread_for_sparity(x, sorted_x).map_err(EstimatorError::from)? <= 0.0 {
+            return Err(EstimatorError::from(AssumptionError::sparity(Subject::X)));
+        }
+        spread_bounds_with_rng_inner(x, m, misrate, rng)
+    }
+
+    // =========================================================================
+    // Internal algorithmic helpers
+    // =========================================================================
+
+    /// Computes the spread value for the sparity check. The result is
+    /// order-independent, so a pre-sorted view (when available) is used to skip
+    /// re-sorting; otherwise the original slice is sorted internally.
+    fn spread_for_sparity(orig: &[f64], sorted: Option<&[f64]>) -> Result<f64, &'static str> {
+        match sorted {
+            Some(s) => crate::spread_impl::spread_impl(s, true),
+            None => crate::spread_impl::spread_impl(orig, false),
+        }
+    }
+
+    /// Shuffles, computes pairwise diffs, returns order-statistic bounds.
+    fn spread_bounds_with_rng_inner(
+        x: &[f64],
+        m: usize,
+        misrate: f64,
+        rng: &mut crate::rng::Rng,
+    ) -> Result<RawBounds, EstimatorError> {
+        let margin = crate::sign_margin::sign_margin_randomized(m, misrate, rng)
+            .map_err(EstimatorError::from)?;
+        let mut half_margin = margin / 2;
+        let max_half_margin = (m - 1) / 2;
+        if half_margin > max_half_margin {
+            half_margin = max_half_margin;
+        }
+        let k_left = half_margin + 1;
+        let k_right = m - half_margin;
+        let mut buf = x.to_vec();
+        rng.shuffle_mut(&mut buf);
+        for i in 0..m {
+            buf[i] = (buf[2 * i] - buf[2 * i + 1]).abs();
+        }
+        buf.truncate(m);
+        buf.sort_unstable_by(|a, b| a.total_cmp(b));
+        let lower = buf[k_left - 1];
+        let upper = buf[k_right - 1];
+        Ok(RawBounds { lower, upper })
+    }
+
+    /// Computes disparity bounds from shift bounds (ls, us) and avg-spread bounds (la, ua).
+    fn disparity_bounds_from_components(
+        ls: f64,
+        us: f64,
+        la: f64,
+        ua: f64,
+    ) -> Result<RawBounds, EstimatorError> {
         if la > 0.0 {
             let r1 = ls / la;
             let r2 = ls / ua;
@@ -459,67 +617,33 @@ pub mod raw {
         })
     }
 
-    pub(crate) fn spread_bounds_with_rng(
-        x: &[f64],
-        misrate: f64,
-        rng: &mut crate::rng::Rng,
-    ) -> Result<RawBounds, EstimatorError> {
-        check_validity(x, Subject::X)?;
-        if misrate.is_nan() || !(0.0..=1.0).contains(&misrate) {
-            return Err(EstimatorError::from(AssumptionError::domain(
-                Subject::Misrate,
-            )));
+    // =========================================================================
+    // Sorting helpers
+    // =========================================================================
+
+    /// Returns a sorted view of one slice: borrows if assume_sorted, copies+sorts otherwise.
+    fn sorted_one<'a>(x: &'a [f64], assume_sorted: bool) -> std::borrow::Cow<'a, [f64]> {
+        if assume_sorted {
+            std::borrow::Cow::Borrowed(x)
+        } else {
+            let mut v = x.to_vec();
+            v.sort_unstable_by(|a, b| a.total_cmp(b));
+            std::borrow::Cow::Owned(v)
         }
-        let n = x.len();
-        let m = n / 2;
-        let min_misrate = crate::min_misrate::min_achievable_misrate_one_sample(m)?;
-        if misrate < min_misrate {
-            return Err(EstimatorError::from(AssumptionError::domain(
-                Subject::Misrate,
-            )));
-        }
-        if n < 2 {
-            return Err(EstimatorError::from(AssumptionError::sparity(Subject::X)));
-        }
-        if crate::spread_impl::spread_impl(x).map_err(EstimatorError::from)? <= 0.0 {
-            return Err(EstimatorError::from(AssumptionError::sparity(Subject::X)));
-        }
-        spread_bounds_with_rng_inner(x, m, misrate, rng)
     }
 
-    /// Inner implementation that skips the spread validation (already done by caller).
-    fn spread_bounds_with_rng_inner(
-        x: &[f64],
-        m: usize,
-        misrate: f64,
-        rng: &mut crate::rng::Rng,
-    ) -> Result<RawBounds, EstimatorError> {
-        let margin = crate::sign_margin::sign_margin_randomized(m, misrate, rng)
-            .map_err(EstimatorError::from)?;
-        let mut half_margin = margin / 2;
-        let max_half_margin = (m - 1) / 2;
-        if half_margin > max_half_margin {
-            half_margin = max_half_margin;
-        }
-        let k_left = half_margin + 1;
-        let k_right = m - half_margin;
-        // Shuffle a copy of x and compute pairwise diffs in-place,
-        // avoiding a separate indices allocation and improving cache locality.
-        let mut buf = x.to_vec();
-        rng.shuffle_mut(&mut buf);
-        for i in 0..m {
-            buf[i] = (buf[2 * i] - buf[2 * i + 1]).abs();
-        }
-        buf.truncate(m);
-        buf.sort_unstable_by(|a, b| a.total_cmp(b));
-        let lower = buf[k_left - 1];
-        let upper = buf[k_right - 1];
-        Ok(RawBounds { lower, upper })
+    /// Returns sorted views of two slices.
+    fn sorted_pair<'a>(
+        x: &'a [f64],
+        y: &'a [f64],
+        assume_sorted: bool,
+    ) -> (std::borrow::Cow<'a, [f64]>, std::borrow::Cow<'a, [f64]>) {
+        (sorted_one(x, assume_sorted), sorted_one(y, assume_sorted))
     }
 }
 
 // =============================================================================
-// Sample-based public API
+// Sample-based public API — thin wrappers over raw
 // =============================================================================
 
 /// Estimates the central value of the data (center).
@@ -530,7 +654,7 @@ pub mod raw {
 /// Returns a [`Measurement`] with the same unit as the input sample.
 pub fn center(x: &Sample) -> Result<Measurement, EstimatorError> {
     check_non_weighted("x", x)?;
-    let result = crate::center_impl::center_impl(x.values()).map_err(EstimatorError::from)?;
+    let result = raw::center(x.sorted_values(), true)?;
     Ok(Measurement::new(result, x.unit().clone()))
 }
 
@@ -545,11 +669,8 @@ pub fn center(x: &Sample) -> Result<Measurement, EstimatorError> {
 /// - `sparity(x)` - sample must be non tie-dominant (spread > 0)
 pub fn spread(x: &Sample) -> Result<Measurement, EstimatorError> {
     check_non_weighted("x", x)?;
-    let spread_val = crate::spread_impl::spread_impl(x.values()).map_err(EstimatorError::from)?;
-    if spread_val <= 0.0 {
-        return Err(EstimatorError::from(AssumptionError::sparity(x.subject())));
-    }
-    Ok(Measurement::new(spread_val, x.unit().clone()))
+    let result = raw::spread(x.sorted_values(), true)?;
+    Ok(Measurement::new(result, x.unit().clone()))
 }
 
 /// Measures the typical difference between elements of x and y (shift).
@@ -559,8 +680,7 @@ pub fn shift(x: &Sample, y: &Sample) -> Result<Measurement, EstimatorError> {
     check_non_weighted("x", x)?;
     check_non_weighted("y", y)?;
     let (x, y) = prepare_pair(x, y)?;
-    let result =
-        crate::shift_impl::shift_impl(x.values(), y.values()).map_err(EstimatorError::from)?;
+    let result = raw::shift(x.sorted_values(), y.sorted_values(), true)?;
     Ok(Measurement::new(result, x.unit().clone()))
 }
 
@@ -576,47 +696,8 @@ pub fn ratio(x: &Sample, y: &Sample) -> Result<Measurement, EstimatorError> {
     check_non_weighted("x", x)?;
     check_non_weighted("y", y)?;
     let (x, y) = prepare_pair(x, y)?;
-    for &v in x.values() {
-        if v <= 0.0 {
-            return Err(EstimatorError::from(AssumptionError::positivity(
-                x.subject(),
-            )));
-        }
-    }
-    for &v in y.values() {
-        if v <= 0.0 {
-            return Err(EstimatorError::from(AssumptionError::positivity(
-                y.subject(),
-            )));
-        }
-    }
-    let result =
-        crate::shift_impl::ratio_impl(x.values(), y.values()).map_err(EstimatorError::from)?;
+    let result = raw::ratio(x.sorted_values(), y.sorted_values(), true)?;
     Ok(Measurement::new(result, MeasurementUnit::ratio()))
-}
-
-/// Measures the typical variability when considering both samples together (avg_spread).
-///
-/// Internal estimator used by disparity. Returns a [`Measurement`] with the finer unit.
-#[cfg(test)]
-pub(crate) fn avg_spread(x: &Sample, y: &Sample) -> Result<Measurement, EstimatorError> {
-    check_non_weighted("x", x)?;
-    check_non_weighted("y", y)?;
-    let (x, y) = prepare_pair(x, y)?;
-    let n = x.size() as f64;
-    let m = y.size() as f64;
-    let spread_x = crate::spread_impl::spread_impl(x.values()).map_err(EstimatorError::from)?;
-    if spread_x <= 0.0 {
-        return Err(EstimatorError::from(AssumptionError::sparity(x.subject())));
-    }
-    let spread_y = crate::spread_impl::spread_impl(y.values()).map_err(EstimatorError::from)?;
-    if spread_y <= 0.0 {
-        return Err(EstimatorError::from(AssumptionError::sparity(y.subject())));
-    }
-    Ok(Measurement::new(
-        (n * spread_x + m * spread_y) / (n + m),
-        x.unit().clone(),
-    ))
 }
 
 /// Measures effect size: a normalized difference between x and y (disparity).
@@ -631,23 +712,8 @@ pub fn disparity(x: &Sample, y: &Sample) -> Result<Measurement, EstimatorError> 
     check_non_weighted("x", x)?;
     check_non_weighted("y", y)?;
     let (x, y) = prepare_pair(x, y)?;
-    let n = x.size() as f64;
-    let m = y.size() as f64;
-    let spread_x = crate::spread_impl::spread_impl(x.values()).map_err(EstimatorError::from)?;
-    if spread_x <= 0.0 {
-        return Err(EstimatorError::from(AssumptionError::sparity(x.subject())));
-    }
-    let spread_y = crate::spread_impl::spread_impl(y.values()).map_err(EstimatorError::from)?;
-    if spread_y <= 0.0 {
-        return Err(EstimatorError::from(AssumptionError::sparity(y.subject())));
-    }
-    let shift_val =
-        crate::shift_impl::shift_impl(x.values(), y.values()).map_err(EstimatorError::from)?;
-    let avg_spread_val = (n * spread_x + m * spread_y) / (n + m);
-    Ok(Measurement::new(
-        shift_val / avg_spread_val,
-        MeasurementUnit::disparity(),
-    ))
+    let result = raw::disparity(x.sorted_values(), y.sorted_values(), true)?;
+    Ok(Measurement::new(result, MeasurementUnit::disparity()))
 }
 
 /// Provides bounds on the shift estimator.
@@ -657,7 +723,7 @@ pub fn shift_bounds(x: &Sample, y: &Sample, misrate: f64) -> Result<Bounds, Esti
     check_non_weighted("x", x)?;
     check_non_weighted("y", y)?;
     let (x, y) = prepare_pair(x, y)?;
-    let rb = raw::shift_bounds(x.values(), y.values(), misrate)?;
+    let rb = raw::shift_bounds(x.sorted_values(), y.sorted_values(), misrate, true)?;
     Ok(Bounds::new(rb.lower, rb.upper, x.unit().clone()))
 }
 
@@ -668,7 +734,7 @@ pub fn ratio_bounds(x: &Sample, y: &Sample, misrate: f64) -> Result<Bounds, Esti
     check_non_weighted("x", x)?;
     check_non_weighted("y", y)?;
     let (x, y) = prepare_pair(x, y)?;
-    let rb = raw::ratio_bounds(x.values(), y.values(), misrate)?;
+    let rb = raw::ratio_bounds(x.sorted_values(), y.sorted_values(), misrate, true)?;
     Ok(Bounds::new(rb.lower, rb.upper, MeasurementUnit::ratio()))
 }
 
@@ -677,7 +743,7 @@ pub fn ratio_bounds(x: &Sample, y: &Sample, misrate: f64) -> Result<Bounds, Esti
 /// Returns [`Bounds`] with the same unit as the input sample.
 pub fn center_bounds(x: &Sample, misrate: f64) -> Result<Bounds, EstimatorError> {
     check_non_weighted("x", x)?;
-    let rb = raw::center_bounds(x.values(), misrate)?;
+    let rb = raw::center_bounds(x.sorted_values(), misrate, true)?;
     Ok(Bounds::new(rb.lower, rb.upper, x.unit().clone()))
 }
 
@@ -686,7 +752,9 @@ pub fn center_bounds(x: &Sample, misrate: f64) -> Result<Bounds, EstimatorError>
 /// Returns [`Bounds`] with the same unit as the input sample.
 pub fn spread_bounds(x: &Sample, misrate: f64) -> Result<Bounds, EstimatorError> {
     check_non_weighted("x", x)?;
-    let rb = raw::spread_bounds(x.values(), misrate)?;
+    let mut rng = crate::rng::Rng::new();
+    // Shuffle runs on the original order; the cached sorted view is sparity-only.
+    let rb = raw::spread_bounds_with_rng(x.values(), Some(x.sorted_values()), misrate, &mut rng)?;
     Ok(Bounds::new(rb.lower, rb.upper, x.unit().clone()))
 }
 
@@ -697,7 +765,9 @@ pub fn spread_bounds_with_seed(
     seed: &str,
 ) -> Result<Bounds, EstimatorError> {
     check_non_weighted("x", x)?;
-    let rb = raw::spread_bounds_with_seed(x.values(), misrate, seed)?;
+    let mut rng = crate::rng::Rng::from_string(seed);
+    // Shuffle runs on the original order; the cached sorted view is sparity-only.
+    let rb = raw::spread_bounds_with_rng(x.values(), Some(x.sorted_values()), misrate, &mut rng)?;
     Ok(Bounds::new(rb.lower, rb.upper, x.unit().clone()))
 }
 
@@ -708,7 +778,17 @@ pub fn disparity_bounds(x: &Sample, y: &Sample, misrate: f64) -> Result<Bounds, 
     check_non_weighted("x", x)?;
     check_non_weighted("y", y)?;
     let (x, y) = prepare_pair(x, y)?;
-    let rb = raw::disparity_bounds(x.values(), y.values(), misrate)?;
+    let mut rng_x = crate::rng::Rng::new();
+    let mut rng_y = crate::rng::Rng::new();
+    let rb = raw::disparity_bounds_with_rngs(
+        x.values(),
+        Some(x.sorted_values()),
+        y.values(),
+        Some(y.sorted_values()),
+        misrate,
+        &mut rng_x,
+        &mut rng_y,
+    )?;
     Ok(Bounds::new(
         rb.lower,
         rb.upper,
@@ -726,38 +806,20 @@ pub fn disparity_bounds_with_seed(
     check_non_weighted("x", x)?;
     check_non_weighted("y", y)?;
     let (x, y) = prepare_pair(x, y)?;
-    let rb = raw::disparity_bounds_with_seed(x.values(), y.values(), misrate, seed)?;
+    let mut rng_x = crate::rng::Rng::from_string(seed);
+    let mut rng_y = crate::rng::Rng::from_string(seed);
+    let rb = raw::disparity_bounds_with_rngs(
+        x.values(),
+        Some(x.sorted_values()),
+        y.values(),
+        Some(y.sorted_values()),
+        misrate,
+        &mut rng_x,
+        &mut rng_y,
+    )?;
     Ok(Bounds::new(
         rb.lower,
         rb.upper,
         MeasurementUnit::disparity(),
     ))
-}
-
-// Internal avg_spread_bounds functions for tests
-#[cfg(test)]
-pub(crate) fn avg_spread_bounds(
-    x: &Sample,
-    y: &Sample,
-    misrate: f64,
-) -> Result<Bounds, EstimatorError> {
-    check_non_weighted("x", x)?;
-    check_non_weighted("y", y)?;
-    let (x, y) = prepare_pair(x, y)?;
-    let rb = raw::avg_spread_bounds(x.values(), y.values(), misrate)?;
-    Ok(Bounds::new(rb.lower, rb.upper, x.unit().clone()))
-}
-
-#[cfg(test)]
-pub(crate) fn avg_spread_bounds_with_seed(
-    x: &Sample,
-    y: &Sample,
-    misrate: f64,
-    seed: &str,
-) -> Result<Bounds, EstimatorError> {
-    check_non_weighted("x", x)?;
-    check_non_weighted("y", y)?;
-    let (x, y) = prepare_pair(x, y)?;
-    let rb = raw::avg_spread_bounds_with_seed(x.values(), y.values(), misrate, seed)?;
-    Ok(Bounds::new(rb.lower, rb.upper, x.unit().clone()))
 }

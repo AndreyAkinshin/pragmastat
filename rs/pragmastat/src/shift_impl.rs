@@ -2,15 +2,6 @@ use std::collections::BTreeSet;
 
 use crate::assumptions::{log, Subject};
 
-/// Fast O((m+n) log precision) implementation of the Shift estimator.
-/// Computes the median of all pairwise differences {x[i] - y[j]}.
-///
-/// Internal implementation - not part of public API.
-pub(crate) fn shift_impl(x: &[f64], y: &[f64]) -> Result<f64, &'static str> {
-    let result = shift_quantiles_impl(x, y, &[0.5], false)?;
-    Ok(result[0])
-}
-
 /// Computes quantiles of all pairwise differences {x[i] - y[j]}.
 /// Time complexity: O((m+n) log precision) per unique rank.
 /// Space complexity: O(1) - avoids materializing all m*n differences.
@@ -170,7 +161,7 @@ pub(crate) fn select_kth_pairwise_diff(x: &[f64], y: &[f64], k: i64) -> Result<f
         }
     }
 
-    Err("Convergence failure in shift_impl")
+    Err("Convergence failure (pathological input)")
 }
 
 /// Counts how many pairs x[i] - y[j] <= threshold using a two-pointer algorithm.
@@ -224,15 +215,6 @@ fn count_and_neighbors(x: &[f64], y: &[f64], threshold: f64) -> (i64, f64, f64) 
 /// Overflow-safe, order-symmetric midpoint: 0.5*a + 0.5*b (halve before summing; never overflows; operand order is irrelevant).
 fn midpoint(a: f64, b: f64) -> f64 {
     0.5 * a + 0.5 * b
-}
-
-/// Fast O((m+n) log precision) implementation of the Ratio estimator via log-transformation.
-/// Computes the median of all pairwise ratios {x[i] / y[j]} as exp(Shift(log x, log y)).
-///
-/// Internal implementation - not part of public API.
-pub(crate) fn ratio_impl(x: &[f64], y: &[f64]) -> Result<f64, &'static str> {
-    let result = ratio_quantiles_impl(x, y, &[0.5], false)?;
-    Ok(result[0])
 }
 
 /// Computes quantiles of all pairwise ratios {x[i] / y[j]} via log-transformation.
