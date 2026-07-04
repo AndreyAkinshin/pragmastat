@@ -26,21 +26,28 @@ rs/pragmastat/
 │   ├── gauss_cdf.rs               # Standard normal CDF (ACM Algorithm 209) (internal)
 │   ├── rng.rs                     # Deterministic xoshiro256++ PRNG
 │   ├── distributions/             # Sampling distributions (Uniform, Additive, Exp, Power, Multiplic)
-│   ├── fast_center.rs             # O(n log n) Hodges-Lehmann algorithm (internal)
-│   ├── fast_center_quantiles.rs   # Center quantile binary search (internal)
-│   ├── fast_spread.rs             # O(n log n) Shamos algorithm (internal)
-│   ├── fast_shift.rs              # O((m+n) log L) shift quantiles (internal)
+│   ├── center_impl.rs             # O(n log n) Hodges-Lehmann algorithm (internal)
+│   ├── center_quantiles_impl.rs   # Center quantile binary search (internal)
+│   ├── spread_impl.rs             # O(n log n) Shamos algorithm (internal)
+│   ├── shift_impl.rs              # O((m+n) log L) shift quantiles (internal)
 │   ├── xoshiro256.rs              # PRNG core implementation (internal)
 │   ├── splitmix64.rs              # Seed mixing (internal)
 │   ├── fnv1a.rs                   # Hash for deterministic seeding (internal)
 │   ├── avg_spread_tests.rs        # Average spread unit tests
 │   ├── avg_spread_bounds_tests.rs # Average spread bounds unit tests
-│   └── disparity_bounds_tests.rs  # Disparity bounds unit tests
+│   ├── disparity_bounds_tests.rs  # Disparity bounds unit tests
+│   ├── pairwise_margin_tests.rs   # Pairwise margin unit tests
+│   ├── ratio_bounds_tests.rs      # Ratio bounds error-priority tests
+│   └── signed_rank_margin_tests.rs # Signed-rank margin unit tests
 ├── tests/
-│   ├── reference_tests.rs         # JSON fixture validation
-│   ├── invariance_tests.rs        # Mathematical property tests
-│   ├── error_tests.rs             # Error path coverage
-│   └── performance_tests.rs
+│   ├── assume_sorted_tests.rs             # assume-sorted equivalence
+│   ├── compare_tests.rs                   # Compare framework
+│   ├── error_tests.rs                     # Error path coverage
+│   ├── invariance_tests.rs                # Mathematical property tests
+│   ├── metrology_tests.rs                 # Bounds unit re-attachment
+│   ├── performance_tests.rs               # Performance smoke test
+│   ├── reference_tests.rs                 # JSON fixture validation
+│   └── sample_bounds_consistency_tests.rs # Sample vs raw bounds on unsorted input
 └── examples/
     └── demo.rs
 ```
@@ -53,7 +60,7 @@ rs/pragmastat/
 | `pairwise_margin` | Internal | Misclassification margin calculation |
 | `rng` | Public | Deterministic PRNG with `Rng` struct |
 | `distributions` | Public | `Distribution` trait + implementations |
-| `fast_*` | Internal | O(n log n) algorithms, not part of public API |
+| `*_impl` | Internal | O(n log n) algorithms, not part of public API |
 
 ## Testing
 
@@ -72,22 +79,63 @@ cargo test --test error_tests # Error handling tests
 
 ## Error Handling
 
-All public functions return `Result<T, EstimatorError>`. Errors use `EstimatorError::Assumption(AssumptionError)` with `violation()`:
+The crate exposes two parallel entry points for every estimator. All public
+functions return `Result<T, EstimatorError>`. Errors use
+`EstimatorError::Assumption(AssumptionError)` with `violation()`.
+
+### (a) Typed Sample API (`pragmastat::estimators::*`)
+
+Takes `&Sample` and returns unit-carrying `Measurement`/`Bounds`. This is the
+primary, recommended surface.
 
 ```rust
-pub fn center(x: &[f64]) -> Result<f64, EstimatorError>
-pub fn spread(x: &[f64]) -> Result<f64, EstimatorError>
-pub fn shift(x: &[f64], y: &[f64]) -> Result<f64, EstimatorError>
-pub fn ratio(x: &[f64], y: &[f64]) -> Result<f64, EstimatorError>
-pub fn disparity(x: &[f64], y: &[f64]) -> Result<f64, EstimatorError>
-pub fn shift_bounds(x: &[f64], y: &[f64], misrate: f64) -> Result<Bounds, EstimatorError>
-pub fn ratio_bounds(x: &[f64], y: &[f64], misrate: f64) -> Result<Bounds, EstimatorError>
-pub fn disparity_bounds(x: &[f64], y: &[f64], misrate: f64) -> Result<Bounds, EstimatorError>
-pub fn center_bounds(x: &[f64], misrate: f64) -> Result<Bounds, EstimatorError>
-pub fn spread_bounds(x: &[f64], misrate: f64) -> Result<Bounds, EstimatorError>
-pub fn spread_bounds_with_seed(x: &[f64], misrate: f64, seed: &str) -> Result<Bounds, EstimatorError>
-pub fn disparity_bounds_with_seed(x: &[f64], y: &[f64], misrate: f64, seed: &str) -> Result<Bounds, EstimatorError>
+pub fn center(x: &Sample) -> Result<Measurement, EstimatorError>
+pub fn spread(x: &Sample) -> Result<Measurement, EstimatorError>
+pub fn shift(x: &Sample, y: &Sample) -> Result<Measurement, EstimatorError>
+pub fn ratio(x: &Sample, y: &Sample) -> Result<Measurement, EstimatorError>
+pub fn disparity(x: &Sample, y: &Sample) -> Result<Measurement, EstimatorError>
+pub fn shift_bounds(x: &Sample, y: &Sample, misrate: f64) -> Result<Bounds, EstimatorError>
+pub fn ratio_bounds(x: &Sample, y: &Sample, misrate: f64) -> Result<Bounds, EstimatorError>
+pub fn disparity_bounds(x: &Sample, y: &Sample, misrate: f64) -> Result<Bounds, EstimatorError>
+pub fn center_bounds(x: &Sample, misrate: f64) -> Result<Bounds, EstimatorError>
+pub fn spread_bounds(x: &Sample, misrate: f64) -> Result<Bounds, EstimatorError>
+pub fn spread_bounds_with_seed(x: &Sample, misrate: f64, seed: &str) -> Result<Bounds, EstimatorError>
+pub fn disparity_bounds_with_seed(x: &Sample, y: &Sample, misrate: f64, seed: &str) -> Result<Bounds, EstimatorError>
 ```
+
+### (b) Raw native-slice API (`pragmastat::estimators::raw::*`)
+
+Takes `&[f64]` directly, returns plain `f64` / `RawBounds` (no units). Every
+function takes a trailing `assume_sorted: bool` — when `true`, the caller
+guarantees the slice(s) are already ascending and the internal sort is skipped.
+
+```rust
+pub fn center(x: &[f64], assume_sorted: bool) -> Result<f64, EstimatorError>
+pub fn spread(x: &[f64], assume_sorted: bool) -> Result<f64, EstimatorError>
+pub fn shift(x: &[f64], y: &[f64], assume_sorted: bool) -> Result<f64, EstimatorError>
+pub fn ratio(x: &[f64], y: &[f64], assume_sorted: bool) -> Result<f64, EstimatorError>
+pub fn disparity(x: &[f64], y: &[f64], assume_sorted: bool) -> Result<f64, EstimatorError>
+pub fn shift_bounds(x: &[f64], y: &[f64], misrate: f64, assume_sorted: bool) -> Result<RawBounds, EstimatorError>
+pub fn ratio_bounds(x: &[f64], y: &[f64], misrate: f64, assume_sorted: bool) -> Result<RawBounds, EstimatorError>
+pub fn center_bounds(x: &[f64], misrate: f64, assume_sorted: bool) -> Result<RawBounds, EstimatorError>
+pub fn spread_bounds(x: &[f64], misrate: f64, assume_sorted: bool) -> Result<RawBounds, EstimatorError>
+pub fn spread_bounds_with_seed(x: &[f64], misrate: f64, seed: &str, assume_sorted: bool) -> Result<RawBounds, EstimatorError>
+pub fn disparity_bounds(x: &[f64], y: &[f64], misrate: f64, assume_sorted: bool) -> Result<RawBounds, EstimatorError>
+pub fn disparity_bounds_with_seed(x: &[f64], y: &[f64], misrate: f64, seed: &str, assume_sorted: bool) -> Result<RawBounds, EstimatorError>
+```
+
+The typed Sample API delegates to `raw`, passing `assume_sorted = true` from the
+`Sample`'s cached sorted values. For the order-independent functions (`center`,
+`spread`, `shift`, `ratio`, `disparity`, `center_bounds`, `shift_bounds`,
+`ratio_bounds`) the flag skips the internal sort and changes the computation
+path. For the shuffle-based `spread_bounds`/`disparity_bounds` (and `_with_seed`)
+the disjoint-pair shuffle always runs on the caller's slice; the flag feeds the
+slice as a pre-sorted view into the order-independent sub-computations only. For
+`spread_bounds` that is just the sparity check, so on a genuinely sorted slice
+the flag never changes the result. For `disparity_bounds` the view also feeds
+the embedded `shift_bounds` sub-call, so passing `assume_sorted = true` with
+UNSORTED input silently changes the result (on a genuinely sorted slice it is
+again identical).
 
 Error conditions:
 - Empty or non-finite input slices (`Validity`)
@@ -97,11 +145,17 @@ Error conditions:
 
 ## Determinism
 
-The `fast_center` and `fast_spread` algorithms use deterministic pivot selection via FNV-1a hash of input values. Same input always produces same output across runs and platforms.
+The `center_impl` and `spread_impl` algorithms use deterministic pivot selection via FNV-1a hash of input values. Same input always produces same output across runs and platforms.
 
 ## Linting
 
-Strict clippy configuration in `Cargo.toml`:
-- `clippy::all` and `clippy::pedantic` at deny level
-- Warnings treated as errors (`-D warnings`)
-- Note: `#[must_use]` is not needed on functions returning `Result` (already has `#[must_use]`)
+The warnings gate lives in CI, not in `Cargo.toml`: a published crate must not
+break docs.rs or downstream source builds when a future rustc adds new warnings.
+`mise run rs:check` runs:
+- `cargo clippy -- -D warnings` (clippy and rustc warnings are errors in the library)
+- `cargo fmt -- --check`
+- `RUSTFLAGS="-D warnings" cargo check --all-targets` (rustc warnings are errors
+  everywhere, including tests and examples; cargo caps lints for external
+  dependencies, so the flag only gates this crate)
+
+Note: `#[must_use]` is not needed on functions returning `Result` (already has `#[must_use]`)
