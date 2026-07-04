@@ -1,6 +1,7 @@
 package pragmastat
 
 import (
+	"errors"
 	"math"
 	"sort"
 )
@@ -55,7 +56,23 @@ func spreadImpl[T Number](values []T) (float64, error) {
 	pivot := float64(a[n/2]) - float64(a[(n-1)/2])
 	prevCountBelow := int64(-1)
 
-	for {
+	// Bound the selection loop. On valid sorted input the Monahan selection
+	// converges in O(log n) iterations; this cap is far higher than ever
+	// needed for sorted input but guarantees termination on misuse (e.g.,
+	// assumeSorted=true on UNSORTED input, which is undefined behavior and
+	// would otherwise spin forever). The cap scales with n so large valid
+	// inputs are never starved. We also track no-progress (stall) on the
+	// active set to bail out deterministically.
+	const baseIterations = 256
+	maxIterations := baseIterations + 4*n
+	prevActiveSize := int64(-1)
+	stallCount := 0
+	const maxStall = 8
+
+	for iter := 0; ; iter++ {
+		if iter >= maxIterations {
+			return 0, errors.New("convergence failure (pathological input)")
+		}
 		// === PARTITION: count how many differences are < pivot ===
 		countBelow := int64(0)
 		largestBelow := math.Inf(-1)
@@ -184,6 +201,20 @@ func spreadImpl[T Number](values []T) (float64, error) {
 				activeSize += int64(R[i] - L[i] + 1)
 			}
 		}
+
+		// Stall detection: on valid sorted input the active set strictly
+		// shrinks toward the target. If it fails to shrink for several
+		// consecutive iterations, the input is pathological (e.g.,
+		// assumeSorted=true on unsorted data) and we bail deterministically.
+		if activeSize >= prevActiveSize && prevActiveSize >= 0 {
+			stallCount++
+			if stallCount >= maxStall {
+				return 0, errors.New("convergence failure (pathological input)")
+			}
+		} else {
+			stallCount = 0
+		}
+		prevActiveSize = activeSize
 
 		if activeSize <= 2 {
 			// Few candidates left: return midrange of remaining
