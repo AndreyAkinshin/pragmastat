@@ -6,8 +6,6 @@
  * Internal implementation - not part of public API.
  */
 
-import { log } from './assumptions';
-
 /**
  * Computes quantiles of all pairwise differences { x_i - y_j }.
  * Time: O((m + n) * log(precision)) per quantile. Space: O(1).
@@ -20,8 +18,8 @@ import { log } from './assumptions';
  * @internal
  */
 export function shiftImpl(
-  x: number[],
-  y: number[],
+  x: readonly number[],
+  y: readonly number[],
   p: number[],
   assumeSorted: boolean = false,
 ): number[] {
@@ -104,7 +102,7 @@ export function shiftImpl(
  * Binary search in [min_diff, max_diff] that snaps to actual discrete values.
  * Avoids materializing all m*n differences.
  */
-function selectKthPairwiseDiff(x: number[], y: number[], k: number): number {
+function selectKthPairwiseDiff(x: readonly number[], y: readonly number[], k: number): number {
   const m = x.length;
   const n = y.length;
   // Use BigInt to prevent 53-bit precision overflow for large m*n
@@ -160,8 +158,8 @@ function selectKthPairwiseDiff(x: number[], y: number[], k: number): number {
  * the closest actual differences on either side of threshold.
  */
 function countAndNeighbors(
-  x: number[],
-  y: number[],
+  x: readonly number[],
+  y: readonly number[],
   threshold: number,
 ): { countLessOrEqual: number; closestBelow: number; closestAbove: number } {
   const m = x.length;
@@ -213,39 +211,4 @@ function countAndNeighbors(
  */
 function midpoint(a: number, b: number): number {
   return 0.5 * a + 0.5 * b;
-}
-
-/**
- * Computes quantiles of all pairwise ratios { x_i / y_j } via log-transformation.
- * Time: O((m + n) * log(precision)) per quantile. Space: O(m + n).
- *
- * @param x First array of positive numeric values
- * @param y Second array of positive numeric values
- * @param p Probabilities in [0, 1]
- * @param assumeSorted If false, arrays will be sorted
- * @returns Array of quantile values corresponding to probabilities in p
- * @internal
- */
-export function ratioImpl(
-  x: number[],
-  y: number[],
-  p: number[],
-  assumeSorted: boolean = false,
-): number[] {
-  if (!x || !y || !p) {
-    throw new Error('All inputs must be non-null');
-  }
-  if (x.length === 0 || y.length === 0) {
-    throw new Error('x and y must be non-empty');
-  }
-
-  // Log-transform both samples (includes positivity check)
-  const logX = log(x, 'x');
-  const logY = log(y, 'y');
-
-  // Delegate to shiftImpl in log-space
-  const logResult = shiftImpl(logX, logY, p, assumeSorted);
-
-  // Exp-transform back to ratio-space
-  return logResult.map((v) => Math.exp(v));
 }

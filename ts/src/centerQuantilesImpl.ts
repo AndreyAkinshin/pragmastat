@@ -14,7 +14,7 @@ const RELATIVE_EPSILON = 1e-14;
  * @param threshold Threshold to count against
  * @returns Number of pairwise averages <= threshold
  */
-function countPairsLessOrEqual(sorted: number[], threshold: number): number {
+function countPairsLessOrEqual(sorted: readonly number[], threshold: number): number {
   const n = sorted.length;
   let count = 0;
   // j is not reset: as i increases, threshold decreases monotonically
@@ -40,7 +40,7 @@ function countPairsLessOrEqual(sorted: number[], threshold: number): number {
  * @param k 1-based rank of the desired quantile
  * @returns The k-th smallest pairwise average
  */
-function findExactQuantile(sorted: number[], k: number): number {
+function findExactQuantile(sorted: readonly number[], k: number): number {
   const n = sorted.length;
   const totalPairs = (n * (n + 1)) / 2;
 
@@ -125,7 +125,7 @@ function findExactQuantile(sorted: number[], k: number): number {
  * @returns Tuple of [lower bound, upper bound]
  */
 export function centerQuantileBoundsImpl(
-  sorted: number[],
+  sorted: readonly number[],
   kLo: number,
   kHi: number,
 ): [number, number] {

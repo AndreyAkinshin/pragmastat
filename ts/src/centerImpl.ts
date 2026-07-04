@@ -18,7 +18,7 @@ import { deriveSeed } from './fnv1a';
  * @returns The center estimate (Hodges-Lehmann estimator)
  * @internal
  */
-export function centerImpl(values: number[]): number {
+export function centerImpl(values: readonly number[], assumeSorted = false): number {
   const n = values.length;
   if (n === 0) {
     throw new Error('Input array cannot be empty');
@@ -38,7 +38,7 @@ export function centerImpl(values: number[]): number {
   const rng = new Rng(deriveSeed(values));
 
   // Sort the values
-  const sortedValues = [...values].sort((a, b) => a - b);
+  const sortedValues = assumeSorted ? values : [...values].sort((a, b) => a - b);
 
   // Calculate target median rank(s) among all pairwise sums
   // Use BigInt to prevent 53-bit precision overflow for large n

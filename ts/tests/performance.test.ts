@@ -1,12 +1,12 @@
 /**
- * Performance tests for fast Center, Spread, and Shift implementations
+ * Performance tests for the Center, Spread, and Shift implementations
  */
 
 import { centerImpl } from '../src/centerImpl';
 import { spreadImpl } from '../src/spreadImpl';
 import { shiftImpl } from '../src/shiftImpl';
 
-describe('Fast Center Performance', () => {
+describe('Center Impl Performance', () => {
   it('should complete in reasonable time for n=100000', () => {
     const n = 100000;
     const x = Array.from({ length: n }, (_, i) => i + 1);
@@ -21,7 +21,7 @@ describe('Fast Center Performance', () => {
   });
 });
 
-describe('Fast Spread Performance', () => {
+describe('Spread Impl Performance', () => {
   it('should complete in reasonable time for n=100000', () => {
     const n = 100000;
     const x = Array.from({ length: n }, (_, i) => i + 1);
@@ -36,7 +36,7 @@ describe('Fast Spread Performance', () => {
   });
 });
 
-describe('Fast Shift Performance', () => {
+describe('Shift Impl Performance', () => {
   it('should complete in reasonable time for n=m=100000', () => {
     const n = 100000;
     const x = Array.from({ length: n }, (_, i) => i + 1);

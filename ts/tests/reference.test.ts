@@ -30,49 +30,309 @@ import { Metric, Threshold, compare1, compare2 } from '../src/compare';
  */
 
 /**
- * Creates a Sample from raw values, remapping the AssumptionError subject
- * from the default 'x' to the given subject (e.g. 'y').
+ * Creates a Sample from raw values.
+ *
+ * Sample construction validates (empty / NaN / Inf) and always reports those
+ * construction errors with the hardcoded subject 'x' — it cannot know whether
+ * the values came from arg1 ('x') or arg2 ('y'). The Sample path therefore
+ * skips the subject assertion for construction-time 'y' validity errors (see
+ * `expectError` / `runDualPath`); the raw path still asserts subject fully.
  */
-function sampleFromTestData(values: number[], subject: 'x' | 'y'): Sample {
-  try {
-    return Sample.of(values);
-  } catch (e) {
-    if (e instanceof AssumptionError && subject !== 'x') {
-      throw new AssumptionError({ id: e.violation!.id, subject });
+function sampleFromTestData(values: number[]): Sample {
+  return Sample.of(values);
+}
+
+/**
+ * Asserts a thrown AssumptionError against a fixture's `expected_error`.
+ *
+ * `isSampleCreation` marks Sample-path entries whose validity errors are raised
+ * during Sample construction. Construction always reports subject 'x' for a
+ * two-sample 'y' argument, so for those entries the subject assertion is skipped
+ * on a 'y' expected-subject validity error (id is still asserted). The raw path
+ * (`isSampleCreation === false`) always asserts subject fully.
+ */
+function expectError(
+  thrownError: AssumptionError | null,
+  expectedError: { id: string; subject: string },
+  isSampleCreation: boolean,
+): void {
+  expect(thrownError).not.toBeNull();
+  expect(thrownError!.violation!.id).toBe(expectedError.id);
+  const skipSubject =
+    isSampleCreation && expectedError.subject === 'y' && expectedError.id === 'validity';
+  if (!skipSubject) {
+    expect(thrownError!.violation!.subject).toBe(expectedError.subject);
+  }
+}
+
+/**
+ * Dual-path entry points: every reference fixture runs through BOTH the raw
+ * native-array API and the Sample API so that Sample-adapter bugs are caught
+ * (a past critical bug shipped because fixtures only ran through one path).
+ *
+ * `isSampleCreation` marks entries whose validity errors are raised during
+ * Sample construction; see `expectError` for how the subject assertion is
+ * handled for those entries.
+ */
+interface EntryPoint<R> {
+  name: string;
+  isSampleCreation: boolean;
+  run: (data: TestData) => R;
+}
+
+interface TestData {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  input: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  output?: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  expected_error?: any;
+}
+
+/** Extracts x (and optional y) raw arrays from a fixture's input field. */
+function getInputArrays(input: TestData['input']): { x: number[]; y?: number[] } {
+  if (Array.isArray(input)) {
+    return { x: input };
+  }
+  if (input && typeof input === 'object' && 'x' in input) {
+    return 'y' in input ? { x: input.x, y: input.y } : { x: input.x };
+  }
+  throw new Error('Invalid test data input format');
+}
+
+/**
+ * Runs a single fixture through every provided entry point, asserting that each
+ * matches the fixture's expected value/bounds or expected error.
+ */
+function runDualPath<R>(
+  data: TestData,
+  entries: EntryPoint<R>[],
+  assertValue: (result: R, expected: TestData['output']) => void,
+): void {
+  for (const entry of entries) {
+    if (data.expected_error) {
+      let thrownError: AssumptionError | null = null;
+      try {
+        entry.run(data);
+      } catch (e) {
+        if (e instanceof AssumptionError) {
+          thrownError = e;
+        } else {
+          throw e;
+        }
+      }
+      expectError(thrownError, data.expected_error, entry.isSampleCreation);
+    } else {
+      const result = entry.run(data);
+      assertValue(result, data.output);
     }
-    throw e;
   }
 }
 
 describe('Reference Tests', () => {
   const testDataPath = path.join(__dirname, '../../tests');
 
-  // Map estimator names to functions that work with raw test data
-  type OneSampleEstimator = (x: Sample) => Measurement;
-  type TwoSampleEstimator = (x: Sample, y: Sample) => Measurement;
+  // Value estimators: each dir runs through BOTH the raw native-array API
+  // (assumeSorted=false) and the Sample API. avg-spread has no public raw API
+  // (internal helper), so it runs through the Sample path only.
+  //
+  // Each entry returns a Measurement-like `{ value }` so a single comparator
+  // can assert against the fixture's numeric `output`.
+  interface ValueResult {
+    value: number;
+  }
 
-  const oneSampleEstimators: Record<string, OneSampleEstimator> = {
-    center,
-    spread,
+  type RawOne = (x: number[]) => number;
+  type SampleOne = (x: Sample) => Measurement;
+  type RawTwo = (x: number[], y: number[]) => number;
+  type SampleTwo = (x: Sample, y: Sample) => Measurement;
+
+  function oneSampleEntries(raw: RawOne | null, sample: SampleOne): EntryPoint<ValueResult>[] {
+    const entries: EntryPoint<ValueResult>[] = [];
+    if (raw) {
+      entries.push({
+        name: 'raw',
+        isSampleCreation: false,
+        run: (data) => ({ value: raw(getInputArrays(data.input).x) }),
+      });
+    }
+    entries.push({
+      name: 'sample',
+      isSampleCreation: true,
+      run: (data) => sample(sampleFromTestData(getInputArrays(data.input).x)),
+    });
+    return entries;
+  }
+
+  function twoSampleEntries(raw: RawTwo | null, sample: SampleTwo): EntryPoint<ValueResult>[] {
+    const entries: EntryPoint<ValueResult>[] = [];
+    if (raw) {
+      entries.push({
+        name: 'raw',
+        isSampleCreation: false,
+        run: (data) => {
+          const { x, y } = getInputArrays(data.input);
+          return { value: raw(x, y!) };
+        },
+      });
+    }
+    entries.push({
+      name: 'sample',
+      isSampleCreation: true,
+      run: (data) => {
+        const { x, y } = getInputArrays(data.input);
+        const sx = sampleFromTestData(x);
+        const sy = sampleFromTestData(y!);
+        return sample(sx, sy);
+      },
+    });
+    return entries;
+  }
+
+  const valueEstimatorEntries: Record<string, EntryPoint<ValueResult>[]> = {
+    center: oneSampleEntries(center, center),
+    spread: oneSampleEntries(spread, spread),
+    shift: twoSampleEntries(shift, shift),
+    ratio: twoSampleEntries(ratio, ratio),
+    disparity: twoSampleEntries(disparity, disparity),
+    // avg-spread: Sample-only internal helper, no raw public API.
+    'avg-spread': twoSampleEntries(null, avgSpread),
   };
 
-  const twoSampleEstimators: Record<string, TwoSampleEstimator> = {
-    shift,
-    ratio,
-    'avg-spread': avgSpread,
-    disparity,
+  const assertValue = (result: ValueResult, expected: number): void => {
+    expect(result.value).toBeCloseTo(expected, 9);
   };
 
-  const allEstimatorNames = new Set([
-    ...Object.keys(oneSampleEstimators),
-    ...Object.keys(twoSampleEstimators),
-  ]);
+  // ---------------------------------------------------------------------------
+  // Bounds-estimator dual-path infrastructure
+  // ---------------------------------------------------------------------------
+  interface BoundsResult {
+    lower: number;
+    upper: number;
+  }
 
-  // Get all test directories
+  const assertBounds = (result: BoundsResult, expected: { lower: number; upper: number }): void => {
+    expect(result.lower).toBeCloseTo(expected.lower, 9);
+    expect(result.upper).toBeCloseTo(expected.upper, 9);
+  };
+
+  // One-sample bounds (centerBounds, spreadBounds): raw + sample entry points.
+  function oneSampleBoundsEntries(
+    raw: (x: number[], misrate: number, seed?: string) => BoundsResult,
+    sample: (x: Sample, misrate: number, seed?: string) => BoundsResult,
+  ): EntryPoint<BoundsResult>[] {
+    return [
+      {
+        name: 'raw',
+        isSampleCreation: false,
+        run: (data) => raw(getInputArrays(data.input).x, data.input.misrate, data.input.seed),
+      },
+      {
+        name: 'sample',
+        isSampleCreation: true,
+        run: (data) =>
+          sample(
+            sampleFromTestData(getInputArrays(data.input).x),
+            data.input.misrate,
+            data.input.seed,
+          ),
+      },
+    ];
+  }
+
+  // Two-sample bounds (shiftBounds, ratioBounds, disparityBounds).
+  function twoSampleBoundsEntries(
+    raw: (x: number[], y: number[], misrate: number, seed?: string) => BoundsResult,
+    sample: (x: Sample, y: Sample, misrate: number, seed?: string) => BoundsResult,
+  ): EntryPoint<BoundsResult>[] {
+    return [
+      {
+        name: 'raw',
+        isSampleCreation: false,
+        run: (data): BoundsResult => {
+          const { x, y } = getInputArrays(data.input);
+          return raw(x, y!, data.input.misrate, data.input.seed);
+        },
+      },
+      {
+        name: 'sample',
+        isSampleCreation: true,
+        run: (data): BoundsResult => {
+          const { x, y } = getInputArrays(data.input);
+          const sx = sampleFromTestData(x);
+          const sy = sampleFromTestData(y!);
+          return sample(sx, sy, data.input.misrate, data.input.seed);
+        },
+      },
+    ];
+  }
+
+  // Runs every *.json fixture under `dirName` through both bounds entry points.
+  function runBoundsDir(dirName: string, entries: EntryPoint<BoundsResult>[]): void {
+    describe(dirName, () => {
+      const dirPath = path.join(testDataPath, dirName);
+      if (!fs.existsSync(dirPath)) return;
+      const testFiles = fs
+        .readdirSync(dirPath)
+        .filter((f) => f.endsWith('.json'))
+        .sort();
+
+      it('should have test files', () => {
+        expect(testFiles.length).toBeGreaterThan(0);
+      });
+
+      testFiles.forEach((fileName) => {
+        const filePath = path.join(dirPath, fileName);
+        const testName = fileName.replace('.json', '');
+        it(`should pass ${testName}`, () => {
+          const data: TestData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+          runDualPath(data, entries, assertBounds);
+        });
+      });
+    });
+  }
+
+  runBoundsDir(
+    'shift-bounds',
+    twoSampleBoundsEntries(
+      (x, y, misrate) => shiftBounds(x, y, misrate),
+      (x, y, misrate) => shiftBounds(x, y, misrate),
+    ),
+  );
+  runBoundsDir(
+    'ratio-bounds',
+    twoSampleBoundsEntries(
+      (x, y, misrate) => ratioBounds(x, y, misrate),
+      (x, y, misrate) => ratioBounds(x, y, misrate),
+    ),
+  );
+  runBoundsDir(
+    'center-bounds',
+    oneSampleBoundsEntries(
+      (x, misrate) => centerBounds(x, misrate),
+      (x, misrate) => centerBounds(x, misrate),
+    ),
+  );
+  runBoundsDir(
+    'spread-bounds',
+    oneSampleBoundsEntries(
+      (x, misrate, seed) => spreadBounds(x, misrate, seed),
+      (x, misrate, seed) => spreadBounds(x, misrate, seed),
+    ),
+  );
+  runBoundsDir(
+    'disparity-bounds',
+    twoSampleBoundsEntries(
+      (x, y, misrate, seed) => disparityBounds(x, y, misrate, seed),
+      (x, y, misrate, seed) => disparityBounds(x, y, misrate, seed),
+    ),
+  );
+
+  // Get all test directories that match a value estimator
   const testDirs = fs
     .readdirSync(testDataPath)
     .filter((dir) => fs.statSync(path.join(testDataPath, dir)).isDirectory())
-    .filter((dir) => allEstimatorNames.has(dir));
+    .filter((dir) => dir in valueEstimatorEntries);
 
   testDirs.forEach((dirName) => {
     describe(dirName, () => {
@@ -82,71 +342,15 @@ describe('Reference Tests', () => {
         .filter((file) => file.endsWith('.json'))
         .sort();
 
+      const entries = valueEstimatorEntries[dirName];
+
       testFiles.forEach((fileName) => {
         const filePath = path.join(dirPath, fileName);
         const testName = fileName.replace('.json', '');
 
         it(`should pass ${testName}`, () => {
-          const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-
-          // Handle error test cases
-          if (data.expected_error) {
-            let thrownError: AssumptionError | null = null;
-            try {
-              if (data.input && typeof data.input === 'object' && 'x' in data.input) {
-                const sx = sampleFromTestData(data.input.x, 'x');
-                if ('y' in data.input) {
-                  const sy = sampleFromTestData(data.input.y, 'y');
-                  const fn = twoSampleEstimators[dirName];
-                  fn(sx, sy);
-                } else {
-                  const fn = oneSampleEstimators[dirName];
-                  fn(sx);
-                }
-              } else if (Array.isArray(data.input)) {
-                const sx = sampleFromTestData(data.input, 'x');
-                const fn = oneSampleEstimators[dirName];
-                fn(sx);
-              }
-            } catch (e) {
-              if (e instanceof AssumptionError) {
-                thrownError = e;
-              } else {
-                throw e;
-              }
-            }
-            expect(thrownError).not.toBeNull();
-            expect(thrownError!.violation!.id).toBe(data.expected_error.id);
-            expect(thrownError!.violation!.subject).toBe(data.expected_error.subject);
-
-            return;
-          }
-
-          // Determine if this is a one-sample or two-sample test
-          if (data.input && typeof data.input === 'object' && 'x' in data.input) {
-            if ('y' in data.input) {
-              // Two-sample test
-              const sx = Sample.of(data.input.x);
-              const sy = Sample.of(data.input.y);
-              const fn = twoSampleEstimators[dirName];
-              const result = fn(sx, sy);
-              expect(result.value).toBeCloseTo(data.output, 9);
-            } else {
-              // One-sample test with x property
-              const sx = Sample.of(data.input.x);
-              const fn = oneSampleEstimators[dirName];
-              const result = fn(sx);
-              expect(result.value).toBeCloseTo(data.output, 9);
-            }
-          } else if (Array.isArray(data.input)) {
-            // One-sample test with direct array
-            const sx = Sample.of(data.input);
-            const fn = oneSampleEstimators[dirName];
-            const result = fn(sx);
-            expect(result.value).toBeCloseTo(data.output, 9);
-          } else {
-            throw new Error(`Invalid test data format in ${filePath}`);
-          }
+          const data: TestData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+          runDualPath(data, entries, assertValue);
         });
       });
     });
@@ -189,100 +393,6 @@ describe('Reference Tests', () => {
 
           const result = pairwiseMargin(data.input.n, data.input.m, data.input.misrate);
           expect(result).toBe(data.output);
-        });
-      });
-    }
-  });
-
-  // ShiftBounds tests
-  describe('shift-bounds', () => {
-    const dirPath = path.join(testDataPath, 'shift-bounds');
-    if (fs.existsSync(dirPath)) {
-      const testFiles = fs
-        .readdirSync(dirPath)
-        .filter((file) => file.endsWith('.json'))
-        .sort();
-
-      testFiles.forEach((fileName) => {
-        const filePath = path.join(dirPath, fileName);
-        const testName = fileName.replace('.json', '');
-
-        it(`should pass ${testName}`, () => {
-          const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-
-          // Handle error test cases
-          if (data.expected_error) {
-            let thrownError: AssumptionError | null = null;
-            try {
-              const sx = sampleFromTestData(data.input.x, 'x');
-              const sy = sampleFromTestData(data.input.y, 'y');
-              shiftBounds(sx, sy, data.input.misrate);
-            } catch (e) {
-              if (e instanceof AssumptionError) {
-                thrownError = e;
-              } else {
-                throw e;
-              }
-            }
-            expect(thrownError).not.toBeNull();
-            expect(thrownError!.violation!.id).toBe(data.expected_error.id);
-            expect(thrownError!.violation!.subject).toBe(data.expected_error.subject);
-
-            return;
-          }
-
-          const sx = Sample.of(data.input.x);
-          const sy = Sample.of(data.input.y);
-          const result = shiftBounds(sx, sy, data.input.misrate);
-          expect(result.lower).toBeCloseTo(data.output.lower, 9);
-          expect(result.upper).toBeCloseTo(data.output.upper, 9);
-        });
-      });
-    }
-  });
-
-  // RatioBounds tests
-  describe('ratio-bounds', () => {
-    const dirPath = path.join(testDataPath, 'ratio-bounds');
-    if (fs.existsSync(dirPath)) {
-      const testFiles = fs
-        .readdirSync(dirPath)
-        .filter((file) => file.endsWith('.json'))
-        .sort();
-
-      testFiles.forEach((fileName) => {
-        const filePath = path.join(dirPath, fileName);
-        const testName = fileName.replace('.json', '');
-
-        it(`should pass ${testName}`, () => {
-          const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-
-          // Handle error test cases
-          if (data.expected_error) {
-            let thrownError: AssumptionError | null = null;
-            try {
-              const sx = sampleFromTestData(data.input.x, 'x');
-              const sy = sampleFromTestData(data.input.y, 'y');
-              ratioBounds(sx, sy, data.input.misrate);
-            } catch (e) {
-              if (e instanceof AssumptionError) {
-                thrownError = e;
-              } else {
-                throw e;
-              }
-            }
-            expect(thrownError).not.toBeNull();
-            expect(thrownError!.violation!.id).toBe(data.expected_error.id);
-            expect(thrownError!.violation!.subject).toBe(data.expected_error.subject);
-
-            return;
-          }
-
-          const sx = Sample.of(data.input.x);
-          const sy = Sample.of(data.input.y);
-          const result = ratioBounds(sx, sy, data.input.misrate);
-          expect(result.lower).toBeCloseTo(data.output.lower, 9);
-          expect(result.upper).toBeCloseTo(data.output.upper, 9);
         });
       });
     }
@@ -676,143 +786,6 @@ describe('Reference Tests', () => {
     }
   });
 
-  // CenterBounds tests
-  describe('center-bounds', () => {
-    const dirPath = path.join(testDataPath, 'center-bounds');
-    if (fs.existsSync(dirPath)) {
-      const testFiles = fs
-        .readdirSync(dirPath)
-        .filter((file) => file.endsWith('.json'))
-        .sort();
-
-      testFiles.forEach((fileName) => {
-        const filePath = path.join(dirPath, fileName);
-        const testName = fileName.replace('.json', '');
-
-        it(`should pass ${testName}`, () => {
-          const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-
-          // Handle error test cases
-          if (data.expected_error) {
-            let thrownError: AssumptionError | null = null;
-            try {
-              const sx = sampleFromTestData(data.input.x, 'x');
-              centerBounds(sx, data.input.misrate);
-            } catch (e) {
-              if (e instanceof AssumptionError) {
-                thrownError = e;
-              } else {
-                throw e;
-              }
-            }
-            expect(thrownError).not.toBeNull();
-            expect(thrownError!.violation!.id).toBe(data.expected_error.id);
-            expect(thrownError!.violation!.subject).toBe(data.expected_error.subject);
-
-            return;
-          }
-
-          const sx = Sample.of(data.input.x);
-          const result = centerBounds(sx, data.input.misrate);
-          expect(result.lower).toBeCloseTo(data.output.lower, 9);
-          expect(result.upper).toBeCloseTo(data.output.upper, 9);
-        });
-      });
-    }
-  });
-
-  // SpreadBounds tests
-  describe('spread-bounds', () => {
-    const dirPath = path.join(testDataPath, 'spread-bounds');
-    if (fs.existsSync(dirPath)) {
-      const testFiles = fs
-        .readdirSync(dirPath)
-        .filter((f) => f.endsWith('.json'))
-        .sort();
-
-      testFiles.forEach((fileName) => {
-        const filePath = path.join(dirPath, fileName);
-        const testName = fileName.replace('.json', '');
-
-        it(`should pass ${testName}`, () => {
-          const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-
-          if (data.expected_error) {
-            let thrownError: AssumptionError | null = null;
-            try {
-              const sx = sampleFromTestData(data.input.x, 'x');
-              spreadBounds(sx, data.input.misrate, data.input.seed);
-            } catch (e) {
-              if (e instanceof AssumptionError) {
-                thrownError = e;
-              } else {
-                throw e;
-              }
-            }
-            expect(thrownError).not.toBeNull();
-            expect(thrownError!.violation!.id).toBe(data.expected_error.id);
-            expect(thrownError!.violation!.subject).toBe(data.expected_error.subject);
-            return;
-          }
-
-          const sx = Sample.of(data.input.x);
-          const result = spreadBounds(sx, data.input.misrate, data.input.seed);
-          expect(result.lower).toBeCloseTo(data.output.lower, 9);
-          expect(result.upper).toBeCloseTo(data.output.upper, 9);
-        });
-      });
-    }
-  });
-
-  // DisparityBounds tests
-  describe('disparity-bounds', () => {
-    const dirPath = path.join(testDataPath, 'disparity-bounds');
-    if (fs.existsSync(dirPath)) {
-      const testFiles = fs
-        .readdirSync(dirPath)
-        .filter((f) => f.endsWith('.json'))
-        .sort();
-
-      it('should have test files', () => {
-        expect(testFiles.length).toBeGreaterThan(0);
-      });
-
-      testFiles.forEach((fileName) => {
-        const filePath = path.join(dirPath, fileName);
-        const testName = fileName.replace('.json', '');
-
-        it(`should pass ${testName}`, () => {
-          const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-
-          if (data.expected_error) {
-            let thrownError: AssumptionError | null = null;
-            try {
-              const sx = sampleFromTestData(data.input.x, 'x');
-              const sy = sampleFromTestData(data.input.y, 'y');
-              disparityBounds(sx, sy, data.input.misrate, data.input.seed);
-            } catch (e) {
-              if (e instanceof AssumptionError) {
-                thrownError = e;
-              } else {
-                throw e;
-              }
-            }
-            expect(thrownError).not.toBeNull();
-            expect(thrownError!.violation!.id).toBe(data.expected_error.id);
-            expect(thrownError!.violation!.subject).toBe(data.expected_error.subject);
-            return;
-          }
-
-          const sx = Sample.of(data.input.x);
-          const sy = Sample.of(data.input.y);
-          const result = disparityBounds(sx, sy, data.input.misrate, data.input.seed);
-          expect(result.lower).toBeCloseTo(data.output.lower, 9);
-          expect(result.upper).toBeCloseTo(data.output.upper, 9);
-        });
-      });
-    }
-  });
-
   // AvgSpreadBounds tests
   describe('avg-spread-bounds', () => {
     const dirPath = path.join(testDataPath, 'avg-spread-bounds');
@@ -836,8 +809,8 @@ describe('Reference Tests', () => {
           if (data.expected_error) {
             let thrownError: AssumptionError | null = null;
             try {
-              const sx = sampleFromTestData(data.input.x, 'x');
-              const sy = sampleFromTestData(data.input.y, 'y');
+              const sx = sampleFromTestData(data.input.x);
+              const sy = sampleFromTestData(data.input.y);
               avgSpreadBounds(sx, sy, data.input.misrate, data.input.seed);
             } catch (e) {
               if (e instanceof AssumptionError) {
@@ -846,9 +819,8 @@ describe('Reference Tests', () => {
                 throw e;
               }
             }
-            expect(thrownError).not.toBeNull();
-            expect(thrownError!.violation!.id).toBe(data.expected_error.id);
-            expect(thrownError!.violation!.subject).toBe(data.expected_error.subject);
+            // Sample-only path: construction reports 'y' validity as 'x'.
+            expectError(thrownError, data.expected_error, true);
             return;
           }
 
@@ -1023,7 +995,7 @@ describe('Reference Tests', () => {
           if (data.expected_error) {
             let thrownError: AssumptionError | null = null;
             try {
-              const sx = sampleFromTestData(data.input.x, 'x');
+              const sx = sampleFromTestData(data.input.x);
               const thresholds = data.input.thresholds.map(
                 (t: { metric: string; value: number; misrate: number }) =>
                   new Threshold(t.metric as Metric, new Measurement(t.value), t.misrate),
@@ -1036,9 +1008,8 @@ describe('Reference Tests', () => {
                 throw e;
               }
             }
-            expect(thrownError).not.toBeNull();
-            expect(thrownError!.violation!.id).toBe(data.expected_error.id);
-            expect(thrownError!.violation!.subject).toBe(data.expected_error.subject);
+            // Sample-only path: construction reports 'y' validity as 'x'.
+            expectError(thrownError, data.expected_error, true);
             return;
           }
 
@@ -1081,8 +1052,8 @@ describe('Reference Tests', () => {
           if (data.expected_error) {
             let thrownError: AssumptionError | null = null;
             try {
-              const sx = sampleFromTestData(data.input.x, 'x');
-              const sy = sampleFromTestData(data.input.y, 'y');
+              const sx = sampleFromTestData(data.input.x);
+              const sy = sampleFromTestData(data.input.y);
               const thresholds = data.input.thresholds.map(
                 (t: { metric: string; value: number; misrate: number }) =>
                   new Threshold(t.metric as Metric, new Measurement(t.value), t.misrate),
@@ -1095,9 +1066,8 @@ describe('Reference Tests', () => {
                 throw e;
               }
             }
-            expect(thrownError).not.toBeNull();
-            expect(thrownError!.violation!.id).toBe(data.expected_error.id);
-            expect(thrownError!.violation!.subject).toBe(data.expected_error.subject);
+            // Sample-only path: construction reports 'y' validity as 'x'.
+            expectError(thrownError, data.expected_error, true);
             return;
           }
 

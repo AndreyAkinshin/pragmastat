@@ -12,7 +12,7 @@ export class Sample {
   readonly totalWeight: number;
   readonly weightedSize: number;
 
-  private _sortedValues: number[] | null = null;
+  private _sortedValues: readonly number[] | null = null;
 
   constructor(values: readonly number[], weights: readonly number[] | null, unit: MeasurementUnit) {
     if (values.length === 0) {
@@ -24,7 +24,7 @@ export class Sample {
       }
     }
 
-    this.values = values;
+    this.values = Object.freeze([...values]);
     this.unit = unit;
 
     if (weights !== null) {
@@ -45,7 +45,7 @@ export class Sample {
       if (totalWeight < 1e-9) {
         throw new Error('total weight must be positive');
       }
-      this.weights = weights;
+      this.weights = Object.freeze([...weights]);
       this.isWeighted = true;
       this.totalWeight = totalWeight;
       this.weightedSize = (totalWeight * totalWeight) / totalWeightSq;
@@ -63,9 +63,9 @@ export class Sample {
   }
 
   /** Returns a sorted copy of the values (lazily computed). */
-  get sortedValues(): number[] {
+  get sortedValues(): readonly number[] {
     if (this._sortedValues === null) {
-      this._sortedValues = [...this.values].sort((a, b) => a - b);
+      this._sortedValues = Object.freeze([...this.values].sort((a, b) => a - b));
     }
     return this._sortedValues;
   }

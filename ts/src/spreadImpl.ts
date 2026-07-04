@@ -18,7 +18,7 @@ import { deriveSeed } from './fnv1a';
  * @returns The spread estimate (Shamos estimator)
  * @internal
  */
-export function spreadImpl(values: number[]): number {
+export function spreadImpl(values: readonly number[], assumeSorted = false): number {
   const n = values.length;
   if (n === 0) {
     throw new Error('Input array cannot be empty');
@@ -34,7 +34,7 @@ export function spreadImpl(values: number[]): number {
   const rng = new Rng(deriveSeed(values));
 
   // Sort the values
-  const a = [...values].sort((a, b) => a - b);
+  const a = assumeSorted ? values : [...values].sort((a, b) => a - b);
 
   // Total number of pairwise differences with i < j
   // Use BigInt to prevent 53-bit precision overflow for large n

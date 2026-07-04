@@ -59,7 +59,7 @@ export class AssumptionError extends Error {
   }
 }
 
-export function checkValidity(values: number[], subject: Subject): void {
+export function checkValidity(values: readonly number[], subject: Subject): void {
   if (values.length === 0) {
     throw AssumptionError.validity(subject);
   }
@@ -68,7 +68,7 @@ export function checkValidity(values: number[], subject: Subject): void {
   }
 }
 
-export function checkPositivity(values: number[], subject: Subject): void {
+export function checkPositivity(values: readonly number[], subject: Subject): void {
   if (values.some((v) => v <= 0)) {
     throw AssumptionError.positivity(subject);
   }
@@ -77,7 +77,7 @@ export function checkPositivity(values: number[], subject: Subject): void {
 /**
  * Log-transforms an array. Throws AssumptionError if any value is non-positive.
  */
-export function log(values: number[], subject: Subject): number[] {
+export function log(values: readonly number[], subject: Subject): number[] {
   const result = new Array<number>(values.length);
   for (let i = 0; i < values.length; i++) {
     if (values[i] <= 0) {
