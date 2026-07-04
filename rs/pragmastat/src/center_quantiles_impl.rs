@@ -73,7 +73,7 @@ fn center_find_exact_quantile_impl(sorted: &[f64], k: i64) -> f64 {
     const EPS: f64 = RELATIVE_EPSILON;
 
     while hi - lo > EPS * 1.0_f64.max(lo.abs().max(hi.abs())) {
-        let mid = f64::midpoint(lo, hi);
+        let mid = 0.5 * lo + 0.5 * hi;
         let count_less_or_equal = count_pairs_less_or_equal(sorted, mid);
 
         if count_less_or_equal >= k {
@@ -83,7 +83,7 @@ fn center_find_exact_quantile_impl(sorted: &[f64], k: i64) -> f64 {
         }
     }
 
-    let target = f64::midpoint(lo, hi);
+    let target = 0.5 * lo + 0.5 * hi;
     let mut candidates: Vec<f64> = Vec::new();
 
     for i in 0..n {
@@ -105,11 +105,11 @@ fn center_find_exact_quantile_impl(sorted: &[f64], k: i64) -> f64 {
             && left >= i
             && (sorted[left] - threshold).abs() < EPS * 1.0_f64.max(threshold.abs())
         {
-            candidates.push(f64::midpoint(sorted[i], sorted[left]));
+            candidates.push(0.5 * sorted[i] + 0.5 * sorted[left]);
         }
 
         if left > i {
-            let avg_before = f64::midpoint(sorted[i], sorted[left - 1]);
+            let avg_before = 0.5 * sorted[i] + 0.5 * sorted[left - 1];
             if avg_before <= target + EPS {
                 candidates.push(avg_before);
             }

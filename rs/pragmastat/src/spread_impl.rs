@@ -89,7 +89,7 @@ pub(crate) fn spread_impl(values: &[f64]) -> Result<f64, &'static str> {
         if at_target {
             if k_low < k_high {
                 // Even N: average the two central order stats
-                return Ok(0.5 * (largest_below + smallest_at_or_above));
+                return Ok(0.5 * largest_below + 0.5 * smallest_at_or_above);
             } else {
                 // Odd N: pick the single middle
                 let need_largest = count_below == k_low;
@@ -126,7 +126,7 @@ pub(crate) fn spread_impl(values: &[f64]) -> Result<f64, &'static str> {
 
             if active == 0 {
                 if k_low < k_high {
-                    return Ok(0.5 * (largest_below + smallest_at_or_above));
+                    return Ok(0.5 * largest_below + 0.5 * smallest_at_or_above);
                 }
                 return Ok(if count_below >= k_low {
                     largest_below
@@ -139,7 +139,7 @@ pub(crate) fn spread_impl(values: &[f64]) -> Result<f64, &'static str> {
                 return Ok(min_active);
             }
 
-            let mid = 0.5 * (min_active + max_active);
+            let mid = 0.5 * min_active + 0.5 * max_active;
             pivot = if mid > min_active && mid <= max_active {
                 mid
             } else {
@@ -222,7 +222,7 @@ pub(crate) fn spread_impl(values: &[f64]) -> Result<f64, &'static str> {
 
             if active_size == 0 {
                 if k_low < k_high {
-                    return Ok(0.5 * (largest_below + smallest_at_or_above));
+                    return Ok(0.5 * largest_below + 0.5 * smallest_at_or_above);
                 }
                 return Ok(if count_below >= k_low {
                     largest_below
@@ -232,7 +232,7 @@ pub(crate) fn spread_impl(values: &[f64]) -> Result<f64, &'static str> {
             }
 
             if k_low < k_high {
-                return Ok(0.5 * (min_rem + max_rem));
+                return Ok(0.5 * min_rem + 0.5 * max_rem);
             }
             // In this code path count_below < k_low, so min_rem is always the correct result:
             // |k_low-1-count_below| = d-1 <= d = |count_below-k_low| for all d > 0.

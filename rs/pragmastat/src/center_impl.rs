@@ -14,7 +14,7 @@ pub(crate) fn center_impl(values: &[f64]) -> Result<f64, &'static str> {
         return Ok(values[0]);
     }
     if n == 2 {
-        return Ok(f64::midpoint(values[0], values[1]));
+        return Ok(0.5 * values[0] + 0.5 * values[1]);
     }
 
     // Validate for NaN/infinite values
@@ -86,7 +86,7 @@ pub(crate) fn center_impl(values: &[f64]) -> Result<f64, &'static str> {
                 max_active_sum = max_active_sum.max(largest_in_row);
             }
 
-            pivot = f64::midpoint(min_active_sum, max_active_sum);
+            pivot = 0.5 * min_active_sum + 0.5 * max_active_sum;
             if pivot <= min_active_sum || pivot > max_active_sum {
                 pivot = max_active_sum;
             }
@@ -208,7 +208,7 @@ pub(crate) fn center_impl(values: &[f64]) -> Result<f64, &'static str> {
                 max_remaining_sum = max_remaining_sum.max(max_in_row);
             }
 
-            pivot = f64::midpoint(min_remaining_sum, max_remaining_sum);
+            pivot = 0.5 * min_remaining_sum + 0.5 * max_remaining_sum;
             if pivot <= min_remaining_sum || pivot > max_remaining_sum {
                 pivot = max_remaining_sum;
             }

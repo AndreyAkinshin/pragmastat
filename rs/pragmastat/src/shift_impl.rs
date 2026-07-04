@@ -221,9 +221,9 @@ fn count_and_neighbors(x: &[f64], y: &[f64], threshold: f64) -> (i64, f64, f64) 
     (count, max_below, min_above)
 }
 
-/// Computes the midpoint of two numbers, avoiding overflow
+/// Overflow-safe, order-symmetric midpoint: 0.5*a + 0.5*b (halve before summing; never overflows; operand order is irrelevant).
 fn midpoint(a: f64, b: f64) -> f64 {
-    a + (b - a) * 0.5
+    0.5 * a + 0.5 * b
 }
 
 /// Fast O((m+n) log precision) implementation of the Ratio estimator via log-transformation.
