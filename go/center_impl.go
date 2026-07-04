@@ -25,7 +25,7 @@ func deriveSeed[T Number](values []T) int64 {
 // centerImpl computes the median of all pairwise averages efficiently.
 // Time complexity: O(n log n) expected
 // Space complexity: O(n)
-func centerImpl[T Number](values []T) (float64, error) {
+func centerImpl[T Number](values []T, assumeSorted bool) (float64, error) {
 	n := len(values)
 	if n == 0 {
 		return 0, errEmptyInput
@@ -45,9 +45,14 @@ func centerImpl[T Number](values []T) (float64, error) {
 	rng := NewRngFromSeed(deriveSeed(values))
 
 	// Sort the values
-	sortedValues := make([]T, n)
-	copy(sortedValues, values)
-	sort.Slice(sortedValues, func(i, j int) bool { return sortedValues[i] < sortedValues[j] })
+	var sortedValues []T
+	if assumeSorted {
+		sortedValues = values
+	} else {
+		sortedValues = make([]T, n)
+		copy(sortedValues, values)
+		sort.Slice(sortedValues, func(i, j int) bool { return sortedValues[i] < sortedValues[j] })
+	}
 
 	// Calculate target median rank(s) among all pairwise sums
 	totalPairs := int64(n) * int64(n+1) / 2
@@ -84,6 +89,7 @@ func centerImpl[T Number](values []T) (float64, error) {
 		if iter >= maxIterations {
 			return 0, errors.New("convergence failure (pathological input)")
 		}
+
 		// === PARTITION STEP ===
 		countBelowPivot := int64(0)
 		currentColumn := int64(n)

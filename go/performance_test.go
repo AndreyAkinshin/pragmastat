@@ -15,7 +15,7 @@ func TestCenterPerformance(t *testing.T) {
 	}
 
 	start := time.Now()
-	result, err := centerImpl(x)
+	result, err := centerImpl(x, false)
 	elapsed := time.Since(start)
 
 	if err != nil {
@@ -44,7 +44,7 @@ func TestSpreadPerformance(t *testing.T) {
 	}
 
 	start := time.Now()
-	result, err := spreadImpl(x)
+	result, err := spreadImpl(x, false)
 	elapsed := time.Since(start)
 
 	if err != nil {
@@ -75,12 +75,13 @@ func TestShiftPerformance(t *testing.T) {
 	}
 
 	start := time.Now()
-	result, err := shiftImpl(x, y)
+	quantiles, err := shiftQuantilesImpl(x, y, []float64{0.5}, false)
 	elapsed := time.Since(start)
 
 	if err != nil {
-		t.Fatalf("shiftImpl failed: %v", err)
+		t.Fatalf("shiftQuantilesImpl failed: %v", err)
 	}
+	result := quantiles[0]
 
 	expected := 0.0
 	if math.Abs(result-expected) > 1e-9 {

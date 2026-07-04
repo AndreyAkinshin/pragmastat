@@ -62,14 +62,6 @@ func mustSampleOf(x []float64) *Sample {
 	return s
 }
 
-func mustSampleOfY(x []float64) *Sample {
-	s, err := newSample(x, nil, nil, SubjectY)
-	if err != nil {
-		panic(err)
-	}
-	return s
-}
-
 // performTestOne tests a one-sample invariance property across sizes 2-10
 func performTestOne(t *testing.T, expr1 func([]float64) float64, expr2 func([]float64) float64) {
 	t.Helper()
@@ -103,22 +95,22 @@ func performTestTwo(t *testing.T, expr1 func([]float64, []float64) float64, expr
 
 func TestCenterShift(t *testing.T) {
 	performTestOne(t,
-		func(x []float64) float64 { return mustVal(Center(mustSampleOf(addScalar(x, 2)))) },
-		func(x []float64) float64 { return mustVal(Center(mustSampleOf(x))) + 2 },
+		func(x []float64) float64 { return mustVal((mustSampleOf(addScalar(x, 2))).Center()) },
+		func(x []float64) float64 { return mustVal((mustSampleOf(x)).Center()) + 2 },
 	)
 }
 
 func TestCenterScale(t *testing.T) {
 	performTestOne(t,
-		func(x []float64) float64 { return mustVal(Center(mustSampleOf(mulScalar(x, 2)))) },
-		func(x []float64) float64 { return 2 * mustVal(Center(mustSampleOf(x))) },
+		func(x []float64) float64 { return mustVal((mustSampleOf(mulScalar(x, 2))).Center()) },
+		func(x []float64) float64 { return 2 * mustVal((mustSampleOf(x)).Center()) },
 	)
 }
 
 func TestCenterNegate(t *testing.T) {
 	performTestOne(t,
-		func(x []float64) float64 { return mustVal(Center(mustSampleOf(mulScalar(x, -1)))) },
-		func(x []float64) float64 { return -1 * mustVal(Center(mustSampleOf(x))) },
+		func(x []float64) float64 { return mustVal((mustSampleOf(mulScalar(x, -1))).Center()) },
+		func(x []float64) float64 { return -1 * mustVal((mustSampleOf(x)).Center()) },
 	)
 }
 
@@ -126,22 +118,22 @@ func TestCenterNegate(t *testing.T) {
 
 func TestSpreadShift(t *testing.T) {
 	performTestOne(t,
-		func(x []float64) float64 { return mustVal(Spread(mustSampleOf(addScalar(x, 2)))) },
-		func(x []float64) float64 { return mustVal(Spread(mustSampleOf(x))) },
+		func(x []float64) float64 { return mustVal((mustSampleOf(addScalar(x, 2))).Spread()) },
+		func(x []float64) float64 { return mustVal((mustSampleOf(x)).Spread()) },
 	)
 }
 
 func TestSpreadScale(t *testing.T) {
 	performTestOne(t,
-		func(x []float64) float64 { return mustVal(Spread(mustSampleOf(mulScalar(x, 2)))) },
-		func(x []float64) float64 { return 2 * mustVal(Spread(mustSampleOf(x))) },
+		func(x []float64) float64 { return mustVal((mustSampleOf(mulScalar(x, 2))).Spread()) },
+		func(x []float64) float64 { return 2 * mustVal((mustSampleOf(x)).Spread()) },
 	)
 }
 
 func TestSpreadNegate(t *testing.T) {
 	performTestOne(t,
-		func(x []float64) float64 { return mustVal(Spread(mustSampleOf(mulScalar(x, -1)))) },
-		func(x []float64) float64 { return mustVal(Spread(mustSampleOf(x))) },
+		func(x []float64) float64 { return mustVal((mustSampleOf(mulScalar(x, -1))).Spread()) },
+		func(x []float64) float64 { return mustVal((mustSampleOf(x)).Spread()) },
 	)
 }
 
@@ -150,25 +142,25 @@ func TestSpreadNegate(t *testing.T) {
 func TestShiftShift(t *testing.T) {
 	performTestTwo(t,
 		func(x, y []float64) float64 {
-			return mustVal(Shift(mustSampleOf(addScalar(x, 3)), mustSampleOfY(addScalar(y, 2))))
+			return mustVal((mustSampleOf(addScalar(x, 3))).Shift(mustSampleOf(addScalar(y, 2))))
 		},
-		func(x, y []float64) float64 { return mustVal(Shift(mustSampleOf(x), mustSampleOfY(y))) + 1 },
+		func(x, y []float64) float64 { return mustVal((mustSampleOf(x)).Shift(mustSampleOf(y))) + 1 },
 	)
 }
 
 func TestShiftScale(t *testing.T) {
 	performTestTwo(t,
 		func(x, y []float64) float64 {
-			return mustVal(Shift(mustSampleOf(mulScalar(x, 2)), mustSampleOfY(mulScalar(y, 2))))
+			return mustVal((mustSampleOf(mulScalar(x, 2))).Shift(mustSampleOf(mulScalar(y, 2))))
 		},
-		func(x, y []float64) float64 { return 2 * mustVal(Shift(mustSampleOf(x), mustSampleOfY(y))) },
+		func(x, y []float64) float64 { return 2 * mustVal((mustSampleOf(x)).Shift(mustSampleOf(y))) },
 	)
 }
 
 func TestShiftAntisymmetry(t *testing.T) {
 	performTestTwo(t,
-		func(x, y []float64) float64 { return mustVal(Shift(mustSampleOf(x), mustSampleOfY(y))) },
-		func(x, y []float64) float64 { return -1 * mustVal(Shift(mustSampleOf(y), mustSampleOfY(x))) },
+		func(x, y []float64) float64 { return mustVal((mustSampleOf(x)).Shift(mustSampleOf(y))) },
+		func(x, y []float64) float64 { return -1 * mustVal((mustSampleOf(y)).Shift(mustSampleOf(x))) },
 	)
 }
 
@@ -177,9 +169,9 @@ func TestShiftAntisymmetry(t *testing.T) {
 func TestRatioScale(t *testing.T) {
 	performTestTwo(t,
 		func(x, y []float64) float64 {
-			return mustVal(Ratio(mustSampleOf(mulScalar(x, 2)), mustSampleOfY(mulScalar(y, 3))))
+			return mustVal((mustSampleOf(mulScalar(x, 2))).Ratio(mustSampleOf(mulScalar(y, 3))))
 		},
-		func(x, y []float64) float64 { return (2.0 / 3) * mustVal(Ratio(mustSampleOf(x), mustSampleOfY(y))) },
+		func(x, y []float64) float64 { return (2.0 / 3) * mustVal((mustSampleOf(x)).Ratio(mustSampleOf(y))) },
 	)
 }
 
@@ -187,33 +179,33 @@ func TestRatioScale(t *testing.T) {
 
 func TestAvgSpreadEqual(t *testing.T) {
 	performTestOne(t,
-		func(x []float64) float64 { return mustVal(avgSpread(mustSampleOf(x), mustSampleOfY(x))) },
-		func(x []float64) float64 { return mustVal(Spread(mustSampleOf(x))) },
+		func(x []float64) float64 { return mustVal((mustSampleOf(x)).avgSpread(mustSampleOf(x))) },
+		func(x []float64) float64 { return mustVal((mustSampleOf(x)).Spread()) },
 	)
 }
 
 func TestAvgSpreadSymmetry(t *testing.T) {
 	performTestTwo(t,
-		func(x, y []float64) float64 { return mustVal(avgSpread(mustSampleOf(x), mustSampleOfY(y))) },
-		func(x, y []float64) float64 { return mustVal(avgSpread(mustSampleOf(y), mustSampleOfY(x))) },
+		func(x, y []float64) float64 { return mustVal((mustSampleOf(x)).avgSpread(mustSampleOf(y))) },
+		func(x, y []float64) float64 { return mustVal((mustSampleOf(y)).avgSpread(mustSampleOf(x))) },
 	)
 }
 
 func TestAvgSpreadAverage(t *testing.T) {
 	performTestOne(t,
 		func(x []float64) float64 {
-			return mustVal(avgSpread(mustSampleOf(x), mustSampleOfY(mulScalar(x, 5))))
+			return mustVal((mustSampleOf(x)).avgSpread(mustSampleOf(mulScalar(x, 5))))
 		},
-		func(x []float64) float64 { return 3 * mustVal(Spread(mustSampleOf(x))) },
+		func(x []float64) float64 { return 3 * mustVal((mustSampleOf(x)).Spread()) },
 	)
 }
 
 func TestAvgSpreadScale(t *testing.T) {
 	performTestTwo(t,
 		func(x, y []float64) float64 {
-			return mustVal(avgSpread(mustSampleOf(mulScalar(x, -2)), mustSampleOfY(mulScalar(y, -2))))
+			return mustVal((mustSampleOf(mulScalar(x, -2))).avgSpread(mustSampleOf(mulScalar(y, -2))))
 		},
-		func(x, y []float64) float64 { return 2 * mustVal(avgSpread(mustSampleOf(x), mustSampleOfY(y))) },
+		func(x, y []float64) float64 { return 2 * mustVal((mustSampleOf(x)).avgSpread(mustSampleOf(y))) },
 	)
 }
 
@@ -222,37 +214,37 @@ func TestAvgSpreadScale(t *testing.T) {
 func TestDisparityShift(t *testing.T) {
 	performTestTwo(t,
 		func(x, y []float64) float64 {
-			return mustVal(Disparity(mustSampleOf(addScalar(x, 2)), mustSampleOfY(addScalar(y, 2))))
+			return mustVal((mustSampleOf(addScalar(x, 2))).Disparity(mustSampleOf(addScalar(y, 2))))
 		},
-		func(x, y []float64) float64 { return mustVal(Disparity(mustSampleOf(x), mustSampleOfY(y))) },
+		func(x, y []float64) float64 { return mustVal((mustSampleOf(x)).Disparity(mustSampleOf(y))) },
 	)
 }
 
 func TestDisparityScale(t *testing.T) {
 	performTestTwo(t,
 		func(x, y []float64) float64 {
-			return mustVal(Disparity(mustSampleOf(mulScalar(x, 2)), mustSampleOfY(mulScalar(y, 2))))
+			return mustVal((mustSampleOf(mulScalar(x, 2))).Disparity(mustSampleOf(mulScalar(y, 2))))
 		},
-		func(x, y []float64) float64 { return mustVal(Disparity(mustSampleOf(x), mustSampleOfY(y))) },
+		func(x, y []float64) float64 { return mustVal((mustSampleOf(x)).Disparity(mustSampleOf(y))) },
 	)
 }
 
 func TestDisparityScaleNeg(t *testing.T) {
 	performTestTwo(t,
 		func(x, y []float64) float64 {
-			return mustVal(Disparity(mustSampleOf(mulScalar(x, -2)), mustSampleOfY(mulScalar(y, -2))))
+			return mustVal((mustSampleOf(mulScalar(x, -2))).Disparity(mustSampleOf(mulScalar(y, -2))))
 		},
 		func(x, y []float64) float64 {
-			return -1 * mustVal(Disparity(mustSampleOf(x), mustSampleOfY(y)))
+			return -1 * mustVal((mustSampleOf(x)).Disparity(mustSampleOf(y)))
 		},
 	)
 }
 
 func TestDisparityAntisymmetry(t *testing.T) {
 	performTestTwo(t,
-		func(x, y []float64) float64 { return mustVal(Disparity(mustSampleOf(x), mustSampleOfY(y))) },
+		func(x, y []float64) float64 { return mustVal((mustSampleOf(x)).Disparity(mustSampleOf(y))) },
 		func(x, y []float64) float64 {
-			return -1 * mustVal(Disparity(mustSampleOf(y), mustSampleOfY(x)))
+			return -1 * mustVal((mustSampleOf(y)).Disparity(mustSampleOf(x)))
 		},
 	)
 }

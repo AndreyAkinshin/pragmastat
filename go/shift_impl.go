@@ -40,17 +40,6 @@ func ratioQuantilesImpl[T Number](x, y []T, p []float64, assumeSorted bool) ([]f
 	return result, nil
 }
 
-// shiftImpl computes the median of all pairwise differences {x[i] - y[j]}.
-// Time complexity: O((m + n) * log(precision)) per quantile
-// Space complexity: O(1) - avoids materializing all m*n differences
-func shiftImpl[T Number](x, y []T) (float64, error) {
-	result, err := shiftQuantilesImpl(x, y, []float64{0.5}, false)
-	if err != nil {
-		return 0, err
-	}
-	return result[0], nil
-}
-
 // shiftQuantilesImpl computes quantiles of all pairwise differences {x[i] - y[j]}.
 // Time complexity: O((m + n) * log(precision)) per unique rank
 // Space complexity: O(1) - avoids materializing all m*n differences
@@ -159,7 +148,9 @@ func selectKthPairwiseDiff[T Number](x, y []T, k int64) (float64, error) {
 	prevMax := math.Inf(1)
 
 	for iter := 0; iter < maxIterations && searchMin != searchMax; iter++ {
-		mid := searchMin + (searchMax-searchMin)*0.5
+		// Overflow-safe, order-symmetric midpoint: 0.5*a + 0.5*b (halve before
+		// summing; never overflows; operand order is irrelevant).
+		mid := 0.5*searchMin + 0.5*searchMax
 		countLessOrEqual, closestBelow, closestAbove := countAndNeighbors(x, y, mid)
 
 		if closestBelow == closestAbove {

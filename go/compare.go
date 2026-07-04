@@ -108,10 +108,10 @@ var compare1Specs = []metricSpec{
 			return validateCenterOrSpread(threshold, x)
 		},
 		estimate: func(x, y *Sample) (Measurement, error) {
-			return Center(x)
+			return x.Center()
 		},
 		bounds: func(x, y *Sample, misrate float64) (Bounds, error) {
-			return CenterBounds(x, misrate)
+			return x.CenterBounds(misrate)
 		},
 	},
 	{
@@ -120,13 +120,13 @@ var compare1Specs = []metricSpec{
 			return validateCenterOrSpread(threshold, x)
 		},
 		estimate: func(x, y *Sample) (Measurement, error) {
-			return Spread(x)
+			return x.Spread()
 		},
 		bounds: func(x, y *Sample, misrate float64) (Bounds, error) {
-			return SpreadBounds(x, misrate)
+			return x.SpreadBounds(misrate)
 		},
 		seededBounds: func(x, y *Sample, misrate float64, seed string) (Bounds, error) {
-			return SpreadBoundsWithSeed(x, misrate, seed)
+			return x.SpreadBoundsWithSeed(misrate, seed)
 		},
 	},
 }
@@ -136,43 +136,57 @@ var compare2Specs = []metricSpec{
 	{
 		metric:               MetricShift,
 		validateAndNormalize: validateShift,
-		estimate:             Shift,
-		bounds:               ShiftBounds,
+		estimate: func(x, y *Sample) (Measurement, error) {
+			return x.Shift(y)
+		},
+		bounds: func(x, y *Sample, misrate float64) (Bounds, error) {
+			return x.ShiftBounds(y, misrate)
+		},
 	},
 	{
 		metric: MetricRatio,
 		validateAndNormalize: func(threshold *Threshold, x, y *Sample) (Measurement, error) {
 			return validateRatio(threshold)
 		},
-		estimate: Ratio,
-		bounds:   RatioBounds,
+		estimate: func(x, y *Sample) (Measurement, error) {
+			return x.Ratio(y)
+		},
+		bounds: func(x, y *Sample, misrate float64) (Bounds, error) {
+			return x.RatioBounds(y, misrate)
+		},
 	},
 	{
 		metric: MetricDisparity,
 		validateAndNormalize: func(threshold *Threshold, x, y *Sample) (Measurement, error) {
 			return validateDisparity(threshold)
 		},
-		estimate:     Disparity,
-		bounds:       DisparityBounds,
-		seededBounds: DisparityBoundsWithSeed,
+		estimate: func(x, y *Sample) (Measurement, error) {
+			return x.Disparity(y)
+		},
+		bounds: func(x, y *Sample, misrate float64) (Bounds, error) {
+			return x.DisparityBounds(y, misrate)
+		},
+		seededBounds: func(x, y *Sample, misrate float64, seed string) (Bounds, error) {
+			return x.DisparityBoundsWithSeed(y, misrate, seed)
+		},
 	},
 }
 
 // validateCenterOrSpread validates and normalizes a Center or Spread threshold.
 func validateCenterOrSpread(threshold *Threshold, x *Sample) (Measurement, error) {
-	if !threshold.Value.Unit.IsCompatible(x.Unit) {
-		return Measurement{}, &UnitMismatchError{Unit1: threshold.Value.Unit, Unit2: x.Unit}
+	if !threshold.Value.Unit.IsCompatible(x.unit) {
+		return Measurement{}, &UnitMismatchError{Unit1: threshold.Value.Unit, Unit2: x.unit}
 	}
-	factor := ConversionFactor(threshold.Value.Unit, x.Unit)
-	return NewMeasurement(threshold.Value.Value*factor, x.Unit), nil
+	factor := ConversionFactor(threshold.Value.Unit, x.unit)
+	return NewMeasurement(threshold.Value.Value*factor, x.unit), nil
 }
 
 // validateShift validates and normalizes a Shift threshold.
 func validateShift(threshold *Threshold, x, y *Sample) (Measurement, error) {
-	if !threshold.Value.Unit.IsCompatible(x.Unit) {
-		return Measurement{}, &UnitMismatchError{Unit1: threshold.Value.Unit, Unit2: x.Unit}
+	if !threshold.Value.Unit.IsCompatible(x.unit) {
+		return Measurement{}, &UnitMismatchError{Unit1: threshold.Value.Unit, Unit2: x.unit}
 	}
-	target := Finer(x.Unit, y.Unit)
+	target := Finer(x.unit, y.unit)
 	factor := ConversionFactor(threshold.Value.Unit, target)
 	return NewMeasurement(threshold.Value.Value*factor, target), nil
 }
@@ -318,7 +332,7 @@ func Compare2WithSeed(x, y *Sample, thresholds []*Threshold, seed string) ([]Pro
 	}
 
 	// Convert both samples to the finer unit before any estimation
-	target := Finer(x.Unit, y.Unit)
+	target := Finer(x.unit, y.unit)
 	xConv, err := x.ConvertTo(target)
 	if err != nil {
 		return nil, err

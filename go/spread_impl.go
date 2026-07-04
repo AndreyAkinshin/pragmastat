@@ -9,7 +9,7 @@ import (
 // spreadImpl computes the median of all pairwise absolute differences efficiently.
 // Time complexity: O(n log n) expected
 // Space complexity: O(n)
-func spreadImpl[T Number](values []T) (float64, error) {
+func spreadImpl[T Number](values []T, assumeSorted bool) (float64, error) {
 	n := len(values)
 	if n == 0 {
 		return 0.0, errEmptyInput
@@ -25,9 +25,14 @@ func spreadImpl[T Number](values []T) (float64, error) {
 	rng := NewRngFromSeed(deriveSeed(values))
 
 	// Sort the values
-	a := make([]T, n)
-	copy(a, values)
-	sort.Slice(a, func(i, j int) bool { return a[i] < a[j] })
+	var a []T
+	if assumeSorted {
+		a = values
+	} else {
+		a = make([]T, n)
+		copy(a, values)
+		sort.Slice(a, func(i, j int) bool { return a[i] < a[j] })
+	}
 
 	// Total number of pairwise differences with i < j
 	N := int64(n) * int64(n-1) / 2
@@ -73,6 +78,7 @@ func spreadImpl[T Number](values []T) (float64, error) {
 		if iter >= maxIterations {
 			return 0, errors.New("convergence failure (pathological input)")
 		}
+
 		// === PARTITION: count how many differences are < pivot ===
 		countBelow := int64(0)
 		largestBelow := math.Inf(-1)
