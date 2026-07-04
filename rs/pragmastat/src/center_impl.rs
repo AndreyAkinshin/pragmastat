@@ -44,7 +44,21 @@ pub(crate) fn center_impl(values: &[f64]) -> Result<f64, &'static str> {
 
     let mut partition_counts = vec![0; n];
 
-    loop {
+    // Bound the selection loop. On valid sorted input the Monahan selection
+    // converges in O(log n) iterations; this cap is far higher than ever
+    // needed for sorted input but guarantees termination on misuse (e.g.,
+    // assume_sorted=true on UNSORTED input, which is undefined behavior and
+    // would otherwise spin forever). The cap scales with n so large valid
+    // inputs are never starved. We also track no-progress (stall) on the
+    // active set to bail out deterministically with a plain error (NOT an
+    // assumption error).
+    const BASE_ITERATIONS: usize = 256;
+    const MAX_STALL: usize = 8;
+    let max_iterations = BASE_ITERATIONS + 4 * n;
+    let mut prev_active_set_size: i64 = -1;
+    let mut stall_count: usize = 0;
+
+    for _ in 0..max_iterations {
         // === PARTITION STEP ===
         let mut count_below_pivot = 0;
         let mut current_column = n;
@@ -166,6 +180,20 @@ pub(crate) fn center_impl(values: &[f64]) -> Result<f64, &'static str> {
             .map(|(l, r)| if r >= l { r - l + 1 } else { 0 })
             .sum();
 
+        // Stall detection: on valid sorted input the active set strictly
+        // shrinks toward the target. If it fails to shrink for several
+        // consecutive iterations, the input is pathological (e.g.,
+        // assume_sorted=true on unsorted data) and we bail deterministically.
+        if active_set_size as i64 >= prev_active_set_size && prev_active_set_size >= 0 {
+            stall_count += 1;
+            if stall_count >= MAX_STALL {
+                return Err("Convergence failure (pathological input)");
+            }
+        } else {
+            stall_count = 0;
+        }
+        prev_active_set_size = active_set_size as i64;
+
         // Choose next pivot
         if active_set_size > 2 {
             // Use randomized row median strategy
@@ -218,4 +246,6 @@ pub(crate) fn center_impl(values: &[f64]) -> Result<f64, &'static str> {
             }
         }
     }
+
+    Err("Convergence failure (pathological input)")
 }

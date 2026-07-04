@@ -52,7 +52,21 @@ pub(crate) fn spread_impl(values: &[f64]) -> Result<f64, &'static str> {
 
     let mut rng = Rng::from_seed(hash_f64_slice(values));
 
-    loop {
+    // Bound the selection loop. On valid sorted input the Monahan selection
+    // converges in O(log n) iterations; this cap is far higher than ever
+    // needed for sorted input but guarantees termination on misuse (e.g.,
+    // assume_sorted=true on UNSORTED input, which is undefined behavior and
+    // would otherwise spin forever). The cap scales with n so large valid
+    // inputs are never starved. We also track no-progress (stall) on the
+    // active set to bail out deterministically with a plain error (NOT an
+    // assumption error).
+    const BASE_ITERATIONS: usize = 256;
+    const MAX_STALL: usize = 8;
+    let max_iterations = BASE_ITERATIONS + 4 * n;
+    let mut prev_active_size: i64 = -1;
+    let mut stall_count: usize = 0;
+
+    for _ in 0..max_iterations {
         // === PARTITION: count how many differences are < pivot ===
         let mut count_below: u64 = 0;
         let mut largest_below = f64::NEG_INFINITY;
@@ -206,6 +220,20 @@ pub(crate) fn spread_impl(values: &[f64]) -> Result<f64, &'static str> {
             .map(|i| (right_bounds[i] - left_bounds[i] + 1) as u64)
             .sum();
 
+        // Stall detection: on valid sorted input the active set strictly
+        // shrinks toward the target. If it fails to shrink for several
+        // consecutive iterations, the input is pathological (e.g.,
+        // assume_sorted=true on unsorted data) and we bail deterministically.
+        if active_size as i64 >= prev_active_size && prev_active_size >= 0 {
+            stall_count += 1;
+            if stall_count >= MAX_STALL {
+                return Err("Convergence failure (pathological input)");
+            }
+        } else {
+            stall_count = 0;
+        }
+        prev_active_size = active_size as i64;
+
         if active_size <= 2 {
             // Few candidates left: return midrange of remaining
             let mut min_rem = f64::INFINITY;
@@ -267,4 +295,6 @@ pub(crate) fn spread_impl(values: &[f64]) -> Result<f64, &'static str> {
             pivot = a[col] - a[row];
         }
     }
+
+    Err("Convergence failure (pathological input)")
 }
