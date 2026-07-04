@@ -12,7 +12,7 @@ from .rng import Rng
 
 # Try to import the C implementation, fall back to pure Python if unavailable
 try:
-    from . import _fast_spread_c
+    from . import _spread_impl_c
 
     _HAS_C_EXTENSION = True
 except ImportError:
@@ -38,7 +38,7 @@ def _derive_seed(values: List[float]) -> int:
     return hash_val
 
 
-def _fast_spread_python(values: List[float]) -> float:
+def _spread_impl_python(values: List[float]) -> float:
     """
     Pure Python implementation of fast spread estimator.
 
@@ -213,7 +213,7 @@ def _fast_spread_python(values: List[float]) -> float:
         pivot = a[col] - a[row]
 
 
-def _fast_spread(values) -> float:
+def _spread_impl(values) -> float:
     """
     Compute the median of all pairwise absolute differences |xi - xj| efficiently.
 
@@ -231,8 +231,8 @@ def _fast_spread(values) -> float:
     """
     if _HAS_C_EXTENSION:
         arr = np.asarray(values, dtype=np.float64)
-        return _fast_spread_c.fast_spread_c(arr)
+        return _spread_impl_c.spread_impl_c(arr)
     # Pure Python fallback requires a list
     if not isinstance(values, list):
         values = list(values)
-    return _fast_spread_python(values)
+    return _spread_impl_python(values)

@@ -21,7 +21,7 @@ static int compare_doubles(const void *a, const void *b) {
  * Based on Monahan's Algorithm 616 (1984)
  * Computes the median of all pairwise averages efficiently
  */
-static PyObject* fast_center_c(PyObject* self, PyObject* args) {
+static PyObject* center_impl_c(PyObject* self, PyObject* args) {
     PyArrayObject *values_array;
 
     // Parse input
@@ -280,21 +280,21 @@ static PyObject* fast_center_c(PyObject* self, PyObject* args) {
 
 // Method definitions
 static PyMethodDef FastCenterMethods[] = {
-    {"fast_center_c", fast_center_c, METH_VARARGS, "Fast center estimator in C"},
+    {"center_impl_c", center_impl_c, METH_VARARGS, "Fast center estimator in C"},
     {NULL, NULL, 0, NULL}
 };
 
 // Module definition
-static struct PyModuleDef fast_center_module = {
+static struct PyModuleDef center_impl_module = {
     PyModuleDef_HEAD_INIT,
-    "_fast_center_c",
+    "_center_impl_c",
     "Fast center estimator C extension",
     -1,
     FastCenterMethods
 };
 
 // Module initialization
-PyMODINIT_FUNC PyInit__fast_center_c(void) {
+PyMODINIT_FUNC PyInit__center_impl_c(void) {
     import_array();
-    return PyModule_Create(&fast_center_module);
+    return PyModule_Create(&center_impl_module);
 }

@@ -1,8 +1,8 @@
 import time
 
-from pragmastat.fast_center import _fast_center
-from pragmastat.fast_shift import _fast_shift
-from pragmastat.fast_spread import _fast_spread
+from pragmastat.center_impl import _center_impl
+from pragmastat.shift_impl import _shift_impl
+from pragmastat.spread_impl import _spread_impl
 
 
 def test_center_performance():
@@ -10,7 +10,7 @@ def test_center_performance():
     x = list(range(1, n + 1))
 
     start = time.time()
-    result = _fast_center(x)
+    result = _center_impl(x)
     elapsed = time.time() - start
 
     print(f"\nCenter for n={n}: {result:.6f}")
@@ -26,7 +26,7 @@ def test_spread_performance():
     x = list(range(1, n + 1))
 
     start = time.time()
-    result = _fast_spread(x)
+    result = _spread_impl(x)
     elapsed = time.time() - start
 
     print(f"\nSpread for n={n}: {result:.6f}")
@@ -43,7 +43,7 @@ def test_shift_performance():
     y = list(range(1, n + 1))
 
     start = time.time()
-    result = _fast_shift(x, y, p=0.5)
+    result = _shift_impl(x, y, p=0.5)
     elapsed = time.time() - start
 
     print(f"\nShift for n=m={n}: {result:.6f}")

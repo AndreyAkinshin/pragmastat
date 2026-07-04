@@ -110,7 +110,7 @@ def _find_exact_quantile(sorted_vals: List[float], k: int) -> float:
     return target
 
 
-def fast_center_quantile_bounds(sorted_vals: List[float], k_lo: int, k_hi: int) -> Tuple[float, float]:
+def center_quantile_bounds_impl(sorted_vals: List[float], k_lo: int, k_hi: int) -> Tuple[float, float]:
     """
     Finds both lower and upper quantile bounds for pairwise averages.
 

@@ -4,12 +4,10 @@ import math
 
 import numpy as np
 
-from ._fast_center_quantiles import fast_center_quantile_bounds
+from ._center_quantiles_impl import center_quantile_bounds_impl
 from .assumptions import AssumptionError, check_positivity
 from .bounds import Bounds
-from .fast_center import _fast_center
-from .fast_shift import _fast_shift
-from .fast_spread import _fast_spread
+from .center_impl import _center_impl
 from .measurement import Measurement
 from .measurement_unit import DISPARITY_UNIT, RATIO_UNIT
 from .min_misrate import (
@@ -19,8 +17,10 @@ from .min_misrate import (
 from .pairwise_margin import pairwise_margin
 from .rng import Rng
 from .sample import Sample, _check_non_weighted, _prepare_pair
+from .shift_impl import _shift_impl
 from .sign_margin import sign_margin_randomized
 from .signed_rank_margin import signed_rank_margin
+from .spread_impl import _spread_impl
 
 DEFAULT_MISRATE = 1e-3
 
@@ -39,7 +39,7 @@ def center(x: Sample) -> Measurement:
         AssumptionError: If sample is weighted.
     """
     _check_non_weighted("center", x)
-    result = _fast_center(x.values)
+    result = _center_impl(x.values)
     return Measurement(result, x.unit)
 
 
@@ -57,7 +57,7 @@ def spread(x: Sample) -> Measurement:
         AssumptionError: If sample is weighted.
     """
     _check_non_weighted("spread", x)
-    spread_val = _fast_spread(x.values)
+    spread_val = _spread_impl(x.values)
     if spread_val <= 0:
         raise AssumptionError.sparity("x")
     return Measurement(spread_val, x.unit)
@@ -80,7 +80,7 @@ def shift(x: Sample, y: Sample) -> Measurement:
     _check_non_weighted("shift", x)
     _check_non_weighted("shift", y)
     x, y = _prepare_pair(x, y)
-    result = float(_fast_shift(x.values, y.values, p=0.5))
+    result = float(_shift_impl(x.values, y.values, p=0.5))
     return Measurement(result, x.unit)
 
 
@@ -105,7 +105,7 @@ def ratio(x: Sample, y: Sample) -> Measurement:
     check_positivity(y.values, "y")
     log_x = np.log(x.values)
     log_y = np.log(y.values)
-    log_result = _fast_shift(log_x, log_y, p=0.5)
+    log_result = _shift_impl(log_x, log_y, p=0.5)
     return Measurement(float(np.exp(log_result)), RATIO_UNIT)
 
 
@@ -130,10 +130,10 @@ def _avg_spread(x: Sample, y: Sample) -> Measurement:
     x, y = _prepare_pair(x, y)
     n = len(x.values)
     m = len(y.values)
-    spread_x = _fast_spread(x.values)
+    spread_x = _spread_impl(x.values)
     if spread_x <= 0:
         raise AssumptionError.sparity("x")
-    spread_y = _fast_spread(y.values)
+    spread_y = _spread_impl(y.values)
     if spread_y <= 0:
         raise AssumptionError.sparity("y")
     return Measurement((n * spread_x + m * spread_y) / (n + m), x.unit)
@@ -158,13 +158,13 @@ def disparity(x: Sample, y: Sample) -> Measurement:
     x, y = _prepare_pair(x, y)
     n = len(x.values)
     m = len(y.values)
-    spread_x = _fast_spread(x.values)
+    spread_x = _spread_impl(x.values)
     if spread_x <= 0:
         raise AssumptionError.sparity("x")
-    spread_y = _fast_spread(y.values)
+    spread_y = _spread_impl(y.values)
     if spread_y <= 0:
         raise AssumptionError.sparity("y")
-    shift_val = float(_fast_shift(x.values, y.values, p=0.5))
+    shift_val = float(_shift_impl(x.values, y.values, p=0.5))
     avg_spread_val = (n * spread_x + m * spread_y) / (n + m)
     return Measurement(shift_val / avg_spread_val, DISPARITY_UNIT)
 
@@ -221,7 +221,7 @@ def shift_bounds(
     denominator = total - 1 if total > 1 else 1
     p = [k_left / denominator, k_right / denominator]
 
-    bounds = _fast_shift(xs, ys, p, assume_sorted=True)
+    bounds = _shift_impl(xs, ys, p, assume_sorted=True)
 
     lower = min(bounds)
     upper = max(bounds)
@@ -308,7 +308,7 @@ def center_bounds(
 
     sorted_x = sorted(x.values)
 
-    lo, hi = fast_center_quantile_bounds(sorted_x, k_left, k_right)
+    lo, hi = center_quantile_bounds_impl(sorted_x, k_left, k_right)
     return Bounds(lo, hi, x.unit)
 
 
@@ -344,7 +344,7 @@ def spread_bounds(
 
     if n < 2:
         raise AssumptionError.sparity("x")
-    if _fast_spread(x.values) <= 0:
+    if _spread_impl(x.values) <= 0:
         raise AssumptionError.sparity("x")
 
     rng = Rng(seed) if seed is not None else Rng()
@@ -410,9 +410,9 @@ def disparity_bounds(
     alpha_shift = min_shift + extra / 2.0
     alpha_avg = min_avg + extra / 2.0
 
-    if _fast_spread(x.values) <= 0:
+    if _spread_impl(x.values) <= 0:
         raise AssumptionError.sparity("x")
-    if _fast_spread(y.values) <= 0:
+    if _spread_impl(y.values) <= 0:
         raise AssumptionError.sparity("y")
 
     sb = shift_bounds(x, y, alpha_shift)
@@ -497,9 +497,9 @@ def _avg_spread_bounds(
     if alpha < min_x or alpha < min_y:
         raise AssumptionError.domain("misrate")
 
-    if _fast_spread(x.values) <= 0:
+    if _spread_impl(x.values) <= 0:
         raise AssumptionError.sparity("x")
-    if _fast_spread(y.values) <= 0:
+    if _spread_impl(y.values) <= 0:
         raise AssumptionError.sparity("y")
 
     bounds_x = spread_bounds(x, alpha, seed=seed)

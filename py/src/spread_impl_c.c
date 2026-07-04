@@ -46,7 +46,7 @@ static long long next_index(long long limit_exclusive) {
  * Fast O(n log n) implementation of the Spread (Shamos) estimator
  * Computes the median of all pairwise absolute differences efficiently
  */
-static PyObject* fast_spread_c(PyObject* self, PyObject* args) {
+static PyObject* spread_impl_c(PyObject* self, PyObject* args) {
     PyArrayObject *values_array;
 
     // Parse input
@@ -315,21 +315,21 @@ static PyObject* fast_spread_c(PyObject* self, PyObject* args) {
 
 // Method definitions
 static PyMethodDef FastSpreadMethods[] = {
-    {"fast_spread_c", fast_spread_c, METH_VARARGS, "Fast spread estimator in C"},
+    {"spread_impl_c", spread_impl_c, METH_VARARGS, "Fast spread estimator in C"},
     {NULL, NULL, 0, NULL}
 };
 
 // Module definition
-static struct PyModuleDef fast_spread_module = {
+static struct PyModuleDef spread_impl_module = {
     PyModuleDef_HEAD_INIT,
-    "_fast_spread_c",
+    "_spread_impl_c",
     "Fast spread estimator C extension",
     -1,
     FastSpreadMethods
 };
 
 // Module initialization
-PyMODINIT_FUNC PyInit__fast_spread_c(void) {
+PyMODINIT_FUNC PyInit__spread_impl_c(void) {
     import_array();
-    return PyModule_Create(&fast_spread_module);
+    return PyModule_Create(&spread_impl_module);
 }

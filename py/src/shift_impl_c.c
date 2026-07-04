@@ -136,7 +136,7 @@ static double select_kth_pairwise_diff(
  * Fast O((m+n) log L) implementation of the Shift estimator
  * Computes quantiles of all pairwise differences without materializing them
  */
-static PyObject* fast_shift_c(PyObject* self, PyObject* args) {
+static PyObject* shift_impl_c(PyObject* self, PyObject* args) {
     PyArrayObject *x_array, *y_array, *p_array;
 
     // Parse input
@@ -334,21 +334,21 @@ static PyObject* fast_shift_c(PyObject* self, PyObject* args) {
 
 // Method definitions
 static PyMethodDef FastShiftMethods[] = {
-    {"fast_shift_c", fast_shift_c, METH_VARARGS, "Fast shift estimator in C"},
+    {"shift_impl_c", shift_impl_c, METH_VARARGS, "Fast shift estimator in C"},
     {NULL, NULL, 0, NULL}
 };
 
 // Module definition
-static struct PyModuleDef fast_shift_module = {
+static struct PyModuleDef shift_impl_module = {
     PyModuleDef_HEAD_INIT,
-    "_fast_shift_c",
+    "_shift_impl_c",
     "Fast shift estimator C extension",
     -1,
     FastShiftMethods
 };
 
 // Module initialization
-PyMODINIT_FUNC PyInit__fast_shift_c(void) {
+PyMODINIT_FUNC PyInit__shift_impl_c(void) {
     import_array();
-    return PyModule_Create(&fast_shift_module);
+    return PyModule_Create(&shift_impl_module);
 }

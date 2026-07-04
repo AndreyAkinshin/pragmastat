@@ -12,7 +12,7 @@ from .rng import Rng
 
 # Try to import the C implementation, fall back to pure Python if unavailable
 try:
-    from . import _fast_center_c
+    from . import _center_impl_c
 
     _HAS_C_EXTENSION = True
 except ImportError:
@@ -38,7 +38,7 @@ def _derive_seed(values: List[float]) -> int:
     return hash_val
 
 
-def _fast_center_python(values: List[float]) -> float:
+def _center_impl_python(values: List[float]) -> float:
     """
     Pure Python implementation of fast center estimator.
 
@@ -214,7 +214,7 @@ def _fast_center_python(values: List[float]) -> float:
                 return pivot / 2
 
 
-def _fast_center(values) -> float:
+def _center_impl(values) -> float:
     """
     Compute the median of all pairwise averages (xi + xj)/2 efficiently.
 
@@ -232,8 +232,8 @@ def _fast_center(values) -> float:
     """
     if _HAS_C_EXTENSION:
         arr = np.asarray(values, dtype=np.float64)
-        return _fast_center_c.fast_center_c(arr)
+        return _center_impl_c.center_impl_c(arr)
     # Pure Python fallback requires a list
     if not isinstance(values, list):
         values = list(values)
-    return _fast_center_python(values)
+    return _center_impl_python(values)

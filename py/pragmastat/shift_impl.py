@@ -11,7 +11,7 @@ from numpy.typing import NDArray
 
 # Try to import the C implementation, fall back to pure Python if unavailable
 try:
-    from . import _fast_shift_c
+    from . import _shift_impl_c
 
     _HAS_C_EXTENSION = True
 except ImportError:
@@ -132,7 +132,7 @@ def _select_kth_pairwise_diff(x: List[float], y: List[float], k: int) -> float:
     return search_min
 
 
-def _fast_shift_python(
+def _shift_impl_python(
     x: List[float],
     y: List[float],
     p: Union[float, List[float]] = 0.5,
@@ -215,7 +215,7 @@ def _fast_shift_python(
     return result[0] if return_single else result
 
 
-def _fast_shift(
+def _shift_impl(
     x: Union[Sequence[float], NDArray],
     y: Union[Sequence[float], NDArray],
     p: Union[float, List[float]] = 0.5,
@@ -246,7 +246,7 @@ def _fast_shift(
         y_arr = np.asarray(y, dtype=np.float64)
         return_single = isinstance(p, (float, int))
         p_arr = np.array([p] if return_single else p, dtype=np.float64)
-        result = _fast_shift_c.fast_shift_c(x_arr, y_arr, p_arr)
+        result = _shift_impl_c.shift_impl_c(x_arr, y_arr, p_arr)
         return float(result[0]) if return_single else result.tolist()
     # Fall back to pure Python implementation
-    return _fast_shift_python(x, y, p, assume_sorted)
+    return _shift_impl_python(x, y, p, assume_sorted)
