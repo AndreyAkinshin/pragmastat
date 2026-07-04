@@ -128,6 +128,68 @@ fn test_sample_construction() {
 }
 
 // =============================================================================
+// Bounds unit re-attachment tests
+// =============================================================================
+//
+// The Sample-path bounds estimators re-attach a unit to the unit-free RAW result.
+// ratio_bounds -> Ratio, disparity_bounds -> Disparity, while center/spread/shift
+// bounds propagate from x / finer(x, y). The RAW (native-array) bounds API has no
+// unit at all (it returns the unit-free RawBounds struct), which is the unitless
+// counterpart these tests pin down.
+
+#[test]
+fn ratio_bounds_sample_unit_is_ratio() {
+    let x = Sample::new(vec![1.0, 2.0, 3.0, 4.0, 5.0]).unwrap();
+    let y = Sample::new(vec![2.0, 4.0, 6.0, 8.0, 10.0]).unwrap();
+    let b = ratio_bounds(&x, &y, 0.5).unwrap();
+    assert_eq!(b.unit.id(), "ratio");
+}
+
+#[test]
+fn disparity_bounds_sample_unit_is_disparity() {
+    let x = Sample::new(vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0]).unwrap();
+    let y = Sample::new(vec![3.0, 4.0, 5.0, 6.0, 7.0, 8.0]).unwrap();
+    let b = disparity_bounds(&x, &y, 0.9).unwrap();
+    assert_eq!(b.unit.id(), "disparity");
+}
+
+#[test]
+fn raw_ratio_disparity_bounds_have_no_unit() {
+    use pragmastat::estimators::raw;
+    // The RAW bounds API returns the unit-free RawBounds (lower/upper only):
+    // the unitless counterpart to the Sample-path Ratio/Disparity re-attachment.
+    let x = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0];
+    let y = [3.0, 4.0, 5.0, 6.0, 7.0, 8.0];
+    let rb_ratio: raw::RawBounds = raw::ratio_bounds(&x, &y, 0.9, false).unwrap();
+    let rb_disp: raw::RawBounds = raw::disparity_bounds(&x, &y, 0.9, false).unwrap();
+    // Structurally unit-free: only lower/upper exist. Touch the fields so the
+    // assertion is meaningful (and the type annotation pins the unit-free struct).
+    assert!(rb_ratio.lower <= rb_ratio.upper);
+    assert!(rb_disp.lower <= rb_disp.upper);
+}
+
+#[test]
+fn center_spread_bounds_sample_unit_propagates_from_x() {
+    let ms = MeasurementUnit::new("ms", "Time", "ms", "Millisecond", 1_000_000);
+    let x = Sample::with_unit(vec![1.0, 2.0, 3.0, 4.0, 5.0], ms.clone()).unwrap();
+    let cb = center_bounds(&x, 0.5).unwrap();
+    assert_eq!(cb.unit.id(), ms.id());
+    let sb = spread_bounds(&x, 0.5).unwrap();
+    assert_eq!(sb.unit.id(), ms.id());
+}
+
+#[test]
+fn shift_bounds_sample_unit_is_finer() {
+    // Same family (Time); ms has smaller base_units, so it is finer than s.
+    let s = MeasurementUnit::new("s", "Time", "s", "Second", 1_000_000_000);
+    let ms = MeasurementUnit::new("ms", "Time", "ms", "Millisecond", 1_000_000);
+    let x = Sample::with_unit(vec![1.0, 2.0, 3.0, 4.0], s).unwrap();
+    let y = Sample::with_unit(vec![1000.0, 2000.0, 3000.0, 4000.0], ms.clone()).unwrap();
+    let b = shift_bounds(&x, &y, 0.5).unwrap();
+    assert_eq!(b.unit.id(), ms.id());
+}
+
+// =============================================================================
 // Unit propagation tests
 // =============================================================================
 
