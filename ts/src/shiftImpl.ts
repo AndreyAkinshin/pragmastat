@@ -208,10 +208,11 @@ function countAndNeighbors(
 }
 
 /**
- * Compute midpoint avoiding overflow
+ * Overflow-safe, order-symmetric midpoint: 0.5*a + 0.5*b (halve before summing;
+ * never overflows; operand order is irrelevant).
  */
 function midpoint(a: number, b: number): number {
-  return a + (b - a) * 0.5;
+  return 0.5 * a + 0.5 * b;
 }
 
 /**

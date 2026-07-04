@@ -125,7 +125,7 @@ export function spreadImpl(values: number[]): number {
     if (atTarget) {
       if (kLow < kHigh) {
         // Even N: average the two central order stats
-        return 0.5 * (largestBelow + smallestAtOrAbove);
+        return 0.5 * largestBelow + 0.5 * smallestAtOrAbove;
       } else {
         // Odd N: pick the single middle
         const needLargest = countBelow === kLow;
@@ -155,7 +155,7 @@ export function spreadImpl(values: number[]): number {
 
       if (active <= 0) {
         if (kLow < kHigh) {
-          return 0.5 * (largestBelow + smallestAtOrAbove);
+          return 0.5 * largestBelow + 0.5 * smallestAtOrAbove;
         }
         return countBelow >= kLow ? largestBelow : smallestAtOrAbove;
       }
@@ -164,7 +164,7 @@ export function spreadImpl(values: number[]): number {
         return minActive;
       }
 
-      const mid = 0.5 * (minActive + maxActive);
+      const mid = 0.5 * minActive + 0.5 * maxActive;
       pivot = mid > minActive && mid <= maxActive ? mid : maxActive;
       prevCountBelow = countBelow;
       continue;
@@ -223,13 +223,13 @@ export function spreadImpl(values: number[]): number {
 
       if (activeSize <= 0) {
         if (kLow < kHigh) {
-          return 0.5 * (largestBelow + smallestAtOrAbove);
+          return 0.5 * largestBelow + 0.5 * smallestAtOrAbove;
         }
         return countBelow >= kLow ? largestBelow : smallestAtOrAbove;
       }
 
       if (kLow < kHigh) {
-        return 0.5 * (minRem + maxRem);
+        return 0.5 * minRem + 0.5 * maxRem;
       }
       return Math.abs(kLow - 1 - countBelow) <= Math.abs(countBelow - kLow) ? minRem : maxRem;
     } else {

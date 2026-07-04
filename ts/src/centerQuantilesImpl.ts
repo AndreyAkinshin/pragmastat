@@ -56,7 +56,7 @@ function findExactQuantile(sorted: number[], k: number): number {
   let hi = max;
 
   while (hi - lo > RELATIVE_EPSILON * Math.max(1.0, Math.abs(lo), Math.abs(hi))) {
-    const mid = (lo + hi) / 2;
+    const mid = 0.5 * lo + 0.5 * hi;
     const count = countPairsLessOrEqual(sorted, mid);
     if (count < k) {
       lo = mid;
@@ -65,7 +65,7 @@ function findExactQuantile(sorted: number[], k: number): number {
     }
   }
 
-  const target = (lo + hi) / 2;
+  const target = 0.5 * lo + 0.5 * hi;
 
   // Extract candidates that are close to the target
   const candidates: number[] = [];
@@ -89,11 +89,11 @@ function findExactQuantile(sorted: number[], k: number): number {
       left >= i &&
       Math.abs(sorted[left] - threshold) < RELATIVE_EPSILON * Math.max(1.0, Math.abs(threshold))
     ) {
-      candidates.push((sorted[i] + sorted[left]) / 2);
+      candidates.push(0.5 * sorted[i] + 0.5 * sorted[left]);
     }
 
     if (left > i) {
-      const avgBefore = (sorted[i] + sorted[left - 1]) / 2;
+      const avgBefore = 0.5 * sorted[i] + 0.5 * sorted[left - 1];
       if (avgBefore <= target + RELATIVE_EPSILON) {
         candidates.push(avgBefore);
       }

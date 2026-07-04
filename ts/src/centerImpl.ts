@@ -55,7 +55,11 @@ export function centerImpl(values: number[]): number {
     return values[0];
   }
   if (n === 2) {
-    return (values[0] + values[1]) / 2;
+    // Overflow-safe, order-symmetric midpoint: 0.5*a + 0.5*b (halve before
+    // summing; never overflows; operand order is irrelevant).
+    const a = values[0];
+    const b = values[1];
+    return 0.5 * a + 0.5 * b;
   }
 
   // Create deterministic RNG from input values
@@ -118,7 +122,7 @@ export function centerImpl(values: number[]): number {
         maxActiveSum = Math.max(maxActiveSum, largestInRow);
       }
 
-      pivot = (minActiveSum + maxActiveSum) / 2;
+      pivot = 0.5 * minActiveSum + 0.5 * maxActiveSum;
       if (pivot <= minActiveSum || pivot > maxActiveSum) {
         pivot = maxActiveSum;
       }
@@ -235,7 +239,7 @@ export function centerImpl(values: number[]): number {
         maxRemainingSum = Math.max(maxRemainingSum, maxInRow);
       }
 
-      pivot = (minRemainingSum + maxRemainingSum) / 2;
+      pivot = 0.5 * minRemainingSum + 0.5 * maxRemainingSum;
       if (pivot <= minRemainingSum || pivot > maxRemainingSum) {
         pivot = maxRemainingSum;
       }
