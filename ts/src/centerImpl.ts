@@ -83,7 +83,25 @@ export function centerImpl(values: number[]): number {
   let activeSetSize = totalPairs;
   let previousCount = 0;
 
+  // Bound the selection loop. On valid sorted input the Monahan selection
+  // converges in O(log n) iterations; this cap is far higher than ever needed
+  // for sorted input but guarantees termination on misuse (e.g.,
+  // `assumeSorted=true` on UNSORTED input, which is undefined behavior and
+  // would otherwise spin forever). The cap scales with n so large valid
+  // inputs are never starved. We also track no-progress (stall) on the
+  // active set to bail out deterministically.
+  const baseIterations = 256;
+  const maxIterations = baseIterations + 4 * n;
+  let prevActiveSetSize = -1;
+  let stallCount = 0;
+  const maxStall = 8;
+  let iterations = 0;
+
   while (true) {
+    if (++iterations > maxIterations) {
+      throw new Error('Convergence failure (pathological input)');
+    }
+
     // === PARTITION STEP ===
     let countBelowPivot = 0;
     let currentColumn = n;
@@ -197,6 +215,20 @@ export function centerImpl(values: number[]): number {
         activeSetSize += rowSize;
       }
     }
+
+    // Stall detection: on valid sorted input the active set strictly
+    // shrinks toward the target. If it fails to shrink for several
+    // consecutive iterations, the input is pathological (e.g.,
+    // assumeSorted=true on unsorted data) and we bail deterministically.
+    if (activeSetSize >= prevActiveSetSize && prevActiveSetSize >= 0) {
+      stallCount++;
+      if (stallCount >= maxStall) {
+        throw new Error('Convergence failure (pathological input)');
+      }
+    } else {
+      stallCount = 0;
+    }
+    prevActiveSetSize = activeSetSize;
 
     // Choose next pivot
     if (activeSetSize > 2) {
