@@ -6,35 +6,7 @@
  */
 
 import { Rng } from './rng';
-
-const FNV_OFFSET_BASIS = 0xcbf29ce484222325n;
-const FNV_PRIME = 0x00000100000001b3n;
-const MASK64 = (1n << 64n) - 1n;
-
-/**
- * Convert a float64 to its IEEE 754 binary representation as bigint.
- */
-function float64ToBits(value: number): bigint {
-  const buffer = new ArrayBuffer(8);
-  new Float64Array(buffer)[0] = value;
-  const view = new DataView(buffer);
-  return (BigInt(view.getUint32(4, true)) << 32n) | BigInt(view.getUint32(0, true));
-}
-
-/**
- * Derive a deterministic seed from input values using FNV-1a hash.
- */
-function deriveSeed(values: number[]): bigint {
-  let hash = FNV_OFFSET_BASIS;
-  for (const v of values) {
-    const bits = float64ToBits(v);
-    for (let i = 0; i < 8; i++) {
-      hash ^= (bits >> BigInt(i * 8)) & 0xffn;
-      hash = (hash * FNV_PRIME) & MASK64;
-    }
-  }
-  return BigInt.asIntN(64, hash);
-}
+import { deriveSeed } from './fnv1a';
 
 /**
  * Compute the median of all pairwise absolute differences |xi - xj| efficiently.
