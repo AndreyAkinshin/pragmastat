@@ -5,7 +5,7 @@
 
 use crate::assumptions::{AssumptionError, EstimatorError, Subject};
 use crate::bounds::Bounds;
-use crate::estimators::raw;
+use crate::estimators;
 use crate::measurement::Measurement;
 use crate::measurement_unit::{
     conversion_factor, finer, is_compatible, MeasurementUnit, UnitMismatchError,
@@ -195,30 +195,17 @@ const COMPARE1_SPECS: &[MetricSpec] = &[
     MetricSpec {
         metric: Metric::Center,
         validate_and_normalize: validate_center,
-        estimate: |x, _| {
-            let val = raw::center(x.values())?;
-            Ok(Measurement::new(val, x.unit().clone()))
-        },
-        bounds: |x, _, misrate| {
-            let rb = raw::center_bounds(x.values(), misrate)?;
-            Ok(Bounds::new(rb.lower, rb.upper, x.unit().clone()))
-        },
+        estimate: |x, _| estimators::center(x),
+        bounds: |x, _, misrate| estimators::center_bounds(x, misrate),
         seeded_bounds: None,
     },
     MetricSpec {
         metric: Metric::Spread,
         validate_and_normalize: validate_spread,
-        estimate: |x, _| {
-            let val = raw::spread(x.values())?;
-            Ok(Measurement::new(val, x.unit().clone()))
-        },
-        bounds: |x, _, misrate| {
-            let rb = raw::spread_bounds(x.values(), misrate)?;
-            Ok(Bounds::new(rb.lower, rb.upper, x.unit().clone()))
-        },
+        estimate: |x, _| estimators::spread(x),
+        bounds: |x, _, misrate| estimators::spread_bounds(x, misrate),
         seeded_bounds: Some(|x, _, misrate, seed| {
-            let rb = raw::spread_bounds_with_seed(x.values(), misrate, seed)?;
-            Ok(Bounds::new(rb.lower, rb.upper, x.unit().clone()))
+            estimators::spread_bounds_with_seed(x, misrate, seed)
         }),
     },
 ];
@@ -230,14 +217,11 @@ const COMPARE2_SPECS: &[MetricSpec] = &[
         validate_and_normalize: validate_shift,
         estimate: |x, y| {
             let y = y.expect("Shift requires y sample");
-            let val = raw::shift(x.values(), y.values())?;
-            // Unit is already the finer one from prepare_pair
-            Ok(Measurement::new(val, x.unit().clone()))
+            estimators::shift(x, y)
         },
         bounds: |x, y, misrate| {
             let y = y.expect("Shift requires y sample");
-            let rb = raw::shift_bounds(x.values(), y.values(), misrate)?;
-            Ok(Bounds::new(rb.lower, rb.upper, x.unit().clone()))
+            estimators::shift_bounds(x, y, misrate)
         },
         seeded_bounds: None,
     },
@@ -246,13 +230,11 @@ const COMPARE2_SPECS: &[MetricSpec] = &[
         validate_and_normalize: validate_ratio,
         estimate: |x, y| {
             let y = y.expect("Ratio requires y sample");
-            let val = raw::ratio(x.values(), y.values())?;
-            Ok(Measurement::new(val, MeasurementUnit::ratio()))
+            estimators::ratio(x, y)
         },
         bounds: |x, y, misrate| {
             let y = y.expect("Ratio requires y sample");
-            let rb = raw::ratio_bounds(x.values(), y.values(), misrate)?;
-            Ok(Bounds::new(rb.lower, rb.upper, MeasurementUnit::ratio()))
+            estimators::ratio_bounds(x, y, misrate)
         },
         seeded_bounds: None,
     },
@@ -261,26 +243,15 @@ const COMPARE2_SPECS: &[MetricSpec] = &[
         validate_and_normalize: validate_disparity,
         estimate: |x, y| {
             let y = y.expect("Disparity requires y sample");
-            let val = raw::disparity(x.values(), y.values())?;
-            Ok(Measurement::new(val, MeasurementUnit::disparity()))
+            estimators::disparity(x, y)
         },
         bounds: |x, y, misrate| {
             let y = y.expect("Disparity requires y sample");
-            let rb = raw::disparity_bounds(x.values(), y.values(), misrate)?;
-            Ok(Bounds::new(
-                rb.lower,
-                rb.upper,
-                MeasurementUnit::disparity(),
-            ))
+            estimators::disparity_bounds(x, y, misrate)
         },
         seeded_bounds: Some(|x, y, misrate, seed| {
             let y = y.expect("Disparity requires y sample");
-            let rb = raw::disparity_bounds_with_seed(x.values(), y.values(), misrate, seed)?;
-            Ok(Bounds::new(
-                rb.lower,
-                rb.upper,
-                MeasurementUnit::disparity(),
-            ))
+            estimators::disparity_bounds_with_seed(x, y, misrate, seed)
         }),
     },
 ];
