@@ -1,11 +1,11 @@
-/// Fast O(n log n) implementation of the Spread (Shamos) estimator.
+/// O(n log n) implementation of the Spread (Shamos) estimator.
 /// Based on Monahan's selection algorithm adapted for pairwise differences.
 ///
 /// Internal implementation - not part of public API.
 use crate::fnv1a::hash_f64_slice;
 use crate::rng::Rng;
 
-pub(crate) fn fast_spread(values: &[f64]) -> Result<f64, &'static str> {
+pub(crate) fn spread_impl(values: &[f64]) -> Result<f64, &'static str> {
     let n = values.len();
     if n <= 1 {
         return Ok(0.0);
@@ -20,7 +20,7 @@ pub(crate) fn fast_spread(values: &[f64]) -> Result<f64, &'static str> {
     }
 
     if n > u32::MAX as usize {
-        return Err("fast_spread: input too large");
+        return Err("spread_impl: input too large");
     }
 
     // Sort the values
@@ -111,7 +111,7 @@ pub(crate) fn fast_spread(values: &[f64]) -> Result<f64, &'static str> {
                 let li = left_bounds[i] as usize;
                 let ri = right_bounds[i] as usize;
                 if li > n || ri >= n {
-                    return Err("fast_spread: bounds corrupted");
+                    return Err("spread_impl: bounds corrupted");
                 }
                 if li > ri {
                     continue;
@@ -168,7 +168,7 @@ pub(crate) fn fast_spread(values: &[f64]) -> Result<f64, &'static str> {
                 let li = left_bounds[i] as usize;
                 let ri = right_bounds[i] as usize;
                 if li > n || ri >= n {
-                    return Err("fast_spread: bounds corrupted");
+                    return Err("spread_impl: bounds corrupted");
                 }
             }
         } else {
@@ -193,7 +193,7 @@ pub(crate) fn fast_spread(values: &[f64]) -> Result<f64, &'static str> {
                 let li = left_bounds[i] as usize;
                 let ri = right_bounds[i] as usize;
                 if li > n || ri >= n {
-                    return Err("fast_spread: bounds corrupted");
+                    return Err("spread_impl: bounds corrupted");
                 }
             }
         }
@@ -258,11 +258,11 @@ pub(crate) fn fast_spread(values: &[f64]) -> Result<f64, &'static str> {
             let left = left_bounds[row] as usize;
             let right = right_bounds[row] as usize;
             if left >= n || right >= n || left > right {
-                return Err("fast_spread: active bounds out of range");
+                return Err("spread_impl: active bounds out of range");
             }
             let col = usize::midpoint(left, right);
             if col >= n {
-                return Err("fast_spread: pivot index out of range");
+                return Err("spread_impl: pivot index out of range");
             }
             pivot = a[col] - a[row];
         }

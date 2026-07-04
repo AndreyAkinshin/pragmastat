@@ -1,11 +1,11 @@
-/// Fast O(n log n) implementation of the Center (Hodges-Lehmann) estimator.
+/// O(n log n) implementation of the Center (Hodges-Lehmann) estimator.
 /// Based on Monahan's Algorithm 616 (1984).
 ///
 /// Internal implementation - not part of public API.
 use crate::fnv1a::hash_f64_slice;
 use crate::rng::Rng;
 
-pub(crate) fn fast_center(values: &[f64]) -> Result<f64, &'static str> {
+pub(crate) fn center_impl(values: &[f64]) -> Result<f64, &'static str> {
     let n = values.len();
     if n == 0 {
         return Err("Input slice cannot be empty");

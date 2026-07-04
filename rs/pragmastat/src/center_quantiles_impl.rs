@@ -1,4 +1,4 @@
-//! Fast algorithm for computing quantiles from pairwise averages
+//! Algorithm for computing quantiles from pairwise averages
 //!
 //! Efficiently computes quantiles from all pairwise averages (x[i] + x[j]) / 2 for i <= j.
 //! Uses binary search with counting function to avoid materializing all N(N+1)/2 pairs.
@@ -7,10 +7,10 @@
 const RELATIVE_EPSILON: f64 = 1e-14;
 
 /// Compute both lower and upper bounds from pairwise averages.
-pub fn fast_center_quantile_bounds(sorted: &[f64], margin_lo: i64, margin_hi: i64) -> (f64, f64) {
+pub fn center_quantile_bounds_impl(sorted: &[f64], margin_lo: i64, margin_hi: i64) -> (f64, f64) {
     debug_assert!(
         sorted.windows(2).all(|w| w[0] <= w[1]),
-        "fast_center_quantile_bounds: input must be sorted"
+        "center_quantile_bounds_impl: input must be sorted"
     );
     let n = sorted.len();
     let total_pairs = (n * (n + 1) / 2) as i64;
@@ -18,8 +18,8 @@ pub fn fast_center_quantile_bounds(sorted: &[f64], margin_lo: i64, margin_hi: i6
     let margin_lo = margin_lo.clamp(1, total_pairs);
     let margin_hi = margin_hi.clamp(1, total_pairs);
 
-    let lo = fast_center_find_exact_quantile(sorted, margin_lo);
-    let hi = fast_center_find_exact_quantile(sorted, margin_hi);
+    let lo = center_find_exact_quantile_impl(sorted, margin_lo);
+    let hi = center_find_exact_quantile_impl(sorted, margin_hi);
 
     if lo > hi {
         (hi, lo)
@@ -52,7 +52,7 @@ fn count_pairs_less_or_equal(sorted: &[f64], target: f64) -> i64 {
 }
 
 /// Find the exact k-th pairwise average using selection algorithm.
-fn fast_center_find_exact_quantile(sorted: &[f64], k: i64) -> f64 {
+fn center_find_exact_quantile_impl(sorted: &[f64], k: i64) -> f64 {
     let n = sorted.len();
     let total_pairs = (n * (n + 1) / 2) as i64;
 

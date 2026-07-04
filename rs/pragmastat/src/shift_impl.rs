@@ -6,8 +6,8 @@ use crate::assumptions::{log, Subject};
 /// Computes the median of all pairwise differences {x[i] - y[j]}.
 ///
 /// Internal implementation - not part of public API.
-pub(crate) fn fast_shift(x: &[f64], y: &[f64]) -> Result<f64, &'static str> {
-    let result = fast_shift_quantiles(x, y, &[0.5], false)?;
+pub(crate) fn shift_impl(x: &[f64], y: &[f64]) -> Result<f64, &'static str> {
+    let result = shift_quantiles_impl(x, y, &[0.5], false)?;
     Ok(result[0])
 }
 
@@ -20,7 +20,7 @@ pub(crate) fn fast_shift(x: &[f64], y: &[f64]) -> Result<f64, &'static str> {
 /// * `y` - Second sample (will be sorted if assume_sorted is false)
 /// * `p` - Slice of probabilities in [0, 1]
 /// * `assume_sorted` - If true, assumes inputs are already sorted
-pub(crate) fn fast_shift_quantiles(
+pub(crate) fn shift_quantiles_impl(
     x: &[f64],
     y: &[f64],
     p: &[f64],
@@ -170,7 +170,7 @@ pub(crate) fn select_kth_pairwise_diff(x: &[f64], y: &[f64], k: i64) -> Result<f
         }
     }
 
-    Err("Convergence failure in fast_shift")
+    Err("Convergence failure in shift_impl")
 }
 
 /// Counts how many pairs x[i] - y[j] <= threshold using a two-pointer algorithm.
@@ -230,8 +230,8 @@ fn midpoint(a: f64, b: f64) -> f64 {
 /// Computes the median of all pairwise ratios {x[i] / y[j]} as exp(Shift(log x, log y)).
 ///
 /// Internal implementation - not part of public API.
-pub(crate) fn fast_ratio(x: &[f64], y: &[f64]) -> Result<f64, &'static str> {
-    let result = fast_ratio_quantiles(x, y, &[0.5], false)?;
+pub(crate) fn ratio_impl(x: &[f64], y: &[f64]) -> Result<f64, &'static str> {
+    let result = ratio_quantiles_impl(x, y, &[0.5], false)?;
     Ok(result[0])
 }
 
@@ -244,7 +244,7 @@ pub(crate) fn fast_ratio(x: &[f64], y: &[f64]) -> Result<f64, &'static str> {
 /// * `y` - Second sample (must be positive; will be sorted if assume_sorted is false)
 /// * `p` - Slice of probabilities in [0, 1]
 /// * `assume_sorted` - If true, assumes inputs are already sorted
-pub(crate) fn fast_ratio_quantiles(
+pub(crate) fn ratio_quantiles_impl(
     x: &[f64],
     y: &[f64],
     p: &[f64],
@@ -258,8 +258,8 @@ pub(crate) fn fast_ratio_quantiles(
     let log_x = log(x, Subject::X).map_err(|_| "x must contain only positive values")?;
     let log_y = log(y, Subject::Y).map_err(|_| "y must contain only positive values")?;
 
-    // Delegate to fast_shift_quantiles in log-space
-    let log_result = fast_shift_quantiles(&log_x, &log_y, p, assume_sorted)?;
+    // Delegate to shift_quantiles_impl in log-space
+    let log_result = shift_quantiles_impl(&log_x, &log_y, p, assume_sorted)?;
 
     // Exp-transform back to ratio-space
     Ok(log_result.iter().map(|&v| v.exp()).collect())

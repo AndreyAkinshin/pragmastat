@@ -34,12 +34,12 @@ pub mod raw {
 
     pub fn center(x: &[f64]) -> Result<f64, EstimatorError> {
         check_validity(x, Subject::X)?;
-        crate::fast_center::fast_center(x).map_err(EstimatorError::from)
+        crate::center_impl::center_impl(x).map_err(EstimatorError::from)
     }
 
     pub fn spread(x: &[f64]) -> Result<f64, EstimatorError> {
         check_validity(x, Subject::X)?;
-        let spread_val = crate::fast_spread::fast_spread(x).map_err(EstimatorError::from)?;
+        let spread_val = crate::spread_impl::spread_impl(x).map_err(EstimatorError::from)?;
         if spread_val <= 0.0 {
             return Err(EstimatorError::from(AssumptionError::sparity(Subject::X)));
         }
@@ -49,7 +49,7 @@ pub mod raw {
     pub fn shift(x: &[f64], y: &[f64]) -> Result<f64, EstimatorError> {
         check_validity(x, Subject::X)?;
         check_validity(y, Subject::Y)?;
-        crate::fast_shift::fast_shift(x, y).map_err(EstimatorError::from)
+        crate::shift_impl::shift_impl(x, y).map_err(EstimatorError::from)
     }
 
     pub fn ratio(x: &[f64], y: &[f64]) -> Result<f64, EstimatorError> {
@@ -57,7 +57,7 @@ pub mod raw {
         check_validity(y, Subject::Y)?;
         check_positivity(x, Subject::X)?;
         check_positivity(y, Subject::Y)?;
-        crate::fast_shift::fast_ratio(x, y).map_err(EstimatorError::from)
+        crate::shift_impl::ratio_impl(x, y).map_err(EstimatorError::from)
     }
 
     #[cfg(test)]
@@ -66,11 +66,11 @@ pub mod raw {
         check_validity(y, Subject::Y)?;
         let n = x.len();
         let m = y.len();
-        let spread_x = crate::fast_spread::fast_spread(x).map_err(EstimatorError::from)?;
+        let spread_x = crate::spread_impl::spread_impl(x).map_err(EstimatorError::from)?;
         if spread_x <= 0.0 {
             return Err(EstimatorError::from(AssumptionError::sparity(Subject::X)));
         }
-        let spread_y = crate::fast_spread::fast_spread(y).map_err(EstimatorError::from)?;
+        let spread_y = crate::spread_impl::spread_impl(y).map_err(EstimatorError::from)?;
         if spread_y <= 0.0 {
             return Err(EstimatorError::from(AssumptionError::sparity(Subject::Y)));
         }
@@ -82,15 +82,15 @@ pub mod raw {
         check_validity(y, Subject::Y)?;
         let n = x.len();
         let m = y.len();
-        let spread_x = crate::fast_spread::fast_spread(x).map_err(EstimatorError::from)?;
+        let spread_x = crate::spread_impl::spread_impl(x).map_err(EstimatorError::from)?;
         if spread_x <= 0.0 {
             return Err(EstimatorError::from(AssumptionError::sparity(Subject::X)));
         }
-        let spread_y = crate::fast_spread::fast_spread(y).map_err(EstimatorError::from)?;
+        let spread_y = crate::spread_impl::spread_impl(y).map_err(EstimatorError::from)?;
         if spread_y <= 0.0 {
             return Err(EstimatorError::from(AssumptionError::sparity(Subject::Y)));
         }
-        let shift_val = crate::fast_shift::fast_shift(x, y).map_err(EstimatorError::from)?;
+        let shift_val = crate::shift_impl::shift_impl(x, y).map_err(EstimatorError::from)?;
         let avg_spread_val = (n as f64 * spread_x + m as f64 * spread_y) / (n + m) as f64;
         Ok(shift_val / avg_spread_val)
     }
@@ -135,7 +135,7 @@ pub mod raw {
         let k_right = total - 1 - half_margin;
         let denominator = (total - 1) as f64;
         let p = vec![k_left as f64 / denominator, k_right as f64 / denominator];
-        let bounds = crate::fast_shift::fast_shift_quantiles(&xs, &ys, &p, true)
+        let bounds = crate::shift_impl::shift_quantiles_impl(&xs, &ys, &p, true)
             .map_err(EstimatorError::from)?;
         let lower = bounds[0].min(bounds[1]);
         let upper = bounds[0].max(bounds[1]);
@@ -195,7 +195,7 @@ pub mod raw {
         let mut sorted = x.to_vec();
         sorted.sort_unstable_by(|a, b| a.total_cmp(b));
         let (lo, hi) =
-            crate::fast_center_quantiles::fast_center_quantile_bounds(&sorted, k_left, k_right);
+            crate::center_quantiles_impl::center_quantile_bounds_impl(&sorted, k_left, k_right);
         Ok(RawBounds {
             lower: lo,
             upper: hi,
@@ -271,13 +271,13 @@ pub mod raw {
                 Subject::Misrate,
             )));
         }
-        if crate::fast_spread::fast_spread(x).map_err(EstimatorError::from)? <= 0.0 {
+        if crate::spread_impl::spread_impl(x).map_err(EstimatorError::from)? <= 0.0 {
             return Err(EstimatorError::from(AssumptionError::sparity(Subject::X)));
         }
-        if crate::fast_spread::fast_spread(y).map_err(EstimatorError::from)? <= 0.0 {
+        if crate::spread_impl::spread_impl(y).map_err(EstimatorError::from)? <= 0.0 {
             return Err(EstimatorError::from(AssumptionError::sparity(Subject::Y)));
         }
-        // Use inner variant to skip redundant fast_spread validation
+        // Use inner variant to skip redundant spread_impl validation
         let bounds_x = spread_bounds_with_rng_inner(x, n / 2, alpha, rng_x)?;
         let bounds_y = spread_bounds_with_rng_inner(y, m / 2, alpha, rng_y)?;
         let weight_x = n as f64 / (n + m) as f64;
@@ -375,11 +375,11 @@ pub mod raw {
         let extra = misrate - (min_shift + min_avg);
         let alpha_shift = min_shift + extra / 2.0;
         let alpha_avg = min_avg + extra / 2.0;
-        let spread_x = crate::fast_spread::fast_spread(x).map_err(EstimatorError::from)?;
+        let spread_x = crate::spread_impl::spread_impl(x).map_err(EstimatorError::from)?;
         if spread_x <= 0.0 {
             return Err(EstimatorError::from(AssumptionError::sparity(Subject::X)));
         }
-        let spread_y = crate::fast_spread::fast_spread(y).map_err(EstimatorError::from)?;
+        let spread_y = crate::spread_impl::spread_impl(y).map_err(EstimatorError::from)?;
         if spread_y <= 0.0 {
             return Err(EstimatorError::from(AssumptionError::sparity(Subject::Y)));
         }
@@ -481,7 +481,7 @@ pub mod raw {
         if n < 2 {
             return Err(EstimatorError::from(AssumptionError::sparity(Subject::X)));
         }
-        if crate::fast_spread::fast_spread(x).map_err(EstimatorError::from)? <= 0.0 {
+        if crate::spread_impl::spread_impl(x).map_err(EstimatorError::from)? <= 0.0 {
             return Err(EstimatorError::from(AssumptionError::sparity(Subject::X)));
         }
         spread_bounds_with_rng_inner(x, m, misrate, rng)
@@ -530,7 +530,7 @@ pub mod raw {
 /// Returns a [`Measurement`] with the same unit as the input sample.
 pub fn center(x: &Sample) -> Result<Measurement, EstimatorError> {
     check_non_weighted("x", x)?;
-    let result = crate::fast_center::fast_center(x.values()).map_err(EstimatorError::from)?;
+    let result = crate::center_impl::center_impl(x.values()).map_err(EstimatorError::from)?;
     Ok(Measurement::new(result, x.unit().clone()))
 }
 
@@ -545,7 +545,7 @@ pub fn center(x: &Sample) -> Result<Measurement, EstimatorError> {
 /// - `sparity(x)` - sample must be non tie-dominant (spread > 0)
 pub fn spread(x: &Sample) -> Result<Measurement, EstimatorError> {
     check_non_weighted("x", x)?;
-    let spread_val = crate::fast_spread::fast_spread(x.values()).map_err(EstimatorError::from)?;
+    let spread_val = crate::spread_impl::spread_impl(x.values()).map_err(EstimatorError::from)?;
     if spread_val <= 0.0 {
         return Err(EstimatorError::from(AssumptionError::sparity(x.subject())));
     }
@@ -560,7 +560,7 @@ pub fn shift(x: &Sample, y: &Sample) -> Result<Measurement, EstimatorError> {
     check_non_weighted("y", y)?;
     let (x, y) = prepare_pair(x, y)?;
     let result =
-        crate::fast_shift::fast_shift(x.values(), y.values()).map_err(EstimatorError::from)?;
+        crate::shift_impl::shift_impl(x.values(), y.values()).map_err(EstimatorError::from)?;
     Ok(Measurement::new(result, x.unit().clone()))
 }
 
@@ -591,7 +591,7 @@ pub fn ratio(x: &Sample, y: &Sample) -> Result<Measurement, EstimatorError> {
         }
     }
     let result =
-        crate::fast_shift::fast_ratio(x.values(), y.values()).map_err(EstimatorError::from)?;
+        crate::shift_impl::ratio_impl(x.values(), y.values()).map_err(EstimatorError::from)?;
     Ok(Measurement::new(result, MeasurementUnit::ratio()))
 }
 
@@ -605,11 +605,11 @@ pub(crate) fn avg_spread(x: &Sample, y: &Sample) -> Result<Measurement, Estimato
     let (x, y) = prepare_pair(x, y)?;
     let n = x.size() as f64;
     let m = y.size() as f64;
-    let spread_x = crate::fast_spread::fast_spread(x.values()).map_err(EstimatorError::from)?;
+    let spread_x = crate::spread_impl::spread_impl(x.values()).map_err(EstimatorError::from)?;
     if spread_x <= 0.0 {
         return Err(EstimatorError::from(AssumptionError::sparity(x.subject())));
     }
-    let spread_y = crate::fast_spread::fast_spread(y.values()).map_err(EstimatorError::from)?;
+    let spread_y = crate::spread_impl::spread_impl(y.values()).map_err(EstimatorError::from)?;
     if spread_y <= 0.0 {
         return Err(EstimatorError::from(AssumptionError::sparity(y.subject())));
     }
@@ -633,16 +633,16 @@ pub fn disparity(x: &Sample, y: &Sample) -> Result<Measurement, EstimatorError> 
     let (x, y) = prepare_pair(x, y)?;
     let n = x.size() as f64;
     let m = y.size() as f64;
-    let spread_x = crate::fast_spread::fast_spread(x.values()).map_err(EstimatorError::from)?;
+    let spread_x = crate::spread_impl::spread_impl(x.values()).map_err(EstimatorError::from)?;
     if spread_x <= 0.0 {
         return Err(EstimatorError::from(AssumptionError::sparity(x.subject())));
     }
-    let spread_y = crate::fast_spread::fast_spread(y.values()).map_err(EstimatorError::from)?;
+    let spread_y = crate::spread_impl::spread_impl(y.values()).map_err(EstimatorError::from)?;
     if spread_y <= 0.0 {
         return Err(EstimatorError::from(AssumptionError::sparity(y.subject())));
     }
     let shift_val =
-        crate::fast_shift::fast_shift(x.values(), y.values()).map_err(EstimatorError::from)?;
+        crate::shift_impl::shift_impl(x.values(), y.values()).map_err(EstimatorError::from)?;
     let avg_spread_val = (n * spread_x + m * spread_y) / (n + m);
     Ok(Measurement::new(
         shift_val / avg_spread_val,
