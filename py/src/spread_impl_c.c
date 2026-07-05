@@ -3,7 +3,8 @@
 #include <numpy/arrayobject.h>
 #include <math.h>
 #include <stdlib.h>
-#include <time.h>
+#include <stdint.h>
+#include <string.h>
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
@@ -18,28 +19,64 @@ static int compare_doubles(const void *a, const void *b) {
     return 0;
 }
 
-// Random double in [0, 1)
-static double uniform_random(void) {
-    return (double)rand() / ((double)RAND_MAX + 1.0);
+// Deterministic RNG mirroring py/pragmastat/xoshiro256.py bit for bit, so the
+// C kernel and the pure-Python fallback follow identical narrowing paths for
+// the same input. No global state: the generator lives on the caller's stack.
+
+static uint64_t rotl_u64(uint64_t x, int k) {
+    return (x << k) | (x >> (64 - k));
 }
 
-// Helper function for uniform random selection
-static long long next_index(long long limit_exclusive) {
-    if (limit_exclusive <= 0) return 0;
-    if (limit_exclusive <= 2147483647LL) {
-        return (long long)(uniform_random() * limit_exclusive);
-    }
+typedef struct { uint64_t s[4]; } xoshiro256pp_state;
 
-    // For large ranges, use rejection sampling
-    unsigned long long u_limit = (unsigned long long)limit_exclusive;
-    while (1) {
-        unsigned long long u = ((unsigned long long)(uniform_random() * 4294967296.0)) << 32;
-        u |= (unsigned long long)(uniform_random() * 4294967296.0);
-        unsigned long long r = u % u_limit;
-        if (u - r <= ULLONG_MAX - (ULLONG_MAX % u_limit)) {
-            return (long long)r;
+// SplitMix64 seed expansion (Xoshiro256PlusPlus.__init__)
+static void xoshiro256pp_init(xoshiro256pp_state *rng, uint64_t seed) {
+    uint64_t state = seed;
+    for (int i = 0; i < 4; i++) {
+        state += 0x9E3779B97F4A7C15ULL;
+        uint64_t z = state;
+        z = (z ^ (z >> 30)) * 0xBF58476D1CE4E5B9ULL;
+        z = (z ^ (z >> 27)) * 0x94D049BB133111EBULL;
+        rng->s[i] = z ^ (z >> 31);
+    }
+}
+
+static uint64_t xoshiro256pp_next(xoshiro256pp_state *rng) {
+    uint64_t *s = rng->s;
+    uint64_t result = rotl_u64(s[0] + s[3], 23) + s[0];
+    uint64_t t = s[1] << 17;
+
+    s[2] ^= s[0];
+    s[3] ^= s[1];
+    s[1] ^= s[2];
+    s[0] ^= s[3];
+
+    s[2] ^= t;
+    s[3] = rotl_u64(s[3], 45);
+
+    return result;
+}
+
+// FNV-1a over the IEEE-754 bytes of each input value, least significant byte
+// first (_derive_seed). Hashes the ORIGINAL input order, before any sorting.
+static uint64_t derive_seed(PyArrayObject *values_array, npy_intp n) {
+    uint64_t hash = 0xCBF29CE484222325ULL;  // FNV offset basis
+    for (npy_intp i = 0; i < n; i++) {
+        double v = *(double*)PyArray_GETPTR1(values_array, i);
+        uint64_t bits;
+        memcpy(&bits, &v, sizeof(bits));
+        for (int b = 0; b < 8; b++) {
+            hash ^= (bits >> (b * 8)) & 0xFF;
+            hash *= 0x00000100000001B3ULL;  // FNV prime
         }
     }
+    return hash;
+}
+
+// Uniform integer in [0, limit_exclusive), mirroring Rng.uniform_int(0, limit)
+static long long next_index(xoshiro256pp_state *rng, long long limit_exclusive) {
+    if (limit_exclusive <= 0) return 0;
+    return (long long)(xoshiro256pp_next(rng) % (uint64_t)limit_exclusive);
 }
 
 /*
@@ -124,12 +161,10 @@ static PyObject* spread_impl_c(PyObject* self, PyObject* args) {
     double pivot = a[n / 2] - a[(n - 1) / 2];
     long long prev_count_below = -1;
 
-    // Initialize random seed
-    static int seeded = 0;
-    if (!seeded) {
-        srand((unsigned int)time(NULL));
-        seeded = 1;
-    }
+    // Deterministic RNG seeded from the input values in their original order,
+    // matching the pure-Python kernel (Rng(_derive_seed(values))).
+    xoshiro256pp_state rng;
+    xoshiro256pp_init(&rng, derive_seed(values_array, n));
 
     double result_value = 0.0;
     int converged = 0;
@@ -317,7 +352,7 @@ static PyObject* spread_impl_c(PyObject* self, PyObject* args) {
 
         } else {
             // Weighted random row selection
-            long long t = next_index(active_size);
+            long long t = next_index(&rng, active_size);
             long long acc = 0;
             int row = 0;
 
