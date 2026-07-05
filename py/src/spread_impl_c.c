@@ -161,7 +161,7 @@ static PyObject* spread_impl_c(PyObject* self, PyObject* args) {
         if (at_target) {
             if (k_low < k_high) {
                 // Even N: average the two central order stats
-                result_value = 0.5 * (largest_below + smallest_at_or_above);
+                result_value = 0.5 * largest_below + 0.5 * smallest_at_or_above;
             } else {
                 // Odd N: pick the single middle
                 int need_largest = (count_below == k_low);
@@ -191,7 +191,7 @@ static PyObject* spread_impl_c(PyObject* self, PyObject* args) {
 
             if (active <= 0) {
                 if (k_low < k_high) {
-                    result_value = 0.5 * (largest_below + smallest_at_or_above);
+                    result_value = 0.5 * largest_below + 0.5 * smallest_at_or_above;
                 } else {
                     result_value = (count_below >= k_low) ? largest_below : smallest_at_or_above;
                 }
@@ -205,7 +205,7 @@ static PyObject* spread_impl_c(PyObject* self, PyObject* args) {
                 break;
             }
 
-            double mid = 0.5 * (min_active + max_active);
+            double mid = 0.5 * min_active + 0.5 * max_active;
             pivot = (mid > min_active && mid <= max_active) ? mid : max_active;
             prev_count_below = count_below;
             continue;
@@ -259,7 +259,7 @@ static PyObject* spread_impl_c(PyObject* self, PyObject* args) {
 
             if (active_size <= 0) {
                 if (k_low < k_high) {
-                    result_value = 0.5 * (largest_below + smallest_at_or_above);
+                    result_value = 0.5 * largest_below + 0.5 * smallest_at_or_above;
                 } else {
                     result_value = (count_below >= k_low) ? largest_below : smallest_at_or_above;
                 }
@@ -268,7 +268,7 @@ static PyObject* spread_impl_c(PyObject* self, PyObject* args) {
             }
 
             if (k_low < k_high) {
-                result_value = 0.5 * (min_rem + max_rem);
+                result_value = 0.5 * min_rem + 0.5 * max_rem;
             } else {
                 long long dist_low = llabs((k_low - 1) - count_below);
                 long long dist_high = llabs(count_below - k_low);

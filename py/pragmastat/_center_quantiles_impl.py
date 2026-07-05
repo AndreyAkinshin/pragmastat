@@ -65,14 +65,14 @@ def _find_exact_quantile(sorted_vals: List[float], k: int) -> float:
     hi = max_val
 
     while hi - lo > RELATIVE_EPSILON * max(1.0, abs(lo), abs(hi)):
-        mid = (lo + hi) / 2
+        mid = 0.5 * lo + 0.5 * hi
         count = _count_pairs_less_or_equal(sorted_vals, mid)
         if count < k:
             lo = mid
         else:
             hi = mid
 
-    target = (lo + hi) / 2
+    target = 0.5 * lo + 0.5 * hi
 
     # Extract candidates that are close to the target
     candidates: List[float] = []
@@ -90,10 +90,10 @@ def _find_exact_quantile(sorted_vals: List[float], k: int) -> float:
                 right = m
 
         if left < n and left >= i and abs(sorted_vals[left] - threshold) < RELATIVE_EPSILON * max(1.0, abs(threshold)):
-            candidates.append((sorted_vals[i] + sorted_vals[left]) / 2)
+            candidates.append(0.5 * sorted_vals[i] + 0.5 * sorted_vals[left])
 
         if left > i:
-            avg_before = (sorted_vals[i] + sorted_vals[left - 1]) / 2
+            avg_before = 0.5 * sorted_vals[i] + 0.5 * sorted_vals[left - 1]
             if avg_before <= target + RELATIVE_EPSILON:
                 candidates.append(avg_before)
 

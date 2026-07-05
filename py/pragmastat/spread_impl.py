@@ -117,7 +117,7 @@ def _spread_impl_python(values: List[float]) -> float:
         if at_target:
             if k_low < k_high:
                 # Even N: average the two central order stats
-                return 0.5 * (largest_below + smallest_at_or_above)
+                return 0.5 * largest_below + 0.5 * smallest_at_or_above
             # Odd N: pick the single middle
             need_largest = count_below == k_low
             return largest_below if need_largest else smallest_at_or_above
@@ -142,13 +142,13 @@ def _spread_impl_python(values: List[float]) -> float:
 
             if active <= 0:
                 if k_low < k_high:
-                    return 0.5 * (largest_below + smallest_at_or_above)
+                    return 0.5 * largest_below + 0.5 * smallest_at_or_above
                 return largest_below if count_below >= k_low else smallest_at_or_above
 
             if max_active <= min_active:
                 return min_active
 
-            mid = 0.5 * (min_active + max_active)
+            mid = 0.5 * min_active + 0.5 * max_active
             pivot = mid if (mid > min_active and mid <= max_active) else max_active
             prev_count_below = count_below
             continue
@@ -190,11 +190,11 @@ def _spread_impl_python(values: List[float]) -> float:
 
             if active_size <= 0:
                 if k_low < k_high:
-                    return 0.5 * (largest_below + smallest_at_or_above)
+                    return 0.5 * largest_below + 0.5 * smallest_at_or_above
                 return largest_below if count_below >= k_low else smallest_at_or_above
 
             if k_low < k_high:
-                return 0.5 * (min_rem + max_rem)
+                return 0.5 * min_rem + 0.5 * max_rem
             return min_rem if abs((k_low - 1) - count_below) <= abs(count_below - k_low) else max_rem
         # Weighted random row selection
         t = rng.uniform_int(0, active_size)

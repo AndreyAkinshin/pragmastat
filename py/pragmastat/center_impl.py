@@ -59,7 +59,9 @@ def _center_impl_python(values: List[float]) -> float:
     if n == 1:
         return values[0]
     if n == 2:
-        return (values[0] + values[1]) / 2
+        # Overflow-safe, order-symmetric midpoint: 0.5*a + 0.5*b
+        # (halve before summing; never overflows; operand order is irrelevant).
+        return 0.5 * values[0] + 0.5 * values[1]
 
     # Create deterministic RNG from input values
     rng = Rng(_derive_seed(values))
@@ -115,7 +117,7 @@ def _center_impl_python(values: List[float]) -> float:
                 min_active_sum = min(min_active_sum, smallest_in_row)
                 max_active_sum = max(max_active_sum, largest_in_row)
 
-            pivot = (min_active_sum + max_active_sum) / 2
+            pivot = 0.5 * min_active_sum + 0.5 * max_active_sum
             if pivot <= min_active_sum or pivot > max_active_sum:
                 pivot = max_active_sum
 
@@ -206,7 +208,7 @@ def _center_impl_python(values: List[float]) -> float:
                 min_remaining_sum = min(min_remaining_sum, min_in_row)
                 max_remaining_sum = max(max_remaining_sum, max_in_row)
 
-            pivot = (min_remaining_sum + max_remaining_sum) / 2
+            pivot = 0.5 * min_remaining_sum + 0.5 * max_remaining_sum
             if pivot <= min_remaining_sum or pivot > max_remaining_sum:
                 pivot = max_remaining_sum
 

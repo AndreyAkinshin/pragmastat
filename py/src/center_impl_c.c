@@ -50,7 +50,9 @@ static PyObject* center_impl_c(PyObject* self, PyObject* args) {
     if (n == 2) {
         double v0 = *(double*)PyArray_GETPTR1(values_array, 0);
         double v1 = *(double*)PyArray_GETPTR1(values_array, 1);
-        return PyFloat_FromDouble((v0 + v1) / 2.0);
+        // Overflow-safe, order-symmetric midpoint: 0.5*a + 0.5*b
+        // (halve before summing; never overflows; operand order is irrelevant).
+        return PyFloat_FromDouble(0.5 * v0 + 0.5 * v1);
     }
 
     // Allocate and copy data
@@ -137,7 +139,7 @@ static PyObject* center_impl_c(PyObject* self, PyObject* args) {
                 max_active_sum = MAX(max_active_sum, largest_in_row);
             }
 
-            pivot = (min_active_sum + max_active_sum) / 2.0;
+            pivot = 0.5 * min_active_sum + 0.5 * max_active_sum;
             if (pivot <= min_active_sum || pivot > max_active_sum) {
                 pivot = max_active_sum;
             }
@@ -251,7 +253,7 @@ static PyObject* center_impl_c(PyObject* self, PyObject* args) {
                 max_remaining_sum = MAX(max_remaining_sum, max_in_row);
             }
 
-            pivot = (min_remaining_sum + max_remaining_sum) / 2.0;
+            pivot = 0.5 * min_remaining_sum + 0.5 * max_remaining_sum;
             if (pivot <= min_remaining_sum || pivot > max_remaining_sum) {
                 pivot = max_remaining_sum;
             }
