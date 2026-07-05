@@ -16,7 +16,13 @@ mise run kt:pack     # Create JAR package
 ```
 kt/
 ├── src/main/kotlin/dev/pragmastat/
-│   ├── Estimators.kt            # Public API: center, spread, shift, etc.
+│   ├── Estimators.kt            # Raw List-based API: center, spread, shift, etc.
+│   ├── Sample.kt                # Typed Sample API: unit-aware overloads
+│   ├── Measurement.kt           # Value + MeasurementUnit pair
+│   ├── MeasurementUnit.kt       # Unit identity, family, conversion
+│   ├── UnitRegistry.kt          # MeasurementUnit lookup by id
+│   ├── Probability.kt           # Typed [0, 1] wrapper for misrate parameters
+│   ├── Compare.kt               # compare1/compare2 threshold-verdict API
 │   ├── Assumptions.kt           # Input validation and error types
 │   ├── PairwiseMargin.kt        # Margin calculation for shift bounds (internal)
 │   ├── SignMargin.kt            # Sign margin for binomial CDF inversion
@@ -25,10 +31,10 @@ kt/
 │   ├── GaussCdf.kt              # Standard normal CDF (ACM Algorithm 209)
 │   ├── Rng.kt                   # Deterministic xoshiro256++ PRNG
 │   ├── Xoshiro256.kt            # PRNG core implementation
-│   ├── FastCenter.kt            # O(n log n) Hodges-Lehmann algorithm
-│   ├── FastCenterQuantiles.kt   # Center quantile binary search
-│   ├── FastSpread.kt            # O(n log n) Shamos algorithm
-│   ├── FastShift.kt             # O((m+n) log L) shift quantiles
+│   ├── CenterImpl.kt            # O(n log n) Hodges-Lehmann algorithm
+│   ├── CenterQuantilesImpl.kt   # Center quantile binary search
+│   ├── SpreadImpl.kt            # O(n log n) Shamos algorithm
+│   ├── ShiftImpl.kt             # O((m+n) log L) shift quantiles
 │   ├── Constants.kt             # Internal constants
 │   └── distributions/
 │       ├── Distribution.kt
@@ -38,9 +44,17 @@ kt/
 │       ├── Power.kt
 │       └── Multiplic.kt
 ├── src/test/kotlin/dev/pragmastat/
-│   ├── ReferenceTest.kt         # JSON fixture validation
-│   ├── InvarianceTest.kt        # Mathematical property tests
-│   └── PerformanceTest.kt
+│   ├── ReferenceTest.kt                   # JSON fixture validation
+│   ├── MetrologyTest.kt                   # JSON fixtures for the unit/metrology system
+│   ├── InvarianceTest.kt                  # Mathematical property tests
+│   ├── AssumeSortedTest.kt                # Raw-API assumeSorted=true branch coverage
+│   ├── MutationTest.kt                    # Estimators must not mutate caller lists
+│   ├── CenterMidpointSymmetryTest.kt      # n==2 midpoint exact order symmetry
+│   ├── BoundsUnitTest.kt                  # Bounds unit propagation (Sample vs raw)
+│   ├── ProbabilityTest.kt                 # Probability [0, 1] range validation
+│   ├── RawMisrateDomainTest.kt            # Raw-API misrate domain errors
+│   ├── RatioBoundsErrorPriorityTest.kt    # domain-before-positivity error priority
+│   └── PerformanceTest.kt                 # Wall-clock sanity checks on large inputs
 └── build.gradle.kts
 ```
 
@@ -54,17 +68,34 @@ kt/
 
 ## Public Functions
 
+There are two parallel public APIs:
+
+- **Raw `List<Double>` API** (shown below): plain lists in, bare `Double` /
+  unitless `Bounds` out. Each estimator takes an optional `assumeSorted: Boolean
+  = false`; when `true` the caller guarantees the input is already sorted
+  ascending and the internal sort is skipped (undefined behavior on unsorted
+  input). For the shuffle-based `spreadBounds`/`disparityBounds` the disjoint-pair
+  shuffle always runs on the passed order (the flag never affects the shuffle); it
+  only reaches the order-independent sub-computations, so `spreadBounds` is
+  effectively inert to it while `disparityBounds` (whose sub-computation embeds
+  `shiftBounds`) can silently differ on unsorted input. This is the single DRY
+  implementation.
+- **Typed `Sample` API** (`Sample`-based overloads in `Sample.kt`): `Sample` /
+  `Probability` in, `Measurement` / unit-carrying `Bounds` out. Thin adapters
+  that delegate to the raw API, passing the cached sorted view with
+  `assumeSorted = true` and re-attaching the appropriate `MeasurementUnit`.
+
 ```kotlin
-fun center(x: List<Double>): Double
-fun spread(x: List<Double>): Double
-fun shift(x: List<Double>, y: List<Double>): Double
-fun ratio(x: List<Double>, y: List<Double>): Double
-fun disparity(x: List<Double>, y: List<Double>): Double
-fun shiftBounds(x: List<Double>, y: List<Double>, misrate: Double = 1e-3): Bounds
-fun ratioBounds(x: List<Double>, y: List<Double>, misrate: Double = 1e-3): Bounds
-fun disparityBounds(x: List<Double>, y: List<Double>, misrate: Double = 1e-3, seed: String? = null): Bounds
-fun centerBounds(x: List<Double>, misrate: Double = 1e-3): Bounds
-fun spreadBounds(x: List<Double>, misrate: Double = 1e-3, seed: String? = null): Bounds
+fun center(x: List<Double>, assumeSorted: Boolean = false): Double
+fun spread(x: List<Double>, assumeSorted: Boolean = false): Double
+fun shift(x: List<Double>, y: List<Double>, assumeSorted: Boolean = false): Double
+fun ratio(x: List<Double>, y: List<Double>, assumeSorted: Boolean = false): Double
+fun disparity(x: List<Double>, y: List<Double>, assumeSorted: Boolean = false): Double
+fun shiftBounds(x: List<Double>, y: List<Double>, misrate: Double = 1e-3, assumeSorted: Boolean = false): Bounds
+fun ratioBounds(x: List<Double>, y: List<Double>, misrate: Double = 1e-3, assumeSorted: Boolean = false): Bounds
+fun disparityBounds(x: List<Double>, y: List<Double>, misrate: Double = 1e-3, seed: String? = null, assumeSorted: Boolean = false): Bounds
+fun centerBounds(x: List<Double>, misrate: Double = 1e-3, assumeSorted: Boolean = false): Bounds
+fun spreadBounds(x: List<Double>, misrate: Double = 1e-3, seed: String? = null, assumeSorted: Boolean = false): Bounds
 ```
 
 ## Distributions
