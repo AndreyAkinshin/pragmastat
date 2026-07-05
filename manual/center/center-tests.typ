@@ -2,7 +2,7 @@
 
 $ Center(vx) = median_(1 <= i <= j <= n) (x_i + x_j) / 2 $
 
-The $Center$ test suite contains 39 test cases stored in the repository (24 original + 14 unsorted + 1 error), plus 1 performance test that should be implemented manually (see #link(<sec-test-framework>)[Test Framework]).
+The $Center$ test suite contains 42 test cases stored in the repository (27 original + 14 unsorted + 1 error), plus 1 performance test that should be implemented manually (see #link(<sec-test-framework>)[Test Framework]).
 
 *Demo examples* ($n = 5$) — from manual introduction, validating properties:
 
@@ -51,6 +51,9 @@ The progression from small ($n = 5$) to large ($n = 100$) samples helps identify
 - `extreme-large-5`: $vx = (10^8, 2 dot 10^8, 3 dot 10^8, 4 dot 10^8, 5 dot 10^8)$ (very large values)
 - `extreme-small-5`: $vx = (10^(-8), 2 dot 10^(-8), 3 dot 10^(-8), 4 dot 10^(-8), 5 dot 10^(-8))$ (very small positive values)
 - `extreme-wide-5`: $vx = (0.001, 1, 100, 1000, 1000000)$ (wide range, tests precision)
+- `large-magnitude-2`: $vx = (10^308, 10^308)$, expected output: $10^308$ (overflow-safe midpoint: $0.5 x_i + 0.5 x_j$ avoids the $x_i + x_j$ overflow to infinity)
+- `large-magnitude-negative-2`: $vx = (-10^308, -10^308)$, expected output: $-10^308$ (negative-magnitude counterpart)
+- `opposite-extreme-2`: $vx = (-10^308, 10^308)$, expected output: $0$ (opposite extremes cancel without overflow)
 
 *Unsorted tests* — verify sorting correctness (14 tests):
 

@@ -15,7 +15,7 @@ Define $k_L = r + 1$ and $k_U = m - r$.
 
 Return $[L, U] = [d_((k_L)), d_((k_U))]$.
 
-The $SpreadBounds$ test suite contains 43 test cases (3 demo + 4 natural + 4 property + 7 edge + 3 additive + 2 uniform + 5 misrate + 5 conservatism + 8 unsorted + 2 error).
+The $SpreadBounds$ test suite contains 44 test cases (3 demo + 4 natural + 4 property + 7 edge + 3 additive + 2 uniform + 5 misrate + 5 conservatism + 8 unsorted + 3 error).
 Since $SpreadBounds$ returns bounds rather than a point estimate, tests validate that bounds are well-formed and satisfy equivariance properties under a fixed seed.
 Each test case output is a JSON object with `lower` and `upper` fields representing the interval bounds.
 Because pairing and cutoff selection are randomized, tests fix `seed` to keep outputs deterministic.
@@ -92,10 +92,11 @@ For large $n$, bounds tighten to a practical interval around $Spread$.
 
 These tests validate that $SpreadBounds$ produces sensible bounds for arbitrary input order under a fixed seed.
 
-*Error cases* --- inputs that violate assumptions (2 tests):
+*Error cases* --- inputs that violate assumptions (3 tests):
 
 - `error-empty-x`: $vx = ()$ — empty array violates validity
 - `error-constant-x`: $vx = (5, 5, ..., 5)$ ($n = 20$) — constant sample violates sparity ($Spread = 0$)
+- `error-single-element-x`: $vx = (5)$ — single element violates sparity ($Spread = 0$)
 
 Note: $SpreadBounds$ has a minimum misrate constraint.
 The sign-test inversion requires $misrate >= 2^(1-m)$.
