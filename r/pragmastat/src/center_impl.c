@@ -175,7 +175,9 @@ double center_impl_compute(const double *values, int n, int assume_sorted) {
             }
 
             if (median_rank_low < median_rank_high) {
-                result = (smallest_at_or_above_pivot + largest_below_pivot) / 4.0;
+                /* Even total: average the two middle values. Overflow-safe: quarter
+                 * each pair-sum before summing (both can be near the double max). */
+                result = 0.25 * smallest_at_or_above_pivot + 0.25 * largest_below_pivot;
             } else {
                 int need_largest = (count_below_pivot == median_rank_low);
                 result = (need_largest ? largest_below_pivot : smallest_at_or_above_pivot) / 2.0;

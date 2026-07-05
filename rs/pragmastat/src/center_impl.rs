@@ -152,8 +152,9 @@ pub(crate) fn center_impl(values: &[f64], assume_sorted: bool) -> Result<f64, &'
 
             // Calculate final result
             if median_rank_low < median_rank_high {
-                // Even total: average the two middle values
-                return Ok((smallest_at_or_above_pivot + largest_below_pivot) / 4.0);
+                // Even total: average the two middle values. Overflow-safe: quarter each
+                // pair-sum before summing (both operands can be near the double max).
+                return Ok(0.25 * smallest_at_or_above_pivot + 0.25 * largest_below_pivot);
             } else {
                 // Odd total: return the single middle value
                 let need_largest = count_below_pivot == median_rank_low;

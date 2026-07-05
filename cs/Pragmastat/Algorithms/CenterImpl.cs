@@ -151,8 +151,9 @@ internal static class CenterImpl
         // Calculate final result based on whether we have odd or even number of pairs
         if (medianRankLow < medianRankHigh)
         {
-          // Even total: average the two middle values
-          return (smallestAtOrAbovePivot + largestBelowPivot) / 4;
+          // Even total: average the two middle values. Overflow-safe: quarter each
+          // pair-sum before summing (both operands can be near the double max).
+          return 0.25 * smallestAtOrAbovePivot + 0.25 * largestBelowPivot;
         }
         else
         {

@@ -154,8 +154,9 @@ export function centerImpl(values: readonly number[], assumeSorted = false): num
 
       // Calculate final result
       if (medianRankLow < medianRankHigh) {
-        // Even total: average the two middle values
-        return (smallestAtOrAbovePivot + largestBelowPivot) / 4;
+        // Even total: average the two middle values. Overflow-safe: quarter each
+        // pair-sum before summing (both operands can be near the double max).
+        return 0.25 * smallestAtOrAbovePivot + 0.25 * largestBelowPivot;
       } else {
         // Odd total: return the single middle value
         const needLargest = countBelowPivot === medianRankLow;

@@ -202,8 +202,9 @@ static PyObject* center_impl_c(PyObject* self, PyObject* args) {
             }
 
             if (median_rank_low < median_rank_high) {
-                // Even total: average the two middle values
-                result_value = (smallest_at_or_above_pivot + largest_below_pivot) / 4.0;
+                // Even total: average the two middle values. Overflow-safe: quarter each
+                // pair-sum before summing (both operands can be near the double max).
+                result_value = 0.25 * smallest_at_or_above_pivot + 0.25 * largest_below_pivot;
             } else {
                 // Odd total: return the single middle value
                 int need_largest = (count_below_pivot == median_rank_low);

@@ -2,7 +2,7 @@
 
 $ Center(vx) = median_(1 <= i <= j <= n) (x_i + x_j) / 2 $
 
-The $Center$ test suite contains 42 test cases stored in the repository (27 original + 14 unsorted + 1 error), plus 1 performance test that should be implemented manually (see #link(<sec-test-framework>)[Test Framework]).
+The $Center$ test suite contains 43 test cases stored in the repository (28 original + 14 unsorted + 1 error), plus 1 performance test that should be implemented manually (see #link(<sec-test-framework>)[Test Framework]).
 
 *Demo examples* ($n = 5$) — from manual introduction, validating properties:
 
@@ -54,6 +54,7 @@ The progression from small ($n = 5$) to large ($n = 100$) samples helps identify
 - `large-magnitude-2`: $vx = (10^308, 10^308)$, expected output: $10^308$ (overflow-safe midpoint: $0.5 x_i + 0.5 x_j$ avoids the $x_i + x_j$ overflow to infinity)
 - `large-magnitude-negative-2`: $vx = (-10^308, -10^308)$, expected output: $-10^308$ (negative-magnitude counterpart)
 - `opposite-extreme-2`: $vx = (-10^308, 10^308)$, expected output: $0$ (opposite extremes cancel without overflow)
+- `large-magnitude-3`: $vx = (8 dot 10^307, 8.5 dot 10^307, 8.9 dot 10^307)$, expected output: $8.475 dot 10^307$ (even pair total: the two central pair-sums are finite but overflow when added, so the final average must be computed as $0.25 A + 0.25 B$)
 
 *Unsorted tests* — verify sorting correctness (14 tests):
 

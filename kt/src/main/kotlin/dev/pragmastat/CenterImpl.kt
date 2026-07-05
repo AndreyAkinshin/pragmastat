@@ -114,7 +114,9 @@ internal fun centerImpl(
             }
 
             return if (medianRankLow < medianRankHigh) {
-                (smallestAtOrAbovePivot + largestBelowPivot) / 4
+                // Even total: average the two middle values. Overflow-safe: quarter each
+                // pair-sum before summing (both operands can be near the double max).
+                0.25 * smallestAtOrAbovePivot + 0.25 * largestBelowPivot
             } else {
                 val needLargest = countBelowPivot == medianRankLow
                 (if (needLargest) largestBelowPivot else smallestAtOrAbovePivot) / 2

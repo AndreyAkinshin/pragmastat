@@ -38,10 +38,14 @@ public static class OneSampleTestCases
         .Add("extreme-large-5", new Sample(1e8, 2e8, 3e8, 4e8, 5e8))
         .Add("extreme-small-5", new Sample(1e-8, 2e-8, 3e-8, 4e-8, 5e-8))
         .Add("extreme-wide-5", new Sample(0.001, 1, 100, 1000, 1000000))
-        // Overflow-safe midpoint cases (n = 2, values near double max) - 3 tests
+        // Overflow-safe midpoint cases (values near double max) - 4 tests.
+        // The n=3 case has an even number of pairs (6), so it exercises the
+        // 0.25*A + 0.25*B averaging of two central pair-sums that are both
+        // finite but overflow when added directly.
         .Add("large-magnitude-2", new Sample(1e308, 1e308))
         .Add("large-magnitude-negative-2", new Sample(-1e308, -1e308))
         .Add("opposite-extreme-2", new Sample(-1e308, 1e308))
+        .Add("large-magnitude-3", new Sample(8.0e307, 8.5e307, 8.9e307))
         // Unsorted tests - 14 tests (verify sorting works correctly)
         .AddUnsortedReverse([2, 3, 4, 5, 7])  // 5 tests: reverse sorted
         .AddUnsortedShuffle("shuffle-3", 2, 1, 3)  // Middle element first

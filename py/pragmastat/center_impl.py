@@ -166,8 +166,9 @@ def _center_impl_python(values: List[float], assume_sorted: bool = False) -> flo
 
             # Calculate final result
             if median_rank_low < median_rank_high:
-                # Even total: average the two middle values
-                return (smallest_at_or_above_pivot + largest_below_pivot) / 4
+                # Even total: average the two middle values. Overflow-safe: quarter
+                # each pair-sum before summing (both can be near the double max).
+                return 0.25 * smallest_at_or_above_pivot + 0.25 * largest_below_pivot
             # Odd total: return the single middle value
             need_largest = count_below_pivot == median_rank_low
             return (largest_below_pivot if need_largest else smallest_at_or_above_pivot) / 2

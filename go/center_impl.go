@@ -168,8 +168,9 @@ func centerImpl[T Number](values []T, assumeSorted bool) (float64, error) {
 
 			// Calculate final result
 			if medianRankLow < medianRankHigh {
-				// Even total: average the two middle values
-				return (smallestAtOrAbovePivot + largestBelowPivot) / 4, nil
+				// Even total: average the two middle values. Overflow-safe: quarter each
+				// pair-sum before summing (both operands can be near the double max).
+				return 0.25*smallestAtOrAbovePivot + 0.25*largestBelowPivot, nil
 			}
 			// Odd total: return the single middle value
 			needLargest := countBelowPivot == medianRankLow
