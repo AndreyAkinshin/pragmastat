@@ -51,7 +51,7 @@ The $Shift$ test suite contains 62 test cases stored in the repository (42 origi
 The natural sequences validate anti-symmetry ($Shift(vx, vy) = -Shift(vy, vx)$) and the identity property ($Shift(vx, vx) = 0$).
 The asymmetric size combinations test the two-sample algorithm with unbalanced inputs.
 
-*Algorithm stress tests* — edge cases for fast binary search algorithm:
+*Algorithm stress tests* — edge cases for the binary search algorithm:
 
 - `duplicates-5-5`: $vx = (3, 3, 3, 3, 3)$, $vy = (3, 3, 3, 3, 3)$ (all identical, expected output: $0$)
 - `duplicates-10-10`: $vx = (1, 1, 2, 2, 3, 3, 4, 4, 5, 5)$, $vy = (1, 1, 2, 2, 3, 3, 4, 4, 5, 5)$ (many duplicates)
@@ -89,7 +89,7 @@ The variety includes cases where only one sample is unsorted, ensuring implement
 - `error-empty-x`: $vx = ()$, $vy = (1, 2, 3, 4, 5)$ — empty X array violates validity
 - `error-empty-y`: $vx = (1, 2, 3, 4, 5)$, $vy = ()$ — empty Y array violates validity
 
-*Performance test* — validates the fast $O((m+n) log L)$ binary search algorithm:
+*Performance test* — validates the $O((m+n) log L)$ binary search algorithm:
 
 - *Input*: $vx = (1, 2, 3, ..., 100000)$, $vy = (1, 2, 3, ..., 100000)$
 - *Expected output*: $0$

@@ -31,7 +31,7 @@ The $Spread$ test suite contains 32 test cases stored in the repository (20 orig
 The natural sequence cases validate the basic pairwise difference calculation.
 Constant samples and $n = 1$ are excluded because $Spread$ requires $Spread(vx) > 0$.
 
-*Algorithm stress tests* — edge cases for fast algorithm implementation:
+*Algorithm stress tests* — edge cases for the $O(n log n)$ implementation:
 
 - `duplicates-10`: $vx = (1, 1, 1, 2, 2, 2, 3, 3, 3, 3)$ (many duplicates, stress tie-breaking)
 - `parity-odd-7`: $vx = (1, 2, 3, 4, 5, 6, 7)$ (odd sample size, 21 differences)
@@ -62,7 +62,7 @@ Since $Spread$ uses absolute differences, order-dependent bugs would manifest di
 - `error-empty-x`: $vx = ()$ — empty array violates validity
 - `error-constant-x`: $vx = (5, 5, 5, 5, 5)$ — constant sample violates sparity ($Spread = 0$)
 
-*Performance test* — validates the fast $O(n log n)$ algorithm:
+*Performance test* — validates the $O(n log n)$ algorithm:
 
 - *Input*: $vx = (1, 2, 3, ..., 100000)$
 - *Expected output*: $29290$

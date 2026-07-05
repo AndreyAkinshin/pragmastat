@@ -106,6 +106,6 @@ Each test must produce identical output to its sorted counterpart, validating th
 - `error-empty-x`: $vx = ()$, $vy = (1, 2, 3, 4, 5)$ — empty X array violates validity
 - `error-empty-y`: $vx = (1, 2, 3, 4, 5)$, $vy = ()$ — empty Y array violates validity
 
-*No performance test* — $RatioBounds$ uses the $"FastRatio"$ algorithm internally, which delegates to $"FastShift"$ in log-space.
+*No performance test* — $RatioBounds$ uses the $"RatioImpl"$ algorithm internally, which delegates to $"ShiftImpl"$ in log-space.
 Since bounds computation involves only two quantile calculations from the pairwise differences (at positions determined by $PairwiseMargin$),
 the performance characteristics are equivalent to computing two $Ratio$ estimates, which completes efficiently for large samples.

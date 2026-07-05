@@ -114,6 +114,6 @@ Each test must produce identical output to its sorted counterpart, validating th
 - `error-empty-x`: $vx = ()$, $vy = (1, 2, 3, 4, 5)$ — empty X array violates validity
 - `error-empty-y`: $vx = (1, 2, 3, 4, 5)$, $vy = ()$ — empty Y array violates validity
 
-*No performance test* — $ShiftBounds$ uses the $"FastShift"$ algorithm internally, which is already validated by the $Shift$ performance test.
+*No performance test* — $ShiftBounds$ uses the $"ShiftImpl"$ algorithm internally, which is already validated by the $Shift$ performance test.
 Since bounds computation involves only two quantile calculations from the pairwise differences (at positions determined by $PairwiseMargin$),
 the performance characteristics are equivalent to computing two $Shift$ estimates, which completes efficiently for large samples.

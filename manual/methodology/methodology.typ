@@ -103,7 +103,7 @@ This pairwise structure provides three benefits:
 
 The pairwise principle also enables efficient computation.
 Matrices of pairwise operations have structural properties (sorted rows and columns)
-that fast algorithms exploit to achieve $O(n log n)$ complexity.
+that the implementations exploit to achieve $O(n log n)$ complexity.
 
 #pagebreak()
 == Median as Universal Aggregator
@@ -177,7 +177,7 @@ This structural unity is not merely aesthetic — it enables unified algorithmic
 #list(marker: none, tight: true,
   [*Sorted structure* — Matrices of pairwise operations have sorted rows and columns],
   [*Monahan's algorithm* — Exploits sorted structure for $O(n log n)$ $Center$/$Spread$],
-  [*Fast shift* — Exploits cross-sample matrix structure for efficient two-sample comparison],
+  [*Shift implementation* — Exploits cross-sample matrix structure for efficient two-sample comparison],
 )
 
 Because all estimators share the same "median of pairwise" form,
@@ -413,7 +413,7 @@ The methodology of this toolkit can be distilled into twelve guiding principles:
 + *Multi-audience optimization reveals essential content* — Serve everyone adequately, not one group perfectly
 + *Executable specifications are reliable specifications* — Tests define correctness
 + *Reproducibility requires portable determinism* — Same seeds, same results, any language
-+ *Structural unity enables unified optimization* — "Median of pairwise" admits fast algorithms
++ *Structural unity enables unified optimization* — "Median of pairwise" admits $O(n log n)$ implementations
 + *Utility is the ultimate criterion* — Methods that solve real problems are correct methods
 
 #pagebreak()

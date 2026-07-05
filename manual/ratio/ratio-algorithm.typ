@@ -36,4 +36,4 @@ This is dramatically more efficient than the naive $O(n m log(n m))$ approach.
 Memory usage is $O(m + n)$ for storing the log-transformed samples,
 compared to $O(n m)$ for materializing all pairwise ratios.
 
-#source-include("cs/Pragmastat/Algorithms/FastRatio.cs", "cs")
+#source-include("cs/Pragmastat/Algorithms/RatioImpl.cs", "cs")

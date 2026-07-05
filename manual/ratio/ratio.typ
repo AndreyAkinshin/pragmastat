@@ -55,7 +55,7 @@ This relationship is expressed formally as:
 $ Ratio(vx, vy) = exp(Shift(log vx, log vy)) $
 
 The log-transformation converts multiplicative relationships to additive ones,
-  allowing the fast #link(<sec-shift>)[$Shift$] algorithm to compute the result efficiently.
+  allowing the #link(<sec-shift>)[$Shift$] algorithm to compute the result efficiently.
 The exp-transformation converts back to the ratio scale.
 
 #v(0.5em)

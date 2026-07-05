@@ -37,7 +37,7 @@ The $Center$ test suite contains 39 test cases stored in the repository (24 orig
 The random samples validate that $Center$ performs correctly on realistic distributions at various sample sizes.
 The progression from small ($n = 5$) to large ($n = 100$) samples helps identify issues that only manifest at specific scales.
 
-*Algorithm stress tests* — edge cases for fast algorithm implementation:
+*Algorithm stress tests* — edge cases for the $O(n log n)$ implementation:
 
 - `duplicates-5`: $vx = (3, 3, 3, 3, 3)$ (all identical, stress stall handling)
 - `duplicates-10`: $vx = (1, 1, 1, 2, 2, 2, 3, 3, 3, 3)$ (many duplicates, stress tie-breaking)
@@ -72,7 +72,7 @@ The variety of shuffle patterns (reverse, rotation, interleaving, single element
 
 - `error-empty-x`: $vx = ()$ — empty array violates validity
 
-*Performance test* — validates the fast $O(n log n)$ algorithm:
+*Performance test* — validates the $O(n log n)$ algorithm:
 
 - *Input*: $vx = (1, 2, 3, ..., 100000)$
 - *Expected output*: $50000.5$

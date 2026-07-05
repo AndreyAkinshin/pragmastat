@@ -2,7 +2,7 @@
 
 $CenterBounds$ uses two components:
   #link(<sec-alg-signed-rank-margin>)[SignedRankMargin] to determine which order statistics to select,
-  and a fast quantile algorithm to compute them.
+  and an $O(n log n)$ quantile algorithm to compute them.
 
 The $Center$ estimator computes the median of all pairwise averages $(x_i + x_j)/2$ for $i <= j$.
 For $CenterBounds$, we need not just the median but specific order statistics:
@@ -12,7 +12,7 @@ Given a sample of size $n$, there are $N = n(n+1)/2$ such pairwise averages.
 A naive approach would materialize all $N$ pairwise averages, sort them, and extract the desired quantile.
 With $n = 10000$, this creates approximately 50 million values,
   requiring quadratic memory and $O(N log N)$ time.
-The fast algorithm avoids materializing the pairs entirely.
+The implementation avoids materializing the pairs entirely.
 
 The algorithm exploits the sorted structure of the implicit pairwise average matrix.
 After sorting the input to obtain $x_1 <= x_2 <= ... <= x_n$,
@@ -53,7 +53,7 @@ The algorithm achieves $O(n log n)$ time complexity for sorting,
   plus $O(n log R)$ for binary search where $R$ is the value range precision.
 Memory usage is $O(n)$ for the sorted array plus $O(n)$ for candidate generation.
 This is dramatically more efficient than the naive $O(n^2 log n^2)$ approach.
-For $n = 10000$, the fast algorithm completes in milliseconds
+For $n = 10000$, the implementation completes in milliseconds
   versus minutes for the naive approach.
 
 The algorithm uses relative tolerance for convergence:
@@ -63,4 +63,4 @@ This ensures stable behavior across different scales of input data.
 For candidate generation near the threshold, small tolerances prevent
 missing exact values due to floating-point imprecision.
 
-#source-include("cs/Pragmastat/Algorithms/FastCenterQuantiles.cs", "cs")
+#source-include("cs/Pragmastat/Algorithms/CenterQuantilesImpl.cs", "cs")

@@ -45,4 +45,4 @@ The algorithm maintains only row bounds and counters, using $O(n)$ additional sp
 This matches the complexity of sorting a single array while avoiding the quadratic memory and time explosion
   of computing all pairwise combinations.
 
-#source-include("cs/Pragmastat/Algorithms/FastCenter.cs", "cs")
+#source-include("cs/Pragmastat/Algorithms/CenterImpl.cs", "cs")

@@ -28,7 +28,7 @@ No resampling, no iteration.
 
 A bootstrap version requires $B$ resamples (typically $B = 10000$ for stable tail quantiles),
   each computing #link(<sec-center>)[$Center$] on the resample.
-#link(<sec-center>)[$Center$] itself costs $O(n log n)$ via the fast selection algorithm on the implicit pairwise matrix.
+#link(<sec-center>)[$Center$] itself costs $O(n log n)$ via the selection algorithm on the implicit pairwise matrix.
 The total cost becomes $O(B dot n log n)$ per call — roughly $10000 times$ slower than the signed-rank approach.
 
 For $n = 5$, each call to #link(<sec-center>)[$Center$] operates on $15$ Walsh averages.
