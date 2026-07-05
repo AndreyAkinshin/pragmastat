@@ -50,11 +50,6 @@ fn main() {
     let bounds = disparity_bounds_with_seed(&x, &y, 1e-3, "demo").unwrap();
     println!("{{lower: {}, upper: {}}}", bounds.lower, bounds.upper); // {lower: -3.1025641025641026, upper: -0.8494623655913979}
 
-    // --- Raw slice API (backward-compatible) ---
-
-    let x_raw: Vec<f64> = (1..=200).map(|i| i as f64).collect();
-    println!("{}", estimators::raw::center(&x_raw, false).unwrap()); // 100.5
-
     // --- Randomization ---
 
     let mut rng = Rng::from_string("demo-uniform");

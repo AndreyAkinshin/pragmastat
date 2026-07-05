@@ -12,15 +12,11 @@ struct Language {
     package_url: &'static str,
     /// Install instructions in Markdown format with {version} and {major} placeholders
     install_md: &'static str,
-    /// Optional raw-API section, inserted between the package link and the demo.
-    /// Empty for languages whose README does not document the raw native-slice API.
-    raw_api_md: &'static str,
 }
 
 const LANGUAGES: &[Language] = &[
     Language {
         slug: "cs",
-        raw_api_md: "",
         title: "C#",
         code_language: "cs",
         demo_path: "cs/Pragmastat.Demo/Program.cs",
@@ -40,7 +36,6 @@ NuGet\Install-Package Pragmastat -Version {version}
     },
     Language {
         slug: "go",
-        raw_api_md: "",
         title: "Go",
         code_language: "go",
         demo_path: "go/demo/main.go",
@@ -54,46 +49,6 @@ go get github.com/AndreyAkinshin/pragmastat/go/v{major}@v{version}
     },
     Language {
         slug: "kt",
-        raw_api_md: r#"## Raw `List<Double>` API
-
-Every estimator has two entry points:
-
-- **Typed API** — takes `Sample` / `Probability` and returns a `Measurement` or
-  unit-carrying `Bounds`. Use this for unit propagation and self-documenting
-  parameter types.
-- **Raw API** — takes a plain `List<Double>` (and a `Double` misrate) and returns
-  a bare `Double` or a unitless `Bounds` (`unit == NumberUnit`). Use this when you
-  just have numbers and want zero ceremony.
-
-```kotlin
-import dev.pragmastat.*
-
-val x = listOf(5.0, 1.0, 8.0, 3.0, 2.0)
-val y = listOf(12.0, 9.0, 15.0, 10.0, 13.0)
-
-center(x)               // Double
-spread(x)               // Double
-shift(x, y)             // Double
-centerBounds(x, 1e-3)   // Bounds (unitless)
-shiftBounds(x, y, 1e-3) // Bounds (unitless)
-```
-
-### The `assumeSorted` flag
-
-Every raw estimator accepts an optional `assumeSorted: Boolean = false`. When you
-pass `assumeSorted = true`, you guarantee the input list is already sorted
-ascending, and the estimator skips its internal sort:
-
-```kotlin
-val sorted = listOf(1.0, 2.0, 3.0, 4.0, 5.0)
-center(sorted, assumeSorted = true)   // skips the internal sort
-```
-
-This is a performance hint, not a behavior switch: for the order-independent
-estimators the result is identical either way. Passing `assumeSorted = true` on
-**unsorted** input is undefined behavior (the contract is on you; you may get a
-wrong result or a convergence error). The `Sample`-based API uses this internally
-to reuse its cached sorted view."#,
         title: "Kotlin",
         code_language: "kotlin",
         demo_path: "kt/demo/src/main/kotlin/dev/pragmastat/demo/Main.kt",
@@ -123,7 +78,6 @@ implementation("dev.pragmastat:pragmastat:{version}")
     },
     Language {
         slug: "py",
-        raw_api_md: "",
         title: "Python",
         code_language: "python",
         demo_path: "py/examples/demo.py",
@@ -137,7 +91,6 @@ pip install pragmastat=={version}
     },
     Language {
         slug: "r",
-        raw_api_md: "",
         title: "R",
         code_language: "r",
         demo_path: "r/pragmastat/inst/examples/demo.R",
@@ -154,7 +107,6 @@ library(pragmastat)
     },
     Language {
         slug: "rs",
-        raw_api_md: "",
         title: "Rust",
         code_language: "rust",
         demo_path: "rs/pragmastat/examples/demo.rs",
@@ -175,7 +127,6 @@ pragmastat = "{version}"
     },
     Language {
         slug: "ts",
-        raw_api_md: "",
         title: "TypeScript",
         code_language: "typescript",
         demo_path: "ts/examples/demo.ts",
@@ -227,11 +178,6 @@ fn generate_readme(lang: &Language, version: &str, demo: &str) -> String {
 
     if !lang.package_url.is_empty() {
         content.push_str(lang.package_url);
-        content.push_str("\n\n");
-    }
-
-    if !lang.raw_api_md.is_empty() {
-        content.push_str(lang.raw_api_md);
         content.push_str("\n\n");
     }
 

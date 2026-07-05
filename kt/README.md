@@ -26,47 +26,6 @@ Source code: https://github.com/AndreyAkinshin/pragmastat/tree/v12.1.0/kt
 
 Pragmastat on Maven Central Repository: https://central.sonatype.com/artifact/dev.pragmastat/pragmastat/overview
 
-## Raw `List<Double>` API
-
-Every estimator has two entry points:
-
-- **Typed API** — takes `Sample` / `Probability` and returns a `Measurement` or
-  unit-carrying `Bounds`. Use this for unit propagation and self-documenting
-  parameter types.
-- **Raw API** — takes a plain `List<Double>` (and a `Double` misrate) and returns
-  a bare `Double` or a unitless `Bounds` (`unit == NumberUnit`). Use this when you
-  just have numbers and want zero ceremony.
-
-```kotlin
-import dev.pragmastat.*
-
-val x = listOf(5.0, 1.0, 8.0, 3.0, 2.0)
-val y = listOf(12.0, 9.0, 15.0, 10.0, 13.0)
-
-center(x)               // Double
-spread(x)               // Double
-shift(x, y)             // Double
-centerBounds(x, 1e-3)   // Bounds (unitless)
-shiftBounds(x, y, 1e-3) // Bounds (unitless)
-```
-
-### The `assumeSorted` flag
-
-Every raw estimator accepts an optional `assumeSorted: Boolean = false`. When you
-pass `assumeSorted = true`, you guarantee the input list is already sorted
-ascending, and the estimator skips its internal sort:
-
-```kotlin
-val sorted = listOf(1.0, 2.0, 3.0, 4.0, 5.0)
-center(sorted, assumeSorted = true)   // skips the internal sort
-```
-
-This is a performance hint, not a behavior switch: for the order-independent
-estimators the result is identical either way. Passing `assumeSorted = true` on
-**unsorted** input is undefined behavior (the contract is on you; you may get a
-wrong result or a convergence error). The `Sample`-based API uses this internally
-to reuse its cached sorted view.
-
 ## Demo
 
 ```kotlin
