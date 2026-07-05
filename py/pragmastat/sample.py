@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Sequence
 
 import numpy as np
 
-from .assumptions import AssumptionError, check_positivity, check_validity
+from .assumptions import AssumptionError, check_validity
 from .measurement_unit import NUMBER_UNIT, MeasurementUnit
 
 if TYPE_CHECKING:
@@ -20,20 +20,21 @@ class Sample:
         values: Sequence[float] | NDArray,
         weights: Sequence[float] | NDArray | None = None,
         unit: MeasurementUnit | None = None,
-        _subject: str = "x",
     ) -> None:
         if unit is None:
             unit = NUMBER_UNIT
 
-        arr = np.asarray(values, dtype=np.float64)
-        check_validity(arr, _subject)
+        arr = np.array(values, dtype=np.float64)
+        # Construction can't know which argument position this sample fills, so
+        # construction-time validity errors are always reported under subject "x".
+        check_validity(arr, "x")
 
+        _freeze_array(arr)
         self._values: NDArray = arr
         self._unit: MeasurementUnit = unit
-        self._subject: str = _subject
 
         if weights is not None:
-            w = np.asarray(weights, dtype=np.float64)
+            w = np.array(weights, dtype=np.float64)
             if len(w) != len(arr):
                 msg = f"weights length ({len(w)}) must match values length ({len(arr)})"
                 raise ValueError(msg)
@@ -44,6 +45,7 @@ class Sample:
             if total < 1e-9:
                 msg = "total weight must be positive"
                 raise ValueError(msg)
+            _freeze_array(w)
             self._weights: NDArray | None = w
             self._is_weighted = True
             self._total_weight = total
@@ -84,7 +86,7 @@ class Sample:
 
     @cached_property
     def sorted_values(self) -> NDArray:
-        return np.sort(self._values)
+        return _freeze_array(np.sort(self._values))
 
     def convert_to(self, target: MeasurementUnit) -> Sample:
         """Converts the sample to a different (compatible) unit."""
@@ -98,42 +100,17 @@ class Sample:
         return _build_sample(
             converted,
             target,
-            self._subject,
             self._is_weighted,
             self._total_weight,
             self._weighted_size,
             self._weights.copy() if self._weights is not None else None,
-        )
-
-    def log(self) -> Sample:
-        """Returns a new sample with log-transformed values and NumberUnit."""
-        check_positivity(self._values, self._subject)
-        log_values = np.log(self._values)
-        return _build_sample(
-            log_values,
-            NUMBER_UNIT,
-            self._subject,
-            self._is_weighted,
-            self._total_weight,
-            self._weighted_size,
-            self._weights.copy() if self._weights is not None else None,
-        )
-
-    def _with_subject(self, subject: str) -> Sample:
-        """Returns a view of the sample with a different subject label."""
-        return _build_sample(
-            self._values,
-            self._unit,
-            subject,
-            self._is_weighted,
-            self._total_weight,
-            self._weighted_size,
-            self._weights,
         )
 
     # --- Comparison and display ---
 
-    __hash__ = None  # mutable numpy arrays inside
+    # Unhashable by design: __eq__ compares float array contents element-wise,
+    # and no hash can be both cheap and consistent with that value equality.
+    __hash__ = None
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Sample):
@@ -165,7 +142,6 @@ class Sample:
         return _build_sample(
             self._values * scalar,
             self._unit,
-            self._subject,
             self._is_weighted,
             self._total_weight,
             self._weighted_size,
@@ -181,7 +157,6 @@ class Sample:
         return _build_sample(
             self._values + scalar,
             self._unit,
-            self._subject,
             self._is_weighted,
             self._total_weight,
             self._weighted_size,
@@ -200,7 +175,6 @@ class Sample:
 def _build_sample(  # noqa: PLR0913
     values: NDArray,
     unit: MeasurementUnit,
-    subject: str,
     is_weighted: bool,
     total_weight: float,
     weighted_size: float,
@@ -208,14 +182,19 @@ def _build_sample(  # noqa: PLR0913
 ) -> Sample:
     """Module-level factory that bypasses validation (values already checked)."""
     obj = Sample.__new__(Sample)
-    obj._values = values  # noqa: SLF001
+    obj._values = _freeze_array(values)  # noqa: SLF001
     obj._unit = unit  # noqa: SLF001
-    obj._subject = subject  # noqa: SLF001
     obj._is_weighted = is_weighted  # noqa: SLF001
     obj._total_weight = total_weight  # noqa: SLF001
     obj._weighted_size = weighted_size  # noqa: SLF001
-    obj._weights = weights  # noqa: SLF001
+    obj._weights = _freeze_array(weights) if weights is not None else None  # noqa: SLF001
     return obj
+
+
+def _freeze_array(array: NDArray) -> NDArray:
+    """Marks an array as read-only so cached sorted values cannot go stale."""
+    array.setflags(write=False)
+    return array
 
 
 def _check_non_weighted(name: str, s: Sample) -> None:
@@ -241,8 +220,15 @@ def _convert_to_finer(a: Sample, b: Sample) -> tuple[Sample, Sample]:
 
 
 def _prepare_pair(x: Sample, y: Sample) -> tuple[Sample, Sample]:
-    """Prepare two samples: set subjects, check compatibility, convert to finer unit."""
-    x = x._with_subject("x")  # noqa: SLF001
-    y = y._with_subject("y")  # noqa: SLF001
+    """Prepare two samples: check unit compatibility, convert to finer unit.
+
+    The error "subject" (x vs y) is determined positionally by the validating
+    function, not stored on the Sample, so no relabeling happens here.
+
+    When both samples already share a unit, they are returned unchanged, so any
+    warm sorted-value caches survive. When a unit conversion is required,
+    ``convert_to`` builds a fresh Sample with scaled values; that new Sample
+    starts with a cold cache (the sorted view is NOT carried over).
+    """
     _check_compatible_units(x, y)
     return _convert_to_finer(x, y)

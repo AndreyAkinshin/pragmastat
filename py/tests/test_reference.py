@@ -23,6 +23,7 @@ from pragmastat import (
     compare1,
     compare2,
     disparity,
+    disparity_bounds,
     ratio,
     ratio_bounds,
     shift,
@@ -37,23 +38,50 @@ from pragmastat.estimators import (
 from pragmastat.estimators import (
     _avg_spread_bounds as avg_spread_bounds,
 )
-from pragmastat.estimators import (
-    disparity_bounds,
-)
 from pragmastat.pairwise_margin import pairwise_margin
 from pragmastat.signed_rank_margin import signed_rank_margin
 
 
-def _assert_violation(err: AssumptionError, expected: dict, context: str = "") -> None:
-    """Assert that an AssumptionError has the expected violation fields."""
+def _assert_violation(err: AssumptionError, expected: dict, context: str = "", skip_subject: bool = False) -> None:
+    """Assert that an AssumptionError has the expected violation fields.
+
+    ``skip_subject`` is used on the Sample entry point for two-sample estimators:
+    Sample construction validates the y argument under subject "x" (construction
+    can't know it's arg2), so for such fixtures we compare only the error id there.
+    The raw path still asserts subject fully.
+
+    This is analogous to the Rust ``is_sample_creation && expected.subject == "y"``
+    predicate, but Python additionally gates on ``id == "validity"`` (see
+    :func:`_is_sample_construction_y_error`): only sample-CONSTRUCTION validity
+    errors mislabel the y argument's subject. Post-construction errors
+    (positivity/sparity) are raised by the ESTIMATOR, which reports "y"
+    positionally, so their subject IS asserted even on the Sample path.
+    """
     assert err.violation is not None, f"Expected violation, got message-only error: {err}{context}"
     assert err.violation.id.value == expected["id"], (
         f"Expected error id '{expected['id']}', got '{err.violation.id.value}'{context}"
     )
-    if "subject" in expected:
+    if "subject" in expected and not skip_subject:
         assert err.violation.subject == expected["subject"], (
             f"Expected error subject '{expected['subject']}', got '{err.violation.subject}'{context}"
         )
+
+
+def _is_sample_construction_y_error(test_case: dict) -> bool:
+    """Whether the Sample path can't report the expected subject for this fixture.
+
+    The subject is skipped on the Sample entry point ONLY for sample-CONSTRUCTION
+    validity errors that expect subject "y": construction validates the y argument
+    under subject "x" (it can't know it's arg2), so the "y" subject is unreachable
+    there. This mirrors C#/Kotlin/R/TS, which gate on the validity id specifically.
+
+    Positivity/sparity errors on the y argument are raised by the ESTIMATOR (not
+    construction), which reports "y" positionally, so their subject IS asserted.
+    """
+    if "expected_error" not in test_case:
+        return False
+    expected = test_case["expected_error"]
+    return expected.get("subject") == "y" and expected.get("id") == "validity"
 
 
 def find_repo_root():
@@ -66,48 +94,144 @@ def find_repo_root():
     raise RuntimeError("Could not find repository root (CITATION.cff not found)")
 
 
-def _call_estimator(estimator_func, test_case, is_two_sample):
-    """Build Sample objects and call the estimator."""
-    sx = Sample(test_case["input"]["x"])
-    if is_two_sample:
-        sy = Sample(test_case["input"]["y"], _subject="y")
-        return estimator_func(sx, sy)
-    return estimator_func(sx)
-
-
-def _call_two_sample_bounds(bounds_func, test_case, **kwargs):
-    """Build Sample objects and call a two-sample bounds estimator."""
-    sx = Sample(test_case["input"]["x"])
-    sy = Sample(test_case["input"]["y"], _subject="y")
-    return bounds_func(sx, sy, test_case["input"]["misrate"], **kwargs)
-
-
-def run_reference_tests(estimator_name, estimator_func, is_two_sample=False):
-    """Run reference tests against JSON data files."""
+def _load_fixtures(estimator_name):
+    """Load all JSON fixtures for an estimator/bounds directory (shared loader)."""
     repo_root = find_repo_root()
     test_data_dir = repo_root / "tests" / estimator_name
 
     json_files = list(test_data_dir.glob("*.json"))
     assert len(json_files) > 0, f"No JSON test files found in {test_data_dir}"
 
+    fixtures = []
     for json_file in json_files:
         with open(json_file, "r") as f:
-            test_case = json.load(f)
+            fixtures.append((json_file.name, json.load(f)))
+    return fixtures
 
-        if "expected_error" in test_case:
-            expected_error = test_case["expected_error"]
-            with pytest.raises(AssumptionError) as exc_info:
-                _call_estimator(estimator_func, test_case, is_two_sample)
-            _assert_violation(exc_info.value, expected_error, f" for {json_file.name}")
-            continue
 
-        expected_output = test_case["output"]
-        actual_result = _call_estimator(estimator_func, test_case, is_two_sample)
-        actual_output = actual_result.value
+# --- Entry-point builders -----------------------------------------------------
+#
+# Each estimator is exercised through BOTH the Sample API and the raw
+# native-array API. An "entry" is a (label, callable) pair; the callable takes a
+# test case and returns the comparable result (a number, or a (lower, upper)
+# tuple for bounds). This catches Sample-adapter bugs that a raw-only harness
+# would miss.
 
-        assert abs(actual_output - expected_output) < 1e-9, (
-            f"Failed for test file: {json_file.name}, expected: {expected_output}, got: {actual_output}"
-        )
+
+def _normalize_point(result):
+    """Reduce a point-estimator result to a plain float (Measurement or float)."""
+    return result.value if isinstance(result, Measurement) else result
+
+
+def _point_entries(estimator_func, is_two_sample):
+    """Build [(label, call_fn), ...] for a one/two-sample point estimator."""
+
+    def sample_call(test_case):
+        sx = Sample(test_case["input"]["x"])
+        if is_two_sample:
+            sy = Sample(test_case["input"]["y"])
+            return _normalize_point(estimator_func(sx, sy))
+        return _normalize_point(estimator_func(sx))
+
+    def raw_call(test_case):
+        x = test_case["input"]["x"]
+        if is_two_sample:
+            y = test_case["input"]["y"]
+            return _normalize_point(estimator_func(x, y))
+        return _normalize_point(estimator_func(x))
+
+    return [("raw", raw_call), ("sample", sample_call)]
+
+
+def _sample_only_point_entries(estimator_func, is_two_sample):
+    """Internal estimators (avg_spread) have no raw entry; run Sample-only."""
+    return _point_entries(estimator_func, is_two_sample)[1:]
+
+
+def run_reference_tests(estimator_name, entries):
+    """Run point-estimator reference tests through every provided entry point."""
+    for fixture_name, test_case in _load_fixtures(estimator_name):
+        is_y_validity_error = _is_sample_construction_y_error(test_case)
+        for label, call_fn in entries:
+            context = f" for {fixture_name} [{label}]"
+            if "expected_error" in test_case:
+                expected_error = test_case["expected_error"]
+                skip_subject = label == "sample" and is_y_validity_error
+                with pytest.raises(AssumptionError) as exc_info:
+                    call_fn(test_case)
+                _assert_violation(exc_info.value, expected_error, context, skip_subject=skip_subject)
+                continue
+
+            expected_output = test_case["output"]
+            actual_output = call_fn(test_case)
+            assert abs(actual_output - expected_output) < 1e-9, (
+                f"Failed{context}: expected: {expected_output}, got: {actual_output}"
+            )
+
+
+def _bounds_entries(bounds_func, is_two_sample, **call_kwargs):
+    """Build [(label, call_fn), ...] for a one/two-sample bounds estimator.
+
+    The call_fn returns a (lower, upper) tuple from the resulting Bounds.
+    """
+
+    def sample_call(test_case):
+        misrate = test_case["input"]["misrate"]
+        sx = Sample(test_case["input"]["x"])
+        if is_two_sample:
+            sy = Sample(test_case["input"]["y"])
+            result = bounds_func(sx, sy, misrate, **call_kwargs)
+        else:
+            result = bounds_func(sx, misrate, **call_kwargs)
+        return result.lower, result.upper
+
+    def raw_call(test_case):
+        misrate = test_case["input"]["misrate"]
+        x = test_case["input"]["x"]
+        if is_two_sample:
+            y = test_case["input"]["y"]
+            result = bounds_func(x, y, misrate, **call_kwargs)
+        else:
+            result = bounds_func(x, misrate, **call_kwargs)
+        return result.lower, result.upper
+
+    return [("raw", raw_call), ("sample", sample_call)]
+
+
+def _sample_only_bounds_entries(bounds_func, is_two_sample, **call_kwargs):
+    """Internal bounds (avg_spread_bounds) have no raw entry; run Sample-only."""
+    return _bounds_entries(bounds_func, is_two_sample, **call_kwargs)[1:]
+
+
+def run_bounds_reference_tests(estimator_name, entries_builder):
+    """Run bounds reference tests through every provided entry point.
+
+    ``entries_builder(seed)`` returns the list of entry points; seed is read
+    per-fixture (some bounds estimators accept a deterministic seed).
+    """
+    for fixture_name, test_case in _load_fixtures(estimator_name):
+        seed = test_case["input"].get("seed")
+        entries = entries_builder(seed)
+        is_y_validity_error = _is_sample_construction_y_error(test_case)
+        for label, call_fn in entries:
+            context = f" for {fixture_name} [{label}]"
+            if "expected_error" in test_case:
+                expected_error = test_case["expected_error"]
+                skip_subject = label == "sample" and is_y_validity_error
+                with pytest.raises(AssumptionError) as exc_info:
+                    call_fn(test_case)
+                _assert_violation(exc_info.value, expected_error, context, skip_subject=skip_subject)
+                continue
+
+            expected_lower = test_case["output"]["lower"]
+            expected_upper = test_case["output"]["upper"]
+            actual_lower, actual_upper = call_fn(test_case)
+            assert abs(actual_lower - expected_lower) < 1e-9, (
+                f"Failed lower bound{context}: expected: {expected_lower}, got: {actual_lower}"
+            )
+            assert abs(actual_upper - expected_upper) < 1e-9, (
+                f"Failed upper bound{context}: expected: {expected_upper}, got: {actual_upper}"
+            )
 
 
 def _parse_sample_values(raw_values):
@@ -153,22 +277,23 @@ def run_distribution_tests(dist_name, dist_factory):
 
 class TestReference:
     def test_center_reference(self):
-        run_reference_tests("center", center)
+        run_reference_tests("center", _point_entries(center, is_two_sample=False))
 
     def test_spread_reference(self):
-        run_reference_tests("spread", spread)
+        run_reference_tests("spread", _point_entries(spread, is_two_sample=False))
 
     def test_shift_reference(self):
-        run_reference_tests("shift", shift, is_two_sample=True)
+        run_reference_tests("shift", _point_entries(shift, is_two_sample=True))
 
     def test_ratio_reference(self):
-        run_reference_tests("ratio", ratio, is_two_sample=True)
+        run_reference_tests("ratio", _point_entries(ratio, is_two_sample=True))
 
     def test_avg_spread_reference(self):
-        run_reference_tests("avg-spread", avg_spread, is_two_sample=True)
+        # avg_spread is an internal estimator with no public raw entry: Sample-only.
+        run_reference_tests("avg-spread", _sample_only_point_entries(avg_spread, is_two_sample=True))
 
     def test_disparity_reference(self):
-        run_reference_tests("disparity", disparity, is_two_sample=True)
+        run_reference_tests("disparity", _point_entries(disparity, is_two_sample=True))
 
     def test_pairwise_margin_reference(self):
         """Test pairwise_margin against reference data."""
@@ -202,79 +327,16 @@ class TestReference:
             )
 
     def test_shift_bounds_reference(self):
-        """Test shift_bounds against reference data."""
-        repo_root = find_repo_root()
-        test_data_dir = repo_root / "tests" / "shift-bounds"
-
-        json_files = list(test_data_dir.glob("*.json"))
-        assert len(json_files) > 0, f"No JSON test files found in {test_data_dir}"
-
-        for json_file in json_files:
-            with open(json_file, "r") as f:
-                test_case = json.load(f)
-
-            input_x = test_case["input"]["x"]
-            input_y = test_case["input"]["y"]
-            misrate = test_case["input"]["misrate"]
-
-            # Handle error test cases
-            if "expected_error" in test_case:
-                expected_error = test_case["expected_error"]
-                with pytest.raises(AssumptionError) as exc_info:
-                    _call_two_sample_bounds(shift_bounds, test_case)
-                _assert_violation(exc_info.value, expected_error, f" for {json_file.name}")
-                continue
-
-            expected_lower = test_case["output"]["lower"]
-            expected_upper = test_case["output"]["upper"]
-
-            result = shift_bounds(Sample(input_x), Sample(input_y, _subject="y"), misrate)
-
-            assert abs(result.lower - expected_lower) < 1e-9, (
-                f"Failed lower bound for test file: {json_file.name}, expected: {expected_lower}, got: {result.lower}"
-            )
-            assert abs(result.upper - expected_upper) < 1e-9, (
-                f"Failed upper bound for test file: {json_file.name}, expected: {expected_upper}, got: {result.upper}"
-            )
+        run_bounds_reference_tests(
+            "shift-bounds",
+            lambda _seed: _bounds_entries(shift_bounds, is_two_sample=True),
+        )
 
     def test_ratio_bounds_reference(self):
-        """Test ratio_bounds against reference data."""
-        repo_root = find_repo_root()
-        test_data_dir = repo_root / "tests" / "ratio-bounds"
-
-        if not test_data_dir.exists():
-            pytest.skip("ratio-bounds test data directory not found")
-
-        json_files = list(test_data_dir.glob("*.json"))
-        assert len(json_files) > 0, f"No JSON test files found in {test_data_dir}"
-
-        for json_file in json_files:
-            with open(json_file, "r") as f:
-                test_case = json.load(f)
-
-            input_x = test_case["input"]["x"]
-            input_y = test_case["input"]["y"]
-            misrate = test_case["input"]["misrate"]
-
-            # Handle error test cases
-            if "expected_error" in test_case:
-                expected_error = test_case["expected_error"]
-                with pytest.raises(AssumptionError) as exc_info:
-                    _call_two_sample_bounds(ratio_bounds, test_case)
-                _assert_violation(exc_info.value, expected_error, f" for {json_file.name}")
-                continue
-
-            expected_lower = test_case["output"]["lower"]
-            expected_upper = test_case["output"]["upper"]
-
-            result = ratio_bounds(Sample(input_x), Sample(input_y, _subject="y"), misrate)
-
-            assert abs(result.lower - expected_lower) < 1e-9, (
-                f"Failed lower bound for test file: {json_file.name}, expected: {expected_lower}, got: {result.lower}"
-            )
-            assert abs(result.upper - expected_upper) < 1e-9, (
-                f"Failed upper bound for test file: {json_file.name}, expected: {expected_upper}, got: {result.upper}"
-            )
+        run_bounds_reference_tests(
+            "ratio-bounds",
+            lambda _seed: _bounds_entries(ratio_bounds, is_two_sample=True),
+        )
 
     def test_rng_uniform_reference(self):
         """Test Rng uniform_float() against reference data."""
@@ -542,155 +604,35 @@ class TestReference:
             )
 
     def test_center_bounds_reference(self):
-        """Test center_bounds against reference data."""
-        repo_root = find_repo_root()
-        test_data_dir = repo_root / "tests" / "center-bounds"
-
-        json_files = list(test_data_dir.glob("*.json"))
-        assert len(json_files) > 0, f"No JSON test files found in {test_data_dir}"
-
-        for json_file in json_files:
-            with open(json_file, "r") as f:
-                test_case = json.load(f)
-
-            input_x = test_case["input"]["x"]
-            misrate = test_case["input"]["misrate"]
-
-            # Handle error test cases
-            if "expected_error" in test_case:
-                expected_error = test_case["expected_error"]
-                with pytest.raises(AssumptionError) as exc_info:
-                    center_bounds(Sample(input_x), misrate)
-                _assert_violation(exc_info.value, expected_error, f" for {json_file.name}")
-                continue
-
-            expected_lower = test_case["output"]["lower"]
-            expected_upper = test_case["output"]["upper"]
-
-            result = center_bounds(Sample(input_x), misrate)
-
-            assert abs(result.lower - expected_lower) < 1e-9, (
-                f"Failed lower bound for test file: {json_file.name}, expected: {expected_lower}, got: {result.lower}"
-            )
-            assert abs(result.upper - expected_upper) < 1e-9, (
-                f"Failed upper bound for test file: {json_file.name}, expected: {expected_upper}, got: {result.upper}"
-            )
+        run_bounds_reference_tests(
+            "center-bounds",
+            lambda _seed: _bounds_entries(center_bounds, is_two_sample=False),
+        )
 
     def test_spread_bounds_reference(self):
-        """Test spread_bounds against reference data."""
-        repo_root = find_repo_root()
-        test_data_dir = repo_root / "tests" / "spread-bounds"
-
-        json_files = list(test_data_dir.glob("*.json"))
-        assert len(json_files) > 0, f"No JSON test files found in {test_data_dir}"
-
-        for json_file in json_files:
-            with open(json_file, "r") as f:
-                test_case = json.load(f)
-
-            input_x = test_case["input"]["x"]
-            misrate = test_case["input"]["misrate"]
-            seed = test_case["input"].get("seed")
-
-            # Handle error test cases
-            if "expected_error" in test_case:
-                expected_error = test_case["expected_error"]
-                with pytest.raises(AssumptionError) as exc_info:
-                    spread_bounds(Sample(input_x), misrate, seed=seed)
-                _assert_violation(exc_info.value, expected_error, f" for {json_file.name}")
-                continue
-
-            expected_lower = test_case["output"]["lower"]
-            expected_upper = test_case["output"]["upper"]
-
-            result = spread_bounds(Sample(input_x), misrate, seed=seed)
-
-            assert abs(result.lower - expected_lower) < 1e-9, (
-                f"Failed lower bound for test file: {json_file.name}, expected: {expected_lower}, got: {result.lower}"
-            )
-            assert abs(result.upper - expected_upper) < 1e-9, (
-                f"Failed upper bound for test file: {json_file.name}, expected: {expected_upper}, got: {result.upper}"
-            )
+        run_bounds_reference_tests(
+            "spread-bounds",
+            lambda seed: _bounds_entries(spread_bounds, is_two_sample=False, seed=seed),
+        )
 
     def test_avg_spread_bounds_reference(self):
-        """Test avg_spread_bounds against reference data."""
+        # avg_spread_bounds is internal (no public raw entry): Sample-only.
         repo_root = find_repo_root()
-        test_data_dir = repo_root / "tests" / "avg-spread-bounds"
-
-        if not test_data_dir.exists():
+        if not (repo_root / "tests" / "avg-spread-bounds").exists():
             pytest.skip("avg-spread-bounds test data directory not found")
-
-        json_files = list(test_data_dir.glob("*.json"))
-        assert len(json_files) > 0, f"No JSON test files found in {test_data_dir}"
-
-        for json_file in json_files:
-            with open(json_file, "r") as f:
-                test_case = json.load(f)
-
-            input_x = test_case["input"]["x"]
-            input_y = test_case["input"]["y"]
-            misrate = test_case["input"]["misrate"]
-            seed = test_case["input"].get("seed")
-
-            # Handle error test cases
-            if "expected_error" in test_case:
-                expected_error = test_case["expected_error"]
-                with pytest.raises(AssumptionError) as exc_info:
-                    _call_two_sample_bounds(avg_spread_bounds, test_case, seed=seed)
-                _assert_violation(exc_info.value, expected_error, f" for {json_file.name}")
-                continue
-
-            expected_lower = test_case["output"]["lower"]
-            expected_upper = test_case["output"]["upper"]
-
-            result = avg_spread_bounds(Sample(input_x), Sample(input_y, _subject="y"), misrate, seed=seed)
-
-            assert abs(result.lower - expected_lower) < 1e-9, (
-                f"Failed lower bound for test file: {json_file.name}, expected: {expected_lower}, got: {result.lower}"
-            )
-            assert abs(result.upper - expected_upper) < 1e-9, (
-                f"Failed upper bound for test file: {json_file.name}, expected: {expected_upper}, got: {result.upper}"
-            )
+        run_bounds_reference_tests(
+            "avg-spread-bounds",
+            lambda seed: _sample_only_bounds_entries(avg_spread_bounds, is_two_sample=True, seed=seed),
+        )
 
     def test_disparity_bounds_reference(self):
-        """Test disparity_bounds against reference data."""
         repo_root = find_repo_root()
-        test_data_dir = repo_root / "tests" / "disparity-bounds"
-
-        if not test_data_dir.exists():
+        if not (repo_root / "tests" / "disparity-bounds").exists():
             pytest.skip("disparity-bounds test data directory not found")
-
-        json_files = list(test_data_dir.glob("*.json"))
-        assert len(json_files) > 0, f"No JSON test files found in {test_data_dir}"
-
-        for json_file in json_files:
-            with open(json_file, "r") as f:
-                test_case = json.load(f)
-
-            input_x = test_case["input"]["x"]
-            input_y = test_case["input"]["y"]
-            misrate = test_case["input"]["misrate"]
-            seed = test_case["input"].get("seed")
-
-            # Handle error test cases
-            if "expected_error" in test_case:
-                expected_error = test_case["expected_error"]
-                with pytest.raises(AssumptionError) as exc_info:
-                    _call_two_sample_bounds(disparity_bounds, test_case, seed=seed)
-                _assert_violation(exc_info.value, expected_error, f" for {json_file.name}")
-                continue
-
-            expected_lower = test_case["output"]["lower"]
-            expected_upper = test_case["output"]["upper"]
-
-            result = disparity_bounds(Sample(input_x), Sample(input_y, _subject="y"), misrate, seed=seed)
-
-            assert abs(result.lower - expected_lower) < 1e-9, (
-                f"Failed lower bound for test file: {json_file.name}, expected: {expected_lower}, got: {result.lower}"
-            )
-            assert abs(result.upper - expected_upper) < 1e-9, (
-                f"Failed upper bound for test file: {json_file.name}, expected: {expected_upper}, got: {result.upper}"
-            )
+        run_bounds_reference_tests(
+            "disparity-bounds",
+            lambda seed: _bounds_entries(disparity_bounds, is_two_sample=True, seed=seed),
+        )
 
 
 class TestSampleConstruction:
@@ -781,6 +723,163 @@ class TestUnitPropagation:
         s = Sample([1, 2, 3], weights=[0.5, 0.3, 0.2])
         with pytest.raises(AssumptionError, match="weighted samples are not supported"):
             center(s)
+
+
+class TestBoundsUnitReattachment:
+    """Bounds estimators re-attach the correct unit on the Sample path and stay
+    unitless (NUMBER_UNIT) on the raw native-array path.
+
+    Sample-path units propagate as:
+      - center_bounds / spread_bounds -> x.unit
+      - shift_bounds                  -> finer(x, y)
+      - ratio_bounds                  -> RATIO_UNIT
+      - disparity_bounds              -> DISPARITY_UNIT
+
+    A custom non-default unit (seconds/milliseconds) is used throughout so these
+    assertions fail if an implementation hardcodes NUMBER_UNIT instead of
+    propagating; the shift case pairs two different units to pin the actual
+    finer(x, y) selection.
+    """
+
+    SEC = MeasurementUnit("s", "Time", "s", "Second", 1_000_000_000)
+    MS = MeasurementUnit("ms", "Time", "ms", "Millisecond", 1_000_000)
+
+    MISRATE = 0.3
+    SEED = "bounds-unit"
+    # Strictly positive so ratio is defined; 8 elements is large enough for the
+    # 0.3 misrate used by every bounds estimator here (incl. disparity, which
+    # splits its budget across shift and avg-spread sub-bounds).
+    X = [5.0, 1.0, 8.0, 3.0, 2.0, 7.0, 4.0, 6.0]
+    Y = [12.0, 9.0, 15.0, 10.0, 13.0, 11.0, 16.0, 14.0]
+
+    # --- Sample path: ratio/disparity re-attach their dedicated units ---
+
+    def test_ratio_bounds_sample_unit_is_ratio(self):
+        sx = Sample(self.X, unit=self.SEC)
+        sy = Sample(self.Y, unit=self.SEC)
+        assert ratio_bounds(sx, sy, self.MISRATE).unit == RATIO_UNIT
+
+    def test_disparity_bounds_sample_unit_is_disparity(self):
+        sx = Sample(self.X, unit=self.SEC)
+        sy = Sample(self.Y, unit=self.SEC)
+        assert disparity_bounds(sx, sy, self.MISRATE, seed=self.SEED).unit == DISPARITY_UNIT
+
+    # --- Sample path: center/spread propagate x.unit, shift the finer(x, y) ---
+
+    def test_center_bounds_sample_unit_is_x_unit(self):
+        sx = Sample(self.X, unit=self.SEC)
+        assert center_bounds(sx, self.MISRATE).unit == self.SEC
+
+    def test_spread_bounds_sample_unit_is_x_unit(self):
+        sx = Sample(self.X, unit=self.SEC)
+        assert spread_bounds(sx, self.MISRATE, seed=self.SEED).unit == self.SEC
+
+    def test_shift_bounds_sample_unit_is_finer(self):
+        # ms (base_units=1e6) is finer than s (base_units=1e9).
+        sx = Sample(self.X, unit=self.SEC)
+        sy = Sample(self.Y, unit=self.MS)
+        assert shift_bounds(sx, sy, self.MISRATE).unit == self.MS
+
+    # --- Raw (native array) bounds are unitless (NUMBER_UNIT) ---
+
+    def test_raw_center_bounds_is_unitless(self):
+        assert center_bounds(self.X, self.MISRATE).unit == NUMBER_UNIT
+
+    def test_raw_spread_bounds_is_unitless(self):
+        assert spread_bounds(self.X, self.MISRATE, seed=self.SEED).unit == NUMBER_UNIT
+
+    def test_raw_shift_bounds_is_unitless(self):
+        assert shift_bounds(self.X, self.Y, self.MISRATE).unit == NUMBER_UNIT
+
+    def test_raw_ratio_bounds_is_unitless(self):
+        assert ratio_bounds(self.X, self.Y, self.MISRATE).unit == NUMBER_UNIT
+
+    def test_raw_disparity_bounds_is_unitless(self):
+        assert disparity_bounds(self.X, self.Y, self.MISRATE, seed=self.SEED).unit == NUMBER_UNIT
+
+
+class TestRawBoundsMisrateDomain:
+    """The raw (native-array, float misrate) bounds API rejects out-of-[0,1] and
+    NaN misrate with a domain/misrate AssumptionError.
+
+    Covered directly via the raw path (Python has no Probability wrapper; every
+    entry point takes a plain float misrate) for a one-sample (center_bounds) and
+    a two-sample (shift_bounds) estimator.
+    """
+
+    X = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0]
+    Y = [9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0]
+    BAD_MISRATES = [2.0, -0.1, float("nan")]
+
+    def _assert_domain_misrate(self, err: AssumptionError) -> None:
+        assert err.violation is not None
+        assert err.violation.id.value == "domain"
+        assert err.violation.subject == "misrate"
+
+    @pytest.mark.parametrize("misrate", BAD_MISRATES)
+    def test_center_bounds_raw_rejects(self, misrate):
+        with pytest.raises(AssumptionError) as exc_info:
+            center_bounds(self.X, misrate)
+        self._assert_domain_misrate(exc_info.value)
+
+    @pytest.mark.parametrize("misrate", BAD_MISRATES)
+    def test_shift_bounds_raw_rejects(self, misrate):
+        with pytest.raises(AssumptionError) as exc_info:
+            shift_bounds(self.X, self.Y, misrate)
+        self._assert_domain_misrate(exc_info.value)
+
+
+class TestRatioBoundsErrorPriority:
+    """The order in which ratio_bounds reports assumption errors: the misrate
+    domain check runs before the positivity check on the values, so an invalid
+    misrate wins even when x is also non-positive.
+
+    Both entry points are exercised; positivity is raised by the estimator (not
+    Sample construction), so the Sample path reports the true subject too.
+    """
+
+    @staticmethod
+    def _assert_violation(err: AssumptionError, id_: str, subject: str, context: str) -> None:
+        assert err.violation is not None, f"Expected violation, got message-only error: {err}{context}"
+        assert err.violation.id.value == id_, context
+        assert err.violation.subject == subject, context
+
+    @pytest.mark.parametrize("entry", ["raw", "sample"])
+    def test_domain_before_positivity(self, entry):
+        # misrate=-0.1 is invalid (domain), x=-1 is non-positive (positivity):
+        # domain(misrate) must take priority over positivity(x).
+        x, y = [-1.0], [1.0]
+        if entry == "sample":
+            x, y = Sample(x), Sample(y)
+        with pytest.raises(AssumptionError) as exc_info:
+            ratio_bounds(x, y, -0.1)
+        self._assert_violation(exc_info.value, "domain", "misrate", f" [{entry}]")
+
+    @pytest.mark.parametrize("entry", ["raw", "sample"])
+    def test_positivity_when_misrate_valid(self, entry):
+        # Valid misrate but non-positive x -> positivity(x).
+        x, y = [-1.0, -2.0, -3.0], [1.0, 2.0, 3.0]
+        if entry == "sample":
+            x, y = Sample(x), Sample(y)
+        with pytest.raises(AssumptionError) as exc_info:
+            ratio_bounds(x, y, 0.5)
+        self._assert_violation(exc_info.value, "positivity", "x", f" [{entry}]")
+
+
+class TestCenterMidpointSymmetry:
+    """The n==2 center midpoint must be order-symmetric (the 0.5*a+0.5*b fix).
+
+    assume_sorted=True is required so the midpoint sees the raw order (the
+    normalizing sort would otherwise hide the asymmetry). The OLD a+(b-a)*0.5
+    formula yields -3.4000000000000004 for the reversed order; the fixed formula
+    must produce the EXACT same bits for both orders.
+    """
+
+    def test_center_n2_midpoint_order_symmetric(self):
+        forward = center([-5.0, -1.8], assume_sorted=True)
+        reversed_ = center([-1.8, -5.0], assume_sorted=True)
+        assert forward == reversed_  # exact bit equality, not approximate
+        assert forward == -3.4
 
 
 class TestCompare1:
@@ -888,19 +987,24 @@ class TestCompare2:
             # Handle error test cases
             if "expected_error" in test_case:
                 expected_error = test_case["expected_error"]
-                # Sample creation itself may raise AssumptionError (e.g., empty x or y)
+                # Sample creation itself may raise a validity AssumptionError (empty/NaN
+                # x or y). Construction reports the y argument under subject "x" (it can't
+                # know it's arg2), so only for construction *validity* errors expecting "y"
+                # do we assert id only; post-construction errors (sparity/...) report "y"
+                # positionally and are asserted in full.
+                skip_subject = _is_sample_construction_y_error(test_case)
                 with pytest.raises(AssumptionError) as exc_info:  # noqa: PT012
                     sx = Sample(x_values)
-                    sy = Sample(y_values, _subject="y")
+                    sy = Sample(y_values)
                     compare2(sx, sy, thresholds, seed=seed)
-                _assert_violation(exc_info.value, expected_error, f" for {json_file.name}")
+                _assert_violation(exc_info.value, expected_error, f" for {json_file.name}", skip_subject=skip_subject)
                 continue
 
             # Normal test case
             expected_projections = test_case["output"]["projections"]
 
             sx = Sample(x_values)
-            sy = Sample(y_values, _subject="y")
+            sy = Sample(y_values)
             projections = compare2(sx, sy, thresholds, seed=seed)
 
             assert len(projections) == len(expected_projections), (
@@ -926,7 +1030,7 @@ class TestCompare2:
         ms = MeasurementUnit("ms", "Time", "ms", "Millisecond", 1_000_000)
         ns = MeasurementUnit("ns", "Time", "ns", "Nanosecond", 1)
         sx = Sample(list(range(1, 31)), unit=ms)
-        sy = Sample([value * 1_000_000 for value in range(21, 51)], unit=ns, _subject="y")
+        sy = Sample([value * 1_000_000 for value in range(21, 51)], unit=ns)
         thresholds = [Threshold(Metric.SHIFT, Measurement(-14, ms), 0.05)]
 
         [projection] = compare2(sx, sy, thresholds)

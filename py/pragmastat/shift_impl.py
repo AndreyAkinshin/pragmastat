@@ -1,4 +1,4 @@
-"""Fast O((m+n) log L) implementation of the Shift estimator.
+"""O((m+n) log L) implementation of the Shift estimator.
 
 Computes quantiles of all pairwise differences without materializing them.
 Uses binary search in value space with two-pointer counting.
@@ -19,8 +19,9 @@ except ImportError:
 
 
 def _midpoint(a: float, b: float) -> float:
-    """Compute numerically stable midpoint."""
-    return a + (b - a) * 0.5
+    # Overflow-safe, order-symmetric midpoint: 0.5*a + 0.5*b
+    # (halve before summing; never overflows; operand order is irrelevant).
+    return 0.5 * a + 0.5 * b
 
 
 def _count_and_neighbors(x: List[float], y: List[float], threshold: float) -> tuple[int, float, float]:
@@ -139,7 +140,7 @@ def _shift_impl_python(
     assume_sorted: bool = False,
 ) -> Union[float, List[float]]:
     """
-    Pure Python implementation of fast shift estimator.
+    Pure Python implementation of shift estimator.
 
     Computes quantiles of all pairwise differences {x_i - y_j} efficiently.
 
@@ -241,12 +242,11 @@ def _shift_impl(
     """
     if _HAS_C_EXTENSION:
         # Convert to numpy arrays and use C implementation
-        # Note: C extension always sorts internally for safety
         x_arr = np.asarray(x, dtype=np.float64)
         y_arr = np.asarray(y, dtype=np.float64)
         return_single = isinstance(p, (float, int))
         p_arr = np.array([p] if return_single else p, dtype=np.float64)
-        result = _shift_impl_c.shift_impl_c(x_arr, y_arr, p_arr)
+        result = _shift_impl_c.shift_impl_c(x_arr, y_arr, p_arr, int(assume_sorted))
         return float(result[0]) if return_single else result.tolist()
     # Fall back to pure Python implementation
     return _shift_impl_python(x, y, p, assume_sorted)

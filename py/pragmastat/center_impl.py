@@ -1,4 +1,4 @@
-"""Fast O(n log n) implementation of the Center (Hodges-Lehmann) estimator.
+"""O(n log n) implementation of the Center (Hodges-Lehmann) estimator.
 
 Based on Monahan's Algorithm 616 (1984).
 """
@@ -38,9 +38,9 @@ def _derive_seed(values: List[float]) -> int:
     return hash_val
 
 
-def _center_impl_python(values: List[float]) -> float:
+def _center_impl_python(values: List[float], assume_sorted: bool = False) -> float:
     """
-    Pure Python implementation of fast center estimator.
+    Pure Python implementation of center estimator.
 
     Compute the median of all pairwise averages (xi + xj)/2 efficiently.
 
@@ -49,6 +49,7 @@ def _center_impl_python(values: List[float]) -> float:
 
     Args:
         values: A list of numeric values
+        assume_sorted: If True, skip internal sorting (caller guarantees sorted input)
 
     Returns:
         The center estimate (Hodges-Lehmann estimator)
@@ -66,8 +67,8 @@ def _center_impl_python(values: List[float]) -> float:
     # Create deterministic RNG from input values
     rng = Rng(_derive_seed(values))
 
-    # Sort the values
-    sorted_values = sorted(values)
+    # Sort the values (skip if caller guarantees sorted input)
+    sorted_values = values if assume_sorted else sorted(values)
 
     # Calculate target median rank(s) among all pairwise sums
     total_pairs = n * (n + 1) // 2
@@ -83,7 +84,19 @@ def _center_impl_python(values: List[float]) -> float:
     active_set_size = total_pairs
     previous_count = 0
 
-    while True:
+    # Bound the selection loop. On valid sorted input the Monahan selection
+    # converges in O(log n) iterations; this cap is far higher than ever
+    # needed for sorted input but guarantees termination on misuse (e.g.,
+    # assume_sorted=True on UNSORTED input, which is undefined behavior and
+    # would otherwise spin forever). The cap scales with n so large valid
+    # inputs are never starved. We also track no-progress (stall) on the
+    # active set to bail out deterministically.
+    BASE_ITERATIONS = 256
+    max_iterations = BASE_ITERATIONS + 4 * n
+    prev_active_set_size = -1
+    stall_count = 0
+    MAX_STALL = 8
+    for _ in range(max_iterations):
         # === PARTITION STEP ===
         # Count pairwise sums less than current pivot
         count_below_pivot = 0
@@ -175,6 +188,18 @@ def _center_impl_python(values: List[float]) -> float:
         # Recalculate active set size
         active_set_size = sum(max(0, right_bounds[i] - left_bounds[i] + 1) for i in range(n))
 
+        # Stall detection: on valid sorted input the active set strictly
+        # shrinks toward the target. If it fails to shrink for several
+        # consecutive iterations, the input is pathological (e.g.,
+        # assume_sorted=True on unsorted data) and we bail deterministically.
+        if 0 <= prev_active_set_size <= active_set_size:
+            stall_count += 1
+            if stall_count >= MAX_STALL:
+                raise RuntimeError("Convergence failure (pathological input)")
+        else:
+            stall_count = 0
+        prev_active_set_size = active_set_size
+
         # Choose next pivot
         if active_set_size > 2:
             # Use randomized row median strategy
@@ -215,8 +240,13 @@ def _center_impl_python(values: List[float]) -> float:
             if min_remaining_sum == max_remaining_sum:
                 return pivot / 2
 
+    # The selection loop did not converge within the iteration cap. This only
+    # happens on pathological input (e.g. assume_sorted=True misused on unsorted
+    # data). Raise a deterministic error instead of looping forever.
+    raise RuntimeError("Convergence failure (pathological input)")
 
-def _center_impl(values) -> float:
+
+def _center_impl(values, assume_sorted: bool = False) -> float:
     """
     Compute the median of all pairwise averages (xi + xj)/2 efficiently.
 
@@ -228,14 +258,15 @@ def _center_impl(values) -> float:
 
     Args:
         values: A list or numpy array of numeric values
+        assume_sorted: If True, skip internal sorting (caller guarantees sorted input)
 
     Returns:
         The center estimate (Hodges-Lehmann estimator)
     """
     if _HAS_C_EXTENSION:
         arr = np.asarray(values, dtype=np.float64)
-        return _center_impl_c.center_impl_c(arr)
+        return _center_impl_c.center_impl_c(arr, int(assume_sorted))
     # Pure Python fallback requires a list
     if not isinstance(values, list):
         values = list(values)
-    return _center_impl_python(values)
+    return _center_impl_python(values, assume_sorted)

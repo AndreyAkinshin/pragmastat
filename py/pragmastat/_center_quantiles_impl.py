@@ -1,4 +1,4 @@
-"""Fast algorithm for finding quantiles of pairwise averages (x[i] + x[j])/2.
+"""Algorithm for finding quantiles of pairwise averages (x[i] + x[j])/2.
 
 Uses binary search with counting function to find exact quantiles in O(n log(range)) time.
 """

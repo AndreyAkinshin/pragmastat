@@ -43,14 +43,15 @@ static long long next_index(long long limit_exclusive) {
 }
 
 /*
- * Fast O(n log n) implementation of the Spread (Shamos) estimator
+ * O(n log n) implementation of the Spread (Shamos) estimator
  * Computes the median of all pairwise absolute differences efficiently
  */
 static PyObject* spread_impl_c(PyObject* self, PyObject* args) {
     PyArrayObject *values_array;
+    int assume_sorted = 0;
 
-    // Parse input
-    if (!PyArg_ParseTuple(args, "O!", &PyArray_Type, &values_array)) {
+    // Parse input: array and optional assume_sorted flag
+    if (!PyArg_ParseTuple(args, "O!|i", &PyArray_Type, &values_array, &assume_sorted)) {
         return NULL;
     }
 
@@ -71,17 +72,25 @@ static PyObject* spread_impl_c(PyObject* self, PyObject* args) {
         return PyFloat_FromDouble(fabs(v1 - v0));
     }
 
-    // Allocate and sort working copy
-    double *a = (double*)malloc(n * sizeof(double));
-    if (!a) {
-        PyErr_NoMemory();
-        return NULL;
+    // Use input directly when sorted; otherwise sort a copy
+    double *a;
+    int allocated_a = 0;
+    if (assume_sorted && PyArray_IS_C_CONTIGUOUS(values_array)) {
+        a = (double*)PyArray_DATA(values_array);
+    } else {
+        a = (double*)malloc(n * sizeof(double));
+        if (!a) {
+            PyErr_NoMemory();
+            return NULL;
+        }
+        allocated_a = 1;
+        for (npy_intp i = 0; i < n; i++) {
+            a[i] = *(double*)PyArray_GETPTR1(values_array, i);
+        }
+        if (!assume_sorted) {
+            qsort(a, n, sizeof(double), compare_doubles);
+        }
     }
-
-    for (npy_intp i = 0; i < n; i++) {
-        a[i] = *(double*)PyArray_GETPTR1(values_array, i);
-    }
-    qsort(a, n, sizeof(double), compare_doubles);
 
     // Total number of pairwise differences with i < j
     long long N = ((long long)n * (n - 1)) / 2;
@@ -94,7 +103,7 @@ static PyObject* spread_impl_c(PyObject* self, PyObject* args) {
     long long *row_counts = (long long*)malloc(n * sizeof(long long));
 
     if (!L || !R_bounds || !row_counts) {
-        free(a);
+        if (allocated_a) free(a);
         free(L);
         free(R_bounds);
         free(row_counts);
@@ -125,7 +134,21 @@ static PyObject* spread_impl_c(PyObject* self, PyObject* args) {
     double result_value = 0.0;
     int converged = 0;
 
-    while (1) {
+    // Bound the selection loop. On valid sorted input the Monahan-style
+    // selection converges in O(log n) iterations; this cap is far higher than
+    // ever needed for sorted input but guarantees termination on misuse (e.g.,
+    // assume_sorted=True on UNSORTED input, which is undefined behavior and
+    // would otherwise loop forever and wedge the process: an unkillable
+    // infinite loop inside the C extension). The cap scales with n so large
+    // valid inputs are never starved. We also track no-progress (stall) on the
+    // active set to bail out deterministically. Mirrors the center cap
+    // (256 + 4 * n).
+    const long long base_iterations = 256;
+    long long max_iterations = base_iterations + 4 * (long long)n;
+    long long prev_active_size = -1;
+    int stall_count = 0;
+    const int max_stall = 8;
+    for (long long iter = 0; iter < max_iterations; iter++) {
         // === PARTITION: count how many differences are < pivot ===
         long long count_below = 0;
         double largest_below = -INFINITY;
@@ -244,6 +267,21 @@ static PyObject* spread_impl_c(PyObject* self, PyObject* args) {
             }
         }
 
+        // Stall detection: on valid sorted input the active set strictly
+        // shrinks toward the target. If it fails to shrink for several
+        // consecutive iterations, the input is pathological (e.g.,
+        // assume_sorted=True on unsorted data) and we bail deterministically;
+        // the shared error path below reports the convergence failure.
+        if (active_size >= prev_active_size && prev_active_size >= 0) {
+            stall_count++;
+            if (stall_count >= max_stall) {
+                break;
+            }
+        } else {
+            stall_count = 0;
+        }
+        prev_active_size = active_size;
+
         if (active_size <= 2) {
             // Few candidates left: return midrange of remaining
             double min_rem = INFINITY;
@@ -300,13 +338,13 @@ static PyObject* spread_impl_c(PyObject* self, PyObject* args) {
     }
 
     // Cleanup
-    free(a);
+    if (allocated_a) free(a);
     free(L);
     free(R_bounds);
     free(row_counts);
 
     if (!converged) {
-        PyErr_SetString(PyExc_RuntimeError, "Algorithm failed to converge");
+        PyErr_SetString(PyExc_RuntimeError, "Convergence failure (pathological input)");
         return NULL;
     }
 
@@ -314,8 +352,8 @@ static PyObject* spread_impl_c(PyObject* self, PyObject* args) {
 }
 
 // Method definitions
-static PyMethodDef FastSpreadMethods[] = {
-    {"spread_impl_c", spread_impl_c, METH_VARARGS, "Fast spread estimator in C"},
+static PyMethodDef SpreadImplMethods[] = {
+    {"spread_impl_c", spread_impl_c, METH_VARARGS, "Spread estimator in C"},
     {NULL, NULL, 0, NULL}
 };
 
@@ -323,9 +361,9 @@ static PyMethodDef FastSpreadMethods[] = {
 static struct PyModuleDef spread_impl_module = {
     PyModuleDef_HEAD_INIT,
     "_spread_impl_c",
-    "Fast spread estimator C extension",
+    "Spread estimator C extension",
     -1,
-    FastSpreadMethods
+    SpreadImplMethods
 };
 
 // Module initialization

@@ -16,9 +16,10 @@ static int compare_doubles(const void *a, const void *b) {
     return 0;
 }
 
-// Numerically stable midpoint
+// Overflow-safe, order-symmetric midpoint: 0.5*a + 0.5*b
+// (halve before summing; never overflows; operand order is irrelevant).
 static double midpoint(double a, double b) {
-    return a + (b - a) * 0.5;
+    return 0.5 * a + 0.5 * b;
 }
 
 // Two-pointer algorithm to count pairs where x[i] - y[j] <= threshold
@@ -133,15 +134,17 @@ static double select_kth_pairwise_diff(
 }
 
 /*
- * Fast O((m+n) log L) implementation of the Shift estimator
+ * O((m+n) log L) implementation of the Shift estimator
  * Computes quantiles of all pairwise differences without materializing them
  */
 static PyObject* shift_impl_c(PyObject* self, PyObject* args) {
     PyArrayObject *x_array, *y_array, *p_array;
+    int assume_sorted = 0;
 
-    // Parse input
-    if (!PyArg_ParseTuple(args, "O!O!O!", &PyArray_Type, &x_array,
-                          &PyArray_Type, &y_array, &PyArray_Type, &p_array)) {
+    // Parse input: arrays and optional assume_sorted flag
+    if (!PyArg_ParseTuple(args, "O!O!O!|i", &PyArray_Type, &x_array,
+                          &PyArray_Type, &y_array, &PyArray_Type, &p_array,
+                          &assume_sorted)) {
         return NULL;
     }
 
@@ -191,8 +194,12 @@ static PyObject* shift_impl_c(PyObject* self, PyObject* args) {
         }
     }
 
-    qsort(xs, m, sizeof(double), compare_doubles);
-    qsort(ys, n, sizeof(double), compare_doubles);
+    // Skip sorting when the caller guarantees the inputs are already sorted
+    // (still copied above for indexed access, so the source is never mutated).
+    if (!assume_sorted) {
+        qsort(xs, m, sizeof(double), compare_doubles);
+        qsort(ys, n, sizeof(double), compare_doubles);
+    }
 
     long long total = (long long)m * n;
 
@@ -204,7 +211,11 @@ static PyObject* shift_impl_c(PyObject* self, PyObject* args) {
         double weight;
     } InterpolationParam;
 
-    InterpolationParam *interp_params = (InterpolationParam*)malloc(num_quantiles * sizeof(InterpolationParam));
+    // Guard against malloc(0): when num_quantiles == 0, malloc(0) MAY return
+    // NULL, which would spuriously trip the PyErr_NoMemory() path below. Request
+    // at least one element so a valid (possibly unused) pointer is returned.
+    InterpolationParam *interp_params =
+        (InterpolationParam*)malloc((num_quantiles > 0 ? num_quantiles : 1) * sizeof(InterpolationParam));
     if (!interp_params) {
         free(xs);
         free(ys);
@@ -213,7 +224,9 @@ static PyObject* shift_impl_c(PyObject* self, PyObject* args) {
     }
 
     // Use a simple array to track unique ranks (could be optimized with hash set)
-    long long *required_ranks = (long long*)malloc(2 * num_quantiles * sizeof(long long));
+    // Same malloc(0) guard as interp_params above (2 ranks per quantile).
+    long long *required_ranks =
+        (long long*)malloc((num_quantiles > 0 ? 2 * num_quantiles : 1) * sizeof(long long));
     int num_required = 0;
 
     if (!required_ranks) {
@@ -263,8 +276,9 @@ static PyObject* shift_impl_c(PyObject* self, PyObject* args) {
         if (!found_upper && upper_rank != lower_rank) required_ranks[num_required++] = upper_rank;
     }
 
-    // Compute rank values
-    double *rank_values = (double*)malloc(num_required * sizeof(double));
+    // Compute rank values (same malloc(0) guard: num_required is 0 when there
+    // are no quantiles).
+    double *rank_values = (double*)malloc((num_required > 0 ? num_required : 1) * sizeof(double));
     if (!rank_values) {
         free(xs);
         free(ys);
@@ -333,8 +347,8 @@ static PyObject* shift_impl_c(PyObject* self, PyObject* args) {
 }
 
 // Method definitions
-static PyMethodDef FastShiftMethods[] = {
-    {"shift_impl_c", shift_impl_c, METH_VARARGS, "Fast shift estimator in C"},
+static PyMethodDef ShiftImplMethods[] = {
+    {"shift_impl_c", shift_impl_c, METH_VARARGS, "Shift estimator in C"},
     {NULL, NULL, 0, NULL}
 };
 
@@ -342,9 +356,9 @@ static PyMethodDef FastShiftMethods[] = {
 static struct PyModuleDef shift_impl_module = {
     PyModuleDef_HEAD_INIT,
     "_shift_impl_c",
-    "Fast shift estimator C extension",
+    "Shift estimator C extension",
     -1,
-    FastShiftMethods
+    ShiftImplMethods
 };
 
 // Module initialization

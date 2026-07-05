@@ -1,4 +1,4 @@
-"""Fast O(n log n) implementation of the Spread (Shamos) estimator.
+"""O(n log n) implementation of the Spread (Shamos) estimator.
 
 Based on Monahan's selection algorithm adapted for pairwise differences.
 """
@@ -38,9 +38,9 @@ def _derive_seed(values: List[float]) -> int:
     return hash_val
 
 
-def _spread_impl_python(values: List[float]) -> float:
+def _spread_impl_python(values: List[float], assume_sorted: bool = False) -> float:
     """
-    Pure Python implementation of fast spread estimator.
+    Pure Python implementation of spread estimator.
 
     Compute the median of all pairwise absolute differences |xi - xj| efficiently.
 
@@ -49,6 +49,7 @@ def _spread_impl_python(values: List[float]) -> float:
 
     Args:
         values: A list of numeric values
+        assume_sorted: If True, skip internal sorting (caller guarantees sorted input)
 
     Returns:
         The spread estimate (Shamos estimator)
@@ -62,8 +63,8 @@ def _spread_impl_python(values: List[float]) -> float:
     # Create deterministic RNG from input values
     rng = Rng(_derive_seed(values))
 
-    # Sort the values
-    a = sorted(values)
+    # Sort the values (skip if caller guarantees sorted input)
+    a = values if assume_sorted else sorted(values)
 
     # Total number of pairwise differences with i < j
     N = n * (n - 1) // 2
@@ -86,7 +87,20 @@ def _spread_impl_python(values: List[float]) -> float:
     pivot = a[n // 2] - a[(n - 1) // 2]
     prev_count_below = -1
 
-    while True:
+    # Bound the selection loop. On valid sorted input the Monahan-style
+    # selection converges in O(log n) iterations; this cap is far higher than
+    # ever needed for sorted input but guarantees termination on misuse (e.g.,
+    # assume_sorted=True on UNSORTED input, which is undefined behavior and
+    # would otherwise spin forever). The cap scales with n so large valid
+    # inputs are never starved. We also track no-progress (stall) on the
+    # active set to bail out deterministically. Mirrors the center cap
+    # (256 + 4 * n).
+    BASE_ITERATIONS = 256
+    max_iterations = BASE_ITERATIONS + 4 * n
+    prev_active_size = -1
+    stall_count = 0
+    MAX_STALL = 8
+    for _ in range(max_iterations):
         # === PARTITION: count how many differences are < pivot ===
         count_below = 0
         largest_below = float("-inf")
@@ -176,6 +190,18 @@ def _spread_impl_python(values: List[float]) -> float:
         # === CHOOSE NEXT PIVOT FROM ACTIVE SET ===
         active_size = sum(max(0, R[i] - L[i] + 1) for i in range(n - 1) if L[i] <= R[i])
 
+        # Stall detection: on valid sorted input the active set strictly
+        # shrinks toward the target. If it fails to shrink for several
+        # consecutive iterations, the input is pathological (e.g.,
+        # assume_sorted=True on unsorted data) and we bail deterministically.
+        if 0 <= prev_active_size <= active_size:
+            stall_count += 1
+            if stall_count >= MAX_STALL:
+                raise RuntimeError("Convergence failure (pathological input)")
+        else:
+            stall_count = 0
+        prev_active_size = active_size
+
         if active_size <= 2:
             # Few candidates left: return midrange of remaining
             min_rem = float("inf")
@@ -212,8 +238,13 @@ def _spread_impl_python(values: List[float]) -> float:
         col = (L[row] + R[row]) // 2
         pivot = a[col] - a[row]
 
+    # The selection loop did not converge within the iteration cap. This only
+    # happens on pathological input (e.g. assume_sorted=True misused on unsorted
+    # data). Raise a deterministic error instead of looping forever.
+    raise RuntimeError("Convergence failure (pathological input)")
 
-def _spread_impl(values) -> float:
+
+def _spread_impl(values, assume_sorted: bool = False) -> float:
     """
     Compute the median of all pairwise absolute differences |xi - xj| efficiently.
 
@@ -225,14 +256,15 @@ def _spread_impl(values) -> float:
 
     Args:
         values: A list or numpy array of numeric values
+        assume_sorted: If True, skip internal sorting (caller guarantees sorted input)
 
     Returns:
         The spread estimate (Shamos estimator)
     """
     if _HAS_C_EXTENSION:
         arr = np.asarray(values, dtype=np.float64)
-        return _spread_impl_c.spread_impl_c(arr)
+        return _spread_impl_c.spread_impl_c(arr, int(assume_sorted))
     # Pure Python fallback requires a list
     if not isinstance(values, list):
         values = list(values)
-    return _spread_impl_python(values)
+    return _spread_impl_python(values, assume_sorted)
