@@ -20,8 +20,11 @@ mise run cs:gen      # Generate reference test files
 cs/
 ├── Pragmastat/
 │   ├── Algorithms/
-│   │   ├── FastCenter.cs       # O(n log n) Hodges-Lehmann algorithm
-│   │   └── FastShift.cs        # O((m+n) log L) shift quantiles
+│   │   ├── CenterImpl.cs           # O(n log n) Hodges-Lehmann center
+│   │   ├── CenterQuantilesImpl.cs  # Quantiles of pairwise averages via binary search
+│   │   ├── RatioImpl.cs            # Ratio quantiles via log-transform + ShiftImpl
+│   │   ├── ShiftImpl.cs            # O((m+n) log L) shift quantiles
+│   │   └── SpreadImpl.cs           # O(n log n) Shamos spread
 │   ├── Estimators/
 │   │   ├── IOneSampleEstimator.cs
 │   │   ├── ITwoSampleEstimator.cs
@@ -54,24 +57,48 @@ cs/
 
 ## Public API
 
+Each estimator is exposed through two parallel entry points on `Toolkit`:
+(a) the **typed `Sample` API** (unit-aware, returns `Measurement`/`Bounds`), and
+(b) the **raw native-array API** (`double[]`, returns `double`/`Bounds`) with an
+`assumeSorted` flag that skips the internal sort when the caller guarantees the
+input is already sorted ascending. `assumeSorted` is inert on already-sorted
+input; passing `assumeSorted: true` on unsorted input is undefined behavior. For
+the shuffle-based `SpreadBounds`/`DisparityBounds` the disjoint-pair shuffle
+always runs on the passed order (the flag never affects the shuffle); it only
+reaches the order-independent sub-computations, so `SpreadBounds` is effectively
+inert to it while `DisparityBounds` (whose sub-computation embeds `ShiftBounds`)
+can silently differ on unsorted input.
+
 ```csharp
-// Static methods in Toolkit
-Toolkit.Center(x)
-Toolkit.Spread(x)
-Toolkit.Shift(x, y)
-Toolkit.Ratio(x, y)
-Toolkit.Disparity(x, y)
-Toolkit.CenterBounds(x, misrate)
-Toolkit.SpreadBounds(x, misrate)
-Toolkit.ShiftBounds(x, y, misrate)
-Toolkit.RatioBounds(x, y, misrate)
-Toolkit.DisparityBounds(x, y, misrate)
+// (a) Typed Sample API
+Measurement Center(Sample x)
+Measurement Spread(Sample x)
+Measurement Shift(Sample x, Sample y)
+Measurement Ratio(Sample x, Sample y)
+Measurement Disparity(Sample x, Sample y)
+Bounds CenterBounds(Sample x, Probability misrate)
+Bounds SpreadBounds(Sample x, Probability misrate, string seed)
+Bounds ShiftBounds(Sample x, Sample y, Probability misrate)
+Bounds RatioBounds(Sample x, Sample y, Probability misrate)
+Bounds DisparityBounds(Sample x, Sample y, Probability misrate, string seed)
+
+// (b) Raw native-array API (assumeSorted defaults to false)
+double Center(double[] x, bool assumeSorted = false)
+double Spread(double[] x, bool assumeSorted = false)
+double Shift(double[] x, double[] y, bool assumeSorted = false)
+double Ratio(double[] x, double[] y, bool assumeSorted = false)
+double Disparity(double[] x, double[] y, bool assumeSorted = false)
+Bounds CenterBounds(double[] x, double misrate, bool assumeSorted = false)
+Bounds SpreadBounds(double[] x, double misrate, string seed, bool assumeSorted = false)
+Bounds ShiftBounds(double[] x, double[] y, double misrate, bool assumeSorted = false)
+Bounds RatioBounds(double[] x, double[] y, double misrate, bool assumeSorted = false)
+Bounds DisparityBounds(double[] x, double[] y, double misrate, string seed, bool assumeSorted = false)
 ```
 
 ## Testing
 
 - **Reference tests**: Load JSON fixtures from `../tests/` directory via TestGenerator
-- **Test runner**: Uses custom runner in `Pragmastat.Tests`
+- **Test runner**: xunit.v3 (self-executing test project)
 - **Tolerance**: `1e-9` for floating-point comparisons
 
 ```bash
