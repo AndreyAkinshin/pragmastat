@@ -18,7 +18,6 @@ class Sample private constructor(
     val values: List<Double>,
     val weights: List<Double>?,
     val unit: MeasurementUnit,
-    internal val subject: Subject = Subject.X,
 ) {
     /** Number of values in the sample. */
     val size: Int get() = values.size
@@ -63,7 +62,7 @@ class Sample private constructor(
         if (unit == target) return this
         val factor = conversionFactor(unit, target)
         val converted = values.map { it * factor }
-        return Sample(converted, weights?.toList(), target, subject)
+        return Sample(converted, weights?.toList(), target)
     }
 
     /**
@@ -75,26 +74,21 @@ class Sample private constructor(
         val logValues =
             values.map { v ->
                 if (v <= 0.0) {
-                    throw AssumptionException(Violation(AssumptionId.POSITIVITY, subject))
+                    throw AssumptionException(Violation(AssumptionId.POSITIVITY, Subject.X))
                 }
                 ln(v)
             }
-        return Sample(logValues, weights?.toList(), NumberUnit, subject)
-    }
-
-    /** Returns a copy of this sample with a different subject label. */
-    internal fun withSubject(newSubject: Subject): Sample {
-        return Sample(values, weights, unit, newSubject)
+        return Sample(logValues, weights?.toList(), NumberUnit)
     }
 
     /** Returns a new sample with each value multiplied by [scalar]. */
     operator fun times(scalar: Double): Sample {
-        return Sample(values.map { it * scalar }, weights?.toList(), unit, subject)
+        return Sample(values.map { it * scalar }, weights?.toList(), unit)
     }
 
     /** Returns a new sample with [scalar] added to each value. */
     operator fun plus(scalar: Double): Sample {
-        return Sample(values.map { it + scalar }, weights?.toList(), unit, subject)
+        return Sample(values.map { it + scalar }, weights?.toList(), unit)
     }
 
     override fun toString(): String = "Sample(size=$size, unit=${unit.id})"
@@ -113,7 +107,7 @@ class Sample private constructor(
         fun of(
             values: List<Double>,
             unit: MeasurementUnit = NumberUnit,
-        ): Sample = create(values, null, unit, Subject.X)
+        ): Sample = create(values, null, unit)
 
         /**
          * Create a weighted sample.
@@ -125,20 +119,21 @@ class Sample private constructor(
             values: List<Double>,
             weights: List<Double>,
             unit: MeasurementUnit = NumberUnit,
-        ): Sample = create(values, weights, unit, Subject.X)
+        ): Sample = create(values, weights, unit)
 
+        // Construction validity errors are always reported with subject "x":
+        // construction cannot know which argument position the sample will occupy.
         internal fun create(
             values: List<Double>,
             weights: List<Double>?,
             unit: MeasurementUnit,
-            subject: Subject,
         ): Sample {
             if (values.isEmpty()) {
-                throw AssumptionException(Violation(AssumptionId.VALIDITY, subject))
+                throw AssumptionException(Violation(AssumptionId.VALIDITY, Subject.X))
             }
             for (v in values) {
                 if (v.isNaN() || v.isInfinite()) {
-                    throw AssumptionException(Violation(AssumptionId.VALIDITY, subject))
+                    throw AssumptionException(Violation(AssumptionId.VALIDITY, Subject.X))
                 }
             }
             if (weights != null) {
@@ -156,25 +151,26 @@ class Sample private constructor(
                 if (minW < 0.0) throw AssumptionException("all weights must be non-negative")
                 if (totalW < 1e-9) throw AssumptionException("total weight must be positive")
             }
-            return Sample(values.toList(), weights?.toList(), unit, subject)
+            return Sample(values.toList(), weights?.toList(), unit)
         }
 
         // ====================================================================
         // Static estimator methods (delegating to the free functions)
         // ====================================================================
 
+        // These companion methods are thin adapters: they delegate to the single
+        // raw List-based estimator implementations (passing the cached sortedValues
+        // with assumeSorted=true) and attach the appropriate measurement unit.
+
         internal fun center(x: Sample): Measurement {
             checkNonWeighted("x", x)
-            val result = centerImpl(x.values)
+            val result = dev.pragmastat.center(x.sortedValues, assumeSorted = true)
             return Measurement(result, x.unit)
         }
 
         internal fun spread(x: Sample): Measurement {
             checkNonWeighted("x", x)
-            val spreadVal = spreadImpl(x.values)
-            if (spreadVal <= 0.0) {
-                throw AssumptionException(Violation(AssumptionId.SPARITY, x.subject))
-            }
+            val spreadVal = dev.pragmastat.spread(x.sortedValues, assumeSorted = true)
             return Measurement(spreadVal, x.unit)
         }
 
@@ -185,7 +181,7 @@ class Sample private constructor(
             checkNonWeighted("x", x)
             checkNonWeighted("y", y)
             val (cx, cy) = preparePair(x, y)
-            val result = shiftImpl(cx.values, cy.values)[0]
+            val result = dev.pragmastat.shift(cx.sortedValues, cy.sortedValues, assumeSorted = true)
             return Measurement(result, cx.unit)
         }
 
@@ -196,9 +192,7 @@ class Sample private constructor(
             checkNonWeighted("x", x)
             checkNonWeighted("y", y)
             val (cx, cy) = preparePair(x, y)
-            checkPositivity(cx.values, cx.subject)
-            checkPositivity(cy.values, cy.subject)
-            val result = ratioImpl(cx.values, cy.values)[0]
+            val result = dev.pragmastat.ratio(cx.sortedValues, cy.sortedValues, assumeSorted = true)
             return Measurement(result, RatioUnit)
         }
 
@@ -209,19 +203,8 @@ class Sample private constructor(
             checkNonWeighted("x", x)
             checkNonWeighted("y", y)
             val (cx, cy) = preparePair(x, y)
-            val n = cx.size
-            val m = cy.size
-            val spreadX = spreadImpl(cx.values)
-            if (spreadX <= 0.0) {
-                throw AssumptionException(Violation(AssumptionId.SPARITY, cx.subject))
-            }
-            val spreadY = spreadImpl(cy.values)
-            if (spreadY <= 0.0) {
-                throw AssumptionException(Violation(AssumptionId.SPARITY, cy.subject))
-            }
-            val shiftVal = shiftImpl(cx.values, cy.values)[0]
-            val avgSpreadVal = (n * spreadX + m * spreadY) / (n + m).toDouble()
-            return Measurement(shiftVal / avgSpreadVal, DisparityUnit)
+            val result = dev.pragmastat.disparity(cx.sortedValues, cy.sortedValues, assumeSorted = true)
+            return Measurement(result, DisparityUnit)
         }
 
         internal fun centerBounds(
@@ -229,7 +212,8 @@ class Sample private constructor(
             misrate: Double,
         ): Bounds {
             checkNonWeighted("x", x)
-            return dev.pragmastat.centerBounds(x.values, misrate).withUnit(x.unit)
+            return dev.pragmastat.centerBounds(x.sortedValues, misrate, assumeSorted = true)
+                .withUnit(x.unit)
         }
 
         internal fun spreadBounds(
@@ -238,7 +222,13 @@ class Sample private constructor(
             seed: String?,
         ): Bounds {
             checkNonWeighted("x", x)
-            return dev.pragmastat.spreadBounds(x.values, misrate, seed).withUnit(x.unit)
+            // Shuffle runs on the original order; the cached sorted view is sparity-only.
+            return spreadBoundsImpl(
+                x.values,
+                misrate,
+                seed,
+                sortedX = x.sortedValues,
+            ).withUnit(x.unit)
         }
 
         internal fun shiftBounds(
@@ -249,7 +239,8 @@ class Sample private constructor(
             checkNonWeighted("x", x)
             checkNonWeighted("y", y)
             val (cx, cy) = preparePair(x, y)
-            return dev.pragmastat.shiftBounds(cx.values, cy.values, misrate).withUnit(cx.unit)
+            return dev.pragmastat.shiftBounds(cx.sortedValues, cy.sortedValues, misrate, assumeSorted = true)
+                .withUnit(cx.unit)
         }
 
         internal fun ratioBounds(
@@ -260,7 +251,10 @@ class Sample private constructor(
             checkNonWeighted("x", x)
             checkNonWeighted("y", y)
             val (cx, cy) = preparePair(x, y)
-            return dev.pragmastat.ratioBounds(cx.values, cy.values, misrate).withUnit(RatioUnit)
+            // ratioBounds is order-independent and ln is monotonic, so log(sortedValues)
+            // stays sorted — reuse the cached sorted view to skip a re-sort (matches ratio/shiftBounds).
+            return dev.pragmastat.ratioBounds(cx.sortedValues, cy.sortedValues, misrate, assumeSorted = true)
+                .withUnit(RatioUnit)
         }
 
         internal fun disparityBounds(
@@ -272,8 +266,15 @@ class Sample private constructor(
             checkNonWeighted("x", x)
             checkNonWeighted("y", y)
             val (cx, cy) = preparePair(x, y)
-            return dev.pragmastat.disparityBounds(cx.values, cy.values, misrate, seed)
-                .withUnit(DisparityUnit)
+            // Shuffles run on the original order; the cached sorted views are sparity-only.
+            return disparityBoundsImpl(
+                cx.values,
+                cy.values,
+                misrate,
+                seed,
+                sortedX = cx.sortedValues,
+                sortedY = cy.sortedValues,
+            ).withUnit(DisparityUnit)
         }
 
         // ====================================================================
@@ -310,16 +311,20 @@ class Sample private constructor(
             return Pair(a.convertTo(target), b.convertTo(target))
         }
 
-        /** Set subjects, check unit compatibility, convert to finer unit. */
+        /**
+         * Check unit compatibility and convert to the finer unit.
+         *
+         * No subject relabeling: the error subject is supplied positionally by the
+         * raw estimator impls these pairs are passed to. Converting to the finer
+         * unit returns the original samples unchanged when units already match, so
+         * the warm sorted cache is reused across repeated two-sample calls.
+         */
         private fun preparePair(
             x: Sample,
             y: Sample,
         ): Pair<Sample, Sample> {
             checkCompatibleUnits(x, y)
-            return convertToFiner(
-                x.withSubject(Subject.X),
-                y.withSubject(Subject.Y),
-            )
+            return convertToFiner(x, y)
         }
     }
 }
@@ -355,37 +360,37 @@ fun disparity(
 /** Provides distribution-free bounds for center of [x]. */
 fun centerBounds(
     x: Sample,
-    misrate: Double = DEFAULT_MISRATE,
-): Bounds = Sample.centerBounds(x, misrate)
+    misrate: Probability = Probability(DEFAULT_MISRATE),
+): Bounds = Sample.centerBounds(x, misrate.value)
 
 /** Provides distribution-free bounds for spread of [x]. */
 fun spreadBounds(
     x: Sample,
-    misrate: Double = DEFAULT_MISRATE,
+    misrate: Probability = Probability(DEFAULT_MISRATE),
     seed: String? = null,
-): Bounds = Sample.spreadBounds(x, misrate, seed)
+): Bounds = Sample.spreadBounds(x, misrate.value, seed)
 
 /** Provides bounds on shift between [x] and [y]. */
 fun shiftBounds(
     x: Sample,
     y: Sample,
-    misrate: Double = DEFAULT_MISRATE,
-): Bounds = Sample.shiftBounds(x, y, misrate)
+    misrate: Probability = Probability(DEFAULT_MISRATE),
+): Bounds = Sample.shiftBounds(x, y, misrate.value)
 
 /** Provides bounds on ratio between [x] and [y]. */
 fun ratioBounds(
     x: Sample,
     y: Sample,
-    misrate: Double = DEFAULT_MISRATE,
-): Bounds = Sample.ratioBounds(x, y, misrate)
+    misrate: Probability = Probability(DEFAULT_MISRATE),
+): Bounds = Sample.ratioBounds(x, y, misrate.value)
 
 /** Provides bounds on disparity between [x] and [y]. */
 fun disparityBounds(
     x: Sample,
     y: Sample,
-    misrate: Double = DEFAULT_MISRATE,
+    misrate: Probability = Probability(DEFAULT_MISRATE),
     seed: String? = null,
-): Bounds = Sample.disparityBounds(x, y, misrate, seed)
+): Bounds = Sample.disparityBounds(x, y, misrate.value, seed)
 
 /** One-sample confirmatory analysis against practical thresholds. */
 fun Sample.compare1(thresholds: List<Threshold>): List<Projection> = CompareEngine.compare1(this, thresholds, null)

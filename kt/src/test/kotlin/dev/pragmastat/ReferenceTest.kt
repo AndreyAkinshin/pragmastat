@@ -131,8 +131,14 @@ class ReferenceTest {
     private val mapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
     private val epsilon = 1e-9
 
-    /** Create a y-sample with Subject.Y so validation errors report the correct subject. */
-    private fun sampleY(values: List<Double>): Sample = Sample.create(values, null, NumberUnit, Subject.Y)
+    /**
+     * Create the y-argument sample for the Sample-based two-sample path.
+     *
+     * Sample no longer carries a subject: construction always reports subject "x".
+     * For two-sample validity errors whose fixture expects "y", the dual-path test
+     * skips the subject check on the Sample path (see [skipSubject] below).
+     */
+    private fun sampleY(values: List<Double>): Sample = Sample.of(values)
 
     private fun assertClose(
         expected: Double,
@@ -145,21 +151,37 @@ class ReferenceTest {
         )
     }
 
+    /**
+     * Entry points for a one-sample estimator. Each fixture runs through BOTH:
+     *   - "raw": the public native-array (List) API with assumeSorted=false
+     *   - "sample": the Sample-based API
+     * so that Sample-adapter bugs are caught (a past critical bug shipped because
+     * fixtures only ran through the raw path, not Sample).
+     */
+    private data class OneSampleEntry(
+        val estimator: String,
+        val path: String,
+        val func: (List<Double>) -> Double,
+    )
+
     @TestFactory
     fun testOneSampleEstimators(): List<DynamicTest> {
-        val estimators =
-            mapOf<String, (List<Double>) -> Double>(
-                "center" to { x -> center(Sample.of(x)).value },
-                "spread" to { x -> spread(Sample.of(x)).value },
+        val entries =
+            listOf(
+                OneSampleEntry("center", "raw") { x -> center(x) },
+                OneSampleEntry("center", "sample") { x -> center(Sample.of(x)).value },
+                OneSampleEntry("spread", "raw") { x -> spread(x) },
+                OneSampleEntry("spread", "sample") { x -> spread(Sample.of(x)).value },
             )
 
         val tests = mutableListOf<DynamicTest>()
 
-        for ((estimatorName, estimatorFunc) in estimators) {
+        for (entry in entries) {
+            val estimatorName = entry.estimator
             val testDir = File("../tests/$estimatorName")
             if (!testDir.exists() || !testDir.isDirectory) {
                 tests.add(
-                    DynamicTest.dynamicTest("$estimatorName/skip-missing-directory") {
+                    DynamicTest.dynamicTest("$estimatorName/${entry.path}/skip-missing-directory") {
                         Assumptions.assumeTrue(false, "Skipping $estimatorName tests: directory not found")
                     },
                 )
@@ -167,7 +189,7 @@ class ReferenceTest {
             }
 
             testDir.listFiles { _, name -> name.endsWith(".json") }?.forEach { file ->
-                val testName = "$estimatorName/${file.nameWithoutExtension}"
+                val testName = "$estimatorName/${entry.path}/${file.nameWithoutExtension}"
                 tests.add(
                     DynamicTest.dynamicTest(testName) {
                         val testData = mapper.readValue<OneSampleTestData>(file)
@@ -176,7 +198,7 @@ class ReferenceTest {
                         if (testData.expectedError != null) {
                             val exception =
                                 assertThrows<AssumptionException> {
-                                    estimatorFunc(testData.input.x)
+                                    entry.func(testData.input.x)
                                 }
                             assertEquals(
                                 testData.expectedError["id"],
@@ -193,7 +215,7 @@ class ReferenceTest {
                             return@dynamicTest
                         }
 
-                        val result = estimatorFunc(testData.input.x)
+                        val result = entry.func(testData.input.x)
                         assertClose(testData.output!!, result)
                     },
                 )
@@ -203,23 +225,46 @@ class ReferenceTest {
         return tests
     }
 
+    /**
+     * Entry points for a two-sample estimator. Each fixture runs through BOTH the
+     * raw native-array (List) API (assumeSorted=false) and the Sample-based API,
+     * except avg-spread which has no public Sample API (raw-only).
+     *
+     * [isSampleConstruction] marks Sample-path entries: on those, a VALIDITY error
+     * expected with subject "y" is reported by Sample CONSTRUCTION as subject "x"
+     * (construction cannot know the sample is arg2), so the subject check is
+     * skipped on the Sample path for those fixtures (id is still asserted). The raw
+     * path validates positionally and asserts the subject fully.
+     */
+    private data class TwoSampleEntry(
+        val estimator: String,
+        val path: String,
+        val isSampleConstruction: Boolean,
+        val func: (List<Double>, List<Double>) -> Double,
+    )
+
     @TestFactory
     fun testTwoSampleEstimators(): List<DynamicTest> {
-        val estimators =
-            mapOf<String, (List<Double>, List<Double>) -> Double>(
-                "shift" to { x, y -> shift(Sample.of(x), sampleY(y)).value },
-                "ratio" to { x, y -> ratio(Sample.of(x), sampleY(y)).value },
-                "avg-spread" to ::avgSpread,
-                "disparity" to { x, y -> disparity(Sample.of(x), sampleY(y)).value },
+        val entries =
+            listOf(
+                TwoSampleEntry("shift", "raw", false) { x, y -> shift(x, y) },
+                TwoSampleEntry("shift", "sample", true) { x, y -> shift(Sample.of(x), sampleY(y)).value },
+                TwoSampleEntry("ratio", "raw", false) { x, y -> ratio(x, y) },
+                TwoSampleEntry("ratio", "sample", true) { x, y -> ratio(Sample.of(x), sampleY(y)).value },
+                // avg-spread is an internal helper with no public Sample API: raw-only.
+                TwoSampleEntry("avg-spread", "raw", false) { x, y -> avgSpread(x, y) },
+                TwoSampleEntry("disparity", "raw", false) { x, y -> disparity(x, y) },
+                TwoSampleEntry("disparity", "sample", true) { x, y -> disparity(Sample.of(x), sampleY(y)).value },
             )
 
         val tests = mutableListOf<DynamicTest>()
 
-        for ((estimatorName, estimatorFunc) in estimators) {
+        for (entry in entries) {
+            val estimatorName = entry.estimator
             val testDir = File("../tests/$estimatorName")
             if (!testDir.exists() || !testDir.isDirectory) {
                 tests.add(
-                    DynamicTest.dynamicTest("$estimatorName/skip-missing-directory") {
+                    DynamicTest.dynamicTest("$estimatorName/${entry.path}/skip-missing-directory") {
                         Assumptions.assumeTrue(false, "Skipping $estimatorName tests: directory not found")
                     },
                 )
@@ -227,7 +272,7 @@ class ReferenceTest {
             }
 
             testDir.listFiles { _, name -> name.endsWith(".json") }?.forEach { file ->
-                val testName = "$estimatorName/${file.nameWithoutExtension}"
+                val testName = "$estimatorName/${entry.path}/${file.nameWithoutExtension}"
                 tests.add(
                     DynamicTest.dynamicTest(testName) {
                         val testData = mapper.readValue<TwoSampleTestData>(file)
@@ -236,14 +281,21 @@ class ReferenceTest {
                         if (testData.expectedError != null) {
                             val exception =
                                 assertThrows<AssumptionException> {
-                                    estimatorFunc(testData.input.x, testData.input.y)
+                                    entry.func(testData.input.x, testData.input.y)
                                 }
                             assertEquals(
                                 testData.expectedError["id"],
                                 exception.violation!!.id.id,
                                 "Expected error id ${testData.expectedError["id"]}, got ${exception.violation!!.id.id}",
                             )
-                            if (testData.expectedError.containsKey("subject")) {
+                            // KNOWN SUBTLETY: for Sample construction validity errors where the
+                            // fixture expects subject "y", skip the subject check (Sample
+                            // construction may report a fixed subject).
+                            val skipSubject =
+                                entry.isSampleConstruction &&
+                                    testData.expectedError["id"] == AssumptionId.VALIDITY.id &&
+                                    testData.expectedError["subject"] == Subject.Y.id
+                            if (testData.expectedError.containsKey("subject") && !skipSubject) {
                                 assertEquals(
                                     testData.expectedError["subject"],
                                     exception.violation!!.subject.id,
@@ -253,7 +305,7 @@ class ReferenceTest {
                             return@dynamicTest
                         }
 
-                        val result = estimatorFunc(testData.input.x, testData.input.y)
+                        val result = entry.func(testData.input.x, testData.input.y)
                         assertClose(testData.output!!, result)
                     },
                 )
@@ -317,108 +369,123 @@ class ReferenceTest {
         return tests
     }
 
-    @TestFactory
-    fun testShiftBounds(): List<DynamicTest> {
+    /**
+     * Entry points for a two-sample bounds estimator. Each fixture runs through
+     * BOTH the raw native-array (List) API (assumeSorted=false) and the
+     * Sample-based API. [isSampleConstruction] follows the same subtlety as
+     * [TwoSampleEntry].
+     */
+    private data class TwoSampleBoundsEntry(
+        val path: String,
+        val isSampleConstruction: Boolean,
+        val func: (List<Double>, List<Double>, Double) -> Bounds,
+    )
+
+    private fun runTwoSampleBoundsTests(
+        dirName: String,
+        entries: List<TwoSampleBoundsEntry>,
+        parse: (File) -> Pair<BoundsOutput?, Map<String, String>?>,
+        inputOf: (File) -> Pair<List<Double>, List<Double>>,
+        misrateOf: (File) -> Double,
+    ): List<DynamicTest> {
         val tests = mutableListOf<DynamicTest>()
-        val testDir = File("../tests/shift-bounds")
+        val testDir = File("../tests/$dirName")
 
         if (!testDir.exists() || !testDir.isDirectory) {
-            Assumptions.assumeTrue(false, "Skipping shift-bounds tests: directory not found")
+            Assumptions.assumeTrue(false, "Skipping $dirName tests: directory not found")
             return tests
         }
 
-        testDir.listFiles { _, name -> name.endsWith(".json") }?.forEach { file ->
-            val testName = "shift-bounds/${file.nameWithoutExtension}"
-            tests.add(
-                DynamicTest.dynamicTest(testName) {
-                    val testData = mapper.readValue<ShiftBoundsTestData>(file)
+        for (entry in entries) {
+            testDir.listFiles { _, name -> name.endsWith(".json") }?.forEach { file ->
+                val testName = "$dirName/${entry.path}/${file.nameWithoutExtension}"
+                tests.add(
+                    DynamicTest.dynamicTest(testName) {
+                        val (output, expectedError) = parse(file)
+                        val (x, y) = inputOf(file)
+                        val misrate = misrateOf(file)
 
-                    // Handle error test cases
-                    if (testData.expectedError != null) {
-                        val exception =
-                            assertThrows<AssumptionException> {
-                                shiftBounds(Sample.of(testData.input.x), sampleY(testData.input.y), testData.input.misrate)
-                            }
-                        kotlin.test.assertEquals(
-                            testData.expectedError["id"],
-                            exception.violation!!.id.id,
-                            "Expected error id ${testData.expectedError["id"]}, got ${exception.violation!!.id.id}",
-                        )
-                        if (testData.expectedError.containsKey("subject")) {
-                            kotlin.test.assertEquals(
-                                testData.expectedError["subject"],
-                                exception.violation!!.subject.id,
-                                "Expected error subject ${testData.expectedError["subject"]}, got ${exception.violation!!.subject.id}",
+                        if (expectedError != null) {
+                            val exception =
+                                assertThrows<AssumptionException> {
+                                    entry.func(x, y, misrate)
+                                }
+                            assertEquals(
+                                expectedError["id"],
+                                exception.violation!!.id.id,
+                                "Expected error id ${expectedError["id"]}, got ${exception.violation!!.id.id}",
                             )
+                            val skipSubject =
+                                entry.isSampleConstruction &&
+                                    expectedError["id"] == AssumptionId.VALIDITY.id &&
+                                    expectedError["subject"] == Subject.Y.id
+                            if (expectedError.containsKey("subject") && !skipSubject) {
+                                assertEquals(
+                                    expectedError["subject"],
+                                    exception.violation!!.subject.id,
+                                    "Expected error subject ${expectedError["subject"]}, got ${exception.violation!!.subject.id}",
+                                )
+                            }
+                            return@dynamicTest
                         }
-                        return@dynamicTest
-                    }
 
-                    val result =
-                        shiftBounds(
-                            Sample.of(testData.input.x),
-                            sampleY(testData.input.y),
-                            testData.input.misrate,
-                        )
-                    assertClose(testData.output!!.lower, result.lower)
-                    assertClose(testData.output!!.upper, result.upper)
-                },
-            )
+                        val result = entry.func(x, y, misrate)
+                        assertClose(output!!.lower, result.lower)
+                        assertClose(output.upper, result.upper)
+                    },
+                )
+            }
         }
 
         return tests
     }
 
     @TestFactory
-    fun testRatioBounds(): List<DynamicTest> {
-        val tests = mutableListOf<DynamicTest>()
-        val testDir = File("../tests/ratio-bounds")
-
-        if (!testDir.exists() || !testDir.isDirectory) {
-            Assumptions.assumeTrue(false, "Skipping ratio-bounds tests: directory not found")
-            return tests
-        }
-
-        testDir.listFiles { _, name -> name.endsWith(".json") }?.forEach { file ->
-            val testName = "ratio-bounds/${file.nameWithoutExtension}"
-            tests.add(
-                DynamicTest.dynamicTest(testName) {
-                    val testData = mapper.readValue<RatioBoundsTestData>(file)
-
-                    // Handle error test cases
-                    if (testData.expectedError != null) {
-                        val exception =
-                            assertThrows<AssumptionException> {
-                                ratioBounds(Sample.of(testData.input.x), sampleY(testData.input.y), testData.input.misrate)
-                            }
-                        kotlin.test.assertEquals(
-                            testData.expectedError["id"],
-                            exception.violation!!.id.id,
-                            "Expected error id ${testData.expectedError["id"]}, got ${exception.violation!!.id.id}",
-                        )
-                        if (testData.expectedError.containsKey("subject")) {
-                            kotlin.test.assertEquals(
-                                testData.expectedError["subject"],
-                                exception.violation!!.subject.id,
-                                "Expected error subject ${testData.expectedError["subject"]}, got ${exception.violation!!.subject.id}",
-                            )
-                        }
-                        return@dynamicTest
-                    }
-
-                    val result =
-                        ratioBounds(
-                            Sample.of(testData.input.x),
-                            sampleY(testData.input.y),
-                            testData.input.misrate,
-                        )
-                    assertClose(testData.output!!.lower, result.lower)
-                    assertClose(testData.output!!.upper, result.upper)
+    fun testShiftBounds(): List<DynamicTest> {
+        val entries =
+            listOf(
+                TwoSampleBoundsEntry("raw", false) { x, y, misrate -> shiftBounds(x, y, misrate) },
+                TwoSampleBoundsEntry("sample", true) { x, y, misrate ->
+                    shiftBounds(Sample.of(x), sampleY(y), Probability(misrate))
                 },
             )
-        }
+        return runTwoSampleBoundsTests(
+            "shift-bounds",
+            entries,
+            parse = { file ->
+                val td = mapper.readValue<ShiftBoundsTestData>(file)
+                Pair(td.output, td.expectedError)
+            },
+            inputOf = { file ->
+                val td = mapper.readValue<ShiftBoundsTestData>(file)
+                Pair(td.input.x, td.input.y)
+            },
+            misrateOf = { file -> mapper.readValue<ShiftBoundsTestData>(file).input.misrate },
+        )
+    }
 
-        return tests
+    @TestFactory
+    fun testRatioBounds(): List<DynamicTest> {
+        val entries =
+            listOf(
+                TwoSampleBoundsEntry("raw", false) { x, y, misrate -> ratioBounds(x, y, misrate) },
+                TwoSampleBoundsEntry("sample", true) { x, y, misrate ->
+                    ratioBounds(Sample.of(x), sampleY(y), Probability(misrate))
+                },
+            )
+        return runTwoSampleBoundsTests(
+            "ratio-bounds",
+            entries,
+            parse = { file ->
+                val td = mapper.readValue<RatioBoundsTestData>(file)
+                Pair(td.output, td.expectedError)
+            },
+            inputOf = { file ->
+                val td = mapper.readValue<RatioBoundsTestData>(file)
+                Pair(td.input.x, td.input.y)
+            },
+            misrateOf = { file -> mapper.readValue<RatioBoundsTestData>(file).input.misrate },
+        )
     }
 
     // Rng reference tests
@@ -1024,8 +1091,24 @@ class ReferenceTest {
         return tests
     }
 
+    /**
+     * Entry points for a one-sample bounds estimator (misrate + optional seed).
+     * Each fixture runs through BOTH the raw native-array (List) API
+     * (assumeSorted=false) and the Sample-based API.
+     */
+    private data class OneSampleBoundsEntry(
+        val path: String,
+        val func: (List<Double>, Double, String?) -> Bounds,
+    )
+
     @TestFactory
     fun testCenterBounds(): List<DynamicTest> {
+        val entries =
+            listOf(
+                OneSampleBoundsEntry("raw") { x, misrate, _ -> centerBounds(x, misrate) },
+                OneSampleBoundsEntry("sample") { x, misrate, _ -> centerBounds(Sample.of(x), Probability(misrate)) },
+            )
+
         val tests = mutableListOf<DynamicTest>()
         val testDir = File("../tests/center-bounds")
 
@@ -1034,42 +1117,40 @@ class ReferenceTest {
             return tests
         }
 
-        testDir.listFiles { _, name -> name.endsWith(".json") }?.forEach { file ->
-            val testName = "center-bounds/${file.nameWithoutExtension}"
-            tests.add(
-                DynamicTest.dynamicTest(testName) {
-                    val testData = mapper.readValue<CenterBoundsTestData>(file)
+        for (entry in entries) {
+            testDir.listFiles { _, name -> name.endsWith(".json") }?.forEach { file ->
+                val testName = "center-bounds/${entry.path}/${file.nameWithoutExtension}"
+                tests.add(
+                    DynamicTest.dynamicTest(testName) {
+                        val testData = mapper.readValue<CenterBoundsTestData>(file)
 
-                    // Handle error test cases
-                    if (testData.expectedError != null) {
-                        val exception =
-                            assertThrows<AssumptionException> {
-                                centerBounds(Sample.of(testData.input.x), testData.input.misrate)
-                            }
-                        assertEquals(
-                            testData.expectedError["id"],
-                            exception.violation!!.id.id,
-                            "Expected error id ${testData.expectedError["id"]}, got ${exception.violation!!.id.id}",
-                        )
-                        if (testData.expectedError.containsKey("subject")) {
+                        // Handle error test cases
+                        if (testData.expectedError != null) {
+                            val exception =
+                                assertThrows<AssumptionException> {
+                                    entry.func(testData.input.x, testData.input.misrate, null)
+                                }
                             assertEquals(
-                                testData.expectedError["subject"],
-                                exception.violation!!.subject.id,
-                                "Expected error subject ${testData.expectedError["subject"]}, got ${exception.violation!!.subject.id}",
+                                testData.expectedError["id"],
+                                exception.violation!!.id.id,
+                                "Expected error id ${testData.expectedError["id"]}, got ${exception.violation!!.id.id}",
                             )
+                            if (testData.expectedError.containsKey("subject")) {
+                                assertEquals(
+                                    testData.expectedError["subject"],
+                                    exception.violation!!.subject.id,
+                                    "Expected error subject ${testData.expectedError["subject"]}, got ${exception.violation!!.subject.id}",
+                                )
+                            }
+                            return@dynamicTest
                         }
-                        return@dynamicTest
-                    }
 
-                    val result =
-                        centerBounds(
-                            Sample.of(testData.input.x),
-                            testData.input.misrate,
-                        )
-                    assertClose(testData.output!!.lower, result.lower)
-                    assertClose(testData.output!!.upper, result.upper)
-                },
-            )
+                        val result = entry.func(testData.input.x, testData.input.misrate, null)
+                        assertClose(testData.output!!.lower, result.lower)
+                        assertClose(testData.output!!.upper, result.upper)
+                    },
+                )
+            }
         }
 
         return tests
@@ -1077,6 +1158,12 @@ class ReferenceTest {
 
     @TestFactory
     fun testSpreadBounds(): List<DynamicTest> {
+        val entries =
+            listOf(
+                OneSampleBoundsEntry("raw") { x, misrate, seed -> spreadBounds(x, misrate, seed) },
+                OneSampleBoundsEntry("sample") { x, misrate, seed -> spreadBounds(Sample.of(x), Probability(misrate), seed) },
+            )
+
         val tests = mutableListOf<DynamicTest>()
         val testDir = File("../tests/spread-bounds")
 
@@ -1085,42 +1172,39 @@ class ReferenceTest {
             return tests
         }
 
-        testDir.listFiles { _, name -> name.endsWith(".json") }?.forEach { file ->
-            val testName = "spread-bounds/${file.nameWithoutExtension}"
-            tests.add(
-                DynamicTest.dynamicTest(testName) {
-                    val testData = mapper.readValue<SpreadBoundsTestData>(file)
+        for (entry in entries) {
+            testDir.listFiles { _, name -> name.endsWith(".json") }?.forEach { file ->
+                val testName = "spread-bounds/${entry.path}/${file.nameWithoutExtension}"
+                tests.add(
+                    DynamicTest.dynamicTest(testName) {
+                        val testData = mapper.readValue<SpreadBoundsTestData>(file)
 
-                    if (testData.expectedError != null) {
-                        val exception =
-                            assertThrows<AssumptionException> {
-                                spreadBounds(Sample.of(testData.input.x), testData.input.misrate, testData.input.seed)
-                            }
-                        assertEquals(
-                            testData.expectedError["id"],
-                            exception.violation!!.id.id,
-                            "Expected error id ${testData.expectedError["id"]}, got ${exception.violation!!.id.id}",
-                        )
-                        if (testData.expectedError.containsKey("subject")) {
+                        if (testData.expectedError != null) {
+                            val exception =
+                                assertThrows<AssumptionException> {
+                                    entry.func(testData.input.x, testData.input.misrate, testData.input.seed)
+                                }
                             assertEquals(
-                                testData.expectedError["subject"],
-                                exception.violation!!.subject.id,
-                                "Expected error subject ${testData.expectedError["subject"]}, got ${exception.violation!!.subject.id}",
+                                testData.expectedError["id"],
+                                exception.violation!!.id.id,
+                                "Expected error id ${testData.expectedError["id"]}, got ${exception.violation!!.id.id}",
                             )
+                            if (testData.expectedError.containsKey("subject")) {
+                                assertEquals(
+                                    testData.expectedError["subject"],
+                                    exception.violation!!.subject.id,
+                                    "Expected error subject ${testData.expectedError["subject"]}, got ${exception.violation!!.subject.id}",
+                                )
+                            }
+                            return@dynamicTest
                         }
-                        return@dynamicTest
-                    }
 
-                    val result =
-                        spreadBounds(
-                            Sample.of(testData.input.x),
-                            testData.input.misrate,
-                            testData.input.seed,
-                        )
-                    assertClose(testData.output!!.lower, result.lower)
-                    assertClose(testData.output!!.upper, result.upper)
-                },
-            )
+                        val result = entry.func(testData.input.x, testData.input.misrate, testData.input.seed)
+                        assertClose(testData.output!!.lower, result.lower)
+                        assertClose(testData.output!!.upper, result.upper)
+                    },
+                )
+            }
         }
 
         return tests
@@ -1178,8 +1262,29 @@ class ReferenceTest {
         return tests
     }
 
+    /**
+     * Entry points for a two-sample bounds estimator with a seed (disparity).
+     * Each fixture runs through BOTH the raw native-array (List) API
+     * (assumeSorted=false) and the Sample-based API.
+     */
+    private data class TwoSampleSeededBoundsEntry(
+        val path: String,
+        val isSampleConstruction: Boolean,
+        val func: (List<Double>, List<Double>, Double, String?) -> Bounds,
+    )
+
     @TestFactory
     fun testDisparityBounds(): List<DynamicTest> {
+        val entries =
+            listOf(
+                TwoSampleSeededBoundsEntry("raw", false) { x, y, misrate, seed ->
+                    disparityBounds(x, y, misrate, seed)
+                },
+                TwoSampleSeededBoundsEntry("sample", true) { x, y, misrate, seed ->
+                    disparityBounds(Sample.of(x), sampleY(y), Probability(misrate), seed)
+                },
+            )
+
         val tests = mutableListOf<DynamicTest>()
         val testDir = File("../tests/disparity-bounds")
 
@@ -1188,48 +1293,54 @@ class ReferenceTest {
             return tests
         }
 
-        testDir.listFiles { _, name -> name.endsWith(".json") }?.forEach { file ->
-            val testName = "disparity-bounds/${file.nameWithoutExtension}"
-            tests.add(
-                DynamicTest.dynamicTest(testName) {
-                    val testData = mapper.readValue<DisparityBoundsTestData>(file)
+        for (entry in entries) {
+            testDir.listFiles { _, name -> name.endsWith(".json") }?.forEach { file ->
+                val testName = "disparity-bounds/${entry.path}/${file.nameWithoutExtension}"
+                tests.add(
+                    DynamicTest.dynamicTest(testName) {
+                        val testData = mapper.readValue<DisparityBoundsTestData>(file)
 
-                    if (testData.expectedError != null) {
-                        val exception =
-                            assertThrows<AssumptionException> {
-                                disparityBounds(
-                                    Sample.of(testData.input.x),
-                                    sampleY(testData.input.y),
-                                    testData.input.misrate,
-                                    testData.input.seed,
+                        if (testData.expectedError != null) {
+                            val exception =
+                                assertThrows<AssumptionException> {
+                                    entry.func(
+                                        testData.input.x,
+                                        testData.input.y,
+                                        testData.input.misrate,
+                                        testData.input.seed,
+                                    )
+                                }
+                            assertEquals(
+                                testData.expectedError["id"],
+                                exception.violation!!.id.id,
+                                "Expected error id ${testData.expectedError["id"]}, got ${exception.violation!!.id.id}",
+                            )
+                            val skipSubject =
+                                entry.isSampleConstruction &&
+                                    testData.expectedError["id"] == AssumptionId.VALIDITY.id &&
+                                    testData.expectedError["subject"] == Subject.Y.id
+                            if (testData.expectedError.containsKey("subject") && !skipSubject) {
+                                assertEquals(
+                                    testData.expectedError["subject"],
+                                    exception.violation!!.subject.id,
+                                    "Expected error subject ${testData.expectedError["subject"]}, got ${exception.violation!!.subject.id}",
                                 )
                             }
-                        assertEquals(
-                            testData.expectedError["id"],
-                            exception.violation!!.id.id,
-                            "Expected error id ${testData.expectedError["id"]}, got ${exception.violation!!.id.id}",
-                        )
-                        if (testData.expectedError.containsKey("subject")) {
-                            assertEquals(
-                                testData.expectedError["subject"],
-                                exception.violation!!.subject.id,
-                                "Expected error subject ${testData.expectedError["subject"]}, got ${exception.violation!!.subject.id}",
-                            )
+                            return@dynamicTest
                         }
-                        return@dynamicTest
-                    }
 
-                    val result =
-                        disparityBounds(
-                            Sample.of(testData.input.x),
-                            sampleY(testData.input.y),
-                            testData.input.misrate,
-                            testData.input.seed,
-                        )
-                    assertClose(testData.output!!.lower, result.lower)
-                    assertClose(testData.output!!.upper, result.upper)
-                },
-            )
+                        val result =
+                            entry.func(
+                                testData.input.x,
+                                testData.input.y,
+                                testData.input.misrate,
+                                testData.input.seed,
+                            )
+                        assertClose(testData.output!!.lower, result.lower)
+                        assertClose(testData.output!!.upper, result.upper)
+                    },
+                )
+            }
         }
 
         return tests
@@ -1259,7 +1370,7 @@ class ReferenceTest {
                                     "spread" -> Metric.Spread
                                     else -> throw IllegalArgumentException("Unknown metric: ${t.metric}")
                                 }
-                            Threshold(metric, Measurement(t.value), t.misrate)
+                            Threshold(metric, Measurement(t.value), Probability(t.misrate))
                         }
 
                     if (testData.expectedError != null) {
@@ -1334,7 +1445,7 @@ class ReferenceTest {
                                     "disparity" -> Metric.Disparity
                                     else -> throw IllegalArgumentException("Unknown metric: ${t.metric}")
                                 }
-                            Threshold(metric, Measurement(t.value), t.misrate)
+                            Threshold(metric, Measurement(t.value), Probability(t.misrate))
                         }
 
                     if (testData.expectedError != null) {
@@ -1351,7 +1462,14 @@ class ReferenceTest {
                             exception.violation!!.id.id,
                             "Expected error id ${testData.expectedError["id"]}, got ${exception.violation!!.id.id}",
                         )
-                        if (testData.expectedError.containsKey("subject")) {
+                        // compare2 is a Sample-only path: a two-sample VALIDITY error on
+                        // the y argument surfaces from Sample construction as subject "x"
+                        // (construction cannot know it is arg2), so skip the subject check
+                        // for that case (id is still asserted).
+                        val skipSubject =
+                            testData.expectedError["id"] == AssumptionId.VALIDITY.id &&
+                                testData.expectedError["subject"] == Subject.Y.id
+                        if (testData.expectedError.containsKey("subject") && !skipSubject) {
                             assertEquals(
                                 testData.expectedError["subject"],
                                 exception.violation!!.subject.id,

@@ -1,21 +1,33 @@
 package dev.pragmastat
 
 /**
- * Fast O(n log n) implementation of the Center (Hodges-Lehmann) estimator.
+ * Overflow-safe, order-symmetric midpoint: 0.5*a + 0.5*b (halve before summing; never overflows;
+ * operand order is irrelevant).
+ */
+private fun midpoint(
+    a: Double,
+    b: Double,
+): Double = 0.5 * a + 0.5 * b
+
+/**
+ * O(n log n) implementation of the Center (Hodges-Lehmann) estimator.
  * Based on Monahan's Algorithm 616 (1984).
  *
  * Internal implementation - not part of public API.
  */
-internal fun centerImpl(values: List<Double>): Double {
+internal fun centerImpl(
+    values: List<Double>,
+    assumeSorted: Boolean = false,
+): Double {
     val n = values.size
     require(n > 0) { "Input list cannot be empty" }
     if (n == 1) return values[0]
-    if (n == 2) return 0.5 * values[0] + 0.5 * values[1]
+    if (n == 2) return midpoint(values[0], values[1])
 
     // Create deterministic RNG from input values
     val rng = Rng(deriveSeed(values))
 
-    val sortedValues = values.sorted()
+    val sortedValues = if (assumeSorted) values else values.sorted()
     val totalPairs = (n.toLong() * (n + 1)) / 2
     val medianRankLow = (totalPairs + 1) / 2
     val medianRankHigh = (totalPairs + 2) / 2
@@ -27,7 +39,25 @@ internal fun centerImpl(values: List<Double>): Double {
     var activeSetSize = totalPairs
     var previousCount = 0L
 
+    // Bound the selection loop. On valid sorted input the Monahan selection
+    // converges in O(log n) iterations; this cap is far higher than ever
+    // needed for sorted input but guarantees termination on misuse (e.g.,
+    // assumeSorted=true on UNSORTED input, which is undefined behavior and
+    // would otherwise spin forever). The cap scales with n so large valid
+    // inputs are never starved. We also track no-progress (stall) on the
+    // active set to bail out deterministically.
+    val baseIterations = 256
+    val maxIterations = baseIterations + 4 * n
+    var prevActiveSetSize = -1L
+    var stallCount = 0
+    val maxStall = 8
+    var iterations = 0
+
     while (true) {
+        if (iterations++ >= maxIterations) {
+            throw IllegalStateException("Convergence failure (pathological input)")
+        }
+
         var countBelowPivot = 0L
         var currentColumn = n
         val partitionCounts = IntArray(n)
@@ -99,6 +129,20 @@ internal fun centerImpl(values: List<Double>): Double {
 
         previousCount = countBelowPivot
         activeSetSize = (0 until n).sumOf { maxOf(0, rightBounds[it] - leftBounds[it] + 1).toLong() }
+
+        // Stall detection: on valid sorted input the active set strictly
+        // shrinks toward the target. If it fails to shrink for several
+        // consecutive iterations, the input is pathological (e.g.,
+        // assumeSorted=true on unsorted data) and we bail deterministically.
+        if (activeSetSize >= prevActiveSetSize && prevActiveSetSize >= 0) {
+            stallCount++
+            if (stallCount >= maxStall) {
+                throw IllegalStateException("Convergence failure (pathological input)")
+            }
+        } else {
+            stallCount = 0
+        }
+        prevActiveSetSize = activeSetSize
 
         if (activeSetSize > 2) {
             val targetIndex = rng.uniformLong(0, activeSetSize)

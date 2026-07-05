@@ -30,11 +30,11 @@ enum class ComparisonVerdict {
 data class Threshold(
     val metric: Metric,
     val value: Measurement,
-    val misrate: Double,
+    val misrate: Probability,
 ) {
     init {
-        require(misrate.isFinite() && misrate > 0.0 && misrate <= 1.0) {
-            "misrate must be in (0, 1], got $misrate"
+        require(misrate.value > 0.0) {
+            "misrate must be in (0, 1], got ${misrate.value}"
         }
         require(value.value.isFinite()) {
             "threshold value must be finite"
@@ -254,9 +254,9 @@ internal object CompareEngine {
             for ((threshold, inputIndex, normalizedValue) in entries) {
                 val bounds =
                     if (seed != null && spec.seededBounds != null) {
-                        spec.seededBounds(x, y, threshold.misrate, seed)
+                        spec.seededBounds(x, y, threshold.misrate.value, seed)
                     } else {
-                        spec.bounds(x, y, threshold.misrate)
+                        spec.bounds(x, y, threshold.misrate.value)
                     }
                 val verdict = computeVerdict(bounds, normalizedValue)
                 results[inputIndex] = Projection(threshold, estimate, bounds, verdict)

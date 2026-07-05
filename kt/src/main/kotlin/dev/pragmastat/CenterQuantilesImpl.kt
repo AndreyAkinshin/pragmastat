@@ -122,11 +122,11 @@ internal object CenterQuantilesImpl {
             }
 
             if (left < n && left >= i && abs(sorted[left] - threshold) < eps * max(1.0, abs(threshold))) {
-                candidates.add((sorted[i] + sorted[left]) / 2)
+                candidates.add(0.5 * sorted[i] + 0.5 * sorted[left])
             }
 
             if (left > i) {
-                val avgBefore = (sorted[i] + sorted[left - 1]) / 2
+                val avgBefore = 0.5 * sorted[i] + 0.5 * sorted[left - 1]
                 if (avgBefore <= target + eps) {
                     candidates.add(avgBefore)
                 }

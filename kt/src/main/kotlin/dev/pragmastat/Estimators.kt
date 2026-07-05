@@ -1,6 +1,7 @@
 package dev.pragmastat
 
 import kotlin.math.abs
+import kotlin.math.exp
 import kotlin.math.max
 import kotlin.math.min
 
@@ -9,12 +10,26 @@ import kotlin.math.min
  *
  * Calculates the median of all pairwise averages (x[i] + x[j])/2.
  * More robust than the mean and more efficient than the median.
- * Uses fast O(n log n) algorithm.
+ * Uses O(n log n) algorithm.
+ *
+ * This is the raw native-array API: it accepts a plain [List] and returns a
+ * unitless [Double]. The [Sample]-based [center] overload is a thin adapter
+ * over this function.
+ *
+ * @param x Sample data
+ * @param assumeSorted When true, the caller guarantees [x] is already sorted
+ *   ascending, so the internal sort is skipped. Passing true on unsorted input
+ *   is a contract violation (undefined behavior): the result is unspecified,
+ *   but termination is guaranteed (the selection loop is bounded and fails
+ *   with a deterministic convergence error on pathological input).
  */
-internal fun center(x: List<Double>): Double {
+fun center(
+    x: List<Double>,
+    assumeSorted: Boolean = false,
+): Double {
     // Check validity (priority 0)
     checkValidity(x, Subject.X)
-    return centerImpl(x)
+    return centerImpl(x, assumeSorted)
 }
 
 /**
@@ -22,15 +37,29 @@ internal fun center(x: List<Double>): Double {
  *
  * Calculates the median of all pairwise absolute differences |x[i] - x[j]|.
  * More robust than standard deviation and more efficient than MAD.
- * Uses fast O(n log n) algorithm.
+ * Uses O(n log n) algorithm.
+ *
+ * This is the raw native-array API: it accepts a plain [List] and returns a
+ * unitless [Double]. The [Sample]-based [spread] overload is a thin adapter
+ * over this function.
  *
  * Assumptions:
  *   - sparity(x) - sample must be non tie-dominant (Spread > 0)
+ *
+ * @param x Sample data
+ * @param assumeSorted When true, the caller guarantees [x] is already sorted
+ *   ascending, so the internal sort is skipped. Passing true on unsorted input
+ *   is a contract violation (undefined behavior): the result is unspecified,
+ *   but termination is guaranteed (the selection loop is bounded and fails
+ *   with a deterministic convergence error on pathological input).
  */
-internal fun spread(x: List<Double>): Double {
+fun spread(
+    x: List<Double>,
+    assumeSorted: Boolean = false,
+): Double {
     // Check validity (priority 0)
     checkValidity(x, Subject.X)
-    val spreadVal = spreadImpl(x)
+    val spreadVal = spreadImpl(x, assumeSorted)
     if (spreadVal <= 0.0) {
         throw AssumptionException(Violation(AssumptionId.SPARITY, Subject.X))
     }
@@ -42,16 +71,27 @@ internal fun spread(x: List<Double>): Double {
  *
  * Calculates the median of all pairwise differences (x[i] - y[j]).
  * Positive values mean x is typically larger, negative means y is typically larger.
- * Uses fast O((m + n) * log(precision)) algorithm.
+ * Uses O((m + n) * log(precision)) algorithm.
+ *
+ * This is the raw native-array API: it accepts plain [List]s and returns a
+ * unitless [Double]. The [Sample]-based [shift] overload is a thin adapter
+ * over this function.
+ *
+ * @param x First sample
+ * @param y Second sample
+ * @param assumeSorted When true, the caller guarantees both [x] and [y] are
+ *   already sorted ascending, so the internal sorts are skipped. Passing true
+ *   on unsorted input is undefined behavior.
  */
-internal fun shift(
+fun shift(
     x: List<Double>,
     y: List<Double>,
+    assumeSorted: Boolean = false,
 ): Double {
     // Check validity (priority 0)
     checkValidity(x, Subject.X)
     checkValidity(y, Subject.Y)
-    return shiftImpl(x, y)[0]
+    return shiftImpl(x, y, assumeSorted = assumeSorted)[0]
 }
 
 /**
@@ -60,15 +100,26 @@ internal fun shift(
  * Calculates the median of all pairwise ratios (x[i] / y[j]) via log-transformation.
  * Equivalent to: exp(Shift(log(x), log(y)))
  * For example, ratio = 1.2 means x is typically 20% larger than y.
- * Uses fast O((m + n) * log(precision)) algorithm.
+ * Uses O((m + n) * log(precision)) algorithm.
+ *
+ * This is the raw native-array API: it accepts plain [List]s and returns a
+ * unitless [Double]. The [Sample]-based [ratio] overload is a thin adapter
+ * over this function.
  *
  * Assumptions:
  *   - positivity(x) - all values in x must be strictly positive
  *   - positivity(y) - all values in y must be strictly positive
+ *
+ * @param x First sample (must be strictly positive)
+ * @param y Second sample (must be strictly positive)
+ * @param assumeSorted When true, the caller guarantees both [x] and [y] are
+ *   already sorted ascending, so the internal sorts are skipped. Passing true
+ *   on unsorted input is undefined behavior.
  */
-internal fun ratio(
+fun ratio(
     x: List<Double>,
     y: List<Double>,
+    assumeSorted: Boolean = false,
 ): Double {
     // Check validity for x (priority 0, subject x)
     checkValidity(x, Subject.X)
@@ -79,7 +130,7 @@ internal fun ratio(
     // Check positivity for y (priority 1, subject y)
     checkPositivity(y, Subject.Y)
 
-    return ratioImpl(x, y)[0]
+    return ratioImpl(x, y, assumeSorted = assumeSorted)[0]
 }
 
 /**
@@ -90,10 +141,17 @@ internal fun ratio(
  * Assumptions:
  *   - sparity(x) - first sample must be non tie-dominant (Spread > 0)
  *   - sparity(y) - second sample must be non tie-dominant (Spread > 0)
+ *
+ * @param x First sample
+ * @param y Second sample
+ * @param assumeSorted When true, the caller guarantees both [x] and [y] are
+ *   already sorted ascending, so the internal sorts are skipped. Passing true
+ *   on unsorted input is undefined behavior.
  */
 internal fun avgSpread(
     x: List<Double>,
     y: List<Double>,
+    assumeSorted: Boolean = false,
 ): Double {
     // Check validity for x (priority 0, subject x)
     checkValidity(x, Subject.X)
@@ -102,11 +160,11 @@ internal fun avgSpread(
 
     val n = x.size
     val m = y.size
-    val spreadX = spreadImpl(x)
+    val spreadX = spreadImpl(x, assumeSorted)
     if (spreadX <= 0.0) {
         throw AssumptionException(Violation(AssumptionId.SPARITY, Subject.X))
     }
-    val spreadY = spreadImpl(y)
+    val spreadY = spreadImpl(y, assumeSorted)
     if (spreadY <= 0.0) {
         throw AssumptionException(Violation(AssumptionId.SPARITY, Subject.Y))
     }
@@ -119,13 +177,24 @@ internal fun avgSpread(
  *
  * Calculated as Shift / AvgSpread. Robust alternative to Cohen's d.
  *
+ * This is the raw native-array API: it accepts plain [List]s and returns a
+ * unitless [Double]. The [Sample]-based [disparity] overload is a thin adapter
+ * over this function.
+ *
  * Assumptions:
  *   - sparity(x) - first sample must be non tie-dominant (Spread > 0)
  *   - sparity(y) - second sample must be non tie-dominant (Spread > 0)
+ *
+ * @param x First sample
+ * @param y Second sample
+ * @param assumeSorted When true, the caller guarantees both [x] and [y] are
+ *   already sorted ascending, so the internal sorts are skipped. Passing true
+ *   on unsorted input is undefined behavior.
  */
-internal fun disparity(
+fun disparity(
     x: List<Double>,
     y: List<Double>,
+    assumeSorted: Boolean = false,
 ): Double {
     // Check validity for x (priority 0, subject x)
     checkValidity(x, Subject.X)
@@ -135,17 +204,17 @@ internal fun disparity(
     val n = x.size
     val m = y.size
 
-    val spreadX = spreadImpl(x)
+    val spreadX = spreadImpl(x, assumeSorted)
     if (spreadX <= 0.0) {
         throw AssumptionException(Violation(AssumptionId.SPARITY, Subject.X))
     }
-    val spreadY = spreadImpl(y)
+    val spreadY = spreadImpl(y, assumeSorted)
     if (spreadY <= 0.0) {
         throw AssumptionException(Violation(AssumptionId.SPARITY, Subject.Y))
     }
 
     // Calculate shift (we know inputs are valid)
-    val shiftVal = shiftImpl(x, y)[0]
+    val shiftVal = shiftImpl(x, y, assumeSorted = assumeSorted)[0]
     val avgSpreadVal = (n * spreadX + m * spreadY) / (n + m).toDouble()
 
     return shiftVal / avgSpreadVal
@@ -178,19 +247,26 @@ data class Bounds(
  * The misrate represents the probability that the true shift falls outside the computed bounds.
  * This is a pragmatic alternative to traditional confidence intervals for the Hodges-Lehmann estimator.
  *
+ * This is the raw native-array API: it accepts plain [List]s and returns
+ * unitless [Bounds]. The [Sample]-based [shiftBounds] overload is a thin
+ * adapter over this function.
+ *
  * @param x First sample
  * @param y Second sample
  * @param misrate Misclassification rate (probability that true shift falls outside bounds)
+ * @param assumeSorted When true, the caller guarantees both [x] and [y] are
+ *   already sorted ascending, so the internal sorts are skipped. This is an
+ *   order-independent estimator, so the flag only changes the computation path,
+ *   not the result. Passing true on unsorted input is undefined behavior.
  * @return A Bounds object containing the lower and upper bounds
  */
-internal fun shiftBounds(
+fun shiftBounds(
     x: List<Double>,
     y: List<Double>,
     misrate: Double = DEFAULT_MISRATE,
+    assumeSorted: Boolean = false,
 ): Bounds {
-    // Check validity for x
     checkValidity(x, Subject.X)
-    // Check validity for y
     checkValidity(y, Subject.Y)
 
     if (misrate.isNaN() || misrate < 0.0 || misrate > 1.0) {
@@ -205,9 +281,8 @@ internal fun shiftBounds(
         throw AssumptionException(Violation(AssumptionId.DOMAIN, Subject.MISRATE))
     }
 
-    // Sort both arrays
-    val xs = x.sorted()
-    val ys = y.sorted()
+    val xs = if (assumeSorted) x else x.sorted()
+    val ys = if (assumeSorted) y else y.sorted()
 
     val total = n.toLong() * m.toLong()
 
@@ -244,15 +319,25 @@ internal fun shiftBounds(
  *   - positivity(x) - all values in x must be strictly positive
  *   - positivity(y) - all values in y must be strictly positive
  *
+ * This is the raw native-array API: it accepts plain [List]s and returns
+ * unitless [Bounds]. The [Sample]-based [ratioBounds] overload is a thin
+ * adapter over this function.
+ *
  * @param x First sample (must be strictly positive)
  * @param y Second sample (must be strictly positive)
  * @param misrate Misclassification rate (probability that true ratio falls outside bounds)
+ * @param assumeSorted When true, the caller guarantees both [x] and [y] are
+ *   already sorted ascending, so the internal sorts are skipped. Since log is
+ *   monotonic, sorted positive input yields sorted log output. This is an
+ *   order-independent estimator, so the flag only changes the computation path,
+ *   not the result. Passing true on unsorted input is undefined behavior.
  * @return A Bounds object containing the lower and upper bounds
  */
-internal fun ratioBounds(
+fun ratioBounds(
     x: List<Double>,
     y: List<Double>,
     misrate: Double = DEFAULT_MISRATE,
+    assumeSorted: Boolean = false,
 ): Bounds {
     checkValidity(x, Subject.X)
     checkValidity(y, Subject.Y)
@@ -270,13 +355,13 @@ internal fun ratioBounds(
     val logX = log(x, Subject.X)
     val logY = log(y, Subject.Y)
 
-    // Delegate to shiftBounds in log-space
-    val logBounds = shiftBounds(logX, logY, misrate)
+    // log is monotonic: sorted positive input -> sorted log output
+    val logBounds = shiftBounds(logX, logY, misrate, assumeSorted)
 
     // Exp-transform back to ratio-space
     return Bounds(
-        kotlin.math.exp(logBounds.lower),
-        kotlin.math.exp(logBounds.upper),
+        exp(logBounds.lower),
+        exp(logBounds.upper),
     )
 }
 
@@ -287,14 +372,23 @@ internal fun ratioBounds(
  * Uses Wilcoxon signed-rank distribution for exact coverage.
  * Requires weak symmetry assumption: distribution symmetric around unknown center.
  *
+ * This is the raw native-array API: it accepts a plain [List] and returns
+ * unitless [Bounds]. The [Sample]-based [centerBounds] overload is a thin
+ * adapter over this function.
+ *
  * @param x Sample data
  * @param misrate Misclassification rate (probability that true center falls outside bounds)
+ * @param assumeSorted When true, the caller guarantees [x] is already sorted
+ *   ascending, so the internal sort is skipped. This is an order-independent
+ *   estimator, so the flag only changes the computation path, not the result.
+ *   Passing true on unsorted input is undefined behavior.
  * @return A Bounds object containing the lower and upper bounds
  * @throws AssumptionException if sample size < 2 or misrate is below minimum achievable
  */
-internal fun centerBounds(
+fun centerBounds(
     x: List<Double>,
     misrate: Double = DEFAULT_MISRATE,
+    assumeSorted: Boolean = false,
 ): Bounds {
     checkValidity(x, Subject.X)
 
@@ -324,7 +418,7 @@ internal fun centerBounds(
     val kLeft = halfMargin + 1L
     val kRight = totalPairs - halfMargin
 
-    val sorted = x.sorted()
+    val sorted = if (assumeSorted) x else x.sorted()
     val (lo, hi) = CenterQuantilesImpl.bounds(sorted, kLeft, kRight)
 
     return Bounds(lo, hi)
@@ -334,15 +428,51 @@ internal fun centerBounds(
  * Provides distribution-free bounds on the Spread estimator using
  * disjoint pairs with sign-test inversion.
  *
+ * This is the raw native-array API: it accepts a plain [List] and returns
+ * unitless [Bounds]. The [Sample]-based [spreadBounds] overload is a thin
+ * adapter over this function.
+ *
+ * The disjoint-pair shuffle always runs on the passed array's order, so the
+ * shuffle result is independent of [assumeSorted]. [assumeSorted] only skips
+ * the internal sort of the order-independent sparity (spread > 0) check, so the
+ * flag never changes the result. Passing true on unsorted input is undefined
+ * behavior.
+ *
  * @param x Sample data
  * @param misrate Misclassification rate (probability that true spread falls outside bounds)
  * @param seed Optional string seed for deterministic randomization
+ * @param assumeSorted When true, the caller guarantees [x] is already sorted
+ *   ascending, so the sparity check reuses [x] without re-sorting.
  * @return A Bounds object containing the lower and upper bounds
  */
-internal fun spreadBounds(
+fun spreadBounds(
     x: List<Double>,
     misrate: Double = DEFAULT_MISRATE,
     seed: String? = null,
+    assumeSorted: Boolean = false,
+): Bounds =
+    // Map the assumeSorted flag to the optional pre-sorted view: when sorted,
+    // x doubles as the sparity-check view. The shuffle always runs on x.
+    spreadBoundsImpl(
+        x = x,
+        misrate = misrate,
+        seed = seed,
+        sortedX = if (assumeSorted) x else null,
+    )
+
+/**
+ * Single implementation of spread bounds shared by the raw and [Sample]-based
+ * entry points.
+ *
+ * [x] is always in ORIGINAL order (the disjoint-pair shuffle is order-dependent).
+ * [sortedX], when non-null, is a pre-sorted view used only to speed up the
+ * order-independent sparity check. NEVER pass [sortedX] as the shuffle array.
+ */
+internal fun spreadBoundsImpl(
+    x: List<Double>,
+    misrate: Double = DEFAULT_MISRATE,
+    seed: String? = null,
+    sortedX: List<Double>? = null,
 ): Bounds {
     checkValidity(x, Subject.X)
 
@@ -351,18 +481,35 @@ internal fun spreadBounds(
     }
 
     val n = x.size
+    if (n < 2) {
+        throw AssumptionException(Violation(AssumptionId.SPARITY, Subject.X))
+    }
     val m = n / 2
     val minMisrate = minAchievableMisrateOneSample(m)
     if (misrate < minMisrate) {
         throw AssumptionException(Violation(AssumptionId.DOMAIN, Subject.MISRATE))
     }
+    // sortedX (when provided) is a pre-sorted view for the order-independent
+    // sparity check; the shuffle in spreadBoundsInner always runs on original x.
+    val spreadVal = if (sortedX != null) spreadImpl(sortedX, assumeSorted = true) else spreadImpl(x)
+    if (spreadVal <= 0.0) {
+        throw AssumptionException(Violation(AssumptionId.SPARITY, Subject.X))
+    }
 
-    if (x.size < 2) {
-        throw AssumptionException(Violation(AssumptionId.SPARITY, Subject.X))
-    }
-    if (spreadImpl(x) <= 0.0) {
-        throw AssumptionException(Violation(AssumptionId.SPARITY, Subject.X))
-    }
+    return spreadBoundsInner(x, misrate, seed)
+}
+
+/**
+ * Inner computation for spreadBounds: margin calculation, shuffle, diff computation.
+ * Caller is responsible for validity and sparity checks.
+ */
+internal fun spreadBoundsInner(
+    values: List<Double>,
+    misrate: Double,
+    seed: String?,
+): Bounds {
+    val n = values.size
+    val m = n / 2
 
     val rng = if (seed != null) Rng(seed) else Rng()
     val margin = signMarginRandomized(m, misrate, rng)
@@ -378,7 +525,7 @@ internal fun spreadBounds(
         DoubleArray(m) { i ->
             val a = shuffled[2 * i]
             val b = shuffled[2 * i + 1]
-            abs(x[a] - x[b])
+            abs(values[a] - values[b])
         }
     diffs.sort()
 
@@ -386,20 +533,101 @@ internal fun spreadBounds(
 }
 
 /**
+ * Computes disparity bounds from shift and avgSpread bound components.
+ * Handles edge cases where the avgSpread interval crosses zero.
+ */
+internal fun disparityBoundsFromComponents(
+    ls: Double,
+    us: Double,
+    la: Double,
+    ua: Double,
+): Bounds {
+    if (la > 0.0) {
+        val r1 = ls / la
+        val r2 = ls / ua
+        val r3 = us / la
+        val r4 = us / ua
+        val lower = min(min(r1, r2), min(r3, r4))
+        val upper = max(max(r1, r2), max(r3, r4))
+        return Bounds(lower, upper)
+    }
+
+    if (ua <= 0.0) {
+        if (ls == 0.0 && us == 0.0) return Bounds(0.0, 0.0)
+        if (ls >= 0.0) return Bounds(0.0, Double.POSITIVE_INFINITY)
+        if (us <= 0.0) return Bounds(Double.NEGATIVE_INFINITY, 0.0)
+        return Bounds(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY)
+    }
+
+    // Default: ua > 0 && la <= 0
+    if (ls > 0.0) return Bounds(ls / ua, Double.POSITIVE_INFINITY)
+    if (us < 0.0) return Bounds(Double.NEGATIVE_INFINITY, us / ua)
+    if (ls == 0.0 && us == 0.0) return Bounds(0.0, 0.0)
+    if (ls == 0.0 && us > 0.0) return Bounds(0.0, Double.POSITIVE_INFINITY)
+    if (ls < 0.0 && us == 0.0) return Bounds(Double.NEGATIVE_INFINITY, 0.0)
+
+    return Bounds(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY)
+}
+
+/**
  * Provides distribution-free bounds for the Disparity estimator (Shift / AvgSpread)
  * using Bonferroni combination of ShiftBounds and AvgSpreadBounds.
+ *
+ * This is the raw native-array API: it accepts plain [List]s and returns
+ * unitless [Bounds]. The [Sample]-based [disparityBounds] overload is a thin
+ * adapter over this function.
+ *
+ * The disjoint-pair shuffle (inside the avg-spread component) always runs on the
+ * passed arrays' order, so it is independent of [assumeSorted]. However, the
+ * embedded shift-bounds sub-computation consumes the passed arrays AS a sorted
+ * view when [assumeSorted] is true: on genuinely sorted input this is inert (the
+ * flag only skips the internal sort and does not change the result), but on
+ * UNSORTED input the flag is undefined behavior and CAN change the result
+ * (shift-bounds would treat the unsorted slice as sorted).
  *
  * @param x First sample
  * @param y Second sample
  * @param misrate Misclassification rate
  * @param seed Optional string seed for deterministic randomization
+ * @param assumeSorted When true, the caller guarantees both [x] and [y] are
+ *   already sorted ascending, so the sub-computations reuse them without
+ *   re-sorting. Passing true on unsorted input is undefined behavior and can
+ *   change the result.
  * @return A Bounds object containing the lower and upper bounds
  */
-internal fun disparityBounds(
+fun disparityBounds(
     x: List<Double>,
     y: List<Double>,
     misrate: Double = DEFAULT_MISRATE,
     seed: String? = null,
+    assumeSorted: Boolean = false,
+): Bounds =
+    // Map the assumeSorted flag to the optional pre-sorted views: when sorted,
+    // x/y double as the sparity/shift-bounds views. The shuffles always run on x/y.
+    disparityBoundsImpl(
+        x = x,
+        y = y,
+        misrate = misrate,
+        seed = seed,
+        sortedX = if (assumeSorted) x else null,
+        sortedY = if (assumeSorted) y else null,
+    )
+
+/**
+ * Single implementation of disparity bounds shared by the raw and [Sample]-based
+ * entry points.
+ *
+ * [x]/[y] are always in ORIGINAL order; [sortedX]/[sortedY], when non-null, are
+ * pre-sorted views used only for the order-independent sparity and shift-bounds
+ * sub-computations. NEVER pass the sorted views as the shuffle arrays.
+ */
+internal fun disparityBoundsImpl(
+    x: List<Double>,
+    y: List<Double>,
+    misrate: Double = DEFAULT_MISRATE,
+    seed: String? = null,
+    sortedX: List<Double>? = null,
+    sortedY: List<Double>? = null,
 ): Bounds {
     // Check validity (priority 0)
     checkValidity(x, Subject.X)
@@ -431,46 +659,19 @@ internal fun disparityBounds(
     val alphaShift = minShift + extra / 2.0
     val alphaAvg = minAvg + extra / 2.0
 
-    if (spreadImpl(x) <= 0.0) {
-        throw AssumptionException(Violation(AssumptionId.SPARITY, Subject.X))
-    }
-    if (spreadImpl(y) <= 0.0) {
-        throw AssumptionException(Violation(AssumptionId.SPARITY, Subject.Y))
-    }
+    // The spread > 0 sparity check is performed by avgSpreadBounds below
+    // (identical predicate, Subject.X/Y order). shiftBounds runs first but cannot
+    // throw for these inputs, so it cannot mask that sparity error.
+    // shiftBounds is order-independent given sorted input; use sorted views when present.
+    val sb =
+        if (sortedX != null && sortedY != null) {
+            shiftBounds(sortedX, sortedY, alphaShift, assumeSorted = true)
+        } else {
+            shiftBounds(x, y, alphaShift)
+        }
+    val ab = avgSpreadBounds(x, y, alphaAvg, seed, sortedX, sortedY)
 
-    val sb = shiftBounds(x, y, alphaShift)
-    val ab = avgSpreadBounds(x, y, alphaAvg, seed)
-
-    val la = ab.lower
-    val ua = ab.upper
-    val ls = sb.lower
-    val us = sb.upper
-
-    if (la > 0.0) {
-        val r1 = ls / la
-        val r2 = ls / ua
-        val r3 = us / la
-        val r4 = us / ua
-        val lower = min(min(r1, r2), min(r3, r4))
-        val upper = max(max(r1, r2), max(r3, r4))
-        return Bounds(lower, upper)
-    }
-
-    if (ua <= 0.0) {
-        if (ls == 0.0 && us == 0.0) return Bounds(0.0, 0.0)
-        if (ls >= 0.0) return Bounds(0.0, Double.POSITIVE_INFINITY)
-        if (us <= 0.0) return Bounds(Double.NEGATIVE_INFINITY, 0.0)
-        return Bounds(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY)
-    }
-
-    // Default: ua > 0 && la <= 0
-    if (ls > 0.0) return Bounds(ls / ua, Double.POSITIVE_INFINITY)
-    if (us < 0.0) return Bounds(Double.NEGATIVE_INFINITY, us / ua)
-    if (ls == 0.0 && us == 0.0) return Bounds(0.0, 0.0)
-    if (ls == 0.0 && us > 0.0) return Bounds(0.0, Double.POSITIVE_INFINITY)
-    if (ls < 0.0 && us == 0.0) return Bounds(Double.NEGATIVE_INFINITY, 0.0)
-
-    return Bounds(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY)
+    return disparityBoundsFromComponents(sb.lower, sb.upper, ab.lower, ab.upper)
 }
 
 /**
@@ -480,6 +681,12 @@ internal fun disparityBounds(
  * @param y Second sample
  * @param misrate Misclassification rate (probability that true avg_spread falls outside bounds)
  * @param seed Optional string seed for deterministic randomization
+ * @param sortedX Optional pre-sorted view of [x], used only for the
+ *   order-independent sparity check; null means sort internally. The shuffle
+ *   always runs on the original [x] order.
+ * @param sortedY Optional pre-sorted view of [y], used only for the
+ *   order-independent sparity check; null means sort internally. The shuffle
+ *   always runs on the original [y] order.
  * @return A Bounds object containing the lower and upper bounds
  */
 internal fun avgSpreadBounds(
@@ -487,6 +694,8 @@ internal fun avgSpreadBounds(
     y: List<Double>,
     misrate: Double = DEFAULT_MISRATE,
     seed: String? = null,
+    sortedX: List<Double>? = null,
+    sortedY: List<Double>? = null,
 ): Bounds {
     checkValidity(x, Subject.X)
     checkValidity(y, Subject.Y)
@@ -511,15 +720,35 @@ internal fun avgSpreadBounds(
         throw AssumptionException(Violation(AssumptionId.DOMAIN, Subject.MISRATE))
     }
 
-    if (spreadImpl(x) <= 0.0) {
+    // sortedX/sortedY (when provided) are pre-sorted views for the sparity
+    // checks; the shuffles in avgSpreadBoundsInner always run on original x/y.
+    val spreadX = if (sortedX != null) spreadImpl(sortedX, assumeSorted = true) else spreadImpl(x)
+    if (spreadX <= 0.0) {
         throw AssumptionException(Violation(AssumptionId.SPARITY, Subject.X))
     }
-    if (spreadImpl(y) <= 0.0) {
+    val spreadY = if (sortedY != null) spreadImpl(sortedY, assumeSorted = true) else spreadImpl(y)
+    if (spreadY <= 0.0) {
         throw AssumptionException(Violation(AssumptionId.SPARITY, Subject.Y))
     }
 
-    val boundsX = spreadBounds(x, alpha, seed)
-    val boundsY = spreadBounds(y, alpha, seed)
+    return avgSpreadBoundsInner(x, y, alpha, seed)
+}
+
+/**
+ * Inner computation for avgSpreadBounds: computes weighted combination of individual spread bounds.
+ * Caller is responsible for validity, domain, and sparity checks.
+ */
+internal fun avgSpreadBoundsInner(
+    x: List<Double>,
+    y: List<Double>,
+    alpha: Double,
+    seed: String?,
+): Bounds {
+    val n = x.size
+    val m = y.size
+
+    val boundsX = spreadBoundsInner(x, alpha, seed)
+    val boundsY = spreadBoundsInner(y, alpha, seed)
 
     val weightX = n.toDouble() / (n + m).toDouble()
     val weightY = m.toDouble() / (n + m).toDouble()

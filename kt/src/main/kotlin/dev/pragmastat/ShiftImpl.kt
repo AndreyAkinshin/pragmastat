@@ -4,7 +4,7 @@ import kotlin.math.ceil
 import kotlin.math.floor
 
 /**
- * Fast O((m + n) * log(precision)) implementation of the Shift estimator.
+ * O((m + n) * log(precision)) implementation of the Shift estimator.
  * Computes quantiles of all pairwise differences { x_i - y_j } without materializing them.
  *
  * Internal implementation - not part of public API.
@@ -174,13 +174,17 @@ private fun countAndNeighbors(
     return Triple(count, maxBelow, minAbove)
 }
 
+/**
+ * Overflow-safe, order-symmetric midpoint: 0.5*a + 0.5*b (halve before summing; never overflows;
+ * operand order is irrelevant).
+ */
 private fun midpoint(
     a: Double,
     b: Double,
 ): Double = 0.5 * a + 0.5 * b
 
 /**
- * Fast O((m + n) * log(precision)) implementation of the Ratio estimator via log-transformation.
+ * O((m + n) * log(precision)) implementation of the Ratio estimator via log-transformation.
  * Computes quantiles of all pairwise ratios { x_i / y_j } as exp(shiftImpl(log x, log y)).
  *
  * Internal implementation - not part of public API.

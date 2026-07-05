@@ -3,12 +3,15 @@ package dev.pragmastat
 import kotlin.math.abs
 
 /**
- * Fast O(n log n) implementation of the Spread (Shamos) estimator.
+ * O(n log n) implementation of the Spread (Shamos) estimator.
  * Based on Monahan's selection algorithm adapted for pairwise differences.
  *
  * Internal implementation - not part of public API.
  */
-internal fun spreadImpl(values: List<Double>): Double {
+internal fun spreadImpl(
+    values: List<Double>,
+    assumeSorted: Boolean = false,
+): Double {
     val n = values.size
     require(n > 0) { "Input list cannot be empty" }
     if (n == 1) return 0.0
@@ -17,7 +20,7 @@ internal fun spreadImpl(values: List<Double>): Double {
     // Create deterministic RNG from input values
     val rng = Rng(deriveSeed(values))
 
-    val a = values.sorted()
+    val a = if (assumeSorted) values else values.sorted()
     val N = (n.toLong() * (n - 1)) / 2
     val kLow = (N + 1) / 2
     val kHigh = (N + 2) / 2
@@ -36,7 +39,25 @@ internal fun spreadImpl(values: List<Double>): Double {
     var pivot = a[n / 2] - a[(n - 1) / 2]
     var prevCountBelow = -1L
 
+    // Bound the selection loop. On valid sorted input the Monahan selection
+    // converges in O(log n) iterations; this cap is far higher than ever
+    // needed for sorted input but guarantees termination on misuse (e.g.,
+    // assumeSorted=true on UNSORTED input, which is undefined behavior and
+    // would otherwise spin forever). The cap scales with n so large valid
+    // inputs are never starved. We also track no-progress (stall) on the
+    // active set to bail out deterministically.
+    val baseIterations = 256
+    val maxIterations = baseIterations + 4 * n
+    var prevActiveSize = -1L
+    var stallCount = 0
+    val maxStall = 8
+    var iterations = 0
+
     while (true) {
+        if (iterations++ >= maxIterations) {
+            throw IllegalStateException("Convergence failure (pathological input)")
+        }
+
         var countBelow = 0L
         var largestBelow = Double.NEGATIVE_INFINITY
         var smallestAtOrAbove = Double.POSITIVE_INFINITY
@@ -115,6 +136,20 @@ internal fun spreadImpl(values: List<Double>): Double {
         prevCountBelow = countBelow
 
         val activeSize = (0 until n - 1).filter { L[it] <= R[it] }.sumOf { (R[it] - L[it] + 1).toLong() }
+
+        // Stall detection: on valid sorted input the active set strictly
+        // shrinks toward the target. If it fails to shrink for several
+        // consecutive iterations, the input is pathological (e.g.,
+        // assumeSorted=true on unsorted data) and we bail deterministically.
+        if (activeSize >= prevActiveSize && prevActiveSize >= 0) {
+            stallCount++
+            if (stallCount >= maxStall) {
+                throw IllegalStateException("Convergence failure (pathological input)")
+            }
+        } else {
+            stallCount = 0
+        }
+        prevActiveSize = activeSize
 
         if (activeSize <= 2) {
             var minRem = Double.POSITIVE_INFINITY
