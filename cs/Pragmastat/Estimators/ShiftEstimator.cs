@@ -14,7 +14,7 @@ public class ShiftEstimator : ITwoSampleEstimator
     Assertion.NonWeighted("y", y);
     Assertion.CompatibleUnits(x, y);
     (x, y) = Assertion.ConvertToFiner(x, y);
-    return FastShift
+    return ShiftImpl
       .Estimate(x.SortedValues, y.SortedValues, [0.5], true)
       .Single().WithUnitOf(x);
   }

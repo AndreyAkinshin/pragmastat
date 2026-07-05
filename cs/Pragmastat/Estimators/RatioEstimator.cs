@@ -17,7 +17,7 @@ public class RatioEstimator : ITwoSampleEstimator
     (x, y) = Assertion.ConvertToFiner(x, y);
     Assertion.PositivityAssumption(x, Subject.X);
     Assertion.PositivityAssumption(y, Subject.Y);
-    return FastRatio
+    return RatioImpl
       .Estimate(x.SortedValues, y.SortedValues, [0.5], assumeSorted: true)
       .Single()
       .WithUnit(MeasurementUnit.Ratio);

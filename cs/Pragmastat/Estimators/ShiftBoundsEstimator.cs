@@ -53,7 +53,7 @@ public class ShiftBoundsEstimator : ITwoSampleBoundsEstimator
       kRight / denominator
     ];
 
-    double[] bounds = FastShift.Estimate(x.SortedValues, y.SortedValues, p, assumeSorted: true);
+    double[] bounds = ShiftImpl.Estimate(x.SortedValues, y.SortedValues, p, assumeSorted: true);
     double lower = Math.Min(bounds[0], bounds[1]);
     double upper = Math.Max(bounds[0], bounds[1]);
     return new Bounds(lower, upper, x.Unit);

@@ -12,11 +12,11 @@ using Pragmastat.Randomization;
 public class AlgorithmVerificationTests
 {
   // =========================================================================
-  // FastCenterQuantiles verification
+  // CenterQuantilesImpl verification
   // =========================================================================
 
   [Fact]
-  public void FastCenterQuantiles_MatchesNaive_SmallInputs()
+  public void CenterQuantilesImpl_MatchesNaive_SmallInputs()
   {
     var testCases = new[]
     {
@@ -36,7 +36,7 @@ public class AlgorithmVerificationTests
       foreach (var k in testRanks)
       {
         double expected = naiveAverages[k - 1];
-        double actual = FastCenterQuantiles.Quantile(sorted, k);
+        double actual = CenterQuantilesImpl.Quantile(sorted, k);
 
         Assert.True(
           Math.Abs(expected - actual) < 1e-10,
@@ -46,7 +46,7 @@ public class AlgorithmVerificationTests
   }
 
   [Fact]
-  public void FastCenterQuantiles_Bounds_MatchesNaive()
+  public void CenterQuantilesImpl_Bounds_MatchesNaive()
   {
     var data = new double[] { 1, 2, 3, 4, 5 };
     var sorted = data.OrderBy(x => x).ToList();
@@ -57,7 +57,7 @@ public class AlgorithmVerificationTests
 
     foreach (var (lo, hi) in testRanks)
     {
-      var (actualLo, actualHi) = FastCenterQuantiles.Bounds(sorted, lo, hi);
+      var (actualLo, actualHi) = CenterQuantilesImpl.Bounds(sorted, lo, hi);
 
       double expectedLo = naiveAverages[(int)Math.Min(lo, hi) - 1];
       double expectedHi = naiveAverages[(int)Math.Max(lo, hi) - 1];

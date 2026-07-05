@@ -16,10 +16,10 @@ internal class AvgSpreadEstimator : ITwoSampleEstimator
     Assertion.CompatibleUnits(x, y);
     (x, y) = Assertion.ConvertToFiner(x, y);
 
-    var spreadX = FastSpread.Estimate(x.SortedValues, isSorted: true);
+    var spreadX = SpreadImpl.Estimate(x.SortedValues, isSorted: true);
     if (spreadX <= 0)
       throw AssumptionException.Sparity(Subject.X);
-    var spreadY = FastSpread.Estimate(y.SortedValues, isSorted: true);
+    var spreadY = SpreadImpl.Estimate(y.SortedValues, isSorted: true);
     if (spreadY <= 0)
       throw AssumptionException.Sparity(Subject.Y);
 

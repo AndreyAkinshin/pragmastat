@@ -11,6 +11,6 @@ public class CenterEstimator : IOneSampleEstimator
   public Measurement Estimate(Sample x)
   {
     Assertion.NonWeighted("x", x);
-    return FastCenter.Estimate(x.SortedValues, isSorted: true).WithUnitOf(x);
+    return CenterImpl.Estimate(x.SortedValues, isSorted: true).WithUnitOf(x);
   }
 }

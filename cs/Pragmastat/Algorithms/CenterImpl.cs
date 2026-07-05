@@ -1,6 +1,6 @@
 namespace Pragmastat.Algorithms;
 
-internal static class FastCenter
+internal static class CenterImpl
 {
   /// <summary>
   /// ACM Algorithm 616: fast computation of the Hodges-Lehmann location estimator

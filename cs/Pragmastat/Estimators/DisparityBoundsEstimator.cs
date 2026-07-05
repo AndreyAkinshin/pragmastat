@@ -48,9 +48,9 @@ public class DisparityBoundsEstimator : ITwoSampleBoundsEstimator
     double alphaShift = minShift + extra / 2.0;
     double alphaAvg = minAvg + extra / 2.0;
 
-    if (FastSpread.Estimate(x.SortedValues, isSorted: true) <= 0)
+    if (SpreadImpl.Estimate(x.SortedValues, isSorted: true) <= 0)
       throw AssumptionException.Sparity(Subject.X);
-    if (FastSpread.Estimate(y.SortedValues, isSorted: true) <= 0)
+    if (SpreadImpl.Estimate(y.SortedValues, isSorted: true) <= 0)
       throw AssumptionException.Sparity(Subject.Y);
 
     var shiftBounds = ShiftBoundsEstimator.Instance.Estimate(x, y, alphaShift);

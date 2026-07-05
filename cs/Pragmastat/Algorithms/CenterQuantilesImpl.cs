@@ -6,7 +6,7 @@ namespace Pragmastat.Algorithms;
 /// Efficiently computes quantiles from all pairwise averages (x[i] + x[j]) / 2 for i ≤ j.
 /// Uses binary search with counting function to avoid materializing all N(N+1)/2 pairs.
 /// </summary>
-internal static class FastCenterQuantiles
+internal static class CenterQuantilesImpl
 {
   private static bool IsSorted(IReadOnlyList<double> list)
   {
@@ -29,7 +29,7 @@ internal static class FastCenterQuantiles
   {
     Debug.Assert(
       IsSorted(sorted),
-      "FastCenterQuantiles.Quantile: input must be sorted");
+      "CenterQuantilesImpl.Quantile: input must be sorted");
     int n = sorted.Count;
     if (n == 0)
       throw new ArgumentException("Input cannot be empty", nameof(sorted));
@@ -55,7 +55,7 @@ internal static class FastCenterQuantiles
   {
     Debug.Assert(
       IsSorted(sorted),
-      "FastCenterQuantiles.Bounds: input must be sorted");
+      "CenterQuantilesImpl.Bounds: input must be sorted");
     int n = sorted.Count;
     if (n == 0)
       throw new ArgumentException("Input cannot be empty", nameof(sorted));

@@ -1,6 +1,6 @@
 namespace Pragmastat.Algorithms;
 
-internal static class FastSpread
+internal static class SpreadImpl
 {
   /// <summary>
   /// Shamos "Spread".  Expected O(n log n) time, O(n) extra space. Exact.

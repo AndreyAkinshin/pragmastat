@@ -46,7 +46,7 @@ public class CenterBoundsEstimator : IOneSampleBoundsEstimator
     long kLeft = halfMargin + 1;
     long kRight = totalPairs - halfMargin;
 
-    var (lo, hi) = FastCenterQuantiles.Bounds(x.SortedValues, kLeft, kRight);
+    var (lo, hi) = CenterQuantilesImpl.Bounds(x.SortedValues, kLeft, kRight);
     return new Bounds(lo, hi, x.Unit);
   }
 }

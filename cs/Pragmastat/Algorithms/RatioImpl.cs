@@ -7,10 +7,10 @@ using Pragmastat.Exceptions;
 using Pragmastat.Internal;
 
 /// <summary>
-/// Computes quantiles of pairwise ratios via log-transformation and FastShift delegation.
+/// Computes quantiles of pairwise ratios via log-transformation and ShiftImpl delegation.
 /// Ratio(x, y) = exp(Shift(log(x), log(y)))
 /// </summary>
-public static class FastRatio
+public static class RatioImpl
 {
   /// <summary>
   /// Computes quantiles of all pairwise ratios { x_i / y_j }.
@@ -30,8 +30,8 @@ public static class FastRatio
     var logX = MathExtensions.Log(x, Subject.X);
     var logY = MathExtensions.Log(y, Subject.Y);
 
-    // Delegate to FastShift in log-space
-    var logResult = FastShift.Estimate(logX, logY, p, assumeSorted);
+    // Delegate to ShiftImpl in log-space
+    var logResult = ShiftImpl.Estimate(logX, logY, p, assumeSorted);
 
     // Exp-transform back to ratio-space
     return logResult.Select(v => Math.Exp(v)).ToArray();

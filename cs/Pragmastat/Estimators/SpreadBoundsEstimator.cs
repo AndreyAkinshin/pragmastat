@@ -35,7 +35,7 @@ public class SpreadBoundsEstimator : IOneSampleBoundsEstimator
 
     if (x.Size < 2)
       throw AssumptionException.Sparity(Subject.X);
-    if (FastSpread.Estimate(x.SortedValues, isSorted: true) <= 0)
+    if (SpreadImpl.Estimate(x.SortedValues, isSorted: true) <= 0)
       throw AssumptionException.Sparity(Subject.X);
 
     var rng = seed == null ? new Rng() : new Rng(seed);
