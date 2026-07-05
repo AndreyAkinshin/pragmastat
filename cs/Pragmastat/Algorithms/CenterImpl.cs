@@ -18,7 +18,7 @@ internal static class CenterImpl
   {
     int n = values.Count;
     if (n == 1) return values[0];
-    if (n == 2) return (values[0] + values[1]) / 2;
+    if (n == 2) return 0.5 * values[0] + 0.5 * values[1];
     random ??= new Random();
     if (!isSorted)
       values = values.OrderBy(x => x).ToList();
@@ -90,7 +90,7 @@ internal static class CenterImpl
           maxActiveSum = Max(maxActiveSum, largestInRow);
         }
 
-        pivot = (minActiveSum + maxActiveSum) / 2;
+        pivot = 0.5 * minActiveSum + 0.5 * maxActiveSum;
         if (pivot <= minActiveSum || pivot > maxActiveSum) pivot = maxActiveSum;
 
         // If all remaining values are identical, we're done
@@ -217,7 +217,7 @@ internal static class CenterImpl
           maxRemainingSum = Max(maxRemainingSum, maxInRow);
         }
 
-        pivot = (minRemainingSum + maxRemainingSum) / 2;
+        pivot = 0.5 * minRemainingSum + 0.5 * maxRemainingSum;
         if (pivot <= minRemainingSum || pivot > maxRemainingSum)
           pivot = maxRemainingSum;
 

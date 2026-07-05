@@ -163,5 +163,5 @@ public static class ShiftImpl
     closestAbove = minAbove;
   }
 
-  private static double Midpoint(double a, double b) => a + (b - a) * 0.5;
+  private static double Midpoint(double a, double b) => 0.5 * a + 0.5 * b;
 }

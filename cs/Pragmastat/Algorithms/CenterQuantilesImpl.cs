@@ -120,7 +120,7 @@ internal static class CenterQuantilesImpl
 
     while (hi - lo > eps * Max(1.0, Max(Abs(lo), Abs(hi))))
     {
-      double mid = (lo + hi) / 2;
+      double mid = 0.5 * lo + 0.5 * hi;
       long countLessOrEqual = CountPairsLessOrEqual(sorted, mid);
 
       if (countLessOrEqual >= k)
@@ -129,7 +129,7 @@ internal static class CenterQuantilesImpl
         lo = mid;
     }
 
-    double target = (lo + hi) / 2;
+    double target = 0.5 * lo + 0.5 * hi;
 
     for (int i = 0; i < n; i++)
     {

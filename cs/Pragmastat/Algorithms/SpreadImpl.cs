@@ -86,7 +86,7 @@ internal static class SpreadImpl
         if (kLow < kHigh)
         {
           // Even N: average the two central order stats.
-          return 0.5 * (largestBelow + smallestAtOrAbove);
+          return 0.5 * largestBelow + 0.5 * smallestAtOrAbove;
         }
         else
         {
@@ -120,13 +120,13 @@ internal static class SpreadImpl
         {
           // No active candidates left: the only consistent answer is the boundary implied by counts.
           // Fall back to neighbors from this partition.
-          if (kLow < kHigh) return 0.5 * (largestBelow + smallestAtOrAbove);
+          if (kLow < kHigh) return 0.5 * largestBelow + 0.5 * smallestAtOrAbove;
           return (countBelow >= kLow) ? largestBelow : smallestAtOrAbove;
         }
 
         if (maxActive <= minActive) return minActive; // all remaining equal
 
-        double mid = 0.5 * (minActive + maxActive);
+        double mid = 0.5 * minActive + 0.5 * maxActive;
         pivot = (mid > minActive && mid <= maxActive) ? mid : maxActive;
         prevCountBelow = countBelow;
         continue;
@@ -189,11 +189,11 @@ internal static class SpreadImpl
 
         if (activeSize <= 0) // safety net; fall back to boundary from last partition
         {
-          if (kLow < kHigh) return 0.5 * (largestBelow + smallestAtOrAbove);
+          if (kLow < kHigh) return 0.5 * largestBelow + 0.5 * smallestAtOrAbove;
           return (countBelow >= kLow) ? largestBelow : smallestAtOrAbove;
         }
 
-        if (kLow < kHigh) return 0.5 * (minRem + maxRem);
+        if (kLow < kHigh) return 0.5 * minRem + 0.5 * maxRem;
         return (Abs((kLow - 1) - countBelow) <= Abs(countBelow - kLow)) ? minRem : maxRem;
       }
       else
