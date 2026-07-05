@@ -82,6 +82,13 @@ public static class ShiftBoundsTestCases
     var inputs = inputBuilder.Build();
     var testData = controller.GenerateData(inputs);
     controller.Save(testData);
-    AnsiConsole.MarkupLine($"  [green]✓[/] Generated [bold]{testData.Count}[/] test cases");
+
+    // Error test cases (AssumptionException)
+    controller.SaveErrorTestCase("error-empty-x",
+      new ShiftBoundsInput { X = [], Y = [1, 2, 3, 4, 5], Misrate = 0.2 }, "validity", "x");
+    controller.SaveErrorTestCase("error-empty-y",
+      new ShiftBoundsInput { X = [1, 2, 3, 4, 5], Y = [], Misrate = 0.2 }, "validity", "y");
+
+    AnsiConsole.MarkupLine($"  [green]✓[/] Generated [bold]{testData.Count}[/] test cases + error fixtures");
   }
 }

@@ -97,6 +97,38 @@ public static class DisparityBoundsTestCases
     var inputs = inputBuilder.Build();
     var testData = controller.GenerateData(inputs);
     controller.Save(testData);
-    AnsiConsole.MarkupLine($"  [green]✓[/] Generated [bold]{testData.Count}[/] test cases");
+
+    // Error test cases (AssumptionException)
+    double[] natural20 = Enumerable.Range(1, 20).Select(v => (double)v).ToArray();
+
+    controller.SaveErrorTestCase("error-empty-x",
+      new DisparityBoundsInput { X = [], Y = [1, 2, 3, 4, 5], Misrate = 0.2, Seed = "disparity-bounds-tests" },
+      "validity", "x");
+    controller.SaveErrorTestCase("error-empty-y",
+      new DisparityBoundsInput { X = [1, 2, 3, 4, 5], Y = [], Misrate = 0.2, Seed = "disparity-bounds-tests" },
+      "validity", "y");
+    controller.SaveErrorTestCase("error-single-element-x",
+      new DisparityBoundsInput { X = [1], Y = [1, 2, 3, 4, 5], Misrate = 0.2, Seed = "disparity-bounds-tests" },
+      "domain", "x");
+    controller.SaveErrorTestCase("error-single-element-y",
+      new DisparityBoundsInput { X = [1, 2, 3, 4, 5], Y = [1], Misrate = 0.2, Seed = "disparity-bounds-tests" },
+      "domain", "y");
+    controller.SaveErrorTestCase("error-constant-x",
+      new DisparityBoundsInput { X = [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5], Y = natural20, Misrate = 0.2, Seed = "disparity-bounds-tests" },
+      "sparity", "x");
+    controller.SaveErrorTestCase("error-constant-y",
+      new DisparityBoundsInput { X = natural20, Y = [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5], Misrate = 0.2, Seed = "disparity-bounds-tests" },
+      "sparity", "y");
+    controller.SaveErrorTestCase("error-misrate-below-min",
+      new DisparityBoundsInput
+      {
+        X = [1, 2, 3, 4, 5],
+        Y = [2, 3, 4, 5, 6],
+        Misrate = 0.001,
+        Seed = "disparity-bounds-tests",
+      },
+      "domain", "misrate");
+
+    AnsiConsole.MarkupLine($"  [green]✓[/] Generated [bold]{testData.Count}[/] test cases + error fixtures");
   }
 }

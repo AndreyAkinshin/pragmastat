@@ -74,6 +74,18 @@ public static class SpreadBoundsTestCases
     var inputs = inputBuilder.Build();
     var testData = controller.GenerateData(inputs);
     controller.Save(testData);
-    AnsiConsole.MarkupLine($"  [green]✓[/] Generated [bold]{testData.Count}[/] test cases");
+
+    // Error test cases (AssumptionException)
+    controller.SaveErrorTestCase("error-empty-x",
+      new SpreadBoundsInput { X = [], Misrate = 0.2, Seed = "spread-bounds-tests" },
+      "validity", "x");
+    controller.SaveErrorTestCase("error-constant-x",
+      new SpreadBoundsInput { X = [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5], Misrate = 0.2, Seed = "spread-bounds-tests" },
+      "sparity", "x");
+    controller.SaveErrorTestCase("error-single-element-x",
+      new SpreadBoundsInput { X = [5], Misrate = 0.2, Seed = "spread-bounds-tests" },
+      "sparity", "x");
+
+    AnsiConsole.MarkupLine($"  [green]✓[/] Generated [bold]{testData.Count}[/] test cases + error fixtures");
   }
 }

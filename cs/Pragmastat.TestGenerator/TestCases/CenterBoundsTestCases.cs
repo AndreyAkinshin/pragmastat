@@ -71,6 +71,11 @@ public static class CenterBoundsTestCases
     var inputs = inputBuilder.Build();
     var testData = controller.GenerateData(inputs);
     controller.Save(testData);
-    AnsiConsole.MarkupLine($"  [green]✓[/] Generated [bold]{testData.Count}[/] test cases");
+
+    // Error test cases (AssumptionException)
+    controller.SaveErrorTestCase("error-empty-x",
+      new CenterBoundsInput { X = [], Misrate = 0.2 }, "validity", "x");
+
+    AnsiConsole.MarkupLine($"  [green]✓[/] Generated [bold]{testData.Count}[/] test cases + error fixtures");
   }
 }

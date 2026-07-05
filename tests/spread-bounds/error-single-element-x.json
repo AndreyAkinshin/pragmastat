@@ -1,6 +1,8 @@
 {
   "input": {
-    "x": [5],
+    "x": [
+      5
+    ],
     "misrate": 0.2,
     "seed": "spread-bounds-tests"
   },

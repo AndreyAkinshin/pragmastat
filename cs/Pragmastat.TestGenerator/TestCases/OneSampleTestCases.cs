@@ -11,7 +11,7 @@ public static class OneSampleTestCases
     // Center: 38 test cases (24 original + 14 unsorted)
     // Note: Performance tests (perf-100k) are not stored in the repository because they generate
     // large JSON files. Instead, they should be implemented manually in each language's test suite.
-    GenerateTests("center", input => CenterEstimator.Instance.Estimate(input.ToSample()),
+    var centerController = GenerateTests("center", input => CenterEstimator.Instance.Estimate(input.ToSample()),
       new OneSampleInputBuilder()
         // Demo examples (n = 5) - 3 tests
         .Add("demo-1", new Sample(0, 2, 4, 6, 8))
@@ -38,6 +38,10 @@ public static class OneSampleTestCases
         .Add("extreme-large-5", new Sample(1e8, 2e8, 3e8, 4e8, 5e8))
         .Add("extreme-small-5", new Sample(1e-8, 2e-8, 3e-8, 4e-8, 5e-8))
         .Add("extreme-wide-5", new Sample(0.001, 1, 100, 1000, 1000000))
+        // Overflow-safe midpoint cases (n = 2, values near double max) - 3 tests
+        .Add("large-magnitude-2", new Sample(1e308, 1e308))
+        .Add("large-magnitude-negative-2", new Sample(-1e308, -1e308))
+        .Add("opposite-extreme-2", new Sample(-1e308, 1e308))
         // Unsorted tests - 14 tests (verify sorting works correctly)
         .AddUnsortedReverse([2, 3, 4, 5, 7])  // 5 tests: reverse sorted
         .AddUnsortedShuffle("shuffle-3", 2, 1, 3)  // Middle element first
@@ -53,7 +57,7 @@ public static class OneSampleTestCases
     // Spread: 30 test cases (requires sparity: spread > 0, so no constant samples or n=1)
     // Note: Performance tests (perf-100k) are not stored in the repository because they generate
     // large JSON files. Instead, they should be implemented manually in each language's test suite.
-    GenerateTests("spread", input => SpreadEstimator.Instance.Estimate(input.ToSample()),
+    var spreadController = GenerateTests("spread", input => SpreadEstimator.Instance.Estimate(input.ToSample()),
       new OneSampleInputBuilder()
         // Demo examples (n = 5) - 3 tests
         .Add("demo-1", new Sample(0, 2, 4, 6, 8))
@@ -86,16 +90,30 @@ public static class OneSampleTestCases
         .AddUnsortedPattern("duplicates-unsorted-10", new Sample(2, 3, 1, 3, 2, 1, 2, 3, 1, 3))  // Duplicates mixed
         .AddUnsortedShuffle("extreme-wide-unsorted-5", 1000, 0.001, 1000000, 100, 1));  // Wide range unsorted
 
+    // Error test cases (AssumptionException)
+    // Use object initializers to bypass Sample constructor validation
+    centerController.SaveErrorTestCase("error-empty-x",
+      new OneSampleInput { X = [] },
+      "validity", "x");
+
+    spreadController.SaveErrorTestCase("error-empty-x",
+      new OneSampleInput { X = [] },
+      "validity", "x");
+
+    spreadController.SaveErrorTestCase("error-constant-x",
+      new OneSampleInput { X = [5, 5, 5, 5, 5] },
+      "sparity", "x");
   }
 
-  private static void GenerateTests(string suiteName, Func<OneSampleInput, double> estimate,
-    OneSampleInputBuilder inputBuilder)
+  private static OneSampleEstimatorController GenerateTests(string suiteName,
+    Func<OneSampleInput, double> estimate, OneSampleInputBuilder inputBuilder)
   {
     AnsiConsole.MarkupLine($"[yellow]→[/] Generating tests for: [bold]{suiteName}[/]");
     var controller = new OneSampleEstimatorController(suiteName, estimate);
     var inputs = inputBuilder.Build();
     var testData = controller.GenerateData(inputs);
     controller.Save(testData);
-    AnsiConsole.MarkupLine($"  [green]✓[/] Generated [bold]{testData.Count}[/] test cases");
+    AnsiConsole.MarkupLine($"  [green]✓[/] Generated [bold]{testData.Count}[/] test cases + error fixtures");
+    return controller;
   }
 }

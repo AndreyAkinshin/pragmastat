@@ -96,6 +96,38 @@ public static class AvgSpreadBoundsTestCases
     var inputs = inputBuilder.Build();
     var testData = controller.GenerateData(inputs);
     controller.Save(testData);
-    AnsiConsole.MarkupLine($"  [green]✓[/] Generated [bold]{testData.Count}[/] test cases");
+
+    // Error test cases (AssumptionException)
+    double[] natural20 = Enumerable.Range(1, 20).Select(v => (double)v).ToArray();
+
+    controller.SaveErrorTestCase("error-empty-x",
+      new AvgSpreadBoundsInput { X = [], Y = [1, 2, 3, 4, 5], Misrate = 0.2, Seed = "avg-spread-bounds-tests" },
+      "validity", "x");
+    controller.SaveErrorTestCase("error-empty-y",
+      new AvgSpreadBoundsInput { X = [1, 2, 3, 4, 5], Y = [], Misrate = 0.2, Seed = "avg-spread-bounds-tests" },
+      "validity", "y");
+    controller.SaveErrorTestCase("error-single-element-x",
+      new AvgSpreadBoundsInput { X = [1], Y = [1, 2, 3, 4, 5], Misrate = 0.2, Seed = "avg-spread-bounds-tests" },
+      "domain", "x");
+    controller.SaveErrorTestCase("error-single-element-y",
+      new AvgSpreadBoundsInput { X = [1, 2, 3, 4, 5], Y = [1], Misrate = 0.2, Seed = "avg-spread-bounds-tests" },
+      "domain", "y");
+    controller.SaveErrorTestCase("error-constant-x",
+      new AvgSpreadBoundsInput { X = [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5], Y = natural20, Misrate = 0.2, Seed = "avg-spread-bounds-tests" },
+      "sparity", "x");
+    controller.SaveErrorTestCase("error-constant-y",
+      new AvgSpreadBoundsInput { X = natural20, Y = [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5], Misrate = 0.2, Seed = "avg-spread-bounds-tests" },
+      "sparity", "y");
+    controller.SaveErrorTestCase("error-misrate-below-min",
+      new AvgSpreadBoundsInput
+      {
+        X = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+        Y = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+        Misrate = 0.001,
+        Seed = "avg-spread-bounds-tests",
+      },
+      "domain", "misrate");
+
+    AnsiConsole.MarkupLine($"  [green]✓[/] Generated [bold]{testData.Count}[/] test cases + error fixtures");
   }
 }
