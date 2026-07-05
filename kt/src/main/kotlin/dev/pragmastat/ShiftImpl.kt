@@ -9,7 +9,7 @@ import kotlin.math.floor
  *
  * Internal implementation - not part of public API.
  */
-internal fun fastShift(
+internal fun shiftImpl(
     x: List<Double>,
     y: List<Double>,
     probabilities: DoubleArray = doubleArrayOf(0.5),
@@ -181,11 +181,11 @@ private fun midpoint(
 
 /**
  * Fast O((m + n) * log(precision)) implementation of the Ratio estimator via log-transformation.
- * Computes quantiles of all pairwise ratios { x_i / y_j } as exp(fastShift(log x, log y)).
+ * Computes quantiles of all pairwise ratios { x_i / y_j } as exp(shiftImpl(log x, log y)).
  *
  * Internal implementation - not part of public API.
  */
-internal fun fastRatio(
+internal fun ratioImpl(
     x: List<Double>,
     y: List<Double>,
     probabilities: DoubleArray = doubleArrayOf(0.5),
@@ -197,8 +197,8 @@ internal fun fastRatio(
     val logX = log(x, Subject.X)
     val logY = log(y, Subject.Y)
 
-    // Delegate to fastShift in log-space
-    val logResult = fastShift(logX, logY, probabilities, assumeSorted)
+    // Delegate to shiftImpl in log-space
+    val logResult = shiftImpl(logX, logY, probabilities, assumeSorted)
 
     // Exp-transform back to ratio-space
     return DoubleArray(logResult.size) { i -> kotlin.math.exp(logResult[i]) }

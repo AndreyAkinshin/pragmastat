@@ -8,7 +8,7 @@ import kotlin.math.abs
  *
  * Internal implementation - not part of public API.
  */
-internal fun fastSpread(values: List<Double>): Double {
+internal fun spreadImpl(values: List<Double>): Double {
     val n = values.size
     require(n > 0) { "Input list cannot be empty" }
     if (n == 1) return 0.0

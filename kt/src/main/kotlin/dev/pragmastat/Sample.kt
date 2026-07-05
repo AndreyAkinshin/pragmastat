@@ -165,13 +165,13 @@ class Sample private constructor(
 
         internal fun center(x: Sample): Measurement {
             checkNonWeighted("x", x)
-            val result = fastCenter(x.values)
+            val result = centerImpl(x.values)
             return Measurement(result, x.unit)
         }
 
         internal fun spread(x: Sample): Measurement {
             checkNonWeighted("x", x)
-            val spreadVal = fastSpread(x.values)
+            val spreadVal = spreadImpl(x.values)
             if (spreadVal <= 0.0) {
                 throw AssumptionException(Violation(AssumptionId.SPARITY, x.subject))
             }
@@ -185,7 +185,7 @@ class Sample private constructor(
             checkNonWeighted("x", x)
             checkNonWeighted("y", y)
             val (cx, cy) = preparePair(x, y)
-            val result = fastShift(cx.values, cy.values)[0]
+            val result = shiftImpl(cx.values, cy.values)[0]
             return Measurement(result, cx.unit)
         }
 
@@ -198,7 +198,7 @@ class Sample private constructor(
             val (cx, cy) = preparePair(x, y)
             checkPositivity(cx.values, cx.subject)
             checkPositivity(cy.values, cy.subject)
-            val result = fastRatio(cx.values, cy.values)[0]
+            val result = ratioImpl(cx.values, cy.values)[0]
             return Measurement(result, RatioUnit)
         }
 
@@ -211,15 +211,15 @@ class Sample private constructor(
             val (cx, cy) = preparePair(x, y)
             val n = cx.size
             val m = cy.size
-            val spreadX = fastSpread(cx.values)
+            val spreadX = spreadImpl(cx.values)
             if (spreadX <= 0.0) {
                 throw AssumptionException(Violation(AssumptionId.SPARITY, cx.subject))
             }
-            val spreadY = fastSpread(cy.values)
+            val spreadY = spreadImpl(cy.values)
             if (spreadY <= 0.0) {
                 throw AssumptionException(Violation(AssumptionId.SPARITY, cy.subject))
             }
-            val shiftVal = fastShift(cx.values, cy.values)[0]
+            val shiftVal = shiftImpl(cx.values, cy.values)[0]
             val avgSpreadVal = (n * spreadX + m * spreadY) / (n + m).toDouble()
             return Measurement(shiftVal / avgSpreadVal, DisparityUnit)
         }

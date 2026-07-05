@@ -10,7 +10,7 @@ import kotlin.math.min
  *
  * Internal implementation - not part of public API.
  */
-internal object FastCenterQuantiles {
+internal object CenterQuantilesImpl {
     /** Relative epsilon for floating-point comparisons in binary search convergence. */
     private const val RELATIVE_EPSILON = 1e-14
 
