@@ -58,8 +58,8 @@ All implementations expose:
 **Note:** Function names follow language conventions: camelCase for TypeScript/Kotlin/Go, snake_case for Python/Rust/R, PascalCase for C#.
 
 **Error handling:** All languages use structured assumption errors with `Violation(id, subject)`:
-- IDs: `validity`, `domain`, `positivity`, `sparity` (checked in this priority order)
-- Subjects: `x`, `y`, `misrate`
+- IDs: `validity`, `domain`, `positivity`, `sparity` (checked in this priority order, with one deliberate exception: `spreadBounds` reports `sparity` for samples with fewer than two elements before checking the misrate against the minimum achievable value)
+- Subjects: `x`, `y`, `misrate` — assigned positionally by the raw (native-array) APIs; `Sample` carries no subject, so construction-time validity errors always report subject `x`
 - Language-specific types: `AssumptionError` (Python/Go/Rust/TypeScript), `AssumptionException` (C#/Kotlin), `assumption_error` condition (R)
 
 See individual language READMEs and AGENTS.md for API details.

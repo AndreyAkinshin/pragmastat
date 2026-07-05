@@ -55,11 +55,6 @@ const VERSION_TARGETS: &[VersionTarget] = &[
         replacement: r#"$1"version": "{version}""#,
     },
     VersionTarget {
-        path: "py/uv.lock",
-        pattern: r#"(name = "pragmastat"\n)version = "[^"]*""#,
-        replacement: r#"${1}version = "{version}""#,
-    },
-    VersionTarget {
         path: "rs/pragmastat-sim/Cargo.lock",
         pattern: r#"(name = "pragmastat"\n)version = "[^"]*""#,
         replacement: r#"${1}version = "{version}""#,

@@ -2571,7 +2571,7 @@ mod tests {
 
     #[test]
     fn convert_pairwise_margin_formula() {
-        // Test the actual formula from fast-pairwise-margin.typ
+        // Test the actual formula from manual/pairwise-margin/pairwise-margin-algorithm.typ
         let defs = HashMap::new();
         let result = typst_to_latex("sigma_(n,m)(d) = sum_(k|d) epsilon_k dot k", &defs, true);
         eprintln!("Result: {result}");

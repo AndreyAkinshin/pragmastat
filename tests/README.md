@@ -131,8 +131,11 @@ Error test cases verify domain validation. They use `expected_error` instead of 
 ```
 
 The `id` field identifies the assumption violation type (e.g., "domain", "validity", "positivity", "sparity").
-Test data matches on `id` only. The language-level violation schema also includes a `subject` field
-(e.g., "x", "y", "misrate"), but test assertions only verify the `id`.
+The `id` is always asserted. When the fixture also specifies a `subject` (e.g., "x", "y", "misrate"),
+the subject is asserted too, with one exception: on the Sample entry point, sample-construction validity
+errors whose fixture attributes them to subject "y" skip the subject assertion. Sample construction
+cannot know the argument position, so a y-argument validity error surfaces from construction with the
+fixed subject "x". The raw entry point always validates positionally, so its subject is asserted in full.
 
 ## Test Case Naming
 

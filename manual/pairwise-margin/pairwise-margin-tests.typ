@@ -2,7 +2,7 @@
 
 $ PairwiseMargin(n, m, misrate) $
 
-The $PairwiseMargin$ test suite contains 178 test cases (4 demo + 4 natural + 10 edge + 12 small grid + 148 large grid).
+The $PairwiseMargin$ test suite contains 206 test cases (4 demo + 4 natural + 10 edge + 12 small grid + 148 large grid + 28 boundary overflow).
 The domain constraint $misrate >= 2 / binom(n+m, n)$ is enforced; inputs violating this return a domain error.
 Combinations where the requested misrate falls below the minimum achievable misrate are excluded from the grid.
 
@@ -34,6 +34,12 @@ These demo cases match the reference values used throughout the manual to illust
 - `asymmetry-extreme-2-50`: $n=2$, $m=50$ (highly unbalanced)
 
 These edge cases validate correct handling of boundary conditions, the symmetry property $PairwiseMargin(n, m, misrate) = PairwiseMargin(m, n, misrate)$, and extreme asymmetry in sample sizes.
+
+*Overflow boundary* ($n + m in {60, dots, 66}$, $misrate in {10^(-1), 10^(-3)}$) — 28 tests:
+
+- Each total size is split two ways: near-symmetric ($n = floor((n+m)/2)$) and asymmetric ($n = floor((n+m)/3)$).
+- These totals surround the size limit where the exact algorithm switches from integer to floating-point binomial coefficients, guarding against 64-bit overflow of $binom(n+m, n)$.
+- Test naming: `boundary-overflow-n{n}_m{m}_mr{k}` where $k$ is the negative log10 of misrate
 
 *Comprehensive grid* — systematic coverage for thorough validation:
 
