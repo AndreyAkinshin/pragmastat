@@ -38,12 +38,12 @@ r/pragmastat/
 │   ├── sign_margin.R            # Sign margin for binomial CDF inversion
 │   ├── signed_rank_margin.R     # Signed-rank margin computation
 │   ├── min_misrate.R            # Minimum achievable misrate calculation
-│   ├── fast_center.R            # O(n log n) Hodges-Lehmann algorithm
-│   ├── fast_center_quantiles.R  # Center quantile binary search
-│   ├── fast_spread.R            # O(n log n) Shamos algorithm
-│   ├── fast_shift.R             # O((m+n) log L) shift quantiles
+│   ├── center_impl.R            # O(n log n) Hodges-Lehmann algorithm
+│   ├── center_quantiles_impl.R  # Center quantile binary search
+│   ├── spread_impl.R            # O(n log n) Shamos algorithm
+│   ├── shift_impl.R             # O((m+n) log L) shift quantiles
 │   ├── rng.R                    # Deterministic xoshiro256++ PRNG (R6 class)
-│   ├── xoshiro256.R             # PRNG core implementation (R6 class)
+│   ├── xoshiro256.R             # PRNG core implementation (plain functions)
 │   └── dist_*.R                 # Distribution classes
 ├── tests/testthat/
 │   ├── helper-reference-tests.R
@@ -70,18 +70,39 @@ r/pragmastat/
 
 ## Public Functions
 
+Each function is dual-dispatch: it accepts either a native numeric **vector**
+(returns a plain unitless `numeric`) or a **`Sample`** object (returns a
+`Measurement` carrying the unit). Dispatch is by `inherits(x, "Sample")`; for the
+two-sample functions, the `Sample` path is taken only when *both* `x` and `y` are
+Samples, otherwise the vector path runs.
+
+The `assume_sorted` flag applies to the **vector path only**: when `TRUE`, the
+already-ascending input is used as-is and the internal sort is skipped (undefined
+behavior if the data is not actually sorted). For the shuffle-based
+`spread_bounds`/`disparity_bounds` the disjoint-pair shuffle always runs on the
+passed order (the flag never affects the shuffle); it only reaches the
+order-independent sub-computations, so `spread_bounds` is effectively inert to it
+while `disparity_bounds` (whose sub-computation embeds `shift_bounds`) can
+silently differ on unsorted input. It is ignored on the `Sample` path,
+which always reuses the Sample's cached `sorted_values` view.
+
 ```r
-center(x)                              # Hodges-Lehmann estimator
-spread(x)                              # Shamos estimator
-shift(x, y)                            # Median of pairwise differences
-ratio(x, y)                            # Geometric median of pairwise ratios
-disparity(x, y)                        # Shift / AvgSpread
-shift_bounds(x, y, misrate = 1e-3)     # Confidence bounds on shift
-ratio_bounds(x, y, misrate = 1e-3)     # Confidence bounds on ratio
-disparity_bounds(x, y, misrate = 1e-3, seed = NULL) # Confidence bounds on disparity
-center_bounds(x, misrate = 1e-3)       # Confidence bounds on center
-spread_bounds(x, misrate = 1e-3, seed = NULL)       # Confidence bounds on spread
+# x, y below are either a numeric vector or a Sample.
+center(x, assume_sorted = FALSE)                              # Hodges-Lehmann estimator
+spread(x, assume_sorted = FALSE)                              # Shamos estimator
+shift(x, y, assume_sorted = FALSE)                            # Median of pairwise differences
+ratio(x, y, assume_sorted = FALSE)                            # Geometric median of pairwise ratios
+disparity(x, y, assume_sorted = FALSE)                        # Shift / AvgSpread
+center_bounds(x, misrate = 1e-3, assume_sorted = FALSE)       # Confidence bounds on center
+spread_bounds(x, misrate = 1e-3, seed = NULL, assume_sorted = FALSE)  # Confidence bounds on spread
+shift_bounds(x, y, misrate = 1e-3, assume_sorted = FALSE)     # Confidence bounds on shift
+ratio_bounds(x, y, misrate = 1e-3, assume_sorted = FALSE)     # Confidence bounds on ratio
+disparity_bounds(x, y, misrate = 1e-3, seed = NULL, assume_sorted = FALSE) # Confidence bounds on disparity
 ```
+
+Internal (not exported by `NAMESPACE`): `avg_spread(x, y)` and
+`avg_spread_bounds(x, y, misrate, seed)` follow the same dual dispatch but have
+no `assume_sorted` flag; the test suite reaches them via the package namespace.
 
 ## Testing
 
