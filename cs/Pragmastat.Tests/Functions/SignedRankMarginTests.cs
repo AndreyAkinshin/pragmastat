@@ -23,8 +23,7 @@ public class SignedRankMarginTests
       var errorTestCase = controller.LoadErrorTestCase(testName);
       var ex = Assert.Throws<AssumptionException>(() =>
         controller.Run(errorTestCase.Input));
-      Assert.Equal(errorTestCase.ExpectedError.Id, ex.Violation.IdString);
-      Assert.Equal(errorTestCase.ExpectedError.Subject, ex.Violation.Subject.ToString().ToLower());
+      ReferenceTestSuiteHelper.AssertErrorMatches(errorTestCase.ExpectedError, ex, ReferenceTestSuiteHelper.EntryPointSample);
       return;
     }
 

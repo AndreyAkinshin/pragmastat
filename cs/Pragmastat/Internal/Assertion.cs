@@ -214,23 +214,38 @@ internal static class Assertion
   {
     NotNull(name, sample);
     if (sample is { IsWeighted: true })
-      throw new WeightedSampleNotSupportedException(name);
+      throw new WeightedSampleNotSupportedException(
+        $"Weighted samples are not supported (parameter '{name}').", name);
   }
 
-  // No Validity(Sample, Subject) method here: the Sample constructor already guarantees
-  // non-empty input with finite values, so validity is enforced at construction time.
+  // For the Sample-based API the Sample constructor already guarantees non-empty input
+  // with finite values, so validity is enforced at construction time. The raw native-array
+  // API bypasses Sample construction, so it must run this check explicitly.
 
   /// <summary>
-  /// Checks that all values in a sample are strictly positive.
+  /// Checks the validity assumption for a raw value collection: it must be non-empty and
+  /// contain only finite values. Used by the raw native-array API, where there is no
+  /// Sample constructor to enforce it.
   /// </summary>
   [AssertionMethod]
-  public static void PositivityAssumption(Sample sample, Subject subject)
+  public static void Validity(IReadOnlyList<double>? values, Subject subject)
   {
-    foreach (var value in sample.Values)
-    {
-      if (value <= 0)
+    if (values == null || values.Count == 0)
+      throw AssumptionException.Validity(subject);
+    for (int i = 0; i < values.Count; i++)
+      if (!values[i].IsFinite())
+        throw AssumptionException.Validity(subject);
+  }
+
+  /// <summary>
+  /// Checks that all values in a raw collection are strictly positive.
+  /// </summary>
+  [AssertionMethod]
+  public static void PositivityAssumption(IReadOnlyList<double> values, Subject subject)
+  {
+    for (int i = 0; i < values.Count; i++)
+      if (values[i] <= 0)
         throw AssumptionException.Positivity(subject);
-    }
   }
 
   [StringFormatMethod("format")]

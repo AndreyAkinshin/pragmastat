@@ -1,7 +1,17 @@
+using Pragmastat.Internal;
+
 namespace Pragmastat.Algorithms;
 
 internal static class CenterImpl
 {
+  // Bound the selection loop. On valid sorted input the Monahan selection converges in
+  // O(log n) iterations; the cap (BaseIterations + 4 * n) is far higher than ever needed for
+  // sorted input but guarantees termination on misuse (e.g. assumeSorted=true on UNSORTED
+  // input, which is undefined behavior and would otherwise spin forever). The cap scales with
+  // n so large valid inputs are never starved. We also track no-progress (stall) on the
+  // active set to bail out deterministically.
+  private const int BaseIterations = 256;
+  private const int MaxStall = 8;
   /// <summary>
   /// ACM Algorithm 616: fast computation of the Hodges-Lehmann location estimator
   /// </summary>
@@ -10,18 +20,20 @@ internal static class CenterImpl
   /// See: John F Monahan, "Algorithm 616: fast computation of the Hodges-Lehmann location estimator"
   /// (1984) DOI: 10.1145/1271.319414
   /// </remarks>
-  /// <param name="values">A sorted sample of values</param>
+  /// <param name="values">Sample values; sorted only when assumeSorted is true</param>
   /// <param name="random">Random number generator</param>
-  /// <param name="isSorted">If values are sorted</param>
+  /// <param name="assumeSorted">If values are sorted</param>
   /// <returns>Exact center value (Hodges-Lehmann estimator)</returns>
-  public static double Estimate(IReadOnlyList<double> values, Random? random = null, bool isSorted = false)
+  public static double Estimate(IReadOnlyList<double> values, Random? random = null, bool assumeSorted = false)
   {
     int n = values.Count;
     if (n == 1) return values[0];
-    if (n == 2) return 0.5 * values[0] + 0.5 * values[1];
+    // Overflow-safe, order-symmetric midpoint: 0.5*a + 0.5*b (halve before summing;
+    // never overflows; operand order is irrelevant).
+    if (n == 2) return Midpoint(values[0], values[1]);
     random ??= new Random();
-    if (!isSorted)
-      values = values.OrderBy(x => x).ToList();
+    if (!assumeSorted)
+      values = values.CopyToArrayAndSort();
 
     // Calculate target median rank(s) among all pairwise sums
     long totalPairs = (long)n * (n + 1) / 2;
@@ -45,7 +57,11 @@ internal static class CenterImpl
     long activeSetSize = totalPairs;
     long previousCount = 0;
 
-    while (true)
+    int maxIterations = BaseIterations + 4 * n;
+    long prevActiveSetSize = -1;
+    int stallCount = 0;
+
+    for (int iter = 0; iter < maxIterations; iter++)
     {
       // === PARTITION STEP ===
       // Count pairwise sums less than current pivot
@@ -172,6 +188,22 @@ internal static class CenterImpl
         activeSetSize += Max(0, rowSize);
       }
 
+      // Stall detection: on valid sorted input the active set strictly shrinks toward the
+      // target. If it fails to shrink for several consecutive iterations, the input is
+      // pathological (e.g. assumeSorted=true on unsorted data) and we bail deterministically.
+      if (activeSetSize >= prevActiveSetSize && prevActiveSetSize >= 0)
+      {
+        stallCount++;
+        if (stallCount >= MaxStall)
+          throw new InvalidOperationException("Convergence failure (pathological input).");
+      }
+      else
+      {
+        stallCount = 0;
+      }
+
+      prevActiveSetSize = activeSetSize;
+
       // Choose next pivot based on remaining active set size
       if (activeSetSize > 2)
       {
@@ -225,5 +257,15 @@ internal static class CenterImpl
           return pivot / 2;
       }
     }
+
+    // Iteration cap exhausted. The selection loop converges in O(log n) iterations on valid
+    // sorted input, so reaching here means the contract was violated (e.g. assumeSorted=true
+    // on unsorted input). Fail deterministically instead of spinning forever. Plain exception
+    // (NOT an AssumptionException): this is a misuse/pathological-input guard.
+    throw new InvalidOperationException("Convergence failure (pathological input).");
   }
+
+  // Overflow-safe, order-symmetric midpoint: 0.5*a + 0.5*b (halve before summing;
+  // never overflows; operand order is irrelevant).
+  private static double Midpoint(double a, double b) => 0.5 * a + 0.5 * b;
 }

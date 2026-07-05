@@ -1,9 +1,19 @@
 namespace Pragmastat.TestGenerator.Framework.CenterBounds;
 
-public class CenterBoundsController(string name, double eps = 1e-9)
-  : ReferenceTestController<CenterBoundsInput, CenterBoundsOutput>(shared: true)
+public class CenterBoundsController : ReferenceTestController<CenterBoundsInput, CenterBoundsOutput>
 {
-  protected override string SuiteName { get; } = name;
+  private readonly double eps;
+  private readonly Func<CenterBoundsInput, Bounds> compute;
+
+  protected override string SuiteName { get; }
+
+  public CenterBoundsController(string name, double eps = 1e-9, Func<CenterBoundsInput, Bounds>? compute = null)
+    : base(ReferenceTestSuiteHelper.GetTestSuiteDirectory(name, shared: true))
+  {
+    SuiteName = name;
+    this.eps = eps;
+    this.compute = compute ?? (input => Toolkit.CenterBounds(input.GetSample(), input.Misrate));
+  }
 
   public override bool Assert(CenterBoundsOutput expected, CenterBoundsOutput actual)
   {
@@ -13,8 +23,6 @@ public class CenterBoundsController(string name, double eps = 1e-9)
 
   public override CenterBoundsOutput Run(CenterBoundsInput input)
   {
-    var bounds = Toolkit.CenterBounds(input.GetSample(), new Probability(input.Misrate));
-    return new CenterBoundsOutput(bounds);
+    return new CenterBoundsOutput(compute(input));
   }
-
 }

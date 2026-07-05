@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Pragmastat.Exceptions;
 using Pragmastat.Internal;
 using Xunit;
 
@@ -30,6 +31,47 @@ public static class ReferenceTestSuiteHelper
     foreach (string value in testCastNames)
       data.Add(value);
     return data;
+  }
+
+  /// <summary>Entry-point labels for the dual-path reference tests.</summary>
+  public const string EntryPointRaw = "raw";
+  public const string EntryPointSample = "sample";
+
+  /// <summary>
+  /// Produces theory data that runs every fixture through BOTH the raw native-array entry point
+  /// (with assumeSorted=false) and the Sample entry point. This catches Sample-adapter bugs that a
+  /// raw-only loop would miss.
+  /// </summary>
+  public static TheoryData<string, string> GetDualPathTheoryData(string suiteName, bool shared = false)
+  {
+    var testCaseNames = LoadTestNames(suiteName, shared);
+
+    var data = new TheoryData<string, string>();
+    foreach (string value in testCaseNames)
+    {
+      data.Add(value, EntryPointRaw);
+      data.Add(value, EntryPointSample);
+    }
+    return data;
+  }
+
+  /// <summary>
+  /// Asserts that a thrown <see cref="AssumptionException"/> matches the fixture's expected error.
+  /// The id is always checked. The subject is checked except on the Sample entry point for
+  /// sample-construction validity errors whose fixture attributes them to subject "y":
+  /// Sample construction cannot know the argument position, so a y-argument validity error
+  /// surfaces from construction with the fixed subject "x". The raw entry point always validates
+  /// positionally, so its subject is asserted in full.
+  /// </summary>
+  public static void AssertErrorMatches(ExpectedError expected, AssumptionException ex, string entryPoint)
+  {
+    Assert.Equal(expected.Id, ex.Violation.IdString);
+
+    bool skipSubject = entryPoint == EntryPointSample &&
+                       expected.Id == "validity" &&
+                       expected.Subject == "y";
+    if (!skipSubject)
+      Assert.Equal(expected.Subject, ex.Violation.Subject.ToString().ToLower());
   }
 
   /// <summary>

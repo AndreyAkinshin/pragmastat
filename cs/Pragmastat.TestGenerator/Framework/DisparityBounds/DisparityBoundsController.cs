@@ -1,9 +1,21 @@
 namespace Pragmastat.TestGenerator.Framework.DisparityBounds;
 
-public class DisparityBoundsController(string name, double eps = 1e-9)
-  : ReferenceTestController<DisparityBoundsInput, DisparityBoundsOutput>(shared: true)
+public class DisparityBoundsController : ReferenceTestController<DisparityBoundsInput, DisparityBoundsOutput>
 {
-  protected override string SuiteName { get; } = name;
+  private readonly double eps;
+  private readonly Func<DisparityBoundsInput, Bounds> compute;
+
+  protected override string SuiteName { get; }
+
+  public DisparityBoundsController(string name, double eps = 1e-9, Func<DisparityBoundsInput, Bounds>? compute = null)
+    : base(ReferenceTestSuiteHelper.GetTestSuiteDirectory(name, shared: true))
+  {
+    SuiteName = name;
+    this.eps = eps;
+    this.compute = compute ?? (input => input.Seed != null
+      ? Toolkit.DisparityBounds(input.GetSampleX(), input.GetSampleY(), input.Misrate, input.Seed)
+      : Toolkit.DisparityBounds(input.GetSampleX(), input.GetSampleY(), input.Misrate));
+  }
 
   public override bool Assert(DisparityBoundsOutput expected, DisparityBoundsOutput actual)
   {
@@ -13,10 +25,6 @@ public class DisparityBoundsController(string name, double eps = 1e-9)
 
   public override DisparityBoundsOutput Run(DisparityBoundsInput input)
   {
-    var bounds = input.Seed != null
-      ? Toolkit.DisparityBounds(input.GetSampleX(), input.GetSampleY(), new Probability(input.Misrate), input.Seed)
-      : Toolkit.DisparityBounds(input.GetSampleX(), input.GetSampleY(), new Probability(input.Misrate));
-    return new DisparityBoundsOutput(bounds);
+    return new DisparityBoundsOutput(compute(input));
   }
-
 }

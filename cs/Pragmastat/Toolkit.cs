@@ -19,6 +19,23 @@ public static class Toolkit
   public static Measurement Ratio(Sample x, Sample y) => RatioEstimator.Instance.Estimate(x, y);
   /// <summary>Measures effect size as shift normalized by average spread.</summary>
   public static Measurement Disparity(Sample x, Sample y) => DisparityEstimator.Instance.Estimate(x, y);
+
+  // ── Raw native-array overloads (unitless results) ─────────────────────────
+  // These accept double[] directly, returning plain numbers / unitless Bounds. The assumeSorted
+  // flag lets callers with already-sorted data skip the internal sort. See the estimator XML docs
+  // for the assumeSorted contract; passing true on unsorted input is undefined behavior.
+
+  /// <summary>Estimates the central value (unitless) from a native array.</summary>
+  public static double Center(double[] x, bool assumeSorted = false) => CenterEstimator.Instance.Estimate(x, assumeSorted);
+  /// <summary>Estimates data dispersion (unitless) from a native array.</summary>
+  public static double Spread(double[] x, bool assumeSorted = false) => SpreadEstimator.Instance.Estimate(x, assumeSorted);
+
+  /// <summary>Measures the typical difference (unitless) from native arrays.</summary>
+  public static double Shift(double[] x, double[] y, bool assumeSorted = false) => ShiftEstimator.Instance.Estimate(x, y, assumeSorted);
+  /// <summary>Measures how many times larger x is compared to y (unitless) from native arrays.</summary>
+  public static double Ratio(double[] x, double[] y, bool assumeSorted = false) => RatioEstimator.Instance.Estimate(x, y, assumeSorted);
+  /// <summary>Measures effect size (unitless) from native arrays.</summary>
+  public static double Disparity(double[] x, double[] y, bool assumeSorted = false) => DisparityEstimator.Instance.Estimate(x, y, assumeSorted);
   internal static Measurement AvgSpread(Sample x, Sample y) => AvgSpreadEstimator.Instance.Estimate(x, y);
 
   internal static Bounds AvgSpreadBounds(Sample x, Sample y) => AvgSpreadBounds(x, y, DefaultMisrate);
@@ -62,6 +79,49 @@ public static class Toolkit
   /// <summary>Provides distribution-free bounds for the spread estimator.</summary>
   public static Bounds SpreadBounds(Sample x, Probability misrate, string seed) =>
     SpreadBoundsEstimator.Instance.Estimate(x, misrate, seed);
+
+  // ── Raw native-array bounds overloads (unitless results) ──────────────────
+
+  /// <summary>Distribution-free bounds (unitless) for the shift estimator from native arrays.</summary>
+  public static Bounds ShiftBounds(double[] x, double[] y, bool assumeSorted = false) =>
+    ShiftBounds(x, y, DefaultMisrate, assumeSorted);
+  /// <summary>Distribution-free bounds (unitless) for the shift estimator from native arrays.</summary>
+  public static Bounds ShiftBounds(double[] x, double[] y, double misrate, bool assumeSorted = false) =>
+    ShiftBoundsEstimator.Instance.Estimate(x, y, misrate, assumeSorted);
+
+  /// <summary>Distribution-free bounds (unitless) for the ratio estimator from native arrays.</summary>
+  public static Bounds RatioBounds(double[] x, double[] y, bool assumeSorted = false) =>
+    RatioBounds(x, y, DefaultMisrate, assumeSorted);
+  /// <summary>Distribution-free bounds (unitless) for the ratio estimator from native arrays.</summary>
+  public static Bounds RatioBounds(double[] x, double[] y, double misrate, bool assumeSorted = false) =>
+    RatioBoundsEstimator.Instance.Estimate(x, y, misrate, assumeSorted);
+
+  /// <summary>Distribution-free bounds (unitless) for the disparity estimator from native arrays.</summary>
+  public static Bounds DisparityBounds(double[] x, double[] y, bool assumeSorted = false) =>
+    DisparityBounds(x, y, DefaultMisrate, assumeSorted);
+  /// <summary>Distribution-free bounds (unitless) for the disparity estimator from native arrays.</summary>
+  public static Bounds DisparityBounds(double[] x, double[] y, double misrate, bool assumeSorted = false) =>
+    DisparityBoundsEstimator.Instance.Estimate(x, y, misrate, assumeSorted);
+  /// <summary>Distribution-free bounds (unitless) for the disparity estimator from native arrays, with seed.</summary>
+  public static Bounds DisparityBounds(double[] x, double[] y, double misrate, string seed, bool assumeSorted = false) =>
+    DisparityBoundsEstimator.Instance.Estimate(x, y, misrate, seed, assumeSorted);
+
+  /// <summary>Distribution-free bounds (unitless) for the center estimator from a native array.</summary>
+  public static Bounds CenterBounds(double[] x, bool assumeSorted = false) =>
+    CenterBounds(x, DefaultMisrate, assumeSorted);
+  /// <summary>Distribution-free bounds (unitless) for the center estimator from a native array.</summary>
+  public static Bounds CenterBounds(double[] x, double misrate, bool assumeSorted = false) =>
+    CenterBoundsEstimator.Instance.Estimate(x, misrate, assumeSorted);
+
+  /// <summary>Distribution-free bounds (unitless) for the spread estimator from a native array.</summary>
+  public static Bounds SpreadBounds(double[] x, bool assumeSorted = false) =>
+    SpreadBounds(x, DefaultMisrate, assumeSorted);
+  /// <summary>Distribution-free bounds (unitless) for the spread estimator from a native array.</summary>
+  public static Bounds SpreadBounds(double[] x, double misrate, bool assumeSorted = false) =>
+    SpreadBoundsEstimator.Instance.Estimate(x, misrate, assumeSorted);
+  /// <summary>Distribution-free bounds (unitless) for the spread estimator from a native array, with seed.</summary>
+  public static Bounds SpreadBounds(double[] x, double misrate, string seed, bool assumeSorted = false) =>
+    SpreadBoundsEstimator.Instance.Estimate(x, misrate, seed, assumeSorted);
 
   /// <summary>One-sample confirmatory analysis: compares Center/Spread against practical thresholds.</summary>
   public static IReadOnlyList<Projection> Compare1(Sample x, IReadOnlyList<Threshold> thresholds)

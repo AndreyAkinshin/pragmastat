@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-public static class ShiftImpl
+internal static class ShiftImpl
 {
   /// <summary>
   /// Computes quantiles of all pairwise differences { x_i - y_j }.
@@ -163,5 +163,7 @@ public static class ShiftImpl
     closestAbove = minAbove;
   }
 
+  // Overflow-safe, order-symmetric midpoint: 0.5*a + 0.5*b (halve before summing;
+  // never overflows; operand order is irrelevant).
   private static double Midpoint(double a, double b) => 0.5 * a + 0.5 * b;
 }

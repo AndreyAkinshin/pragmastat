@@ -2,6 +2,7 @@ using Pragmastat.Algorithms;
 using Pragmastat.Exceptions;
 using Pragmastat.Functions;
 using Pragmastat.Internal;
+using Pragmastat.Metrology;
 
 using static Pragmastat.Functions.MinAchievableMisrate;
 
@@ -11,14 +12,40 @@ public class ShiftBoundsEstimator : ITwoSampleBoundsEstimator
 {
   public static readonly ShiftBoundsEstimator Instance = new();
 
+  /// <summary>
+  /// Raw native-array entry point. Returns unitless bounds.
+  /// </summary>
+  /// <param name="x">First sample values.</param>
+  /// <param name="y">Second sample values.</param>
+  /// <param name="misrate">Misclassification rate.</param>
+  /// <param name="assumeSorted">
+  /// When true, both <paramref name="x"/> and <paramref name="y"/> are assumed already sorted
+  /// ascending and the internal sort is skipped. This changes the computation path; passing true
+  /// on unsorted input is undefined behavior and yields a wrong result. The caller is responsible.
+  /// </param>
+  public Bounds Estimate(double[] x, double[] y, double misrate, bool assumeSorted = false) =>
+    EstimateRaw(x, y, misrate, assumeSorted);
+
   public Bounds Estimate(Sample x, Sample y, Probability misrate)
   {
     Assertion.NonWeighted("x", x);
     Assertion.NonWeighted("y", y);
     Assertion.CompatibleUnits(x, y);
     (x, y) = Assertion.ConvertToFiner(x, y);
+    var rb = EstimateRaw(x.SortedValues, y.SortedValues, misrate, assumeSorted: true);
+    return new Bounds(rb.Lower, rb.Upper, x.Unit);
+  }
 
-    int n = x.Size, m = y.Size;
+  /// <summary>
+  /// Single shared implementation. Both the raw and Sample entry points call this.
+  /// Returns unitless bounds (the Sample path re-attaches the unit).
+  /// </summary>
+  internal static Bounds EstimateRaw(IReadOnlyList<double> x, IReadOnlyList<double> y, double misrate, bool assumeSorted)
+  {
+    Assertion.Validity(x, Subject.X);
+    Assertion.Validity(y, Subject.Y);
+
+    int n = x.Count, m = y.Count;
     long total = (long)n * m;
 
     if (double.IsNaN(misrate) || misrate < 0 || misrate > 1)
@@ -28,11 +55,15 @@ public class ShiftBoundsEstimator : ITwoSampleBoundsEstimator
     if (misrate < minMisrate)
       throw AssumptionException.Domain(Subject.Misrate);
 
+    // Order-independent: produce sorted views once (or reuse the already-sorted input).
+    IReadOnlyList<double> xs = assumeSorted ? x : x.CopyToArrayAndSort();
+    IReadOnlyList<double> ys = assumeSorted ? y : y.CopyToArrayAndSort();
+
     // Special case: when there's only one pairwise difference, bounds collapse to a single value
     if (total == 1)
     {
-      double value = x.Values[0] - y.Values[0];
-      return new Bounds(value, value, x.Unit);
+      double value = xs[0] - ys[0];
+      return new Bounds(value, value, MeasurementUnit.Number);
     }
 
     int margin = PairwiseMargin.Instance.Calc(n, m, misrate);
@@ -53,9 +84,9 @@ public class ShiftBoundsEstimator : ITwoSampleBoundsEstimator
       kRight / denominator
     ];
 
-    double[] bounds = ShiftImpl.Estimate(x.SortedValues, y.SortedValues, p, assumeSorted: true);
+    double[] bounds = ShiftImpl.Estimate(xs, ys, p, assumeSorted: true);
     double lower = Math.Min(bounds[0], bounds[1]);
     double upper = Math.Max(bounds[0], bounds[1]);
-    return new Bounds(lower, upper, x.Unit);
+    return new Bounds(lower, upper, MeasurementUnit.Number);
   }
 }

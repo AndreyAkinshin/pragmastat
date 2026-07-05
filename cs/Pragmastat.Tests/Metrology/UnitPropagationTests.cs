@@ -69,7 +69,7 @@ public class UnitPropagationTests
           double[] yValues = ParseDoubleArray(input.GetProperty("y"));
           string yUnitId = input.GetProperty("y_unit").GetString()!;
           MeasurementUnit yUnit = Registry.Resolve(yUnitId);
-          var sy = new Sample(yValues, yUnit, Subject.Y);
+          var sy = new Sample(yValues, yUnit);
           Measurement m = Toolkit.Shift(sx, sy);
           Assert.Equal(expectedUnitId, m.Unit.Id);
           break;
@@ -79,7 +79,7 @@ public class UnitPropagationTests
           double[] yValues = ParseDoubleArray(input.GetProperty("y"));
           string yUnitId = input.GetProperty("y_unit").GetString()!;
           MeasurementUnit yUnit = Registry.Resolve(yUnitId);
-          var sy = new Sample(yValues, yUnit, Subject.Y);
+          var sy = new Sample(yValues, yUnit);
           Measurement m = Toolkit.Ratio(sx, sy);
           Assert.Equal(expectedUnitId, m.Unit.Id);
           break;
@@ -89,7 +89,7 @@ public class UnitPropagationTests
           double[] yValues = ParseDoubleArray(input.GetProperty("y"));
           string yUnitId = input.GetProperty("y_unit").GetString()!;
           MeasurementUnit yUnit = Registry.Resolve(yUnitId);
-          var sy = new Sample(yValues, yUnit, Subject.Y);
+          var sy = new Sample(yValues, yUnit);
           Measurement m = Toolkit.Disparity(sx, sy);
           Assert.Equal(expectedUnitId, m.Unit.Id);
           break;

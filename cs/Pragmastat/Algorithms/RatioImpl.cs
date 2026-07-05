@@ -10,7 +10,7 @@ using Pragmastat.Internal;
 /// Computes quantiles of pairwise ratios via log-transformation and ShiftImpl delegation.
 /// Ratio(x, y) = exp(Shift(log(x), log(y)))
 /// </summary>
-public static class RatioImpl
+internal static class RatioImpl
 {
   /// <summary>
   /// Computes quantiles of all pairwise ratios { x_i / y_j }.

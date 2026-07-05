@@ -12,6 +12,24 @@ public class SampleConstructionTests
   [UsedImplicitly]
   public static readonly TheoryData<string> TestDataNames = ReferenceTestSuiteHelper.GetTheoryData(SuiteName, true);
 
+  [Fact]
+  public void Sample_OwnsCopy_CallerMutationDoesNotCorruptIt()
+  {
+    // A Sample must own an immutable copy of its input. With already-sorted input the
+    // lazy sorted cache would otherwise alias the caller's array, so a later mutation
+    // could leave SortedValues unsorted while still being used with assumeSorted: true.
+    double[] values = { 1.0, 2.0, 3.0 };
+    var sample = new Sample(values);
+    _ = sample.SortedValues; // populate the lazy cache
+
+    values[0] = 999.0; // mutate the caller-owned array
+
+    Assert.Equal(1.0, sample.Values[0]);
+    Assert.Equal(1.0, sample.SortedValues[0]);
+    Assert.Equal(2.0, sample.SortedValues[1]);
+    Assert.Equal(3.0, sample.SortedValues[2]);
+  }
+
   [Theory]
   [MemberData(nameof(TestDataNames))]
   public void SampleConstructionTest(string testName)

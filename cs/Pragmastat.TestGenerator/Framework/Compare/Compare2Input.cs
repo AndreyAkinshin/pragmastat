@@ -1,5 +1,4 @@
 using JetBrains.Annotations;
-using Pragmastat.Exceptions;
 
 namespace Pragmastat.TestGenerator.Framework.Compare;
 
@@ -24,7 +23,7 @@ public class Compare2Input
   }
 
   public Sample GetSampleX() => new Sample(X);
-  public Sample GetSampleY() => new Sample(Y, validationSubject: Subject.Y);
+  public Sample GetSampleY() => new Sample(Y);
 
   public IReadOnlyList<Threshold> GetThresholds()
     => Thresholds.Select(t => t.ToThreshold()).ToList();

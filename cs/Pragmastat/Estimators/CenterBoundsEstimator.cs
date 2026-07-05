@@ -2,6 +2,7 @@ using Pragmastat.Algorithms;
 using Pragmastat.Exceptions;
 using Pragmastat.Functions;
 using Pragmastat.Internal;
+using Pragmastat.Metrology;
 
 using static Pragmastat.Functions.MinAchievableMisrate;
 
@@ -15,14 +16,38 @@ public class CenterBoundsEstimator : IOneSampleBoundsEstimator
 {
   public static readonly CenterBoundsEstimator Instance = new();
 
+  /// <summary>
+  /// Raw native-array entry point. Returns unitless bounds.
+  /// </summary>
+  /// <param name="x">Input values.</param>
+  /// <param name="misrate">Misclassification rate.</param>
+  /// <param name="assumeSorted">
+  /// When true, <paramref name="x"/> is assumed already sorted ascending and the internal sort is
+  /// skipped. This changes the computation path; passing true on unsorted input is undefined
+  /// behavior and yields a wrong result. The caller is responsible.
+  /// </param>
+  public Bounds Estimate(double[] x, double misrate, bool assumeSorted = false) =>
+    EstimateRaw(x, misrate, assumeSorted);
+
   public Bounds Estimate(Sample x, Probability misrate)
   {
     Assertion.NonWeighted("x", x);
+    var rb = EstimateRaw(x.SortedValues, misrate, assumeSorted: true);
+    return new Bounds(rb.Lower, rb.Upper, x.Unit);
+  }
+
+  /// <summary>
+  /// Single shared implementation. Both the raw and Sample entry points call this.
+  /// Returns unitless bounds (the Sample path re-attaches the unit).
+  /// </summary>
+  internal static Bounds EstimateRaw(IReadOnlyList<double> x, double misrate, bool assumeSorted)
+  {
+    Assertion.Validity(x, Subject.X);
 
     if (double.IsNaN(misrate) || misrate < 0 || misrate > 1)
       throw AssumptionException.Domain(Subject.Misrate);
 
-    int n = x.Size;
+    int n = x.Count;
 
     if (n < 2)
       throw AssumptionException.Domain(Subject.X);
@@ -46,7 +71,8 @@ public class CenterBoundsEstimator : IOneSampleBoundsEstimator
     long kLeft = halfMargin + 1;
     long kRight = totalPairs - halfMargin;
 
-    var (lo, hi) = CenterQuantilesImpl.Bounds(x.SortedValues, kLeft, kRight);
-    return new Bounds(lo, hi, x.Unit);
+    IReadOnlyList<double> sorted = assumeSorted ? x : x.CopyToArrayAndSort();
+    var (lo, hi) = CenterQuantilesImpl.Bounds(sorted, kLeft, kRight);
+    return new Bounds(lo, hi, MeasurementUnit.Number);
   }
 }

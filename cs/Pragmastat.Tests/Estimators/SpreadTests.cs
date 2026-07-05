@@ -9,22 +9,30 @@ namespace Pragmastat.Tests.Estimators;
 public class SpreadTests
 {
   private const string SuiteName = "spread";
-  private readonly OneSampleEstimatorController controller = new(SuiteName, input => SpreadEstimator.Instance.Estimate(input.ToSample()));
+
+  private readonly OneSampleEstimatorController sampleController =
+    new(SuiteName, input => SpreadEstimator.Instance.Estimate(input.ToSample()));
+  private readonly OneSampleEstimatorController rawController =
+    new(SuiteName, input => SpreadEstimator.Instance.Estimate(input.X, assumeSorted: false));
+
+  private OneSampleEstimatorController Controller(string entryPoint) =>
+    entryPoint == ReferenceTestSuiteHelper.EntryPointRaw ? rawController : sampleController;
 
   [UsedImplicitly]
-  public static readonly TheoryData<string> TestDataNames = ReferenceTestSuiteHelper.GetTheoryData(SuiteName, true);
+  public static readonly TheoryData<string, string> TestDataNames =
+    ReferenceTestSuiteHelper.GetDualPathTheoryData(SuiteName, true);
 
   [Theory]
   [MemberData(nameof(TestDataNames))]
-  public void SpreadTest(string testName)
+  public void SpreadTest(string testName, string entryPoint)
   {
+    var controller = Controller(entryPoint);
     if (ReferenceTestSuiteHelper.IsErrorTestCase(SuiteName, testName, shared: true))
     {
       var errorTestCase = controller.LoadErrorTestCase(testName);
       var ex = Assert.Throws<AssumptionException>(() =>
         controller.Run(errorTestCase.Input));
-      Assert.Equal(errorTestCase.ExpectedError.Id, ex.Violation.IdString);
-      Assert.Equal(errorTestCase.ExpectedError.Subject, ex.Violation.Subject.ToString().ToLower());
+      ReferenceTestSuiteHelper.AssertErrorMatches(errorTestCase.ExpectedError, ex, entryPoint);
       return;
     }
 
@@ -43,6 +51,6 @@ public class SpreadTests
     var sample = new Sample(x);
     var actual = SpreadEstimator.Instance.Estimate(sample);
     const double expected = 29290;
-    Assert.True(controller.Assert(expected, actual));
+    Assert.True(sampleController.Assert(expected, actual));
   }
 }

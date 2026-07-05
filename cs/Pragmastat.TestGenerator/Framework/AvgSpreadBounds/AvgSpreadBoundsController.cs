@@ -14,8 +14,8 @@ public class AvgSpreadBoundsController(string name, double eps = 1e-9)
   public override AvgSpreadBoundsOutput Run(AvgSpreadBoundsInput input)
   {
     var bounds = input.Seed != null
-      ? Toolkit.AvgSpreadBounds(input.GetSampleX(), input.GetSampleY(), new Probability(input.Misrate), input.Seed)
-      : Toolkit.AvgSpreadBounds(input.GetSampleX(), input.GetSampleY(), new Probability(input.Misrate));
+      ? Toolkit.AvgSpreadBounds(input.GetSampleX(), input.GetSampleY(), input.Misrate, input.Seed)
+      : Toolkit.AvgSpreadBounds(input.GetSampleX(), input.GetSampleY(), input.Misrate);
     return new AvgSpreadBoundsOutput(bounds);
   }
 

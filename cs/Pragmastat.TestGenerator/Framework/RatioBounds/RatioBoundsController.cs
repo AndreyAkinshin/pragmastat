@@ -1,9 +1,20 @@
 namespace Pragmastat.TestGenerator.Framework.RatioBounds;
 
-public class RatioBoundsController(string name, double eps = 1e-9)
-  : ReferenceTestController<RatioBoundsInput, RatioBoundsOutput>(shared: true)
+public class RatioBoundsController : ReferenceTestController<RatioBoundsInput, RatioBoundsOutput>
 {
-  protected override string SuiteName { get; } = name;
+  private readonly double eps;
+  private readonly Func<RatioBoundsInput, Bounds> compute;
+
+  protected override string SuiteName { get; }
+
+  public RatioBoundsController(string name, double eps = 1e-9, Func<RatioBoundsInput, Bounds>? compute = null)
+    : base(ReferenceTestSuiteHelper.GetTestSuiteDirectory(name, shared: true))
+  {
+    SuiteName = name;
+    this.eps = eps;
+    this.compute = compute ?? (input =>
+      Toolkit.RatioBounds(input.GetSampleX(), input.GetSampleY(), input.Misrate));
+  }
 
   public override bool Assert(RatioBoundsOutput expected, RatioBoundsOutput actual)
   {
@@ -13,8 +24,6 @@ public class RatioBoundsController(string name, double eps = 1e-9)
 
   public override RatioBoundsOutput Run(RatioBoundsInput input)
   {
-    var bounds = Toolkit.RatioBounds(input.GetSampleX(), input.GetSampleY(), new Probability(input.Misrate));
-    return new RatioBoundsOutput(bounds);
+    return new RatioBoundsOutput(compute(input));
   }
-
 }

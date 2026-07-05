@@ -2,10 +2,19 @@ namespace Pragmastat.Algorithms;
 
 internal static class SpreadImpl
 {
+  // Bound the selection loop. On valid sorted input the selection converges in O(log n)
+  // iterations; the cap (BaseIterations + 4 * n) is far higher than ever needed for sorted
+  // input but guarantees termination on misuse (e.g. assumeSorted=true on UNSORTED input,
+  // which is undefined behavior and would otherwise spin forever). The cap scales with n so
+  // large valid inputs are never starved. We also track no-progress (stall) on the active
+  // set to bail out deterministically. Mirrors CenterImpl's guard.
+  private const int BaseIterations = 256;
+  private const int MaxStall = 8;
+
   /// <summary>
   /// Shamos "Spread".  Expected O(n log n) time, O(n) extra space. Exact.
   /// </summary>
-  public static double Estimate(IReadOnlyList<double> values, Random? random = null, bool isSorted = false)
+  public static double Estimate(IReadOnlyList<double> values, Random? random = null, bool assumeSorted = false)
   {
     int n = values.Count;
     if (n <= 1) return 0;
@@ -13,7 +22,7 @@ internal static class SpreadImpl
     random ??= new Random();
 
     // Prepare a sorted working copy.
-    double[] a = isSorted ? CopySorted(values) : EnsureSorted(values);
+    double[] a = assumeSorted ? CopyTrusted(values) : CopyAndSort(values);
 
     // Total number of pairwise differences with i < j
     long N = (long)n * (n - 1) / 2;
@@ -42,7 +51,11 @@ internal static class SpreadImpl
 
     long prevCountBelow = -1;
 
-    while (true)
+    int maxIterations = BaseIterations + 4 * n;
+    long prevActiveSize = -1;
+    int stallCount = 0;
+
+    for (int iter = 0; iter < maxIterations; iter++)
     {
       // === PARTITION: count how many differences are < pivot; also track boundary neighbors ===
       long countBelow = 0;
@@ -174,6 +187,22 @@ internal static class SpreadImpl
         if (L[i] <= R[i]) activeSize += (R[i] - L[i] + 1);
       }
 
+      // Stall detection: on valid sorted input the active set strictly shrinks toward the
+      // target. If it fails to shrink for several consecutive iterations, the input is
+      // pathological (e.g. assumeSorted=true on unsorted data) and we bail deterministically.
+      if (activeSize >= prevActiveSize && prevActiveSize >= 0)
+      {
+        stallCount++;
+        if (stallCount >= MaxStall)
+          throw new InvalidOperationException("Convergence failure (pathological input).");
+      }
+      else
+      {
+        stallCount = 0;
+      }
+
+      prevActiveSize = activeSize;
+
       if (activeSize <= 2)
       {
         // Few candidates left: return midrange of remaining exactly.
@@ -214,10 +243,17 @@ internal static class SpreadImpl
         pivot = a[col] - a[row];
       }
     }
+
+    // Iteration cap exhausted. The selection loop converges in O(log n) iterations on valid
+    // sorted input, so reaching here means the contract was violated (e.g. assumeSorted=true
+    // on unsorted input). Fail deterministically instead of spinning forever. Plain exception
+    // (NOT an AssumptionException): this is a misuse/pathological-input guard, mirroring
+    // CenterImpl's convergence-failure throw.
+    throw new InvalidOperationException("Convergence failure (pathological input).");
   }
   // --- Helpers ---
 
-  private static double[] CopySorted(IReadOnlyList<double> values)
+  private static double[] CopyAndSort(IReadOnlyList<double> values)
   {
     var a = new double[values.Count];
     for (int i = 0; i < a.Length; i++)
@@ -231,9 +267,9 @@ internal static class SpreadImpl
     return a;
   }
 
-  private static double[] EnsureSorted(IReadOnlyList<double> values)
+  private static double[] CopyTrusted(IReadOnlyList<double> values)
   {
-    // Trust caller; still copy to array for fast indexed access.
+    // Trust caller that values are sorted; still copy to array for fast indexed access.
     var a = new double[values.Count];
     for (int i = 0; i < a.Length; i++)
     {

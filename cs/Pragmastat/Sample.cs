@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Linq;
 using System.Text;
 using JetBrains.Annotations;
 using Pragmastat.Exceptions;
@@ -30,31 +31,29 @@ public class Sample
   /// </summary>
   public double WeightedSize { get; }
 
-  public Sample(params double[] values) : this((IReadOnlyList<double>)values, null, null)
+  public Sample(params double[] values) : this((IReadOnlyList<double>)values, null)
   {
   }
 
-  public Sample(params int[] values) : this(Array.ConvertAll(values, x => (double)x), null, null)
+  public Sample(params int[] values) : this(Array.ConvertAll(values, x => (double)x), null)
   {
   }
 
-  internal Subject? ValidationSubject { get; }
-
-  public Sample(IReadOnlyList<double> values, MeasurementUnit? unit = null, Subject? validationSubject = null)
+  public Sample(IReadOnlyList<double> values, MeasurementUnit? unit = null)
   {
-    // Validate validity assumption at construction time
+    // Validate validity assumption at construction time.
+    // Construction cannot know the argument position, so it always reports subject "x".
     if (values == null)
       throw new ArgumentNullException(nameof(values), "values can't be null");
-    ValidationSubject = validationSubject ?? Subject.X;
     if (values.Count == 0)
-      throw AssumptionException.Validity(ValidationSubject.Value);
+      throw AssumptionException.Validity(Subject.X);
     foreach (var value in values)
     {
       if (!value.IsFinite())
-        throw AssumptionException.Validity(ValidationSubject.Value);
+        throw AssumptionException.Validity(Subject.X);
     }
 
-    Values = values;
+    Values = values.ToArray();
     Unit = unit ?? MeasurementUnit.Number;
     Weights = null;
     TotalWeight = 1.0;
@@ -65,18 +64,18 @@ public class Sample
       (IsSorted(Values) ? Values : Values.CopyToArrayAndSort(), null));
   }
 
-  public Sample(IReadOnlyList<double> values, IReadOnlyList<double> weights, MeasurementUnit? measurementUnit = null, Subject? validationSubject = null)
+  public Sample(IReadOnlyList<double> values, IReadOnlyList<double> weights, MeasurementUnit? measurementUnit = null)
   {
-    // Validate validity assumption at construction time
+    // Validate validity assumption at construction time.
+    // Construction cannot know the argument position, so it always reports subject "x".
     if (values == null)
       throw new ArgumentNullException(nameof(values), "values can't be null");
-    ValidationSubject = validationSubject ?? Subject.X;
     if (values.Count == 0)
-      throw AssumptionException.Validity(ValidationSubject.Value);
+      throw AssumptionException.Validity(Subject.X);
     foreach (var value in values)
     {
       if (!value.IsFinite())
-        throw AssumptionException.Validity(ValidationSubject.Value);
+        throw AssumptionException.Validity(Subject.X);
     }
 
     Assertion.NotNullOrEmpty(nameof(weights), weights);
@@ -102,8 +101,8 @@ public class Sample
       throw new ArgumentException(nameof(weights),
         $"The sum of all elements from {nameof(weights)} should be positive");
 
-    Values = values;
-    Weights = weights;
+    Values = values.ToArray();
+    Weights = weights.ToArray();
     Unit = measurementUnit ?? MeasurementUnit.Number;
     TotalWeight = totalWeight;
     WeightedSize = totalWeight.Sqr() / totalWeightSquared;
@@ -253,7 +252,7 @@ public class Sample
     for (int i = 0; i < Size; i++)
     {
       if (Values[i] <= 0)
-        throw AssumptionException.Positivity(ValidationSubject ?? Subject.X);
+        throw AssumptionException.Positivity(Subject.X);
       logValues[i] = Math.Log(Values[i]);
     }
     return IsWeighted

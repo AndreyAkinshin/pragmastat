@@ -1,9 +1,20 @@
 namespace Pragmastat.TestGenerator.Framework.ShiftBounds;
 
-public class ShiftBoundsController(string name, double eps = 1e-9)
-  : ReferenceTestController<ShiftBoundsInput, ShiftBoundsOutput>(shared: true)
+public class ShiftBoundsController : ReferenceTestController<ShiftBoundsInput, ShiftBoundsOutput>
 {
-  protected override string SuiteName { get; } = name;
+  private readonly double eps;
+  private readonly Func<ShiftBoundsInput, Bounds> compute;
+
+  protected override string SuiteName { get; }
+
+  public ShiftBoundsController(string name, double eps = 1e-9, Func<ShiftBoundsInput, Bounds>? compute = null)
+    : base(ReferenceTestSuiteHelper.GetTestSuiteDirectory(name, shared: true))
+  {
+    SuiteName = name;
+    this.eps = eps;
+    this.compute = compute ?? (input =>
+      Toolkit.ShiftBounds(input.GetSampleX(), input.GetSampleY(), input.Misrate));
+  }
 
   public override bool Assert(ShiftBoundsOutput expected, ShiftBoundsOutput actual)
   {
@@ -13,9 +24,6 @@ public class ShiftBoundsController(string name, double eps = 1e-9)
 
   public override ShiftBoundsOutput Run(ShiftBoundsInput input)
   {
-    var bounds = Toolkit.ShiftBounds(input.GetSampleX(), input.GetSampleY(), new Probability(input.Misrate));
-    return new ShiftBoundsOutput(bounds);
+    return new ShiftBoundsOutput(compute(input));
   }
-
 }
-

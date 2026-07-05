@@ -5,15 +5,14 @@ namespace Pragmastat;
 
 public readonly struct Probability : IComparable, IComparable<Probability>, IEquatable<Probability>, IFormattable
 {
-  public static readonly Probability Zero = 0.0;
-  public static readonly Probability Half = 0.5;
-  public static readonly Probability One = 1.0;
-  public static readonly Probability NaN = double.NaN;
-
   public readonly double Value;
 
   public Probability(double value)
   {
+    // InRangeInclusive uses (value < min || value > max), which is false for NaN; reject NaN
+    // explicitly so C# matches Kotlin (which rejects NaN).
+    if (double.IsNaN(value))
+      throw new ArgumentOutOfRangeException(nameof(value), value, $"{nameof(value)} must not be NaN");
     Assertion.InRangeInclusive(nameof(value), value, 0, 1);
     Value = value;
   }

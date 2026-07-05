@@ -148,11 +148,11 @@ internal static class CenterQuantilesImpl
       }
 
       if (left < n && left >= i && Abs(sorted[left] - threshold) < eps * Max(1.0, Abs(threshold)))
-        candidates.Add((sorted[i] + sorted[left]) / 2);
+        candidates.Add(0.5 * sorted[i] + 0.5 * sorted[left]);
 
       if (left > i)
       {
-        double avgBefore = (sorted[i] + sorted[left - 1]) / 2;
+        double avgBefore = 0.5 * sorted[i] + 0.5 * sorted[left - 1];
         if (avgBefore <= target + eps)
           candidates.Add(avgBefore);
       }

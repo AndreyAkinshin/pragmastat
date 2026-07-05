@@ -1,9 +1,21 @@
 namespace Pragmastat.TestGenerator.Framework.SpreadBounds;
 
-public class SpreadBoundsController(string name, double eps = 1e-9)
-  : ReferenceTestController<SpreadBoundsInput, SpreadBoundsOutput>(shared: true)
+public class SpreadBoundsController : ReferenceTestController<SpreadBoundsInput, SpreadBoundsOutput>
 {
-  protected override string SuiteName { get; } = name;
+  private readonly double eps;
+  private readonly Func<SpreadBoundsInput, Bounds> compute;
+
+  protected override string SuiteName { get; }
+
+  public SpreadBoundsController(string name, double eps = 1e-9, Func<SpreadBoundsInput, Bounds>? compute = null)
+    : base(ReferenceTestSuiteHelper.GetTestSuiteDirectory(name, shared: true))
+  {
+    SuiteName = name;
+    this.eps = eps;
+    this.compute = compute ?? (input => input.Seed != null
+      ? Toolkit.SpreadBounds(input.GetSample(), input.Misrate, input.Seed)
+      : Toolkit.SpreadBounds(input.GetSample(), input.Misrate));
+  }
 
   public override bool Assert(SpreadBoundsOutput expected, SpreadBoundsOutput actual)
   {
@@ -13,10 +25,6 @@ public class SpreadBoundsController(string name, double eps = 1e-9)
 
   public override SpreadBoundsOutput Run(SpreadBoundsInput input)
   {
-    var bounds = input.Seed != null
-      ? Toolkit.SpreadBounds(input.GetSample(), new Probability(input.Misrate), input.Seed)
-      : Toolkit.SpreadBounds(input.GetSample(), new Probability(input.Misrate));
-    return new SpreadBoundsOutput(bounds);
+    return new SpreadBoundsOutput(compute(input));
   }
-
 }

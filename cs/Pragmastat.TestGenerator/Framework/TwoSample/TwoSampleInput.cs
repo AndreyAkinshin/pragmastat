@@ -1,5 +1,4 @@
 using JetBrains.Annotations;
-using Pragmastat.Exceptions;
 
 namespace Pragmastat.TestGenerator.Framework.TwoSample;
 
@@ -29,5 +28,5 @@ public class TwoSampleInput
   }
 
   public Sample GetSampleX() => new Sample(X);
-  public Sample GetSampleY() => new Sample(Y, validationSubject: Subject.Y);
+  public Sample GetSampleY() => new Sample(Y);
 }
