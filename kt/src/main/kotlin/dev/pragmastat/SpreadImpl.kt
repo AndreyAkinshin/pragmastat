@@ -58,7 +58,7 @@ internal fun spreadImpl(values: List<Double>): Double {
 
         if (atTarget) {
             return if (kLow < kHigh) {
-                0.5 * (largestBelow + smallestAtOrAbove)
+                0.5 * largestBelow + 0.5 * smallestAtOrAbove
             } else {
                 if (countBelow == kLow) largestBelow else smallestAtOrAbove
             }
@@ -78,7 +78,7 @@ internal fun spreadImpl(values: List<Double>): Double {
 
             if (active <= 0) {
                 return if (kLow < kHigh) {
-                    0.5 * (largestBelow + smallestAtOrAbove)
+                    0.5 * largestBelow + 0.5 * smallestAtOrAbove
                 } else {
                     if (countBelow >= kLow) largestBelow else smallestAtOrAbove
                 }
@@ -86,7 +86,7 @@ internal fun spreadImpl(values: List<Double>): Double {
 
             if (maxActive <= minActive) return minActive
 
-            val mid = 0.5 * (minActive + maxActive)
+            val mid = 0.5 * minActive + 0.5 * maxActive
             pivot = if (mid > minActive && mid <= maxActive) mid else maxActive
             prevCountBelow = countBelow
             continue
@@ -127,14 +127,14 @@ internal fun spreadImpl(values: List<Double>): Double {
 
             if (activeSize <= 0) {
                 return if (kLow < kHigh) {
-                    0.5 * (largestBelow + smallestAtOrAbove)
+                    0.5 * largestBelow + 0.5 * smallestAtOrAbove
                 } else {
                     if (countBelow >= kLow) largestBelow else smallestAtOrAbove
                 }
             }
 
             return if (kLow < kHigh) {
-                0.5 * (minRem + maxRem)
+                0.5 * minRem + 0.5 * maxRem
             } else {
                 if (abs((kLow - 1) - countBelow) <= abs(countBelow - kLow)) minRem else maxRem
             }

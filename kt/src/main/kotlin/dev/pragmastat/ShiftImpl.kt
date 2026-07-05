@@ -177,7 +177,7 @@ private fun countAndNeighbors(
 private fun midpoint(
     a: Double,
     b: Double,
-): Double = a + (b - a) * 0.5
+): Double = 0.5 * a + 0.5 * b
 
 /**
  * Fast O((m + n) * log(precision)) implementation of the Ratio estimator via log-transformation.

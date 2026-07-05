@@ -10,7 +10,7 @@ internal fun centerImpl(values: List<Double>): Double {
     val n = values.size
     require(n > 0) { "Input list cannot be empty" }
     if (n == 1) return values[0]
-    if (n == 2) return (values[0] + values[1]) / 2.0
+    if (n == 2) return 0.5 * values[0] + 0.5 * values[1]
 
     // Create deterministic RNG from input values
     val rng = Rng(deriveSeed(values))
@@ -54,7 +54,7 @@ internal fun centerImpl(values: List<Double>): Double {
                 maxActiveSum = maxOf(maxActiveSum, sortedValues[rightBounds[i] - 1] + rowValue)
             }
 
-            pivot = (minActiveSum + maxActiveSum) / 2
+            pivot = 0.5 * minActiveSum + 0.5 * maxActiveSum
             if (pivot <= minActiveSum || pivot > maxActiveSum) pivot = maxActiveSum
             if (minActiveSum == maxActiveSum || activeSetSize <= 2) return pivot / 2
             continue
@@ -129,7 +129,7 @@ internal fun centerImpl(values: List<Double>): Double {
                 maxRemainingSum = maxOf(maxRemainingSum, sortedValues[rightBounds[i] - 1] + rowValue)
             }
 
-            pivot = (minRemainingSum + maxRemainingSum) / 2
+            pivot = 0.5 * minRemainingSum + 0.5 * maxRemainingSum
             if (pivot <= minRemainingSum || pivot > maxRemainingSum) pivot = maxRemainingSum
             if (minRemainingSum == maxRemainingSum) return pivot / 2
         }

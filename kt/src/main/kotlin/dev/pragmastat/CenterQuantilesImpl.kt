@@ -93,7 +93,7 @@ internal object CenterQuantilesImpl {
         val eps = RELATIVE_EPSILON
 
         while (hi - lo > eps * max(1.0, max(abs(lo), abs(hi)))) {
-            val mid = (lo + hi) / 2
+            val mid = 0.5 * lo + 0.5 * hi
             val countLessOrEqual = countPairsLessOrEqual(sorted, mid)
 
             if (countLessOrEqual >= k) {
@@ -103,7 +103,7 @@ internal object CenterQuantilesImpl {
             }
         }
 
-        val target = (lo + hi) / 2
+        val target = 0.5 * lo + 0.5 * hi
         val candidates = ArrayList<Double>(n)
 
         for (i in 0 until n) {
