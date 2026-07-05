@@ -32,16 +32,18 @@ py/
 │   ├── gauss_cdf.py               # Standard normal CDF (ACM Algorithm 209)
 │   ├── rng.py                     # Deterministic xoshiro256++ PRNG
 │   ├── xoshiro256.py              # PRNG core implementation
-│   ├── fast_center.py             # O(n log n) Hodges-Lehmann algorithm
-│   ├── _fast_center_quantiles.py  # Center quantile binary search (internal)
-│   ├── fast_spread.py             # O(n log n) Shamos algorithm
-│   ├── fast_shift.py              # O((m+n) log L) shift quantiles
+│   ├── center_impl.py             # O(n log n) Hodges-Lehmann algorithm
+│   ├── _center_quantiles_impl.py  # Center quantile binary search (internal)
+│   ├── spread_impl.py             # O(n log n) Shamos algorithm
+│   ├── shift_impl.py              # O((m+n) log L) shift quantiles
 │   ├── _constants.py              # Internal constants
 │   └── distributions/             # Uniform, Additive, Exp, Power, Multiplic
 ├── tests/
-│   ├── test_reference.py          # JSON fixture validation (includes sample-construction, unit-propagation)
+│   ├── test_assume_sorted.py      # assume-sorted equivalence + convergence-guard misuse
 │   ├── test_invariance.py         # Mathematical property tests
-│   └── test_performance.py
+│   ├── test_mutation.py           # Raw-API input-mutation safety
+│   ├── test_performance.py        # Performance smoke test
+│   └── test_reference.py          # JSON fixture validation (includes sample-construction, unit-propagation)
 ├── examples/
 │   └── demo.py
 └── pyproject.toml
@@ -69,20 +71,45 @@ py/
 
 ## Public Functions
 
-All estimator functions accept `Sample` objects and return `Measurement` or `Bounds`:
+Every estimator exposes **two entry points through one function**: each accepts
+either a typed `Sample` or a raw `ArrayLike` (`Sequence[float]` or numpy
+`NDArray`), distinguished at runtime.
+
+- **Typed Sample input**: point estimators return `Measurement`, bounds return
+  `Bounds` (units propagated from the input). The cached sorted view is used, so
+  `assume_sorted` is ignored for `Sample` input.
+- **Raw native-array input**: point estimators return a plain `float`, bounds
+  return `Bounds` (with `NUMBER_UNIT`). Pass `assume_sorted=True` to skip the
+  internal sort when the input is already sorted ascending. `assume_sorted` is a
+  keyword-only argument (default `False`).
 
 ```python
-def center(x: Sample) -> Measurement
-def spread(x: Sample) -> Measurement
-def shift(x: Sample, y: Sample) -> Measurement
-def ratio(x: Sample, y: Sample) -> Measurement
-def disparity(x: Sample, y: Sample) -> Measurement
-def center_bounds(x: Sample, misrate: float = 1e-3) -> Bounds
-def spread_bounds(x: Sample, misrate: float = 1e-3, seed: str | None = None) -> Bounds
-def shift_bounds(x: Sample, y: Sample, misrate: float = 1e-3) -> Bounds
-def ratio_bounds(x: Sample, y: Sample, misrate: float = 1e-3) -> Bounds
-def disparity_bounds(x: Sample, y: Sample, misrate: float = 1e-3, seed: str | None = None) -> Bounds
+ArrayLike = Union[Sequence[float], NDArray]
+
+# Point estimators: Sample -> Measurement, ArrayLike -> float
+def center(x: Sample | ArrayLike, *, assume_sorted: bool = False) -> Measurement | float
+def spread(x: Sample | ArrayLike, *, assume_sorted: bool = False) -> Measurement | float
+def shift(x: Sample | ArrayLike, y: Sample | ArrayLike, *, assume_sorted: bool = False) -> Measurement | float
+def ratio(x: Sample | ArrayLike, y: Sample | ArrayLike, *, assume_sorted: bool = False) -> Measurement | float
+def disparity(x: Sample | ArrayLike, y: Sample | ArrayLike, *, assume_sorted: bool = False) -> Measurement | float
+
+# Bounds estimators: always return Bounds
+def center_bounds(x: Sample | ArrayLike, misrate: float = 1e-3, *, assume_sorted: bool = False) -> Bounds
+def spread_bounds(x: Sample | ArrayLike, misrate: float = 1e-3, seed: str | None = None, *, assume_sorted: bool = False) -> Bounds
+def shift_bounds(x: Sample | ArrayLike, y: Sample | ArrayLike, misrate: float = 1e-3, *, assume_sorted: bool = False) -> Bounds
+def ratio_bounds(x: Sample | ArrayLike, y: Sample | ArrayLike, misrate: float = 1e-3, *, assume_sorted: bool = False) -> Bounds
+def disparity_bounds(x: Sample | ArrayLike, y: Sample | ArrayLike, misrate: float = 1e-3, seed: str | None = None, *, assume_sorted: bool = False) -> Bounds
 ```
+
+Each public function wraps a private `_*_raw` helper that operates on native
+arrays. For the order-independent estimators the helper takes the
+`assume_sorted` flag, and the `Sample` path calls it with the cached
+`sorted_values` and `assume_sorted=True`. The shuffle-based bounds
+(`_spread_bounds_raw`, `_avg_spread_bounds_raw`, `_disparity_bounds_raw`)
+differ: the disjoint-pair shuffle must see the ORIGINAL order, so these helpers
+take original-order values plus optional pre-sorted views (`sorted_view` /
+`sorted_x` / `sorted_y`) used only for the order-independent sub-computations;
+the `Sample` path passes `values` together with the cached `sorted_values`.
 
 ## Unit Propagation Rules
 
@@ -152,7 +179,9 @@ Error conditions:
 
 ## Determinism
 
-The `_fast_center` and `_fast_spread` functions use deterministic pivot selection via FNV-1a hash. Uses the library's own `Rng` class instead of Python's `random` module.
+The pure-Python `_center_impl` and `_spread_impl` functions are deterministic: their randomized pivot-row selection uses the library's own `Rng` class (not Python's `random` module), seeded from the input values via an FNV-1a hash.
+
+The optional C extensions are deterministic too, though they reach the result by different internal routes. The C `center` uses a middle-element pivot strategy (no PRNG), so its pivot sequence differs from the pure-Python center's FNV-seeded random pivots; both still converge to the same value, because the selection result is independent of the pivot path. The C `spread` seeds a xoshiro256++ generator from an FNV-1a hash of the input values, mirroring the pure-Python `Rng` bit-for-bit, so the C and pure-Python spread kernels do follow identical narrowing paths. Every kernel is deterministic for a given input and returns identical results across the C and pure-Python implementations.
 
 ## Linting
 
