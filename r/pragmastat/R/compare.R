@@ -71,11 +71,11 @@ compute_verdict <- function(bounds, threshold_value) {
   }
 }
 
-as_compare_sample <- function(x, subject) {
+as_compare_sample <- function(x) {
   if (inherits(x, "Sample")) {
-    return(x$with_subject(subject))
+    return(x)
   }
-  Sample$new(as.double(x), subject = subject)
+  Sample$new(as.double(x))
 }
 
 threshold_numeric <- function(value) {
@@ -132,7 +132,6 @@ Threshold <- R6::R6Class("Threshold",
     metric = NULL,
     value = NULL,
     misrate = NULL,
-
     initialize = function(metric, value, misrate = DEFAULT_MISRATE) {
       if (!is.character(metric) || length(metric) != 1) {
         stop("metric must be a single character string")
@@ -146,7 +145,7 @@ Threshold <- R6::R6Class("Threshold",
         value <- as.double(value)
       }
       if (!is.numeric(misrate) || length(misrate) != 1 ||
-          !is.finite(misrate) || misrate <= 0 || misrate > 1) {
+        !is.finite(misrate) || misrate <= 0 || misrate > 1) {
         stop(assumption_error(ASSUMPTION_IDS$DOMAIN, SUBJECTS$MISRATE))
       }
       self$metric <- metric
@@ -163,7 +162,6 @@ Projection <- R6::R6Class("Projection",
     estimate = NULL,
     bounds = NULL,
     verdict = NULL,
-
     initialize = function(threshold, estimate, bounds, verdict) {
       self$threshold <- threshold
       self$estimate <- estimate
@@ -174,7 +172,9 @@ Projection <- R6::R6Class("Projection",
 )
 
 as_threshold <- function(x) {
-  if (inherits(x, "Threshold")) return(x)
+  if (inherits(x, "Threshold")) {
+    return(x)
+  }
   Threshold$new(
     metric = x$metric,
     value = x$value,
@@ -201,7 +201,7 @@ build_projection <- function(threshold, estimate, bounds, verdict) {
 #   - verdict: "less", "greater", or "inconclusive"
 #' @export
 compare1 <- function(x, thresholds, seed = NULL) {
-  sx <- as_compare_sample(x, SUBJECTS$X)
+  sx <- as_compare_sample(x)
   check_non_weighted("x", sx)
 
   if (length(thresholds) == 0) {
@@ -275,8 +275,8 @@ compare1 <- function(x, thresholds, seed = NULL) {
 #   - verdict: "less", "greater", or "inconclusive"
 #' @export
 compare2 <- function(x, y, thresholds, seed = NULL) {
-  sx <- as_compare_sample(x, SUBJECTS$X)
-  sy <- as_compare_sample(y, SUBJECTS$Y)
+  sx <- as_compare_sample(x)
+  sy <- as_compare_sample(y)
   check_non_weighted("x", sx)
   check_non_weighted("y", sy)
   check_compatible_units(sx, sy)

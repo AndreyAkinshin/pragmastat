@@ -2,12 +2,16 @@
 \alias{shift_bounds}
 \title{Bounds on the Shift Estimator}
 \usage{
-shift_bounds(x, y, misrate = DEFAULT_MISRATE)
+shift_bounds(x, y, misrate = DEFAULT_MISRATE, assume_sorted = FALSE)
 }
 \arguments{
 \item{x}{A numeric vector or \code{\link{Sample}} representing the first sample.}
 \item{y}{A numeric vector or \code{\link{Sample}} representing the second sample.}
 \item{misrate}{Misclassification rate, the probability that the true shift falls outside bounds.}
+
+\item{assume_sorted}{If \code{TRUE}, assume numeric vector inputs are already
+sorted ascending and skip the internal sort. Ignored for \code{\link{Sample}}
+input. Passing \code{TRUE} on unsorted input is undefined behavior.}
 }
 \description{
 Provides bounds on the Shift estimator with a specified misclassification rate.

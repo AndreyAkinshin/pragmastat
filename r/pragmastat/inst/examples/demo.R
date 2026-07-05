@@ -35,7 +35,7 @@ b <- center_bounds(sx, 1e-3)
 print(paste("center_bounds: [", b$lower, ", ", b$upper, "] unit:", b$unit$id, sep = ""))
 
 sx <- Sample$new(1:200)
-sy <- Sample$new(101:300, subject = "y")
+sy <- Sample$new(101:300)
 m <- shift(sx, sy)
 print(paste("shift:", m$value, "unit:", m$unit$id))
 m <- ratio(sx, sy)

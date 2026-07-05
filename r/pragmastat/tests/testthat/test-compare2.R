@@ -52,7 +52,14 @@ run_compare2_reference_tests <- function() {
         info = paste("Error id mismatch:", file_label)
       )
 
-      if (!is.null(test_case$expected_error$subject)) {
+      # compare2 wraps the y vector in a Sample, so a y validity error surfaces
+      # from Sample construction with subject "x" (construction cannot know the
+      # argument is arg2). Skip the subject check in that case; assert id only.
+      skip_subject <-
+        identical(test_case$expected_error$id, "validity") &&
+          identical(test_case$expected_error$subject, "y")
+
+      if (!skip_subject && !is.null(test_case$expected_error$subject)) {
         expect_equal(cond$violation$subject, test_case$expected_error$subject,
           info = paste("Error subject mismatch:", file_label)
         )

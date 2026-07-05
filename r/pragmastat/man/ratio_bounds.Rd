@@ -2,12 +2,16 @@
 \alias{ratio_bounds}
 \title{Bounds on the Ratio Estimator}
 \usage{
-ratio_bounds(x, y, misrate = DEFAULT_MISRATE)
+ratio_bounds(x, y, misrate = DEFAULT_MISRATE, assume_sorted = FALSE)
 }
 \arguments{
 \item{x}{A numeric vector or \code{\link{Sample}} representing the first sample (must be strictly positive).}
 \item{y}{A numeric vector or \code{\link{Sample}} representing the second sample (must be strictly positive).}
 \item{misrate}{Misclassification rate, the probability that the true ratio falls outside bounds.}
+
+\item{assume_sorted}{If \code{TRUE}, assume numeric vector inputs are already
+sorted ascending and skip the internal sort. Ignored for \code{\link{Sample}}
+input. Passing \code{TRUE} on unsorted input is undefined behavior.}
 }
 \description{
 Provides bounds on the Ratio estimator with a specified misclassification rate.

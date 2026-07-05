@@ -2,11 +2,15 @@
 \alias{ratio}
 \title{Ratio Estimator}
 \usage{
-ratio(x, y)
+ratio(x, y, assume_sorted = FALSE)
 }
 \arguments{
 \item{x}{A numeric vector or \code{\link{Sample}} representing the first sample (must be strictly positive).}
 \item{y}{A numeric vector or \code{\link{Sample}} representing the second sample (must be strictly positive).}
+
+\item{assume_sorted}{If \code{TRUE}, assume numeric vector inputs are already
+sorted ascending and skip the internal sort. Ignored for \code{\link{Sample}}
+input. Passing \code{TRUE} on unsorted input is undefined behavior.}
 }
 \description{
 Computes the Ratio estimator - the geometric median of pairwise ratios via log-space

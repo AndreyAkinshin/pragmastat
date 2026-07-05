@@ -2,12 +2,18 @@
 \alias{spread_bounds}
 \title{Distribution-Free Bounds for Spread}
 \usage{
-spread_bounds(x, misrate = DEFAULT_MISRATE, seed = NULL)
+spread_bounds(x, misrate = DEFAULT_MISRATE, seed = NULL, assume_sorted = FALSE)
 }
 \arguments{
 \item{x}{A numeric vector or \code{\link{Sample}} (at least 2 elements).}
 \item{misrate}{Misclassification rate. Must satisfy \code{misrate >= 2^(1 - floor(n/2))}.}
 \item{seed}{Optional string seed for deterministic randomization.}
+
+\item{assume_sorted}{If \code{TRUE}, skip the internal sort of the sparity check
+for a numeric vector input. The disjoint-pair shuffle always runs on the
+original order, so the result is unchanged. Ignored for \code{\link{Sample}}
+input. Passing \code{TRUE} on unsorted input is undefined behavior for the
+sparity check.}
 }
 \description{
 Provides distribution-free bounds for the Spread using disjoint pairs with sign-test inversion.

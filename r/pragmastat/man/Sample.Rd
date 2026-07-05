@@ -16,12 +16,11 @@ scalar transformations (e.g. \code{sample * 1000}).
 }
 \section{Constructor}{
 \describe{
-\item{\code{Sample$new(values, weights = NULL, unit = NULL, subject = "x")}}{
+\item{\code{Sample$new(values, weights = NULL, unit = NULL)}}{
   \describe{
     \item{\code{values}}{Numeric vector (must be non-empty, finite, no NaN).}
     \item{\code{weights}}{Optional numeric vector of non-negative weights (same length as \code{values}).}
     \item{\code{unit}}{\code{\link{MeasurementUnit}} (defaults to \code{\link{number_unit}}).}
-    \item{\code{subject}}{Subject label for error messages (\code{"x"} or \code{"y"}).}
   }
 }
 }
@@ -36,14 +35,12 @@ scalar transformations (e.g. \code{sample * 1000}).
 \item{\code{total_weight}}{Numeric. Sum of weights (1.0 for unweighted samples).}
 \item{\code{weighted_size}}{Numeric. Kish's effective sample size.}
 \item{\code{unit}}{\code{\link{MeasurementUnit}}. The measurement unit.}
-\item{\code{subject}}{Character. Subject label (\code{"x"} or \code{"y"}).}
 }
 }
 \section{Methods}{
 \describe{
 \item{\code{convert_to(target)}}{Convert values to a compatible target unit. Returns a new Sample.}
 \item{\code{log_transform()}}{Log-transform values (all must be positive). Returns a new Sample with \code{\link{number_unit}}.}
-\item{\code{with_subject(subject)}}{Return a new Sample with a different subject label.}
 }
 }
 \examples{

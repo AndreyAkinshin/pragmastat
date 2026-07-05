@@ -8,10 +8,10 @@
 #define ABS(a) ((a) < 0 ? -(a) : (a))
 
 /*
- * Fast O(n log n) implementation of the Spread (Shamos) estimator
+ * O(n log n) implementation of the Spread (Shamos) estimator
  * Computes the median of all pairwise absolute differences efficiently
  */
-SEXP fast_spread_c(SEXP values_sexp) {
+SEXP spread_impl_c(SEXP values_sexp, SEXP assume_sorted_sexp) {
     // Input validation
     if (!isReal(values_sexp)) {
         error("Input must be a numeric vector");
@@ -33,13 +33,19 @@ SEXP fast_spread_c(SEXP values_sexp) {
         return result;
     }
 
-    // Allocate and sort working copy
-    double *a = (double *) R_alloc(n, sizeof(double));
+    // Use input directly when sorted; otherwise sort a copy
+    int assume_sorted = asLogical(assume_sorted_sexp);
     double *values = REAL(values_sexp);
-    for (int i = 0; i < n; i++) {
-        a[i] = values[i];
+    double *a;
+    if (assume_sorted) {
+        a = values;
+    } else {
+        a = (double *) R_alloc(n, sizeof(double));
+        for (int i = 0; i < n; i++) {
+            a[i] = values[i];
+        }
+        R_rsort(a, n);
     }
-    R_rsort(a, n);
 
     // Total number of pairwise differences with i < j
     long long N = ((long long)n * (n - 1)) / 2;
@@ -64,7 +70,27 @@ SEXP fast_spread_c(SEXP values_sexp) {
     double pivot = a[n / 2] - a[(n - 1) / 2];
     long long prev_count_below = -1;
 
-    while (1) {
+    /*
+     * Bound the selection loop. On valid sorted input the Monahan-style
+     * selection converges in O(log n) iterations; this cap is far higher than
+     * ever needed for sorted input but guarantees termination on misuse
+     * (e.g., assume_sorted=TRUE on UNSORTED input, which is undefined
+     * behavior and would otherwise wedge the process in an unkillable
+     * infinite loop inside the C extension). The cap scales with n so large
+     * valid inputs are never starved, and it counts EVERY pass through the
+     * loop, so it also terminates the stall-handling ping-pong mode. We
+     * additionally track no-progress (stall) on the active set to bail out
+     * deterministically (mirrors center_impl's guard). R_alloc'd buffers are
+     * reclaimed automatically when error() unwinds, so no manual free is
+     * needed on the error path.
+     */
+    const int base_iterations = 256;
+    const int max_iterations = base_iterations + 4 * n;
+    long long previous_active_set_size = -1;
+    int stall_count = 0;
+    const int max_stall = 8;
+
+    for (int iter = 0; iter < max_iterations; iter++) {
         // === PARTITION: count how many differences are < pivot ===
         long long count_below = 0;
         double largest_below = R_NegInf;
@@ -102,7 +128,7 @@ SEXP fast_spread_c(SEXP values_sexp) {
 
             if (k_low < k_high) {
                 // Even N: average the two central order stats
-                REAL(result)[0] = 0.5 * (largest_below + smallest_at_or_above);
+                REAL(result)[0] = 0.5 * largest_below + 0.5 * smallest_at_or_above;
             } else {
                 // Odd N: pick the single middle
                 int need_largest = (count_below == k_low);
@@ -134,7 +160,7 @@ SEXP fast_spread_c(SEXP values_sexp) {
             if (active <= 0) {
                 SEXP result = PROTECT(allocVector(REALSXP, 1));
                 if (k_low < k_high) {
-                    REAL(result)[0] = 0.5 * (largest_below + smallest_at_or_above);
+                    REAL(result)[0] = 0.5 * largest_below + 0.5 * smallest_at_or_above;
                 } else {
                     REAL(result)[0] = (count_below >= k_low) ? largest_below : smallest_at_or_above;
                 }
@@ -149,9 +175,11 @@ SEXP fast_spread_c(SEXP values_sexp) {
                 return result;
             }
 
-            double mid = 0.5 * (min_active + max_active);
+            double mid = 0.5 * min_active + 0.5 * max_active;
             pivot = (mid > min_active && mid <= max_active) ? mid : max_active;
             prev_count_below = count_below;
+            // This branch does not touch the active-set stall tracking; its
+            // ping-pong cycles are terminated by the iteration cap instead.
             continue;
         }
 
@@ -188,6 +216,21 @@ SEXP fast_spread_c(SEXP values_sexp) {
             }
         }
 
+        /*
+         * Stall detection: on valid sorted input the active set strictly
+         * shrinks toward the target. If it fails to shrink for several
+         * consecutive iterations, the input is pathological (e.g.,
+         * assume_sorted=TRUE on unsorted data) and we bail deterministically.
+         */
+        if (active_size >= previous_active_set_size && previous_active_set_size >= 0) {
+            if (++stall_count >= max_stall) {
+                break;
+            }
+        } else {
+            stall_count = 0;
+        }
+        previous_active_set_size = active_size;
+
         if (active_size <= 2) {
             // Few candidates left: return midrange of remaining
             double min_rem = R_PosInf;
@@ -204,7 +247,7 @@ SEXP fast_spread_c(SEXP values_sexp) {
             if (active_size <= 0) {
                 SEXP result = PROTECT(allocVector(REALSXP, 1));
                 if (k_low < k_high) {
-                    REAL(result)[0] = 0.5 * (largest_below + smallest_at_or_above);
+                    REAL(result)[0] = 0.5 * largest_below + 0.5 * smallest_at_or_above;
                 } else {
                     REAL(result)[0] = (count_below >= k_low) ? largest_below : smallest_at_or_above;
                 }
@@ -214,7 +257,7 @@ SEXP fast_spread_c(SEXP values_sexp) {
 
             SEXP result = PROTECT(allocVector(REALSXP, 1));
             if (k_low < k_high) {
-                REAL(result)[0] = 0.5 * (min_rem + max_rem);
+                REAL(result)[0] = 0.5 * min_rem + 0.5 * max_rem;
             } else {
                 long long dist_low = llabs((k_low - 1) - count_below);
                 long long dist_high = llabs(count_below - k_low);
@@ -245,7 +288,10 @@ SEXP fast_spread_c(SEXP values_sexp) {
         }
     }
 
-    // Should never reach here
-    error("Algorithm failed to converge");
+    // Non-convergence: iteration cap reached or the stall guard tripped; only
+    // reachable on pathological input (e.g. unsorted values passed with
+    // assume_sorted=TRUE). R_alloc buffers are freed automatically by the R
+    // memory manager when error() unwinds.
+    error("Convergence failure (pathological input)");
     return R_NilValue;
 }

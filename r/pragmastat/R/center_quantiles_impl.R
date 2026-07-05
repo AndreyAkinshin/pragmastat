@@ -1,4 +1,4 @@
-# Fast algorithm for computing specific quantiles of pairwise averages.
+# Algorithm for computing specific quantiles of pairwise averages.
 # Uses binary search with counting to avoid materializing all N(N+1)/2 pairs.
 
 # Relative tolerance for convergence
@@ -10,7 +10,7 @@
 # @param margin_lo 1-based rank for lower bound
 # @param margin_hi 1-based rank for upper bound
 # @return List with 'lower' and 'upper' components
-fast_center_quantile_bounds <- function(sorted, margin_lo, margin_hi) {
+center_quantile_bounds_impl <- function(sorted, margin_lo, margin_hi) {
   n <- length(sorted)
   total_pairs <- as.numeric(n) * as.numeric(n + 1) / 2
 
@@ -19,8 +19,8 @@ fast_center_quantile_bounds <- function(sorted, margin_lo, margin_hi) {
   if (margin_hi < 1) margin_hi <- 1
   if (margin_hi > total_pairs) margin_hi <- total_pairs
 
-  lo <- fast_center_find_exact_quantile(sorted, margin_lo)
-  hi <- fast_center_find_exact_quantile(sorted, margin_hi)
+  lo <- center_find_exact_quantile_impl(sorted, margin_lo)
+  hi <- center_find_exact_quantile_impl(sorted, margin_hi)
 
   if (lo > hi) {
     tmp <- lo
@@ -32,7 +32,7 @@ fast_center_quantile_bounds <- function(sorted, margin_lo, margin_hi) {
 }
 
 # Counts pairwise averages <= target value using O(n) two-pointer algorithm.
-fast_center_count_pairs <- function(sorted, target) {
+center_count_pairs_impl <- function(sorted, target) {
   n <- length(sorted)
   count <- 0
   # j is not reset: as i increases, threshold decreases monotonically
@@ -54,7 +54,7 @@ fast_center_count_pairs <- function(sorted, target) {
 }
 
 # Finds the exact k-th pairwise average using binary search + candidate refinement.
-fast_center_find_exact_quantile <- function(sorted, k) {
+center_find_exact_quantile_impl <- function(sorted, k) {
   n <- length(sorted)
   total_pairs <- as.numeric(n) * as.numeric(n + 1) / 2
 
@@ -73,8 +73,8 @@ fast_center_find_exact_quantile <- function(sorted, k) {
   eps <- .RELATIVE_EPSILON
 
   while (hi - lo > eps * max(1.0, abs(lo), abs(hi))) {
-    mid <- (lo + hi) / 2
-    count_le <- fast_center_count_pairs(sorted, mid)
+    mid <- 0.5 * lo + 0.5 * hi
+    count_le <- center_count_pairs_impl(sorted, mid)
 
     if (count_le >= k) {
       hi <- mid
@@ -83,7 +83,7 @@ fast_center_find_exact_quantile <- function(sorted, k) {
     }
   }
 
-  target <- (lo + hi) / 2
+  target <- 0.5 * lo + 0.5 * hi
   candidates <- numeric(0)
 
   for (i in 1:n) {
@@ -103,11 +103,11 @@ fast_center_find_exact_quantile <- function(sorted, k) {
     }
 
     if (left <= n && left >= i && abs(sorted[left] - threshold) < eps * max(1.0, abs(threshold))) {
-      candidates <- c(candidates, (sorted[i] + sorted[left]) / 2)
+      candidates <- c(candidates, 0.5 * sorted[i] + 0.5 * sorted[left])
     }
 
     if (left > i) {
-      avg_before <- (sorted[i] + sorted[left - 1]) / 2
+      avg_before <- 0.5 * sorted[i] + 0.5 * sorted[left - 1]
       if (avg_before <= target + eps) {
         candidates <- c(candidates, avg_before)
       }
@@ -121,7 +121,7 @@ fast_center_find_exact_quantile <- function(sorted, k) {
   candidates <- sort(candidates)
 
   for (candidate in candidates) {
-    count_at <- fast_center_count_pairs(sorted, candidate)
+    count_at <- center_count_pairs_impl(sorted, candidate)
     if (count_at >= k) {
       return(candidate)
     }

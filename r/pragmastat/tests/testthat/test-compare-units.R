@@ -23,7 +23,7 @@ test_that("compare2 supports Measurement thresholds with Sample input", {
   ns <- MeasurementUnit$new("ns", "Time", "ns", "Nanosecond", 1)
 
   sx <- Sample$new(1:30, unit = ms)
-  sy <- Sample$new((21:50) * 1000000, unit = ns, subject = "y")
+  sy <- Sample$new((21:50) * 1000000, unit = ns)
   thresholds <- list(
     list(metric = "shift", value = Measurement$new(-14, ms), misrate = 0.05)
   )

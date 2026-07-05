@@ -2,10 +2,14 @@
 \alias{spread}
 \title{Spread Estimator}
 \usage{
-spread(x)
+spread(x, assume_sorted = FALSE)
 }
 \arguments{
 \item{x}{A numeric vector or \code{\link{Sample}} for which to compute the Spread estimator.}
+
+\item{assume_sorted}{If \code{TRUE}, assume a numeric vector input is already
+sorted ascending and skip the internal sort. Ignored for \code{\link{Sample}}
+input. Passing \code{TRUE} on unsorted input is undefined behavior.}
 }
 \description{
 Computes the Spread estimator - the median of all pairwise absolute differences |xi - xj|

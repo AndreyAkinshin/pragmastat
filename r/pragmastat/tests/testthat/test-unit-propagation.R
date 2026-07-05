@@ -38,7 +38,8 @@ test_that("unit propagation satisfies reference tests", {
         info = paste("Unit mismatch for center:", file_label)
       )
       if (!is.null(output$value)) {
-        expect_equal(m$value, output$value, tolerance = 1e-9,
+        expect_equal(m$value, output$value,
+          tolerance = 1e-9,
           info = paste("Value mismatch for center:", file_label)
         )
       }
@@ -52,7 +53,7 @@ test_that("unit propagation satisfies reference tests", {
       )
     } else if (estimator_name == "shift") {
       y_unit <- registry$resolve(input$y_unit)
-      sy <- Sample$new(as.numeric(input$y), unit = y_unit, subject = "y")
+      sy <- Sample$new(as.numeric(input$y), unit = y_unit)
       m <- shift(sx, sy)
       expect_true(inherits(m, "Measurement"),
         info = paste("Expected Measurement for shift:", file_label)
@@ -62,7 +63,7 @@ test_that("unit propagation satisfies reference tests", {
       )
     } else if (estimator_name == "ratio") {
       y_unit <- registry$resolve(input$y_unit)
-      sy <- Sample$new(as.numeric(input$y), unit = y_unit, subject = "y")
+      sy <- Sample$new(as.numeric(input$y), unit = y_unit)
       m <- ratio(sx, sy)
       expect_true(inherits(m, "Measurement"),
         info = paste("Expected Measurement for ratio:", file_label)
@@ -72,7 +73,7 @@ test_that("unit propagation satisfies reference tests", {
       )
     } else if (estimator_name == "disparity") {
       y_unit <- registry$resolve(input$y_unit)
-      sy <- Sample$new(as.numeric(input$y), unit = y_unit, subject = "y")
+      sy <- Sample$new(as.numeric(input$y), unit = y_unit)
       m <- disparity(sx, sy)
       expect_true(inherits(m, "Measurement"),
         info = paste("Expected Measurement for disparity:", file_label)

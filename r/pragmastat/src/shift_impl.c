@@ -6,8 +6,12 @@
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
+/*
+ * Overflow-safe, order-symmetric midpoint: 0.5*a + 0.5*b
+ * (halve before summing; never overflows; operand order is irrelevant).
+ */
 static inline double midpoint(double a, double b) {
-    return a + (b - a) * 0.5;
+    return 0.5 * a + 0.5 * b;
 }
 
 /*
@@ -115,7 +119,7 @@ static double select_kth_pairwise_diff(
     }
 
     if (search_min != search_max) {
-        error("Convergence failure in binary search");
+        error("Convergence failure (pathological input)");
     }
 
     return search_min;
@@ -131,7 +135,7 @@ static double select_kth_pairwise_diff(
  * @param assume_sorted_sexp Logical: if TRUE, assume x and y are already sorted
  * @return Numeric vector of quantile values
  */
-SEXP fast_shift_c(SEXP x_sexp, SEXP y_sexp, SEXP p_sexp, SEXP assume_sorted_sexp) {
+SEXP shift_impl_c(SEXP x_sexp, SEXP y_sexp, SEXP p_sexp, SEXP assume_sorted_sexp) {
     // Input validation
     if (!isReal(x_sexp) || !isReal(y_sexp) || !isReal(p_sexp)) {
         error("x, y, and p must be numeric vectors");

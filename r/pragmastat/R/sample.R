@@ -8,20 +8,21 @@ Sample <- R6::R6Class(
     #' @param values Numeric vector of values
     #' @param weights Optional numeric vector of weights (same length as values)
     #' @param unit MeasurementUnit (defaults to number_unit)
-    #' @param subject Subject label for error reporting ("x" or "y")
-    initialize = function(values, weights = NULL, unit = NULL, subject = "x") {
+    initialize = function(values, weights = NULL, unit = NULL) {
       if (is.null(unit)) {
         unit <- number_unit
       }
+      # Construction errors always report subject "x": construction cannot know
+      # whether this sample will be used as arg1 ("x") or arg2 ("y"). The error
+      # subject is supplied positionally by the validating estimator instead.
       if (length(values) == 0) {
-        stop(assumption_error(ASSUMPTION_IDS$VALIDITY, subject))
+        stop(assumption_error(ASSUMPTION_IDS$VALIDITY, SUBJECTS$X))
       }
       if (any(is.na(values) | is.nan(values) | is.infinite(values))) {
-        stop(assumption_error(ASSUMPTION_IDS$VALIDITY, subject))
+        stop(assumption_error(ASSUMPTION_IDS$VALIDITY, SUBJECTS$X))
       }
       private$.values <- as.double(values)
       private$.unit <- unit
-      private$.subject <- subject
 
       if (!is.null(weights)) {
         if (length(weights) != length(values)) {
@@ -55,26 +56,21 @@ Sample <- R6::R6Class(
       }
       factor <- conversion_factor(private$.unit, target)
       converted <- private$.values * factor
-      Sample$new(converted, weights = private$.weights, unit = target,
-                 subject = private$.subject)
+      Sample$new(converted,
+        weights = private$.weights, unit = target
+      )
     },
 
     #' @description Log-transform the sample values (positivity required)
     #' @return A new Sample with log-transformed values and NumberUnit
     log_transform = function() {
       if (any(private$.values <= 0)) {
-        stop(assumption_error(ASSUMPTION_IDS$POSITIVITY, private$.subject))
+        stop(assumption_error(ASSUMPTION_IDS$POSITIVITY, SUBJECTS$X))
       }
-      Sample$new(log(private$.values), weights = private$.weights,
-                 unit = number_unit, subject = private$.subject)
-    },
-
-    #' @description Return a view of the sample with a different subject label
-    #' @param subject New subject label ("x" or "y")
-    #' @return A new Sample with the given subject
-    with_subject = function(subject) {
-      Sample$new(private$.values, weights = private$.weights,
-                 unit = private$.unit, subject = subject)
+      Sample$new(log(private$.values),
+        weights = private$.weights,
+        unit = number_unit
+      )
     }
   ),
   active = list(
@@ -119,11 +115,6 @@ Sample <- R6::R6Class(
     #' @field unit The measurement unit
     unit = function() {
       private$.unit
-    },
-
-    #' @field subject The subject label
-    subject = function() {
-      private$.subject
     }
   ),
   private = list(
@@ -131,7 +122,6 @@ Sample <- R6::R6Class(
     .weights = NULL,
     .unit = NULL,
     .sorted_values = NULL,
-    .subject = NULL,
     .total_weight = NULL,
     .weighted_size = NULL
   )
@@ -168,21 +158,25 @@ convert_to_finer <- function(a, b) {
 #' @export
 `*.Sample` <- function(e1, e2) {
   if (inherits(e1, "Sample")) {
-    Sample$new(e1$values * e2, weights = e1$weights, unit = e1$unit,
-               subject = e1$subject)
+    Sample$new(e1$values * e2,
+      weights = e1$weights, unit = e1$unit
+    )
   } else {
-    Sample$new(e1 * e2$values, weights = e2$weights, unit = e2$unit,
-               subject = e2$subject)
+    Sample$new(e1 * e2$values,
+      weights = e2$weights, unit = e2$unit
+    )
   }
 }
 
 #' @export
 `+.Sample` <- function(e1, e2) {
   if (inherits(e1, "Sample")) {
-    Sample$new(e1$values + e2, weights = e1$weights, unit = e1$unit,
-               subject = e1$subject)
+    Sample$new(e1$values + e2,
+      weights = e1$weights, unit = e1$unit
+    )
   } else {
-    Sample$new(e1 + e2$values, weights = e2$weights, unit = e2$unit,
-               subject = e2$subject)
+    Sample$new(e1 + e2$values,
+      weights = e2$weights, unit = e2$unit
+    )
   }
 }

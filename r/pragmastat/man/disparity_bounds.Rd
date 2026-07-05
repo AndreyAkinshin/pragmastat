@@ -2,13 +2,19 @@
 \alias{disparity_bounds}
 \title{Distribution-Free Bounds for Disparity}
 \usage{
-disparity_bounds(x, y, misrate = DEFAULT_MISRATE, seed = NULL)
+disparity_bounds(x, y, misrate = DEFAULT_MISRATE, seed = NULL, assume_sorted = FALSE)
 }
 \arguments{
 \item{x}{A numeric vector or \code{\link{Sample}} (at least 2 elements).}
 \item{y}{A numeric vector or \code{\link{Sample}} (at least 2 elements).}
 \item{misrate}{Misclassification rate. Uses Bonferroni split between shift and avg_spread components.}
 \item{seed}{Optional string seed for deterministic randomization.}
+
+\item{assume_sorted}{If \code{TRUE}, skip the internal sort of the
+order-independent shift and sparity sub-computations for numeric vector inputs.
+The disjoint-pair shuffle always runs on the original order, so the result is
+unchanged. Ignored for \code{\link{Sample}} input. Passing \code{TRUE} on
+unsorted input is undefined behavior for those sub-computations.}
 }
 \description{
 Provides distribution-free bounds for the Disparity estimator (Shift / AvgSpread) using

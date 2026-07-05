@@ -3,10 +3,14 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
-#include "fast_center_impl.h"
+#include "center_impl.h"
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
+
+static inline double midpoint_fc(double a, double b) {
+    return 0.5 * a + 0.5 * b;
+}
 
 static int cmp_double_fc(const void *a, const void *b) {
     double da = *(const double *)a;
@@ -21,17 +25,24 @@ static int cmp_double_fc(const void *a, const void *b) {
  * Uses Monahan's Algorithm 616 with deterministic pivot selection.
  * Allocates and frees its own working memory.
  */
-double fast_center_compute(const double *values, int n) {
+double center_impl_compute(const double *values, int n, int assume_sorted) {
     if (n == 1) return values[0];
-    if (n == 2) return (values[0] + values[1]) / 2.0;
+    if (n == 2) return midpoint_fc(values[0], values[1]);
 
-    /* Sort a copy */
-    double *sorted_values = (double *)malloc(n * sizeof(double));
-    if (!sorted_values) {
-        error("fast_center: memory allocation failed");
+    /* Use input directly when sorted; otherwise sort a copy */
+    double *sorted_values;
+    int allocated_sorted = 0;
+    if (assume_sorted) {
+        sorted_values = (double *)values;
+    } else {
+        sorted_values = (double *)malloc(n * sizeof(double));
+        if (!sorted_values) {
+            error("center_impl: memory allocation failed");
+        }
+        memcpy(sorted_values, values, n * sizeof(double));
+        qsort(sorted_values, n, sizeof(double), cmp_double_fc);
+        allocated_sorted = 1;
     }
-    memcpy(sorted_values, values, n * sizeof(double));
-    qsort(sorted_values, n, sizeof(double), cmp_double_fc);
 
     /* Calculate target median rank(s) */
     long long total_pairs = ((long long)n * (n + 1)) / 2;
@@ -41,21 +52,21 @@ double fast_center_compute(const double *values, int n) {
     /* Initialize search bounds */
     long long *left_bounds = (long long *)malloc(n * sizeof(long long));
     if (!left_bounds) {
-        free(sorted_values);
-        error("fast_center: memory allocation failed");
+        if (allocated_sorted) free(sorted_values);
+        error("center_impl: memory allocation failed");
     }
     long long *right_bounds = (long long *)malloc(n * sizeof(long long));
     if (!right_bounds) {
-        free(sorted_values);
+        if (allocated_sorted) free(sorted_values);
         free(left_bounds);
-        error("fast_center: memory allocation failed");
+        error("center_impl: memory allocation failed");
     }
     long long *partition_counts = (long long *)malloc(n * sizeof(long long));
     if (!partition_counts) {
-        free(sorted_values);
+        if (allocated_sorted) free(sorted_values);
         free(left_bounds);
         free(right_bounds);
-        error("fast_center: memory allocation failed");
+        error("center_impl: memory allocation failed");
     }
 
     for (int i = 0; i < n; i++) {
@@ -69,7 +80,24 @@ double fast_center_compute(const double *values, int n) {
 
     double result = 0.0;
 
-    while (1) {
+    /*
+     * Bound the selection loop. On valid sorted input the Monahan selection
+     * converges in O(log n) iterations; this cap is far higher than ever
+     * needed for sorted input but guarantees termination on misuse (e.g.,
+     * assume_sorted=TRUE on UNSORTED input, which is undefined behavior and
+     * would otherwise wedge the process in an unkillable infinite loop inside
+     * the C extension). The cap scales with n so large valid inputs are never
+     * starved, and it counts EVERY pass through the loop, so it also
+     * terminates the convergence-check ping-pong mode. We additionally track
+     * no-progress (stall) on the active set to bail out deterministically.
+     */
+    const int base_iterations = 256;
+    const int max_iterations = base_iterations + 4 * n;
+    long long previous_active_set_size = -1;
+    int stall_count = 0;
+    const int max_stall = 8;
+
+    for (int iter = 0; iter < max_iterations; iter++) {
         /* === PARTITION STEP === */
         long long count_below_pivot = 0;
         long long current_column = n - 1;
@@ -105,7 +133,7 @@ double fast_center_compute(const double *values, int n) {
                 if (largest_in_row > max_active_sum) max_active_sum = largest_in_row;
             }
 
-            pivot = (min_active_sum + max_active_sum) / 2.0;
+            pivot = 0.5 * min_active_sum + 0.5 * max_active_sum;
             if (pivot <= min_active_sum || pivot > max_active_sum) {
                 pivot = max_active_sum;
             }
@@ -175,6 +203,21 @@ double fast_center_compute(const double *values, int n) {
             active_set_size += MAX(0, row_size);
         }
 
+        /*
+         * Stall detection: on valid sorted input the active set strictly
+         * shrinks toward the target. If it fails to shrink for several
+         * consecutive iterations, the input is pathological (e.g.,
+         * assume_sorted=TRUE on unsorted data) and we bail deterministically.
+         */
+        if (active_set_size >= previous_active_set_size && previous_active_set_size >= 0) {
+            if (++stall_count >= max_stall) {
+                break;
+            }
+        } else {
+            stall_count = 0;
+        }
+        previous_active_set_size = active_set_size;
+
         /* Choose next pivot */
         if (active_set_size > 2) {
             /* Deterministic pivot: pick middle element of active set */
@@ -208,7 +251,7 @@ double fast_center_compute(const double *values, int n) {
                 if (max_in_row > max_remaining_sum) max_remaining_sum = max_in_row;
             }
 
-            pivot = (min_remaining_sum + max_remaining_sum) / 2.0;
+            pivot = 0.5 * min_remaining_sum + 0.5 * max_remaining_sum;
             if (pivot <= min_remaining_sum || pivot > max_remaining_sum) {
                 pivot = max_remaining_sum;
             }
@@ -220,8 +263,15 @@ double fast_center_compute(const double *values, int n) {
         }
     }
 
+    /* Non-convergence: iteration cap reached or the stall guard tripped. */
+    if (allocated_sorted) free(sorted_values);
+    free(left_bounds);
+    free(right_bounds);
+    free(partition_counts);
+    error("Convergence failure (pathological input)");
+
 cleanup:
-    free(sorted_values);
+    if (allocated_sorted) free(sorted_values);
     free(left_bounds);
     free(right_bounds);
     free(partition_counts);
@@ -229,9 +279,9 @@ cleanup:
 }
 
 /*
- * R-callable wrapper for fast_center_compute.
+ * R-callable wrapper for center_impl_compute.
  */
-SEXP fast_center_c(SEXP values_sexp) {
+SEXP center_impl_c(SEXP values_sexp, SEXP assume_sorted_sexp) {
     if (!isReal(values_sexp)) {
         error("Input must be a numeric vector");
     }
@@ -241,7 +291,8 @@ SEXP fast_center_c(SEXP values_sexp) {
         error("Input vector cannot be empty");
     }
 
-    double result = fast_center_compute(REAL(values_sexp), n);
+    int assume_sorted = asLogical(assume_sorted_sexp);
+    double result = center_impl_compute(REAL(values_sexp), n, assume_sorted);
 
     SEXP result_sexp = PROTECT(allocVector(REALSXP, 1));
     REAL(result_sexp)[0] = result;

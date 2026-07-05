@@ -2,11 +2,15 @@
 \alias{disparity}
 \title{Disparity Estimator}
 \usage{
-disparity(x, y)
+disparity(x, y, assume_sorted = FALSE)
 }
 \arguments{
 \item{x}{A numeric vector or \code{\link{Sample}} representing the first sample.}
 \item{y}{A numeric vector or \code{\link{Sample}} representing the second sample.}
+
+\item{assume_sorted}{If \code{TRUE}, assume numeric vector inputs are already
+sorted ascending and skip the internal sort. Ignored for \code{\link{Sample}}
+input. Passing \code{TRUE} on unsorted input is undefined behavior.}
 }
 \description{
 Computes the Disparity estimator - defined as Shift(x,y) / AvgSpread(x,y).

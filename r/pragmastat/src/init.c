@@ -3,15 +3,15 @@
 #include <R_ext/Rdynload.h>
 
 // Forward declarations
-SEXP fast_center_c(SEXP values_sexp);
-SEXP fast_spread_c(SEXP values_sexp);
-SEXP fast_shift_c(SEXP x_sexp, SEXP y_sexp, SEXP p_sexp, SEXP assume_sorted_sexp);
+SEXP center_impl_c(SEXP values_sexp, SEXP assume_sorted_sexp);
+SEXP spread_impl_c(SEXP values_sexp, SEXP assume_sorted_sexp);
+SEXP shift_impl_c(SEXP x_sexp, SEXP y_sexp, SEXP p_sexp, SEXP assume_sorted_sexp);
 
 // Registration table
 static const R_CallMethodDef CallEntries[] = {
-    {"fast_center_c", (DL_FUNC) &fast_center_c, 1},
-    {"fast_spread_c", (DL_FUNC) &fast_spread_c, 1},
-    {"fast_shift_c", (DL_FUNC) &fast_shift_c, 4},
+    {"center_impl_c", (DL_FUNC) &center_impl_c, 2},
+    {"spread_impl_c", (DL_FUNC) &spread_impl_c, 2},
+    {"shift_impl_c", (DL_FUNC) &shift_impl_c, 4},
     {NULL, NULL, 0}
 };
 

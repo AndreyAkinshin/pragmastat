@@ -2,10 +2,14 @@
 \alias{center}
 \title{Center Estimator}
 \usage{
-center(x)
+center(x, assume_sorted = FALSE)
 }
 \arguments{
 \item{x}{A numeric vector or \code{\link{Sample}} for which to compute the Center estimator.}
+
+\item{assume_sorted}{If \code{TRUE}, assume a numeric vector input is already
+sorted ascending and skip the internal sort. Ignored for \code{\link{Sample}}
+input. Passing \code{TRUE} on unsorted input is undefined behavior.}
 }
 \description{
 Computes the Center estimator - the median of all pairwise averages (xi + xj)/2
