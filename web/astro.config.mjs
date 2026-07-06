@@ -33,4 +33,10 @@ export default defineConfig({
       },
     },
   },
+  vite: {
+    server: {
+      // Local dev preview over mDNS: allow any *.local host.
+      allowedHosts: ['.local'],
+    },
+  },
 });
