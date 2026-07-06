@@ -1,2 +1,2 @@
-#let version = "12.1.0"
-#let major = "12"
+#let version = "13.0.0"
+#let major = "13"
