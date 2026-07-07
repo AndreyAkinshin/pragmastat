@@ -132,7 +132,6 @@ func runScalarDualPath(t *testing.T, td TestData, entries []scalarEntry) {
 	t.Helper()
 	if len(td.ExpectedError) > 0 {
 		for _, e := range entries {
-			e := e
 			t.Run(e.name, func(t *testing.T) {
 				value, err, sampleCreation := e.run(t)
 				_ = value
@@ -156,7 +155,6 @@ func runScalarDualPath(t *testing.T, td TestData, entries []scalarEntry) {
 		t.Fatalf("Failed to parse output data: %v", err)
 	}
 	for _, e := range entries {
-		e := e
 		t.Run(e.name, func(t *testing.T) {
 			value, err, _ := e.run(t)
 			if err != nil {
@@ -175,7 +173,6 @@ func runBoundsDualPath(t *testing.T, td TestData, entries []boundsEntry) {
 	t.Helper()
 	if len(td.ExpectedError) > 0 {
 		for _, e := range entries {
-			e := e
 			t.Run(e.name, func(t *testing.T) {
 				_, err, sampleCreation := e.run(t)
 				checkSubject := true
@@ -195,7 +192,6 @@ func runBoundsDualPath(t *testing.T, td TestData, entries []boundsEntry) {
 		t.Fatalf("Failed to parse output data: %v", err)
 	}
 	for _, e := range entries {
-		e := e
 		t.Run(e.name, func(t *testing.T) {
 			b, err, _ := e.run(t)
 			if err != nil {

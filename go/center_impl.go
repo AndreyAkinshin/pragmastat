@@ -14,7 +14,7 @@ func deriveSeed[T Number](values []T) int64 {
 	hash := fnvOffsetBasis
 	for _, v := range values {
 		bits := math.Float64bits(float64(v))
-		for i := 0; i < 8; i++ {
+		for i := range 8 {
 			hash ^= (bits >> (i * 8)) & 0xff
 			hash *= fnvPrime
 		}
@@ -62,7 +62,7 @@ func centerImpl[T Number](values []T, assumeSorted bool) (float64, error) {
 	// Initialize search bounds for each row (1-based indexing)
 	leftBounds := make([]int64, n)
 	rightBounds := make([]int64, n)
-	for i := 0; i < n; i++ {
+	for i := range n {
 		leftBounds[i] = int64(i + 1) // Row i pairs with columns [i+1..n]
 		rightBounds[i] = int64(n)
 	}
@@ -115,7 +115,7 @@ func centerImpl[T Number](values []T, assumeSorted bool) (float64, error) {
 			minActiveSum := math.Inf(1)
 			maxActiveSum := math.Inf(-1)
 
-			for i := 0; i < n; i++ {
+			for i := range n {
 				if leftBounds[i] > rightBounds[i] {
 					continue
 				}
@@ -146,7 +146,7 @@ func centerImpl[T Number](values []T, assumeSorted bool) (float64, error) {
 			largestBelowPivot := math.Inf(-1)
 			smallestAtOrAbovePivot := math.Inf(1)
 
-			for i := 0; i < n; i++ {
+			for i := range n {
 				countInRow := partitionCounts[i]
 				rowValue := sortedValues[i]
 				totalInRow := int64(n - i)
@@ -183,12 +183,12 @@ func centerImpl[T Number](values []T, assumeSorted bool) (float64, error) {
 		// === UPDATE BOUNDS ===
 		if countBelowPivot < medianRankLow {
 			// Too few values below pivot - search higher
-			for i := 0; i < n; i++ {
+			for i := range n {
 				leftBounds[i] = int64(i) + partitionCounts[i] + 1
 			}
 		} else {
 			// Too many values below pivot - search lower
-			for i := 0; i < n; i++ {
+			for i := range n {
 				rightBounds[i] = int64(i) + partitionCounts[i]
 			}
 		}
@@ -198,7 +198,7 @@ func centerImpl[T Number](values []T, assumeSorted bool) (float64, error) {
 
 		// Recalculate active set size
 		activeSetSize = 0
-		for i := 0; i < n; i++ {
+		for i := range n {
 			rowSize := rightBounds[i] - leftBounds[i] + 1
 			if rowSize > 0 {
 				activeSetSize += rowSize
@@ -226,7 +226,7 @@ func centerImpl[T Number](values []T, assumeSorted bool) (float64, error) {
 			cumulativeSize := int64(0)
 			selectedRow := 0
 
-			for i := 0; i < n; i++ {
+			for i := range n {
 				rowSize := rightBounds[i] - leftBounds[i] + 1
 				if rowSize > 0 {
 					if targetIndex < cumulativeSize+rowSize {
@@ -245,7 +245,7 @@ func centerImpl[T Number](values []T, assumeSorted bool) (float64, error) {
 			minRemainingSum := math.Inf(1)
 			maxRemainingSum := math.Inf(-1)
 
-			for i := 0; i < n; i++ {
+			for i := range n {
 				if leftBounds[i] > rightBounds[i] {
 					continue
 				}

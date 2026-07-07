@@ -31,7 +31,7 @@ func (m *Multiplic) Sample(rng *Rng) float64 {
 // Samples generates multiple samples from the multiplicative distribution.
 func (m *Multiplic) Samples(rng *Rng, count int) []float64 {
 	result := make([]float64, count)
-	for i := 0; i < count; i++ {
+	for i := range count {
 		result[i] = m.Sample(rng)
 	}
 	return result

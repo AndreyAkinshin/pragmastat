@@ -192,7 +192,7 @@ func countAndNeighbors[T Number](x, y []T, threshold float64) (int64, float64, f
 	minAbove := math.Inf(1)
 
 	j := 0
-	for i := 0; i < m; i++ {
+	for i := range m {
 		// Move j forward while x[i] - y[j] > threshold
 		for j < n && float64(x[i])-float64(y[j]) > threshold {
 			j++

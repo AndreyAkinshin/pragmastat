@@ -201,7 +201,7 @@ func RngResample[T any](rng *Rng, x []T, k int) []T {
 
 	result := make([]T, k)
 	n := len(x)
-	for i := 0; i < k; i++ {
+	for i := range k {
 		result[i] = x[int(rng.UniformInt64(0, int64(n)))]
 	}
 	return result

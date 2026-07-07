@@ -92,7 +92,6 @@ func TestReferenceData(t *testing.T) {
 		{"spread", Spread, (*Sample).Spread},
 	}
 	for _, est := range oneSampleScalar {
-		est := est
 		t.Run(est.name, func(t *testing.T) {
 			forEachFixture(t, est.name, func(t *testing.T, td TestData, input OneSampleInput) {
 				entries := []scalarEntry{
@@ -131,7 +130,6 @@ func TestReferenceData(t *testing.T) {
 		{"disparity", Disparity, func(x, y *Sample) (Measurement, error) { return x.Disparity(y) }},
 	}
 	for _, est := range twoSampleScalar {
-		est := est
 		t.Run(est.name, func(t *testing.T) {
 			forEachFixture(t, est.name, func(t *testing.T, td TestData, input TwoSampleInput) {
 				entries := []scalarEntry{
@@ -204,7 +202,6 @@ func TestReferenceData(t *testing.T) {
 		{"ratio-bounds", RatioBounds, func(x, y *Sample, m float64) (Bounds, error) { return x.RatioBounds(y, m) }},
 	}
 	for _, est := range twoSampleBounds {
-		est := est
 		t.Run(est.name, func(t *testing.T) {
 			forEachFixture(t, est.name, func(t *testing.T, td TestData, input ShiftBoundsInput) {
 				entries := []boundsEntry{
@@ -393,7 +390,7 @@ func TestRngUniformReference(t *testing.T) {
 			if len(testData.Output) != testData.Input.Count {
 				t.Fatalf("Output length %d != count %d", len(testData.Output), testData.Input.Count)
 			}
-			for i := 0; i < testData.Input.Count; i++ {
+			for i := range testData.Input.Count {
 				actual := rng.UniformFloat64()
 				expected := testData.Output[i]
 				if !floatEquals(actual, expected, 1e-15) {
@@ -436,7 +433,7 @@ func TestRngUniformIntReference(t *testing.T) {
 			if len(testData.Output) != testData.Input.Count {
 				t.Fatalf("Output length %d != count %d", len(testData.Output), testData.Input.Count)
 			}
-			for i := 0; i < testData.Input.Count; i++ {
+			for i := range testData.Input.Count {
 				actual := rng.UniformInt64(testData.Input.Min, testData.Input.Max)
 				expected := testData.Output[i]
 				if actual != expected {
@@ -480,7 +477,7 @@ func TestRngStringSeedReference(t *testing.T) {
 			if len(testData.Output) != testData.Input.Count {
 				t.Fatalf("Output length %d != count %d", len(testData.Output), testData.Input.Count)
 			}
-			for i := 0; i < testData.Input.Count; i++ {
+			for i := range testData.Input.Count {
 				actual := rng.UniformFloat64()
 				expected := testData.Output[i]
 				if !floatEquals(actual, expected, 1e-15) {
@@ -523,7 +520,7 @@ func TestRngUniformRangeReference(t *testing.T) {
 			if len(testData.Output) != testData.Input.Count {
 				t.Fatalf("Output length %d != count %d", len(testData.Output), testData.Input.Count)
 			}
-			for i := 0; i < testData.Input.Count; i++ {
+			for i := range testData.Input.Count {
 				actual := rng.UniformFloat64Range(testData.Input.Min, testData.Input.Max)
 				expected := testData.Output[i]
 				if !floatEquals(actual, expected, 1e-12) {
@@ -567,7 +564,7 @@ func TestRngUniformFloat32Reference(t *testing.T) {
 			if len(testData.Output) != testData.Input.Count {
 				t.Fatalf("Output length %d != count %d", len(testData.Output), testData.Input.Count)
 			}
-			for i := 0; i < testData.Input.Count; i++ {
+			for i := range testData.Input.Count {
 				actual := rng.UniformFloat32()
 				expected := testData.Output[i]
 				if actual != expected {
@@ -610,7 +607,7 @@ func TestRngUniformInt32Reference(t *testing.T) {
 			if len(testData.Output) != testData.Input.Count {
 				t.Fatalf("Output length %d != count %d", len(testData.Output), testData.Input.Count)
 			}
-			for i := 0; i < testData.Input.Count; i++ {
+			for i := range testData.Input.Count {
 				actual := rng.UniformInt32(testData.Input.Min, testData.Input.Max)
 				expected := testData.Output[i]
 				if actual != expected {
@@ -654,7 +651,7 @@ func TestRngUniformBoolReference(t *testing.T) {
 			if len(testData.Output) != testData.Input.Count {
 				t.Fatalf("Output length %d != count %d", len(testData.Output), testData.Input.Count)
 			}
-			for i := 0; i < testData.Input.Count; i++ {
+			for i := range testData.Input.Count {
 				actual := rng.UniformBool()
 				expected := testData.Output[i]
 				if actual != expected {
@@ -822,7 +819,7 @@ func TestUniformDistributionReference(t *testing.T) {
 			rng := NewRngFromSeed(testData.Input.Seed)
 			dist := NewUniform(testData.Input.Min, testData.Input.Max)
 
-			for i := 0; i < testData.Input.Count; i++ {
+			for i := range testData.Input.Count {
 				actual := dist.Sample(rng)
 				expected := testData.Output[i]
 				if !floatEquals(actual, expected, 1e-12) {
@@ -861,7 +858,7 @@ func TestAdditiveDistributionReference(t *testing.T) {
 			rng := NewRngFromSeed(testData.Input.Seed)
 			dist := NewAdditive(testData.Input.Mean, testData.Input.StdDev)
 
-			for i := 0; i < testData.Input.Count; i++ {
+			for i := range testData.Input.Count {
 				actual := dist.Sample(rng)
 				expected := testData.Output[i]
 				if !floatEquals(actual, expected, 1e-12) {
@@ -900,7 +897,7 @@ func TestMultiplicDistributionReference(t *testing.T) {
 			rng := NewRngFromSeed(testData.Input.Seed)
 			dist := NewMultiplic(testData.Input.LogMean, testData.Input.LogStdDev)
 
-			for i := 0; i < testData.Input.Count; i++ {
+			for i := range testData.Input.Count {
 				actual := dist.Sample(rng)
 				expected := testData.Output[i]
 				if !floatEquals(actual, expected, 1e-12) {
@@ -939,7 +936,7 @@ func TestExpDistributionReference(t *testing.T) {
 			rng := NewRngFromSeed(testData.Input.Seed)
 			dist := NewExp(testData.Input.Rate)
 
-			for i := 0; i < testData.Input.Count; i++ {
+			for i := range testData.Input.Count {
 				actual := dist.Sample(rng)
 				expected := testData.Output[i]
 				if !floatEquals(actual, expected, 1e-12) {
@@ -978,7 +975,7 @@ func TestPowerDistributionReference(t *testing.T) {
 			rng := NewRngFromSeed(testData.Input.Seed)
 			dist := NewPower(testData.Input.Min, testData.Input.Shape)
 
-			for i := 0; i < testData.Input.Count; i++ {
+			for i := range testData.Input.Count {
 				actual := dist.Sample(rng)
 				expected := testData.Output[i]
 				if !floatEquals(actual, expected, 1e-12) {

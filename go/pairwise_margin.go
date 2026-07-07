@@ -96,7 +96,7 @@ func pairwiseMarginExactRaw(n, m int, p float64) int {
 
 		// Compute pmf[u] using Loeffler recurrence
 		sum := 0.0
-		for i := 0; i < u; i++ {
+		for i := range u {
 			sum += pmf[i] * sigma[u-i]
 		}
 		sum /= float64(u)
@@ -217,7 +217,7 @@ func binomialCoefficient(n, k int) int64 {
 	}
 
 	result := int64(1)
-	for i := 0; i < k; i++ {
+	for i := range k {
 		result = result * int64(n-i) / int64(i+1)
 	}
 	return result

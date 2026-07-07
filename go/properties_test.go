@@ -136,7 +136,6 @@ func TestRawBoundsRejectMisrateDomain(t *testing.T) {
 	}
 
 	for _, m := range badMisrates {
-		m := m
 		t.Run("CenterBounds", func(t *testing.T) {
 			_, err := CenterBounds(x, m, false)
 			assertDomainMisrate(t, err, "CenterBounds")

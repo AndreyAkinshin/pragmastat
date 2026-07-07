@@ -525,7 +525,7 @@ func spreadBoundsInner(x []float64, misrate float64, rng *Rng) (Bounds, error) {
 	shuffled := RngShuffle(rng, indices)
 
 	diffs := make([]float64, m)
-	for i := 0; i < m; i++ {
+	for i := range m {
 		diffs[i] = math.Abs(x[shuffled[2*i]] - x[shuffled[2*i+1]])
 	}
 	sort.Float64s(diffs)

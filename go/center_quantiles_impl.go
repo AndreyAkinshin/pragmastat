@@ -44,7 +44,7 @@ func centerCountPairsLessOrEqualImpl(sorted []float64, target float64) int64 {
 	// j is not reset: as i increases, threshold decreases monotonically
 	j := n - 1
 
-	for i := 0; i < n; i++ {
+	for i := range n {
 		threshold := 2*target - sorted[i]
 
 		for j >= 0 && sorted[j] > threshold {
@@ -98,7 +98,7 @@ func centerFindExactQuantileImpl(sorted []float64, k int64) float64 {
 	target := 0.5*lo + 0.5*hi
 	var candidates []float64
 
-	for i := 0; i < n; i++ {
+	for i := range n {
 		threshold := 2*target - sorted[i]
 
 		left := i

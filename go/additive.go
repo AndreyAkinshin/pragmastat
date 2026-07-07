@@ -41,7 +41,7 @@ func (a *Additive) Sample(rng *Rng) float64 {
 // Samples generates multiple samples from the additive distribution.
 func (a *Additive) Samples(rng *Rng, count int) []float64 {
 	result := make([]float64, count)
-	for i := 0; i < count; i++ {
+	for i := range count {
 		result[i] = a.Sample(rng)
 	}
 	return result

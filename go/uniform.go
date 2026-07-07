@@ -23,7 +23,7 @@ func (u *Uniform) Sample(rng *Rng) float64 {
 // Samples generates multiple samples from the uniform distribution.
 func (u *Uniform) Samples(rng *Rng, count int) []float64 {
 	result := make([]float64, count)
-	for i := 0; i < count; i++ {
+	for i := range count {
 		result[i] = u.Sample(rng)
 	}
 	return result

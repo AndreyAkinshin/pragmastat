@@ -187,7 +187,7 @@ const (
 // fnv1aHash computes FNV-1a 64-bit hash of a string
 func fnv1aHash(s string) uint64 {
 	hash := uint64(fnvOffsetBasis)
-	for i := 0; i < len(s); i++ {
+	for i := range len(s) {
 		hash ^= uint64(s[i])
 		hash *= fnvPrime
 	}

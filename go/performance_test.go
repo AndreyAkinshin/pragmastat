@@ -10,7 +10,7 @@ import (
 func TestCenterPerformance(t *testing.T) {
 	n := 100000
 	x := make([]float64, n)
-	for i := 0; i < n; i++ {
+	for i := range n {
 		x[i] = float64(i + 1)
 	}
 
@@ -39,7 +39,7 @@ func TestCenterPerformance(t *testing.T) {
 func TestSpreadPerformance(t *testing.T) {
 	n := 100000
 	x := make([]float64, n)
-	for i := 0; i < n; i++ {
+	for i := range n {
 		x[i] = float64(i + 1)
 	}
 
@@ -69,7 +69,7 @@ func TestShiftPerformance(t *testing.T) {
 	n := 100000
 	x := make([]float64, n)
 	y := make([]float64, n)
-	for i := 0; i < n; i++ {
+	for i := range n {
 		x[i] = float64(i + 1)
 		y[i] = float64(i + 1)
 	}

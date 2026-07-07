@@ -43,7 +43,7 @@ func spreadImpl[T Number](values []T, assumeSorted bool) (float64, error) {
 	// Row i allows j in [i+1, n-1] initially
 	L := make([]int, n)
 	R := make([]int, n)
-	for i := 0; i < n; i++ {
+	for i := range n {
 		L[i] = i + 1
 		if L[i] >= n {
 			L[i] = n
@@ -85,7 +85,7 @@ func spreadImpl[T Number](values []T, assumeSorted bool) (float64, error) {
 		smallestAtOrAbove := math.Inf(1)
 
 		j := 1 // global two-pointer
-		for i := 0; i < n-1; i++ {
+		for i := range n - 1 {
 			if j < i+1 {
 				j = i + 1
 			}
@@ -134,7 +134,7 @@ func spreadImpl[T Number](values []T, assumeSorted bool) (float64, error) {
 			maxActive := math.Inf(-1)
 			active := int64(0)
 
-			for i := 0; i < n-1; i++ {
+			for i := range n - 1 {
 				Li, Ri := L[i], R[i]
 				if Li > Ri {
 					continue
@@ -174,7 +174,7 @@ func spreadImpl[T Number](values []T, assumeSorted bool) (float64, error) {
 		// === SHRINK ACTIVE WINDOW ===
 		if countBelow < kLow {
 			// Need larger differences: discard all strictly below pivot
-			for i := 0; i < n-1; i++ {
+			for i := range n - 1 {
 				newL := i + 1 + int(rowCounts[i])
 				if newL > L[i] {
 					L[i] = newL
@@ -186,7 +186,7 @@ func spreadImpl[T Number](values []T, assumeSorted bool) (float64, error) {
 			}
 		} else {
 			// Too many below: keep only those strictly below pivot
-			for i := 0; i < n-1; i++ {
+			for i := range n - 1 {
 				newR := i + int(rowCounts[i])
 				if newR < R[i] {
 					R[i] = newR
@@ -202,7 +202,7 @@ func spreadImpl[T Number](values []T, assumeSorted bool) (float64, error) {
 
 		// === CHOOSE NEXT PIVOT FROM ACTIVE SET ===
 		activeSize := int64(0)
-		for i := 0; i < n-1; i++ {
+		for i := range n - 1 {
 			if L[i] <= R[i] {
 				activeSize += int64(R[i] - L[i] + 1)
 			}
@@ -226,7 +226,7 @@ func spreadImpl[T Number](values []T, assumeSorted bool) (float64, error) {
 			// Few candidates left: return midrange of remaining
 			minRem := math.Inf(1)
 			maxRem := math.Inf(-1)
-			for i := 0; i < n-1; i++ {
+			for i := range n - 1 {
 				if L[i] > R[i] {
 					continue
 				}
@@ -258,6 +258,7 @@ func spreadImpl[T Number](values []T, assumeSorted bool) (float64, error) {
 		t := rng.UniformInt64(0, activeSize)
 		acc := int64(0)
 		var row int
+		//nolint:intrange // row is read after the loop (its break value), a range var would be out of scope
 		for row = 0; row < n-1; row++ {
 			if L[row] > R[row] {
 				continue
