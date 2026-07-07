@@ -13,7 +13,10 @@ import kotlin.math.exp
  * @property logStdDev Standard deviation of log values (scale parameter).
  * @throws IllegalArgumentException If logStdDev <= 0.
  */
-class Multiplic(private val logMean: Double, private val logStdDev: Double) : Distribution {
+class Multiplic(
+    private val logMean: Double,
+    private val logStdDev: Double,
+) : Distribution {
     private val additive: Additive
 
     init {
@@ -21,7 +24,5 @@ class Multiplic(private val logMean: Double, private val logStdDev: Double) : Di
         additive = Additive(logMean, logStdDev)
     }
 
-    override fun sample(rng: Rng): Double {
-        return exp(additive.sample(rng))
-    }
+    override fun sample(rng: Rng): Double = exp(additive.sample(rng))
 }

@@ -1,13 +1,17 @@
 package dev.pragmastat
 
-enum class AssumptionId(val id: String) {
+enum class AssumptionId(
+    val id: String,
+) {
     VALIDITY("validity"),
     DOMAIN("domain"),
     POSITIVITY("positivity"),
     SPARITY("sparity"),
 }
 
-enum class Subject(val id: String) {
+enum class Subject(
+    val id: String,
+) {
     X("x"),
     Y("y"),
     MISRATE("misrate"),
@@ -63,11 +67,10 @@ internal fun checkPositivity(
 internal fun log(
     values: List<Double>,
     subject: Subject,
-): List<Double> {
-    return values.map { v ->
+): List<Double> =
+    values.map { v ->
         if (v <= 0.0) {
             throw AssumptionException(Violation(AssumptionId.POSITIVITY, subject))
         }
         kotlin.math.ln(v)
     }
-}

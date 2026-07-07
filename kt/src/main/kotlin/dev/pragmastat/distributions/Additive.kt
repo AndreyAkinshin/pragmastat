@@ -14,7 +14,10 @@ import kotlin.math.*
  * @property stdDev Scale parameter (standard deviation).
  * @throws IllegalArgumentException If stdDev <= 0.
  */
-class Additive(private val mean: Double, private val stdDev: Double) : Distribution {
+class Additive(
+    private val mean: Double,
+    private val stdDev: Double,
+) : Distribution {
     init {
         require(stdDev > 0) { "stdDev must be positive" }
     }

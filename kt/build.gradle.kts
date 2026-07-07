@@ -1,10 +1,10 @@
 plugins {
-    kotlin("jvm") version "2.0.21"
+    kotlin("jvm") version "2.4.0"
     `maven-publish`
     signing
-    id("org.jetbrains.dokka") version "2.0.0"
-    id("org.jreleaser") version "1.20.0"
-    id("org.jlleitschuh.gradle.ktlint") version "12.1.2"
+    id("org.jetbrains.dokka") version "2.2.0"
+    id("org.jreleaser") version "1.25.0"
+    id("org.jlleitschuh.gradle.ktlint") version "14.2.0"
 }
 
 group = "dev.pragmastat"

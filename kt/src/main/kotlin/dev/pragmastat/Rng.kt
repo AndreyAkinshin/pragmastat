@@ -25,7 +25,9 @@ package dev.pragmastat
  * val sampled = rng3.sample(listOf(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), 3)
  * ```
  */
-class Rng private constructor(private val inner: Xoshiro256PlusPlus) {
+class Rng private constructor(
+    private val inner: Xoshiro256PlusPlus,
+) {
     /**
      * Create a new Rng with system entropy (non-deterministic).
      */

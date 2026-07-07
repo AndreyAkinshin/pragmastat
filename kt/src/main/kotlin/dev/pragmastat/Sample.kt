@@ -82,14 +82,10 @@ class Sample private constructor(
     }
 
     /** Returns a new sample with each value multiplied by [scalar]. */
-    operator fun times(scalar: Double): Sample {
-        return Sample(values.map { it * scalar }, weights?.toList(), unit)
-    }
+    operator fun times(scalar: Double): Sample = Sample(values.map { it * scalar }, weights?.toList(), unit)
 
     /** Returns a new sample with [scalar] added to each value. */
-    operator fun plus(scalar: Double): Sample {
-        return Sample(values.map { it + scalar }, weights?.toList(), unit)
-    }
+    operator fun plus(scalar: Double): Sample = Sample(values.map { it + scalar }, weights?.toList(), unit)
 
     override fun toString(): String = "Sample(size=$size, unit=${unit.id})"
 
@@ -212,7 +208,8 @@ class Sample private constructor(
             misrate: Double,
         ): Bounds {
             checkNonWeighted("x", x)
-            return dev.pragmastat.centerBounds(x.sortedValues, misrate, assumeSorted = true)
+            return dev.pragmastat
+                .centerBounds(x.sortedValues, misrate, assumeSorted = true)
                 .withUnit(x.unit)
         }
 
@@ -239,7 +236,8 @@ class Sample private constructor(
             checkNonWeighted("x", x)
             checkNonWeighted("y", y)
             val (cx, cy) = preparePair(x, y)
-            return dev.pragmastat.shiftBounds(cx.sortedValues, cy.sortedValues, misrate, assumeSorted = true)
+            return dev.pragmastat
+                .shiftBounds(cx.sortedValues, cy.sortedValues, misrate, assumeSorted = true)
                 .withUnit(cx.unit)
         }
 
@@ -253,7 +251,8 @@ class Sample private constructor(
             val (cx, cy) = preparePair(x, y)
             // ratioBounds is order-independent and ln is monotonic, so log(sortedValues)
             // stays sorted — reuse the cached sorted view to skip a re-sort (matches ratio/shiftBounds).
-            return dev.pragmastat.ratioBounds(cx.sortedValues, cy.sortedValues, misrate, assumeSorted = true)
+            return dev.pragmastat
+                .ratioBounds(cx.sortedValues, cy.sortedValues, misrate, assumeSorted = true)
                 .withUnit(RatioUnit)
         }
 

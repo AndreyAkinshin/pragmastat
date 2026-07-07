@@ -3,7 +3,9 @@ package dev.pragmastat
 /**
  * SplitMix64 PRNG for seed expansion.
  */
-internal class SplitMix64(private var state: ULong) {
+internal class SplitMix64(
+    private var state: ULong,
+) {
     fun next(): ULong {
         state += 0x9e3779b97f4a7c15UL
         var z = state
@@ -20,7 +22,9 @@ internal class SplitMix64(private var state: ULong) {
  * This is the jump-free version of the algorithm. It passes BigCrush
  * and is used by .NET 6+, Julia, and Rust's rand crate.
  */
-internal class Xoshiro256PlusPlus(seed: ULong) {
+internal class Xoshiro256PlusPlus(
+    seed: ULong,
+) {
     private var s0: ULong
     private var s1: ULong
     private var s2: ULong
@@ -175,9 +179,7 @@ internal class Xoshiro256PlusPlus(seed: ULong) {
     // Boolean Methods
     // ========================================================================
 
-    fun uniformBool(): Boolean {
-        return uniformDouble() < 0.5
-    }
+    fun uniformBool(): Boolean = uniformDouble() < 0.5
 }
 
 /**
@@ -219,6 +221,4 @@ internal object Fnv1a {
  * Derive a deterministic seed from input values using FNV-1a hash.
  * Ensures same input always produces same random sequence.
  */
-internal fun deriveSeed(values: List<Double>): Long {
-    return Fnv1a.hashDoubles(values).toLong()
-}
+internal fun deriveSeed(values: List<Double>): Long = Fnv1a.hashDoubles(values).toLong()

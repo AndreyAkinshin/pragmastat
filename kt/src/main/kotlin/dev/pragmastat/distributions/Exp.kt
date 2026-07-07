@@ -13,7 +13,9 @@ import kotlin.math.ln
  * @property rate Rate parameter (lambda > 0).
  * @throws IllegalArgumentException If rate <= 0.
  */
-class Exp(private val rate: Double) : Distribution {
+class Exp(
+    private val rate: Double,
+) : Distribution {
     init {
         require(rate > 0) { "rate must be positive" }
     }

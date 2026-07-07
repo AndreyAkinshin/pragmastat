@@ -32,7 +32,11 @@ internal fun signMarginRandomized(
     return r * 2
 }
 
-private data class SplitResult(val rLow: Int, val logCdfLow: Double, val logPmfHigh: Double)
+private data class SplitResult(
+    val rLow: Int,
+    val logCdfLow: Double,
+    val logPmfHigh: Double,
+)
 
 private fun binomCdfSplit(
     n: Int,

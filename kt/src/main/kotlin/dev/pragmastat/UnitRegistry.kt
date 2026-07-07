@@ -28,10 +28,9 @@ class UnitRegistry private constructor(
      *
      * @throws IllegalArgumentException if no unit with the given ID is registered
      */
-    fun resolve(id: String): MeasurementUnit {
-        return byId[id]
+    fun resolve(id: String): MeasurementUnit =
+        byId[id]
             ?: throw IllegalArgumentException("unknown unit id: '$id'")
-    }
 
     companion object {
         /** Returns a registry pre-populated with Number, Ratio, and Disparity units. */

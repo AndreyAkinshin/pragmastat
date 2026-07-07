@@ -11,12 +11,13 @@ import dev.pragmastat.Rng
  * @property max Upper bound (exclusive).
  * @throws IllegalArgumentException If min >= max.
  */
-class Uniform(private val min: Double, private val max: Double) : Distribution {
+class Uniform(
+    private val min: Double,
+    private val max: Double,
+) : Distribution {
     init {
         require(min < max) { "min must be less than max" }
     }
 
-    override fun sample(rng: Rng): Double {
-        return min + rng.uniformDouble() * (max - min)
-    }
+    override fun sample(rng: Rng): Double = min + rng.uniformDouble() * (max - min)
 }

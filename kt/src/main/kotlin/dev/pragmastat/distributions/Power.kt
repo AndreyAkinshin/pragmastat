@@ -14,7 +14,10 @@ import kotlin.math.pow
  * @property shape Shape parameter (alpha > 0, controls tail heaviness).
  * @throws IllegalArgumentException If min <= 0 or shape <= 0.
  */
-class Power(private val min: Double, private val shape: Double) : Distribution {
+class Power(
+    private val min: Double,
+    private val shape: Double,
+) : Distribution {
     init {
         require(min > 0) { "min must be positive" }
         require(shape > 0) { "shape must be positive" }

@@ -17,7 +17,5 @@ interface Distribution {
     fun samples(
         rng: Rng,
         count: Int,
-    ): List<Double> {
-        return (0 until count).map { sample(rng) }
-    }
+    ): List<Double> = (0 until count).map { sample(rng) }
 }

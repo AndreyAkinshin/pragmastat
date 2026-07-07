@@ -15,13 +15,12 @@ data class Measurement(
     /** Returns the numeric value (alias for [value]). */
     fun toDouble(): Double = value
 
-    override fun toString(): String {
-        return if (unit.abbreviation.isNotEmpty()) {
+    override fun toString(): String =
+        if (unit.abbreviation.isNotEmpty()) {
             "${formatValue(value)} ${unit.abbreviation}"
         } else {
             formatValue(value)
         }
-    }
 }
 
 private fun formatValue(v: Double): String {

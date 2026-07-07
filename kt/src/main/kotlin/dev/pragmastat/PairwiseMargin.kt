@@ -51,9 +51,7 @@ private fun pairwiseMarginExact(
     n: Int,
     m: Int,
     misrate: Double,
-): Int {
-    return pairwiseMarginExactRaw(n, m, misrate / 2.0) * 2
-}
+): Int = pairwiseMarginExactRaw(n, m, misrate / 2.0) * 2
 
 /**
  * Uses Edgeworth approximation for large samples
@@ -62,9 +60,7 @@ private fun pairwiseMarginApprox(
     n: Int,
     m: Int,
     misrate: Double,
-): Int {
-    return pairwiseMarginApproxRaw(n, m, misrate / 2.0) * 2
-}
+): Int = pairwiseMarginApproxRaw(n, m, misrate / 2.0) * 2
 
 /**
  * Inversed implementation of Andreas Löffler's (1982)

@@ -14,7 +14,9 @@ package dev.pragmastat
  * @property value The underlying probability value, guaranteed to be in [0, 1].
  */
 @JvmInline
-value class Probability(val value: Double) {
+value class Probability(
+    val value: Double,
+) {
     init {
         require(value in 0.0..1.0) { "Probability must be in [0, 1], got $value" }
     }

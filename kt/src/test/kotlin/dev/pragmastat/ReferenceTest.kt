@@ -102,7 +102,9 @@ data class ProjectionOutput(
     val verdict: String,
 )
 
-data class Compare1Output(val projections: List<ProjectionOutput>)
+data class Compare1Output(
+    val projections: List<ProjectionOutput>,
+)
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class Compare1TestData(
@@ -118,7 +120,9 @@ data class Compare2Input(
     val thresholds: List<CompareThresholdInput>,
 )
 
-data class Compare2Output(val projections: List<ProjectionOutput>)
+data class Compare2Output(
+    val projections: List<ProjectionOutput>,
+)
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class Compare2TestData(
@@ -490,33 +494,77 @@ class ReferenceTest {
 
     // Rng reference tests
 
-    data class UniformInput(val seed: Long, val count: Int)
+    data class UniformInput(
+        val seed: Long,
+        val count: Int,
+    )
 
-    data class UniformTestData(val input: UniformInput, val output: List<Double>)
+    data class UniformTestData(
+        val input: UniformInput,
+        val output: List<Double>,
+    )
 
-    data class UniformIntInput(val seed: Long, val min: Long, val max: Long, val count: Int)
+    data class UniformIntInput(
+        val seed: Long,
+        val min: Long,
+        val max: Long,
+        val count: Int,
+    )
 
-    data class UniformIntTestData(val input: UniformIntInput, val output: List<Long>)
+    data class UniformIntTestData(
+        val input: UniformIntInput,
+        val output: List<Long>,
+    )
 
-    data class StringSeedInput(val seed: String, val count: Int)
+    data class StringSeedInput(
+        val seed: String,
+        val count: Int,
+    )
 
-    data class StringSeedTestData(val input: StringSeedInput, val output: List<Double>)
+    data class StringSeedTestData(
+        val input: StringSeedInput,
+        val output: List<Double>,
+    )
 
-    data class ShuffleInput(val seed: Long, val x: List<Double>)
+    data class ShuffleInput(
+        val seed: Long,
+        val x: List<Double>,
+    )
 
-    data class ShuffleTestData(val input: ShuffleInput, val output: List<Double>)
+    data class ShuffleTestData(
+        val input: ShuffleInput,
+        val output: List<Double>,
+    )
 
-    data class SampleInput(val seed: Long, val x: List<Double>, val k: Int)
+    data class SampleInput(
+        val seed: Long,
+        val x: List<Double>,
+        val k: Int,
+    )
 
-    data class SampleTestData(val input: SampleInput, val output: List<Double>)
+    data class SampleTestData(
+        val input: SampleInput,
+        val output: List<Double>,
+    )
 
-    data class ResampleTestData(val input: SampleInput, val output: List<Double>)
+    data class ResampleTestData(
+        val input: SampleInput,
+        val output: List<Double>,
+    )
 
     // Distribution reference tests
 
-    data class UniformDistInput(val seed: Long, val min: Double, val max: Double, val count: Int)
+    data class UniformDistInput(
+        val seed: Long,
+        val min: Double,
+        val max: Double,
+        val count: Int,
+    )
 
-    data class UniformDistTestData(val input: UniformDistInput, val output: List<Double>)
+    data class UniformDistTestData(
+        val input: UniformDistInput,
+        val output: List<Double>,
+    )
 
     data class AdditiveDistInput(
         val seed: Long,
@@ -525,7 +573,10 @@ class ReferenceTest {
         val count: Int,
     )
 
-    data class AdditiveDistTestData(val input: AdditiveDistInput, val output: List<Double>)
+    data class AdditiveDistTestData(
+        val input: AdditiveDistInput,
+        val output: List<Double>,
+    )
 
     data class MultiplicDistInput(
         val seed: Long,
@@ -534,32 +585,78 @@ class ReferenceTest {
         val count: Int,
     )
 
-    data class MultiplicDistTestData(val input: MultiplicDistInput, val output: List<Double>)
+    data class MultiplicDistTestData(
+        val input: MultiplicDistInput,
+        val output: List<Double>,
+    )
 
-    data class ExpDistInput(val seed: Long, val rate: Double, val count: Int)
+    data class ExpDistInput(
+        val seed: Long,
+        val rate: Double,
+        val count: Int,
+    )
 
-    data class ExpDistTestData(val input: ExpDistInput, val output: List<Double>)
+    data class ExpDistTestData(
+        val input: ExpDistInput,
+        val output: List<Double>,
+    )
 
-    data class PowerDistInput(val seed: Long, val min: Double, val shape: Double, val count: Int)
+    data class PowerDistInput(
+        val seed: Long,
+        val min: Double,
+        val shape: Double,
+        val count: Int,
+    )
 
-    data class PowerDistTestData(val input: PowerDistInput, val output: List<Double>)
+    data class PowerDistTestData(
+        val input: PowerDistInput,
+        val output: List<Double>,
+    )
 
     // New Rng test data classes
-    data class UniformRangeInput(val seed: Long, val min: Double, val max: Double, val count: Int)
+    data class UniformRangeInput(
+        val seed: Long,
+        val min: Double,
+        val max: Double,
+        val count: Int,
+    )
 
-    data class UniformRangeTestData(val input: UniformRangeInput, val output: List<Double>)
+    data class UniformRangeTestData(
+        val input: UniformRangeInput,
+        val output: List<Double>,
+    )
 
-    data class UniformF32Input(val seed: Long, val count: Int)
+    data class UniformF32Input(
+        val seed: Long,
+        val count: Int,
+    )
 
-    data class UniformF32TestData(val input: UniformF32Input, val output: List<Float>)
+    data class UniformF32TestData(
+        val input: UniformF32Input,
+        val output: List<Float>,
+    )
 
-    data class UniformI32Input(val seed: Long, val min: Int, val max: Int, val count: Int)
+    data class UniformI32Input(
+        val seed: Long,
+        val min: Int,
+        val max: Int,
+        val count: Int,
+    )
 
-    data class UniformI32TestData(val input: UniformI32Input, val output: List<Int>)
+    data class UniformI32TestData(
+        val input: UniformI32Input,
+        val output: List<Int>,
+    )
 
-    data class UniformBoolInput(val seed: Long, val count: Int)
+    data class UniformBoolInput(
+        val seed: Long,
+        val count: Int,
+    )
 
-    data class UniformBoolTestData(val input: UniformBoolInput, val output: List<Boolean>)
+    data class UniformBoolTestData(
+        val input: UniformBoolInput,
+        val output: List<Boolean>,
+    )
 
     @TestFactory
     fun testRngUniform(): List<DynamicTest> {
@@ -993,7 +1090,10 @@ class ReferenceTest {
 
     // One-sample bounds reference tests
 
-    data class SignedRankMarginInput(val n: Int, val misrate: Double)
+    data class SignedRankMarginInput(
+        val n: Int,
+        val misrate: Double,
+    )
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class SignedRankMarginTestData(
@@ -1002,7 +1102,10 @@ class ReferenceTest {
         @JsonProperty("expected_error") val expectedError: Map<String, String>? = null,
     )
 
-    data class CenterBoundsInput(val x: List<Double>, val misrate: Double)
+    data class CenterBoundsInput(
+        val x: List<Double>,
+        val misrate: Double,
+    )
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class CenterBoundsTestData(
@@ -1011,7 +1114,11 @@ class ReferenceTest {
         @JsonProperty("expected_error") val expectedError: Map<String, String>? = null,
     )
 
-    data class SpreadBoundsInput(val x: List<Double>, val misrate: Double, val seed: String)
+    data class SpreadBoundsInput(
+        val x: List<Double>,
+        val misrate: Double,
+        val seed: String,
+    )
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class SpreadBoundsTestData(
@@ -1020,7 +1127,12 @@ class ReferenceTest {
         @JsonProperty("expected_error") val expectedError: Map<String, String>? = null,
     )
 
-    data class AvgSpreadBoundsInput(val x: List<Double>, val y: List<Double>, val misrate: Double, val seed: String)
+    data class AvgSpreadBoundsInput(
+        val x: List<Double>,
+        val y: List<Double>,
+        val misrate: Double,
+        val seed: String,
+    )
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class AvgSpreadBoundsTestData(
@@ -1029,7 +1141,12 @@ class ReferenceTest {
         @JsonProperty("expected_error") val expectedError: Map<String, String>? = null,
     )
 
-    data class DisparityBoundsInput(val x: List<Double>, val y: List<Double>, val misrate: Double, val seed: String)
+    data class DisparityBoundsInput(
+        val x: List<Double>,
+        val y: List<Double>,
+        val misrate: Double,
+        val seed: String,
+    )
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class DisparityBoundsTestData(

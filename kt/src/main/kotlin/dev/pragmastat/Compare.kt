@@ -128,9 +128,7 @@ internal object CompareEngine {
         threshold: Threshold,
         x: Sample,
         unused: Sample?,
-    ): Measurement {
-        return validateCenter(threshold, x, null)
-    }
+    ): Measurement = validateCenter(threshold, x, null)
 
     private fun validateShift(
         threshold: Threshold,
@@ -244,8 +242,7 @@ internal object CompareEngine {
             thresholds
                 .mapIndexed { index, threshold ->
                     Triple(threshold, index, normalizedValues[index])
-                }
-                .groupBy { it.first.metric }
+                }.groupBy { it.first.metric }
 
         for (spec in specs) {
             val entries = byMetric[spec.metric] ?: continue
