@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "dev.pragmastat"
-version = "13.0.0"
+version = "13.0.1"
 
 repositories {
     mavenCentral()
