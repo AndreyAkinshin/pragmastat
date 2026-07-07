@@ -17,11 +17,5 @@
   "devDependencies": {
     "rehype-katex": "^7.0.0",
     "remark-math": "^6.0.0"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "esbuild",
-      "sharp"
-    ]
   }
 }

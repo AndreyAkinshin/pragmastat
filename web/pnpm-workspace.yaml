@@ -1,0 +1,5 @@
+# pnpm 11 moved build-script settings out of package.json's "pnpm" field.
+# Allow the native postinstall builds these packages need.
+allowBuilds:
+  esbuild: true
+  sharp: true
