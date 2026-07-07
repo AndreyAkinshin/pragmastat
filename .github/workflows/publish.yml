@@ -200,13 +200,13 @@ jobs:
     runs-on: ubuntu-24.04
     needs: build
     permissions:
-      id-token: write  # Required for npm provenance
+      id-token: write  # Mint the OIDC token for tokenless trusted publishing
       contents: read
     steps:
     - name: Set up Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '20'
+        node-version: '24'  # bundles npm >= 11.5.1, required for OIDC trusted publishing
         registry-url: 'https://registry.npmjs.org'
 
     - name: Download ts artifacts
@@ -216,10 +216,10 @@ jobs:
         path: ts/
 
     - name: Publish to npm
-      run: npm publish *.tgz --access public --provenance
+      # No NODE_AUTH_TOKEN: with no registry credential present, npm runs the OIDC
+      # exchange (tokenless trusted publishing) and generates provenance by default.
+      run: npm publish *.tgz --access public
       working-directory: ts
-      env:
-        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   publish-rs:
     runs-on: ubuntu-24.04
