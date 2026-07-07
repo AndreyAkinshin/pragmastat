@@ -50,18 +50,18 @@ mod signed_rank_margin_tests;
 pub use assumptions::{AssumptionError, AssumptionId, EstimatorError, Subject, Violation};
 pub use bounds::Bounds;
 pub use compare::{
-    compare1, compare1_with_seed, compare2, compare2_with_seed, ComparisonVerdict, Metric,
-    Projection, Threshold,
+    ComparisonVerdict, Metric, Projection, Threshold, compare1, compare1_with_seed, compare2,
+    compare2_with_seed,
 };
 pub use distributions::{Additive, Distribution, Exp, Multiplic, Power, Uniform};
 pub use estimators::{
-    center, center_bounds, disparity, disparity_bounds, disparity_bounds_with_seed, ratio,
-    ratio_bounds, shift, shift_bounds, spread, spread_bounds, spread_bounds_with_seed,
-    DEFAULT_MISRATE,
+    DEFAULT_MISRATE, center, center_bounds, disparity, disparity_bounds,
+    disparity_bounds_with_seed, ratio, ratio_bounds, shift, shift_bounds, spread, spread_bounds,
+    spread_bounds_with_seed,
 };
 pub use measurement::Measurement;
 pub use measurement_unit::{
-    conversion_factor, finer, is_compatible, MeasurementUnit, UnitMismatchError,
+    MeasurementUnit, UnitMismatchError, conversion_factor, finer, is_compatible,
 };
 pub use rng::Rng;
 pub use sample::Sample;

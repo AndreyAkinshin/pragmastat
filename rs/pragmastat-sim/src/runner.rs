@@ -1,6 +1,6 @@
 use crate::output::OutputWriter;
 use crate::progress::ProgressTracker;
-use crate::sim::{output_path, SimError, Simulation, SimulationRow};
+use crate::sim::{SimError, Simulation, SimulationRow, output_path};
 use console::style;
 use rayon::prelude::*;
 use std::collections::BTreeMap;

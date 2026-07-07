@@ -1,6 +1,6 @@
 use super::bounds::{
-    format_bounds_row, min_achievable_misrate_two_sample, parse_misrates, resolve_sample_count,
-    round_bounds_row, BoundsInput, BoundsRow,
+    BoundsInput, BoundsRow, format_bounds_row, min_achievable_misrate_two_sample, parse_misrates,
+    resolve_sample_count, round_bounds_row,
 };
 use super::{SimError, Simulation};
 use crate::distributions::{self, DistributionEntry};
@@ -58,11 +58,9 @@ impl Simulation for RatioBoundsSim {
                         continue;
                     }
                     let key = format!("{}-{}-{}", dist.name, n, misrate);
-                    if !overwrite {
-                        if let Some(row) = existing.get(&key) {
-                            reused.push(row.clone());
-                            continue;
-                        }
+                    if !overwrite && let Some(row) = existing.get(&key) {
+                        reused.push(row.clone());
+                        continue;
                     }
                     inputs.push(BoundsInput {
                         distribution_name: dist.name.to_string(),

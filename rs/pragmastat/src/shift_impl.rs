@@ -1,6 +1,6 @@
 use std::collections::BTreeSet;
 
-use crate::assumptions::{log, Subject};
+use crate::assumptions::{Subject, log};
 
 /// Computes quantiles of all pairwise differences {x[i] - y[j]}.
 /// Time complexity: O((m+n) log precision) per unique rank.

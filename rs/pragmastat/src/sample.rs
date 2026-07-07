@@ -6,7 +6,7 @@
 
 use crate::assumptions::{AssumptionError, EstimatorError, Subject};
 use crate::measurement_unit::{
-    conversion_factor, finer, is_compatible, MeasurementUnit, UnitMismatchError,
+    MeasurementUnit, UnitMismatchError, conversion_factor, finer, is_compatible,
 };
 use std::ops::Mul;
 use std::sync::OnceLock;

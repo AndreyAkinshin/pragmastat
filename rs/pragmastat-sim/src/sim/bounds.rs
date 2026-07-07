@@ -91,11 +91,7 @@ pub fn parse_misrates(input: &str) -> Vec<f64> {
                 return None;
             }
             let v: f64 = trimmed.parse().ok()?;
-            if v > 0.0 && v < 1.0 {
-                Some(v)
-            } else {
-                None
-            }
+            if v > 0.0 && v < 1.0 { Some(v) } else { None }
         })
         .collect()
 }

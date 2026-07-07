@@ -14,7 +14,7 @@
 //! These tests lock the Sample API to the raw API directly.
 
 use pragmastat::estimators::raw;
-use pragmastat::{disparity_bounds_with_seed, spread_bounds_with_seed, Sample};
+use pragmastat::{Sample, disparity_bounds_with_seed, spread_bounds_with_seed};
 
 const UNSORTED_X: [f64; 20] = [
     5.0, 3.0, 1.0, 4.0, 2.0, 9.0, 7.0, 6.0, 8.0, 10.0, 15.0, 11.0, 13.0, 12.0, 14.0, 20.0, 18.0,

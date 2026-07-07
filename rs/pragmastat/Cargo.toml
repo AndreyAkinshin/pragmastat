@@ -1,7 +1,8 @@
 [package]
 name = "pragmastat"
 version = "13.0.1"
-edition = "2021"
+edition = "2024"
+rust-version = "1.87"
 authors = ["Andrey Akinshin"]
 description = "Pragmastat: Pragmatic Statistical Toolkit"
 license = "MIT"

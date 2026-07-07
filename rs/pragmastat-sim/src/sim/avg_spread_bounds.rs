@@ -1,9 +1,10 @@
 use super::bounds::{
-    format_two_sample_bounds_row, min_achievable_misrate_avg_spread, parse_misrates,
-    resolve_sample_count, round_two_sample_bounds_row, TwoSampleBoundsInput, TwoSampleBoundsRow,
+    TwoSampleBoundsInput, TwoSampleBoundsRow, format_two_sample_bounds_row,
+    min_achievable_misrate_avg_spread, parse_misrates, resolve_sample_count,
+    round_two_sample_bounds_row,
 };
 use super::{SimError, Simulation};
-use crate::distributions::{asymptotic_spread, find_distributions, DistributionEntry};
+use crate::distributions::{DistributionEntry, asymptotic_spread, find_distributions};
 use pragmastat::Rng;
 use std::collections::BTreeMap;
 
@@ -63,11 +64,9 @@ impl Simulation for AvgSpreadBoundsSim {
                             continue;
                         }
                         let key = format!("{}-{}-{}-{}", dist.name, n, m, misrate);
-                        if !overwrite {
-                            if let Some(row) = existing.get(&key) {
-                                reused.push(row.clone());
-                                continue;
-                            }
+                        if !overwrite && let Some(row) = existing.get(&key) {
+                            reused.push(row.clone());
+                            continue;
                         }
                         inputs.push(TwoSampleBoundsInput {
                             distribution_name: dist.name.to_string(),

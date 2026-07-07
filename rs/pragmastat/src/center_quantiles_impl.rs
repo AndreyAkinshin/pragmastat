@@ -21,11 +21,7 @@ pub fn center_quantile_bounds_impl(sorted: &[f64], margin_lo: i64, margin_hi: i6
     let lo = center_find_exact_quantile_impl(sorted, margin_lo);
     let hi = center_find_exact_quantile_impl(sorted, margin_hi);
 
-    if lo > hi {
-        (hi, lo)
-    } else {
-        (lo, hi)
-    }
+    if lo > hi { (hi, lo) } else { (lo, hi) }
 }
 
 /// Count pairwise averages <= target value.

@@ -5,8 +5,8 @@
 //! This generates JSON test files in the tests/ directory that all language
 //! implementations must pass to ensure cross-language consistency.
 
-use pragmastat::distributions::{Additive, Distribution, Exp, Multiplic, Power, Uniform};
 use pragmastat::Rng;
+use pragmastat::distributions::{Additive, Distribution, Exp, Multiplic, Power, Uniform};
 use serde::Serialize;
 use std::fs;
 use std::path::PathBuf;

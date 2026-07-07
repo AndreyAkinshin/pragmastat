@@ -1,4 +1,4 @@
-use super::drift::{format_drift_row, round_drift_row, DriftInput, DriftRow};
+use super::drift::{DriftInput, DriftRow, format_drift_row, round_drift_row};
 use super::{SimError, Simulation};
 use crate::distributions::{self, DistributionEntry};
 use crate::estimators;
@@ -61,11 +61,9 @@ impl Simulation for DispDriftSim {
         for dist in &self.distributions {
             for &n in sample_sizes {
                 let key = format!("{}-{}", dist.name, n);
-                if !overwrite {
-                    if let Some(row) = existing.get(&key) {
-                        reused.push(row.clone());
-                        continue;
-                    }
+                if !overwrite && let Some(row) = existing.get(&key) {
+                    reused.push(row.clone());
+                    continue;
                 }
                 inputs.push(DriftInput {
                     distribution_name: dist.name.to_string(),

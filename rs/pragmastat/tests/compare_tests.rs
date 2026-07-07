@@ -6,8 +6,8 @@
 use float_cmp::approx_eq;
 use pragmastat::assumptions::EstimatorError;
 use pragmastat::compare::{
-    compare1, compare1_with_seed, compare2, compare2_with_seed, ComparisonVerdict, Metric,
-    Threshold,
+    ComparisonVerdict, Metric, Threshold, compare1, compare1_with_seed, compare2,
+    compare2_with_seed,
 };
 use pragmastat::measurement::Measurement;
 use pragmastat::sample::Sample;

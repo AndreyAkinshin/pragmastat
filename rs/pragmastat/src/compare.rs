@@ -8,9 +8,9 @@ use crate::bounds::Bounds;
 use crate::estimators;
 use crate::measurement::Measurement;
 use crate::measurement_unit::{
-    conversion_factor, finer, is_compatible, MeasurementUnit, UnitMismatchError,
+    MeasurementUnit, UnitMismatchError, conversion_factor, finer, is_compatible,
 };
-use crate::sample::{check_compatible_units, check_non_weighted, Sample};
+use crate::sample::{Sample, check_compatible_units, check_non_weighted};
 
 /// Metric types supported by Compare1 and Compare2.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -638,12 +638,14 @@ mod tests {
 
     #[test]
     fn test_threshold_non_finite_value() {
-        assert!(Threshold::new(
-            Metric::Center,
-            Measurement::new(f64::INFINITY, MeasurementUnit::number()),
-            0.1,
-        )
-        .is_err());
+        assert!(
+            Threshold::new(
+                Metric::Center,
+                Measurement::new(f64::INFINITY, MeasurementUnit::number()),
+                0.1,
+            )
+            .is_err()
+        );
     }
 
     #[test]

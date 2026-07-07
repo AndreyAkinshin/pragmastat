@@ -5,12 +5,12 @@
 //! lightweight numeric interface and for internal tests.
 
 use crate::assumptions::{
-    check_positivity, check_validity, log, AssumptionError, EstimatorError, Subject,
+    AssumptionError, EstimatorError, Subject, check_positivity, check_validity, log,
 };
 use crate::bounds::Bounds;
 use crate::measurement::Measurement;
 use crate::measurement_unit::MeasurementUnit;
-use crate::sample::{check_non_weighted, prepare_pair, Sample};
+use crate::sample::{Sample, check_non_weighted, prepare_pair};
 
 /// Default misclassification rate for bounds estimators.
 pub const DEFAULT_MISRATE: f64 = 1e-3;
@@ -312,11 +312,7 @@ pub mod raw {
     /// The disjoint-pair shuffle always runs on the caller's slice regardless,
     /// so on a genuinely sorted slice the flag never changes the result.
     fn sorted_view(x: &[f64], assume_sorted: bool) -> Option<&[f64]> {
-        if assume_sorted {
-            Some(x)
-        } else {
-            None
-        }
+        if assume_sorted { Some(x) } else { None }
     }
 
     /// Computes weighted-average spread bounds.
