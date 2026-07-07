@@ -1,4 +1,3 @@
-using System.Runtime.Serialization;
 using JetBrains.Annotations;
 
 namespace Pragmastat.Exceptions;
@@ -7,11 +6,6 @@ public class WeightedSampleNotSupportedException : ArgumentException
 {
   [PublicAPI]
   public WeightedSampleNotSupportedException()
-  {
-  }
-
-  [PublicAPI]
-  protected WeightedSampleNotSupportedException(SerializationInfo info, StreamingContext context) : base(info, context)
   {
   }
 
