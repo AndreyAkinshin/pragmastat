@@ -4,7 +4,6 @@ Based on Monahan's selection algorithm adapted for pairwise differences.
 """
 
 import struct
-from typing import List
 
 import numpy as np
 
@@ -19,7 +18,7 @@ except ImportError:
     _HAS_C_EXTENSION = False
 
 
-def _derive_seed(values: List[float]) -> int:
+def _derive_seed(values: list[float]) -> int:
     """Derive a deterministic seed from input values using FNV-1a hash."""
     FNV_OFFSET_BASIS = 0xCBF29CE484222325
     FNV_PRIME = 0x00000100000001B3
@@ -38,7 +37,7 @@ def _derive_seed(values: List[float]) -> int:
     return hash_val
 
 
-def _spread_impl_python(values: List[float], assume_sorted: bool = False) -> float:
+def _spread_impl_python(values: list[float], assume_sorted: bool = False) -> float:
     """
     Pure Python implementation of spread estimator.
 

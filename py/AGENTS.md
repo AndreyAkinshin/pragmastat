@@ -128,9 +128,9 @@ Two-sample estimators check unit compatibility and convert to the finer unit.
 ```python
 from pragmastat import Sample, NUMBER_UNIT
 
-x = Sample([1, 2, 3, 4, 5])                          # unweighted, NUMBER_UNIT
-x = Sample([1, 2, 3], unit=NUMBER_UNIT)               # explicit unit
-x = Sample([1, 2, 3], weights=[0.5, 0.3, 0.2])       # weighted
+x = Sample([1, 2, 3, 4, 5])  # unweighted, NUMBER_UNIT
+x = Sample([1, 2, 3], unit=NUMBER_UNIT)  # explicit unit
+x = Sample([1, 2, 3], weights=[0.5, 0.3, 0.2])  # weighted
 ```
 
 Validation at construction time:

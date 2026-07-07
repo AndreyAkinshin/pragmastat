@@ -42,7 +42,8 @@ array/sequence.
 from __future__ import annotations
 
 import math
-from typing import TYPE_CHECKING, Sequence, Union
+from collections.abc import Sequence
+from typing import TYPE_CHECKING, Union
 
 import numpy as np
 
@@ -309,7 +310,7 @@ def _spread_bounds_raw(
     return _spread_bounds_shuffle(x, m, misrate, rng)
 
 
-def _avg_spread_bounds_raw(  # noqa: PLR0913
+def _avg_spread_bounds_raw(  # noqa: PLR0913, PLR0917
     x: NDArray,
     sorted_x: NDArray | None,
     y: NDArray,
@@ -400,7 +401,7 @@ def _disparity_bounds_from_components(
     return -math.inf, math.inf
 
 
-def _disparity_bounds_raw(  # noqa: PLR0913
+def _disparity_bounds_raw(  # noqa: PLR0913, PLR0917
     x: NDArray,
     sorted_x: NDArray | None,
     y: NDArray,

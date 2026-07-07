@@ -6,7 +6,6 @@ for small samples (n+m <= 400) and Edgeworth approximation for larger samples.
 """
 
 import math
-from typing import List
 
 from .assumptions import AssumptionError
 from .gauss_cdf import gauss_cdf as _gauss_cdf
@@ -71,8 +70,8 @@ def _pairwise_margin_exact_raw(n: int, m: int, p: float) -> int:
     else:
         total = _binomial_coefficient_float(n + m, m)
 
-    pmf: List[float] = [1.0]  # pmf[0] = 1
-    sigma: List[float] = [0.0]  # sigma[0] is unused
+    pmf: list[float] = [1.0]  # pmf[0] = 1
+    sigma: list[float] = [0.0]  # sigma[0] is unused
 
     u = 0
     cdf = 1.0 / total

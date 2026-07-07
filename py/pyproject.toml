@@ -3,7 +3,7 @@ name = "pragmastat"
 version = "13.0.1"
 description = "Pragmastat: Pragmatic Statistical Toolkit"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.12"
 license = "MIT"
 authors = [{ name = "Andrey Akinshin" }]
 dependencies = ["numpy>=1.20"]
@@ -20,7 +20,7 @@ build-backend = "setuptools.build_meta"
 
 [tool.ruff]
 line-length = 120
-target-version = "py38"
+target-version = "py312"
 
 [tool.ruff.lint]
 select = ["ALL"]
@@ -31,9 +31,9 @@ ignore = [
     "D212",    # multi-line summary first line — project uses second-line style
     # Math/stats variable naming (x, y, n, m, p, etc.)
     "N806",    # non-lowercase-variable-in-function — math notation convention
-    # Python 3.8 compatibility (requires-python = ">=3.8")
-    "FA100",   # future-rewritable-type-annotation — py38 compat
-    "FA102",   # future-required-type-annotation — py38 compat
+    # Type-annotation style: don't mandate `from __future__ import annotations`
+    "FA100",   # future-rewritable-type-annotation
+    "FA102",   # future-required-type-annotation
     "UP015",   # redundant-open-modes — explicit is fine
     # Test-specific
     "S101",    # assert — used in tests
@@ -85,6 +85,8 @@ ignore = [
     "SIM108",  # if-else-block-instead-of-if-exp — explicit blocks preferred
     "ERA001",  # commented-out-code — occasional reference comments
     "RUF022",  # unsorted-dunder-all — __all__ grouped by category intentionally
+    # Copyright headers — project does not use them
+    "CPY001",  # missing-copyright-notice
 ]
 
 [tool.ruff.lint.per-file-ignores]

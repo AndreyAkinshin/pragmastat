@@ -4,7 +4,7 @@ Computes quantiles of all pairwise differences without materializing them.
 Uses binary search in value space with two-pointer counting.
 """
 
-from typing import List, Sequence, Union
+from collections.abc import Sequence
 
 import numpy as np
 from numpy.typing import NDArray
@@ -24,7 +24,7 @@ def _midpoint(a: float, b: float) -> float:
     return 0.5 * a + 0.5 * b
 
 
-def _count_and_neighbors(x: List[float], y: List[float], threshold: float) -> tuple[int, float, float]:
+def _count_and_neighbors(x: list[float], y: list[float], threshold: float) -> tuple[int, float, float]:
     """
     Count pairs where x[i] - y[j] <= threshold using two-pointer algorithm.
 
@@ -71,7 +71,7 @@ def _count_and_neighbors(x: List[float], y: List[float], threshold: float) -> tu
     return count, max_below, min_above
 
 
-def _select_kth_pairwise_diff(x: List[float], y: List[float], k: int) -> float:
+def _select_kth_pairwise_diff(x: list[float], y: list[float], k: int) -> float:
     """
     Select the k-th smallest pairwise difference (1-indexed).
 
@@ -134,11 +134,11 @@ def _select_kth_pairwise_diff(x: List[float], y: List[float], k: int) -> float:
 
 
 def _shift_impl_python(
-    x: List[float],
-    y: List[float],
-    p: Union[float, List[float]] = 0.5,
+    x: list[float],
+    y: list[float],
+    p: float | list[float] = 0.5,
     assume_sorted: bool = False,
-) -> Union[float, List[float]]:
+) -> float | list[float]:
     """
     Pure Python implementation of shift estimator.
 
@@ -217,11 +217,11 @@ def _shift_impl_python(
 
 
 def _shift_impl(
-    x: Union[Sequence[float], NDArray],
-    y: Union[Sequence[float], NDArray],
-    p: Union[float, List[float]] = 0.5,
+    x: Sequence[float] | NDArray,
+    y: Sequence[float] | NDArray,
+    p: float | list[float] = 0.5,
     assume_sorted: bool = False,
-) -> Union[float, List[float]]:
+) -> float | list[float]:
     """
     Compute quantiles of all pairwise differences {x_i - y_j} efficiently.
 

@@ -271,7 +271,7 @@ def run_distribution_tests(dist_name, dist_factory):
         actual = [dist.sample(rng) for _ in range(input_data["count"])]
 
         assert len(actual) == len(expected), f"Length mismatch for {json_file.name}: {len(actual)} vs {len(expected)}"
-        for i, (act, exp) in enumerate(zip(actual, expected)):
+        for i, (act, exp) in enumerate(zip(actual, expected, strict=True)):
             assert abs(act - exp) < 1e-12, f"Failed for {json_file.name}, index {i}: expected {exp}, got {act}"
 
 
@@ -360,7 +360,7 @@ class TestReference:
             assert len(actual) == len(expected), (
                 f"Length mismatch for {json_file.name}: {len(actual)} vs {len(expected)}"
             )
-            for i, (act, exp) in enumerate(zip(actual, expected)):
+            for i, (act, exp) in enumerate(zip(actual, expected, strict=True)):
                 assert abs(act - exp) < 1e-15, f"Failed for {json_file.name}, index {i}: expected {exp}, got {act}"
 
     def test_rng_uniform_int_reference(self):
@@ -408,7 +408,7 @@ class TestReference:
             assert len(actual) == len(expected), (
                 f"Length mismatch for {json_file.name}: {len(actual)} vs {len(expected)}"
             )
-            for i, (act, exp) in enumerate(zip(actual, expected)):
+            for i, (act, exp) in enumerate(zip(actual, expected, strict=True)):
                 assert abs(act - exp) < 1e-15, f"Failed for {json_file.name}, index {i}: expected {exp}, got {act}"
 
     def test_rng_uniform_float_range_reference(self):
@@ -435,7 +435,7 @@ class TestReference:
             assert len(actual) == len(expected), (
                 f"Length mismatch for {json_file.name}: {len(actual)} vs {len(expected)}"
             )
-            for i, (act, exp) in enumerate(zip(actual, expected)):
+            for i, (act, exp) in enumerate(zip(actual, expected, strict=True)):
                 assert abs(act - exp) < 1e-12, f"Failed for {json_file.name}, index {i}: expected {exp}, got {act}"
 
     def test_rng_uniform_bool_reference(self):
@@ -481,7 +481,7 @@ class TestReference:
             assert len(actual) == len(expected), (
                 f"Length mismatch for {json_file.name}: {len(actual)} vs {len(expected)}"
             )
-            for i, (act, exp) in enumerate(zip(actual, expected)):
+            for i, (act, exp) in enumerate(zip(actual, expected, strict=True)):
                 assert abs(act - exp) < 1e-15, f"Failed for {json_file.name}, index {i}: expected {exp}, got {act}"
 
     def test_sample_reference(self):
@@ -507,7 +507,7 @@ class TestReference:
             assert len(actual) == len(expected), (
                 f"Length mismatch for {json_file.name}: {len(actual)} vs {len(expected)}"
             )
-            for i, (act, exp) in enumerate(zip(actual, expected)):
+            for i, (act, exp) in enumerate(zip(actual, expected, strict=True)):
                 assert abs(act - exp) < 1e-15, f"Failed for {json_file.name}, index {i}: expected {exp}, got {act}"
 
     def test_resample_reference(self):
@@ -533,7 +533,7 @@ class TestReference:
             assert len(actual) == len(expected), (
                 f"Length mismatch for {json_file.name}: {len(actual)} vs {len(expected)}"
             )
-            for i, (act, exp) in enumerate(zip(actual, expected)):
+            for i, (act, exp) in enumerate(zip(actual, expected, strict=True)):
                 assert abs(act - exp) < 1e-15, f"Failed for {json_file.name}, index {i}: expected {exp}, got {act}"
 
     def test_uniform_distribution_reference(self):
@@ -928,7 +928,7 @@ class TestCompare1:
                 f"Projection count mismatch for {json_file.name}: {len(projections)} vs {len(expected_projections)}"
             )
 
-            for i, (actual, expected) in enumerate(zip(projections, expected_projections)):
+            for i, (actual, expected) in enumerate(zip(projections, expected_projections, strict=True)):
                 context = f" for {json_file.name}, projection {i}"
                 assert abs(actual.estimate.value - expected["estimate"]) < 1e-9, (
                     f"Estimate mismatch{context}: expected {expected['estimate']}, got {actual.estimate.value}"
@@ -1011,7 +1011,7 @@ class TestCompare2:
                 f"Projection count mismatch for {json_file.name}: {len(projections)} vs {len(expected_projections)}"
             )
 
-            for i, (actual, expected) in enumerate(zip(projections, expected_projections)):
+            for i, (actual, expected) in enumerate(zip(projections, expected_projections, strict=True)):
                 context = f" for {json_file.name}, projection {i}"
                 assert abs(actual.estimate.value - expected["estimate"]) < 1e-9, (
                     f"Estimate mismatch{context}: expected {expected['estimate']}, got {actual.estimate.value}"

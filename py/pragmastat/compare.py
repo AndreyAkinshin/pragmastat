@@ -277,7 +277,11 @@ def compare1(x: Sample, thresholds: list[Threshold], seed: str | None = None) ->
     results: list[Projection | None] = [None] * len(thresholds)
 
     for spec in _COMPARE1_SPECS:
-        entries = [(i, t, n) for i, (t, n) in enumerate(zip(thresholds, normalized_values)) if t.metric == spec.metric]
+        entries = [
+            (i, t, n)
+            for i, (t, n) in enumerate(zip(thresholds, normalized_values, strict=True))
+            if t.metric == spec.metric
+        ]
 
         if not entries:
             continue
@@ -338,7 +342,11 @@ def compare2(x: Sample, y: Sample, thresholds: list[Threshold], seed: str | None
     results: list[Projection | None] = [None] * len(thresholds)
 
     for spec in _COMPARE2_SPECS:
-        entries = [(i, t, n) for i, (t, n) in enumerate(zip(thresholds, normalized_values)) if t.metric == spec.metric]
+        entries = [
+            (i, t, n)
+            for i, (t, n) in enumerate(zip(thresholds, normalized_values, strict=True))
+            if t.metric == spec.metric
+        ]
 
         if not entries:
             continue

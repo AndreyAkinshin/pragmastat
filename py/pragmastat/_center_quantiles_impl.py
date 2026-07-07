@@ -3,13 +3,11 @@
 Uses binary search with counting function to find exact quantiles in O(n log(range)) time.
 """
 
-from typing import List, Tuple
-
 # Relative epsilon for floating-point comparisons in binary search convergence.
 RELATIVE_EPSILON = 1e-14
 
 
-def _count_pairs_less_or_equal(sorted_vals: List[float], threshold: float) -> int:
+def _count_pairs_less_or_equal(sorted_vals: list[float], threshold: float) -> int:
     """
     Counts how many pairwise averages (sorted[i] + sorted[j])/2 where i <= j are <= threshold.
 
@@ -35,7 +33,7 @@ def _count_pairs_less_or_equal(sorted_vals: List[float], threshold: float) -> in
     return count
 
 
-def _find_exact_quantile(sorted_vals: List[float], k: int) -> float:
+def _find_exact_quantile(sorted_vals: list[float], k: int) -> float:
     """
     Finds the k-th smallest pairwise average using binary search.
 
@@ -75,7 +73,7 @@ def _find_exact_quantile(sorted_vals: List[float], k: int) -> float:
     target = 0.5 * lo + 0.5 * hi
 
     # Extract candidates that are close to the target
-    candidates: List[float] = []
+    candidates: list[float] = []
     for i in range(n):
         threshold = 2 * target - sorted_vals[i]
 
@@ -110,7 +108,7 @@ def _find_exact_quantile(sorted_vals: List[float], k: int) -> float:
     return target
 
 
-def center_quantile_bounds_impl(sorted_vals: List[float], k_lo: int, k_hi: int) -> Tuple[float, float]:
+def center_quantile_bounds_impl(sorted_vals: list[float], k_lo: int, k_hi: int) -> tuple[float, float]:
     """
     Finds both lower and upper quantile bounds for pairwise averages.
 

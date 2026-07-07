@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from functools import cached_property
-from typing import TYPE_CHECKING, Sequence
+from typing import TYPE_CHECKING
 
 import numpy as np
 
@@ -9,6 +9,8 @@ from .assumptions import AssumptionError, check_validity
 from .measurement_unit import NUMBER_UNIT, MeasurementUnit
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from numpy.typing import NDArray
 
 
@@ -172,7 +174,7 @@ class Sample:
         return self.__add__(-scalar)
 
 
-def _build_sample(  # noqa: PLR0913
+def _build_sample(  # noqa: PLR0913, PLR0917
     values: NDArray,
     unit: MeasurementUnit,
     is_weighted: bool,

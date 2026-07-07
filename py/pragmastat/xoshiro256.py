@@ -4,8 +4,6 @@ xoshiro256++ PRNG implementation for cross-language reproducibility.
 Reference: https://prng.di.unimi.it/xoshiro256plusplus.c
 """
 
-from typing import List
-
 # Mask for 64-bit unsigned operations
 U64_MASK = 0xFFFFFFFFFFFFFFFF
 
@@ -41,7 +39,7 @@ class Xoshiro256PlusPlus:
     def __init__(self, seed: int) -> None:
         """Create a new generator from a 64-bit seed."""
         sm = SplitMix64(seed)
-        self._state: List[int] = [sm.next(), sm.next(), sm.next(), sm.next()]
+        self._state: list[int] = [sm.next(), sm.next(), sm.next(), sm.next()]
 
     def next_u64(self) -> int:
         """Generate the next 64-bit random value."""

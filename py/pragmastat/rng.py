@@ -6,7 +6,8 @@ produces identical sequences across all Pragmastat language implementations.
 """
 
 import time
-from typing import List, Optional, Sequence, TypeVar, Union
+from collections.abc import Sequence
+from typing import TypeVar
 
 from .xoshiro256 import Xoshiro256PlusPlus, fnv1a_hash
 
@@ -35,7 +36,7 @@ class Rng:
     [3, 8, 9]
     """
 
-    def __init__(self, seed: Optional[Union[int, str]] = None) -> None:
+    def __init__(self, seed: int | str | None = None) -> None:
         """
         Create a new Rng.
 
@@ -149,7 +150,7 @@ class Rng:
         """
         return self._inner.uniform_bool()
 
-    def sample(self, x: Sequence[T], k: int) -> List[T]:
+    def sample(self, x: Sequence[T], k: int) -> list[T]:
         """
         Sample k elements from the input sequence without replacement.
 
@@ -187,7 +188,7 @@ class Rng:
         if k >= n:
             return list(x)
 
-        result: List[T] = []
+        result: list[T] = []
         remaining = k
 
         for i, item in enumerate(x):
@@ -201,7 +202,7 @@ class Rng:
 
         return result
 
-    def resample(self, x: Sequence[T], k: int) -> List[T]:
+    def resample(self, x: Sequence[T], k: int) -> list[T]:
         """
         Resample k elements from the input sequence with replacement.
 
@@ -230,13 +231,13 @@ class Rng:
         if n == 0:
             raise ValueError("resample: cannot resample from empty sequence")
 
-        result: List[T] = []
+        result: list[T] = []
         for _ in range(k):
             idx = self.uniform_int(0, n)
             result.append(x[idx])
         return result
 
-    def shuffle(self, x: Sequence[T]) -> List[T]:
+    def shuffle(self, x: Sequence[T]) -> list[T]:
         """
         Return a shuffled copy of the input sequence.
 

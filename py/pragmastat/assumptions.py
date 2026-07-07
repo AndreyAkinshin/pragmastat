@@ -14,13 +14,13 @@ is reported. For two-sample functions, subject X is checked before Y.
 """
 
 from dataclasses import dataclass
-from enum import Enum
+from enum import StrEnum
 from typing import Literal
 
 import numpy as np
 
 
-class AssumptionId(str, Enum):
+class AssumptionId(StrEnum):
     """Assumption identifiers in canonical priority order."""
 
     VALIDITY = "validity"
