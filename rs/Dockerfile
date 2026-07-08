@@ -1,5 +1,5 @@
 # Dockerfile for Pragmastat Rust implementation
-FROM rust:1.90-slim
+FROM rust:1-slim
 
 # Install additional components
 RUN rustup component add rustfmt clippy
