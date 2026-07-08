@@ -87,15 +87,17 @@ export class Xoshiro256PlusPlus {
 
   /**
    * Generate a uniform integer in [min, max).
-   * @throws RangeError if max - min exceeds u64 range.
+   * @throws RangeError if the range exceeds 2^52.
    */
   uniformInt(min: bigint, max: bigint): bigint {
     if (min >= max) {
       return min;
     }
     const range = max - min;
-    if (range > 0xffffffffffffffffn) {
-      throw new RangeError('uniform_int: range overflow (max - min exceeds u64)');
+    // 2^52 is the largest range all implementations (incl. double-based R) can
+    // sample exactly; well beyond any real sample.
+    if (range > 1n << 52n) {
+      throw new RangeError('uniform_int: range exceeds 2^52');
     }
     return min + (this.nextU64() % range);
   }

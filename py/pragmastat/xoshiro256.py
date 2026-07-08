@@ -84,13 +84,15 @@ class Xoshiro256PlusPlus:
         """Generate a uniform integer in [min, max).
 
         Raises:
-            OverflowError: If max_val - min_val exceeds u64 range.
+            OverflowError: If max_val - min_val exceeds 2**52.
         """
         if min_val >= max_val:
             return min_val
         range_size = max_val - min_val
-        if range_size > 0xFFFFFFFFFFFFFFFF:
-            raise OverflowError("uniform_int: range overflow (max - min exceeds u64)")
+        # 2^52 is the largest range all implementations (incl. double-based R)
+        # can sample exactly; well beyond any real sample.
+        if range_size > (1 << 52):
+            raise OverflowError("uniform_int: range exceeds 2^52")
         return min_val + (self.next_u64() % range_size)
 
     # ========================================================================

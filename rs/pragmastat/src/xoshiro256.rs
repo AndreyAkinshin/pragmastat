@@ -80,15 +80,16 @@ impl Xoshiro256PlusPlus {
     /// Generate a uniform i64 in [min, max)
     ///
     /// # Panics
-    /// Panics if the range `max - min` overflows i64.
+    /// Panics if the range exceeds 2^52.
     #[inline]
     pub fn uniform_i64(&mut self, min: i64, max: i64) -> i64 {
         if min >= max {
             return min;
         }
-        let range =
-            max.checked_sub(min)
-                .expect("uniform_i64: range overflow (max - min exceeds i64)") as u64;
+        // 2^52 is the largest range all implementations (incl. double-based R)
+        // can sample exactly; well beyond any real sample.
+        let range = (max as u64).wrapping_sub(min as u64);
+        assert!(range <= (1u64 << 52), "uniform_i64: range exceeds 2^52");
         min + (self.next_u64() % range) as i64
     }
 

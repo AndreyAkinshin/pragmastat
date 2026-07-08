@@ -97,14 +97,17 @@ internal class Xoshiro256PlusPlus(
 
     /**
      * Generate a uniform Long in [min, max).
-     * @throws ArithmeticException if max - min overflows.
+     * @throws ArithmeticException if the range exceeds 2^52.
      */
     fun uniformLong(
         min: Long,
         max: Long,
     ): Long {
         if (min >= max) return min
-        val range = Math.subtractExact(max, min).toULong()
+        // 2^52 is the largest range all implementations (incl. double-based R)
+        // can sample exactly; well beyond any real sample.
+        val range = max.toULong() - min.toULong()
+        if (range > (1UL shl 52)) throw ArithmeticException("uniformLong: range exceeds 2^52")
         return min + (nextU64() % range).toLong()
     }
 

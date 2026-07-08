@@ -91,6 +91,11 @@ func (x *xoshiro256PlusPlus) uniformInt64(min, max int64) int64 {
 	}
 	// uint64 subtraction gives correct unsigned distance for all int64 pairs
 	rangeSize := uint64(max) - uint64(min)
+	// 2^52 is the largest range all implementations (incl. double-based R) can
+	// sample exactly; well beyond any real sample.
+	if rangeSize > (1 << 52) {
+		panic("uniformInt64: range exceeds 2^52")
+	}
 	return min + int64(x.nextU64()%rangeSize)
 }
 

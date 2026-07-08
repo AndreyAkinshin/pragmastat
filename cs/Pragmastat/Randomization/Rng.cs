@@ -113,6 +113,7 @@ public sealed class Rng
   /// <param name="min">Minimum value (inclusive).</param>
   /// <param name="max">Maximum value (exclusive).</param>
   /// <returns>A random long in [min, max). Returns min if min >= max.</returns>
+  /// <exception cref="OverflowException">Thrown if the range exceeds 2^52.</exception>
   public long UniformInt64(long min, long max)
   {
     return _inner.UniformInt64(min, max);

@@ -133,13 +133,17 @@ internal sealed class Xoshiro256PlusPlus
   /// Generate a uniform long in [min, max).
   /// Returns min if min >= max.
   /// </summary>
-  /// <exception cref="OverflowException">Thrown if max - min overflows.</exception>
+  /// <exception cref="OverflowException">Thrown if the range exceeds 2^52.</exception>
   [MethodImpl(MethodImplOptions.AggressiveInlining)]
   public long UniformInt64(long min, long max)
   {
     if (min >= max)
       return min;
-    ulong range = checked((ulong)(max - min));
+    // 2^52 is the largest range all implementations (incl. double-based R) can
+    // sample exactly; well beyond any real sample.
+    ulong range = (ulong)max - (ulong)min;
+    if (range > (1UL << 52))
+      throw new OverflowException("UniformInt64: range exceeds 2^52");
     return min + (long)(NextU64() % range);
   }
 

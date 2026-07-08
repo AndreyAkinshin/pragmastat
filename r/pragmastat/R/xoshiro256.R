@@ -198,37 +198,39 @@ u64_mul <- function(a, b) {
   u64(hi, lo)
 }
 
-# Modulo (for uniform_int) - a is u64, b is a small positive numeric.
-# Exact for b < 2^32 by decomposing hi_mod into 16-bit chunks
-# to keep all intermediate products within the 53-bit mantissa.
+# (a * b) mod m for a, b in [0, m) and m in [1, 2^52]. Russian-peasant doubling
+# with conditional subtracts keeps every intermediate below 2^53, so all the
+# arithmetic is exact in double precision.
+u64_mulmod <- function(a, b, m) {
+  result <- 0
+  while (b > 0) {
+    if (b %% 2 == 1) {
+      result <- result + a
+      if (result >= m) result <- result - m
+    }
+    a <- a + a
+    if (a >= m) a <- a - m
+    b <- floor(b / 2)
+  }
+  result
+}
+
+# Modulo (for uniform_int): a is a u64, b a positive numeric <= 2^52.
+# a mod b = ((hi mod b) * (2^32 mod b) + (lo mod b)) mod b, evaluated with mulmod
+# so it stays exact for every modulus that fits the 53-bit mantissa (the caller
+# rejects larger ranges).
 u64_mod <- function(a, b_numeric) {
-  if (b_numeric <= 0) {
+  if (b_numeric <= 1) {
     return(0)
   }
-  if (b_numeric == 1) {
-    return(0)
+  hi_mod <- a$hi %% b_numeric
+  lo_mod <- a$lo %% b_numeric
+  pow32_mod <- 4294967296 %% b_numeric
+  result <- u64_mulmod(hi_mod, pow32_mod, b_numeric) + lo_mod
+  if (result >= b_numeric) {
+    result <- result - b_numeric
   }
-
-  # (hi * 2^32 + lo) mod b = ((hi mod b) * (2^32 mod b) + (lo mod b)) mod b
-  # Split hi_mod into 16-bit chunks so each product stays within 2^48 < 2^53
-
-  if (b_numeric < 4294967296) {
-    hi_mod <- a$hi %% b_numeric
-    lo_mod <- a$lo %% b_numeric
-    pow32_mod <- 4294967296 %% b_numeric
-
-    hi_mod_lo <- hi_mod %% 65536
-    hi_mod_hi <- floor(hi_mod / 65536)
-    t1 <- (hi_mod_hi * pow32_mod) %% b_numeric
-    t2 <- (t1 * 65536) %% b_numeric
-    t3 <- (hi_mod_lo * pow32_mod) %% b_numeric
-    result <- (t2 + t3 + lo_mod) %% b_numeric
-    return(result)
-  }
-
-  # For larger moduli, use direct conversion (may lose some precision for very large a)
-  a_numeric <- u64_to_numeric(a)
-  a_numeric %% b_numeric
+  result
 }
 
 # Module-level constants for splitmix64 and FNV-1a (avoid re-creation per call)
@@ -317,9 +319,10 @@ xoshiro256_uniform_int <- function(xo, min_val, max_val) {
     return(min_val)
   }
   range_size <- as.numeric(max_val - min_val)
-  # Validate range fits in i64 (for cross-language consistency)
-  if (range_size > 9223372036854775807) {
-    stop("uniform_int: range overflow (max - min exceeds i64)")
+  # Ranges above 2^52 cannot be sampled exactly with double-based arithmetic;
+  # reject them for cross-language consistency (well beyond any real sample).
+  if (range_size > 4503599627370496) {
+    stop("uniform_int: range exceeds 2^52")
   }
   u64_val <- xoshiro256_next_u64(xo)
   # Return as numeric to avoid as.integer() truncation for values > 2^31-1
