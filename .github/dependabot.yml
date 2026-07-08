@@ -1,0 +1,80 @@
+# Keep dependencies, base images, and Actions current automatically.
+# Grouped weekly PRs per ecosystem to avoid churn.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]
+
+  - package-ecosystem: nuget
+    directory: /cs
+    schedule:
+      interval: weekly
+    groups:
+      nuget:
+        patterns: ["*"]
+
+  - package-ecosystem: gradle
+    directory: /kt
+    schedule:
+      interval: weekly
+    groups:
+      gradle:
+        patterns: ["*"]
+
+  - package-ecosystem: cargo
+    directories:
+      - /rs/pragmastat
+      - /rs/pragmastat-sim
+      - /tools
+    schedule:
+      interval: weekly
+    groups:
+      cargo:
+        patterns: ["*"]
+
+  - package-ecosystem: gomod
+    directory: /go
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: npm
+    directories:
+      - /ts
+      - /web
+    schedule:
+      interval: weekly
+    groups:
+      npm:
+        patterns: ["*"]
+
+  - package-ecosystem: pip
+    directories:
+      - /py
+      - /img
+    schedule:
+      interval: weekly
+    groups:
+      pip:
+        patterns: ["*"]
+
+  - package-ecosystem: docker
+    directories:
+      - /cs
+      - /go
+      - /img
+      - /kt
+      - /py
+      - /r
+      - /rs
+      - /ts
+      - /web
+    schedule:
+      interval: weekly
+    groups:
+      docker:
+        patterns: ["*"]
