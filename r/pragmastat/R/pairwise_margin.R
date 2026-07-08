@@ -44,10 +44,10 @@ pairwise_margin_approx <- function(n, m, misrate) {
 # pairwise_margin_exact_raw implements the inversed Loeffler (1982) algorithm
 # Reference: "Über eine Partition der nat. Zahlen und ihre Anwendung beim U-Test"
 pairwise_margin_exact_raw <- function(n, m, p) {
-  # Use R's built-in choose() function for binomial coefficient
-  # For large values, use logarithmic calculation
+  # Exact integer binomial for small samples (matches the other six ports
+  # bit-for-bit); logarithmic approximation for large values.
   if (n + m < 62) {
-    total <- choose(n + m, m)
+    total <- exact_binomial(n + m, m)
   } else {
     total <- exp(lchoose(n + m, m))
   }

@@ -248,13 +248,13 @@ private fun binomialCoefficient(
     if (kk == 0 || kk == n) return 1.0
 
     kk = minOf(kk, n - kk) // Take advantage of symmetry
-    var result = 1.0
+    var result = 1L // exact integer arithmetic: each partial product is divisible
 
     for (i in 0 until kk) {
         result = result * (n - i) / (i + 1)
     }
 
-    return result
+    return result.toDouble()
 }
 
 /**

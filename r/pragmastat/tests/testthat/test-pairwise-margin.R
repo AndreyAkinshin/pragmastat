@@ -35,3 +35,12 @@ test_that("pairwise_margin satisfies reference tests", {
     )
   }
 })
+
+test_that("pairwise_margin uses exact integer binomial (cross-language parity)", {
+  # R's built-in choose() is inexact even below 2^53: choose(56, 27) returns
+  # 7384942649010078, but the exact value is 7384942649010080. exact_binomial
+  # mirrors the go (int64) and rust (u128) ports bit-for-bit.
+  expect_equal(exact_binomial(56, 27), 7384942649010080)
+  # The pairwise margin all seven ports agree on for this input is 782.
+  expect_equal(pairwise_margin(29, 27, 1.0), 782)
+})

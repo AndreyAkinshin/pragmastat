@@ -209,12 +209,12 @@ def _binomial_coefficient(n: int, k: int) -> float:
         return 1.0
 
     k = min(k, n - k)  # Take advantage of symmetry
-    result = 1.0
+    result = 1  # exact integer arithmetic: each partial product is divisible
 
     for i in range(k):
-        result = result * (n - i) / (i + 1)
+        result = result * (n - i) // (i + 1)
 
-    return result
+    return float(result)
 
 
 def _binomial_coefficient_float(n: int, k: int) -> float:

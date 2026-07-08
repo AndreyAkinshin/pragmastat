@@ -223,13 +223,13 @@ function binomialCoefficient(n: number, k: number): number {
   }
 
   k = Math.min(k, n - k); // Take advantage of symmetry
-  let result = 1;
+  let result = 1n; // exact integer arithmetic: each partial product is divisible
 
   for (let i = 0; i < k; i++) {
-    result = (result * (n - i)) / (i + 1);
+    result = (result * BigInt(n - i)) / BigInt(i + 1);
   }
 
-  return result;
+  return Number(result);
 }
 
 /**
