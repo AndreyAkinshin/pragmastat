@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -271,6 +272,26 @@ internal static class Fnv1a
     {
       hash ^= b;
       hash *= Prime;
+    }
+    return hash;
+  }
+
+  /// <summary>
+  /// Compute FNV-1a 64-bit hash of double values by their raw IEEE-754 bits.
+  /// Used to derive a deterministic RNG seed from the input, matching the other
+  /// language implementations.
+  /// </summary>
+  public static ulong HashDoubles(IReadOnlyList<double> values)
+  {
+    ulong hash = OffsetBasis;
+    foreach (double v in values)
+    {
+      ulong bits = (ulong)BitConverter.DoubleToInt64Bits(v);
+      for (int i = 0; i < 8; i++)
+      {
+        hash ^= (bits >> (i * 8)) & 0xff;
+        hash *= Prime;
+      }
     }
     return hash;
   }

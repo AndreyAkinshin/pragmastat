@@ -1,4 +1,5 @@
 using Pragmastat.Internal;
+using Pragmastat.Randomization;
 
 namespace Pragmastat.Algorithms;
 
@@ -21,17 +22,17 @@ internal static class CenterImpl
   /// (1984) DOI: 10.1145/1271.319414
   /// </remarks>
   /// <param name="values">Sample values; sorted only when assumeSorted is true</param>
-  /// <param name="random">Random number generator</param>
   /// <param name="assumeSorted">If values are sorted</param>
   /// <returns>Exact center value (Hodges-Lehmann estimator)</returns>
-  public static double Estimate(IReadOnlyList<double> values, Random? random = null, bool assumeSorted = false)
+  public static double Estimate(IReadOnlyList<double> values, bool assumeSorted = false)
   {
     int n = values.Count;
     if (n == 1) return values[0];
     // Overflow-safe, order-symmetric midpoint: 0.5*a + 0.5*b (halve before summing;
     // never overflows; operand order is irrelevant).
     if (n == 2) return Midpoint(values[0], values[1]);
-    random ??= new Random();
+    // Deterministic RNG seeded from the input (FNV-1a), matching the other languages.
+    var rng = new Rng((long)Fnv1a.HashDoubles(values));
     if (!assumeSorted)
       values = values.CopyToArrayAndSort();
 
@@ -209,9 +210,7 @@ internal static class CenterImpl
       if (activeSetSize > 2)
       {
         // Use randomized row median strategy for efficiency
-        // Handle large activeSetSize by using double precision for random selection
-        double randomFraction = random.NextDouble();
-        long targetIndex = (long)(randomFraction * activeSetSize);
+        long targetIndex = rng.UniformInt64(0, activeSetSize);
         int selectedRow = 0;
 
         // Find which row contains the target index

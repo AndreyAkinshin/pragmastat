@@ -17,13 +17,12 @@ public class CenterImplConvergenceTests
   {
     // Adversarial unsorted input. With assumeSorted=true the algorithm's sorted-matrix
     // invariants are violated, so the selection loop cannot make consistent progress.
-    // Deterministic RNG keeps the test reproducible.
+    // The impl seeds its RNG deterministically from the input, so this is reproducible.
     var values = new double[] { 5, 1, 9, 2, 8, 3, 7, 4, 6, 0, 5, 1, 9, 2, 8, 3, 7, 4, 6, 0 };
-    var rng = new Random(12345);
 
     var stopwatch = Stopwatch.StartNew();
     var ex = Assert.Throws<InvalidOperationException>(() =>
-      CenterImpl.Estimate(values, rng, assumeSorted: true));
+      CenterImpl.Estimate(values, assumeSorted: true));
     stopwatch.Stop();
 
     Assert.Contains("Convergence failure", ex.Message);
@@ -38,7 +37,7 @@ public class CenterImplConvergenceTests
   {
     // Sanity: the cap must never trigger on valid sorted input.
     var values = Enumerable.Range(1, 1000).Select(i => (double)i).ToArray();
-    double result = CenterImpl.Estimate(values, new Random(1), assumeSorted: true);
+    double result = CenterImpl.Estimate(values, assumeSorted: true);
     Assert.Equal(500.5, result, 1e-9);
   }
 }

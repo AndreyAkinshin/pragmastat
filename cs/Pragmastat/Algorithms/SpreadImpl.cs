@@ -1,3 +1,5 @@
+using Pragmastat.Randomization;
+
 namespace Pragmastat.Algorithms;
 
 internal static class SpreadImpl
@@ -14,12 +16,13 @@ internal static class SpreadImpl
   /// <summary>
   /// Shamos "Spread".  Expected O(n log n) time, O(n) extra space. Exact.
   /// </summary>
-  public static double Estimate(IReadOnlyList<double> values, Random? random = null, bool assumeSorted = false)
+  public static double Estimate(IReadOnlyList<double> values, bool assumeSorted = false)
   {
     int n = values.Count;
     if (n <= 1) return 0;
     if (n == 2) return Abs(values[1] - values[0]);
-    random ??= new Random();
+    // Deterministic RNG seeded from the input (FNV-1a), matching the other languages.
+    var rng = new Rng((long)Fnv1a.HashDoubles(values));
 
     // Prepare a sorted working copy.
     double[] a = assumeSorted ? CopyTrusted(values) : CopyAndSort(values);
@@ -227,7 +230,7 @@ internal static class SpreadImpl
       }
       else
       {
-        long t = NextIndex(random, activeSize); // 0..activeSize-1
+        long t = rng.UniformInt64(0, activeSize); // 0..activeSize-1
         long acc = 0;
         int row = 0;
         for (; row < n - 1; row++)
@@ -279,23 +282,5 @@ internal static class SpreadImpl
     }
 
     return a;
-  }
-
-  private static long NextIndex(Random rng, long limitExclusive)
-  {
-    // Uniform 0..limitExclusive-1 even for large ranges.
-    // Use rejection sampling for correctness.
-    ulong uLimit = (ulong)limitExclusive;
-    if (uLimit <= int.MaxValue)
-    {
-      return rng.Next((int)uLimit);
-    }
-
-    while (true)
-    {
-      ulong u = ((ulong)(uint)rng.Next() << 32) | (uint)rng.Next();
-      ulong r = u % uLimit;
-      if (u - r <= ulong.MaxValue - (ulong.MaxValue % uLimit)) return (long)r;
-    }
   }
 }

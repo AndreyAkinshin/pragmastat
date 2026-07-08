@@ -20,11 +20,10 @@ public class SpreadImplConvergenceTests
     // partition invariants are violated; the selection loop never reaches the target rank and
     // cannot make consistent progress. Deterministic RNG keeps the test reproducible.
     var values = new double[] { 5, 5, 4, 4, 3, 3, 2, 2, 1, 1 };
-    var rng = new Random(1);
 
     var stopwatch = Stopwatch.StartNew();
     var ex = Assert.Throws<InvalidOperationException>(() =>
-      SpreadImpl.Estimate(values, rng, assumeSorted: true));
+      SpreadImpl.Estimate(values, assumeSorted: true));
     stopwatch.Stop();
 
     Assert.Contains("Convergence failure", ex.Message);
@@ -39,7 +38,7 @@ public class SpreadImplConvergenceTests
   {
     // Sanity: the cap must never trigger on valid sorted input.
     var values = Enumerable.Range(1, 1000).Select(i => (double)i).ToArray();
-    double result = SpreadImpl.Estimate(values, new Random(1), assumeSorted: true);
+    double result = SpreadImpl.Estimate(values, assumeSorted: true);
     // Shamos spread of 1..1000 is the median of the 499500 pairwise gaps. Gap d occurs
     // (1000 - d) times, so ranks 249750 and 249751 both land on d = 293.
     Assert.Equal(293.0, result, 1e-9);
