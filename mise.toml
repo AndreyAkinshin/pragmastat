@@ -4,14 +4,18 @@
 # Usage: mise run <task>
 # List all tasks: mise tasks
 
+# Toolchain versions marked "sync:" are duplicated by setup-* steps in
+# .github/workflows/*.yml so CI reuses GitHub's prewarmed tool cache. Keep
+# both sides in step when bumping.
 [tools]
-dotnet = "10.0"
-go = "1.24"
+dotnet = "10.0"        # sync: actions/setup-dotnet in the workflows
+go = "1.26"
 golangci-lint = "latest"
-java = "temurin-11"
-node = "22"
-pnpm = "10"
-python = "3.13"
+java = "temurin-21"    # sync: actions/setup-java (Gradle 9 daemon JDK; jvmToolchain still targets 11)
+node = "22"            # sync: actions/setup-node in ci.yml (publish-npm pins 24 for npm OIDC)
+# npm backend: aqua's release-asset matching is unreliable for pnpm 11.x
+"npm:pnpm" = "11"
+python = "3.12"        # sync: actions/setup-python in the workflows
 ruff = "latest"
 rust = "stable"
 typst = "latest"
@@ -719,6 +723,9 @@ description = "Run documentation CI pipeline"
 run = [
     { task = "docs:clean" },
     { task = "docs:sync" },
+    # Fail CI if regeneration left uncommitted drift in tracked generated docs
+    # (per-language READMEs, width tables). Guards against shipping stale output.
+    "git diff --exit-code || { echo 'ERROR: docs:sync produced uncommitted drift — regenerate and commit generated docs' >&2; exit 1; }",
     { task = "pdf:build" },
     { task = "web:build" },
 ]

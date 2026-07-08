@@ -31,10 +31,10 @@ jobs:
   ci-manual:
     runs-on: ubuntu-24.04
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - name: Set up mise
-      uses: jdx/mise-action@v2
+      uses: jdx/mise-action@v4
 
     # --- Rust tools (for Typst → MDX conversion) ---
     - name: Set up Rust
@@ -47,9 +47,9 @@ jobs:
 
     # --- Image generation ---
     - name: Set up Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
-        python-version: '3.10'
+        python-version: '3.12'  # keep in sync with [tools].python in mise.toml
 
     - name: Install image dependencies
       run: |
@@ -62,7 +62,7 @@ jobs:
 
     # --- PDF generation ---
     - name: Install Typst
-      uses: typst-community/setup-typst@v4
+      uses: typst-community/setup-typst@v5
 
     - name: Download fonts
       run: mise run pdf:restore
@@ -83,7 +83,7 @@ jobs:
     # --- Upload artifacts (release only) ---
     - name: Upload web artifacts
       if: inputs.release
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: web
         path: web/dist
@@ -91,7 +91,7 @@ jobs:
 
     - name: Upload pdf artifacts
       if: inputs.release
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: pdf
         path: manual/pragmastat.pdf
@@ -105,9 +105,9 @@ jobs:
   # Steps mirror mise tasks: r:check → r:build → r:test.
   ci-r:
     runs-on: ubuntu-24.04
-    container: rocker/verse:4.5.1
+    container: rocker/verse:4.6.1
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - name: Install dependencies
       shell: bash
@@ -135,7 +135,7 @@ jobs:
 
     - name: Upload r artifacts
       if: inputs.release
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: r
         path: 'r/*.tar.gz'
@@ -144,15 +144,15 @@ jobs:
   ci-cs:
     runs-on: ubuntu-24.04
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - name: Set up mise
-      uses: jdx/mise-action@v2
+      uses: jdx/mise-action@v4
 
     - name: Set up .NET
       uses: actions/setup-dotnet@v5
       with:
-        dotnet-version: '10.0.x'
+        dotnet-version: '10.0.x'  # keep in sync with [tools].dotnet in mise.toml
 
     - name: Check
       run: mise run cs:check
@@ -171,7 +171,7 @@ jobs:
 
     - name: Upload cs artifacts
       if: inputs.release
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: cs
         path: cs/artifacts
@@ -180,15 +180,15 @@ jobs:
   ci-py:
     runs-on: ubuntu-24.04
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - name: Set up mise
-      uses: jdx/mise-action@v2
+      uses: jdx/mise-action@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
-        python-version: '3.10'
+        python-version: '3.12'  # keep in sync with [tools].python in mise.toml
 
     - name: Install package and dependencies
       run: mise run py:restore
@@ -204,7 +204,7 @@ jobs:
 
     - name: Upload py artifacts
       if: inputs.release
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: py
         path: py/dist/
@@ -213,10 +213,10 @@ jobs:
   ci-rs:
     runs-on: ubuntu-24.04
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - name: Set up mise
-      uses: jdx/mise-action@v2
+      uses: jdx/mise-action@v4
 
     - name: Set up Rust
       uses: dtolnay/rust-toolchain@stable
@@ -242,7 +242,7 @@ jobs:
 
     - name: Upload rs artifacts
       if: inputs.release
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: rs
         path: rs/pragmastat/target/package/*.crate
@@ -251,15 +251,15 @@ jobs:
   ci-ts:
     runs-on: ubuntu-24.04
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - name: Set up mise
-      uses: jdx/mise-action@v2
+      uses: jdx/mise-action@v4
 
     - name: Set up Node.js
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v6
       with:
-        node-version: '20'
+        node-version: '22'  # keep in sync with [tools].node in mise.toml
         cache: 'pnpm'
         cache-dependency-path: ts/pnpm-lock.yaml
 
@@ -280,7 +280,7 @@ jobs:
 
     - name: Upload ts artifacts
       if: inputs.release
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: ts
         path: ts/*.tgz
@@ -289,10 +289,10 @@ jobs:
   ci-go:
     runs-on: ubuntu-24.04
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - name: Set up mise
-      uses: jdx/mise-action@v2
+      uses: jdx/mise-action@v4
 
     - name: Download dependencies
       run: mise run go:restore
@@ -308,7 +308,7 @@ jobs:
 
     - name: Upload go artifacts
       if: inputs.release
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: go
         path: go/
@@ -317,19 +317,19 @@ jobs:
   ci-kt:
     runs-on: ubuntu-24.04
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - name: Set up mise
-      uses: jdx/mise-action@v2
+      uses: jdx/mise-action@v4
 
     - name: Set up JDK
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@v5
       with:
-        java-version: '11'
+        java-version: '21'  # sync: [tools].java in mise.toml (Gradle 9 daemon; jvmToolchain targets 11)
         distribution: 'temurin'
 
     - name: Cache Gradle packages
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       continue-on-error: true
       with:
         path: |
@@ -361,7 +361,7 @@ jobs:
 
     - name: Upload kt artifacts
       if: inputs.release
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: kt
         path: |
@@ -375,7 +375,7 @@ jobs:
 
   ci-success:
     name: CI Success
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [ci-manual, ci-r, ci-cs, ci-py, ci-rs, ci-ts, ci-go, ci-kt]
     if: always()
     steps:

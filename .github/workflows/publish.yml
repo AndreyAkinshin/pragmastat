@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-24.04
     needs: build
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - name: Read version
       id: version
@@ -34,55 +34,55 @@ jobs:
         git push origin "v${{ steps.version.outputs.VERSION }}" "go/v${{ steps.version.outputs.VERSION }}"
 
     - name: Download web artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         name: web
         path: artifacts/web
 
     - name: Download pdf artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         name: pdf
         path: artifacts/pdf
 
     - name: Download cs artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         name: cs
         path: artifacts/cs
 
     - name: Download py artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         name: py
         path: artifacts/py
 
     - name: Download rs artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         name: rs
         path: artifacts/rs
 
     - name: Download ts artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         name: ts
         path: artifacts/ts
 
     - name: Download go artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         name: go
         path: artifacts/go
 
     - name: Download r artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         name: r
         path: artifacts/r
 
     - name: Download kt artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         name: kt
         path: artifacts/kt
@@ -109,7 +109,7 @@ jobs:
         cp artifacts/pdf/pragmastat.pdf "pragmastat-v${VERSION}.pdf"
 
     - name: Create GitHub Release
-      uses: softprops/action-gh-release@v2.4.1
+      uses: softprops/action-gh-release@v3
       with:
         tag_name: v${{ steps.version.outputs.VERSION }}
         name: v${{ steps.version.outputs.VERSION }}
@@ -132,14 +132,14 @@ jobs:
     runs-on: ubuntu-24.04
     needs: build
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - name: Read version
       id: version
       run: echo "VERSION=$(cat VERSION)" >> $GITHUB_OUTPUT
 
     - name: Download web artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         name: web
         path: web/public
@@ -162,15 +162,15 @@ jobs:
     runs-on: ubuntu-24.04
     needs: build
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - name: Set up .NET
       uses: actions/setup-dotnet@v5
       with:
-        dotnet-version: '10.0.x'
+        dotnet-version: '10.0.x'  # keep in sync with [tools].dotnet in mise.toml
 
     - name: Download cs artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         name: cs
         path: cs/artifacts
@@ -185,7 +185,7 @@ jobs:
       id-token: write  # Required for trusted publishing to PyPI
     steps:
     - name: Download py artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         name: py
         path: dist/
@@ -204,13 +204,13 @@ jobs:
       contents: read
     steps:
     - name: Set up Node.js
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v6
       with:
-        node-version: '24'  # bundles npm >= 11.5.1, required for OIDC trusted publishing
+        node-version: '24'  # npm OIDC needs npm >= 11.5.1 (Node 24); intentionally ahead of mise's node 22
         registry-url: 'https://registry.npmjs.org'
 
     - name: Download ts artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         name: ts
         path: ts/
@@ -225,13 +225,13 @@ jobs:
     runs-on: ubuntu-24.04
     needs: build
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - name: Set up Rust
       uses: dtolnay/rust-toolchain@stable
 
     - name: Download rs artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         name: rs
         path: rs/pragmastat/target/package
@@ -244,16 +244,16 @@ jobs:
     runs-on: ubuntu-24.04
     needs: build
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - name: Set up JDK
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@v5
       with:
-        java-version: '11'
+        java-version: '21'  # sync: [tools].java in mise.toml (Gradle 9 daemon; jvmToolchain targets 11)
         distribution: 'temurin'
 
     - name: Cache Gradle packages
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       continue-on-error: true
       with:
         path: |
@@ -264,7 +264,7 @@ jobs:
           ${{ runner.os }}-gradle-
 
     - name: Download kt artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         name: kt
         path: kt/build/
@@ -284,7 +284,7 @@ jobs:
 
     - name: Upload build reports on failure
       if: failure()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: kt-build-reports
         path: kt/build/reports/

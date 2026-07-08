@@ -1,7 +1,7 @@
 # Dockerfile for Pragmastat R implementation
 # Note: rocker/verse doesn't support ARM64. On Apple Silicon, this runs via x86_64 emulation (Rosetta 2)
 # The platform is specified in docker-compose.yml as linux/amd64
-FROM rocker/verse:latest
+FROM rocker/verse:4.6.1
 
 # Update TeX Live packages
 RUN tlmgr update --self && \
