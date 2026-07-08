@@ -88,13 +88,13 @@ internal fun spreadImpl(
         if (countBelow == prevCountBelow) {
             var minActive = Double.POSITIVE_INFINITY
             var maxActive = Double.NEGATIVE_INFINITY
-            var active = 0
+            var active = 0L
 
             for (i in 0 until n - 1) {
                 if (L[i] > R[i]) continue
                 minActive = minOf(minActive, a[L[i]] - a[i])
                 maxActive = maxOf(maxActive, a[R[i]] - a[i])
-                active += R[i] - L[i] + 1
+                active += (R[i] - L[i] + 1).toLong()
             }
 
             if (active <= 0) {
