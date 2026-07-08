@@ -91,6 +91,15 @@ internal fun selectKthPairwiseDiff(
         throw IllegalStateException("NaN in input values")
     }
 
+    // Extreme finite input can overflow the bounds to -/+Infinity, making the
+    // midpoint a NaN; every finite pairwise diff lies within [-MAX_VALUE, MAX_VALUE].
+    if (searchMin.isInfinite()) {
+        searchMin = Math.copySign(Double.MAX_VALUE, searchMin)
+    }
+    if (searchMax.isInfinite()) {
+        searchMax = Math.copySign(Double.MAX_VALUE, searchMax)
+    }
+
     val maxIterations = 128 // Sufficient for double precision convergence
     var prevMin = Double.NEGATIVE_INFINITY
     var prevMax = Double.POSITIVE_INFINITY

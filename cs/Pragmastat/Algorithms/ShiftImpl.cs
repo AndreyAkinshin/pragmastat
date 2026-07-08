@@ -89,6 +89,14 @@ internal static class ShiftImpl
     if (double.IsNaN(searchMin) || double.IsNaN(searchMax))
       throw new InvalidOperationException("NaN in input values.");
 
+    // Extreme finite input can overflow the bounds to +-Infinity, making the
+    // midpoint NaN; every finite pairwise diff lies within [-MaxValue, MaxValue].
+    // (Ternary rather than Math.CopySign, which is absent on netstandard2.0.)
+    if (double.IsInfinity(searchMin))
+      searchMin = searchMin > 0 ? double.MaxValue : -double.MaxValue;
+    if (double.IsInfinity(searchMax))
+      searchMax = searchMax > 0 ? double.MaxValue : -double.MaxValue;
+
     const int maxIterations = 128; // Sufficient for double precision convergence
     double prevMin = double.NegativeInfinity;
     double prevMax = double.PositiveInfinity;

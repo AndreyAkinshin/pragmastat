@@ -124,6 +124,15 @@ pub(crate) fn select_kth_pairwise_diff(x: &[f64], y: &[f64], k: i64) -> Result<f
         return Err("NaN in input values");
     }
 
+    // Extreme finite input can overflow the bounds to -/+infinity, making the
+    // midpoint a NaN; every finite pairwise diff lies within [-f64::MAX, f64::MAX].
+    if search_min.is_infinite() {
+        search_min = f64::MAX.copysign(search_min);
+    }
+    if search_max.is_infinite() {
+        search_max = f64::MAX.copysign(search_max);
+    }
+
     const MAX_ITERATIONS: usize = 128; // Sufficient for double precision
     let mut prev_min = f64::NEG_INFINITY;
     let mut prev_max = f64::INFINITY;

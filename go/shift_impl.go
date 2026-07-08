@@ -143,6 +143,17 @@ func selectKthPairwiseDiff[T Number](x, y []T, k int64) (float64, error) {
 		return 0, errors.New("NaN in input values")
 	}
 
+	// The bounds x[0]-y[n-1] and x[m-1]-y[0] can overflow to -Inf/+Inf on
+	// finite extreme input; that makes the midpoint 0.5*min+0.5*max a NaN and
+	// derails the search. Every finite pairwise diff lies within
+	// [-MaxFloat64, MaxFloat64], so clamp the bounds to that range.
+	if math.IsInf(searchMin, 0) {
+		searchMin = math.Copysign(math.MaxFloat64, searchMin)
+	}
+	if math.IsInf(searchMax, 0) {
+		searchMax = math.Copysign(math.MaxFloat64, searchMax)
+	}
+
 	const maxIterations = 128 // Sufficient for double precision convergence
 	prevMin := math.Inf(-1)
 	prevMax := math.Inf(1)

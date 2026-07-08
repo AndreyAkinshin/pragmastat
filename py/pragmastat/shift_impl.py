@@ -99,6 +99,14 @@ def _select_kth_pairwise_diff(x: list[float], y: list[float], k: int) -> float:
     if np.isnan(search_min) or np.isnan(search_max):
         raise ValueError("NaN in input values")
 
+    # Extreme finite input can overflow the bounds to +-inf, making the midpoint
+    # NaN; every finite pairwise diff lies within [-DBL_MAX, DBL_MAX].
+    dbl_max = np.finfo(np.float64).max
+    if np.isinf(search_min):
+        search_min = np.copysign(dbl_max, search_min)
+    if np.isinf(search_max):
+        search_max = np.copysign(dbl_max, search_max)
+
     max_iterations = 128  # Sufficient for double precision convergence
     prev_min = float("-inf")
     prev_max = float("inf")

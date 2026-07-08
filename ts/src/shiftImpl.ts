@@ -119,6 +119,15 @@ function selectKthPairwiseDiff(x: readonly number[], y: readonly number[], k: nu
     throw new Error('NaN in input values');
   }
 
+  // Extreme finite input can overflow the bounds to +-Infinity, making the
+  // midpoint NaN; every finite pairwise diff lies within [-MAX_VALUE, MAX_VALUE].
+  if (!isFinite(searchMin)) {
+    searchMin = Math.sign(searchMin) * Number.MAX_VALUE;
+  }
+  if (!isFinite(searchMax)) {
+    searchMax = Math.sign(searchMax) * Number.MAX_VALUE;
+  }
+
   const maxIterations = 128; // Sufficient for double precision convergence
   let prevMin = -Infinity;
   let prevMax = Infinity;

@@ -1,6 +1,7 @@
 #include <R.h>
 #include <Rinternals.h>
 #include <math.h>
+#include <float.h>
 #include <stdlib.h>
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
@@ -85,6 +86,15 @@ static double select_kth_pairwise_diff(
 
     if (ISNAN(search_min) || ISNAN(search_max)) {
         error("NaN in input values");
+    }
+
+    /* Extreme finite input can overflow the bounds to -/+inf, making the
+       midpoint a NaN; every finite pairwise diff lies within [-DBL_MAX, DBL_MAX]. */
+    if (isinf(search_min)) {
+        search_min = copysign(DBL_MAX, search_min);
+    }
+    if (isinf(search_max)) {
+        search_max = copysign(DBL_MAX, search_max);
     }
 
     const int max_iterations = 128;

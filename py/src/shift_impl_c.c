@@ -2,6 +2,7 @@
 #include <Python.h>
 #include <numpy/arrayobject.h>
 #include <math.h>
+#include <float.h>
 #include <stdlib.h>
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
@@ -91,6 +92,15 @@ static double select_kth_pairwise_diff(
     if (isnan(search_min) || isnan(search_max)) {
         PyErr_SetString(PyExc_ValueError, "NaN in input values");
         return NAN;
+    }
+
+    /* Extreme finite input can overflow the bounds to -/+inf, making the
+       midpoint a NaN; every finite pairwise diff lies within [-DBL_MAX, DBL_MAX]. */
+    if (isinf(search_min)) {
+        search_min = copysign(DBL_MAX, search_min);
+    }
+    if (isinf(search_max)) {
+        search_max = copysign(DBL_MAX, search_max);
     }
 
     const int max_iterations = 128;
