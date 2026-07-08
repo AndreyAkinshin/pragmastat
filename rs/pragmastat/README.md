@@ -50,6 +50,14 @@ fn main() {
     let bounds = disparity_bounds_with_seed(&x, &y, 1e-3, "demo").unwrap();
     println!("{{lower: {}, upper: {}}}", bounds.lower, bounds.upper); // {lower: -3.1025641025641026, upper: -0.8494623655913979}
 
+    // --- Confirmatory Comparison ---
+
+    let th = Threshold::new(Metric::Center, Measurement::number(50.0), 1e-3).unwrap();
+    println!("{}", compare1(&x, &[th]).unwrap()[0].verdict().as_str()); // greater
+
+    let th = Threshold::new(Metric::Shift, Measurement::number(0.0), 1e-3).unwrap();
+    println!("{}", compare2(&x, &y, &[th]).unwrap()[0].verdict().as_str()); // less
+
     // --- Randomization ---
 
     let mut rng = Rng::from_string("demo-uniform");

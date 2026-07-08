@@ -14,10 +14,14 @@ Pragmastat on PyPI: https://pypi.org/project/pragmastat/
 
 ```python
 from pragmastat import (
+    Metric,
     Rng,
     Sample,
+    Threshold,
     center,
     center_bounds,
+    compare1,
+    compare2,
     disparity,
     disparity_bounds,
     ratio,
@@ -61,6 +65,17 @@ def main():
     print(
         f"Bounds(lower={bounds.lower}, upper={bounds.upper})"
     )  # Bounds(lower=-3.1025641025641026, upper=-0.8494623655913979)
+
+    # --- Confirmatory Comparison ---
+
+    x = Sample(list(range(1, 201)))
+    projection = compare1(x, [Threshold(Metric.CENTER, 50.0, 1e-3)])[0]
+    print(projection.verdict.value)  # greater
+
+    x = Sample(list(range(1, 201)))
+    y = Sample(list(range(101, 301)))
+    projection = compare2(x, y, [Threshold(Metric.SHIFT, 0.0, 1e-3)])[0]
+    print(projection.verdict.value)  # less
 
     # --- Randomization ---
 

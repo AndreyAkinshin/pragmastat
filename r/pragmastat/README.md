@@ -42,6 +42,16 @@ print(disparity(x, y)) # -1.694915
 bounds <- disparity_bounds(x, y, 1e-3, seed = "demo")
 print(paste("[", bounds$lower, ", ", bounds$upper, "]", sep = "")) # [-3.1025641025641, -0.849462365591398]
 
+# --- Confirmatory Comparison ---
+
+sx <- Sample$new(x)
+t1 <- list(list(metric = METRIC_CENTER, value = Measurement$new(50), misrate = 1e-3))
+print(compare1(sx, t1)[[1]]$verdict) # "greater"
+
+sy <- Sample$new(y)
+t2 <- list(list(metric = METRIC_SHIFT, value = Measurement$new(0), misrate = 1e-3))
+print(compare2(sx, sy, t2)[[1]]$verdict) # "less"
+
 # --- Sample-based interface ---
 
 sx <- Sample$new(1:200)

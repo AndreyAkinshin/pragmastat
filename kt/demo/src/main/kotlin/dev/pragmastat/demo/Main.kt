@@ -23,6 +23,11 @@ fun main() {
     println(disparity(sx, sy)) // -1.694915254237288
     println(disparityBounds(sx, sy, Probability(1e-3), "demo")) // Bounds(lower=-3.1025..., upper=-0.8494..., unit=...)
 
+    // --- Confirmatory Comparison ---
+
+    println(compare1(sx, listOf(Threshold(Metric.Center, Measurement(50.0), Probability(1e-3))))[0].verdict.toId()) // greater
+    println(compare2(sx, sy, listOf(Threshold(Metric.Shift, Measurement(0.0), Probability(1e-3))))[0].verdict.toId()) // less
+
     // --- Custom units ---
 
     val ns = MeasurementUnit("ns", "Time", "ns", "Nanosecond", 1)

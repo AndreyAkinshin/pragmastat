@@ -18,6 +18,10 @@ enum class ComparisonVerdict {
     Less,
     Greater,
     Inconclusive,
+    ;
+
+    /** Canonical lowercase identifier ("less"/"greater"/"inconclusive"), matching the other ports. */
+    fun toId(): String = name.lowercase()
 }
 
 /**

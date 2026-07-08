@@ -41,6 +41,20 @@ func mustS(val *pragmastat.Sample, err error) *pragmastat.Sample {
 	return val
 }
 
+func mustT(val *pragmastat.Threshold, err error) *pragmastat.Threshold {
+	if err != nil {
+		log.Fatal(err)
+	}
+	return val
+}
+
+func mustP(val []pragmastat.Projection, err error) []pragmastat.Projection {
+	if err != nil {
+		log.Fatal(err)
+	}
+	return val
+}
+
 func main() {
 	// --- One-Sample ---
 
@@ -74,6 +88,16 @@ func main() {
 	fmt.Println(mustB(sx.RatioBounds(sy, 1e-3)))                     // [0.4066666666666668;0.5958333333333332]
 	fmt.Println(mustM(sx.Disparity(sy)).Value)                       // -1.694915254237288
 	fmt.Println(mustB(sx.DisparityBoundsWithSeed(sy, 1e-3, "demo"))) // [-3.1025641025641026;-0.8494623655913979]
+
+	// --- Confirmatory Comparison ---
+
+	th1 := mustT(pragmastat.NewThreshold(pragmastat.MetricCenter, pragmastat.NewNumberMeasurement(50), 1e-3))
+	proj1 := mustP(pragmastat.Compare1(sx, []*pragmastat.Threshold{th1}))
+	fmt.Println(proj1[0].Verdict) // greater
+
+	th2 := mustT(pragmastat.NewThreshold(pragmastat.MetricShift, pragmastat.NewNumberMeasurement(0), 1e-3))
+	proj2 := mustP(pragmastat.Compare2(sx, sy, []*pragmastat.Threshold{th2}))
+	fmt.Println(proj2[0].Verdict) // less
 
 	// --- Randomization ---
 

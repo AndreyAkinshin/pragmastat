@@ -21,6 +21,7 @@ Pragmastat on NuGet: https://www.nuget.org/packages/Pragmastat/
 ```cs
 using static System.Console;
 using Pragmastat.Distributions;
+using Pragmastat.Metrology;
 using Pragmastat.Randomization;
 
 namespace Pragmastat.Demo;
@@ -49,6 +50,11 @@ class Program
     WriteLine(x.RatioBounds(y));                  // [0.4066666666666668;0.5958333333333332]
     WriteLine(x.Disparity(y));                    // -1.694915254237288
     WriteLine(x.DisparityBounds(y, 1e-3, "demo")); // [-3.1025641025641026;-0.8494623655913979]
+
+    // --- Confirmatory Comparison ---
+
+    WriteLine(Toolkit.Compare1(x, [new Threshold(Metric.Center, new Measurement(50, MeasurementUnit.Number), 1e-3)])[0].Verdict.ToId()); // greater
+    WriteLine(Toolkit.Compare2(x, y, [new Threshold(Metric.Shift, new Measurement(0, MeasurementUnit.Number), 1e-3)])[0].Verdict.ToId()); // less
 
     // --- Randomization ---
 

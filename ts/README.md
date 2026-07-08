@@ -31,6 +31,11 @@ import {
   Power,
   Uniform,
   Sample,
+  Measurement,
+  Metric,
+  Threshold,
+  compare1,
+  compare2,
 } from 'pragmastat';
 
 function main(): void {
@@ -54,6 +59,11 @@ function main(): void {
   console.log(ratioBounds(sx, sy, 1e-3)); // { lower: 0.4066..., upper: 0.5958..., unit: ... }
   console.log(disparity(sx, sy).value); // -1.694915254237288
   console.log(disparityBounds(sx, sy, 1e-3, 'demo')); // { lower: -3.1025..., upper: -0.8494..., unit: ... }
+
+  // --- Confirmatory Comparison ---
+
+  console.log(compare1(sx, [new Threshold(Metric.Center, new Measurement(50), 1e-3)])[0].verdict); // greater
+  console.log(compare2(sx, sy, [new Threshold(Metric.Shift, new Measurement(0), 1e-3)])[0].verdict); // less
 
   // --- Randomization ---
 
