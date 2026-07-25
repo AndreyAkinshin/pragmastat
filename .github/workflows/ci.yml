@@ -47,7 +47,7 @@ jobs:
 
     # --- Image generation ---
     - name: Set up Python
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v7
       with:
         python-version: '3.12'  # keep in sync with [tools].python in mise.toml
 
@@ -150,7 +150,7 @@ jobs:
       uses: jdx/mise-action@v4
 
     - name: Set up .NET
-      uses: actions/setup-dotnet@v5
+      uses: actions/setup-dotnet@v6
       with:
         dotnet-version: '10.0.x'  # keep in sync with [tools].dotnet in mise.toml
 
@@ -186,7 +186,7 @@ jobs:
       uses: jdx/mise-action@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v7
       with:
         python-version: '3.12'  # keep in sync with [tools].python in mise.toml
 
@@ -257,7 +257,7 @@ jobs:
       uses: jdx/mise-action@v4
 
     - name: Set up Node.js
-      uses: actions/setup-node@v6
+      uses: actions/setup-node@v7
       with:
         node-version: '22'  # keep in sync with [tools].node in mise.toml
         cache: 'pnpm'

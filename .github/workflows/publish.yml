@@ -165,7 +165,7 @@ jobs:
     - uses: actions/checkout@v7
 
     - name: Set up .NET
-      uses: actions/setup-dotnet@v5
+      uses: actions/setup-dotnet@v6
       with:
         dotnet-version: '10.0.x'  # keep in sync with [tools].dotnet in mise.toml
 
@@ -204,7 +204,7 @@ jobs:
       contents: read
     steps:
     - name: Set up Node.js
-      uses: actions/setup-node@v6
+      uses: actions/setup-node@v7
       with:
         node-version: '24'  # npm OIDC needs npm >= 11.5.1 (Node 24); intentionally ahead of mise's node 22
         registry-url: 'https://registry.npmjs.org'
