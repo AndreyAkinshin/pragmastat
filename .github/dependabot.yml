@@ -1,5 +1,6 @@
 # Keep dependencies, base images, and Actions current automatically.
-# Grouped weekly PRs per ecosystem to avoid churn.
+# Grouped weekly PRs per ecosystem, but MINOR/PATCH only — major bumps come as
+# individual PRs so one breaking major can't block a group of safe updates.
 version: 2
 updates:
   - package-ecosystem: github-actions
@@ -9,6 +10,7 @@ updates:
     groups:
       actions:
         patterns: ["*"]
+        update-types: ["minor", "patch"]
 
   - package-ecosystem: nuget
     directory: /cs
@@ -17,6 +19,7 @@ updates:
     groups:
       nuget:
         patterns: ["*"]
+        update-types: ["minor", "patch"]
 
   - package-ecosystem: gradle
     directory: /kt
@@ -25,6 +28,11 @@ updates:
     groups:
       gradle:
         patterns: ["*"]
+        update-types: ["minor", "patch"]
+    ignore:
+      # junit-jupiter 6.x requires JDK 17; the project pins jvmToolchain(11).
+      - dependency-name: "org.junit.jupiter:junit-jupiter"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: cargo
     directories:
@@ -36,6 +44,7 @@ updates:
     groups:
       cargo:
         patterns: ["*"]
+        update-types: ["minor", "patch"]
 
   - package-ecosystem: gomod
     directory: /go
@@ -51,6 +60,7 @@ updates:
     groups:
       npm:
         patterns: ["*"]
+        update-types: ["minor", "patch"]
 
   - package-ecosystem: pip
     directories:
@@ -61,6 +71,7 @@ updates:
     groups:
       pip:
         patterns: ["*"]
+        update-types: ["minor", "patch"]
 
   - package-ecosystem: docker
     directories:
@@ -78,3 +89,11 @@ updates:
     groups:
       docker:
         patterns: ["*"]
+        update-types: ["minor", "patch"]
+    ignore:
+      # Base images are pinned to the mise toolchain (with sync comments to the
+      # setup-* actions). Move runtime floors holistically, not via docker-only bumps.
+      - dependency-name: "python"
+      - dependency-name: "node"
+      - dependency-name: "eclipse-temurin"
+      - dependency-name: "rocker/verse"
