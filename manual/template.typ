@@ -84,6 +84,13 @@
 #v(1em)
 #outline(title: none, indent: 1.5em, depth: 2)
 
+// Introduction (unnumbered in PDF, starts on new page)
+#pagebreak()
+#{
+  set heading(numbering: none)
+  include "introduction/introduction.typ"
+}
+
 // Synopsis (unnumbered in PDF, starts on new page)
 #pagebreak()
 #{
