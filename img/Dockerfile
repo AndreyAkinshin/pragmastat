@@ -1,5 +1,5 @@
 # Dockerfile for Pragmastat image generation
-FROM python:3.12-slim
+FROM python:3.14-slim
 
 # Set working directory to img
 WORKDIR /workspace/img

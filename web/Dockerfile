@@ -1,5 +1,5 @@
 # Dockerfile for Pragmastat web/Astro build
-FROM node:22-alpine
+FROM node:26-alpine
 
 # Install bash and pnpm
 RUN apk add --no-cache bash

@@ -1,5 +1,5 @@
 # Dockerfile for Pragmastat TypeScript implementation
-FROM node:22-alpine
+FROM node:26-alpine
 
 # Install bash for build scripts
 RUN apk add --no-cache bash

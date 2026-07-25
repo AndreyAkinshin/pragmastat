@@ -1,5 +1,5 @@
 # Dockerfile for Pragmastat Kotlin implementation
-FROM eclipse-temurin:21-jdk
+FROM eclipse-temurin:25-jdk
 
 # Install bash
 RUN apt-get update && \
