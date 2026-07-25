@@ -1,3 +1,3 @@
-module github.com/AndreyAkinshin/pragmastat/go/v13
+module github.com/AndreyAkinshin/pragmastat/go/v14
 
 go 1.25
