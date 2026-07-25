@@ -231,6 +231,9 @@ jobs:
     - name: Check package
       run: mise run rs:check
 
+    - name: Check simulations
+      run: mise run rs:sim:check
+
     - name: Run tests
       run: mise run rs:test
 
