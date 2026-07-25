@@ -16,7 +16,9 @@ node = "22"            # sync: actions/setup-node in ci.yml (publish-npm pins 24
 # npm backend: aqua's release-asset matching is unreliable for pnpm 11.x
 "npm:pnpm" = "11"
 python = "3.12"        # sync: actions/setup-python in the workflows
-ruff = "latest"
+# Pinned, not "latest": ruff's lint set is select=ALL, so a new ruff release can
+# enable a new rule and turn CI red with zero code changes. Bump deliberately.
+ruff = "0.16.0"
 rust = "stable"
 typst = "latest"
 
