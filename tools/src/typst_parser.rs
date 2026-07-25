@@ -857,7 +857,7 @@ fn parse_children_with_labels(node: &SyntaxNode, events: &mut Vec<TypstEvent>, l
             while j < children.len() {
                 let next = children[j];
                 if next.kind() == SyntaxKind::Label {
-                    let text = next.text();
+                    let text = next.leaf_text();
                     label_text = Some(
                         text.trim_start_matches('<')
                             .trim_end_matches('>')
@@ -919,13 +919,13 @@ fn parse_node(node: &SyntaxNode, events: &mut Vec<TypstEvent>, list_depth: u8) {
             }
         }
         SyntaxKind::Text => {
-            let text = node.text().to_string();
+            let text = node.leaf_text().to_string();
             if !text.is_empty() {
                 events.push(TypstEvent::Text(text));
             }
         }
         SyntaxKind::Space => {
-            let text = node.text().to_string();
+            let text = node.leaf_text().to_string();
             // Convert multiple newlines to paragraph break
             if text.contains("\n\n") {
                 events.push(TypstEvent::ParagraphBreak);
@@ -940,7 +940,7 @@ fn parse_node(node: &SyntaxNode, events: &mut Vec<TypstEvent>, list_depth: u8) {
         }
         SyntaxKind::Escape => {
             // Handle escape sequences like \# -> #, \* -> *, etc.
-            let escaped = node.text();
+            let escaped = node.leaf_text();
             if let Some(ch) = escaped.strip_prefix('\\') {
                 events.push(TypstEvent::Text(ch.to_string()));
             } else {
@@ -953,7 +953,7 @@ fn parse_node(node: &SyntaxNode, events: &mut Vec<TypstEvent>, list_depth: u8) {
         }
         SyntaxKind::Raw => {
             if let Some(raw) = node.cast::<ast::Raw>() {
-                // to_untyped().text() only returns the node's direct text, not its children
+                // to_untyped().leaf_text() only returns the node's direct text, not its children
                 // We need to collect text from the RawDelim and other children
                 let mut code = String::new();
                 let mut in_content = false;
@@ -969,13 +969,13 @@ fn parse_node(node: &SyntaxNode, events: &mut Vec<TypstEvent>, list_depth: u8) {
                         }
                         SyntaxKind::RawTrimmed | SyntaxKind::Text => {
                             if in_content {
-                                code.push_str(child.text());
+                                code.push_str(child.leaf_text());
                             }
                         }
                         _ => {
                             // Collect any other text content
                             if in_content {
-                                code.push_str(child.text());
+                                code.push_str(child.leaf_text());
                             }
                         }
                     }
@@ -983,7 +983,7 @@ fn parse_node(node: &SyntaxNode, events: &mut Vec<TypstEvent>, list_depth: u8) {
 
                 let lang = raw
                     .lang()
-                    .map(|l| l.to_untyped().text().to_string())
+                    .map(|l| l.to_untyped().leaf_text().to_string())
                     .unwrap_or_default();
 
                 if raw.block() {
@@ -1057,7 +1057,7 @@ fn parse_node(node: &SyntaxNode, events: &mut Vec<TypstEvent>, list_depth: u8) {
             if let Some(call) = node.cast::<ast::FuncCall>() {
                 // Get callee name from the expression
                 let callee_text = match call.callee() {
-                    ast::Expr::Ident(ident) => ident.to_untyped().text().to_string(),
+                    ast::Expr::Ident(ident) => ident.to_untyped().leaf_text().to_string(),
                     _ => String::new(),
                 };
 
@@ -1065,7 +1065,7 @@ fn parse_node(node: &SyntaxNode, events: &mut Vec<TypstEvent>, list_depth: u8) {
                     "image" => {
                         // Extract image path from arguments
                         if let Some(ast::Arg::Pos(ast::Expr::Str(s))) = call.args().items().next() {
-                            let src = s.to_untyped().text().trim_matches('"').to_string();
+                            let src = s.to_untyped().leaf_text().trim_matches('"').to_string();
                             events.push(TypstEvent::Image {
                                 alt: String::new(),
                                 src,
@@ -1080,11 +1080,11 @@ fn parse_node(node: &SyntaxNode, events: &mut Vec<TypstEvent>, list_depth: u8) {
                         for arg in call.args().items() {
                             match arg {
                                 ast::Arg::Pos(ast::Expr::Str(s)) => {
-                                    dest = s.to_untyped().text().trim_matches('"').to_string();
+                                    dest = s.to_untyped().leaf_text().trim_matches('"').to_string();
                                 }
                                 ast::Arg::Pos(ast::Expr::Label(label)) => {
                                     // Internal link: #link(<label-name>)
-                                    let label_text = label.to_untyped().text();
+                                    let label_text = label.to_untyped().leaf_text();
                                     let label_name = label_text
                                         .trim_start_matches('<')
                                         .trim_end_matches('>');
@@ -1124,7 +1124,7 @@ fn parse_node(node: &SyntaxNode, events: &mut Vec<TypstEvent>, list_depth: u8) {
                         // Horizontal spacing - preserve for web output
                         for arg in call.args().items() {
                             if let ast::Arg::Pos(expr) = arg {
-                                let size = expr.to_untyped().text().to_string();
+                                let size = expr.to_untyped().leaf_text().to_string();
                                 events.push(TypstEvent::HSpace(size));
                                 break;
                             }
@@ -1140,7 +1140,7 @@ fn parse_node(node: &SyntaxNode, events: &mut Vec<TypstEvent>, list_depth: u8) {
                         for arg in call.args().items() {
                             match arg {
                                 ast::Arg::Pos(ast::Expr::Label(label)) => {
-                                    let label_text = label.to_untyped().text();
+                                    let label_text = label.to_untyped().leaf_text();
                                     key = Some(
                                         label_text
                                             .trim_start_matches('<')
@@ -1149,9 +1149,9 @@ fn parse_node(node: &SyntaxNode, events: &mut Vec<TypstEvent>, list_depth: u8) {
                                     );
                                 }
                                 ast::Arg::Named(named)
-                                    if named.name().to_untyped().text() == "form" =>
+                                    if named.name().to_untyped().leaf_text() == "form" =>
                                 {
-                                    let val = named.expr().to_untyped().text();
+                                    let val = named.expr().to_untyped().leaf_text();
                                     if val.trim_matches('"') == "full" {
                                         is_full = true;
                                     }
@@ -1172,7 +1172,7 @@ fn parse_node(node: &SyntaxNode, events: &mut Vec<TypstEvent>, list_depth: u8) {
                         // Parse content block and function call arguments as list items
                         for arg in call.args().items() {
                             match arg {
-                                ast::Arg::Pos(ast::Expr::Content(content)) => {
+                                ast::Arg::Pos(ast::Expr::ContentBlock(content)) => {
                                     let mut item_content = Vec::new();
                                     parse_node(
                                         content.body().to_untyped(),
@@ -1249,10 +1249,10 @@ fn extract_text_recursive(node: &SyntaxNode, text: &mut String) {
 fn extract_text_recursive_inner(node: &SyntaxNode, text: &mut String, preserve_math: bool) {
     match node.kind() {
         SyntaxKind::Text => {
-            text.push_str(node.text());
+            text.push_str(node.leaf_text());
         }
         SyntaxKind::Space => {
-            let s = node.text();
+            let s = node.leaf_text();
             if s.contains('\n') {
                 text.push(' ');
             } else {
@@ -1261,7 +1261,7 @@ fn extract_text_recursive_inner(node: &SyntaxNode, text: &mut String, preserve_m
         }
         SyntaxKind::Escape => {
             // Handle escape sequences like \# -> #, \* -> *, etc.
-            let escaped = node.text();
+            let escaped = node.leaf_text();
             if let Some(ch) = escaped.strip_prefix('\\') {
                 text.push_str(ch);
             } else {
@@ -1305,7 +1305,7 @@ fn extract_math_content(node: &SyntaxNode) -> String {
 
 /// Recursively collect all text from a node and its children
 fn collect_all_text(node: &SyntaxNode, content: &mut String) {
-    let text = node.text();
+    let text = node.leaf_text();
     if !text.is_empty() && node.children().next().is_none() {
         // Leaf node with text
         content.push_str(text);
@@ -1327,7 +1327,7 @@ fn parse_table_call(call: ast::FuncCall) -> (Vec<Vec<TypstEvent>>, Vec<Vec<Vec<T
 
     for arg in call.args().items() {
         match arg {
-            ast::Arg::Named(named) if named.name().to_untyped().text() == "columns" => {
+            ast::Arg::Named(named) if named.name().to_untyped().leaf_text() == "columns" => {
                 // Extract column count
                 if let ast::Expr::Int(i) = named.expr() {
                     #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
@@ -1338,10 +1338,10 @@ fn parse_table_call(call: ast::FuncCall) -> (Vec<Vec<TypstEvent>>, Vec<Vec<Vec<T
             ast::Arg::Pos(ast::Expr::FuncCall(header_call)) => {
                 // Handle table.header[...][...] — extract content blocks as header cells
                 let is_header = matches!(header_call.callee(), ast::Expr::FieldAccess(fa)
-                    if fa.field().to_untyped().text() == "header");
+                    if fa.field().to_untyped().leaf_text() == "header");
                 if is_header {
                     for header_arg in header_call.args().items() {
-                        if let ast::Arg::Pos(ast::Expr::Content(content)) = header_arg {
+                        if let ast::Arg::Pos(ast::Expr::ContentBlock(content)) = header_arg {
                             let mut cell_events = Vec::new();
                             parse_node(content.body().to_untyped(), &mut cell_events, 0);
                             headers.push(cell_events);
@@ -1350,7 +1350,7 @@ fn parse_table_call(call: ast::FuncCall) -> (Vec<Vec<TypstEvent>>, Vec<Vec<Vec<T
                     is_first_row = false;
                 }
             }
-            ast::Arg::Pos(ast::Expr::Content(content)) => {
+            ast::Arg::Pos(ast::Expr::ContentBlock(content)) => {
                 // Parse cell content
                 let mut cell_events = Vec::new();
                 parse_node(content.body().to_untyped(), &mut cell_events, 0);
