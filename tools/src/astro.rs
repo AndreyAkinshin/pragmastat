@@ -76,32 +76,33 @@ pub fn convert_typst_to_mdx(
     // Skip the first heading (H1 or H2) since it's in frontmatter
     let mut skip_first_heading = true;
     for event in &document.events {
-        if skip_first_heading {
-            if let TypstEvent::Heading { level, .. } = event {
-                if *level <= 2 {
-                    skip_first_heading = false;
-                    continue;
-                }
-            }
+        if skip_first_heading
+            && let TypstEvent::Heading { level, .. } = event
+            && *level <= 2
+        {
+            skip_first_heading = false;
+            continue;
         }
         // Apply heading offset for function/distribution/implementation pages
-        if heading_offset != 0 {
-            if let TypstEvent::Heading { level, text, label } = event {
-                let adjusted = (*level as i8 + heading_offset).max(1) as u8;
-                let adjusted_event = TypstEvent::Heading {
-                    level: adjusted,
-                    text: text.clone(),
-                    label: label.clone(),
-                };
-                convert_typst_event_to_mdx(
-                    &adjusted_event,
-                    definitions,
-                    references,
-                    xref_map,
-                    &mut output,
-                );
-                continue;
-            }
+        if heading_offset != 0
+            && let TypstEvent::Heading { level, text, label } = event
+        {
+            let adjusted = (level.cast_signed() + heading_offset)
+                .max(1)
+                .cast_unsigned();
+            let adjusted_event = TypstEvent::Heading {
+                level: adjusted,
+                text: text.clone(),
+                label: label.clone(),
+            };
+            convert_typst_event_to_mdx(
+                &adjusted_event,
+                definitions,
+                references,
+                xref_map,
+                &mut output,
+            );
+            continue;
         }
         convert_typst_event_to_mdx(event, definitions, references, xref_map, &mut output);
     }
@@ -304,7 +305,10 @@ fn convert_typst_event_to_mdx(
             output.push_str("<br/>\n");
         }
         TypstEvent::HSpace(size) => {
-            let _ = write!(output, r#"<span style="display:inline-block;width:{size}"></span>"#);
+            let _ = write!(
+                output,
+                r#"<span style="display:inline-block;width:{size}"></span>"#
+            );
         }
         TypstEvent::Link { text, dest } => {
             // Convert any $...$ math in the link text to KaTeX
@@ -324,7 +328,7 @@ fn convert_typst_event_to_mdx(
     }
 }
 
-/// Convert `$...$` math fragments in text to KaTeX
+/// Convert `$...$` math fragments in text to `KaTeX`
 ///
 /// Link content blocks may contain inline math preserved as `$...$`.
 /// This function finds each fragment and converts the Typst math to LaTeX.

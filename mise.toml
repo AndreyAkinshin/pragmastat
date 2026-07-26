@@ -615,6 +615,28 @@ rm -rf venv
 """
 
 # ==========================================================================
+# Documentation Toolchain Tasks
+# ==========================================================================
+
+[tasks."tools:check"]
+description = "Check documentation tools (clippy, fmt, cargo check)"
+dir = "tools"
+run = """
+cargo clippy --all-targets -- -D warnings
+cargo fmt -- --check
+"""
+
+[tasks."tools:check:fix"]
+description = "Format documentation tools"
+dir = "tools"
+run = "cargo fmt"
+
+[tasks."tools:test"]
+description = "Run documentation tools tests"
+dir = "tools"
+run = "cargo test"
+
+# ==========================================================================
 # Documentation Generation Tasks
 # ==========================================================================
 
@@ -723,6 +745,8 @@ run = "cargo run --manifest-path tools/Cargo.toml --release -- clean"
 [tasks."docs:ci"]
 description = "Run documentation CI pipeline"
 run = [
+    { task = "tools:check" },
+    { task = "tools:test" },
     { task = "docs:clean" },
     { task = "docs:sync" },
     # Fail CI if regeneration left uncommitted drift in tracked generated docs

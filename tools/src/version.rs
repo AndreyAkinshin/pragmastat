@@ -120,7 +120,8 @@ pub fn sync_versions(base_path: &Path, version: &str) -> Result<()> {
         }
 
         let major = version.split('.').next().unwrap_or(version);
-        let replacement = target.replacement
+        let replacement = target
+            .replacement
             .replace("{version}", version)
             .replace("{major}", major);
         let updated = regex.replace_all(&content, replacement.as_str());

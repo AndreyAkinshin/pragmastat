@@ -83,6 +83,8 @@ impl EvalContext {
 }
 
 /// Parse the definitions.typ file and extract variables
+// One linear pass over the file; the per-construct branches share the cursor state.
+#[allow(clippy::too_many_lines)]
 pub fn parse_definitions(path: &Path) -> Result<EvalContext> {
     let content = std::fs::read_to_string(path)?;
     let base_path = path.parent().unwrap_or(Path::new("."));
@@ -146,9 +148,7 @@ pub fn parse_definitions(path: &Path) -> Result<EvalContext> {
                     import_vars.push("*".to_string());
                     i += 1;
                 } else {
-                    while i < chars.len()
-                        && (chars[i].is_alphanumeric() || chars[i] == '_')
-                    {
+                    while i < chars.len() && (chars[i].is_alphanumeric() || chars[i] == '_') {
                         i += 1;
                     }
                     import_vars.push(chars_to_string(var_start, i));
@@ -168,9 +168,7 @@ pub fn parse_definitions(path: &Path) -> Result<EvalContext> {
                             i += 1;
                         }
                         let next_start = i;
-                        while i < chars.len()
-                            && (chars[i].is_alphanumeric() || chars[i] == '_')
-                        {
+                        while i < chars.len() && (chars[i].is_alphanumeric() || chars[i] == '_') {
                             i += 1;
                         }
                         if i > next_start {

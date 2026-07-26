@@ -163,7 +163,8 @@ pub fn sync_templates(base_path: &Path, version: &str) -> Result<()> {
 
 fn generate_readme(lang: &Language, version: &str, demo: &str) -> String {
     let major = version.split('.').next().unwrap_or(version);
-    let install = lang.install_md
+    let install = lang
+        .install_md
         .replace("{version}", version)
         .replace("{major}", major);
     let source_url = format!(

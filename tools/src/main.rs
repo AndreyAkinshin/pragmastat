@@ -110,6 +110,7 @@ impl astro::AsPageInfo for Page {
     }
 }
 
+#[rustfmt::skip] // One line per page keeps this table scannable
 const PAGES: &[Page] = &[
     // Introduction
     Page { slug: "introduction", file: "introduction/introduction", title: "Introduction", order: 0, group: None, heading_offset: 0 },

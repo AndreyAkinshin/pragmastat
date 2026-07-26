@@ -9,6 +9,8 @@ pub struct XRefMap {
 
 impl XRefMap {
     /// Create a new cross-reference map with predefined mappings
+    // Flat label-to-URL table: length tracks the number of labels, not complexity.
+    #[allow(clippy::too_many_lines)]
     #[must_use]
     pub fn new() -> Self {
         let mut mappings = HashMap::new();
@@ -94,37 +96,19 @@ impl XRefMap {
             "sec-alg-ratio-bounds".into(),
             "/ratio-bounds#algorithm".into(),
         );
-        mappings.insert(
-            "sec-alg-disparity".into(),
-            "/disparity#algorithm".into(),
-        );
+        mappings.insert("sec-alg-disparity".into(), "/disparity#algorithm".into());
         mappings.insert(
             "sec-alg-disparity-bounds".into(),
             "/disparity-bounds#algorithm".into(),
         );
-        mappings.insert(
-            "sec-alg-compare1".into(),
-            "/compare1#algorithm".into(),
-        );
-        mappings.insert(
-            "sec-alg-compare2".into(),
-            "/compare2#algorithm".into(),
-        );
+        mappings.insert("sec-alg-compare1".into(), "/compare1#algorithm".into());
+        mappings.insert("sec-alg-compare2".into(), "/compare2#algorithm".into());
         mappings.insert("sec-alg-rng".into(), "/rng#algorithm".into());
-        mappings.insert(
-            "sec-alg-uniform".into(),
-            "/uniform-float#algorithm".into(),
-        );
+        mappings.insert("sec-alg-uniform".into(), "/uniform-float#algorithm".into());
         mappings.insert("sec-alg-sample".into(), "/sample#algorithm".into());
         mappings.insert("sec-alg-shuffle".into(), "/shuffle#algorithm".into());
-        mappings.insert(
-            "sec-alg-resample".into(),
-            "/resample#algorithm".into(),
-        );
-        mappings.insert(
-            "sec-alg-avg-spread".into(),
-            "/avg-spread#algorithm".into(),
-        );
+        mappings.insert("sec-alg-resample".into(), "/resample#algorithm".into());
+        mappings.insert("sec-alg-avg-spread".into(), "/avg-spread#algorithm".into());
         mappings.insert(
             "sec-alg-avg-spread-bounds".into(),
             "/avg-spread-bounds#algorithm".into(),
@@ -189,10 +173,7 @@ mod tests {
     fn resolve_algorithm_label() {
         let xref = XRefMap::new();
         assert_eq!(xref.resolve("sec-alg-center"), Some("/center#algorithm"));
-        assert_eq!(
-            xref.resolve("sec-alg-rng"),
-            Some("/rng#algorithm")
-        );
+        assert_eq!(xref.resolve("sec-alg-rng"), Some("/rng#algorithm"));
     }
 
     #[test]

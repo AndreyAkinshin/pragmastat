@@ -7,7 +7,11 @@ use std::collections::HashMap;
 use std::fmt::Write;
 
 /// Convert Typst math content to LaTeX string
-pub fn typst_to_latex(typst_math: &str, definitions: &HashMap<String, String>, display: bool) -> String {
+pub fn typst_to_latex(
+    typst_math: &str,
+    definitions: &HashMap<String, String>,
+    display: bool,
+) -> String {
     let mut result = typst_math.to_string();
 
     // Convert Typst \/ (explicit fraction) depending on display mode
@@ -78,7 +82,7 @@ fn apply_definitions_outside_text(input: &str, definitions: &HashMap<String, Str
 
     // Apply definitions to the result (which now has placeholders instead of \text{} blocks)
     let mut sorted_defs: Vec<_> = definitions.iter().collect();
-    sorted_defs.sort_by(|(a, _), (b, _)| b.len().cmp(&a.len()));
+    sorted_defs.sort_by_key(|(name, _)| std::cmp::Reverse(name.len()));
 
     for (name, latex) in sorted_defs {
         // Skip single letters - they cause too many false matches
@@ -741,8 +745,7 @@ fn convert_syntax(input: &str, display: bool) -> String {
                 let bytes = result.as_bytes();
 
                 // Check if preceded by backslash (already converted, e.g., \sigma)
-                let preceded_by_backslash =
-                    m.start() > 0 && bytes[m.start() - 1] == b'\\';
+                let preceded_by_backslash = m.start() > 0 && bytes[m.start() - 1] == b'\\';
 
                 // Check if embedded in a larger word (preceded by letter)
                 let preceded_by_letter =
@@ -1106,6 +1109,9 @@ fn strip_outer_parens(s: &str) -> &str {
 
 /// Find the fraction numerator (content before /)
 /// Returns (start, end) indices of the numerator
+// Single backward scanner over the character stream: splitting the bracket/function
+// state across helpers would spread one state machine over several signatures.
+#[allow(clippy::too_many_lines)]
 fn find_fraction_part_before(chars: &[char], slash_pos: usize) -> Option<(usize, usize)> {
     if slash_pos == 0 {
         return None;
@@ -1283,6 +1289,8 @@ fn find_fraction_part_before(chars: &[char], slash_pos: usize) -> Option<(usize,
 
 /// Find the fraction denominator (content after /)
 /// Returns (start, end) indices of the denominator
+// Forward mirror of `find_fraction_part_before`; kept as one scanner for the same reason.
+#[allow(clippy::too_many_lines)]
 fn find_fraction_part_after(chars: &[char], start_pos: usize) -> Option<(usize, usize)> {
     if start_pos >= chars.len() {
         return None;
@@ -1497,7 +1505,9 @@ fn wrap_multichar_scripts(input: &str, prefix: &str) -> String {
         if chars[i..].starts_with(&prefix_chars) {
             let after = i + prefix_chars.len();
             // Skip if already braced or parenthesized or followed by backslash (LaTeX command)
-            if after < chars.len() && (chars[after] == '{' || chars[after] == '(' || chars[after] == '\\') {
+            if after < chars.len()
+                && (chars[after] == '{' || chars[after] == '(' || chars[after] == '\\')
+            {
                 result.push(chars[i]);
                 i += 1;
                 continue;
@@ -2214,7 +2224,10 @@ mod tests {
         assert_eq!(typst_to_latex("pmean", &defs, true), "\\mathrm{mean}");
         assert_eq!(typst_to_latex("pstddev", &defs, true), "\\mathrm{stdDev}");
         assert_eq!(typst_to_latex("plogmean", &defs, true), "\\mathrm{logMean}");
-        assert_eq!(typst_to_latex("plogstddev", &defs, true), "\\mathrm{logStdDev}");
+        assert_eq!(
+            typst_to_latex("plogstddev", &defs, true),
+            "\\mathrm{logStdDev}"
+        );
         assert_eq!(typst_to_latex("pmin", &defs, true), "\\mathrm{min}");
         assert_eq!(typst_to_latex("pmax", &defs, true), "\\mathrm{max}");
         assert_eq!(typst_to_latex("pshape", &defs, true), "\\mathrm{shape}");
@@ -2374,7 +2387,11 @@ mod tests {
     fn convert_splitmix64_formula() {
         let defs = HashMap::new();
         // Test the actual formula from the randomization chapter
-        let result = typst_to_latex("x <- (x xor (x >> 30)) times \"0xbf58476d1ce4e5b9\"", &defs, true);
+        let result = typst_to_latex(
+            "x <- (x xor (x >> 30)) times \"0xbf58476d1ce4e5b9\"",
+            &defs,
+            true,
+        );
         eprintln!("Result: {result}");
         assert!(
             result.contains("\\leftarrow"),
@@ -2498,7 +2515,9 @@ mod tests {
 
         // Should create a proper fraction with superscripts intact
         assert!(
-            result.contains("\\frac{\\operatorname{Drift}^2(T_2, X)}{\\operatorname{Drift}^2(T_1, X)}"),
+            result.contains(
+                "\\frac{\\operatorname{Drift}^2(T_2, X)}{\\operatorname{Drift}^2(T_1, X)}"
+            ),
             "Superscript function calls should be proper fraction parts: {result}"
         );
 
@@ -2515,8 +2534,11 @@ mod tests {
         let mut defs = HashMap::new();
         defs.insert("Drift".to_string(), "\\operatorname{Drift}".to_string());
 
-        let result =
-            typst_to_latex("n_\"new\" = n_\"original\" dot Drift^2(T_2, X) / Drift^2(T_1, X)", &defs, true);
+        let result = typst_to_latex(
+            "n_\"new\" = n_\"original\" dot Drift^2(T_2, X) / Drift^2(T_1, X)",
+            &defs,
+            true,
+        );
         eprintln!("Result: {result}");
 
         // Should have proper text subscripts
@@ -2531,7 +2553,9 @@ mod tests {
 
         // Should have proper fraction
         assert!(
-            result.contains("\\frac{\\operatorname{Drift}^2(T_2, X)}{\\operatorname{Drift}^2(T_1, X)}"),
+            result.contains(
+                "\\frac{\\operatorname{Drift}^2(T_2, X)}{\\operatorname{Drift}^2(T_1, X)}"
+            ),
             "Should have proper fraction with Drift^2: {result}"
         );
     }
@@ -2596,15 +2620,24 @@ mod tests {
 
         // "thesigma" should stay as-is (sigma is embedded)
         let result = typst_to_latex("thesigma", &defs, true);
-        assert_eq!(result, "thesigma", "Embedded sigma should not convert: {result}");
+        assert_eq!(
+            result, "thesigma",
+            "Embedded sigma should not convert: {result}"
+        );
 
         // "sigmaX" should stay as-is (sigma followed by letter)
         let result = typst_to_latex("sigmaX", &defs, true);
-        assert_eq!(result, "sigmaX", "sigma followed by letter should not convert: {result}");
+        assert_eq!(
+            result, "sigmaX",
+            "sigma followed by letter should not convert: {result}"
+        );
 
         // But "sigma X" should convert (space separator)
         let result = typst_to_latex("sigma X", &defs, true);
-        assert_eq!(result, "\\sigma X", "sigma with space should convert: {result}");
+        assert_eq!(
+            result, "\\sigma X",
+            "sigma with space should convert: {result}"
+        );
     }
 
     #[test]
@@ -2621,7 +2654,10 @@ mod tests {
     fn greek_with_operators_converts() {
         // Greek letters adjacent to operators should convert
         let defs = HashMap::new();
-        assert_eq!(typst_to_latex("sigma + tau", &defs, true), "\\sigma + \\tau");
+        assert_eq!(
+            typst_to_latex("sigma + tau", &defs, true),
+            "\\sigma + \\tau"
+        );
         assert_eq!(typst_to_latex("(sigma)", &defs, true), "(\\sigma)");
         assert_eq!(typst_to_latex("sigma,tau", &defs, true), "\\sigma,\\tau");
     }
@@ -2662,8 +2698,14 @@ mod tests {
     fn inline_complex_fraction_stays_flat() {
         let defs = HashMap::new();
         let result = typst_to_latex("(a + b) / 2", &defs, false);
-        assert!(!result.contains("\\frac"), "Inline should not produce \\frac: {result}");
-        assert!(result.contains("/"), "Inline should keep flat slash: {result}");
+        assert!(
+            !result.contains("\\frac"),
+            "Inline should not produce \\frac: {result}"
+        );
+        assert!(
+            result.contains('/'),
+            "Inline should keep flat slash: {result}"
+        );
     }
 
     #[test]

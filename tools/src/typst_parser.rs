@@ -1085,9 +1085,8 @@ fn parse_node(node: &SyntaxNode, events: &mut Vec<TypstEvent>, list_depth: u8) {
                                 ast::Arg::Pos(ast::Expr::Label(label)) => {
                                     // Internal link: #link(<label-name>)
                                     let label_text = label.to_untyped().leaf_text();
-                                    let label_name = label_text
-                                        .trim_start_matches('<')
-                                        .trim_end_matches('>');
+                                    let label_name =
+                                        label_text.trim_start_matches('<').trim_end_matches('>');
                                     dest = format!("internal:{label_name}");
                                 }
                                 _ => {}
@@ -1174,11 +1173,7 @@ fn parse_node(node: &SyntaxNode, events: &mut Vec<TypstEvent>, list_depth: u8) {
                             match arg {
                                 ast::Arg::Pos(ast::Expr::ContentBlock(content)) => {
                                     let mut item_content = Vec::new();
-                                    parse_node(
-                                        content.body().to_untyped(),
-                                        &mut item_content,
-                                        0,
-                                    );
+                                    parse_node(content.body().to_untyped(), &mut item_content, 0);
                                     events.push(TypstEvent::ListItem {
                                         depth: 1,
                                         content: item_content,
@@ -1814,7 +1809,7 @@ Some text after."#,
 
     #[test]
     fn parse_internal_link() {
-        let content = r#"See #link(<ch-algorithms>)[Algorithms] for details."#;
+        let content = r"See #link(<ch-algorithms>)[Algorithms] for details.";
         let events = parse_typst_content(content);
         let link = events.iter().find_map(|e| {
             if let TypstEvent::Link { text, dest } = e {

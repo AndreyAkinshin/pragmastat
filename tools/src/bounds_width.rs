@@ -65,8 +65,7 @@ pub fn generate(base_path: &Path) -> Result<()> {
         .map_err(|e| anyhow::anyhow!("Cannot read {}: {e}", json_path.display()))?;
     let all_rows: Vec<Row> = serde_json::from_str(&json_data)?;
 
-    let by_n: std::collections::HashMap<usize, &Row> =
-        all_rows.iter().map(|r| (r.n, r)).collect();
+    let by_n: std::collections::HashMap<usize, &Row> = all_rows.iter().map(|r| (r.n, r)).collect();
 
     for spec in SPECS {
         let content = build_table(&by_n, spec.get);
@@ -78,7 +77,7 @@ pub fn generate(base_path: &Path) -> Result<()> {
     let benchmark_content = build_benchmark_table(&by_n);
     let benchmark_path = base_path.join(BENCHMARK_OUTPUT);
     std::fs::write(&benchmark_path, benchmark_content)?;
-    println!("  Generated: {}", BENCHMARK_OUTPUT);
+    println!("  Generated: {BENCHMARK_OUTPUT}");
 
     Ok(())
 }
