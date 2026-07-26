@@ -16,5 +16,10 @@
   "devDependencies": {
     "rehype-katex": "^7.0.0",
     "remark-math": "^6.0.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "katex": "^0.16.27"
+    }
   }
 }

@@ -61,6 +61,14 @@ updates:
       npm:
         patterns: ["*"]
         update-types: ["minor", "patch"]
+    ignore:
+      # katex is pinned to the range rehype-katex accepts. rehype-katex 7.0.1
+      # (latest) requires katex ^0.16, so 0.17+ cannot render the manual; a bump
+      # would only add an unused copy. For a 0.x package semver-minor is the
+      # breaking step, hence both types. Revisit when rehype-katex widens its range.
+      - dependency-name: "katex"
+        update-types:
+          ["version-update:semver-minor", "version-update:semver-major"]
 
   - package-ecosystem: pip
     directories:

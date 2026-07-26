@@ -1,5 +1,8 @@
 ---
 import { ViewTransitions } from 'astro:transitions';
+// Bundled locally so the stylesheet version cannot drift from the katex that
+// rehype-katex uses to render the markup, and so the site needs no CDN at runtime
+import 'katex/dist/katex.min.css';
 
 interface Props {
   title: string;
@@ -17,7 +20,6 @@ const { title, description = 'Pragmatic Statistical Toolkit' } = Astro.props;
     <meta name="description" content={description} />
     <title>{title} | Pragmastat</title>
     <link rel="icon" type="image/svg+xml" href="/img/logo.svg" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.27/dist/katex.min.css" crossorigin="anonymous">
     <ViewTransitions />
 
     <!-- Prevent flash of wrong theme / sidebar state / background color -->
