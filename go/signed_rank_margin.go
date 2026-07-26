@@ -4,6 +4,19 @@ import (
 	"math"
 )
 
+// The float64 conversions in this file are not redundant. The Go specification
+// lets an implementation fuse a multiply into a following add or subtract as a
+// single rounding, and gc does that on arm64, ppc64le, s390x and riscv64, never
+// on amd64. The margin computed here selects an order statistic, so a last-bit
+// difference in the Edgeworth expansion can return a different integer and move
+// the reported bound by far more than the conformance tolerance; none of the
+// other six languages fuses, so the fused result is the odd one out. An explicit
+// conversion is the only way the language offers to pin an intermediate rounding.
+// Where the multiplier is a power of two the conversion is inert, since scaling
+// by a power of two is exact and fused and unfused agree bit for bit; those sites
+// are pinned anyway, so that no future reader has to re-derive which of them are
+// safe. The guard is mise task go:check:fma.
+
 const (
 	// signedRankMaxExactSize is the maximum n for exact signed-rank computation.
 	// Limited to 63 because 2^n must fit in a 64-bit integer for exact computation.
@@ -104,7 +117,9 @@ func signedRankMarginApproxRaw(n int, misrate float64) int64 {
 
 // signedRankEdgeworthCdf computes Edgeworth expansion for Wilcoxon signed-rank distribution CDF.
 func signedRankEdgeworthCdf(n int, w int64) float64 {
-	mu := float64(n) * float64(n+1) / 4.0
+	// The /4.0 is strength-reduced to a multiply, which then fuses into the
+	// subtraction that forms z below; the conversion pins it (inert: /4.0 is exact)
+	mu := float64(float64(n) * float64(n+1) / 4.0)
 	sigma2 := float64(n) * float64(n+1) * float64(2*n+1) / 24.0
 	sigma := math.Sqrt(sigma2)
 
@@ -114,14 +129,14 @@ func signedRankEdgeworthCdf(n int, w int64) float64 {
 	Phi := gaussCdf(z)
 
 	nf := float64(n)
-	kappa4 := -nf * (nf + 1) * (2*nf + 1) * (3*nf*nf + 3*nf - 1) / 240.0
+	kappa4 := -nf * (nf + 1) * (float64(2*nf) + 1) * (float64(3*nf*nf) + float64(3*nf) - 1) / 240.0
 
 	e3 := kappa4 / (24 * sigma2 * sigma2)
 
 	z2 := z * z
-	z3 := z2 * z
-	f3 := -phi * (z3 - 3*z)
+	z3 := float64(z2 * z)
+	f3 := -phi * (z3 - float64(3*z))
 
-	edgeworth := Phi + e3*f3
+	edgeworth := Phi + float64(e3*f3)
 	return math.Min(math.Max(edgeworth, 0), 1)
 }

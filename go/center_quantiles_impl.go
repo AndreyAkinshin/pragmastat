@@ -5,6 +5,20 @@ import (
 	"sort"
 )
 
+// Every multiply-add in this file is written as float64(a*b) + float64(c*d)
+// rather than a*b + c*d. The conversions are not redundant. The Go
+// specification lets an implementation fuse a multiply into an add as a single
+// rounding, and gc does it on arm64, ppc64le, s390x, riscv64 and loong64,
+// never on amd64. None of the other six languages fuses, so a fused result
+// would differ in the last bit from every one of them. An explicit conversion
+// is the only way the language offers to pin the intermediate rounding.
+//
+// Here the multiplier is always 0.5, so the scaling is exact and the fused and
+// unfused forms agree bit for bit: none of these sites was ever wrong. They are
+// pinned for uniformity, so this file needs no entry on the go:check:fma
+// exemption list and no future reader has to re-derive that proof to know the
+// file is safe.
+
 // relativeEpsilon is the tolerance for floating-point comparisons in binary search convergence.
 const relativeEpsilon = 1e-14
 
@@ -83,7 +97,7 @@ func centerFindExactQuantileImpl(sorted []float64, k int64) float64 {
 	for hi-lo > eps*math.Max(1.0, math.Max(math.Abs(lo), math.Abs(hi))) {
 		// Overflow-safe, order-symmetric midpoint: 0.5*a + 0.5*b (halve before
 		// summing; never overflows; operand order is irrelevant).
-		mid := 0.5*lo + 0.5*hi
+		mid := float64(0.5*lo) + float64(0.5*hi)
 		countLessOrEqual := centerCountPairsLessOrEqualImpl(sorted, mid)
 
 		if countLessOrEqual >= k {
@@ -95,7 +109,7 @@ func centerFindExactQuantileImpl(sorted []float64, k int64) float64 {
 
 	// Overflow-safe, order-symmetric midpoint: 0.5*a + 0.5*b (halve before
 	// summing; never overflows; operand order is irrelevant).
-	target := 0.5*lo + 0.5*hi
+	target := float64(0.5*lo) + float64(0.5*hi)
 	var candidates []float64
 
 	for i := range n {
@@ -114,11 +128,11 @@ func centerFindExactQuantileImpl(sorted []float64, k int64) float64 {
 		}
 
 		if left < n && left >= i && math.Abs(sorted[left]-threshold) < eps*math.Max(1.0, math.Abs(threshold)) {
-			candidates = append(candidates, 0.5*sorted[i]+0.5*sorted[left])
+			candidates = append(candidates, float64(0.5*sorted[i])+float64(0.5*sorted[left]))
 		}
 
 		if left > i {
-			avgBefore := 0.5*sorted[i] + 0.5*sorted[left-1]
+			avgBefore := float64(0.5*sorted[i]) + float64(0.5*sorted[left-1])
 			if avgBefore <= target+eps {
 				candidates = append(candidates, avgBefore)
 			}

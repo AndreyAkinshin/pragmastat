@@ -35,7 +35,12 @@ func (a *Additive) Sample(rng *Rng) float64 {
 	// Use the first of the two Box-Muller outputs
 	z := r * math.Cos(theta)
 
-	return a.Mean + z*a.StdDev
+	// float64 conversion pins the intermediate rounding; see uniformFloat64Range
+	// in xoshiro256.go. It does not make this draw portable on its own: math.Log
+	// and math.Cos are themselves polynomial evaluations in Go, and gc fuses them
+	// on FMA-capable targets, so a residual divergence remains that no conversion
+	// in this file can remove.
+	return a.Mean + float64(z*a.StdDev)
 }
 
 // Samples generates multiple samples from the additive distribution.

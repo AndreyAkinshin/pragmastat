@@ -17,7 +17,11 @@ doi = "10.5281/zenodo.17236778"
 
 [dev-dependencies]
 serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
+# float_roundtrip: without it serde_json uses a fast float parser that is
+# accurate to within an ulp but not correctly rounded, so a fixture written as
+# -0.23552140697665314 can parse one ulp low. The randomization suites compare
+# bitwise, which makes that the difference between a pass and a false failure.
+serde_json = { version = "1.0", features = ["float_roundtrip"] }
 float-cmp = "0.10"
 
 [lib]

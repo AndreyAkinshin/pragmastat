@@ -62,11 +62,19 @@ func (x *xoshiro256PlusPlus) uniformFloat64() float64 {
 
 // Note: FP rounding in min + (max-min)*u can theoretically yield max
 // for extreme values of (max-min). Acceptable for statistical use.
+//
+// The float64 conversion is not redundant. The Go specification lets an
+// implementation fuse the multiply into the add as a single rounding, and on
+// every FMA-capable target the compiler does. The randomization contract is
+// bitwise: a seeded stream must be identical in all seven languages, and none
+// of the other six fuses, so a fused draw here would differ in the last bit
+// from every one of them. An explicit conversion is the only way the language
+// offers to pin the intermediate rounding.
 func (x *xoshiro256PlusPlus) uniformFloat64Range(min, max float64) float64 {
 	if min >= max {
 		return min
 	}
-	return min + (max-min)*x.uniformFloat64()
+	return min + float64((max-min)*x.uniformFloat64())
 }
 
 func (x *xoshiro256PlusPlus) uniformFloat32() float32 {
@@ -78,7 +86,8 @@ func (x *xoshiro256PlusPlus) uniformFloat32Range(min, max float32) float32 {
 	if min >= max {
 		return min
 	}
-	return min + (max-min)*x.uniformFloat32()
+	// float32 conversion pins the intermediate rounding; see uniformFloat64Range.
+	return min + float32((max-min)*x.uniformFloat32())
 }
 
 // ========================================================================

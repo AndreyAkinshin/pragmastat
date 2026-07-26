@@ -7,6 +7,18 @@ import (
 	"sort"
 )
 
+// Every multiply-add in this file pins its intermediate rounding with an explicit
+// float64 conversion, written as float64(a*b) + c. Those conversions are not
+// redundant. The Go specification lets an implementation fuse a multiply into a
+// following add as a single rounding, and gc does exactly that on arm64, ppc64le,
+// s390x, riscv64 and loong64, but never on amd64, where CI runs. None of the other
+// six languages fuse, so a fused intermediate differs from all of them in the last
+// bit. That is not academic here: h in shiftQuantilesImpl feeds floor and ceil and
+// therefore selects a Type-7 order statistic, so one flipped bit returns a
+// different observation; measured under qemu-aarch64, that moved ShiftBounds by
+// 6.9e-3 against a 1e-9 tolerance. An explicit conversion is the only mechanism
+// the language offers to pin an intermediate rounding.
+
 // ratioQuantilesImpl computes quantiles of all pairwise ratios {x[i] / y[j]} via log-transformation.
 // Time complexity: O((m + n) * log(precision)) per unique rank
 // Space complexity: O(m + n) for log-transformed arrays
@@ -83,7 +95,7 @@ func shiftQuantilesImpl[T Number](x, y []T, p []float64, assumeSorted bool) ([]f
 	requiredRanks := make(map[int64]struct{})
 
 	for i, pk := range p {
-		h := 1.0 + float64(total-1)*pk
+		h := 1.0 + float64(float64(total-1)*pk)
 		lowerRank := int64(math.Floor(h))
 		upperRank := int64(math.Ceil(h))
 		weight := h - float64(lowerRank)
@@ -118,7 +130,7 @@ func shiftQuantilesImpl[T Number](x, y []T, p []float64, assumeSorted bool) ([]f
 		if param.weight == 0.0 {
 			result[i] = lower
 		} else {
-			result[i] = (1.0-param.weight)*lower + param.weight*upper
+			result[i] = float64((1.0-param.weight)*lower) + float64(param.weight*upper)
 		}
 	}
 
@@ -160,8 +172,11 @@ func selectKthPairwiseDiff[T Number](x, y []T, k int64) (float64, error) {
 
 	for iter := 0; iter < maxIterations && searchMin != searchMax; iter++ {
 		// Overflow-safe, order-symmetric midpoint: 0.5*a + 0.5*b (halve before
-		// summing; never overflows; operand order is irrelevant).
-		mid := 0.5*searchMin + 0.5*searchMax
+		// summing; never overflows; operand order is irrelevant). Halving by a power
+		// of two is exact, so this site is the one place where fusing could not have
+		// changed the result; it is pinned anyway so no future reader has to re-derive
+		// that.
+		mid := float64(0.5*searchMin) + float64(0.5*searchMax)
 		countLessOrEqual, closestBelow, closestAbove := countAndNeighbors(x, y, mid)
 
 		if closestBelow == closestAbove {

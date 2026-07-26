@@ -1,0 +1,34 @@
+#!/bin/sh
+# Emits src/Makevars with -ffp-contract=off when the compiler understands it.
+#
+# The kernels in src/ are part of a cross-language contract: seven implementations must agree
+# on the value, and six of them cannot fuse a multiply and an add even if they wanted to. C
+# can. The standard's default is `#pragma STDC FP_CONTRACT ON`, gcc's default is
+# `-ffp-contract=fast`, which contracts across statements, and clang has defaulted to `on`
+# since version 14. Measured by recompiling the four kernels with R's own flags plus
+# -march=x86-64-v3, which has FMA3 and stands in for aarch64: twelve fused instructions with
+# the defaults, zero with the flag.
+#
+# It is emitted rather than written unconditionally because R CMD check reports a hardcoded
+# -ffp-contract as a non-portable flag, and a compiler that does not know it would fail the
+# build outright. A configure script is the mechanism R provides for exactly this.
+set -e
+
+CC=`"${R_HOME}/bin/R" CMD config CC`
+CFLAGS=`"${R_HOME}/bin/R" CMD config CFLAGS`
+
+cat > src/Makevars <<EOF
+EOF
+
+TMPC=`mktemp -t pragmastat-fpc-XXXXXX`.c
+trap 'rm -f "$TMPC" "$TMPC.o"' EXIT
+echo 'int main(void) { return 0; }' > "$TMPC"
+
+if $CC $CFLAGS -ffp-contract=off -c "$TMPC" -o "$TMPC.o" > /dev/null 2>&1; then
+  echo 'PKG_CFLAGS = -ffp-contract=off' > src/Makevars
+  echo "pragmastat: floating-point contraction disabled"
+else
+  echo "pragmastat: this compiler does not accept -ffp-contract=off; the C kernels may fuse"
+  echo "pragmastat: a multiply and an add, which can differ in the last bit from the other"
+  echo "pragmastat: six implementations on targets with a fused multiply-add instruction"
+fi

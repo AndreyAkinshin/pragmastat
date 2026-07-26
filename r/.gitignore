@@ -2,3 +2,6 @@ pragmastat.Rcheck
 pragmastat_*.tar.gz
 .Rhistory
 .r-packages
+
+# Emitted by ./configure; see the script for why it is not committed.
+pragmastat/src/Makevars

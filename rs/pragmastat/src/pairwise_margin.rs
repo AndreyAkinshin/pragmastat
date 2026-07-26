@@ -104,7 +104,7 @@ fn pairwise_margin_exact_raw(n: usize, m: usize, p: f64) -> usize {
         // Compute pmf[u] using Loeffler recurrence
         let mut sum = 0.0;
         for i in 0..u {
-            sum = f64::mul_add(pmf[i], sigma[u - i], sum);
+            sum += pmf[i] * sigma[u - i];
         }
         sum /= u as f64;
         pmf.push(sum);

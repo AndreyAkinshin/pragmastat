@@ -110,7 +110,9 @@ func newSample[T Number](values []T, weights []float64, unit *MeasurementUnit) (
 		var minW = math.MaxFloat64
 		for _, w := range weights {
 			totalWeight += w
-			totalWeightSq += w * w
+			// float64 pins the intermediate rounding; see uniformFloat64Range in
+			// xoshiro256.go.
+			totalWeightSq += float64(w * w)
 			if w < minW {
 				minW = w
 			}

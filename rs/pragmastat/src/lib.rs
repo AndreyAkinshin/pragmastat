@@ -6,6 +6,16 @@
 //! - Enable simple implementations without advanced statistical libraries
 //! - Provide clear explanations accessible to practitioners without deep statistical training
 
+// `a.mul_add(b, c)` is not an optimization of `a * b + c` here, it is a different algorithm:
+// it rounds once where the specification rounds twice. Every estimator in this toolkit is
+// defined as a fixed sequence of binary64 operations that seven implementations must reproduce,
+// and none of the other six has a fused multiply-add anywhere. Taking this lint's advice once
+// already shipped a divergence: it rewrote `uniform_f64_range`, and Rust drew different numbers
+// from the same seed as the other six for months, on every platform, while a 1e-12 comparison
+// reported it as a pass. The randomization suites now compare bitwise, which would catch it
+// again, but the lint should not be able to propose it in the first place.
+#![allow(clippy::suboptimal_flops)]
+
 pub mod assumptions;
 pub mod bounds;
 pub mod compare;

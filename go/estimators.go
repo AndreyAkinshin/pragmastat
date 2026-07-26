@@ -7,6 +7,27 @@ import (
 	"sort"
 )
 
+// =============================================================================
+// Floating-point rounding: every multiply-add is pinned
+//
+// The Go specification lets an implementation fuse a multiply and an add into a
+// single rounding, and gc does it on arm64, ppc64le, s390x, riscv64 and
+// loong64, never on amd64, where CI runs. A fused result differs in the last
+// bit from the other six languages, none of which fuse. That last bit is not
+// cosmetic here: it propagates into pairwiseMargin, which returns a different
+// integer, and that integer selects a different order statistic.
+//
+// Every multiply-add below therefore wraps the PRODUCT in an explicit
+// float64(), which is the only construct the language offers to pin an
+// intermediate rounding: float64(a*b) + c. The conversions are NOT redundant
+// and must not be "simplified" away; mise run go:check:fma guards them.
+//
+// The two extra/2.0 sites in disparityBoundsImpl are provably inert, since
+// halving is exact and fused and unfused therefore agree bit for bit. They are
+// pinned anyway: a conversion is free, and an exemption that every future
+// reader has to re-prove is not.
+// =============================================================================
+
 // Number is a constraint that permits signed/unsigned integer or floating-point type.
 type Number interface {
 	~int | ~int8 | ~int16 | ~int32 | ~int64 |
@@ -190,7 +211,7 @@ func avgSpread(x, y []float64, assumeSorted bool) (float64, error) {
 		return 0, NewSparityError(SubjectY)
 	}
 
-	return (n*spreadX + m*spreadY) / (n + m), nil
+	return (float64(n*spreadX) + float64(m*spreadY)) / (n + m), nil
 }
 
 // Disparity measures effect size: a normalized difference between x and y.
@@ -232,7 +253,7 @@ func Disparity(x, y []float64, assumeSorted bool) (float64, error) {
 	if err != nil {
 		return 0, err
 	}
-	avgSpreadVal := (n*spreadX + m*spreadY) / (n + m)
+	avgSpreadVal := (float64(n*spreadX) + float64(m*spreadY)) / (n + m)
 
 	return shiftVal[0] / avgSpreadVal, nil
 }
@@ -600,8 +621,8 @@ func avgSpreadBoundsImpl(x, sortedX, y, sortedY []float64, misrate float64, rngX
 	wy := float64(m) / float64(n+m)
 
 	return Bounds{
-		Lower: wx*boundsX.Lower + wy*boundsY.Lower,
-		Upper: wx*boundsX.Upper + wy*boundsY.Upper,
+		Lower: float64(wx*boundsX.Lower) + float64(wy*boundsY.Lower),
+		Upper: float64(wx*boundsX.Upper) + float64(wy*boundsY.Upper),
 		Unit:  NumberUnit,
 	}, nil
 }
@@ -646,8 +667,8 @@ func disparityBoundsImpl(x, sortedX, y, sortedY []float64, misrate float64, rngX
 	}
 
 	extra := misrate - (minShift + minAvg)
-	alphaShift := minShift + extra/2.0
-	alphaAvg := minAvg + extra/2.0
+	alphaShift := minShift + float64(extra/2.0)
+	alphaAvg := minAvg + float64(extra/2.0)
 
 	// The spread>0 sparity check is performed by avgSpreadBoundsImpl below
 	// (identical predicate, same x/y subject order). ShiftBounds runs first but

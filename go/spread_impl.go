@@ -6,6 +6,20 @@ import (
 	"sort"
 )
 
+// Every multiply-add in this file is written as float64(a*b) + float64(c*d)
+// rather than a*b + c*d. The conversions are not redundant. The Go
+// specification lets an implementation fuse a multiply into an add as a single
+// rounding, and gc does it on arm64, ppc64le, s390x, riscv64 and loong64,
+// never on amd64. None of the other six languages fuses, so a fused result
+// would differ in the last bit from every one of them. An explicit conversion
+// is the only way the language offers to pin the intermediate rounding.
+//
+// Here the multiplier is always 0.5, so the scaling is exact and the fused and
+// unfused forms agree bit for bit: none of these sites was ever wrong. They are
+// pinned for uniformity, so this file needs no entry on the go:check:fma
+// exemption list and no future reader has to re-derive that proof to know the
+// file is safe.
+
 // spreadImpl computes the median of all pairwise absolute differences efficiently.
 // Time complexity: O(n log n) expected
 // Space complexity: O(n)
@@ -118,7 +132,7 @@ func spreadImpl[T Number](values []T, assumeSorted bool) (float64, error) {
 		if atTarget {
 			if kLow < kHigh {
 				// Even N: average the two central order stats
-				return 0.5*largestBelow + 0.5*smallestAtOrAbove, nil
+				return float64(0.5*largestBelow) + float64(0.5*smallestAtOrAbove), nil
 			}
 			// Odd N: pick the single middle
 			needLargest := countBelow == kLow
@@ -149,7 +163,7 @@ func spreadImpl[T Number](values []T, assumeSorted bool) (float64, error) {
 
 			if active <= 0 {
 				if kLow < kHigh {
-					return 0.5*largestBelow + 0.5*smallestAtOrAbove, nil
+					return float64(0.5*largestBelow) + float64(0.5*smallestAtOrAbove), nil
 				}
 				if countBelow >= kLow {
 					return largestBelow, nil
@@ -161,7 +175,7 @@ func spreadImpl[T Number](values []T, assumeSorted bool) (float64, error) {
 				return minActive, nil
 			}
 
-			mid := 0.5*minActive + 0.5*maxActive
+			mid := float64(0.5*minActive) + float64(0.5*maxActive)
 			if mid > minActive && mid <= maxActive {
 				pivot = mid
 			} else {
@@ -238,7 +252,7 @@ func spreadImpl[T Number](values []T, assumeSorted bool) (float64, error) {
 
 			if activeSize <= 0 {
 				if kLow < kHigh {
-					return 0.5*largestBelow + 0.5*smallestAtOrAbove, nil
+					return float64(0.5*largestBelow) + float64(0.5*smallestAtOrAbove), nil
 				}
 				if countBelow >= kLow {
 					return largestBelow, nil
@@ -247,7 +261,7 @@ func spreadImpl[T Number](values []T, assumeSorted bool) (float64, error) {
 			}
 
 			if kLow < kHigh {
-				return 0.5*minRem + 0.5*maxRem, nil
+				return float64(0.5*minRem) + float64(0.5*maxRem), nil
 			}
 			// In this code path countBelow < kLow, so minRem is always the correct result:
 			// |kLow-1-countBelow| = d-1 <= d = |countBelow-kLow| for all d > 0.

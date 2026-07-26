@@ -16,8 +16,12 @@ func NewUniform(min, max float64) *Uniform {
 }
 
 // Sample generates a single sample from the uniform distribution.
+//
+// The float64 conversion pins the intermediate rounding against FMA
+// contraction; see uniformFloat64Range in xoshiro256.go for why sampling
+// cannot afford a fused multiply-add.
 func (u *Uniform) Sample(rng *Rng) float64 {
-	return u.Min + rng.UniformFloat64()*(u.Max-u.Min)
+	return u.Min + float64(rng.UniformFloat64()*(u.Max-u.Min))
 }
 
 // Samples generates multiple samples from the uniform distribution.

@@ -6,6 +6,20 @@ import (
 	"sort"
 )
 
+// Every multiply-add in this file is written as float64(a*b) + float64(c*d)
+// rather than a*b + c*d. The conversions are not redundant. The Go
+// specification lets an implementation fuse a multiply into an add as a single
+// rounding, and gc does it on arm64, ppc64le, s390x, riscv64 and loong64,
+// never on amd64. None of the other six languages fuses, so a fused result
+// would differ in the last bit from every one of them. An explicit conversion
+// is the only way the language offers to pin the intermediate rounding.
+//
+// Here the multiplier is always a power of two (0.5 or 0.25), so the scaling is
+// exact and the fused and unfused forms agree bit for bit: none of these sites
+// was ever wrong. They are pinned for uniformity, so this file needs no entry
+// on the go:check:fma exemption list and no future reader has to re-derive that
+// proof to know the file is safe.
+
 // deriveSeed computes a deterministic seed from input values using FNV-1a hash.
 func deriveSeed[T Number](values []T) int64 {
 	const fnvOffsetBasis = uint64(0xcbf29ce484222325)
@@ -38,7 +52,7 @@ func centerImpl[T Number](values []T, assumeSorted bool) (float64, error) {
 		b := float64(values[1])
 		// Overflow-safe, order-symmetric midpoint: 0.5*a + 0.5*b (halve before
 		// summing; never overflows; operand order is irrelevant).
-		return 0.5*a + 0.5*b, nil
+		return float64(0.5*a) + float64(0.5*b), nil
 	}
 
 	// Create deterministic RNG from input values
@@ -127,7 +141,7 @@ func centerImpl[T Number](values []T, assumeSorted bool) (float64, error) {
 				maxActiveSum = math.Max(maxActiveSum, largestInRow)
 			}
 
-			pivot = 0.5*minActiveSum + 0.5*maxActiveSum
+			pivot = float64(0.5*minActiveSum) + float64(0.5*maxActiveSum)
 			if pivot <= minActiveSum || pivot > maxActiveSum {
 				pivot = maxActiveSum
 			}
@@ -170,7 +184,7 @@ func centerImpl[T Number](values []T, assumeSorted bool) (float64, error) {
 			if medianRankLow < medianRankHigh {
 				// Even total: average the two middle values. Overflow-safe: quarter each
 				// pair-sum before summing (both operands can be near the double max).
-				return 0.25*smallestAtOrAbovePivot + 0.25*largestBelowPivot, nil
+				return float64(0.25*smallestAtOrAbovePivot) + float64(0.25*largestBelowPivot), nil
 			}
 			// Odd total: return the single middle value
 			needLargest := countBelowPivot == medianRankLow
@@ -257,7 +271,7 @@ func centerImpl[T Number](values []T, assumeSorted bool) (float64, error) {
 				maxRemainingSum = math.Max(maxRemainingSum, maxInRow)
 			}
 
-			pivot = 0.5*minRemainingSum + 0.5*maxRemainingSum
+			pivot = float64(0.5*minRemainingSum) + float64(0.5*maxRemainingSum)
 			if pivot <= minRemainingSum || pivot > maxRemainingSum {
 				pivot = maxRemainingSum
 			}

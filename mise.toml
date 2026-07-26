@@ -113,11 +113,52 @@ dir = "go"
 run = "go test -race -v ./..."
 
 [tasks."go:check"]
-description = "Check Go code (format and lint)"
+description = "Check Go code (format, lint, no FMA contraction)"
 dir = "go"
 run = """
 test -z "$(go fmt ./...)" || { echo "Code is not formatted"; exit 1; }
 golangci-lint run
+mise run go:check:fma
+"""
+
+[tasks."go:check:fma"]
+description = "Assert no kernel is FMA-contracted except the documented exemptions"
+dir = "go"
+# The Go specification lets the compiler fuse a multiply and an add into a single rounding, and gc
+# does it on every FMA-capable target and never on amd64, where all of CI runs. A fused result
+# differs in the last bit from the other six languages, none of which fuse. That breaks the
+# randomization contract, under which a seeded stream must be identical in every language. Those
+# kernels pin the intermediate rounding with explicit float64() conversions; this guards the
+# conversions against being "simplified" away again.
+#
+# There is no exemption list, and that is the point: every kernel is guarded, so a new file is
+# covered the moment it is written and nobody has to remember to enrol it. Pinning costs nothing
+# on amd64, where the compiler would not have fused anyway, so there was never a reason to
+# exempt anything.
+#
+# What this cannot fix is math.Exp / math.Log / math.Pow / math.Erfc. They are polynomial
+# evaluations inside the standard library, they fuse on these targets too, and their fused
+# instructions are attributed to GOROOT rather than to this module. Anything computed through
+# them conforms at a stated tolerance and not bitwise, in any language.
+#
+# A private GOCACHE forces a cold compile. Reusing the shared cache silently replays an earlier
+# build and prints no assembly at all, which is exactly how this defect stayed hidden.
+run = """
+#!/usr/bin/env bash
+set -euo pipefail
+cache="$(mktemp -d)"
+trap 'rm -rf "$cache"' EXIT
+for arch in arm64 ppc64le s390x riscv64; do
+  fused="$(GOCACHE="$cache/$arch" GOARCH="$arch" go build -gcflags=-S ./... 2>&1 \\
+    | grep -E 'FMADD|FMSUB|FNMADD|FNMSUB' || true)"
+  if [ -n "$fused" ]; then
+    echo "ERROR: FMA contraction on $arch:" >&2
+    echo "$fused" >&2
+    echo "Pin the rounding with an explicit float64() conversion around the product." >&2
+    exit 1
+  fi
+done
+echo "no FMA contraction anywhere (arm64, ppc64le, s390x, riscv64)"
 """
 
 [tasks."go:check:fix"]
@@ -356,6 +397,7 @@ run = """
 rm -rf pragmastat.Rcheck pragmastat_*.tar.gz pragmastat/..Rcheck ..Rcheck
 rm -rf pragmastat/src/*.o pragmastat/src/*.so pragmastat/src/*.dll pragmastat/src/*.dylib pragmastat/src/*.a pragmastat/src/symbols.rds
 rm -rf pragmastat/inst/testdata pragmastat/tests/tests
+rm -f pragmastat/src/Makevars  # emitted by ./configure
 """
 
 [tasks."r:restore"]
@@ -415,12 +457,38 @@ dir = "rs/pragmastat"
 run = "cargo test --verbose"
 
 [tasks."rs:check"]
-description = "Check Rust code (clippy, fmt, cargo check)"
+description = "Check Rust code (clippy, fmt, cargo check, no fused multiply-add)"
 dir = "rs/pragmastat"
 run = """
 cargo clippy -- -D warnings
 cargo fmt -- --check
 RUSTFLAGS="-D warnings" cargo check --all-targets
+mise run rs:check:fma
+"""
+
+[tasks."rs:check:fma"]
+description = "Assert no source file calls mul_add"
+dir = "rs/pragmastat"
+# rustc never contracts on its own, so Rust can only acquire a fused multiply-add by asking for
+# one. `a.mul_add(b, c)` lowers to llvm.fma.f64 and rounds once where `a * b + c` rounds twice,
+# on every target, hardware FMA or softfloat. That is a different algorithm, not a faster
+# spelling of the same one, and none of the other six implementations has one anywhere.
+#
+# This is not a precaution. clippy's `suboptimal_flops` proposed exactly this rewrite once, it
+# was accepted, and Rust drew different random numbers from the same seed as the other six for
+# months while a 1e-12 comparison called it a pass. The lint is now allowed away in lib.rs; this
+# catches a hand-written one, which no lint setting can prevent.
+run = """
+#!/usr/bin/env bash
+set -euo pipefail
+hits="$(grep -rn 'mul_add' src/ examples/ tests/ 2>/dev/null | grep -v '^[^:]*:[0-9]*: *//' || true)"
+if [ -n "$hits" ]; then
+  echo "ERROR: mul_add in Rust source — it rounds once where the specification rounds twice:" >&2
+  echo "$hits" >&2
+  echo "Write 'a * b + c'. If a fused rounding is genuinely intended, say so where it is used." >&2
+  exit 1
+fi
+echo "no fused multiply-add in Rust source"
 """
 
 [tasks."rs:check:fix"]

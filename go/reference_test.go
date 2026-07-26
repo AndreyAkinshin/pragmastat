@@ -390,10 +390,16 @@ func TestRngUniformReference(t *testing.T) {
 			if len(testData.Output) != testData.Input.Count {
 				t.Fatalf("Output length %d != count %d", len(testData.Output), testData.Input.Count)
 			}
+			// Bitwise, not tolerant. The randomization contract is that a seeded
+			// stream is identical in every language, so "close enough" is not the
+			// property under test: a one-ULP drift here is a broken contract, and a
+			// tolerance would report it as a pass. This is what catches an FMA
+			// contraction on an arm64 runner, where the compiler is free to fuse a
+			// multiply into an add and change the last bit of a draw.
 			for i := range testData.Input.Count {
 				actual := rng.UniformFloat64()
 				expected := testData.Output[i]
-				if !floatEquals(actual, expected, 1e-15) {
+				if actual != expected {
 					t.Errorf("UniformFloat64() at index %d = %v, want %v", i, actual, expected)
 				}
 			}
@@ -480,7 +486,7 @@ func TestRngStringSeedReference(t *testing.T) {
 			for i := range testData.Input.Count {
 				actual := rng.UniformFloat64()
 				expected := testData.Output[i]
-				if !floatEquals(actual, expected, 1e-15) {
+				if actual != expected {
 					t.Errorf("UniformFloat64() at index %d = %v, want %v", i, actual, expected)
 				}
 			}
@@ -523,7 +529,7 @@ func TestRngUniformRangeReference(t *testing.T) {
 			for i := range testData.Input.Count {
 				actual := rng.UniformFloat64Range(testData.Input.Min, testData.Input.Max)
 				expected := testData.Output[i]
-				if !floatEquals(actual, expected, 1e-12) {
+				if actual != expected {
 					t.Errorf("UniformFloat64Range(%v, %v) at index %d = %v, want %v",
 						testData.Input.Min, testData.Input.Max, i, actual, expected)
 				}
@@ -822,7 +828,7 @@ func TestUniformDistributionReference(t *testing.T) {
 			for i := range testData.Input.Count {
 				actual := dist.Sample(rng)
 				expected := testData.Output[i]
-				if !floatEquals(actual, expected, 1e-12) {
+				if actual != expected {
 					t.Errorf("Uniform sample at index %d = %v, want %v", i, actual, expected)
 				}
 			}

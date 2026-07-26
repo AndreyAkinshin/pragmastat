@@ -10,6 +10,27 @@ const (
 	maxAcceptableBinomN = 62
 )
 
+// Every product in this file that feeds an addition or a subtraction is wrapped
+// in an explicit float64() conversion, as is every named power such a product is
+// built from. The conversions are not redundant. The Go specification lets an
+// implementation fuse a multiply and an add into a single rounding, and gc does
+// it on arm64, ppc64le, s390x, riscv64 and loong64, never on amd64. None of the
+// other six languages fuse, so a fused result here would differ in the last bit
+// from every one of them. An explicit conversion is the only way the language
+// offers to pin an intermediate rounding.
+//
+// One bit matters more here than it usually does. pairwiseMargin returns an
+// integer that selects an order statistic, so a single-ULP difference in the
+// Edgeworth CDF or in Stirling's log-gamma can move the returned index and shift
+// the reported bounds by far more than the 1e-9 conformance tolerance. Measured
+// under qemu-aarch64, the unpinned code returned a different integer on 8268 of
+// 79797 (n, m) pairs at misrate == minAchievableMisrateTwoSample(n, m).
+//
+// A few of the wrapped products only scale by a power of two, where halving and
+// doubling are exact and fusion is provably bit-exact. They are wrapped anyway:
+// an exemption every future reader has to re-derive is worth less than a
+// conversion.
+
 // pairwiseMargin determines how many extreme pairwise differences to exclude
 // when constructing bounds based on the distribution of dominance statistics.
 // Uses exact calculation for small samples (n+m <= 400) and Edgeworth
@@ -97,7 +118,7 @@ func pairwiseMarginExactRaw(n, m int, p float64) int {
 		// Compute pmf[u] using Loeffler recurrence
 		sum := 0.0
 		for i := range u {
-			sum += pmf[i] * sigma[u-i]
+			sum += float64(pmf[i] * sigma[u-i])
 		}
 		sum /= float64(u)
 		pmf = append(pmf, sum)
@@ -144,7 +165,9 @@ func pairwiseMarginApproxRaw(n, m int, misrate float64) (int, error) {
 // edgeworthCdf computes the CDF using Edgeworth expansion.
 func edgeworthCdf(n, m int, u int64) float64 {
 	nm := float64(n) * float64(m)
-	mu := nm / 2.0
+	// gc strength-reduces /2.0 to *0.5 and then fuses the halving into the
+	// subtraction below; the conversion keeps the two roundings apart.
+	mu := float64(nm / 2.0)
 	su := math.Sqrt(nm * float64(n+m+1) / 12.0)
 	// -0.5 continuity correction: computing P(U ≥ u) for a right-tail discrete CDF
 	z := (float64(u) - mu - 0.5) / su
@@ -154,34 +177,34 @@ func edgeworthCdf(n, m int, u int64) float64 {
 	// Pre-compute powers of n and m as float64 (avoids int64 overflow for large n, m)
 	nf := float64(n)
 	mf := float64(m)
-	n2 := nf * nf
-	n3 := n2 * nf
-	n4 := n2 * n2
-	m2 := mf * mf
-	m3 := m2 * mf
-	m4 := m2 * m2
+	n2 := float64(nf * nf)
+	n3 := float64(n2 * nf)
+	n4 := float64(n2 * n2)
+	m2 := float64(mf * mf)
+	m3 := float64(m2 * mf)
+	m4 := float64(m2 * m2)
 
 	// Compute moments using float64 arithmetic
 	mu2 := (nf * mf * (nf + mf + 1)) / 12.0
 	mu4 := (nf * mf * (nf + mf + 1) *
-		(5*mf*nf*(mf+nf) -
-			2*(m2+n2) +
-			3*mf*nf -
-			2*(nf+mf))) / 240.0
+		(float64(5*mf*nf*(mf+nf)) -
+			float64(2*(m2+n2)) +
+			float64(3*mf*nf) -
+			float64(2*(nf+mf)))) / 240.0
 
 	mu6 := (nf * mf * (nf + mf + 1) *
-		(35*m2*n2*(m2+n2) +
-			70*m3*n3 -
-			42*mf*nf*(m3+n3) -
-			14*m2*n2*(nf+mf) +
-			16*(n4+m4) -
-			52*nf*mf*(n2+m2) -
-			43*n2*m2 +
-			32*(m3+n3) +
-			14*mf*nf*(nf+mf) +
-			8*(n2+m2) +
-			16*nf*mf -
-			8*(nf+mf))) / 4032.0
+		(float64(35*m2*n2*(m2+n2)) +
+			float64(70*m3*n3) -
+			float64(42*mf*nf*(m3+n3)) -
+			float64(14*m2*n2*(nf+mf)) +
+			float64(16*(n4+m4)) -
+			float64(52*nf*mf*(n2+m2)) -
+			float64(43*n2*m2) +
+			float64(32*(m3+n3)) +
+			float64(14*mf*nf*(nf+mf)) +
+			float64(8*(n2+m2)) +
+			float64(16*nf*mf) -
+			float64(8*(nf+mf)))) / 4032.0
 
 	// Pre-compute powers of mu2 and related terms
 	mu2_2 := mu2 * mu2
@@ -190,20 +213,20 @@ func edgeworthCdf(n, m int, u int64) float64 {
 
 	// Factorial constants: 4! = 24, 6! = 720, 8! = 40320
 	e3 := (mu4_mu2_2 - 3) / 24.0
-	e5 := (mu6/mu2_3 - 15*mu4_mu2_2 + 30) / 720.0
+	e5 := (mu6/mu2_3 - float64(15*mu4_mu2_2) + 30) / 720.0
 	e7 := 35 * (mu4_mu2_2 - 3) * (mu4_mu2_2 - 3) / 40320.0
 
 	// Pre-compute powers of z for Hermite polynomials
-	z2 := z * z
-	z3 := z2 * z
-	z5 := z3 * z2
-	z7 := z5 * z2
+	z2 := float64(z * z)
+	z3 := float64(z2 * z)
+	z5 := float64(z3 * z2)
+	z7 := float64(z5 * z2)
 
-	f3 := -phi * (z3 - 3*z)
-	f5 := -phi * (z5 - 10*z3 + 15*z)
-	f7 := -phi * (z7 - 21*z5 + 105*z3 - 105*z)
+	f3 := -phi * (z3 - float64(3*z))
+	f5 := -phi * (z5 - float64(10*z3) + float64(15*z))
+	f7 := -phi * (z7 - float64(21*z5) + float64(105*z3) - float64(105*z))
 
-	edgeworth := Phi + e3*f3 + e5*f5 + e7*f7
+	edgeworth := Phi + float64(e3*f3) + float64(e5*f5) + float64(e7*f7)
 	return math.Max(0, math.Min(edgeworth, 1))
 }
 
@@ -262,7 +285,7 @@ func logFactorial(n float64) float64 {
 
 // stirlingApproxLog computes Stirling's approximation with Bernoulli correction.
 func stirlingApproxLog(x float64) float64 {
-	result := x*math.Log(x) - x + math.Log(2*math.Pi/x)/2
+	result := float64(x*math.Log(x)) - x + float64(math.Log(2*math.Pi/x)/2)
 
 	// Add Bernoulli correction series
 	// Bernoulli numbers: B2 = 1/6, B4 = -1/30, B6 = 1/42, B8 = -1/30, B10 = 5/66
