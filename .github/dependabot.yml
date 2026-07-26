@@ -69,6 +69,12 @@ updates:
       - dependency-name: "katex"
         update-types:
           ["version-update:semver-minor", "version-update:semver-major"]
+      # @types/node describes the runtime, so its major must track the Node
+      # version the project actually runs: mise pins node 22 and ts/package.json
+      # declares engines >=22. Newer types would type-check calls that the
+      # pinned runtime does not have. Bump this together with the runtime.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: pip
     directories:
