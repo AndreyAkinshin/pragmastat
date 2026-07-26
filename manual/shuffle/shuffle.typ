@@ -8,7 +8,7 @@ Uniformly random permutation of sample $vx$ using generator $r$.
 
 #v(0.3em)
 #list(marker: none, tight: true,
-  [*Algorithm* — Fisher-Yates (Knuth shuffle), see #link(<sec-alg-shuffle>)[Shuffle]],
+  [*Algorithm* — Fisher--Yates (Knuth shuffle), see #link(<sec-alg-shuffle>)[Shuffle]],
   [*Complexity* — $O(n)$ time, $O(n)$ space (returns new array)],
   [*Output* — new array (does not modify input)],
 )

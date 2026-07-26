@@ -197,7 +197,7 @@ Names in this toolkit encode operational knowledge rather than historical proven
   [Gaussian / Normal], [$Additive$], [Formation: sum of independent factors (CLT)],
   [Log-normal / Galton], [$Multiplic$], [Formation: product of independent factors],
   [Pareto], [$Power$], [Behavior: power-law relationship],
-  [Hodges-Lehmann], [$Center$], [Function: measures central tendency],
+  [Hodges--Lehmann], [$Center$], [Function: measures central tendency],
   [Shamos], [$Spread$], [Function: measures variability],
   [(none)], [sparity], [Assumption: property of having positive spread],
 )

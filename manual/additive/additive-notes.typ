@@ -3,9 +3,9 @@
 The $Additive$ ('Normal') distribution has two parameters: the mean and the standard deviation,
 written as $Additive(pmean, pstddev)$.
 
-==== Sampling (Box-Muller Transform)
+==== Sampling (Box--Muller Transform)
 
-The toolkit samples $Additive$ values using the Box-Muller transform (see @boxmuller1958),
+The toolkit samples $Additive$ values using the Box--Muller transform (see @boxmuller1958),
 which converts two independent $UniformFloat$ draws into standard normal values.
 Given $U_1, U_2 in [0, 1)$:
 

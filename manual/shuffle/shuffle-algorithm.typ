@@ -1,6 +1,6 @@
 #import "/manual/definitions.typ": *
 
-The $Shuffle$ function uses the Fisher-Yates algorithm (see @fisher1938, @knuth1997),
+The $Shuffle$ function uses the Fisher--Yates algorithm (see @fisher1938, @knuth1997),
   also known as the Knuth shuffle,
   with the #link(<sec-rng>)[Rng] generator for random decisions:
 

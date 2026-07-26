@@ -31,7 +31,7 @@ Robust bounds on #link(<sec-shift>)[$Shift(vx, vy)$] with specified coverage.
 *Notes*
 
 #list(marker: none, tight: true,
-  [*Also known as* — distribution-free confidence interval for Hodges-Lehmann],
+  [*Also known as* — distribution-free confidence interval for Hodges--Lehmann],
   [*Note* — assumes #link(<sec-weak-shape>)[weak shape] and weak continuity (ties from measurement resolution are tolerated but may yield conservative bounds)],
 )
 

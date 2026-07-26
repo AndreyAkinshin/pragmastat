@@ -10,7 +10,7 @@ The challenge lies in determining which order statistics produce bounds
   that contain the true center with probability $1 - misrate$.
 
 The margin function is the one-sample analog of $PairwiseMargin$.
-While $PairwiseMargin$ uses the Mann-Whitney distribution for two-sample comparisons,
+While $PairwiseMargin$ uses the Mann--Whitney distribution for two-sample comparisons,
   $SignedRankMargin$ uses the Wilcoxon signed-rank distribution for one-sample inference.
 Under the weak symmetry assumption, the signed-rank statistic has a known distribution
   that enables exact computation of bounds coverage.

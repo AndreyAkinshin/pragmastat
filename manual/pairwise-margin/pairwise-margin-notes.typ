@@ -1,6 +1,6 @@
 #import "/manual/definitions.typ": *
 
-The Mann-Whitney $U$ test (also known as the Wilcoxon rank-sum test)
+The Mann--Whitney $U$ test (also known as the Wilcoxon rank-sum test)
   ranks among the most widely used non-parametric statistical tests,
   testing whether two independent samples come from the same distribution.
 Under $Additive$ (Normal) conditions, it achieves nearly the same precision as the Student's $t$-test,
@@ -8,7 +8,7 @@ Under $Additive$ (Normal) conditions, it achieves nearly the same precision as t
 
 The test operates by comparing all pairs of measurements between the two samples.
 Given samples $vx = (x_1, ..., x_n)$ and $vy = (y_1, ..., y_m)$,
-  the Mann-Whitney $U$ statistic counts how many pairs satisfy $x_i > y_j$:
+  the Mann--Whitney $U$ statistic counts how many pairs satisfy $x_i > y_j$:
 
 $ U = sum_(i=1)^n sum_(j=1)^m bb(1)(x_i > y_j) $
 
@@ -45,7 +45,7 @@ This inversion transforms hypothesis testing into bounds estimation.
 The mathematical foundation remains the same.
 The distribution of pairwise comparisons under random sampling determines
   which order statistics of pairwise differences form reliable bounds.
-The Mann-Whitney $U$ statistic measures pairwise comparisons ($x_i > y_j$).
+The Mann--Whitney $U$ statistic measures pairwise comparisons ($x_i > y_j$).
 The $Shift$ estimator uses pairwise differences ($x_i - y_j$).
 These quantities are mathematically related:
   a pairwise difference $x_i - y_j$ is positive exactly when $x_i > y_j$.
@@ -96,7 +96,7 @@ Bounds provide actionable answers:
   they tell practitioners which values are plausible,
   enabling informed decisions without arbitrary significance thresholds.
 
-Traditional Mann-Whitney implementations apply tie correction when samples contain repeated values.
+Traditional Mann--Whitney implementations apply tie correction when samples contain repeated values.
 This correction modifies variance calculations to account for tied observations,
   changing $p$-values and confidence intervals in ways that depend on measurement precision.
 The toolkit deliberately omits tie correction.

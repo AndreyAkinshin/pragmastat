@@ -147,7 +147,7 @@ This simple inversion provides several advantages:
 The terminology shift from "confidence level" to "misrate"
   parallels other clarifying renames in this toolkit.
 Just as $Additive$ better describes the distribution's formation than 'Normal',
-  and #link(<sec-center>)[$Center$] better describes the estimator's purpose than 'Hodges-Lehmann',
+  and #link(<sec-center>)[$Center$] better describes the estimator's purpose than 'Hodges--Lehmann',
   $misrate$ better describes the quantity practitioners actually reason about:
   the probability of error.
 

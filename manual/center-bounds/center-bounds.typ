@@ -30,7 +30,7 @@ Robust bounds on #link(<sec-center>)[$Center(vx)$] with specified coverage.
 *Notes*
 
 #list(marker: none, tight: true,
-  [*Also known as* — Wilcoxon signed-rank confidence interval for Hodges-Lehmann pseudomedian],
+  [*Also known as* — Wilcoxon signed-rank confidence interval for Hodges--Lehmann pseudomedian],
   [*Note* — assumes #link(<sec-weak-symmetry>)[weak symmetry] and weak continuity; exact for $n <= 63$, Edgeworth approximation for $n > 63$],
 )
 

@@ -25,7 +25,7 @@ Robust measure of location (central tendency).
 *Notes*
 
 #list(marker: none, tight: true,
-  [*Also known as* — Hodges-Lehmann estimator, pseudomedian],
+  [*Also known as* — Hodges--Lehmann estimator, pseudomedian],
   [*Complexity* — $O(n log n)$],
 )
 

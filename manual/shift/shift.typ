@@ -26,7 +26,7 @@ Robust measure of location difference between two samples.
 *Notes*
 
 #list(marker: none, tight: true,
-  [*Also known as* — Hodges-Lehmann estimator for two samples],
+  [*Also known as* — Hodges--Lehmann estimator for two samples],
   [*Complexity* — $O((m+n) log L)$],
 )
 

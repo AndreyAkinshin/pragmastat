@@ -9,7 +9,7 @@ $ Additive(pmean, pstddev) $
 
 #image("/img/distribution-additive_light.png")
 
-- *Formation:* the sum of many variables $X_1 + X_2 + ... + X_n$ under mild CLT (Central Limit Theorem) conditions (e.g., Lindeberg-Feller).
+- *Formation:* the sum of many variables $X_1 + X_2 + ... + X_n$ under mild CLT (Central Limit Theorem) conditions (e.g., Lindeberg--Feller).
 - *Origin:* historically called 'Normal' or 'Gaussian' distribution after Carl Friedrich Gauss and others.
 - *Rename Motivation:* renamed to $Additive$ to reflect its formation mechanism through addition.
 - *Properties:* symmetric, bell-shaped, characterized by central limit theorem convergence.

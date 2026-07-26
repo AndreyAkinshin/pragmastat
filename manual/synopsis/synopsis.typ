@@ -90,9 +90,9 @@ The table below maps each toolkit function to the underlying algorithm and its c
   table.hline(),
   [$UniformFloat$], [53-bit extraction from xoshiro256++ output], [$O(1)$ per draw],
   [$UniformInt$], [Modulo reduction of raw 64-bit output], [$O(1)$ per draw],
-  [$Sample$], [Fan-Muller-Rezucha selection sampling], [$O(n)$],
+  [$Sample$], [Fan--Muller--Rezucha selection sampling], [$O(n)$],
   [$Resample$], [Uniform integer sampling with replacement], [$O(k)$],
-  [$Shuffle$], [Fisher-Yates (Knuth shuffle)], [$O(n)$],
+  [$Shuffle$], [Fisher--Yates (Knuth shuffle)], [$O(n)$],
   table.hline(),
 )
 

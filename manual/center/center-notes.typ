@@ -14,7 +14,7 @@ $ Median(vx) = cases(
   (x_((n\/2)) + x_((n\/2+1))) / 2 & "if" n "is even"
 ) $
 
-*Center* (Hodges-Lehmann estimator):
+*Center* (Hodges--Lehmann estimator):
 $ Center(vx) = attach(Median, b: 1 <= i <= j <= n) ((x_i + x_j) / 2) $
 
 ==== Breakdown
