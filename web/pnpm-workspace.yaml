@@ -1,5 +1,7 @@
 # pnpm 11 moved build-script settings out of package.json's "pnpm" field.
-# Allow the native postinstall builds these packages need.
+# Allow the native postinstall builds these packages need. sharp is no longer a
+# direct dependency, but astro still pulls it in transitively for its image
+# service, so the entry stays.
 allowBuilds:
   esbuild: true
   sharp: true

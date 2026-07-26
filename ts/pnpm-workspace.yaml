@@ -1,0 +1,6 @@
+# pnpm 11 moved build-script settings out of package.json's "pnpm" field.
+# jest 30 pulls in unrs-resolver, a native resolver with a postinstall step.
+# Declined: the suite passes without the compiled binary, so there is no reason
+# to run third-party install scripts for it.
+allowBuilds:
+  unrs-resolver: false
