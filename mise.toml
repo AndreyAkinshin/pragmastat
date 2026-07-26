@@ -9,7 +9,7 @@
 # both sides in step when bumping.
 [tools]
 dotnet = "10.0"        # sync: actions/setup-dotnet in the workflows
-go = "1.26"
+go = "1.26"            # sync: the go directive in go/go.mod
 golangci-lint = "2.12.2"
 java = "temurin-21"    # sync: actions/setup-java (Gradle 9 daemon JDK; jvmToolchain still targets 11)
 node = "22"            # sync: actions/setup-node in ci.yml (publish-npm pins 24 for npm OIDC)
