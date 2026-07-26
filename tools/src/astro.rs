@@ -318,7 +318,7 @@ fn convert_typst_event_to_mdx(
                 if let Some(url) = xref_map.resolve(label) {
                     let _ = write!(output, "[{converted_text}]({url})");
                 } else {
-                    eprintln!("Warning: unresolved xref: {label}");
+                    // Recorded by resolve(); the caller fails the run after generation
                     output.push_str(&converted_text);
                 }
             } else {

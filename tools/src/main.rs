@@ -164,6 +164,23 @@ const PAGES: &[Page] = &[
     Page { slug: "methodology", file: "methodology/methodology", title: "Methodology", order: 40, group: Some("Appendix"), heading_offset: 0 },
 ];
 
+/// Fail the run if any internal link had no entry in the cross-reference map
+///
+/// An unmapped label silently degrades its link to plain text in the generated
+/// MDX, so a miss must break the build rather than ship a broken page.
+fn ensure_xrefs_resolved(xref_map: &xref::XRefMap) -> Result<()> {
+    let unresolved = xref_map.unresolved();
+    if !unresolved.is_empty() {
+        anyhow::bail!(
+            "unresolved cross-reference(s): {}\n\
+             Each one lost its link in the generated MDX. \
+             Add the label to XRefMap in tools/src/xref.rs.",
+            unresolved.join(", ")
+        );
+    }
+    Ok(())
+}
+
 fn build_web(base_path: &Path) -> Result<()> {
     println!("Building web output...");
 
@@ -221,6 +238,8 @@ fn build_web(base_path: &Path) -> Result<()> {
         std::fs::write(web_content_path.join(&output_file), mdx_content)?;
         println!("  Generated: web/src/content/manual/{output_file}");
     }
+
+    ensure_xrefs_resolved(&xref_map)?;
 
     // Generate bibliography page (only includes actually used references)
     let bibliography_mdx =

@@ -1,10 +1,15 @@
-use std::collections::HashMap;
+use std::cell::RefCell;
+use std::collections::{BTreeSet, HashMap};
 
 /// Cross-reference mapping for internal links
 ///
 /// Maps Typst label names (e.g., "sec-alg-center") to web URLs (e.g., "/center#algorithm")
+///
+/// Lookups that miss are recorded so that generation can fail on them instead of
+/// silently degrading the link to plain text.
 pub struct XRefMap {
     mappings: HashMap<String, String>,
+    unresolved: RefCell<BTreeSet<String>>,
 }
 
 impl XRefMap {
@@ -141,15 +146,29 @@ impl XRefMap {
             "/center-bounds#on-misrate-efficiency-of-medianbounds".into(),
         );
 
-        Self { mappings }
+        Self {
+            mappings,
+            unresolved: RefCell::new(BTreeSet::new()),
+        }
     }
 
     /// Resolve an internal label to its web URL
     ///
-    /// Returns `None` if the label is not found
+    /// Returns `None` if the label is not found, recording the label so that
+    /// [`XRefMap::unresolved`] can report it afterwards.
     #[must_use]
     pub fn resolve(&self, label: &str) -> Option<&str> {
-        self.mappings.get(label).map(String::as_str)
+        let resolved = self.mappings.get(label).map(String::as_str);
+        if resolved.is_none() {
+            self.unresolved.borrow_mut().insert(label.to_owned());
+        }
+        resolved
+    }
+
+    /// Labels that [`XRefMap::resolve`] failed to look up, sorted and deduplicated
+    #[must_use]
+    pub fn unresolved(&self) -> Vec<String> {
+        self.unresolved.borrow().iter().cloned().collect()
     }
 }
 
@@ -189,5 +208,20 @@ mod tests {
     fn resolve_unknown_label() {
         let xref = XRefMap::new();
         assert_eq!(xref.resolve("unknown-label"), None);
+    }
+
+    #[test]
+    fn unresolved_starts_empty_and_records_misses() {
+        let xref = XRefMap::new();
+        assert!(xref.unresolved().is_empty());
+
+        assert_eq!(xref.resolve("sec-assumptions"), Some("/assumptions"));
+        assert!(xref.unresolved().is_empty());
+
+        assert_eq!(xref.resolve("sec-nope"), None);
+        assert_eq!(xref.resolve("sec-nope"), None);
+        assert_eq!(xref.resolve("sec-also-nope"), None);
+
+        assert_eq!(xref.unresolved(), vec!["sec-also-nope", "sec-nope"]);
     }
 }
