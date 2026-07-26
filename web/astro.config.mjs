@@ -4,6 +4,7 @@ import mdx from '@astrojs/mdx';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import rehypeThemedImages from './src/plugins/rehype-themed-images.js';
+import katexWoff2Only from './src/plugins/vite-katex-woff2-only.js';
 import fs from 'fs';
 
 // Load KaTeX macros from generated file
@@ -37,6 +38,7 @@ export default defineConfig({
     },
   },
   vite: {
+    plugins: [katexWoff2Only()],
     server: {
       // Local dev preview over mDNS: allow any *.local host.
       allowedHosts: ['.local'],
