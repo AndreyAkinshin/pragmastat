@@ -828,10 +828,7 @@ fn find_project_root(start: &Path) -> Option<std::path::PathBuf> {
         if path.join("CITATION.cff").exists() {
             return Some(path.to_path_buf());
         }
-        match path.parent() {
-            Some(parent) => path = parent,
-            None => return None,
-        }
+        path = path.parent()?;
     }
 }
 

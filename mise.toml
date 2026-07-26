@@ -10,7 +10,7 @@
 [tools]
 dotnet = "10.0"        # sync: actions/setup-dotnet in the workflows
 go = "1.26"
-golangci-lint = "latest"
+golangci-lint = "2.12.2"
 java = "temurin-21"    # sync: actions/setup-java (Gradle 9 daemon JDK; jvmToolchain still targets 11)
 node = "22"            # sync: actions/setup-node in ci.yml (publish-npm pins 24 for npm OIDC)
 # npm backend: aqua's release-asset matching is unreliable for pnpm 11.x
@@ -19,8 +19,11 @@ python = "3.12"        # sync: actions/setup-python in the workflows
 # Pinned, not "latest": ruff's lint set is select=ALL, so a new ruff release can
 # enable a new rule and turn CI red with zero code changes. Bump deliberately.
 ruff = "0.16.0"
-rust = "stable"
-typst = "latest"
+rust = "1.97.1"      # sync: dtolnay/rust-toolchain in ci.yml
+# Pinned in lockstep with tools/Cargo.toml's typst-syntax: the PDF is rendered by
+# this binary while the MDX generator parses the same sources with that crate.
+# A drifting "latest" would silently outpace the parser. Bump both together.
+typst = "0.15.1"
 
 # ==========================================================================
 # C# Tasks (cs/)
