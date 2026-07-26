@@ -125,8 +125,8 @@ The table below shows $misrate_min$ for small sample sizes:
   table.hline(),
 )
 
-For meaningful bounds construction, choose $misrate > misrate_min$.
-With $n >= 10$, standard choices like $misrate = 10^(-3)$ become feasible.
-With $n >= 20$, even $misrate = 10^(-6)$ is achievable.
+For meaningful bounds construction, choose $misrate >= misrate_min$.
+With $n >= 11$, standard choices like $misrate = 10^(-3)$ become feasible.
+With $n >= 21$, even $misrate = 10^(-6)$ is achievable.
 
 #source-include("cs/Pragmastat/Functions/SignedRankMargin.cs", "cs")

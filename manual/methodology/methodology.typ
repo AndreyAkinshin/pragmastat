@@ -129,7 +129,8 @@ This is deliberate: a tradeoff between robustness and precision.
 
 #v(0.5em)
 The 29% breakdown point survives approximately one corrupted measurement in four
-while maintaining roughly 95% asymptotic efficiency under ideal Gaussian conditions.
+while maintaining high asymptotic efficiency under ideal Gaussian conditions
+  (about 95% for $Center$ and 86% for $Spread$).
 This represents the practical optimum: enough robustness for realistic contamination levels,
 enough efficiency to compete with traditional methods when data is clean.
 
@@ -464,7 +465,7 @@ For one-sample bounds, minimum achievable misrate $= 2^(1-n)$:
   [5], [0.0625], [93.75%], [cannot achieve 95%],
   [7], [0.0156], [98.4%], [cannot achieve 99%],
   [10], [0.00195], [99.8%], [most practical misrates achievable],
-  [20], [$1.9 times 10^(-6)$], [99.9998%], [$misrate = 10^(-6)$ is achievable],
+  [21], [$9.5 times 10^(-7)$], [99.9999%], [$misrate = 10^(-6)$ is achievable],
   table.hline(),
 )
 
@@ -473,7 +474,7 @@ For one-sample bounds, minimum achievable misrate $= 2^(1-n)$:
 
 #list(marker: none, tight: true,
   [$n < 11$: Cannot achieve 99.9% confidence ($misrate = 10^(-3)$)],
-  [$n >= 20$: $misrate = 10^(-6)$ is achievable],
+  [$n >= 21$: $misrate = 10^(-6)$ is achievable],
 )
 
 #v(0.5em)

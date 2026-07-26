@@ -11,7 +11,7 @@ Exclusion count for dominance-based bounds.
 
 #list(marker: none, tight: true,
   [$n, m >= 1$ — sample sizes],
-  [$misrate > 2 / binom(n+m, n)$ — error rate (minimum achievable)],
+  [$misrate >= 2 / binom(n+m, n)$ — error rate (minimum achievable)],
 )
 
 #v(0.3em)

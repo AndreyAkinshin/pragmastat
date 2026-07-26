@@ -250,7 +250,7 @@ The table below shows $misrate_min$ for small sample sizes:
   table.hline(),
 )
 
-For meaningful bounds construction, choose $misrate > misrate_min$.
+For meaningful bounds construction, choose $misrate >= misrate_min$.
 This ensures the margin function excludes at least some extreme pairwise differences,
   producing bounds narrower than the full range.
 When working with small samples, verify that the desired misrate exceeds $misrate_min$
