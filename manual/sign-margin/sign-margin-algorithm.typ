@@ -9,8 +9,11 @@ Given $n$ pairs and a desired $misrate$, the algorithm finds
 
 *Binomial CDF computation*
 
-Under the symmetry assumption, the number of positive signs among $n$ disjoint-pair differences
-  follows $"Binomial"(n, 1\/2)$.
+Each disjoint-pair value exceeds the true parameter with probability $1\/2$ by construction,
+  since that parameter is the median of the distribution those values are drawn from
+  (for #link(<sec-spread-bounds>)[$SpreadBounds$], the absolute differences $abs(X_1 - X_2)$).
+The count of values above the parameter therefore follows $"Binomial"(n, 1\/2)$;
+  no symmetry assumption is needed.
 The CDF is computed exactly:
 
 $ Pr(W <= k) = sum_(i=0)^k binom(n, i) 2^(-n) $
@@ -23,7 +26,7 @@ The algorithm evaluates this sum incrementally,
 Because the Binomial CDF is a step function, the exact $misrate$ typically falls between
   two adjacent grid points $k$ and $k + 1$.
 The algorithm identifies these adjacent values:
-$k_"lo"$ is the largest integer where $Pr(W <= k_"lo") < misrate / 2$
+$k_"lo"$ is the largest integer where $Pr(W <= k_"lo") <= misrate / 2$
 and $k_"hi" = k_"lo" + 1$.
 
 *Randomized cutoff*
@@ -31,7 +34,7 @@ and $k_"hi" = k_"lo" + 1$.
 To match the requested $misrate$ exactly rather than conservatively,
   the algorithm interpolates between the two grid points.
 It computes a probability $p$ such that
-  using margin $2 k_"lo"$ with probability $p$ and margin $2 k_"hi"$ with probability $1 - p$
+  using margin $2 k_"hi"$ with probability $p$ and margin $2 k_"lo"$ with probability $1 - p$
   yields an expected coverage of exactly $1 - misrate$.
 A uniform random draw determines which margin to return.
 
