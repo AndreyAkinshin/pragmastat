@@ -10,16 +10,11 @@
   "dependencies": {
     "@astrojs/mdx": "^4.0.0",
     "astro": "^5.0.0",
-    "katex": "^0.16.27",
+    "katex": "^0.16.47",
     "unist-util-visit": "^5.1.0"
   },
   "devDependencies": {
     "rehype-katex": "^7.0.0",
     "remark-math": "^6.0.0"
-  },
-  "pnpm": {
-    "overrides": {
-      "katex": "^0.16.27"
-    }
   }
 }
