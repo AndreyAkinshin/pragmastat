@@ -951,6 +951,20 @@ fn parse_node(node: &SyntaxNode, events: &mut Vec<TypstEvent>, list_depth: u8) {
             // Handle forced line breaks (\ at end of line in Typst)
             events.push(TypstEvent::Linebreak);
         }
+        SyntaxKind::Shorthand => {
+            // Markup shorthands (--- em dash, -- en dash, ... ellipsis, ~ nbsp).
+            // These are leaf nodes, so the catch-all arm would drop them silently.
+            if let Some(shorthand) = node.cast::<ast::Shorthand>() {
+                events.push(TypstEvent::Text(shorthand.get().to_string()));
+            }
+        }
+        SyntaxKind::SmartQuote => {
+            if let Some(quote) = node.cast::<ast::SmartQuote>() {
+                events.push(TypstEvent::Text(
+                    if quote.double() { "\"" } else { "'" }.to_string(),
+                ));
+            }
+        }
         SyntaxKind::Raw => {
             if let Some(raw) = node.cast::<ast::Raw>() {
                 // to_untyped().leaf_text() only returns the node's direct text, not its children
@@ -1263,6 +1277,17 @@ fn extract_text_recursive_inner(node: &SyntaxNode, text: &mut String, preserve_m
                 text.push_str(escaped);
             }
         }
+        SyntaxKind::Shorthand => {
+            // Same leaf-node problem as in parse_node; headings and alt text go through here
+            if let Some(shorthand) = node.cast::<ast::Shorthand>() {
+                text.push(shorthand.get());
+            }
+        }
+        SyntaxKind::SmartQuote => {
+            if let Some(quote) = node.cast::<ast::SmartQuote>() {
+                text.push(if quote.double() { '"' } else { '\'' });
+            }
+        }
         SyntaxKind::Equation if preserve_math => {
             // Preserve inline math as $...$ so the MDX converter can process it
             // Use equation body to avoid including the $ delimiters twice
@@ -1382,6 +1407,20 @@ mod tests {
     use super::*;
     use crate::typst_eval::TypstValue;
     use std::collections::HashMap;
+
+    #[test]
+    fn markup_shorthands_and_quotes_survive() {
+        let events = parse_typst_content("A --- B and the \"quoted\" word");
+        let text: String = events
+            .iter()
+            .filter_map(|e| match e {
+                TypstEvent::Text(t) => Some(t.as_str()),
+                _ => None,
+            })
+            .collect();
+        assert!(text.contains('\u{2014}'), "em dash lost: {text:?}");
+        assert!(text.contains("\"quoted\""), "quotes lost: {text:?}");
+    }
 
     #[test]
     fn preprocess_let_binding() {
