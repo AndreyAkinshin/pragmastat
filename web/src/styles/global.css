@@ -88,6 +88,13 @@ a:active {
   font-family: var(--font-mono);
   font-size: 0.875rem;
   line-height: 1.5;
+
+  /* Wrap instead of running off the page. The algorithm sections embed real source files whose
+     lines are wider than a narrow viewport, and a horizontal scrollbar hides the tail of a line
+     behind an interaction; a wrapped line is still readable. overflow-x on the parent stays as
+     the fallback for a single token longer than the line. */
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
 }
 
 /* Code block copy button */
