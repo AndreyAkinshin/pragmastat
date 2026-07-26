@@ -1,5 +1,5 @@
 ---
-import { ViewTransitions } from 'astro:transitions';
+import { ClientRouter } from 'astro:transitions';
 // Bundled locally so the stylesheet version cannot drift from the katex that
 // rehype-katex uses to render the markup, and so the site needs no CDN at runtime
 import 'katex/dist/katex.min.css';
@@ -20,7 +20,7 @@ const { title, description = 'Pragmatic Statistical Toolkit' } = Astro.props;
     <meta name="description" content={description} />
     <title>{title} | Pragmastat</title>
     <link rel="icon" type="image/svg+xml" href="/img/logo.svg" />
-    <ViewTransitions />
+    <ClientRouter />
 
     <!-- Prevent flash of wrong theme / sidebar state / background color -->
     <script is:inline>

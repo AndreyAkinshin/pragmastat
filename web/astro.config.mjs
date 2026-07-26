@@ -1,4 +1,5 @@
 import { defineConfig } from 'astro/config';
+import { unified } from '@astrojs/markdown-remark';
 import mdx from '@astrojs/mdx';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
@@ -17,15 +18,17 @@ try {
 export default defineConfig({
   integrations: [mdx()],
   markdown: {
-    remarkPlugins: [remarkMath],
-    rehypePlugins: [
-      [rehypeKatex, {
-        macros: katexMacros,
-        strict: false,
-        // trust: false is the default - only trust macros we explicitly define
-      }],
-      rehypeThemedImages,
-    ],
+    processor: unified({
+      remarkPlugins: [remarkMath],
+      rehypePlugins: [
+        [rehypeKatex, {
+          macros: katexMacros,
+          strict: false,
+          // trust: false is the default - only trust macros we explicitly define
+        }],
+        rehypeThemedImages,
+      ],
+    }),
     shikiConfig: {
       themes: {
         light: 'kanagawa-lotus',
