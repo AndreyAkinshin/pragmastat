@@ -52,7 +52,8 @@ The $Center$ estimator achieves a $29%$ breakdown point,
 ==== Drift
 
 Drift measures estimator precision by quantifying how much estimates scatter across repeated samples.
-It is based on the $Spread$ of estimates and therefore has a breakdown point of approximately $29%$.
+It is based on the $Spread$ of estimates, so its empirical evaluation across repeated samples
+  inherits the $29%$ breakdown point of $Spread$.
 
 Drift is useful for comparing the precision of several estimators.
 To simplify the comparison, one of the estimators can be chosen as a baseline.

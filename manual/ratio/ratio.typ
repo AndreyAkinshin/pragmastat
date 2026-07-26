@@ -18,7 +18,7 @@ Robust measure of scale ratio between two samples — the multiplicative dual of
 *Output*
 
 #list(marker: none, tight: true,
-  [*Value* — estimation of the geometric median of pairwise ratios $x_i / y_j$ (via log-space aggregation)],
+  [*Value* — estimation of the median of pairwise log-ratios $log(x_i \/ y_j)$, exponentiated],
   [*Unit* — dimensionless],
 )
 
@@ -49,7 +49,7 @@ Robust measure of scale ratio between two samples — the multiplicative dual of
 
 $Ratio$ is the multiplicative analog of #link(<sec-shift>)[$Shift$].
 While #link(<sec-shift>)[$Shift$] computes the median of pairwise differences $x_i - y_j$,
-$Ratio$ computes the median of pairwise ratios $x_i / y_j$ via log-transformation.
+$Ratio$ computes the median of pairwise log-ratios $log(x_i \/ y_j)$ and exponentiates the result.
 This relationship is expressed formally as:
 
 $ Ratio(vx, vy) = exp(Shift(log vx, log vy)) $

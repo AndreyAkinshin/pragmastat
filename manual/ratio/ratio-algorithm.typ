@@ -14,7 +14,7 @@ Taking the logarithm of a ratio yields a difference:
 
 $ log(x_i / y_j) = log(x_i) - log(y_j) $
 
-This transforms the problem of finding the median of pairwise ratios
+This turns the multiplicative aggregation
 into finding the median of pairwise differences in log-space.
 
 The algorithm operates in three steps:
@@ -27,7 +27,8 @@ The algorithm operates in three steps:
   This leverages the $O((m + n) log L)$ complexity of the Shift algorithm.
 
 + *Exp-transform* — Apply $exp$ to convert the result back to ratio-space.
-  If the log-space median is $d$, then $exp(d) = exp(log(x_i) - log(y_j)) = x_i / y_j$ is the original ratio.
+  Since $exp(log(x_i) - log(y_j)) = x_i \/ y_j$, exponentiating the log-space median
+  returns the estimate on the original ratio scale.
 
 The total complexity is $O((m + n) log L)$ per quantile,
 where $L$ represents the convergence precision in the log-space binary search.
