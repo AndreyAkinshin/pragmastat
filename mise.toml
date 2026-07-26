@@ -279,8 +279,11 @@ find . -type f -name "*.pyo" -delete 2>/dev/null || true
 description = "Install Python package and dev dependencies"
 dir = "py"
 run = """
+# ruff deliberately absent: it is a mise-managed tool pinned in [tools], and a
+# pip copy here lands in the python prefix and wins on PATH, silently replacing
+# the pinned version with whatever pip resolves.
 python -m pip install --upgrade pip
-pip install pytest build twine ruff
+pip install pytest build twine
 pip install -e .
 """
 
