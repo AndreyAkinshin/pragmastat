@@ -765,8 +765,12 @@ run = [
     { task = "tools:test" },
     { task = "docs:clean" },
     { task = "docs:sync" },
+    # img:logo regenerates the committed img/logo.png, so the drift check below
+    # also catches it going stale against logo.svg — it silently did for months.
+    { task = "img:logo" },
     # Fail CI if regeneration left uncommitted drift in tracked generated docs
-    # (per-language READMEs, width tables). Guards against shipping stale output.
+    # (per-language READMEs, width tables, logo.png). Guards against shipping
+    # stale output.
     "git diff --exit-code || { echo 'ERROR: docs:sync produced uncommitted drift — regenerate and commit generated docs' >&2; exit 1; }",
     { task = "pdf:build" },
     { task = "web:build" },
@@ -779,6 +783,7 @@ run = [
     { task = "tools:test" },
     { task = "docs:clean" },
     { task = "docs:sync" },
+    { task = "img:logo" },
     "git diff --exit-code || { echo 'ERROR: docs:sync produced uncommitted drift — regenerate and commit generated docs' >&2; exit 1; }",
     { task = "pdf:build:release" },
     { task = "web:build:release" },
