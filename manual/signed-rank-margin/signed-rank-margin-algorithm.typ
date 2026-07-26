@@ -125,7 +125,9 @@ The table below shows $misrate_min$ for small sample sizes:
   table.hline(),
 )
 
-For meaningful bounds construction, choose $misrate >= misrate_min$.
+The accepted domain is $misrate >= misrate_min$, but equality yields a margin of $0$,
+  leaving the bounds at the full range of pairwise averages.
+For informative bounds, choose $misrate > misrate_min$.
 With $n >= 11$, standard choices like $misrate = 10^(-3)$ become feasible.
 With $n >= 21$, even $misrate = 10^(-6)$ is achievable.
 

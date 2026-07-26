@@ -250,9 +250,10 @@ The table below shows $misrate_min$ for small sample sizes:
   table.hline(),
 )
 
-For meaningful bounds construction, choose $misrate >= misrate_min$.
-This ensures the margin function excludes at least some extreme pairwise differences,
-  producing bounds narrower than the full range.
+The accepted domain is $misrate >= misrate_min$.
+At exact equality the margin is $0$, so the bounds span the full range of pairwise
+  differences: admissible, but carrying no information.
+For bounds narrower than that range, choose $misrate > misrate_min$.
 When working with small samples, verify that the desired misrate exceeds $misrate_min$
   for the given sample sizes.
 With moderate sample sizes ($n, m >= 15$), $misrate_min$ drops below $10^(-8)$,

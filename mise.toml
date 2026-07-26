@@ -772,6 +772,18 @@ run = [
     { task = "web:build" },
 ]
 
+[tasks."docs:ci:release"]
+description = "Run documentation CI pipeline (release mode)"
+run = [
+    { task = "tools:check" },
+    { task = "tools:test" },
+    { task = "docs:clean" },
+    { task = "docs:sync" },
+    "git diff --exit-code || { echo 'ERROR: docs:sync produced uncommitted drift — regenerate and commit generated docs' >&2; exit 1; }",
+    { task = "pdf:build:release" },
+    { task = "web:build:release" },
+]
+
 # ==========================================================================
 # Aggregate Tasks
 # ==========================================================================

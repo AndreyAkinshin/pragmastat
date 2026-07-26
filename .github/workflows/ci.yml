@@ -39,43 +39,26 @@ jobs:
     # --- Rust tools (for Typst → MDX conversion) ---
     - name: Set up Rust
       uses: dtolnay/rust-toolchain@1.97.1  # sync: [tools].rust in mise.toml
+      with:
+        components: rustfmt, clippy  # docs:ci runs tools:check
 
     - name: Cache Rust tools
       uses: Swatinem/rust-cache@v2
       with:
         workspaces: "tools -> target"
 
-    # --- Image generation ---
+    # --- Python for figure generation (img:build manages its own venv) ---
     - name: Set up Python
       uses: actions/setup-python@v7
       with:
         python-version: '3.12'  # keep in sync with [tools].python in mise.toml
 
-    - name: Install image dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-      working-directory: img
-
-    - name: Generate images
-      run: mise run img:build
-
-    # --- PDF generation ---
-    - name: Install Typst
-      uses: typst-community/setup-typst@v5
-
-    - name: Download fonts
-      run: mise run pdf:restore
-
-    - name: Build PDF
-      run: mise run pdf:build
-
-    # --- Web build ---
-    - name: Install web dependencies
-      run: mise run web:restore
-
-    - name: Build website
-      run: mise run web:build${{ inputs.release && ':release' || '' }}
+    # Runs the same pipeline as local development, so the Clippy, rustfmt, test
+    # and generated-docs-drift gates in docs:ci apply here too. Typst comes from
+    # mise at the version pinned in [tools]; figures, fonts and web dependencies
+    # are pulled in through the task's own dependencies.
+    - name: Build documentation
+      run: mise run docs:ci${{ inputs.release && ':release' || '' }}
 
     - name: Copy PDF to web output
       run: cp manual/pragmastat.pdf web/dist/
