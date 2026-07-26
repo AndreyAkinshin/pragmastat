@@ -696,8 +696,11 @@ fn resolve_includes(content: &str, current_dir: &Path) -> Result<String> {
 
         if directive_type == "typst" {
             // Handle #include "path.typ"
-            let after_include = &remaining[start + 8..];
-            let after_include = after_include.trim_start();
+            let after_include_raw = &remaining[start + 8..];
+            let after_include = after_include_raw.trim_start();
+            // Offsets below are relative to the trimmed slice, so the skipped
+            // whitespace has to be added back when advancing `remaining`
+            let trim_offset = after_include_raw.len() - after_include.len();
 
             // Find the quoted path
             if let Some(quote_start) = after_include.find('"') {
@@ -718,7 +721,8 @@ fn resolve_includes(content: &str, current_dir: &Path) -> Result<String> {
                     result.push('\n');
 
                     // Move past the include directive
-                    remaining = &remaining[start + 8 + quote_start + 1 + quote_end + 1..];
+                    remaining =
+                        &remaining[start + 8 + trim_offset + quote_start + 1 + quote_end + 1..];
                     continue;
                 }
             }
@@ -1407,6 +1411,30 @@ mod tests {
     use super::*;
     use crate::typst_eval::TypstValue;
     use std::collections::HashMap;
+
+    #[test]
+    fn resolve_includes_consumes_whole_directive() {
+        // A space between #include and the path used to be dropped from the offset
+        // arithmetic, leaving the closing quote behind in the output
+        let dir = std::env::temp_dir().join("pragmastat-include-test");
+        std::fs::create_dir_all(&dir).expect("create temp dir");
+        let included = dir.join("part.typ");
+        std::fs::write(&included, "included body\n").expect("write include");
+
+        let resolved = resolve_includes("before\n#include \"part.typ\"\nafter\n", &dir)
+            .expect("resolve includes");
+
+        std::fs::remove_file(&included).ok();
+        std::fs::remove_dir(&dir).ok();
+
+        assert!(
+            !resolved.contains('"'),
+            "directive leftovers in output: {resolved:?}"
+        );
+        assert!(resolved.contains("included body"));
+        assert!(resolved.contains("before"));
+        assert!(resolved.contains("after"));
+    }
 
     #[test]
     fn markup_shorthands_and_quotes_survive() {
