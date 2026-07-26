@@ -12,6 +12,41 @@ find_repo_root <- function() {
   repo_root
 }
 
+# An "exact" tolerance means bitwise equality. identical(num.eq = FALSE) is the
+# only comparison in R that separates -0.0 from +0.0 while keeping NaN equal to
+# NaN, which is what a bit pattern check gives the other implementations.
+#
+# Doubles are reported with %.17g, the shortest format that round-trips every
+# binary64: a shorter one prints both sides of a one-ULP disagreement
+# identically and hides exactly the defect this comparison exists to catch.
+expect_exact <- function(actual, expected, label) {
+  if (is.logical(expected)) {
+    actual <- as.logical(actual)
+  } else {
+    actual <- as.double(actual)
+    expected <- as.double(expected)
+  }
+  expect_identical(length(actual), length(expected),
+    info = paste(label, "length")
+  )
+  if (length(actual) != length(expected)) {
+    return(invisible(NULL))
+  }
+  for (i in seq_along(expected)) {
+    expect_true(identical(actual[i], expected[i], num.eq = FALSE),
+      info = sprintf(
+        "%s[%d]: expected %s, actual %s", label, i,
+        format_exact(expected[i]), format_exact(actual[i])
+      )
+    )
+  }
+  invisible(NULL)
+}
+
+format_exact <- function(x) {
+  if (is.double(x)) sprintf("%.17g", x) else as.character(x)
+}
+
 # Extract a plain numeric value from either a raw numeric result or a Measurement.
 unwrap_value <- function(result) {
   if (inherits(result, "Measurement")) {

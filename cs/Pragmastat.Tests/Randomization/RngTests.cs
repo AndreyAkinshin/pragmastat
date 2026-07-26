@@ -29,10 +29,11 @@ public class RngTests
       Assert.Equal(count, output.GetArrayLength());
       for (int i = 0; i < count; i++)
       {
+        // Bitwise, not tolerant: see BitwiseAssert for why the randomization fixtures
+        // are compared exactly while the estimator suites are not.
         double actual = rng.UniformDouble();
         double expected = output[i].GetDouble();
-        Assert.True(Math.Abs(actual - expected) < 1e-15,
-            $"File: {Path.GetFileName(filePath)}, index {i}: expected {expected}, got {actual}");
+        BitwiseAssert.Equal(expected, actual, filePath, i);
       }
     }
   }
@@ -90,8 +91,7 @@ public class RngTests
       {
         double actual = rng.UniformDouble();
         double expected = output[i].GetDouble();
-        Assert.True(Math.Abs(actual - expected) < 1e-15,
-            $"File: {Path.GetFileName(filePath)}, index {i}: expected {expected}, got {actual}");
+        BitwiseAssert.Equal(expected, actual, filePath, i);
       }
     }
   }
@@ -124,9 +124,7 @@ public class RngTests
       int i = 0;
       foreach (JsonElement e in output.EnumerateArray())
       {
-        double expected = e.GetDouble();
-        Assert.True(Math.Abs(actual[i] - expected) < 1e-15,
-            $"File: {Path.GetFileName(filePath)}, index {i}: expected {expected}, got {actual[i]}");
+        BitwiseAssert.Equal(e.GetDouble(), actual[i], filePath, i);
         i++;
       }
     }
@@ -161,9 +159,7 @@ public class RngTests
       int i = 0;
       foreach (JsonElement e in output.EnumerateArray())
       {
-        double expected = e.GetDouble();
-        Assert.True(Math.Abs(actual[i] - expected) < 1e-15,
-            $"File: {Path.GetFileName(filePath)}, index {i}: expected {expected}, got {actual[i]}");
+        BitwiseAssert.Equal(e.GetDouble(), actual[i], filePath, i);
         i++;
       }
     }
@@ -198,9 +194,7 @@ public class RngTests
       int i = 0;
       foreach (JsonElement e in output.EnumerateArray())
       {
-        double expected = e.GetDouble();
-        Assert.True(Math.Abs(actual[i] - expected) < 1e-15,
-            $"File: {Path.GetFileName(filePath)}, index {i}: expected {expected}, got {actual[i]}");
+        BitwiseAssert.Equal(e.GetDouble(), actual[i], filePath, i);
         i++;
       }
     }
@@ -239,8 +233,7 @@ public class RngTests
       {
         double actual = rng.UniformDouble(min, max);
         double expected = output[i].GetDouble();
-        Assert.True(Math.Abs(actual - expected) < 1e-12,
-            $"File: {Path.GetFileName(filePath)}, index {i}: expected {expected}, got {actual}");
+        BitwiseAssert.Equal(expected, actual, filePath, i);
       }
     }
   }

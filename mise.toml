@@ -524,6 +524,45 @@ description = "Generate RNG and distribution reference test files"
 dir = "rs/pragmastat"
 run = "cargo run --example gen_rng_tests"
 
+[tasks."tests:check:rng-fixtures"]
+description = "Assert the deterministic randomization fixtures still match their generator"
+# The fixtures under tests/ are an oracle, and an oracle that nobody can regenerate silently
+# stops being one. This repository already learned that the hard way: the generator aborted on
+# a config the library rejects, so it had not run in a long time, and
+# tests/distributions/multiplic drifted a full ULP away from the code that was supposed to
+# produce it. Nothing noticed, because the loaders compared at 1e-12.
+#
+# Regeneration goes to a scratch directory, never to tests/. This task runs as a sibling of
+# every language's suite, all of which read the fixture tree, so writing there would hand them
+# half-written files. The private CARGO_TARGET_DIR is for the same reason: rs:ci begins with
+# `cargo clean`.
+#
+# Only the suites free of transcendental functions are compared. The parametric distributions
+# built on log, exp and cos go through the platform libm, so regenerating them on a machine
+# with a different libc legitimately produces different last bits; comparing those would fail
+# for reasons that have nothing to do with this repository.
+run = """
+#!/usr/bin/env bash
+set -euo pipefail
+scratch="$(mktemp -d)"
+target="$(mktemp -d)"
+trap 'rm -rf "$scratch" "$target"' EXIT
+mkdir -p "$scratch"
+PRAGMASTAT_TESTS_DIR="$scratch" CARGO_TARGET_DIR="$target" \\
+  cargo run --quiet --manifest-path rs/pragmastat/Cargo.toml --example gen_rng_tests >/dev/null
+status=0
+for suite in rng shuffle sample resample distributions/uniform; do
+  if ! diff -r -q "tests/$suite" "$scratch/$suite"; then
+    status=1
+  fi
+done
+if [ "$status" -ne 0 ]; then
+  echo "ERROR: regenerating produced different fixtures — the oracle and the code disagree." >&2
+  exit 1
+fi
+echo "deterministic randomization fixtures match their generator"
+"""
+
 [tasks."rs:doc"]
 description = "Build Rust documentation"
 dir = "rs/pragmastat"
@@ -887,7 +926,7 @@ depends = ["cs:demo", "go:demo", "kt:demo", "py:demo", "r:demo", "rs:demo", "ts:
 
 [tasks."ci"]
 description = "Run CI pipeline for all language implementations"
-depends = ["cs:ci", "go:ci", "kt:ci", "py:ci", "r:ci", "rs:ci", "ts:ci", "docs:ci"]
+depends = ["cs:ci", "go:ci", "kt:ci", "py:ci", "r:ci", "rs:ci", "ts:ci", "docs:ci", "tests:check:rng-fixtures"]
 
 # ==========================================================================
 # Version Task

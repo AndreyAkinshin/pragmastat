@@ -28,10 +28,12 @@ public class DistributionTests
 
       for (int i = 0; i < output.GetArrayLength(); i++)
       {
+        // Bitwise: a uniform draw is min + (max - min) * u, with no libm call in the path,
+        // so it must reproduce the reference stream exactly. The suites below keep Tolerance
+        // because their transforms go through log/exp/cos/pow, which differ per platform libm.
         double actual = dist.Sample(rng);
         double expected = output[i].GetDouble();
-        Assert.True(Math.Abs(actual - expected) < Tolerance,
-          $"File: {Path.GetFileName(filePath)}, index {i}: expected {expected}, got {actual}");
+        BitwiseAssert.Equal(expected, actual, filePath, i);
       }
     }
   }

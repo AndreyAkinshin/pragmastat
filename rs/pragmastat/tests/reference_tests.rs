@@ -4,13 +4,65 @@ use pragmastat::estimators::raw;
 use pragmastat::*;
 use serde::{Deserialize, Serialize};
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 /// Compares two f64 values using the reference-test tolerance, treating
 /// matching infinities as equal (mirrors the existing two-sample logic).
 fn values_match(actual: f64, expected: f64) -> bool {
     approx_eq!(f64, actual, expected, epsilon = 1e-9)
         || (actual.is_infinite() && expected.is_infinite() && actual.signum() == expected.signum())
+}
+
+/// Asserts that a randomization stream matches its fixture bit for bit.
+///
+/// Bitwise, not tolerant. The randomization contract is that a seeded stream is
+/// identical in every language, so "close enough" is not the property under test:
+/// a one-ULP drift is already a broken contract, and a tolerance reports it as a
+/// pass. This is what catches a compiler fusing a multiply into an add on arm64
+/// and changing the last bit of a draw. The estimator suites stay tolerant for a
+/// different reason: they run through `log`, `exp` and friends, which each
+/// platform takes from a different libm, so their last bit is not contractual.
+fn assert_bitwise_f64(json_file: &Path, actual: &[f64], expected: &[f64]) {
+    assert_eq!(
+        actual.len(),
+        expected.len(),
+        "Failed for test file: {:?}, length mismatch",
+        json_file.file_name().unwrap()
+    );
+    for (i, (&actual_val, &expected_val)) in actual.iter().zip(expected.iter()).enumerate() {
+        assert!(
+            actual_val.to_bits() == expected_val.to_bits(),
+            "Failed for test file: {:?}, index {}, expected: {} (0x{:016X}), got: {} (0x{:016X})",
+            json_file.file_name().unwrap(),
+            i,
+            expected_val,
+            expected_val.to_bits(),
+            actual_val,
+            actual_val.to_bits()
+        );
+    }
+}
+
+/// Bitwise counterpart of [`assert_bitwise_f64`] for the f32 draw stream.
+fn assert_bitwise_f32(json_file: &Path, actual: &[f32], expected: &[f32]) {
+    assert_eq!(
+        actual.len(),
+        expected.len(),
+        "Failed for test file: {:?}, length mismatch",
+        json_file.file_name().unwrap()
+    );
+    for (i, (&actual_val, &expected_val)) in actual.iter().zip(expected.iter()).enumerate() {
+        assert!(
+            actual_val.to_bits() == expected_val.to_bits(),
+            "Failed for test file: {:?}, index {}, expected: {} (0x{:08X}), got: {} (0x{:08X})",
+            json_file.file_name().unwrap(),
+            i,
+            expected_val,
+            expected_val.to_bits(),
+            actual_val,
+            actual_val.to_bits()
+        );
+    }
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -1060,18 +1112,7 @@ fn run_rng_uniform_tests() {
             .map(|_| rng.uniform_f64())
             .collect();
 
-        for (i, (actual_val, expected_val)) in
-            actual.iter().zip(test_case.output.iter()).enumerate()
-        {
-            assert!(
-                approx_eq!(f64, *actual_val, *expected_val, epsilon = 1e-15),
-                "Failed for test file: {:?}, index {}, expected: {}, got: {}",
-                json_file.file_name().unwrap(),
-                i,
-                expected_val,
-                actual_val
-            );
-        }
+        assert_bitwise_f64(&json_file, &actual, &test_case.output);
     }
 }
 
@@ -1142,18 +1183,7 @@ fn run_rng_string_seed_tests() {
             .map(|_| rng.uniform_f64())
             .collect();
 
-        for (i, (actual_val, expected_val)) in
-            actual.iter().zip(test_case.output.iter()).enumerate()
-        {
-            assert!(
-                approx_eq!(f64, *actual_val, *expected_val, epsilon = 1e-15),
-                "Failed for test file: {:?}, index {}, expected: {}, got: {}",
-                json_file.file_name().unwrap(),
-                i,
-                expected_val,
-                actual_val
-            );
-        }
+        assert_bitwise_f64(&json_file, &actual, &test_case.output);
     }
 }
 
@@ -1186,18 +1216,7 @@ fn run_rng_uniform_range_tests() {
             .map(|_| rng.uniform_f64_range(test_case.input.min, test_case.input.max))
             .collect();
 
-        for (i, (actual_val, expected_val)) in
-            actual.iter().zip(test_case.output.iter()).enumerate()
-        {
-            assert!(
-                approx_eq!(f64, *actual_val, *expected_val, epsilon = 1e-12),
-                "Failed for test file: {:?}, index {}, expected: {}, got: {}",
-                json_file.file_name().unwrap(),
-                i,
-                expected_val,
-                actual_val
-            );
-        }
+        assert_bitwise_f64(&json_file, &actual, &test_case.output);
     }
 }
 
@@ -1230,18 +1249,7 @@ fn run_rng_uniform_f32_tests() {
             .map(|_| rng.uniform_f32())
             .collect();
 
-        for (i, (actual_val, expected_val)) in
-            actual.iter().zip(test_case.output.iter()).enumerate()
-        {
-            assert!(
-                approx_eq!(f32, *actual_val, *expected_val, epsilon = 1e-7),
-                "Failed for test file: {:?}, index {}, expected: {}, got: {}",
-                json_file.file_name().unwrap(),
-                i,
-                expected_val,
-                actual_val
-            );
-        }
+        assert_bitwise_f32(&json_file, &actual, &test_case.output);
     }
 }
 
@@ -1347,18 +1355,7 @@ fn run_shuffle_tests() {
         let mut rng = Rng::from_seed(test_case.input.seed);
         let actual = rng.shuffle(&test_case.input.x);
 
-        for (i, (actual_val, expected_val)) in
-            actual.iter().zip(test_case.output.iter()).enumerate()
-        {
-            assert!(
-                approx_eq!(f64, *actual_val, *expected_val, epsilon = 1e-15),
-                "Failed for test file: {:?}, index {}, expected: {}, got: {}",
-                json_file.file_name().unwrap(),
-                i,
-                expected_val,
-                actual_val
-            );
-        }
+        assert_bitwise_f64(&json_file, &actual, &test_case.output);
     }
 }
 
@@ -1388,18 +1385,7 @@ fn run_sample_tests() {
         let mut rng = Rng::from_seed(test_case.input.seed);
         let actual = rng.sample(&test_case.input.x, test_case.input.k);
 
-        for (i, (actual_val, expected_val)) in
-            actual.iter().zip(test_case.output.iter()).enumerate()
-        {
-            assert!(
-                approx_eq!(f64, *actual_val, *expected_val, epsilon = 1e-15),
-                "Failed for test file: {:?}, index {}, expected: {}, got: {}",
-                json_file.file_name().unwrap(),
-                i,
-                expected_val,
-                actual_val
-            );
-        }
+        assert_bitwise_f64(&json_file, &actual, &test_case.output);
     }
 }
 
@@ -1429,18 +1415,7 @@ fn run_resample_tests() {
         let mut rng = Rng::from_seed(test_case.input.seed);
         let actual = rng.resample(&test_case.input.x, test_case.input.k);
 
-        for (i, (actual_val, expected_val)) in
-            actual.iter().zip(test_case.output.iter()).enumerate()
-        {
-            assert!(
-                approx_eq!(f64, *actual_val, *expected_val, epsilon = 1e-15),
-                "Failed for test file: {:?}, index {}, expected: {}, got: {}",
-                json_file.file_name().unwrap(),
-                i,
-                expected_val,
-                actual_val
-            );
-        }
+        assert_bitwise_f64(&json_file, &actual, &test_case.output);
     }
 }
 
@@ -1479,18 +1454,10 @@ fn run_uniform_distribution_tests() {
             .map(|_| dist.sample(&mut rng))
             .collect();
 
-        for (i, (actual_val, expected_val)) in
-            actual.iter().zip(test_case.output.iter()).enumerate()
-        {
-            assert!(
-                approx_eq!(f64, *actual_val, *expected_val, epsilon = 1e-12),
-                "Failed for test file: {:?}, index {}, expected: {}, got: {}",
-                json_file.file_name().unwrap(),
-                i,
-                expected_val,
-                actual_val
-            );
-        }
+        // The uniform distribution is a plain affine map over the raw draw, so it
+        // carries the same bitwise contract; additive/multiplic/exp/power below go
+        // through libm and stay tolerant.
+        assert_bitwise_f64(&json_file, &actual, &test_case.output);
     }
 }
 

@@ -674,10 +674,18 @@ class ReferenceTest {
                 DynamicTest.dynamicTest(testName) {
                     val testData = mapper.readValue<UniformTestData>(file)
                     val rng = Rng(testData.input.seed)
+                    // Bitwise, not tolerant. The randomization contract is that a seeded
+                    // stream is identical in every language, so "close enough" is not the
+                    // property under test: a one-ULP drift here is a broken contract, and a
+                    // tolerance would report it as a pass. This is what catches an FMA
+                    // contraction on an arm64 runner, where the compiler is free to fuse a
+                    // multiply into an add and change the last bit of a draw. The estimator
+                    // suites stay tolerant because their fixtures pass through libm
+                    // (log/exp/cos/pow), which differs in the last bit between platforms.
                     for (i in 0 until testData.input.count) {
                         val actual = rng.uniformDouble()
                         val expected = testData.output[i]
-                        assertClose(expected, actual, 1e-15)
+                        assertEquals(expected, actual, "uniformDouble() at index $i = $actual, want $expected")
                     }
                 },
             )
@@ -733,7 +741,7 @@ class ReferenceTest {
                     for (i in 0 until testData.input.count) {
                         val actual = rng.uniformDouble()
                         val expected = testData.output[i]
-                        assertClose(expected, actual, 1e-15)
+                        assertEquals(expected, actual, "uniformDouble() at index $i = $actual, want $expected")
                     }
                 },
             )
@@ -761,7 +769,12 @@ class ReferenceTest {
                     for (i in 0 until testData.input.count) {
                         val actual = rng.uniformDouble(testData.input.min, testData.input.max)
                         val expected = testData.output[i]
-                        assertClose(expected, actual, 1e-12)
+                        assertEquals(
+                            expected,
+                            actual,
+                            "uniformDouble(${testData.input.min}, ${testData.input.max}) " +
+                                "at index $i = $actual, want $expected",
+                        )
                     }
                 },
             )
@@ -871,8 +884,13 @@ class ReferenceTest {
                     val testData = mapper.readValue<ShuffleTestData>(file)
                     val rng = Rng(testData.input.seed)
                     val actual = rng.shuffle(testData.input.x)
+                    assertEquals(testData.output.size, actual.size, "shuffle() length = ${actual.size}, want ${testData.output.size}")
                     for (i in actual.indices) {
-                        assertClose(testData.output[i], actual[i], 1e-15)
+                        assertEquals(
+                            testData.output[i],
+                            actual[i],
+                            "shuffle() at index $i = ${actual[i]}, want ${testData.output[i]}",
+                        )
                     }
                 },
             )
@@ -898,8 +916,13 @@ class ReferenceTest {
                     val testData = mapper.readValue<SampleTestData>(file)
                     val rng = Rng(testData.input.seed)
                     val actual = rng.sample(testData.input.x, testData.input.k)
+                    assertEquals(testData.output.size, actual.size, "sample() length = ${actual.size}, want ${testData.output.size}")
                     for (i in actual.indices) {
-                        assertClose(testData.output[i], actual[i], 1e-15)
+                        assertEquals(
+                            testData.output[i],
+                            actual[i],
+                            "sample() at index $i = ${actual[i]}, want ${testData.output[i]}",
+                        )
                     }
                 },
             )
@@ -925,8 +948,13 @@ class ReferenceTest {
                     val testData = mapper.readValue<ResampleTestData>(file)
                     val rng = Rng(testData.input.seed)
                     val actual = rng.resample(testData.input.x, testData.input.k)
+                    assertEquals(testData.output.size, actual.size, "resample() length = ${actual.size}, want ${testData.output.size}")
                     for (i in actual.indices) {
-                        assertClose(testData.output[i], actual[i], 1e-15)
+                        assertEquals(
+                            testData.output[i],
+                            actual[i],
+                            "resample() at index $i = ${actual[i]}, want ${testData.output[i]}",
+                        )
                     }
                 },
             )
@@ -952,10 +980,12 @@ class ReferenceTest {
                     val testData = mapper.readValue<UniformDistTestData>(file)
                     val rng = Rng(testData.input.seed)
                     val dist = Uniform(testData.input.min, testData.input.max)
+                    // Bitwise: Uniform draws are pure arithmetic on the raw stream, no libm.
+                    // The additive/multiplic/exp/power suites below stay tolerant.
                     for (i in 0 until testData.input.count) {
                         val actual = dist.sample(rng)
                         val expected = testData.output[i]
-                        assertClose(expected, actual, 1e-12)
+                        assertEquals(expected, actual, "Uniform sample at index $i = $actual, want $expected")
                     }
                 },
             )

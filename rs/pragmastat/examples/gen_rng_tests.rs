@@ -214,7 +214,12 @@ struct PowerDistTestCase {
 }
 
 fn find_tests_dir() -> PathBuf {
-    // Find repository root by looking for CITATION.cff
+    // An explicit destination lets a checker regenerate into a scratch directory and diff,
+    // instead of rewriting the shared fixture tree while every language's suite is reading it.
+    if let Ok(dir) = std::env::var("PRAGMASTAT_TESTS_DIR") {
+        return PathBuf::from(dir);
+    }
+    // Otherwise find the repository root by looking for CITATION.cff
     let mut current = std::env::current_dir().expect("Cannot get current dir");
     loop {
         if current.join("CITATION.cff").exists() {
@@ -297,6 +302,12 @@ fn generate_uniform_range_tests(tests_dir: &PathBuf) {
         (123, 0.0, 1.0, 20),
         (0, -1.0, 1.0, 20),
         (999, 0.0, 100.0, 20),
+        // Discriminating cases. Every config above has either a zero addend or a power-of-two
+        // width, so its product is exact and a fused multiply-add would produce identical bits.
+        // These do not: they are what tells `min + (max - min) * u` apart from `fma(max - min, u, min)`.
+        (1729, 0.1, 0.7, 20),
+        (1729, -273.15, 100.0, 20),
+        (42, 5.0, 6.7, 20),
     ];
 
     for (seed, min, max, count) in test_configs {
@@ -485,7 +496,10 @@ fn generate_shuffle_tests(tests_dir: &PathBuf) {
         (1729, vec![0.0, 0.0, 0.0, 0.0, 0.0], "zeros"),
         (1729, vec![-5.0, -3.0, -1.0, 1.0, 3.0, 5.0], "neg"),
         (1729, (0..100).map(|i| i as f64).collect(), "seq"),
-        (1729, vec![], "empty"),
+        // No empty case: shuffling an empty sample is a documented error in all seven
+        // implementations, and this suite has no shape for an expected error. Leaving it here
+        // made the generator panic on every run, which is why no fixture in tests/shuffle was
+        // regenerable.
     ];
 
     for (seed, x, suffix) in test_configs {
@@ -513,7 +527,6 @@ fn generate_sample_tests(tests_dir: &PathBuf) {
         (1729, (0..10).map(|i| i as f64).collect(), 1),
         (1729, (0..10).map(|i| i as f64).collect(), 10),
         (1729, (0..10).map(|i| i as f64).collect(), 15), // k > n
-        (1729, (0..10).map(|i| i as f64).collect(), 0),  // k = 0
         (123, (0..10).map(|i| i as f64).collect(), 3),
         (0, (0..10).map(|i| i as f64).collect(), 3),
         (999, (0..10).map(|i| i as f64).collect(), 3),
@@ -522,10 +535,8 @@ fn generate_sample_tests(tests_dir: &PathBuf) {
         (1729, (0..100).map(|i| i as f64).collect(), 10),
         (1729, (0..100).map(|i| i as f64).collect(), 25),
         (1729, vec![1.0, 2.0, 3.0, 4.0, 5.0], 3),
-        (1729, vec![1.0, 2.0, 3.0, 4.0, 5.0], 0), // k = 0, n = 5
         (1729, vec![1.0, 2.0], 1),
         (1729, vec![1.0], 1),
-        (1729, vec![], 0), // empty input, k = 0
     ];
 
     for (seed, x, k) in test_configs {
@@ -557,10 +568,8 @@ fn generate_resample_tests(tests_dir: &PathBuf) {
         (1729, (0..10).map(|i| i as f64).collect(), 10),
         (1729, (0..10).map(|i| i as f64).collect(), 15),
         (1729, (0..10).map(|i| i as f64).collect(), 1),
-        (1729, (0..10).map(|i| i as f64).collect(), 0), // k = 0
         (1729, vec![0.0, 1.0, 2.0, 3.0, 4.0], 3),
         (1729, vec![0.0, 1.0, 2.0, 3.0, 4.0], 7),
-        (1729, vec![0.0, 1.0, 2.0, 3.0, 4.0], 0), // k = 0, n = 5
         (1729, vec![0.0], 1),
         (1729, vec![0.0, 1.0], 1),
         (1729, (0..20).map(|i| i as f64).collect(), 5),
@@ -597,8 +606,13 @@ fn generate_uniform_distribution_tests(tests_dir: &PathBuf) {
     let dist_dir = tests_dir.join("distributions").join("uniform");
     fs::create_dir_all(&dist_dir).expect("Failed to create uniform distribution test dir");
 
-    let test_configs: Vec<(i64, f64, f64, usize)> =
-        vec![(1729, -1.0, 1.0, 10), (123, 0.0, 10.0, 10)];
+    // The first two configs cannot discriminate a fused multiply-add from an unfused one: a zero
+    // min makes the addend exact and a width of two makes the product exact. The third can.
+    let test_configs: Vec<(i64, f64, f64, usize)> = vec![
+        (1729, -1.0, 1.0, 10),
+        (123, 0.0, 10.0, 10),
+        (1729, -273.15, 100.0, 10),
+    ];
 
     for (seed, min, max, count) in test_configs {
         let mut rng = Rng::from_seed(seed);

@@ -252,8 +252,46 @@ def _parse_sample_values(raw_values):
     return result
 
 
-def run_distribution_tests(dist_name, dist_factory):
-    """Run distribution reference tests against JSON data files."""
+def _fmt(value):
+    """Render a float so a one-ULP difference is unmistakable in a failure message."""
+    return f"{value!r} [{float(value).hex()}]"
+
+
+def _assert_bitwise(actual, expected, context):
+    """Assert a drawn sequence equals the fixture exactly, with no tolerance.
+
+    The randomization contract is bitwise: ``Rng(seed)`` must produce an
+    identical stream in all seven language implementations, and the manual says
+    so. Exact equality is therefore the property under test -- a tolerance would
+    report a broken contract as a pass. Concretely, a compiler that fuses a
+    multiply into an add (FMA contraction on arm64) shifts the last bit of a
+    draw; only ``==`` sees it.
+
+    This is why the RNG suites and ``distributions/uniform`` are bitwise while
+    the estimator suites are not: estimators accumulate rounding across many
+    operations and carry no cross-language bit-exactness guarantee. The
+    additive/multiplic/exp/power distributions stay tolerant for the same
+    reason at a lower level -- their draws go through log/exp/cos/pow, which
+    each language takes from a different libm, and two implementations that are
+    both correct to within an ULP still disagree in the last bit.
+
+    JSON is safe to compare against directly here: Python's ``json`` module
+    parses a numeric literal straight to binary64 via ``float()``, which is
+    correctly rounded, so a shortest-round-trip fixture literal reproduces the
+    generator's exact bits.
+    """
+    assert len(actual) == len(expected), f"Length mismatch for {context}: {len(actual)} vs {len(expected)}"
+    for i, (act, exp) in enumerate(zip(actual, expected, strict=True)):
+        assert act == exp, f"Failed for {context}, index {i}: expected {_fmt(exp)}, got {_fmt(act)}"
+
+
+def run_distribution_tests(dist_name, dist_factory, *, bitwise):
+    """Run distribution reference tests against JSON data files.
+
+    ``bitwise`` is explicit at every call site (no default) so the exactness
+    decision is visible per distribution: uniform draws are pure arithmetic on
+    the RNG output and must match bit for bit, transcendental ones cannot.
+    """
     repo_root = find_repo_root()
     test_data_dir = repo_root / "tests" / "distributions" / dist_name
 
@@ -269,6 +307,10 @@ def run_distribution_tests(dist_name, dist_factory):
         rng = Rng(input_data["seed"])
         dist = dist_factory(input_data)
         actual = [dist.sample(rng) for _ in range(input_data["count"])]
+
+        if bitwise:
+            _assert_bitwise(actual, expected, json_file.name)
+            continue
 
         assert len(actual) == len(expected), f"Length mismatch for {json_file.name}: {len(actual)} vs {len(expected)}"
         for i, (act, exp) in enumerate(zip(actual, expected, strict=True)):
@@ -357,11 +399,8 @@ class TestReference:
             rng = Rng(seed)
             actual = [rng.uniform_float() for _ in range(count)]
 
-            assert len(actual) == len(expected), (
-                f"Length mismatch for {json_file.name}: {len(actual)} vs {len(expected)}"
-            )
-            for i, (act, exp) in enumerate(zip(actual, expected, strict=True)):
-                assert abs(act - exp) < 1e-15, f"Failed for {json_file.name}, index {i}: expected {exp}, got {act}"
+            # Bitwise: see _assert_bitwise for why this suite has no tolerance.
+            _assert_bitwise(actual, expected, json_file.name)
 
     def test_rng_uniform_int_reference(self):
         """Test Rng uniform_int() against reference data."""
@@ -405,11 +444,7 @@ class TestReference:
             rng = Rng(seed)
             actual = [rng.uniform_float() for _ in range(count)]
 
-            assert len(actual) == len(expected), (
-                f"Length mismatch for {json_file.name}: {len(actual)} vs {len(expected)}"
-            )
-            for i, (act, exp) in enumerate(zip(actual, expected, strict=True)):
-                assert abs(act - exp) < 1e-15, f"Failed for {json_file.name}, index {i}: expected {exp}, got {act}"
+            _assert_bitwise(actual, expected, json_file.name)
 
     def test_rng_uniform_float_range_reference(self):
         """Test Rng uniform_float_range() against reference data."""
@@ -432,11 +467,9 @@ class TestReference:
             rng = Rng(seed)
             actual = [rng.uniform_float_range(min_val, max_val) for _ in range(count)]
 
-            assert len(actual) == len(expected), (
-                f"Length mismatch for {json_file.name}: {len(actual)} vs {len(expected)}"
-            )
-            for i, (act, exp) in enumerate(zip(actual, expected, strict=True)):
-                assert abs(act - exp) < 1e-12, f"Failed for {json_file.name}, index {i}: expected {exp}, got {act}"
+            # The fixture that a tolerance hid: uniform-range-seed-1729--50-50
+            # drifts by one ULP under an FMA-contracting compiler.
+            _assert_bitwise(actual, expected, json_file.name)
 
     def test_rng_uniform_bool_reference(self):
         """Test Rng uniform_bool() against reference data."""
@@ -478,11 +511,9 @@ class TestReference:
             rng = Rng(seed)
             actual = rng.shuffle(x)
 
-            assert len(actual) == len(expected), (
-                f"Length mismatch for {json_file.name}: {len(actual)} vs {len(expected)}"
-            )
-            for i, (act, exp) in enumerate(zip(actual, expected, strict=True)):
-                assert abs(act - exp) < 1e-15, f"Failed for {json_file.name}, index {i}: expected {exp}, got {act}"
+            # A permutation carries the input values through untouched, so any
+            # inexactness here would be a wrong element, not a rounding error.
+            _assert_bitwise(actual, expected, json_file.name)
 
     def test_sample_reference(self):
         """Test Rng sample() against reference data."""
@@ -504,11 +535,7 @@ class TestReference:
             rng = Rng(seed)
             actual = rng.sample(x, k)
 
-            assert len(actual) == len(expected), (
-                f"Length mismatch for {json_file.name}: {len(actual)} vs {len(expected)}"
-            )
-            for i, (act, exp) in enumerate(zip(actual, expected, strict=True)):
-                assert abs(act - exp) < 1e-15, f"Failed for {json_file.name}, index {i}: expected {exp}, got {act}"
+            _assert_bitwise(actual, expected, json_file.name)
 
     def test_resample_reference(self):
         """Test Rng resample() against reference data."""
@@ -530,40 +557,44 @@ class TestReference:
             rng = Rng(seed)
             actual = rng.resample(x, k)
 
-            assert len(actual) == len(expected), (
-                f"Length mismatch for {json_file.name}: {len(actual)} vs {len(expected)}"
-            )
-            for i, (act, exp) in enumerate(zip(actual, expected, strict=True)):
-                assert abs(act - exp) < 1e-15, f"Failed for {json_file.name}, index {i}: expected {exp}, got {act}"
+            _assert_bitwise(actual, expected, json_file.name)
 
     def test_uniform_distribution_reference(self):
+        # Uniform draws are min + u * (max - min) on the raw RNG output: pure
+        # binary64 arithmetic, no libm, so the cross-language contract is exact.
         run_distribution_tests(
             "uniform",
             lambda input_data: Uniform(input_data["min"], input_data["max"]),
+            bitwise=True,
         )
 
     def test_additive_distribution_reference(self):
+        # log/cos: libm-dependent last bit, tolerance is the honest predicate.
         run_distribution_tests(
             "additive",
             lambda input_data: Additive(input_data["mean"], input_data["stdDev"]),
+            bitwise=False,
         )
 
     def test_multiplic_distribution_reference(self):
         run_distribution_tests(
             "multiplic",
             lambda input_data: Multiplic(input_data["logMean"], input_data["logStdDev"]),
+            bitwise=False,
         )
 
     def test_exp_distribution_reference(self):
         run_distribution_tests(
             "exp",
             lambda input_data: Exp(input_data["rate"]),
+            bitwise=False,
         )
 
     def test_power_distribution_reference(self):
         run_distribution_tests(
             "power",
             lambda input_data: Power(input_data["min"], input_data["shape"]),
+            bitwise=False,
         )
 
     def test_sample_negative_k_raises(self):

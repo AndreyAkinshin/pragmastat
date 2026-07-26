@@ -65,6 +65,45 @@ function expectError(
   }
 }
 
+/** Raw binary64 bits of a double, so that a one-ULP report is unambiguous. */
+function f64Bits(value: number): string {
+  const view = new DataView(new ArrayBuffer(8));
+  view.setFloat64(0, value);
+  return `0x${view.getBigUint64(0).toString(16).padStart(16, '0')}`;
+}
+
+/**
+ * Asserts a generated sequence against a randomization fixture bit for bit.
+ *
+ * The randomization contract is bitwise: `new Rng(seed)` must produce an
+ * identical sequence in every language implementation, and the manual states
+ * so. "Close enough" is therefore not the property under test — a tolerance
+ * reports a broken contract as a pass. That is not theoretical: a compiler is
+ * free to fuse a multiply into an add and change the last bit of a draw (Go's
+ * arm64 backend does exactly this in `UniformFloat64Range`), and the tolerant
+ * comparison that used to live here would have shipped it.
+ *
+ * `Object.is` is the same predicate as `expect(...).toBe(...)`; the loop exists
+ * only so the failure names the index and prints both bit patterns.
+ *
+ * The estimator suites and the additive/multiplic/exp/power distributions stay
+ * tolerant on purpose: their draws go through `log`, `exp`, `cos` and `pow`,
+ * which every language takes from a different libm, so bitwise equality there
+ * is not achievable.
+ */
+function expectBitwiseSequence(subject: string, actual: number[], expected: number[]): void {
+  expect(actual).toHaveLength(expected.length);
+  for (let i = 0; i < actual.length; i++) {
+    if (!Object.is(actual[i], expected[i])) {
+      throw new Error(
+        `${subject}: bitwise mismatch at index ${i}: ` +
+          `expected ${expected[i]} (${f64Bits(expected[i])}), ` +
+          `actual ${actual[i]} (${f64Bits(actual[i])})`,
+      );
+    }
+  }
+}
+
 /**
  * Dual-path entry points: every reference fixture runs through BOTH the raw
  * native-array API and the Sample API so that Sample-adapter bugs are caught
@@ -416,9 +455,7 @@ describe('Reference Tests', () => {
           const rng = new Rng(data.input.seed);
           const actual = Array.from({ length: data.input.count }, () => rng.uniformFloat());
 
-          for (let i = 0; i < actual.length; i++) {
-            expect(actual[i]).toBeCloseTo(data.output[i], 15);
-          }
+          expectBitwiseSequence('uniformFloat()', actual, data.output);
         });
       });
     }
@@ -468,9 +505,11 @@ describe('Reference Tests', () => {
           const rng = new Rng(data.input.seed);
           const actual = Array.from({ length: data.input.count }, () => rng.uniformFloat());
 
-          for (let i = 0; i < actual.length; i++) {
-            expect(actual[i]).toBeCloseTo(data.output[i], 15);
-          }
+          expectBitwiseSequence(
+            `uniformFloat() [seed ${JSON.stringify(data.input.seed)}]`,
+            actual,
+            data.output,
+          );
         });
       });
     }
@@ -496,9 +535,11 @@ describe('Reference Tests', () => {
             rng.uniformFloatRange(data.input.min, data.input.max),
           );
 
-          for (let i = 0; i < actual.length; i++) {
-            expect(actual[i]).toBeCloseTo(data.output[i], 12);
-          }
+          expectBitwiseSequence(
+            `uniformFloatRange(${data.input.min}, ${data.input.max})`,
+            actual,
+            data.output,
+          );
         });
       });
     }
@@ -544,11 +585,9 @@ describe('Reference Tests', () => {
         it(`should pass ${testName}`, () => {
           const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
           const rng = new Rng(data.input.seed);
-          const actual = rng.shuffle(data.input.x);
+          const actual = rng.shuffle<number>(data.input.x);
 
-          for (let i = 0; i < actual.length; i++) {
-            expect(actual[i]).toBeCloseTo(data.output[i], 15);
-          }
+          expectBitwiseSequence('shuffle()', actual, data.output);
         });
       });
     }
@@ -570,11 +609,9 @@ describe('Reference Tests', () => {
         it(`should pass ${testName}`, () => {
           const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
           const rng = new Rng(data.input.seed);
-          const actual = rng.sample(data.input.x, data.input.k);
+          const actual = rng.sample<number>(data.input.x, data.input.k);
 
-          for (let i = 0; i < actual.length; i++) {
-            expect(actual[i]).toBeCloseTo(data.output[i], 15);
-          }
+          expectBitwiseSequence(`sample(k=${data.input.k})`, actual, data.output);
         });
       });
     }
@@ -596,11 +633,9 @@ describe('Reference Tests', () => {
         it(`should pass ${testName}`, () => {
           const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
           const rng = new Rng(data.input.seed);
-          const actual = rng.resample(data.input.x, data.input.k);
+          const actual = rng.resample<number>(data.input.x, data.input.k);
 
-          for (let i = 0; i < actual.length; i++) {
-            expect(actual[i]).toBeCloseTo(data.output[i], 15);
-          }
+          expectBitwiseSequence(`resample(k=${data.input.k})`, actual, data.output);
         });
       });
     }
@@ -625,9 +660,11 @@ describe('Reference Tests', () => {
           const dist = new Uniform(data.input.min, data.input.max);
           const actual = Array.from({ length: data.input.count }, () => dist.sample(rng));
 
-          for (let i = 0; i < actual.length; i++) {
-            expect(actual[i]).toBeCloseTo(data.output[i], 12);
-          }
+          expectBitwiseSequence(
+            `Uniform(${data.input.min}, ${data.input.max}).sample()`,
+            actual,
+            data.output,
+          );
         });
       });
     }

@@ -1,3 +1,19 @@
+# The randomization contract is bitwise: rng("experiment-1") must emit the
+# identical sequence in every language implementation, and the manual says so.
+# These suites therefore compare with expect_exact() (bit patterns) instead of
+# expect_equal(), whose default tolerance is 1.5e-8. A tolerant comparison here
+# reports a broken contract as a pass: when a backend fuses a multiply into an
+# add the last bit moves, and neither 1e-12 nor 1e-15 ever notices.
+#
+# The estimator suites stay tolerant on purpose: their fixtures encode
+# mathematical values that each language is free to reach by a different
+# summation order, not a bit pattern the languages agreed to reproduce.
+
+# Draw `count` values from a freshly seeded generator, in order.
+rng_draw <- function(r, count, fn, mode = numeric(1)) {
+  vapply(seq_len(count), function(i) fn(r), mode)
+}
+
 test_that("rng uniform_float satisfies reference tests", {
   repo_root <- find_repo_root()
   rng_dir <- file.path(repo_root, "tests", "rng")
@@ -7,18 +23,9 @@ test_that("rng uniform_float satisfies reference tests", {
 
   for (json_file in json_files) {
     test_case <- jsonlite::fromJSON(json_file)
-    seed <- test_case$input$seed
-    count <- test_case$input$count
-    expected <- test_case$output
-
-    r <- rng(seed)
-    for (i in seq_len(count)) {
-      actual <- r$uniform_float()
-      expect_equal(actual, expected[i],
-        tolerance = 1e-15,
-        info = paste("Failed for", basename(json_file), "at index", i)
-      )
-    }
+    r <- rng(test_case$input$seed)
+    actual <- rng_draw(r, test_case$input$count, function(r) r$uniform_float())
+    expect_exact(actual, test_case$output, basename(json_file))
   }
 })
 
@@ -31,19 +38,11 @@ test_that("rng uniform_int satisfies reference tests", {
 
   for (json_file in json_files) {
     test_case <- jsonlite::fromJSON(json_file)
-    seed <- test_case$input$seed
     min_val <- test_case$input$min
     max_val <- test_case$input$max
-    count <- test_case$input$count
-    expected <- test_case$output
-
-    r <- rng(seed)
-    for (i in seq_len(count)) {
-      actual <- r$uniform_int(min_val, max_val)
-      expect_equal(actual, expected[i],
-        info = paste("Failed for", basename(json_file), "at index", i)
-      )
-    }
+    r <- rng(test_case$input$seed)
+    actual <- rng_draw(r, test_case$input$count, function(r) r$uniform_int(min_val, max_val))
+    expect_exact(actual, test_case$output, basename(json_file))
   }
 })
 
@@ -56,18 +55,9 @@ test_that("rng string seed satisfies reference tests", {
 
   for (json_file in json_files) {
     test_case <- jsonlite::fromJSON(json_file)
-    seed <- test_case$input$seed
-    count <- test_case$input$count
-    expected <- test_case$output
-
-    r <- rng(seed)
-    for (i in seq_len(count)) {
-      actual <- r$uniform_float()
-      expect_equal(actual, expected[i],
-        tolerance = 1e-15,
-        info = paste("Failed for", basename(json_file), "at index", i)
-      )
-    }
+    r <- rng(test_case$input$seed)
+    actual <- rng_draw(r, test_case$input$count, function(r) r$uniform_float())
+    expect_exact(actual, test_case$output, basename(json_file))
   }
 })
 
@@ -80,20 +70,11 @@ test_that("rng uniform_float_range satisfies reference tests", {
 
   for (json_file in json_files) {
     test_case <- jsonlite::fromJSON(json_file)
-    seed <- test_case$input$seed
     min_val <- test_case$input$min
     max_val <- test_case$input$max
-    count <- test_case$input$count
-    expected <- test_case$output
-
-    r <- rng(seed)
-    for (i in seq_len(count)) {
-      actual <- r$uniform_float_range(min_val, max_val)
-      expect_equal(actual, expected[i],
-        tolerance = 1e-12,
-        info = paste("Failed for", basename(json_file), "at index", i)
-      )
-    }
+    r <- rng(test_case$input$seed)
+    actual <- rng_draw(r, test_case$input$count, function(r) r$uniform_float_range(min_val, max_val))
+    expect_exact(actual, test_case$output, basename(json_file))
   }
 })
 
@@ -106,17 +87,9 @@ test_that("rng uniform_bool satisfies reference tests", {
 
   for (json_file in json_files) {
     test_case <- jsonlite::fromJSON(json_file)
-    seed <- test_case$input$seed
-    count <- test_case$input$count
-    expected <- test_case$output
-
-    r <- rng(seed)
-    for (i in seq_len(count)) {
-      actual <- r$uniform_bool()
-      expect_equal(actual, expected[i],
-        info = paste("Failed for", basename(json_file), "at index", i)
-      )
-    }
+    r <- rng(test_case$input$seed)
+    actual <- rng_draw(r, test_case$input$count, function(r) r$uniform_bool(), logical(1))
+    expect_exact(actual, test_case$output, basename(json_file))
   }
 })
 
@@ -129,19 +102,9 @@ test_that("shuffle satisfies reference tests", {
 
   for (json_file in json_files) {
     test_case <- jsonlite::fromJSON(json_file)
-    seed <- test_case$input$seed
-    x <- test_case$input$x
-    expected <- test_case$output
-
-    r <- rng(seed)
-    actual <- r$shuffle(x)
-
-    for (i in seq_along(actual)) {
-      expect_equal(actual[i], expected[i],
-        tolerance = 1e-15,
-        info = paste("Failed for", basename(json_file), "at index", i)
-      )
-    }
+    r <- rng(test_case$input$seed)
+    actual <- r$shuffle(test_case$input$x)
+    expect_exact(actual, test_case$output, basename(json_file))
   }
 })
 
@@ -154,24 +117,9 @@ test_that("sample satisfies reference tests", {
 
   for (json_file in json_files) {
     test_case <- jsonlite::fromJSON(json_file)
-    seed <- test_case$input$seed
-    x <- test_case$input$x
-    k <- test_case$input$k
-    expected <- test_case$output
-
-    r <- rng(seed)
-    actual <- r$sample(x, k)
-
-    expect_equal(length(actual), length(expected),
-      info = paste("Wrong length for", basename(json_file))
-    )
-
-    for (i in seq_along(actual)) {
-      expect_equal(actual[i], expected[i],
-        tolerance = 1e-15,
-        info = paste("Failed for", basename(json_file), "at index", i)
-      )
-    }
+    r <- rng(test_case$input$seed)
+    actual <- r$sample(test_case$input$x, test_case$input$k)
+    expect_exact(actual, test_case$output, basename(json_file))
   }
 })
 
@@ -189,24 +137,9 @@ test_that("resample satisfies reference tests", {
 
   for (json_file in json_files) {
     test_case <- jsonlite::fromJSON(json_file)
-    seed <- test_case$input$seed
-    x <- test_case$input$x
-    k <- test_case$input$k
-    expected <- test_case$output
-
-    r <- rng(seed)
-    actual <- r$resample(x, k)
-
-    expect_equal(length(actual), length(expected),
-      info = paste("Wrong length for", basename(json_file))
-    )
-
-    for (i in seq_along(actual)) {
-      expect_equal(actual[i], expected[i],
-        tolerance = 1e-15,
-        info = paste("Failed for", basename(json_file), "at index", i)
-      )
-    }
+    r <- rng(test_case$input$seed)
+    actual <- r$resample(test_case$input$x, test_case$input$k)
+    expect_exact(actual, test_case$output, basename(json_file))
   }
 })
 
