@@ -593,10 +593,20 @@ run = [
 description = "Generate images"
 dir = "img"
 run = """
-if [ ! -d "venv" ] && [ ! -f "/.dockerenv" ] && [ -z "$VIRTUAL_ENV" ]; then
-    python3 -m venv venv
-    ./venv/bin/pip install -q --upgrade pip
-    ./venv/bin/pip install -q -r requirements.txt
+if [ ! -f "/.dockerenv" ] && [ -z "$VIRTUAL_ENV" ]; then
+    # Reinstall whenever requirements.txt changes: a venv created once would
+    # otherwise keep rendering figures with whatever was current back then,
+    # regardless of what requirements.txt now declares.
+    STAMP="venv/.requirements.sha256"
+    WANT="$(sha256sum requirements.txt | cut -d' ' -f1)"
+    if [ ! -d "venv" ]; then
+        python3 -m venv venv
+        ./venv/bin/pip install -q --upgrade pip
+    fi
+    if [ "$(cat "$STAMP" 2>/dev/null)" != "$WANT" ]; then
+        ./venv/bin/pip install -q -r requirements.txt
+        echo "$WANT" > "$STAMP"
+    fi
 fi
 if [ -d "venv" ]; then
     ./venv/bin/python3 generate-images.py
