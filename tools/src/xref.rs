@@ -34,6 +34,10 @@ impl XRefMap {
             "sec-weak-symmetry".into(),
             "/assumptions#weak-symmetry-assumption".into(),
         );
+        mappings.insert(
+            "sec-weak-shape".into(),
+            "/assumptions#weak-shape-assumption".into(),
+        );
 
         // Test framework -> methodology
         mappings.insert(
@@ -201,6 +205,15 @@ mod tests {
         assert_eq!(
             xref.resolve("sec-test-framework"),
             Some("/methodology#test-framework")
+        );
+    }
+
+    #[test]
+    fn resolve_weak_shape_label() {
+        let xref = XRefMap::new();
+        assert_eq!(
+            xref.resolve("sec-weak-shape"),
+            Some("/assumptions#weak-shape-assumption")
         );
     }
 

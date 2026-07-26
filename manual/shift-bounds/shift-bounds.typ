@@ -32,7 +32,7 @@ Robust bounds on #link(<sec-shift>)[$Shift(vx, vy)$] with specified coverage.
 
 #list(marker: none, tight: true,
   [*Also known as* — distribution-free confidence interval for Hodges-Lehmann],
-  [*Note* — assumes weak continuity (ties from measurement resolution are tolerated but may yield conservative bounds)],
+  [*Note* — assumes #link(<sec-weak-shape>)[weak shape] and weak continuity (ties from measurement resolution are tolerated but may yield conservative bounds)],
 )
 
 #v(0.5em)
@@ -53,7 +53,9 @@ Robust bounds on #link(<sec-shift>)[$Shift(vx, vy)$] with specified coverage.
 $ShiftBounds$ provides not just the estimated shift but also the uncertainty of that estimate.
 The function returns an interval of plausible shift values given the data.
 Set $misrate$ to control how often the bounds might fail to contain the true shift: use $10^(-3)$ for everyday analysis or $10^(-6)$ for critical decisions where errors are costly.
-These bounds require no assumptions about your data distribution, so they remain valid for any continuous measurements.
+These bounds require #link(<sec-weak-shape>)[weak shape] but no specific distributional form:
+  coverage is exact for any continuous distributions that differ only by a shift.
+When the shapes differ, the actual coverage may deviate from $1 - misrate$.
 If the bounds exclude zero, that suggests a reliable difference between the two groups.
 
 #v(0.5em)

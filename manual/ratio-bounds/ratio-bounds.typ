@@ -28,7 +28,7 @@ Robust bounds on #link(<sec-ratio>)[$Ratio(vx, vy)$] with specified coverage —
 
 #list(marker: none, tight: true,
   [*Also known as* — distribution-free confidence interval for Hodges-Lehmann ratio],
-  [*Note* — assumes weak continuity (ties from measurement resolution are tolerated but may yield conservative bounds)],
+  [*Note* — assumes #link(<sec-weak-shape>)[weak shape] in log-space and weak continuity (ties from measurement resolution are tolerated but may yield conservative bounds)],
 )
 
 #v(0.5em)
@@ -60,7 +60,10 @@ $RatioBounds$ returns $[e^a, e^b]$.
 $RatioBounds$ provides not just the estimated ratio but also the uncertainty of that estimate.
 The function returns an interval of plausible ratio values given the data.
 Set $misrate$ to control how often the bounds might fail to contain the true ratio: use $10^(-3)$ for everyday analysis or $10^(-6)$ for critical decisions where errors are costly.
-These bounds require no assumptions about your data distribution, so they remain valid for any continuous positive measurements.
+These bounds require #link(<sec-weak-shape>)[weak shape] but no specific distributional form:
+  coverage is exact for any continuous positive distributions that differ only by scale,
+  so that the log-transformed samples differ only by a shift.
+When the shapes differ, the actual coverage may deviate from $1 - misrate$.
 If the bounds exclude $1$, that suggests a reliable multiplicative difference between the two groups.
 
 #v(0.5em)

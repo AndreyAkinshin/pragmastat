@@ -180,6 +180,71 @@ Weak symmetry is a performance expectation, not an enforced constraint:
 #link(<sec-center-bounds>)[$CenterBounds$] requires both weak continuity and weak symmetry for exact coverage.
 
 #pagebreak()
+== Weak Shape Assumption <sec-weak-shape>
+
+*Definition*
+
+Two-sample bounds assume the compared distributions share the same shape
+and differ only in location: $F_X (t) = F_Y (t - Delta)$, equivalently $X =^d Y + Delta$.
+The unknown $Delta$ is the target parameter; nothing else about the common shape is assumed.
+
+*Properties*
+
+Weak shape is a performance expectation, not an enforced constraint:
+
+#v(0.3em)
+#list(marker: none, tight: true,
+  [*Approximate shape match* — The shapes need not match exactly;
+  mild differences produce mild coverage drift.],
+  [*Distribution-free within the model* — Coverage is exact for every continuous
+  $F_X$ that satisfies the model, whatever its shape.],
+  [*Not validated* — This is a modeling assumption, never checked computationally.],
+  [*Violation behavior* — When the shapes differ (unequal dispersion, for example),
+  the actual coverage may deviate from $1 - misrate$.],
+)
+
+#v(0.5em)
+*Multiplicative form*
+
+#link(<sec-ratio-bounds>)[$RatioBounds$] applies the same model in log-space,
+where it becomes multiplicative: the distributions must differ only by scale,
+$F_X (t) = F_Y (t \/ theta)$, equivalently $X =^d theta Y$ with $theta > 0$.
+
+#v(0.5em)
+*When shape agreement is plausible*
+
+#list(marker: none, tight: true,
+  [Before/after comparisons where the change moves the level, not the variability],
+  [Repeated benchmarks of two builds measured under identical conditions],
+  [Two arms of the same instrumented process],
+)
+
+#v(0.5em)
+*When shape agreement is doubtful*
+
+#list(marker: none, tight: true,
+  [Groups with visibly different dispersion],
+  [Samples truncated, censored, or rounded differently from each other],
+  [Mixtures where only one group carries a slow tail],
+)
+
+#v(0.5em)
+*Functions requiring weak shape*
+
+#list(marker: none, tight: true,
+  [#link(<sec-shift-bounds>)[$ShiftBounds(vx, vy, misrate)$] — requires weak shape for exact coverage.],
+  [#link(<sec-ratio-bounds>)[$RatioBounds(vx, vy, misrate)$] — requires the multiplicative form for exact coverage.],
+  [#link(<sec-disparity-bounds>)[$DisparityBounds(vx, vy, misrate)$] — inherits weak shape from its $ShiftBounds$ component.],
+)
+
+#v(0.5em)
+*Relationship to weak symmetry*
+
+The two assumptions are independent.
+#link(<sec-center-bounds>)[$CenterBounds$] needs one distribution to be symmetric;
+two-sample bounds need two distributions to agree in shape, with no symmetry requirement on either.
+
+#pagebreak()
 == Sparity Assumption <sec-sparity>
 
 *Definition*
@@ -194,7 +259,7 @@ This can happen even when `min(x) < max(x)`, so a min/max check is not sufficien
 
 *Why it matters*
 
-#link(<sec-spread>)[Spread] is defined as the median of pairwise differences.
+#link(<sec-spread>)[Spread] is defined as the median of pairwise absolute differences.
 If the median is zero, variability is not just small — it is not identifiable at the toolkit's scale.
 The sparity assumption captures this and prevents tie-dominant samples from entering spread-based estimators.
 

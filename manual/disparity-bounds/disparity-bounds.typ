@@ -31,7 +31,7 @@ Robust bounds on #link(<sec-disparity>)[$Disparity(vx, vy)$] with specified cove
 *Notes*
 
 #list(marker: none, tight: true,
-  [*Note* --- Bonferroni split between shift and avg-spread bounds; no independence assumption needed; bounds may be unbounded when pooled spread cannot be certified positive],
+  [*Note* --- Bonferroni split between shift and avg-spread bounds; inherits #link(<sec-weak-shape>)[weak shape] from the shift component; no independence assumption needed; bounds may be unbounded when pooled spread cannot be certified positive],
 )
 
 #v(0.5em)
