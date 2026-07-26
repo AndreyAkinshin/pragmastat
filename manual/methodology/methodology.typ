@@ -352,9 +352,14 @@ Reference tests serve three critical purposes:
 )
 
 #v(0.5em)
-The C\# implementation serves as the reference generator.
-All test cases are defined programmatically, executed to produce expected outputs, and serialized to JSON.
-Other implementations load these JSON files and verify their outputs match within numerical tolerance.
+Fixtures are generated programmatically and serialized to JSON, and every implementation loads the
+  same files.
+The generator is not always the same one: the randomization suites are emitted from Rust and the
+  rest from C\#.
+That is deliberate, because a generator is not an oracle: a suite generated and checked by one
+  implementation would prove only that it agrees with itself.
+Each case therefore records where its expected values came from, and each case states the tolerance
+  it is checked at, up to and including bitwise equality.
 
 #pagebreak()
 == Cross-Language Determinism
@@ -367,8 +372,39 @@ the same simulation in Rust, Go, or any other supported language must produce th
 #list(marker: none, tight: true,
   [*Portable RNG* — $Rng("experiment-1")$ produces identical sequences in all languages],
   [*Specified algorithms* — xoshiro256++ for generation, SplitMix64 for seeding, FNV-1a for string hashing],
-  [*No implementation-dependent behavior* — Floating-point operations follow IEEE 754],
+  [*Pinned rounding* — every intermediate rounding in a bitwise-portable kernel is written where
+  the language would otherwise be free to skip it],
 )
+
+#v(0.5em)
+*How far determinism reaches, and where it stops*
+
+"Follows IEEE 754" is not by itself a guarantee of identical bits, and claiming it would be
+  convenient rather than true.
+IEEE 754 fixes the result of each individual operation; it does not fix how many operations a
+  compiler performs.
+Several languages let an implementation fuse a multiply and an add into one instruction with a
+  single rounding, and compilers do exactly that on most non-x86 targets.
+A fused result is a legitimate IEEE 754 value and still differs from an unfused one in the last
+  bit.
+Where a suite declares its tolerance `exact`, the kernel therefore writes each rounding down
+  explicitly, and a build-time check asserts on four such targets that no fusion survived.
+
+#v(0.3em)
+Two limits are stated rather than hidden.
+Transcendental functions are the first: the logarithm, the exponential, the cosine and the general
+  power are polynomial approximations, each language takes its own, and two implementations correct
+  to within an ulp still disagree in the last bit.
+Any result computed through one of them conforms at a stated tolerance and not bitwise, which is
+  why the parametric distributions other than $Uniform$ are tolerance-bound.
+Accumulated rounding is the second: an estimator that sums or searches over $O(n^2)$ intermediate
+  values is reproducible to the tolerance its suite declares, not to the last bit.
+
+#v(0.3em)
+So the promise is graded, and each suite carries its grade explicitly rather than inheriting a
+  default.
+Randomization and sampling are bitwise.
+The estimators conform at the tolerance recorded with their cases.
 
 #v(0.5em)
 *Unified API*
