@@ -1,4 +1,5 @@
 use crate::assumptions::EstimatorError;
+use crate::conformance::bitwise_mismatch;
 use crate::estimators::raw::{avg_spread, spread};
 use float_cmp::approx_eq;
 use serde::Deserialize;
@@ -113,12 +114,8 @@ fn test_avg_spread_reference() {
         };
 
         executed_count += 1;
-        if !(approx_eq!(f64, actual_output, expected_output, epsilon = 1e-9)
-            || (actual_output.is_infinite() && expected_output.is_infinite()))
-        {
-            failures.push(format!(
-                "{file_name:?}: expected {expected_output}, got {actual_output}",
-            ));
+        if let Some(mismatch) = bitwise_mismatch("value", expected_output, actual_output) {
+            failures.push(format!("{file_name:?}: {mismatch}"));
         }
     }
 

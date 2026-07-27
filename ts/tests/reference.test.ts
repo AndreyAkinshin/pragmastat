@@ -73,6 +73,36 @@ function f64Bits(value: number): string {
 }
 
 /**
+ * Asserts a single double against a fixture bit for bit.
+ *
+ * Every suite that uses this returns an element selected out of a pairwise set
+ * (or an average of two such elements). A divergence is therefore never a small
+ * error: either the same element was selected and the answer is bit-identical,
+ * or a different one was, and the gap is data-dependent and unbounded by any
+ * epsilon. A tolerance hides exactly the failure it appears to guard against.
+ * The suites that keep a tolerance, and the reason, are listed at
+ * `TOLERANT_VALUE_DIRS` and above `describe('compare2')`.
+ *
+ * Exactness here is measured, not assumed: recomputing every estimator with each
+ * call to `log`, `exp`, `pow` and `cos` returning the neighbouring representable
+ * value (the largest legitimate difference between two conforming libm
+ * implementations) moved none of them, on any input.
+ *
+ * `Object.is` is the same predicate as `expect(...).toBe(...)`; this wrapper
+ * exists only so a one-ULP failure is readable, printing both bit patterns
+ * alongside the subject that names the fixture and the entry point.
+ */
+function expectBitwise(subject: string, actual: number, expected: number): void {
+  if (!Object.is(actual, expected)) {
+    throw new Error(
+      `${subject}: bitwise mismatch: ` +
+        `expected ${expected} (${f64Bits(expected)}), ` +
+        `actual ${actual} (${f64Bits(actual)})`,
+    );
+  }
+}
+
+/**
  * Asserts a generated sequence against a randomization fixture bit for bit.
  *
  * The randomization contract is bitwise: `new Rng(seed)` must produce an
@@ -83,24 +113,14 @@ function f64Bits(value: number): string {
  * arm64 backend does exactly this in `UniformFloat64Range`), and the tolerant
  * comparison that used to live here would have shipped it.
  *
- * `Object.is` is the same predicate as `expect(...).toBe(...)`; the loop exists
- * only so the failure names the index and prints both bit patterns.
- *
- * The estimator suites and the additive/multiplic/exp/power distributions stay
- * tolerant on purpose: their draws go through `log`, `exp`, `cos` and `pow`,
- * which every language takes from a different libm, so bitwise equality there
- * is not achievable.
+ * The additive/multiplic/exp/power distributions stay tolerant on purpose:
+ * their draws go through `log`, `exp`, `cos` and `pow`, which every language
+ * takes from a different libm, so bitwise equality there is not achievable.
  */
 function expectBitwiseSequence(subject: string, actual: number[], expected: number[]): void {
   expect(actual).toHaveLength(expected.length);
   for (let i = 0; i < actual.length; i++) {
-    if (!Object.is(actual[i], expected[i])) {
-      throw new Error(
-        `${subject}: bitwise mismatch at index ${i}: ` +
-          `expected ${expected[i]} (${f64Bits(expected[i])}), ` +
-          `actual ${actual[i]} (${f64Bits(actual[i])})`,
-      );
-    }
+    expectBitwise(`${subject} at index ${i}`, actual[i], expected[i]);
   }
 }
 
@@ -146,7 +166,7 @@ function getInputArrays(input: TestData['input']): { x: number[]; y?: number[] }
 function runDualPath<R>(
   data: TestData,
   entries: EntryPoint<R>[],
-  assertValue: (result: R, expected: TestData['output']) => void,
+  assertValue: (result: R, expected: TestData['output'], entryName: string) => void,
 ): void {
   for (const entry of entries) {
     if (data.expected_error) {
@@ -163,7 +183,7 @@ function runDualPath<R>(
       expectError(thrownError, data.expected_error, entry.isSampleCreation);
     } else {
       const result = entry.run(data);
-      assertValue(result, data.output);
+      assertValue(result, data.output, entry.name);
     }
   }
 }
@@ -238,9 +258,26 @@ describe('Reference Tests', () => {
     'avg-spread': twoSampleEntries(null, avgSpread),
   };
 
-  const assertValue = (result: ValueResult, expected: number): void => {
-    expect(result.value).toBeCloseTo(expected, 9);
-  };
+  /**
+   * Suites that stay on a tolerance, and why.
+   *
+   * `ratio` is `exp(median(log x - log y))`: unlike the selection estimators it
+   * really is approximate. Perturbing libm by one ULP moves it on 94% of inputs,
+   * by up to 16 ULP, so exact equality across implementations is not a property
+   * it has. `ratio-bounds` inherits this from the same projection.
+   */
+  const TOLERANT_VALUE_DIRS = new Set(['ratio']);
+  const TOLERANT_BOUNDS_DIRS = new Set(['ratio-bounds']);
+
+  const makeAssertValue =
+    (subject: string, exact: boolean) =>
+    (result: ValueResult, expected: number, entryName: string): void => {
+      if (exact) {
+        expectBitwise(`${subject} [${entryName}]`, result.value, expected);
+      } else {
+        expect(result.value).toBeCloseTo(expected, 9);
+      }
+    };
 
   // ---------------------------------------------------------------------------
   // Bounds-estimator dual-path infrastructure
@@ -250,10 +287,17 @@ describe('Reference Tests', () => {
     upper: number;
   }
 
-  const assertBounds = (result: BoundsResult, expected: { lower: number; upper: number }): void => {
-    expect(result.lower).toBeCloseTo(expected.lower, 9);
-    expect(result.upper).toBeCloseTo(expected.upper, 9);
-  };
+  const makeAssertBounds =
+    (subject: string, exact: boolean) =>
+    (result: BoundsResult, expected: { lower: number; upper: number }, entryName: string): void => {
+      if (exact) {
+        expectBitwise(`${subject} [${entryName}].lower`, result.lower, expected.lower);
+        expectBitwise(`${subject} [${entryName}].upper`, result.upper, expected.upper);
+      } else {
+        expect(result.lower).toBeCloseTo(expected.lower, 9);
+        expect(result.upper).toBeCloseTo(expected.upper, 9);
+      }
+    };
 
   // One-sample bounds (centerBounds, spreadBounds): raw + sample entry points.
   function oneSampleBoundsEntries(
@@ -320,12 +364,14 @@ describe('Reference Tests', () => {
         expect(testFiles.length).toBeGreaterThan(0);
       });
 
+      const exact = !TOLERANT_BOUNDS_DIRS.has(dirName);
+
       testFiles.forEach((fileName) => {
         const filePath = path.join(dirPath, fileName);
         const testName = fileName.replace('.json', '');
         it(`should pass ${testName}`, () => {
           const data: TestData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-          runDualPath(data, entries, assertBounds);
+          runDualPath(data, entries, makeAssertBounds(`${dirName}/${fileName}`, exact));
         });
       });
     });
@@ -382,6 +428,7 @@ describe('Reference Tests', () => {
         .sort();
 
       const entries = valueEstimatorEntries[dirName];
+      const exact = !TOLERANT_VALUE_DIRS.has(dirName);
 
       testFiles.forEach((fileName) => {
         const filePath = path.join(dirPath, fileName);
@@ -389,7 +436,7 @@ describe('Reference Tests', () => {
 
         it(`should pass ${testName}`, () => {
           const data: TestData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-          runDualPath(data, entries, assertValue);
+          runDualPath(data, entries, makeAssertValue(`${dirName}/${fileName}`, exact));
         });
       });
     });
@@ -864,8 +911,8 @@ describe('Reference Tests', () => {
           const sx = Sample.of(data.input.x);
           const sy = Sample.of(data.input.y);
           const result = avgSpreadBounds(sx, sy, data.input.misrate, data.input.seed);
-          expect(result.lower).toBeCloseTo(data.output.lower, 9);
-          expect(result.upper).toBeCloseTo(data.output.upper, 9);
+          expectBitwise(`avg-spread-bounds/${fileName}.lower`, result.lower, data.output.lower);
+          expectBitwise(`avg-spread-bounds/${fileName}.upper`, result.upper, data.output.upper);
         });
       });
     }
@@ -989,7 +1036,7 @@ describe('Reference Tests', () => {
 
             expect(result.unit.id).toBe(data.output.unit);
             if (data.output.value !== undefined) {
-              expect(result.value).toBeCloseTo(data.output.value, 9);
+              expectBitwise(`unit-propagation/${fileName}`, result.value, data.output.value);
             }
           } else {
             // One-sample
@@ -1004,7 +1051,7 @@ describe('Reference Tests', () => {
 
             expect(result.unit.id).toBe(data.output.unit);
             if (data.output.value !== undefined) {
-              expect(result.value).toBeCloseTo(data.output.value, 9);
+              expectBitwise(`unit-propagation/${fileName}`, result.value, data.output.value);
             }
           }
         });
@@ -1059,10 +1106,12 @@ describe('Reference Tests', () => {
 
           expect(results.length).toBe(data.output.projections.length);
           for (let i = 0; i < results.length; i++) {
-            expect(results[i].estimate.value).toBeCloseTo(data.output.projections[i].estimate, 9);
-            expect(results[i].bounds.lower).toBeCloseTo(data.output.projections[i].lower, 9);
-            expect(results[i].bounds.upper).toBeCloseTo(data.output.projections[i].upper, 9);
-            expect(results[i].verdict).toBe(data.output.projections[i].verdict);
+            const subject = `compare1/${fileName} projection ${i}`;
+            const projection = data.output.projections[i];
+            expectBitwise(`${subject}.estimate`, results[i].estimate.value, projection.estimate);
+            expectBitwise(`${subject}.lower`, results[i].bounds.lower, projection.lower);
+            expectBitwise(`${subject}.upper`, results[i].bounds.upper, projection.upper);
+            expect(results[i].verdict).toBe(projection.verdict);
           }
         });
       });
@@ -1070,6 +1119,13 @@ describe('Reference Tests', () => {
   });
 
   // Compare2 tests
+  //
+  // Stays tolerant as a whole: its projections mix `shift`/`disparity`, which are
+  // exact, with `ratio`, which is not. A per-suite predicate cannot express "exact
+  // for these projections, approximate for that one", so the weakest member sets
+  // the bar. Splitting it would mean keying the comparator off the threshold
+  // metric, which buys exactness on projections the dedicated shift/disparity
+  // suites already cover bitwise.
   describe('compare2', () => {
     const dirPath = path.join(testDataPath, 'compare2');
     if (fs.existsSync(dirPath)) {

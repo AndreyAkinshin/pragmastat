@@ -27,8 +27,8 @@ public class AvgSpreadBoundsTests
 
     var testCase = controller.LoadTestCase(testName);
     var actual = controller.Run(testCase.Input);
-    Assert.True(
-      controller.Assert(testCase.Output, actual),
-      $"Test: {testName}, Expected: [{testCase.Output.Lower}, {testCase.Output.Upper}], Actual: [{actual.Lower}, {actual.Upper}]");
+    string context = $"Suite: {SuiteName}, test {testName}";
+    BitwiseAssert.Equal(testCase.Output.Lower, actual.Lower, context + ", lower");
+    BitwiseAssert.Equal(testCase.Output.Upper, actual.Upper, context + ", upper");
   }
 }

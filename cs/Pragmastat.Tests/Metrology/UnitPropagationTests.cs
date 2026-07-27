@@ -10,7 +10,6 @@ namespace Pragmastat.Tests.Metrology;
 public class UnitPropagationTests
 {
   private const string SuiteName = "unit-propagation";
-  private const double Tolerance = 1e-9;
 
   private static readonly UnitRegistry Registry = UnitRegistry.Standard();
 
@@ -54,8 +53,8 @@ public class UnitPropagationTests
           Measurement m = CenterEstimator.Instance.Estimate(sx);
           Assert.Equal(expectedUnitId, m.Unit.Id);
           if (output.TryGetProperty("value", out var valueProp))
-            Assert.True(Math.Abs(m.NominalValue - valueProp.GetDouble()) < Tolerance,
-              $"Value = {m.NominalValue}, want {valueProp.GetDouble()}");
+            BitwiseAssert.Equal(valueProp.GetDouble(), m.NominalValue,
+              $"Suite: {SuiteName}, test {testName}, value");
           break;
         }
       case "spread":

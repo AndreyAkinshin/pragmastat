@@ -37,6 +37,22 @@ public static class SpreadBoundsTestCases
     inputBuilder.Add("edge-large-n", new Sample(Enumerable.Range(1, 100).Select(x => (double)x).ToArray()), 0.01);
     inputBuilder.Add("edge-n2", new Sample(1, 3), 1.0);
 
+    // At the misrate floor.
+    //
+    // The one-sample floor is 2^(1 - floor(n/2)), so asking for exactly that value makes the
+    // sign-margin comparison an exact tie, decided entirely by rounding. The sign margin inverts
+    // the binomial distribution function in logarithmic space, which means the tie is settled
+    // inside log and exp, and those come from a different library in every port. Nothing else in
+    // this suite samples that point: the smallest misrate above is 0.002, while the floor at
+    // n = 25 is 2^-11.
+    foreach (var n in new[] { 4, 5, 6, 7, 9, 12, 17, 25, 40 })
+    {
+      double floor = Math.Pow(2.0, 1 - n / 2);
+      if (floor <= 0 || floor > 1) continue;
+      inputBuilder.Add($"floor-n{n}",
+        new Sample(Enumerable.Range(1, n).Select(x => (double)x).ToArray()), floor);
+    }
+
     // Additive distribution (misrate varies by size)
     inputBuilder.AddAdditive([20], 0.02, count: 1);
     inputBuilder.AddAdditive([30, 50], 0.01, count: 1);

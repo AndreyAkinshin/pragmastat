@@ -38,9 +38,11 @@ test_that("unit propagation satisfies reference tests", {
         info = paste("Unit mismatch for center:", file_label)
       )
       if (!is.null(output$value)) {
-        expect_equal(m$value, output$value,
-          tolerance = 1e-9,
-          info = paste("Value mismatch for center:", file_label)
+        # center is bit-identical across ports, so the value carried through
+        # the unit adapter must be too: compare bit patterns, not an epsilon.
+        expect_exact(
+          m$value, output$value,
+          paste("Value mismatch for center:", file_label)
         )
       }
     } else if (estimator_name == "spread") {

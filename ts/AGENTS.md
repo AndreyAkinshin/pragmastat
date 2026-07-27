@@ -118,7 +118,12 @@ class Multiplic implements Distribution { constructor(location: number, scale: n
 
 - **Reference tests**: Load JSON fixtures from `../tests/` directory
 - **Invariance tests**: Verify mathematical properties
-- **Tolerance**: `1e-9` for floating-point comparisons
+- **Comparison**: bitwise (`Object.is` on binary64) for every selection estimator
+  and the randomization suites. A selection estimator returns an element of the
+  pairwise set, so a divergence is a different element, not a small error, and no
+  epsilon bounds it. Only `ratio`/`ratio-bounds`, `compare2` and the
+  additive/multiplic/exp/power distributions stay tolerant: they go through libm
+  (`log`, `exp`, `pow`, `cos`) and are genuinely approximate.
 
 ```bash
 mise run ts:test          # All tests (preferred)

@@ -2,6 +2,8 @@ package pragmastat
 
 import (
 	"encoding/json"
+	"fmt"
+	"math"
 	"os"
 	"path/filepath"
 	"strings"
@@ -18,6 +20,74 @@ import (
 // Both must match the fixture's expected output / expected error. Running each
 // fixture through both paths is what catches Sample-adapter bugs (a past
 // critical bug shipped because fixtures only ran through the raw path).
+
+// --- How a fixture's expected value is compared with the computed one ---
+
+// referenceTolerance is the epsilon kept by the few suites whose result is a
+// genuine floating-point approximation rather than a selected element.
+const referenceTolerance = 1e-9
+
+// compareMode selects the comparison a suite runs under.
+type compareMode int
+
+const (
+	// compareExact requires bit-identical binary64 payloads.
+	//
+	// These estimators select their result out of the pairwise set, so a
+	// divergence is never a small error: either the same element was selected
+	// and the answer is bit-identical, or a different one was, and then the
+	// difference is a data-dependent gap that no epsilon bounds. A tolerance
+	// hides exactly the failure it appears to guard against.
+	//
+	// The exactness was measured, not assumed. A perturbation experiment
+	// recomputed every estimator with each call to log, exp, pow and cos
+	// returning the neighbouring representable value, which is the smallest
+	// difference two conforming libm implementations can legitimately have.
+	// The suites marked compareExact did not move at all, on any input.
+	compareExact compareMode = iota
+	// compareTolerant keeps referenceTolerance, for results that genuinely pass
+	// through libm. Under the same perturbation, exp(median(log x - log y))
+	// moves on 94% of inputs, by up to 16 ulp.
+	compareTolerant
+)
+
+// assertFloat compares one computed binary64 against a fixture's expected
+// value. A bitwise mismatch prints both raw payloads: a one-ULP difference is
+// invisible in the decimal rendering, and being able to read it is the entire
+// point of comparing bitwise.
+func assertFloat(t *testing.T, mode compareMode, label string, actual, expected float64) {
+	t.Helper()
+	if mode == compareTolerant {
+		if !floatEquals(actual, expected, referenceTolerance) {
+			t.Errorf("%s = %v, want %v (tolerance %g)", label, actual, expected, referenceTolerance)
+		}
+		return
+	}
+	if actual != expected {
+		t.Errorf("%s = %s, want %s", label, formatFloatBits(actual), formatFloatBits(expected))
+	}
+}
+
+// assertExactSequence compares a computed sequence with a fixture's expected
+// one, element by element and bit for bit.
+func assertExactSequence(t *testing.T, label string, actual, expected []float64) {
+	t.Helper()
+	if len(actual) != len(expected) {
+		t.Fatalf("%s length = %d, want %d", label, len(actual), len(expected))
+	}
+	for i := range actual {
+		if actual[i] != expected[i] {
+			t.Errorf("%s at index %d = %s, want %s",
+				label, i, formatFloatBits(actual[i]), formatFloatBits(expected[i]))
+		}
+	}
+}
+
+// formatFloatBits renders a binary64 as its shortest round-tripping decimal
+// followed by its raw payload.
+func formatFloatBits(v float64) string {
+	return fmt.Sprintf("%v (0x%016x)", v, math.Float64bits(v))
+}
 
 // expectedError is the shape of the "expected_error" object in fixtures.
 type expectedError struct {
@@ -127,8 +197,8 @@ type boundsEntry struct {
 }
 
 // runScalarDualPath runs both entry points for a scalar estimator against the
-// fixture's expected output or expected error.
-func runScalarDualPath(t *testing.T, td TestData, entries []scalarEntry) {
+// fixture's expected output or expected error, under the suite's compareMode.
+func runScalarDualPath(t *testing.T, td TestData, mode compareMode, entries []scalarEntry) {
 	t.Helper()
 	if len(td.ExpectedError) > 0 {
 		for _, e := range entries {
@@ -160,16 +230,14 @@ func runScalarDualPath(t *testing.T, td TestData, entries []scalarEntry) {
 			if err != nil {
 				t.Fatalf("%s entry returned error: %v", e.name, err)
 			}
-			if !floatEquals(value, expected, 1e-9) {
-				t.Errorf("%s = %v, want %v", e.name, value, expected)
-			}
+			assertFloat(t, mode, e.name, value, expected)
 		})
 	}
 }
 
 // runBoundsDualPath runs both entry points for a bounds estimator against the
-// fixture's expected output or expected error.
-func runBoundsDualPath(t *testing.T, td TestData, entries []boundsEntry) {
+// fixture's expected output or expected error, under the suite's compareMode.
+func runBoundsDualPath(t *testing.T, td TestData, mode compareMode, entries []boundsEntry) {
 	t.Helper()
 	if len(td.ExpectedError) > 0 {
 		for _, e := range entries {
@@ -197,10 +265,8 @@ func runBoundsDualPath(t *testing.T, td TestData, entries []boundsEntry) {
 			if err != nil {
 				t.Fatalf("%s entry returned error: %v", e.name, err)
 			}
-			if !floatEquals(b.Lower, expected.Lower, 1e-9) || !floatEquals(b.Upper, expected.Upper, 1e-9) {
-				t.Errorf("%s = [%v, %v], want [%v, %v]",
-					e.name, b.Lower, b.Upper, expected.Lower, expected.Upper)
-			}
+			assertFloat(t, mode, e.name+" lower", b.Lower, expected.Lower)
+			assertFloat(t, mode, e.name+" upper", b.Upper, expected.Upper)
 		})
 	}
 }

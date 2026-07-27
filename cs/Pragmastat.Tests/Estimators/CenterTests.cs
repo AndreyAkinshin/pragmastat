@@ -39,7 +39,7 @@ public class CenterTests
 
     var testCase = controller.LoadTestCase(testName);
     var actual = controller.Run(testCase.Input);
-    Assert.True(controller.Assert(testCase.Output, actual));
+    BitwiseAssert.Equal(testCase.Output, actual, $"Suite: {SuiteName}, test {testName} ({entryPoint})");
   }
 
   [Fact]

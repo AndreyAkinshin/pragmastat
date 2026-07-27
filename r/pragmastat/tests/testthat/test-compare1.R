@@ -1,16 +1,24 @@
 # Run reference tests for compare1
 # Compare1 requires special handling since it needs thresholds and seed
 
-expect_projection <- function(actual_proj, expected_proj, file_label, idx) {
+# compare1 projects only center and spread, both of which select an element of
+# the pairwise set and are therefore bit-identical across ports (see the note
+# on run_reference_tests). Its numbers are compared bitwise. compare2 is the
+# one that stays tolerant: it composes ratio projections alongside exact ones,
+# and a per-suite tolerance cannot say "exact for shift, approximate for ratio".
+expect_projection_exact <- function(actual_proj, expected_proj, file_label, idx) {
   label <- paste0(file_label, " projection[", idx, "]")
-  expect_equal(actual_proj$estimate$value, expected_proj$estimate,
-    tolerance = 1e-9, info = paste(label, "estimate")
+  expect_exact(
+    actual_proj$estimate$value, expected_proj$estimate,
+    paste(label, "estimate")
   )
-  expect_equal(actual_proj$bounds$lower, expected_proj$lower,
-    tolerance = 1e-9, info = paste(label, "lower")
+  expect_exact(
+    actual_proj$bounds$lower, expected_proj$lower,
+    paste(label, "lower")
   )
-  expect_equal(actual_proj$bounds$upper, expected_proj$upper,
-    tolerance = 1e-9, info = paste(label, "upper")
+  expect_exact(
+    actual_proj$bounds$upper, expected_proj$upper,
+    paste(label, "upper")
   )
   expect_equal(actual_proj$verdict, expected_proj$verdict,
     info = paste(label, "verdict")
@@ -70,7 +78,7 @@ run_compare1_reference_tests <- function() {
       )
 
       for (i in seq_along(expected_projections)) {
-        expect_projection(
+        expect_projection_exact(
           actual_output[[i]], expected_projections[[i]], file_label, i
         )
       }

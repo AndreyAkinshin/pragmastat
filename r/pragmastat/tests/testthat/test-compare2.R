@@ -1,7 +1,10 @@
 # Run reference tests for compare2
 # Compare2 requires special handling since it needs thresholds and seed
 
-expect_projection <- function(actual_proj, expected_proj, file_label, idx) {
+# compare2 composes ratio projections (libm-dependent, see test-ratio.R)
+# alongside exact ones. A per-suite tolerance cannot express "exact for shift,
+# approximate for ratio", so the whole suite stays tolerant.
+expect_projection_tolerant <- function(actual_proj, expected_proj, file_label, idx) {
   label <- paste0(file_label, " projection[", idx, "]")
   expect_equal(actual_proj$estimate$value, expected_proj$estimate,
     tolerance = 1e-9, info = paste(label, "estimate")
@@ -79,7 +82,7 @@ run_compare2_reference_tests <- function() {
       )
 
       for (i in seq_along(expected_projections)) {
-        expect_projection(
+        expect_projection_tolerant(
           actual_output[[i]], expected_projections[[i]], file_label, i
         )
       }

@@ -1,3 +1,6 @@
+mod conformance;
+
+use conformance::Conformance;
 use float_cmp::approx_eq;
 use pragmastat::assumptions::EstimatorError;
 use pragmastat::estimators::raw;
@@ -6,22 +9,21 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::{Path, PathBuf};
 
-/// Compares two f64 values using the reference-test tolerance, treating
-/// matching infinities as equal (mirrors the existing two-sample logic).
-fn values_match(actual: f64, expected: f64) -> bool {
-    approx_eq!(f64, actual, expected, epsilon = 1e-9)
-        || (actual.is_infinite() && expected.is_infinite() && actual.signum() == expected.signum())
+/// What a fixture expects from one estimator call, and how strictly its numbers
+/// are compared. Bundled so the bounds checkers keep a readable signature.
+struct Expectation<'a> {
+    error: Option<&'a ExpectedError>,
+    bounds: Option<&'a BoundsOutput>,
+    conformance: Conformance,
 }
 
 /// Asserts that a randomization stream matches its fixture bit for bit.
 ///
-/// Bitwise, not tolerant. The randomization contract is that a seeded stream is
-/// identical in every language, so "close enough" is not the property under test:
-/// a one-ULP drift is already a broken contract, and a tolerance reports it as a
-/// pass. This is what catches a compiler fusing a multiply into an add on arm64
-/// and changing the last bit of a draw. The estimator suites stay tolerant for a
-/// different reason: they run through `log`, `exp` and friends, which each
-/// platform takes from a different libm, so their last bit is not contractual.
+/// The randomization contract is that a seeded stream is identical in every
+/// language, so "close enough" is not the property under test: a one-ULP drift is
+/// already a broken contract, and a tolerance reports it as a pass. This is what
+/// catches a compiler fusing a multiply into an add on arm64 and changing the last
+/// bit of a draw.
 fn assert_bitwise_f64(json_file: &Path, actual: &[f64], expected: &[f64]) {
     assert_eq!(
         actual.len(),
@@ -219,6 +221,7 @@ fn check_one_sample_point(
     label: &str,
     test_case: &OneSampleTestCase,
     result: PointResult,
+    conformance: Conformance,
 ) {
     if let Some(ref expected_error) = test_case.expected_error {
         match result {
@@ -232,9 +235,10 @@ fn check_one_sample_point(
     match result {
         Ok(actual_output) => {
             *executed_count += 1;
-            if !values_match(actual_output, expected_output) {
+            if !conformance.matches(actual_output, expected_output) {
                 failures.push(format!(
-                    "{file_name:?} [{label}]: expected {expected_output}, got {actual_output}",
+                    "{file_name:?} [{label}]: {}",
+                    conformance.mismatch("value", expected_output, actual_output)
                 ));
             }
         }
@@ -245,8 +249,12 @@ fn check_one_sample_point(
 /// Runs every fixture for a one-sample estimator through BOTH the raw API
 /// (`assume_sorted = false`) and the Sample-based public API, asserting that
 /// each entry point matches the fixture's expected output / expected error.
-fn run_one_sample_tests<R, S>(estimator_name: &str, raw_func: R, sample_func: S)
-where
+fn run_one_sample_tests<R, S>(
+    estimator_name: &str,
+    conformance: Conformance,
+    raw_func: R,
+    sample_func: S,
+) where
     R: Fn(&[f64]) -> PointResult,
     S: Fn(&Sample) -> Result<Measurement, EstimatorError>,
 {
@@ -293,6 +301,7 @@ where
             "raw",
             &test_case,
             raw_func(&test_case.input.x),
+            conformance,
         );
 
         // (2) Sample API: construct Sample::new, then extract `.value`.
@@ -307,6 +316,7 @@ where
             "sample",
             &test_case,
             sample_result,
+            conformance,
         );
     }
 
@@ -331,6 +341,7 @@ fn run_two_sample_raw<R>(
     file_name: &std::ffi::OsStr,
     test_case: &TwoSampleTestCase,
     raw_func: &R,
+    conformance: Conformance,
 ) where
     R: Fn(&[f64], &[f64]) -> PointResult,
 {
@@ -348,9 +359,10 @@ fn run_two_sample_raw<R>(
     match result {
         Ok(actual_output) => {
             *executed_count += 1;
-            if !values_match(actual_output, expected_output) {
+            if !conformance.matches(actual_output, expected_output) {
                 failures.push(format!(
-                    "{file_name:?} [raw]: expected {expected_output}, got {actual_output}",
+                    "{file_name:?} [raw]: {}",
+                    conformance.mismatch("value", expected_output, actual_output)
                 ));
             }
         }
@@ -370,6 +382,7 @@ fn run_two_sample_sample<S>(
     file_name: &std::ffi::OsStr,
     test_case: &TwoSampleTestCase,
     sample_func: &S,
+    conformance: Conformance,
 ) where
     S: Fn(&Sample, &Sample) -> Result<Measurement, EstimatorError>,
 {
@@ -418,9 +431,10 @@ fn run_two_sample_sample<S>(
     match result {
         Ok(actual_output) => {
             *executed_count += 1;
-            if !values_match(actual_output, expected_output) {
+            if !conformance.matches(actual_output, expected_output) {
                 failures.push(format!(
-                    "{file_name:?} [sample]: expected {expected_output}, got {actual_output}",
+                    "{file_name:?} [sample]: {}",
+                    conformance.mismatch("value", expected_output, actual_output)
                 ));
             }
         }
@@ -430,8 +444,12 @@ fn run_two_sample_sample<S>(
 
 /// Runs every fixture for a two-sample estimator through BOTH the raw API
 /// (`assume_sorted = false`) and the Sample-based public API.
-fn run_two_sample_tests<R, S>(estimator_name: &str, raw_func: R, sample_func: S)
-where
+fn run_two_sample_tests<R, S>(
+    estimator_name: &str,
+    conformance: Conformance,
+    raw_func: R,
+    sample_func: S,
+) where
     R: Fn(&[f64], &[f64]) -> PointResult,
     S: Fn(&Sample, &Sample) -> Result<Measurement, EstimatorError>,
 {
@@ -476,6 +494,7 @@ where
             file_name,
             &test_case,
             &raw_func,
+            conformance,
         );
         run_two_sample_sample(
             &mut failures,
@@ -483,6 +502,7 @@ where
             file_name,
             &test_case,
             &sample_func,
+            conformance,
         );
     }
 
@@ -502,27 +522,53 @@ where
 
 #[test]
 fn test_center() {
-    run_one_sample_tests("center", |x| raw::center(x, false), center);
+    run_one_sample_tests(
+        "center",
+        Conformance::Exact,
+        |x| raw::center(x, false),
+        center,
+    );
 }
 
 #[test]
 fn test_spread() {
-    run_one_sample_tests("spread", |x| raw::spread(x, false), spread);
+    run_one_sample_tests(
+        "spread",
+        Conformance::Exact,
+        |x| raw::spread(x, false),
+        spread,
+    );
 }
 
 #[test]
 fn test_shift() {
-    run_two_sample_tests("shift", |x, y| raw::shift(x, y, false), shift);
+    run_two_sample_tests(
+        "shift",
+        Conformance::Exact,
+        |x, y| raw::shift(x, y, false),
+        shift,
+    );
 }
 
 #[test]
 fn test_ratio() {
-    run_two_sample_tests("ratio", |x, y| raw::ratio(x, y, false), ratio);
+    // exp(median(log x - log y)): the only point estimator that libm can move.
+    run_two_sample_tests(
+        "ratio",
+        Conformance::Tolerant,
+        |x, y| raw::ratio(x, y, false),
+        ratio,
+    );
 }
 
 #[test]
 fn test_disparity() {
-    run_two_sample_tests("disparity", |x, y| raw::disparity(x, y, false), disparity);
+    run_two_sample_tests(
+        "disparity",
+        Conformance::Exact,
+        |x, y| raw::disparity(x, y, false),
+        disparity,
+    );
 }
 
 fn run_shift_bounds_tests() {
@@ -558,13 +604,17 @@ fn run_shift_bounds_tests() {
         let content = fs::read_to_string(json_file).unwrap();
         let test_case: ShiftBoundsTestCase = serde_json::from_str(&content).unwrap();
         let file_name = json_file.file_name().unwrap();
+        let expectation = Expectation {
+            error: test_case.expected_error.as_ref(),
+            bounds: test_case.output.as_ref(),
+            conformance: Conformance::Exact,
+        };
 
         // (1) raw API with assume_sorted = false
         check_two_sample_bounds_raw(
             &mut failures,
             file_name,
-            test_case.expected_error.as_ref(),
-            test_case.output.as_ref(),
+            &expectation,
             raw::shift_bounds(
                 &test_case.input.x,
                 &test_case.input.y,
@@ -577,8 +627,7 @@ fn run_shift_bounds_tests() {
         check_two_sample_bounds_sample(
             &mut failures,
             file_name,
-            test_case.expected_error.as_ref(),
-            test_case.output.as_ref(),
+            &expectation,
             &test_case.input.x,
             &test_case.input.y,
             |x, y| shift_bounds(x, y, test_case.input.misrate),
@@ -596,20 +645,26 @@ fn run_shift_bounds_tests() {
 fn check_two_sample_bounds_raw(
     failures: &mut Vec<String>,
     file_name: &std::ffi::OsStr,
-    expected_error: Option<&ExpectedError>,
-    expected_output: Option<&BoundsOutput>,
+    expectation: &Expectation,
     result: Result<raw::RawBounds, EstimatorError>,
 ) {
-    if let Some(expected_error) = expected_error {
+    if let Some(expected_error) = expectation.error {
         match result {
             Ok(_) => failures.push(format!("{file_name:?} [raw]: expected error, got Ok")),
             Err(err) => verify_error(failures, file_name, &err, expected_error),
         }
         return;
     }
-    let expected_output = expected_output.expect("Test case must have output");
+    let expected_output = expectation.bounds.expect("Test case must have output");
     match result {
-        Ok(actual) => check_bounds_values(failures, file_name, "raw", &actual, expected_output),
+        Ok(actual) => check_bounds_values(
+            failures,
+            file_name,
+            "raw",
+            &actual,
+            expected_output,
+            expectation.conformance,
+        ),
         Err(e) => failures.push(format!("{file_name:?} [raw]: unexpected error {e:?}")),
     }
 }
@@ -622,8 +677,7 @@ fn check_two_sample_bounds_raw(
 fn check_two_sample_bounds_sample<F>(
     failures: &mut Vec<String>,
     file_name: &std::ffi::OsStr,
-    expected_error: Option<&ExpectedError>,
-    expected_output: Option<&BoundsOutput>,
+    expectation: &Expectation,
     x: &[f64],
     y: &[f64],
     estimator: F,
@@ -633,7 +687,7 @@ fn check_two_sample_bounds_sample<F>(
     let x_sample = match Sample::new(x.to_vec()) {
         Ok(s) => s,
         Err(e) => {
-            match expected_error {
+            match expectation.error {
                 Some(expected_error) => {
                     verify_error_impl(failures, file_name, &e, expected_error, true)
                 }
@@ -647,7 +701,7 @@ fn check_two_sample_bounds_sample<F>(
     let y_sample = match Sample::new(y.to_vec()) {
         Ok(s) => s,
         Err(e) => {
-            match expected_error {
+            match expectation.error {
                 Some(expected_error) => {
                     verify_error_impl(failures, file_name, &e, expected_error, true)
                 }
@@ -660,16 +714,23 @@ fn check_two_sample_bounds_sample<F>(
     };
 
     let result = estimator(&x_sample, &y_sample);
-    if let Some(expected_error) = expected_error {
+    if let Some(expected_error) = expectation.error {
         match result {
             Ok(_) => failures.push(format!("{file_name:?} [sample]: expected error, got Ok")),
             Err(err) => verify_error_impl(failures, file_name, &err, expected_error, false),
         }
         return;
     }
-    let expected_output = expected_output.expect("Test case must have output");
+    let expected_output = expectation.bounds.expect("Test case must have output");
     match result {
-        Ok(actual) => check_bounds_values(failures, file_name, "sample", &actual, expected_output),
+        Ok(actual) => check_bounds_values(
+            failures,
+            file_name,
+            "sample",
+            &actual,
+            expected_output,
+            expectation.conformance,
+        ),
         Err(e) => failures.push(format!("{file_name:?} [sample]: unexpected error {e:?}")),
     }
 }
@@ -681,19 +742,18 @@ fn check_bounds_values<B: BoundsView>(
     label: &str,
     actual: &B,
     expected: &BoundsOutput,
+    conformance: Conformance,
 ) {
-    if !values_match(actual.lower(), expected.lower) {
+    if !conformance.matches(actual.lower(), expected.lower) {
         failures.push(format!(
-            "{file_name:?} [{label}]: expected lower {}, got {}",
-            expected.lower,
-            actual.lower()
+            "{file_name:?} [{label}]: {}",
+            conformance.mismatch("lower", expected.lower, actual.lower())
         ));
     }
-    if !values_match(actual.upper(), expected.upper) {
+    if !conformance.matches(actual.upper(), expected.upper) {
         failures.push(format!(
-            "{file_name:?} [{label}]: expected upper {}, got {}",
-            expected.upper,
-            actual.upper()
+            "{file_name:?} [{label}]: {}",
+            conformance.mismatch("upper", expected.upper, actual.upper())
         ));
     }
 }
@@ -755,13 +815,18 @@ fn run_ratio_bounds_tests() {
         let content = fs::read_to_string(json_file).unwrap();
         let test_case: RatioBoundsTestCase = serde_json::from_str(&content).unwrap();
         let file_name = json_file.file_name().unwrap();
+        let expectation = Expectation {
+            error: test_case.expected_error.as_ref(),
+            bounds: test_case.output.as_ref(),
+            // Log-space quantiles mapped back through exp: genuinely approximate.
+            conformance: Conformance::Tolerant,
+        };
 
         // (1) raw API with assume_sorted = false
         check_two_sample_bounds_raw(
             &mut failures,
             file_name,
-            test_case.expected_error.as_ref(),
-            test_case.output.as_ref(),
+            &expectation,
             raw::ratio_bounds(
                 &test_case.input.x,
                 &test_case.input.y,
@@ -774,8 +839,7 @@ fn run_ratio_bounds_tests() {
         check_two_sample_bounds_sample(
             &mut failures,
             file_name,
-            test_case.expected_error.as_ref(),
-            test_case.output.as_ref(),
+            &expectation,
             &test_case.input.x,
             &test_case.input.y,
             |x, y| ratio_bounds(x, y, test_case.input.misrate),
@@ -822,6 +886,11 @@ fn run_disparity_bounds_tests() {
         let content = fs::read_to_string(json_file).unwrap();
         let test_case: DisparityBoundsTestCase = serde_json::from_str(&content).unwrap();
         let file_name = json_file.file_name().unwrap();
+        let expectation = Expectation {
+            error: test_case.expected_error.as_ref(),
+            bounds: test_case.output.as_ref(),
+            conformance: Conformance::Exact,
+        };
 
         let seed = test_case.input.seed.as_deref();
 
@@ -842,13 +911,7 @@ fn run_disparity_bounds_tests() {
                 false,
             ),
         };
-        check_two_sample_bounds_raw(
-            &mut failures,
-            file_name,
-            test_case.expected_error.as_ref(),
-            test_case.output.as_ref(),
-            raw_result,
-        );
+        check_two_sample_bounds_raw(&mut failures, file_name, &expectation, raw_result);
 
         // (2) Sample API (seeded variant when the fixture has a seed). The Sample
         // path passes the cached sorted view internally (assume_sorted = true),
@@ -857,8 +920,7 @@ fn run_disparity_bounds_tests() {
         check_two_sample_bounds_sample(
             &mut failures,
             file_name,
-            test_case.expected_error.as_ref(),
-            test_case.output.as_ref(),
+            &expectation,
             &test_case.input.x,
             &test_case.input.y,
             |x, y| match seed {
@@ -1778,13 +1840,17 @@ fn run_center_bounds_tests() {
         let content = fs::read_to_string(json_file).unwrap();
         let test_case: CenterBoundsTestCase = serde_json::from_str(&content).unwrap();
         let file_name = json_file.file_name().unwrap();
+        let expectation = Expectation {
+            error: test_case.expected_error.as_ref(),
+            bounds: test_case.output.as_ref(),
+            conformance: Conformance::Exact,
+        };
 
         // (1) raw API with assume_sorted = false
         check_one_sample_bounds_raw(
             &mut failures,
             file_name,
-            test_case.expected_error.as_ref(),
-            test_case.output.as_ref(),
+            &expectation,
             raw::center_bounds(&test_case.input.x, test_case.input.misrate, false),
         );
 
@@ -1792,8 +1858,7 @@ fn run_center_bounds_tests() {
         check_one_sample_bounds_sample(
             &mut failures,
             file_name,
-            test_case.expected_error.as_ref(),
-            test_case.output.as_ref(),
+            &expectation,
             &test_case.input.x,
             |x| center_bounds(x, test_case.input.misrate),
         );
@@ -1810,20 +1875,26 @@ fn run_center_bounds_tests() {
 fn check_one_sample_bounds_raw(
     failures: &mut Vec<String>,
     file_name: &std::ffi::OsStr,
-    expected_error: Option<&ExpectedError>,
-    expected_output: Option<&BoundsOutput>,
+    expectation: &Expectation,
     result: Result<raw::RawBounds, EstimatorError>,
 ) {
-    if let Some(expected_error) = expected_error {
+    if let Some(expected_error) = expectation.error {
         match result {
             Ok(_) => failures.push(format!("{file_name:?} [raw]: expected error, got Ok")),
             Err(err) => verify_error(failures, file_name, &err, expected_error),
         }
         return;
     }
-    let expected_output = expected_output.expect("Test case must have output");
+    let expected_output = expectation.bounds.expect("Test case must have output");
     match result {
-        Ok(actual) => check_bounds_values(failures, file_name, "raw", &actual, expected_output),
+        Ok(actual) => check_bounds_values(
+            failures,
+            file_name,
+            "raw",
+            &actual,
+            expected_output,
+            expectation.conformance,
+        ),
         Err(e) => failures.push(format!("{file_name:?} [raw]: unexpected error {e:?}")),
     }
 }
@@ -1835,8 +1906,7 @@ fn check_one_sample_bounds_raw(
 fn check_one_sample_bounds_sample<F>(
     failures: &mut Vec<String>,
     file_name: &std::ffi::OsStr,
-    expected_error: Option<&ExpectedError>,
-    expected_output: Option<&BoundsOutput>,
+    expectation: &Expectation,
     x: &[f64],
     estimator: F,
 ) where
@@ -1845,7 +1915,7 @@ fn check_one_sample_bounds_sample<F>(
     let x_sample = match Sample::new(x.to_vec()) {
         Ok(s) => s,
         Err(e) => {
-            match expected_error {
+            match expectation.error {
                 Some(expected_error) => {
                     verify_error(failures, file_name, &e, expected_error);
                 }
@@ -1858,16 +1928,23 @@ fn check_one_sample_bounds_sample<F>(
     };
 
     let result = estimator(&x_sample);
-    if let Some(expected_error) = expected_error {
+    if let Some(expected_error) = expectation.error {
         match result {
             Ok(_) => failures.push(format!("{file_name:?} [sample]: expected error, got Ok")),
             Err(err) => verify_error(failures, file_name, &err, expected_error),
         }
         return;
     }
-    let expected_output = expected_output.expect("Test case must have output");
+    let expected_output = expectation.bounds.expect("Test case must have output");
     match result {
-        Ok(actual) => check_bounds_values(failures, file_name, "sample", &actual, expected_output),
+        Ok(actual) => check_bounds_values(
+            failures,
+            file_name,
+            "sample",
+            &actual,
+            expected_output,
+            expectation.conformance,
+        ),
         Err(e) => failures.push(format!("{file_name:?} [sample]: unexpected error {e:?}")),
     }
 }
@@ -1924,6 +2001,11 @@ fn run_spread_bounds_tests() {
         let content = fs::read_to_string(json_file).unwrap();
         let test_case: SpreadBoundsTestCase = serde_json::from_str(&content).unwrap();
         let file_name = json_file.file_name().unwrap();
+        let expectation = Expectation {
+            error: test_case.expected_error.as_ref(),
+            bounds: test_case.output.as_ref(),
+            conformance: Conformance::Exact,
+        };
 
         let seed = test_case.input.seed.as_deref();
 
@@ -1935,13 +2017,7 @@ fn run_spread_bounds_tests() {
             }
             None => raw::spread_bounds(&test_case.input.x, test_case.input.misrate, false),
         };
-        check_one_sample_bounds_raw(
-            &mut failures,
-            file_name,
-            test_case.expected_error.as_ref(),
-            test_case.output.as_ref(),
-            raw_result,
-        );
+        check_one_sample_bounds_raw(&mut failures, file_name, &expectation, raw_result);
 
         // (2) Sample API (seeded variant when the fixture has a seed). The Sample
         // path passes the cached sorted view internally (assume_sorted = true),
@@ -1949,8 +2025,7 @@ fn run_spread_bounds_tests() {
         check_one_sample_bounds_sample(
             &mut failures,
             file_name,
-            test_case.expected_error.as_ref(),
-            test_case.output.as_ref(),
+            &expectation,
             &test_case.input.x,
             |x| match seed {
                 Some(s) => spread_bounds_with_seed(x, test_case.input.misrate, s),

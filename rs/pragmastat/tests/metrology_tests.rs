@@ -1,4 +1,6 @@
-use float_cmp::approx_eq;
+mod conformance;
+
+use conformance::Conformance;
 use pragmastat::*;
 use serde_json::Value;
 use std::fs;
@@ -291,9 +293,14 @@ fn test_unit_propagation() {
                             m.unit.id()
                         ));
                     }
+                    // The only float this suite compares is a center estimate:
+                    // selection-based, so it is exact.
                     if let Some(ev) = expected_value {
-                        if !approx_eq!(f64, m.value, ev, epsilon = 1e-9) {
-                            failures.push(format!("{file_name:?}: value = {}, want {ev}", m.value));
+                        if !Conformance::Exact.matches(m.value, ev) {
+                            failures.push(format!(
+                                "{file_name:?}: {}",
+                                Conformance::Exact.mismatch("value", ev, m.value)
+                            ));
                         }
                     }
                 }

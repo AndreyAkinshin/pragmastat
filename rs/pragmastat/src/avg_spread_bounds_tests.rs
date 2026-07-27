@@ -1,6 +1,6 @@
 use crate::assumptions::{AssumptionId, EstimatorError, Subject};
+use crate::conformance::bitwise_mismatch;
 use crate::estimators::raw::{avg_spread_bounds, avg_spread_bounds_with_seed};
-use float_cmp::approx_eq;
 use serde::Deserialize;
 use std::fs;
 use std::path::PathBuf;
@@ -137,27 +137,15 @@ fn test_avg_spread_bounds_reference() {
         };
         let expected_output = test_case.output.expect("Test case must have output");
 
-        if !approx_eq!(
-            f64,
-            actual_output.lower,
-            expected_output.lower,
-            epsilon = 1e-9
-        ) {
-            failures.push(format!(
-                "{file_name:?}: expected lower {}, got {}",
-                expected_output.lower, actual_output.lower
-            ));
+        if let Some(mismatch) =
+            bitwise_mismatch("lower", expected_output.lower, actual_output.lower)
+        {
+            failures.push(format!("{file_name:?}: {mismatch}"));
         }
-        if !approx_eq!(
-            f64,
-            actual_output.upper,
-            expected_output.upper,
-            epsilon = 1e-9
-        ) {
-            failures.push(format!(
-                "{file_name:?}: expected upper {}, got {}",
-                expected_output.upper, actual_output.upper
-            ));
+        if let Some(mismatch) =
+            bitwise_mismatch("upper", expected_output.upper, actual_output.upper)
+        {
+            failures.push(format!("{file_name:?}: {mismatch}"));
         }
     }
 

@@ -52,6 +52,10 @@ impl XRefMap {
             "sec-convergence-conventions".into(),
             "/methodology#convergence-conventions".into(),
         );
+        mappings.insert(
+            "sec-conformance-classes".into(),
+            "/methodology#conformance-classes".into(),
+        );
 
         // Function page labels
         mappings.insert("sec-center".into(), "/center".into());

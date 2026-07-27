@@ -109,6 +109,62 @@ def _load_fixtures(estimator_name):
     return fixtures
 
 
+# --- Exactness predicates -----------------------------------------------------
+#
+# Why most suites compare bit for bit
+# -----------------------------------
+# The estimators select an element out of a pairwise set (a median of pairwise
+# means, differences, absolute differences, ...). A divergence between two
+# implementations is therefore never a small error: either the same element was
+# selected and the result is bit-identical, or a different one was, and then the
+# gap is data-dependent and no epsilon bounds it. A tolerance on such an output
+# hides exactly the failure it appears to guard against.
+#
+# The exactness is measured, not assumed. A perturbation experiment recomputed
+# every estimator with each call to log/exp/pow/cos returning the neighbouring
+# representable value -- the smallest legitimate difference between two
+# conforming libm implementations. center, spread, shift, disparity, avg_spread,
+# every bounds variant, the margins and compare1 did not move on any input.
+#
+# The suites that stay tolerant, and why
+# --------------------------------------
+#   ratio / ratio-bounds  exp(median(log x - log y)): the perturbation moves them
+#                         on 94% of inputs, by up to 16 ULP. Genuinely approximate.
+#   compare2              composes ratio projections next to exact ones; a
+#                         per-suite predicate cannot say "exact for shift,
+#                         approximate for ratio", so the whole suite stays tolerant.
+#   distributions/        additive, multiplic, exp and power draw through
+#                         log/exp/cos/pow, which each language takes from a
+#                         different libm. distributions/uniform is pure binary64
+#                         arithmetic on the RNG output and is exact.
+#
+# JSON is safe to compare against directly: Python's ``json`` module parses a
+# numeric literal straight to binary64 via ``float()``, which is correctly
+# rounded, so a shortest-round-trip fixture literal reproduces the generator's
+# exact bits. (This is the trap Rust needed ``serde_json``/``float_roundtrip``
+# for; CPython has no equivalent knob to get wrong.)
+
+
+def _fmt(value):
+    """Render a float so a one-ULP difference is unmistakable in a failure message."""
+    return f"{value!r} [{float(value).hex()}]"
+
+
+def _assert_scalar(actual, expected, what, *, bitwise):
+    """Compare one binary64 result against its fixture value.
+
+    ``bitwise`` is passed explicitly by every caller so the exactness decision is
+    visible per suite rather than inherited from a default. When it is set the
+    predicate is raw ``==`` on the doubles and the failure message prints both
+    values with their hex payloads, because a one-ULP report has to be readable
+    to be worth anything.
+    """
+    if bitwise:
+        assert actual == expected, f"{what}: expected {_fmt(expected)}, got {_fmt(actual)}"
+    else:
+        assert abs(actual - expected) < 1e-9, f"{what}: expected: {expected}, got: {actual}"
+
+
 # --- Entry-point builders -----------------------------------------------------
 #
 # Each estimator is exercised through BOTH the Sample API and the raw
@@ -148,8 +204,12 @@ def _sample_only_point_entries(estimator_func, is_two_sample):
     return _point_entries(estimator_func, is_two_sample)[1:]
 
 
-def run_reference_tests(estimator_name, entries):
-    """Run point-estimator reference tests through every provided entry point."""
+def run_reference_tests(estimator_name, entries, *, bitwise):
+    """Run point-estimator reference tests through every provided entry point.
+
+    ``bitwise`` has no default: see the exactness predicates above for which
+    suites are exact and why.
+    """
     for fixture_name, test_case in _load_fixtures(estimator_name):
         is_y_validity_error = _is_sample_construction_y_error(test_case)
         for label, call_fn in entries:
@@ -164,9 +224,7 @@ def run_reference_tests(estimator_name, entries):
 
             expected_output = test_case["output"]
             actual_output = call_fn(test_case)
-            assert abs(actual_output - expected_output) < 1e-9, (
-                f"Failed{context}: expected: {expected_output}, got: {actual_output}"
-            )
+            _assert_scalar(actual_output, expected_output, f"Failed{context}", bitwise=bitwise)
 
 
 def _bounds_entries(bounds_func, is_two_sample, **call_kwargs):
@@ -203,11 +261,13 @@ def _sample_only_bounds_entries(bounds_func, is_two_sample, **call_kwargs):
     return _bounds_entries(bounds_func, is_two_sample, **call_kwargs)[1:]
 
 
-def run_bounds_reference_tests(estimator_name, entries_builder):
+def run_bounds_reference_tests(estimator_name, entries_builder, *, bitwise):
     """Run bounds reference tests through every provided entry point.
 
     ``entries_builder(seed)`` returns the list of entry points; seed is read
     per-fixture (some bounds estimators accept a deterministic seed).
+
+    ``bitwise`` has no default: see the exactness predicates above.
     """
     for fixture_name, test_case in _load_fixtures(estimator_name):
         seed = test_case["input"].get("seed")
@@ -226,12 +286,8 @@ def run_bounds_reference_tests(estimator_name, entries_builder):
             expected_lower = test_case["output"]["lower"]
             expected_upper = test_case["output"]["upper"]
             actual_lower, actual_upper = call_fn(test_case)
-            assert abs(actual_lower - expected_lower) < 1e-9, (
-                f"Failed lower bound{context}: expected: {expected_lower}, got: {actual_lower}"
-            )
-            assert abs(actual_upper - expected_upper) < 1e-9, (
-                f"Failed upper bound{context}: expected: {expected_upper}, got: {actual_upper}"
-            )
+            _assert_scalar(actual_lower, expected_lower, f"Failed lower bound{context}", bitwise=bitwise)
+            _assert_scalar(actual_upper, expected_upper, f"Failed upper bound{context}", bitwise=bitwise)
 
 
 def _parse_sample_values(raw_values):
@@ -252,11 +308,6 @@ def _parse_sample_values(raw_values):
     return result
 
 
-def _fmt(value):
-    """Render a float so a one-ULP difference is unmistakable in a failure message."""
-    return f"{value!r} [{float(value).hex()}]"
-
-
 def _assert_bitwise(actual, expected, context):
     """Assert a drawn sequence equals the fixture exactly, with no tolerance.
 
@@ -266,23 +317,30 @@ def _assert_bitwise(actual, expected, context):
     report a broken contract as a pass. Concretely, a compiler that fuses a
     multiply into an add (FMA contraction on arm64) shifts the last bit of a
     draw; only ``==`` sees it.
-
-    This is why the RNG suites and ``distributions/uniform`` are bitwise while
-    the estimator suites are not: estimators accumulate rounding across many
-    operations and carry no cross-language bit-exactness guarantee. The
-    additive/multiplic/exp/power distributions stay tolerant for the same
-    reason at a lower level -- their draws go through log/exp/cos/pow, which
-    each language takes from a different libm, and two implementations that are
-    both correct to within an ULP still disagree in the last bit.
-
-    JSON is safe to compare against directly here: Python's ``json`` module
-    parses a numeric literal straight to binary64 via ``float()``, which is
-    correctly rounded, so a shortest-round-trip fixture literal reproduces the
-    generator's exact bits.
     """
     assert len(actual) == len(expected), f"Length mismatch for {context}: {len(actual)} vs {len(expected)}"
     for i, (act, exp) in enumerate(zip(actual, expected, strict=True)):
         assert act == exp, f"Failed for {context}, index {i}: expected {_fmt(exp)}, got {_fmt(act)}"
+
+
+def _assert_projections(projections, expected_projections, fixture_name, *, bitwise):
+    """Compare a compare1/compare2 projection list against its fixture.
+
+    Verdicts are enum strings and were always exact; only the three binary64
+    fields take the ``bitwise`` predicate.
+    """
+    assert len(projections) == len(expected_projections), (
+        f"Projection count mismatch for {fixture_name}: {len(projections)} vs {len(expected_projections)}"
+    )
+
+    for i, (actual, expected) in enumerate(zip(projections, expected_projections, strict=True)):
+        context = f" for {fixture_name}, projection {i}"
+        _assert_scalar(actual.estimate.value, expected["estimate"], f"Estimate mismatch{context}", bitwise=bitwise)
+        _assert_scalar(actual.bounds.lower, expected["lower"], f"Lower bound mismatch{context}", bitwise=bitwise)
+        _assert_scalar(actual.bounds.upper, expected["upper"], f"Upper bound mismatch{context}", bitwise=bitwise)
+        assert actual.verdict.value == expected["verdict"], (
+            f"Verdict mismatch{context}: expected {expected['verdict']}, got {actual.verdict.value}"
+        )
 
 
 def run_distribution_tests(dist_name, dist_factory, *, bitwise):
@@ -319,23 +377,24 @@ def run_distribution_tests(dist_name, dist_factory, *, bitwise):
 
 class TestReference:
     def test_center_reference(self):
-        run_reference_tests("center", _point_entries(center, is_two_sample=False))
+        run_reference_tests("center", _point_entries(center, is_two_sample=False), bitwise=True)
 
     def test_spread_reference(self):
-        run_reference_tests("spread", _point_entries(spread, is_two_sample=False))
+        run_reference_tests("spread", _point_entries(spread, is_two_sample=False), bitwise=True)
 
     def test_shift_reference(self):
-        run_reference_tests("shift", _point_entries(shift, is_two_sample=True))
+        run_reference_tests("shift", _point_entries(shift, is_two_sample=True), bitwise=True)
 
     def test_ratio_reference(self):
-        run_reference_tests("ratio", _point_entries(ratio, is_two_sample=True))
+        # exp(median(log x - log y)): libm-dependent, tolerance is the honest predicate.
+        run_reference_tests("ratio", _point_entries(ratio, is_two_sample=True), bitwise=False)
 
     def test_avg_spread_reference(self):
         # avg_spread is an internal estimator with no public raw entry: Sample-only.
-        run_reference_tests("avg-spread", _sample_only_point_entries(avg_spread, is_two_sample=True))
+        run_reference_tests("avg-spread", _sample_only_point_entries(avg_spread, is_two_sample=True), bitwise=True)
 
     def test_disparity_reference(self):
-        run_reference_tests("disparity", _point_entries(disparity, is_two_sample=True))
+        run_reference_tests("disparity", _point_entries(disparity, is_two_sample=True), bitwise=True)
 
     def test_pairwise_margin_reference(self):
         """Test pairwise_margin against reference data."""
@@ -372,12 +431,15 @@ class TestReference:
         run_bounds_reference_tests(
             "shift-bounds",
             lambda _seed: _bounds_entries(shift_bounds, is_two_sample=True),
+            bitwise=True,
         )
 
     def test_ratio_bounds_reference(self):
+        # Projects the shift bounds through exp/log: approximate, like ratio itself.
         run_bounds_reference_tests(
             "ratio-bounds",
             lambda _seed: _bounds_entries(ratio_bounds, is_two_sample=True),
+            bitwise=False,
         )
 
     def test_rng_uniform_reference(self):
@@ -638,12 +700,14 @@ class TestReference:
         run_bounds_reference_tests(
             "center-bounds",
             lambda _seed: _bounds_entries(center_bounds, is_two_sample=False),
+            bitwise=True,
         )
 
     def test_spread_bounds_reference(self):
         run_bounds_reference_tests(
             "spread-bounds",
             lambda seed: _bounds_entries(spread_bounds, is_two_sample=False, seed=seed),
+            bitwise=True,
         )
 
     def test_avg_spread_bounds_reference(self):
@@ -654,6 +718,7 @@ class TestReference:
         run_bounds_reference_tests(
             "avg-spread-bounds",
             lambda seed: _sample_only_bounds_entries(avg_spread_bounds, is_two_sample=True, seed=seed),
+            bitwise=True,
         )
 
     def test_disparity_bounds_reference(self):
@@ -663,6 +728,7 @@ class TestReference:
         run_bounds_reference_tests(
             "disparity-bounds",
             lambda seed: _bounds_entries(disparity_bounds, is_two_sample=True, seed=seed),
+            bitwise=True,
         )
 
 
@@ -720,7 +786,7 @@ class TestUnitPropagation:
         s = Sample([1, 2, 3, 4, 5], unit=NUMBER_UNIT)
         result = center(s)
         assert isinstance(result, Measurement)
-        assert abs(result.value - 3) < 1e-9
+        assert result.value == 3  # exact: center is bitwise
         assert result.unit == NUMBER_UNIT
 
     def test_spread_preserves_unit(self):
@@ -955,24 +1021,9 @@ class TestCompare1:
             sx = Sample(x_values)
             projections = compare1(sx, thresholds, seed=seed)
 
-            assert len(projections) == len(expected_projections), (
-                f"Projection count mismatch for {json_file.name}: {len(projections)} vs {len(expected_projections)}"
-            )
-
-            for i, (actual, expected) in enumerate(zip(projections, expected_projections, strict=True)):
-                context = f" for {json_file.name}, projection {i}"
-                assert abs(actual.estimate.value - expected["estimate"]) < 1e-9, (
-                    f"Estimate mismatch{context}: expected {expected['estimate']}, got {actual.estimate.value}"
-                )
-                assert abs(actual.bounds.lower - expected["lower"]) < 1e-9, (
-                    f"Lower bound mismatch{context}: expected {expected['lower']}, got {actual.bounds.lower}"
-                )
-                assert abs(actual.bounds.upper - expected["upper"]) < 1e-9, (
-                    f"Upper bound mismatch{context}: expected {expected['upper']}, got {actual.bounds.upper}"
-                )
-                assert actual.verdict.value == expected["verdict"], (
-                    f"Verdict mismatch{context}: expected {expected['verdict']}, got {actual.verdict.value}"
-                )
+            # compare1 projects only exact metrics (center/spread), so the whole
+            # suite is bitwise -- unlike compare2, which mixes in ratio.
+            _assert_projections(projections, expected_projections, json_file.name, bitwise=True)
 
     def test_compare1_supports_measurement_threshold_units(self):
         ms = MeasurementUnit("ms", "Time", "ms", "Millisecond", 1_000_000)
@@ -982,7 +1033,7 @@ class TestCompare1:
 
         [projection] = compare1(sx, thresholds)
 
-        assert abs(projection.estimate.value - 5.5) < 1e-9
+        assert projection.estimate.value == 5.5  # exact: center is bitwise
         assert projection.estimate.unit == ms
         assert projection.bounds.unit == ms
         assert projection.verdict.value == "greater"
@@ -1038,24 +1089,10 @@ class TestCompare2:
             sy = Sample(y_values)
             projections = compare2(sx, sy, thresholds, seed=seed)
 
-            assert len(projections) == len(expected_projections), (
-                f"Projection count mismatch for {json_file.name}: {len(projections)} vs {len(expected_projections)}"
-            )
-
-            for i, (actual, expected) in enumerate(zip(projections, expected_projections, strict=True)):
-                context = f" for {json_file.name}, projection {i}"
-                assert abs(actual.estimate.value - expected["estimate"]) < 1e-9, (
-                    f"Estimate mismatch{context}: expected {expected['estimate']}, got {actual.estimate.value}"
-                )
-                assert abs(actual.bounds.lower - expected["lower"]) < 1e-9, (
-                    f"Lower bound mismatch{context}: expected {expected['lower']}, got {actual.bounds.lower}"
-                )
-                assert abs(actual.bounds.upper - expected["upper"]) < 1e-9, (
-                    f"Upper bound mismatch{context}: expected {expected['upper']}, got {actual.bounds.upper}"
-                )
-                assert actual.verdict.value == expected["verdict"], (
-                    f"Verdict mismatch{context}: expected {expected['verdict']}, got {actual.verdict.value}"
-                )
+            # compare2 fixtures mix ratio projections (approximate) with shift and
+            # disparity ones (exact). A per-suite predicate cannot express that
+            # split, so the whole suite stays tolerant.
+            _assert_projections(projections, expected_projections, json_file.name, bitwise=False)
 
     def test_compare2_supports_measurement_threshold_units(self):
         ms = MeasurementUnit("ms", "Time", "ms", "Millisecond", 1_000_000)

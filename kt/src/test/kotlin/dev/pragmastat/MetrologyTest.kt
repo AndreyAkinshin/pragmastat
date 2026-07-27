@@ -6,24 +6,11 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
 import java.io.File
-import kotlin.math.abs
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class MetrologyTest {
     private val mapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
-    private val epsilon = 1e-9
-
-    private fun assertClose(
-        expected: Double,
-        actual: Double,
-        tolerance: Double = epsilon,
-    ) {
-        assertTrue(
-            abs(expected - actual) < tolerance,
-            "Expected $expected but got $actual (difference: ${abs(expected - actual)})",
-        )
-    }
 
     /** Parse a JSON value that may be a number or a special float string. */
     private fun parseFloat(node: JsonNode): Double =
@@ -161,7 +148,7 @@ class MetrologyTest {
                             val m = center(sx)
                             assertEquals(expectedUnit, m.unit.id, "unit mismatch")
                             if (expectedValue != null) {
-                                assertClose(expectedValue, m.value)
+                                assertBitwise(expectedValue, m.value, "value")
                             }
                         }
 

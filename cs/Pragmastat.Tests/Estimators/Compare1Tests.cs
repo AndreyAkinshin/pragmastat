@@ -28,8 +28,18 @@ public class Compare1Tests
 
     var testCase = controller.LoadTestCase(testName);
     var actual = controller.Run(testCase.Input);
-    Assert.True(controller.Assert(testCase.Output, actual),
-      $"Test: {testName}, Projections mismatch");
+
+    var expected = testCase.Output.Projections;
+    var produced = actual.Projections;
+    Assert.Equal(expected.Length, produced.Length);
+    for (int i = 0; i < expected.Length; i++)
+    {
+      string context = $"Suite: {SuiteName}, test {testName}, projection {i}";
+      BitwiseAssert.Equal(expected[i].Estimate, produced[i].Estimate, context + ", estimate");
+      BitwiseAssert.Equal(expected[i].Lower, produced[i].Lower, context + ", lower");
+      BitwiseAssert.Equal(expected[i].Upper, produced[i].Upper, context + ", upper");
+      Assert.Equal(expected[i].Verdict, produced[i].Verdict);
+    }
   }
 
   // ── API-validation unit tests ─────────────────────────────────────────────

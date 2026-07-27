@@ -49,6 +49,8 @@ mod avg_spread_bounds_tests;
 #[cfg(test)]
 mod avg_spread_tests;
 #[cfg(test)]
+mod conformance;
+#[cfg(test)]
 mod disparity_bounds_tests;
 #[cfg(test)]
 mod pairwise_margin_tests;

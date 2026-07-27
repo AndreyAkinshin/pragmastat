@@ -144,6 +144,17 @@ class ReferenceTest {
      */
     private fun sampleY(values: List<Double>): Sample = Sample.of(values)
 
+    /**
+     * Tolerant comparison, reserved for the genuinely approximate suites.
+     *
+     * Only ratio, ratio-bounds, compare2 and the libm-backed distributions use it.
+     * ratio is exp(median(log x - log y)): perturbing log/exp by one representable
+     * step (the most two conforming libm implementations may legitimately differ)
+     * moves it on 94% of inputs, by up to 16 ulp. compare2 composes ratio
+     * projections alongside exact ones and a per-suite tolerance cannot express
+     * "exact for shift, approximate for ratio", so it stays tolerant as a whole.
+     * Everything else compares bitwise through [assertBitwise].
+     */
     private fun assertClose(
         expected: Double,
         actual: Double,
@@ -220,7 +231,7 @@ class ReferenceTest {
                         }
 
                         val result = entry.func(testData.input.x)
-                        assertClose(testData.output!!, result)
+                        assertBitwise(testData.output!!, result, "output")
                     },
                 )
             }
@@ -239,11 +250,17 @@ class ReferenceTest {
      * (construction cannot know the sample is arg2), so the subject check is
      * skipped on the Sample path for those fixtures (id is still asserted). The raw
      * path validates positionally and asserts the subject fully.
+     *
+     * [exact] selects the comparison: shift, avg-spread and disparity select an
+     * element out of the pairwise set and are bit-identical across conforming libm
+     * implementations, so they compare bitwise. ratio goes through exp(median(log x
+     * - log y)) and is genuinely approximate.
      */
     private data class TwoSampleEntry(
         val estimator: String,
         val path: String,
         val isSampleConstruction: Boolean,
+        val exact: Boolean,
         val func: (List<Double>, List<Double>) -> Double,
     )
 
@@ -251,14 +268,14 @@ class ReferenceTest {
     fun testTwoSampleEstimators(): List<DynamicTest> {
         val entries =
             listOf(
-                TwoSampleEntry("shift", "raw", false) { x, y -> shift(x, y) },
-                TwoSampleEntry("shift", "sample", true) { x, y -> shift(Sample.of(x), sampleY(y)).value },
-                TwoSampleEntry("ratio", "raw", false) { x, y -> ratio(x, y) },
-                TwoSampleEntry("ratio", "sample", true) { x, y -> ratio(Sample.of(x), sampleY(y)).value },
+                TwoSampleEntry("shift", "raw", false, exact = true) { x, y -> shift(x, y) },
+                TwoSampleEntry("shift", "sample", true, exact = true) { x, y -> shift(Sample.of(x), sampleY(y)).value },
+                TwoSampleEntry("ratio", "raw", false, exact = false) { x, y -> ratio(x, y) },
+                TwoSampleEntry("ratio", "sample", true, exact = false) { x, y -> ratio(Sample.of(x), sampleY(y)).value },
                 // avg-spread is an internal helper with no public Sample API: raw-only.
-                TwoSampleEntry("avg-spread", "raw", false) { x, y -> avgSpread(x, y) },
-                TwoSampleEntry("disparity", "raw", false) { x, y -> disparity(x, y) },
-                TwoSampleEntry("disparity", "sample", true) { x, y -> disparity(Sample.of(x), sampleY(y)).value },
+                TwoSampleEntry("avg-spread", "raw", false, exact = true) { x, y -> avgSpread(x, y) },
+                TwoSampleEntry("disparity", "raw", false, exact = true) { x, y -> disparity(x, y) },
+                TwoSampleEntry("disparity", "sample", true, exact = true) { x, y -> disparity(Sample.of(x), sampleY(y)).value },
             )
 
         val tests = mutableListOf<DynamicTest>()
@@ -310,7 +327,11 @@ class ReferenceTest {
                         }
 
                         val result = entry.func(testData.input.x, testData.input.y)
-                        assertClose(testData.output!!, result)
+                        if (entry.exact) {
+                            assertBitwise(testData.output!!, result, "output")
+                        } else {
+                            assertClose(testData.output!!, result)
+                        }
                     },
                 )
             }
@@ -388,6 +409,7 @@ class ReferenceTest {
     private fun runTwoSampleBoundsTests(
         dirName: String,
         entries: List<TwoSampleBoundsEntry>,
+        exact: Boolean,
         parse: (File) -> Pair<BoundsOutput?, Map<String, String>?>,
         inputOf: (File) -> Pair<List<Double>, List<Double>>,
         misrateOf: (File) -> Double,
@@ -434,8 +456,13 @@ class ReferenceTest {
                         }
 
                         val result = entry.func(x, y, misrate)
-                        assertClose(output!!.lower, result.lower)
-                        assertClose(output.upper, result.upper)
+                        if (exact) {
+                            assertBitwise(output!!.lower, result.lower, "lower")
+                            assertBitwise(output.upper, result.upper, "upper")
+                        } else {
+                            assertClose(output!!.lower, result.lower)
+                            assertClose(output.upper, result.upper)
+                        }
                     },
                 )
             }
@@ -456,6 +483,7 @@ class ReferenceTest {
         return runTwoSampleBoundsTests(
             "shift-bounds",
             entries,
+            exact = true,
             parse = { file ->
                 val td = mapper.readValue<ShiftBoundsTestData>(file)
                 Pair(td.output, td.expectedError)
@@ -480,6 +508,8 @@ class ReferenceTest {
         return runTwoSampleBoundsTests(
             "ratio-bounds",
             entries,
+            // ratio-bounds inherits ratio's log/exp round trip: genuinely approximate.
+            exact = false,
             parse = { file ->
                 val td = mapper.readValue<RatioBoundsTestData>(file)
                 Pair(td.output, td.expectedError)
@@ -679,9 +709,10 @@ class ReferenceTest {
                     // property under test: a one-ULP drift here is a broken contract, and a
                     // tolerance would report it as a pass. This is what catches an FMA
                     // contraction on an arm64 runner, where the compiler is free to fuse a
-                    // multiply into an add and change the last bit of a draw. The estimator
-                    // suites stay tolerant because their fixtures pass through libm
-                    // (log/exp/cos/pow), which differs in the last bit between platforms.
+                    // multiply into an add and change the last bit of a draw. The
+                    // exact-selection estimator suites compare bitwise for the same reason;
+                    // only the libm-backed ones (ratio, compare2, the non-uniform
+                    // distributions) keep a tolerance.
                     for (i in 0 until testData.input.count) {
                         val actual = rng.uniformDouble()
                         val expected = testData.output[i]
@@ -1293,8 +1324,8 @@ class ReferenceTest {
                         }
 
                         val result = entry.func(testData.input.x, testData.input.misrate, null)
-                        assertClose(testData.output!!.lower, result.lower)
-                        assertClose(testData.output!!.upper, result.upper)
+                        assertBitwise(testData.output!!.lower, result.lower, "lower")
+                        assertBitwise(testData.output!!.upper, result.upper, "upper")
                     },
                 )
             }
@@ -1347,8 +1378,8 @@ class ReferenceTest {
                         }
 
                         val result = entry.func(testData.input.x, testData.input.misrate, testData.input.seed)
-                        assertClose(testData.output!!.lower, result.lower)
-                        assertClose(testData.output!!.upper, result.upper)
+                        assertBitwise(testData.output!!.lower, result.lower, "lower")
+                        assertBitwise(testData.output!!.upper, result.upper, "upper")
                     },
                 )
             }
@@ -1400,8 +1431,8 @@ class ReferenceTest {
                             testData.input.misrate,
                             testData.input.seed,
                         )
-                    assertClose(testData.output!!.lower, result.lower)
-                    assertClose(testData.output!!.upper, result.upper)
+                    assertBitwise(testData.output!!.lower, result.lower, "lower")
+                    assertBitwise(testData.output!!.upper, result.upper, "upper")
                 },
             )
         }
@@ -1483,8 +1514,8 @@ class ReferenceTest {
                                 testData.input.misrate,
                                 testData.input.seed,
                             )
-                        assertClose(testData.output!!.lower, result.lower)
-                        assertClose(testData.output!!.upper, result.upper)
+                        assertBitwise(testData.output!!.lower, result.lower, "lower")
+                        assertBitwise(testData.output!!.upper, result.upper, "upper")
                     },
                 )
             }
@@ -1555,9 +1586,10 @@ class ReferenceTest {
                     for (i in result.indices) {
                         val expected = testData.output.projections[i]
                         val actual = result[i]
-                        assertClose(expected.estimate, actual.estimate.value)
-                        assertClose(expected.lower, actual.bounds.lower)
-                        assertClose(expected.upper, actual.bounds.upper)
+                        // compare1 projects center and spread only, both exact-selection.
+                        assertBitwise(expected.estimate, actual.estimate.value, "projection[$i].estimate")
+                        assertBitwise(expected.lower, actual.bounds.lower, "projection[$i].lower")
+                        assertBitwise(expected.upper, actual.bounds.upper, "projection[$i].upper")
                         assertEquals(expected.verdict, actual.verdict.name.lowercase())
                     }
                 },

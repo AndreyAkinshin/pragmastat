@@ -124,9 +124,13 @@ make_bounds_entry_points <- function(bounds_func, supports_assume_sorted = TRUE)
 # the Sample entry point. `dir_name` is the tests/<dir> directory. `n_samples`
 # is 1 or 2. `extra_arg_names` names the trailing scalar fixture inputs (in
 # order) forwarded to the function (e.g. c("misrate"), c("misrate", "seed")).
+#
+# `tolerance = NULL` (the default) compares bit patterns; see the note on
+# run_reference_tests for why that is the right shape for these estimators.
+# Only the ratio family sets a tolerance.
 run_bounds_reference_tests <- function(dir_name, bounds_func, n_samples,
                                        extra_arg_names = c("misrate"),
-                                       tolerance = 1e-9,
+                                       tolerance = NULL,
                                        supports_assume_sorted = TRUE) {
   repo_root <- find_repo_root()
   test_data_dir <- file.path(repo_root, "tests", dir_name)
@@ -180,14 +184,25 @@ run_bounds_reference_tests <- function(dir_name, bounds_func, n_samples,
       } else {
         actual_output <- ep$fn(samples, extras)
 
-        expect_equal(actual_output$lower, test_case$output$lower,
-          tolerance = tolerance,
-          info = paste("Failed for test file:", label, "- lower bound")
-        )
-        expect_equal(actual_output$upper, test_case$output$upper,
-          tolerance = tolerance,
-          info = paste("Failed for test file:", label, "- upper bound")
-        )
+        if (is.null(tolerance)) {
+          expect_exact(
+            actual_output$lower, test_case$output$lower,
+            paste(label, "lower bound")
+          )
+          expect_exact(
+            actual_output$upper, test_case$output$upper,
+            paste(label, "upper bound")
+          )
+        } else {
+          expect_equal(actual_output$lower, test_case$output$lower,
+            tolerance = tolerance,
+            info = paste("Failed for test file:", label, "- lower bound")
+          )
+          expect_equal(actual_output$upper, test_case$output$upper,
+            tolerance = tolerance,
+            info = paste("Failed for test file:", label, "- upper bound")
+          )
+        }
       }
     }
   }
@@ -195,8 +210,19 @@ run_bounds_reference_tests <- function(dir_name, bounds_func, n_samples,
 
 # Helper function for running reference tests against JSON data through BOTH the
 # raw native-array entry point and the Sample entry point.
+#
+# `tolerance = NULL` (the default) compares bit patterns. These estimators
+# select an element out of the pairwise set rather than accumulating one, so a
+# divergence is never a small error: either the same element was selected and
+# the result is bit-identical across ports, or a different one was, and then
+# the gap is data-dependent and no epsilon bounds it. A tolerance therefore
+# hides precisely the defect it appears to guard against.
+#
+# A tolerance is set only where the arithmetic is genuinely approximate: the
+# ratio family routes through log/exp from the platform libm, which moves the
+# result by up to ~16 ULP between conforming implementations.
 run_reference_tests <- function(estimator_name, estimator_func, is_two_sample = FALSE,
-                                supports_assume_sorted = TRUE) {
+                                supports_assume_sorted = TRUE, tolerance = NULL) {
   repo_root <- find_repo_root()
   test_data_dir <- file.path(repo_root, "tests", estimator_name)
 
@@ -256,10 +282,14 @@ run_reference_tests <- function(estimator_name, estimator_func, is_two_sample = 
         # Normal test case: compare output.
         actual_output <- invoke()
 
-        expect_equal(actual_output, test_case$output,
-          tolerance = 1e-9,
-          info = paste("Failed for test file:", label)
-        )
+        if (is.null(tolerance)) {
+          expect_exact(actual_output, test_case$output, label)
+        } else {
+          expect_equal(actual_output, test_case$output,
+            tolerance = tolerance,
+            info = paste("Failed for test file:", label)
+          )
+        }
       }
     }
   }

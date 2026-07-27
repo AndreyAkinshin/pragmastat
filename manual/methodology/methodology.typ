@@ -403,8 +403,80 @@ Accumulated rounding is the second: an estimator that sums or searches over $O(n
 #v(0.3em)
 So the promise is graded, and each suite carries its grade explicitly rather than inheriting a
   default.
-Randomization and sampling are bitwise.
-The estimators conform at the tolerance recorded with their cases.
+
+#pagebreak()
+== Conformance Classes <sec-conformance-classes>
+
+Every suite declares which of two promises it makes, and the promise is measured rather than
+  assumed.
+
+#v(0.3em)
+#list(marker: none, tight: true,
+  [*Exact* — the seven implementations return identical bits. The whole computation is a fixed
+  sequence of binary64 operations, so there is nothing left for an implementation to decide.],
+  [*Approximate* — the seven agree to the tolerance recorded with the suite. The reason is always
+  a library function the specification does not fix, never accumulated arithmetic error.],
+)
+
+#v(0.5em)
+*How the class is established*
+
+A tolerance is the right instrument only where the output is continuous in the input.
+Most estimators here return an element selected out of the pairwise set, so a divergence is not a
+  small error: either the same element was selected and the answer is identical to the last bit, or
+  a different one was, and the difference is a data-dependent gap that no tolerance bounds.
+Declaring such a suite conformant "to $10^(-9)$" would state something that neither holds by
+  construction nor describes the way it fails.
+
+#v(0.3em)
+The class is therefore measured with a perturbation experiment.
+Each estimator is recomputed with every call to the logarithm, the exponential, the cosine and the
+  general power returning the neighbouring representable value.
+That is the smallest difference two conforming implementations of those functions can legitimately
+  have, so it stands in for the whole space of libraries the seven ports might be built against.
+An estimator whose output never moves under that perturbation cannot diverge for this reason in any
+  language, which is a proof rather than an observation.
+The square root is deliberately left alone: IEEE 754 requires it to be correctly rounded, so every
+  conforming implementation already returns the same bits.
+
+#v(0.5em)
+*The classes as measured*
+
+#table(
+  columns: 3,
+  align: (left, left, left),
+  stroke: none,
+  table.hline(),
+  [*Suite*], [*Class*], [*What establishes it*],
+  table.hline(),
+  [Randomization, sampling], [exact], [Integer state and pinned roundings; no library call],
+  [$Center$, $Spread$, $Shift$], [exact], [Selection over exactly-computed pairwise values],
+  [$Disparity$, $AvgSpread$], [exact], [Arithmetic on exact inputs],
+  [$Compare1$], [exact], [Composes only exact estimators],
+  [$PairwiseMargin$, $SignedRankMargin$], [exact], [Exact binomial; no library call since the recurrence replaced Stirling],
+  [$CenterBounds$, $ShiftBounds$, $DisparityBounds$], [exact], [Margin selection over exact candidates],
+  [$SpreadBounds$], [exact], [Bitwise on every fixture; see the note below],
+  [$Uniform$ sampling], [exact], [One multiply and one add, both pinned],
+  [$Ratio$, $RatioBounds$], [approximate], [Logarithm and exponential from the platform library],
+  [$Compare2$], [approximate], [Composes ratio projections alongside exact ones],
+  [$Additive$, $Multiplic$, $Exp$, $Power$ sampling], [approximate], [Logarithm, exponential, cosine and general power],
+  table.hline(),
+)
+
+#v(0.5em)
+For the approximate suites the perturbation moves $Ratio$ on 94% of inputs by up to 3 units in the
+  last place, and $RatioBounds$ on 96% by up to 16; in neither case does the selection itself flip,
+  so the divergence stays proportional rather than becoming a jump.
+
+#v(0.3em)
+One qualification is worth stating rather than smoothing over.
+$SpreadBounds$ matches bitwise on every fixture, but it is not yet exact by construction: the sign
+  margin inverts the binomial distribution function in logarithmic space, so at the one-sample
+  misrate floor $2^(1-floor(n\/2))$ an exact tie is settled by rounding inside the logarithm.
+Under the perturbation it flips there between returning an interval and rejecting the input, on 4
+  of 284 probe cases, all of them at that floor.
+The same treatment that removed the library call from the binomial coefficient applies, and until
+  it does, the exact label for this suite rests on the fixtures rather than on the construction.
 
 #v(0.5em)
 *Unified API*

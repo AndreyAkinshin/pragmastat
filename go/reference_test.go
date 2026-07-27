@@ -2,6 +2,7 @@ package pragmastat
 
 import (
 	"encoding/json"
+	"fmt"
 	"math"
 	"os"
 	"path/filepath"
@@ -82,7 +83,8 @@ func TestReferenceData(t *testing.T) {
 		})
 	})
 
-	// One-sample scalar estimators: center, spread.
+	// One-sample scalar estimators: center, spread. Both select their result
+	// out of the pairwise set, so both compare bit for bit.
 	oneSampleScalar := []struct {
 		name   string
 		rawFn  func(x []float64, assumeSorted bool) (float64, error)
@@ -114,20 +116,25 @@ func TestReferenceData(t *testing.T) {
 						},
 					},
 				}
-				runScalarDualPath(t, td, entries)
+				runScalarDualPath(t, td, compareExact, entries)
 			})
 		})
 	}
 
 	// Two-sample scalar estimators: shift, ratio, disparity (public).
+	//
+	// ratio is the one tolerant member: it is exp(median(log x - log y)), so the
+	// result is a libm approximation rather than an element selected out of the
+	// pairwise set. shift and disparity select, and compare bit for bit.
 	twoSampleScalar := []struct {
 		name   string
+		mode   compareMode
 		rawFn  func(x, y []float64, assumeSorted bool) (float64, error)
 		sampFn func(x, y *Sample) (Measurement, error)
 	}{
-		{"shift", Shift, func(x, y *Sample) (Measurement, error) { return x.Shift(y) }},
-		{"ratio", Ratio, func(x, y *Sample) (Measurement, error) { return x.Ratio(y) }},
-		{"disparity", Disparity, func(x, y *Sample) (Measurement, error) { return x.Disparity(y) }},
+		{"shift", compareExact, Shift, func(x, y *Sample) (Measurement, error) { return x.Shift(y) }},
+		{"ratio", compareTolerant, Ratio, func(x, y *Sample) (Measurement, error) { return x.Ratio(y) }},
+		{"disparity", compareExact, Disparity, func(x, y *Sample) (Measurement, error) { return x.Disparity(y) }},
 	}
 	for _, est := range twoSampleScalar {
 		t.Run(est.name, func(t *testing.T) {
@@ -156,7 +163,7 @@ func TestReferenceData(t *testing.T) {
 						},
 					},
 				}
-				runScalarDualPath(t, td, entries)
+				runScalarDualPath(t, td, est.mode, entries)
 			})
 		})
 	}
@@ -188,18 +195,23 @@ func TestReferenceData(t *testing.T) {
 					},
 				},
 			}
-			runScalarDualPath(t, td, entries)
+			runScalarDualPath(t, td, compareExact, entries)
 		})
 	})
 
 	// Two-sample bounds estimators (deterministic): shift-bounds, ratio-bounds.
+	// Both bounds are order statistics of the pairwise set, so shift-bounds is
+	// exact; ratio-bounds carries the same libm exponentiation as ratio.
 	twoSampleBounds := []struct {
 		name   string
+		mode   compareMode
 		rawFn  func(x, y []float64, misrate float64, assumeSorted bool) (Bounds, error)
 		sampFn func(x, y *Sample, misrate float64) (Bounds, error)
 	}{
-		{"shift-bounds", ShiftBounds, func(x, y *Sample, m float64) (Bounds, error) { return x.ShiftBounds(y, m) }},
-		{"ratio-bounds", RatioBounds, func(x, y *Sample, m float64) (Bounds, error) { return x.RatioBounds(y, m) }},
+		{"shift-bounds", compareExact, ShiftBounds,
+			func(x, y *Sample, m float64) (Bounds, error) { return x.ShiftBounds(y, m) }},
+		{"ratio-bounds", compareTolerant, RatioBounds,
+			func(x, y *Sample, m float64) (Bounds, error) { return x.RatioBounds(y, m) }},
 	}
 	for _, est := range twoSampleBounds {
 		t.Run(est.name, func(t *testing.T) {
@@ -228,7 +240,7 @@ func TestReferenceData(t *testing.T) {
 						},
 					},
 				}
-				runBoundsDualPath(t, td, entries)
+				runBoundsDualPath(t, td, est.mode, entries)
 			})
 		})
 	}
@@ -699,14 +711,9 @@ func TestShuffleReference(t *testing.T) {
 			rng := NewRngFromSeed(testData.Input.Seed)
 			actual := RngShuffle(rng, testData.Input.X)
 
-			if len(actual) != len(testData.Output) {
-				t.Fatalf("Shuffle() length = %d, want %d", len(actual), len(testData.Output))
-			}
-			for i, v := range actual {
-				if !floatEquals(v, testData.Output[i], 1e-15) {
-					t.Errorf("Shuffle() at index %d = %v, want %v", i, v, testData.Output[i])
-				}
-			}
+			// A permutation carries the input values through untouched, so an
+			// inexactness here would be a wrong element, not a rounding error.
+			assertExactSequence(t, "RngShuffle()", actual, testData.Output)
 		})
 	}
 }
@@ -742,14 +749,9 @@ func TestSampleReference(t *testing.T) {
 			rng := NewRngFromSeed(testData.Input.Seed)
 			actual := RngSample(rng, testData.Input.X, testData.Input.K)
 
-			if len(actual) != len(testData.Output) {
-				t.Fatalf("RngSample() length = %d, want %d", len(actual), len(testData.Output))
-			}
-			for i, v := range actual {
-				if !floatEquals(v, testData.Output[i], 1e-15) {
-					t.Errorf("RngSample() at index %d = %v, want %v", i, v, testData.Output[i])
-				}
-			}
+			// Selection without replacement: every element is an input value
+			// carried through untouched.
+			assertExactSequence(t, "RngSample()", actual, testData.Output)
 		})
 	}
 }
@@ -785,14 +787,8 @@ func TestResampleReference(t *testing.T) {
 			rng := NewRngFromSeed(testData.Input.Seed)
 			actual := RngResample(rng, testData.Input.X, testData.Input.K)
 
-			if len(actual) != len(testData.Output) {
-				t.Fatalf("RngResample() length = %d, want %d", len(actual), len(testData.Output))
-			}
-			for i, v := range actual {
-				if !floatEquals(v, testData.Output[i], 1e-15) {
-					t.Errorf("RngResample() at index %d = %v, want %v", i, v, testData.Output[i])
-				}
-			}
+			// Selection with replacement: same argument as RngSample.
+			assertExactSequence(t, "RngResample()", actual, testData.Output)
 		})
 	}
 }
@@ -1131,7 +1127,7 @@ func TestCenterBoundsReference(t *testing.T) {
 				},
 			},
 		}
-		runBoundsDualPath(t, td, entries)
+		runBoundsDualPath(t, td, compareExact, entries)
 	})
 }
 
@@ -1159,7 +1155,7 @@ func TestSpreadBoundsReference(t *testing.T) {
 				},
 			},
 		}
-		runBoundsDualPath(t, td, entries)
+		runBoundsDualPath(t, td, compareExact, entries)
 	})
 }
 
@@ -1193,7 +1189,7 @@ func TestAvgSpreadBoundsReference(t *testing.T) {
 				},
 			},
 		}
-		runBoundsDualPath(t, td, entries)
+		runBoundsDualPath(t, td, compareExact, entries)
 	})
 }
 
@@ -1223,7 +1219,7 @@ func TestDisparityBoundsReference(t *testing.T) {
 				},
 			},
 		}
-		runBoundsDualPath(t, td, entries)
+		runBoundsDualPath(t, td, compareExact, entries)
 	})
 }
 
@@ -1408,8 +1404,8 @@ func TestUnitPropagation(t *testing.T) {
 				if m.Unit.ID != output.Unit {
 					t.Errorf("Unit = %q, want %q", m.Unit.ID, output.Unit)
 				}
-				if output.Value != nil && !floatEquals(m.Value, *output.Value, 1e-9) {
-					t.Errorf("Value = %v, want %v", m.Value, *output.Value)
+				if output.Value != nil {
+					assertFloat(t, compareExact, "Value", m.Value, *output.Value)
 				}
 
 			case "spread":
@@ -1551,6 +1547,24 @@ func mustParseVerdict(t *testing.T, s string) ComparisonVerdict {
 	}
 }
 
+// assertProjections compares a comparison result against the fixture's
+// projections under mode.
+func assertProjections(t *testing.T, mode compareMode, actual []Projection, expected []ProjectionOutput) {
+	t.Helper()
+	if len(actual) != len(expected) {
+		t.Fatalf("Expected %d projections, got %d", len(expected), len(actual))
+	}
+	for i, proj := range actual {
+		exp := expected[i]
+		assertFloat(t, mode, fmt.Sprintf("Projection %d: Estimate", i), proj.Estimate.Value, exp.Estimate)
+		assertFloat(t, mode, fmt.Sprintf("Projection %d: Lower", i), proj.Bounds.Lower, exp.Lower)
+		assertFloat(t, mode, fmt.Sprintf("Projection %d: Upper", i), proj.Bounds.Upper, exp.Upper)
+		if proj.Verdict != mustParseVerdict(t, exp.Verdict) {
+			t.Errorf("Projection %d: Verdict = %v, want %v", i, proj.Verdict, exp.Verdict)
+		}
+	}
+}
+
 func TestCompare1Reference(t *testing.T) {
 	dirPath := filepath.Join("../tests", "compare1")
 	files, err := os.ReadDir(dirPath)
@@ -1639,25 +1653,9 @@ func TestCompare1Reference(t *testing.T) {
 				t.Fatalf("Compare1 error: %v", err)
 			}
 
-			if len(actual) != len(expected.Projections) {
-				t.Fatalf("Expected %d projections, got %d", len(expected.Projections), len(actual))
-			}
-
-			for i, proj := range actual {
-				exp := expected.Projections[i]
-				if !floatEquals(proj.Estimate.Value, exp.Estimate, 1e-9) {
-					t.Errorf("Projection %d: Estimate = %v, want %v", i, proj.Estimate.Value, exp.Estimate)
-				}
-				if !floatEquals(proj.Bounds.Lower, exp.Lower, 1e-9) {
-					t.Errorf("Projection %d: Lower = %v, want %v", i, proj.Bounds.Lower, exp.Lower)
-				}
-				if !floatEquals(proj.Bounds.Upper, exp.Upper, 1e-9) {
-					t.Errorf("Projection %d: Upper = %v, want %v", i, proj.Bounds.Upper, exp.Upper)
-				}
-				if proj.Verdict != mustParseVerdict(t, exp.Verdict) {
-					t.Errorf("Projection %d: Verdict = %v, want %v", i, proj.Verdict, exp.Verdict)
-				}
-			}
+			// compare1 projects center and spread only, both of which select
+			// their result out of the pairwise set.
+			assertProjections(t, compareExact, actual, expected.Projections)
 		})
 	}
 }
@@ -1757,25 +1755,10 @@ func TestCompare2Reference(t *testing.T) {
 				t.Fatalf("Compare2 error: %v", err)
 			}
 
-			if len(actual) != len(expected.Projections) {
-				t.Fatalf("Expected %d projections, got %d", len(expected.Projections), len(actual))
-			}
-
-			for i, proj := range actual {
-				exp := expected.Projections[i]
-				if !floatEquals(proj.Estimate.Value, exp.Estimate, 1e-9) {
-					t.Errorf("Projection %d: Estimate = %v, want %v", i, proj.Estimate.Value, exp.Estimate)
-				}
-				if !floatEquals(proj.Bounds.Lower, exp.Lower, 1e-9) {
-					t.Errorf("Projection %d: Lower = %v, want %v", i, proj.Bounds.Lower, exp.Lower)
-				}
-				if !floatEquals(proj.Bounds.Upper, exp.Upper, 1e-9) {
-					t.Errorf("Projection %d: Upper = %v, want %v", i, proj.Bounds.Upper, exp.Upper)
-				}
-				if proj.Verdict != mustParseVerdict(t, exp.Verdict) {
-					t.Errorf("Projection %d: Verdict = %v, want %v", i, proj.Verdict, exp.Verdict)
-				}
-			}
+			// compare2 composes ratio projections alongside exact ones. A
+			// per-suite mode cannot express "exact for shift, approximate for
+			// ratio", so the suite stays tolerant as a whole.
+			assertProjections(t, compareTolerant, actual, expected.Projections)
 		})
 	}
 }
