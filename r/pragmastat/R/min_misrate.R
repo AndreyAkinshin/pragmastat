@@ -9,7 +9,13 @@
 # @return Minimum achievable misrate
 min_achievable_misrate_one_sample <- function(n) {
   if (n <= 0) stop(assumption_error(ASSUMPTION_IDS$DOMAIN, SUBJECTS$X))
-  2^(1 - n)
+  # Repeated halving rather than ^: this is a power of two, and scaling by an exponent is exact in binary64. A general
+  # power function returns the same value in every implementation anyone ships, but the
+  # specification does not require it to, and this value is a domain boundary: it decides
+  # which misrates the toolkit accepts at all.
+  v <- 1.0
+  for (i in seq_len(n - 1)) v <- v / 2
+  v
 }
 
 # Computes the minimum achievable misrate for two-sample Mann-Whitney based bounds.

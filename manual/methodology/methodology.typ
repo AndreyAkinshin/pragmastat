@@ -469,14 +469,21 @@ For the approximate suites the perturbation moves $Ratio$ on 94% of inputs by up
   so the divergence stays proportional rather than becoming a jump.
 
 #v(0.3em)
-One qualification is worth stating rather than smoothing over.
-$SpreadBounds$ matches bitwise on every fixture, but it is not yet exact by construction: the sign
-  margin inverts the binomial distribution function in logarithmic space, so at the one-sample
-  misrate floor $2^(1-floor(n\/2))$ an exact tie is settled by rounding inside the logarithm.
-Under the perturbation it flips there between returning an interval and rejecting the input, on 4
-  of 284 probe cases, all of them at that floor.
-The same treatment that removed the library call from the binomial coefficient applies, and until
-  it does, the exact label for this suite rests on the fixtures rather than on the construction.
+The measurement is also what corrected the diagnosis when it was wrong.
+$SpreadBounds$ was for a time the one estimator that moved under the perturbation, and the obvious
+  explanation was that the sign margin inverts the binomial distribution function in logarithmic
+  space, where an exact tie at the misrate floor would be settled by rounding inside the logarithm.
+The obvious explanation was wrong.
+The sensitivity was in the floor itself: it is $2^(1-floor(n\/2))$, an exact power of two, and it
+  was being computed by asking a general power function for it.
+That value is a domain boundary rather than a result, so a last-bit difference there does not
+  perturb an answer, it decides whether the input is accepted at all.
+All seven now build it by halving, which is exact, and the estimator stops moving entirely.
+
+#v(0.3em)
+The lesson generalizes past this one function.
+A library call whose exact case every implementation happens to get right is still a library call,
+  and the specification does not promise what every implementation happens to do.
 
 #v(0.5em)
 *Unified API*

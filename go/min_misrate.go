@@ -9,7 +9,11 @@ func minAchievableMisrateOneSample(n int) (float64, error) {
 	if n <= 0 {
 		return 0, &AssumptionError{Violation: Violation{ID: Domain, Subject: SubjectX}}
 	}
-	return math.Pow(2, float64(1-n)), nil
+	// Ldexp, not Pow: this is a power of two, and scaling by one is exact in binary64
+	// for every representable exponent. A general power function would give the same
+	// answer in any conforming implementation, but it asks a library the specification
+	// does not fix a question it does not need to ask.
+	return math.Ldexp(1, 1-n), nil
 }
 
 // minAchievableMisrateTwoSample computes the minimum achievable misrate

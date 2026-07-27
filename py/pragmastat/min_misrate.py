@@ -1,5 +1,7 @@
 """MinAchievableMisrate functions for bounds validation."""
 
+import math
+
 from ._binomial import binomial_coefficient
 from .assumptions import AssumptionError
 
@@ -23,7 +25,11 @@ def min_achievable_misrate_one_sample(n: int) -> float:
     """
     if n <= 0:
         raise AssumptionError.domain("x")
-    return 2.0 ** (1 - n)
+    # ldexp, not **: this is a power of two, and scaling by an exponent is exact in binary64. A general
+    # power function returns the same value in every implementation anyone ships, but the
+    # specification does not require it to, and this value is a domain boundary: it decides
+    # which misrates the toolkit accepts at all.
+    return math.ldexp(1.0, 1 - n)
 
 
 def min_achievable_misrate_two_sample(n: int, m: int) -> float:

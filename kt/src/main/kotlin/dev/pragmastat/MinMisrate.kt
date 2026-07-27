@@ -1,7 +1,5 @@
 package dev.pragmastat
 
-import kotlin.math.pow
-
 /**
  * Computes the minimum achievable misrate for one-sample bounds.
  *
@@ -15,7 +13,11 @@ internal fun minAchievableMisrateOneSample(n: Int): Double {
     if (n <= 0) {
         throw AssumptionException(Violation(AssumptionId.DOMAIN, Subject.X))
     }
-    return 2.0.pow(1 - n)
+    // scalb, not pow: this is a power of two, and scaling by an exponent is exact in binary64. A general
+    // power function returns the same value in every implementation anyone ships, but the
+    // specification does not require it to, and this value is a domain boundary: it decides
+    // which misrates the toolkit accepts at all.
+    return Math.scalb(1.0, 1 - n)
 }
 
 /**

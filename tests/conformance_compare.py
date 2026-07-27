@@ -43,31 +43,6 @@ SUITE_OF = {
     "misrateFloor": None,
 }
 
-def known_exposure(estimator, key):
-    """True for the one soft spot the manual already states, and only there.
-
-    SpreadBounds is labelled exact because it matches bitwise on every fixture, but it is
-    not exact by construction: signMargin inverts the binomial distribution function in log
-    space, so at the one-sample misrate floor 2^(1-floor(n/2)) an exact tie is settled by
-    rounding inside the logarithm.
-
-    The allowance is a predicate rather than a count on purpose. A tolerated number would
-    drift with the size of the sweep and would quietly absorb a second, unrelated exposure;
-    this accepts movement at exactly the point that is documented and fails anywhere else.
-    Deleting this function is the point of the follow-up that takes signMargin out of log
-    space; widening it is not.
-    """
-    if estimator != "spreadBounds":
-        return False
-    case = key.split("/")[0]
-    try:
-        size = int(case.split(".")[0].lstrip("n"))
-        misrate = payload(case.split(".m", 1)[1])
-    except (IndexError, ValueError):
-        return False
-    return misrate == 2.0 ** (1 - size // 2)
-
-
 def payload(token):
     """Parses the 'MpE' form Go's strconv emits for 'b', or returns None for an integer."""
     if "p" not in token:
@@ -116,14 +91,10 @@ def main(base_path, perturbed_path, manifest_path):
     total = Counter()
     moved = Counter()
     worst = Counter()
-    tolerated = Counter()
     for key in set(base) & set(perturbed):
         estimator = key.split("/")[-1]
         total[estimator] += 1
         if base[key] == perturbed[key]:
-            continue
-        if known_exposure(estimator, key):
-            tolerated[estimator] += 1
             continue
         moved[estimator] += 1
         for a, b in zip(base[key], perturbed[key]):
@@ -134,21 +105,17 @@ def main(base_path, perturbed_path, manifest_path):
     for key in only_one_side:
         estimator = key.split("/")[-1]
         total[estimator] += 1
-        if known_exposure(estimator, key):
-            tolerated[estimator] += 1
-        else:
-            moved[estimator] += 1
-            worst[estimator] = max(worst[estimator], -1)
+        moved[estimator] += 1
+        worst[estimator] = max(worst[estimator], -1)
 
-    print(f"{'estimator':<20}{'class':>13}{'probed':>9}{'moved':>8}{'max ulp':>10}{'known':>8}")
+    print(f"{'estimator':<20}{'class':>13}{'probed':>9}{'moved':>8}{'max ulp':>10}")
     failures = []
     for estimator in sorted(total):
         suite = SUITE_OF.get(estimator)
         cls = "exact" if suite is None else classes.get(suite, "exact")
         w = worst[estimator]
         shown = "domain" if w == -1 else (str(w) if moved[estimator] else "-")
-        known = str(tolerated[estimator]) if tolerated[estimator] else "-"
-        print(f"{estimator:<20}{cls:>13}{total[estimator]:>9}{moved[estimator]:>8}{shown:>10}{known:>8}")
+        print(f"{estimator:<20}{cls:>13}{total[estimator]:>9}{moved[estimator]:>8}{shown:>10}")
         if cls == "exact" and moved[estimator]:
             failures.append(
                 f"  {estimator}: declared exact in tests/manifest.json, but a one-ulp "

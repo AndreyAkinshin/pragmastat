@@ -19,7 +19,17 @@ export function minAchievableMisrateOneSample(n: number): number {
   if (n <= 0) {
     throw AssumptionError.domain('x');
   }
-  return Math.pow(2, 1 - n);
+  // Repeated halving rather than Math.pow: this is a power of two, and scaling by an exponent is exact in binary64. A general
+  // power function returns the same value in every implementation anyone ships, but the
+  // specification does not require it to, and this value is a domain boundary: it decides
+  // which misrates the toolkit accepts at all.
+  // ECMAScript defines Math.pow as implementation-approximated, so it is not the
+  // primitive to reach for when the value has to be exact. Each halving is.
+  let v = 1;
+  for (let i = 1; i < n; i++) {
+    v /= 2;
+  }
+  return v;
 }
 
 /**

@@ -101,7 +101,7 @@
     },
     "spread-bounds": {
       "conformance": "exact",
-      "conformance_reason": "Bitwise on every fixture, but not yet bitwise by construction: signMargin inverts the Binomial(n, 0.5) CDF in log space, so at the one-sample misrate floor 2^(1-floor(n/2)) an exact tie is decided by log and exp rounding. A libm perturbation flips it there between returning bounds and rejecting the input.",
+      
       "directory": "spread-bounds",
       "generator": "cs/Pragmastat.TestGenerator",
       "pattern": "*.json",

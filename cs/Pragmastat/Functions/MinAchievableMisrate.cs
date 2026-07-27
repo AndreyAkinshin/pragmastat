@@ -17,7 +17,15 @@ internal static class MinAchievableMisrate
   {
     if (n <= 0)
       throw AssumptionException.Domain(Subject.X);
-    return Math.Pow(2, 1 - n);
+    // Repeated halving rather than Pow: this is a power of two, and halving is exact in
+    // binary64. A general power function returns the same value in every implementation
+    // anyone ships, but the specification does not require it to, and this value is a
+    // domain boundary: it decides which misrates the toolkit accepts at all.
+    // Math.ScaleB would say it more directly but does not exist in netstandard2.0.
+    double result = 1.0;
+    for (int i = 1; i < n; i++)
+      result /= 2.0;
+    return result;
   }
 
   /// <summary>
