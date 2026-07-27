@@ -132,9 +132,11 @@ def _load_fixtures(estimator_name):
 # --------------------------------------
 #   ratio / ratio-bounds  exp(median(log x - log y)): the perturbation moves them
 #                         on 94% of inputs, by up to 16 ULP. Genuinely approximate.
-#   compare2              composes ratio projections next to exact ones; a
-#                         per-suite predicate cannot say "exact for shift,
-#                         approximate for ratio", so the whole suite stays tolerant.
+#   compare2              only its ratio projections. The predicate is resolved
+#                         per projection from that projection's own metric (see
+#                         :func:`_projection_is_bitwise`), so the 28 shift and
+#                         disparity projections in the suite are compared bit for
+#                         bit and only the 5 ratio ones get a tolerance.
 #   distributions/        additive, multiplic, exp and power draw through
 #                         log/exp/cos/pow, which each language takes from a
 #                         different libm. distributions/uniform is pure binary64
@@ -318,18 +320,44 @@ def _parse_sample_values(raw_values):
     return result
 
 
-def _assert_projections(projections, expected_projections, fixture_name, *, bitwise):
+def _projection_is_bitwise(metric):
+    """Whether a projection of ``metric`` is compared bit for bit.
+
+    ``ratio`` is the only approximate metric: its estimator and its bounds both go
+    through log and exp, which each language takes from a different libm. Every
+    other metric selects an element out of a pairwise set and is exact (see the
+    exactness predicates above). A projection is graded on its own metric, so one
+    ratio threshold in a fixture no longer lowers the guarantee on the shift and
+    disparity thresholds standing next to it.
+    """
+    return metric is not Metric.RATIO
+
+
+def _assert_projections(projections, expected_projections, fixture_name, thresholds):
     """Compare a compare1/compare2 projection list against its fixture.
 
+    The exactness predicate is resolved per projection from the metric of the
+    threshold that produced it. The metric is read from the fixture INPUT, never
+    from the ``Projection.threshold`` the library handed back: an implementation
+    that mislabelled a projection would otherwise get to pick its own tolerance.
+    ``input.thresholds`` and ``output.projections`` share a length and an order --
+    the order-* fixtures exist to pin exactly that -- so threshold i grades
+    projection i.
+
     Verdicts are enum strings and were always exact; only the three binary64
-    fields take the ``bitwise`` predicate.
+    fields take the predicate.
     """
     assert len(projections) == len(expected_projections), (
         f"Projection count mismatch for {fixture_name}: {len(projections)} vs {len(expected_projections)}"
     )
+    assert len(thresholds) == len(projections), (
+        f"Threshold/projection misalignment for {fixture_name}: {len(thresholds)} vs {len(projections)}"
+    )
 
-    for i, (actual, expected) in enumerate(zip(projections, expected_projections, strict=True)):
-        context = f" for {fixture_name}, projection {i}"
+    triples = zip(projections, expected_projections, thresholds, strict=True)
+    for i, (actual, expected, threshold) in enumerate(triples):
+        context = f" for {fixture_name}, projection {i} ({threshold.metric.value})"
+        bitwise = _projection_is_bitwise(threshold.metric)
         _assert_scalar(actual.estimate.value, expected["estimate"], f"Estimate mismatch{context}", bitwise=bitwise)
         _assert_scalar(actual.bounds.lower, expected["lower"], f"Lower bound mismatch{context}", bitwise=bitwise)
         _assert_scalar(actual.bounds.upper, expected["upper"], f"Upper bound mismatch{context}", bitwise=bitwise)
@@ -1016,9 +1044,9 @@ class TestCompare1:
             sx = Sample(x_values)
             projections = compare1(sx, thresholds, seed=seed)
 
-            # compare1 projects only exact metrics (center/spread), so the whole
-            # suite is bitwise -- unlike compare2, which mixes in ratio.
-            _assert_projections(projections, expected_projections, json_file.name, bitwise=True)
+            # compare1 accepts only center and spread thresholds, both in the exact
+            # class, so the per-metric predicate resolves to bitwise throughout.
+            _assert_projections(projections, expected_projections, json_file.name, thresholds)
 
     def test_compare1_supports_measurement_threshold_units(self):
         ms = MeasurementUnit("ms", "Time", "ms", "Millisecond", 1_000_000)
@@ -1086,9 +1114,9 @@ class TestCompare2:
             projections = compare2(sx, sy, thresholds, seed=seed)
 
             # compare2 fixtures mix ratio projections (approximate) with shift and
-            # disparity ones (exact). A per-suite predicate cannot express that
-            # split, so the whole suite stays tolerant.
-            _assert_projections(projections, expected_projections, json_file.name, bitwise=False)
+            # disparity ones (exact). Each projection is graded on its own
+            # threshold's metric, so only the ratio ones carry a tolerance.
+            _assert_projections(projections, expected_projections, json_file.name, thresholds)
 
     def test_compare2_supports_measurement_threshold_units(self):
         ms = MeasurementUnit("ms", "Time", "ms", "Millisecond", 1_000_000)
@@ -1099,7 +1127,8 @@ class TestCompare2:
 
         [projection] = compare2(sx, sy, thresholds)
 
-        assert abs(projection.estimate.value + 20_000_000) < 1e-9
+        # Exact: shift is in the bitwise class, like the compare1 case above.
+        assert_identical(projection.estimate.value, -20_000_000.0, "compare2 shift estimate")
         assert projection.estimate.unit == ns
         assert projection.bounds.unit == ns
         assert projection.verdict.value == "less"

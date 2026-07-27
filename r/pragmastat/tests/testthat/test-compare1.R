@@ -3,9 +3,9 @@
 
 # compare1 projects only center and spread, both of which select an element of
 # the pairwise set and are therefore bit-identical across ports (see the note
-# on run_reference_tests). Its numbers are compared bitwise. compare2 is the
-# one that stays tolerant: it composes ratio projections alongside exact ones,
-# and a per-suite tolerance cannot say "exact for shift, approximate for ratio".
+# on run_reference_tests). Every threshold it accepts is exact, so this file
+# needs no per-projection decision; compare2 resolves the class from each
+# threshold's metric because it can also project ratio.
 expect_projection_exact <- function(actual_proj, expected_proj, file_label, idx) {
   label <- paste0(file_label, " projection[", idx, "]")
   expect_exact(

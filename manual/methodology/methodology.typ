@@ -416,6 +416,9 @@ Every suite declares which of two promises it makes, and the promise is measured
   sequence of binary64 operations, so there is nothing left for an implementation to decide.],
   [*Approximate* — the seven agree to the tolerance recorded with the suite. The reason is always
   a library function the specification does not fix, never accumulated arithmetic error.],
+  [*Per-projection* — the suite carries results of both kinds and the class is chosen per result.
+  A single predicate for a whole suite has to be the weakest one present, which lets one
+  approximate result lower the guarantee on every exact result beside it.],
 )
 
 #v(0.5em)
@@ -465,7 +468,7 @@ A measurement nobody can repeat stops being a measurement.
   [$SpreadBounds$], [exact], [Bitwise on every fixture; see the note below],
   [$Uniform$ sampling], [exact], [One multiply and one add, both pinned],
   [$Ratio$, $RatioBounds$], [approximate], [Logarithm and exponential from the platform library],
-  [$Compare2$], [approximate], [Composes ratio projections alongside exact ones],
+  [$Compare2$], [per-projection], [Each projection follows its own threshold's metric],
   [$Additive$, $Multiplic$, $Exp$, $Power$ sampling], [approximate], [Logarithm, exponential, cosine and general power],
   table.hline(),
 )

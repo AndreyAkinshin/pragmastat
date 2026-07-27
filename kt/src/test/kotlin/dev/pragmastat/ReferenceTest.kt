@@ -147,13 +147,14 @@ class ReferenceTest {
     /**
      * Tolerant comparison, reserved for the genuinely approximate suites.
      *
-     * Only ratio, ratio-bounds, compare2 and the libm-backed distributions use it.
-     * ratio is exp(median(log x - log y)): perturbing log/exp by one representable
-     * step (the most two conforming libm implementations may legitimately differ)
-     * moves it on 94% of inputs, by up to 16 ulp. compare2 composes ratio
-     * projections alongside exact ones and a per-suite tolerance cannot express
-     * "exact for shift, approximate for ratio", so it stays tolerant as a whole.
-     * Everything else compares bitwise through [assertBitwise].
+     * Only ratio, ratio-bounds, the RATIO projections of compare2 and the
+     * libm-backed distributions use it. ratio is exp(median(log x - log y)):
+     * perturbing log/exp by one representable step (the most two conforming libm
+     * implementations may legitimately differ) moves it on 94% of inputs, by up to
+     * 16 ulp. compare2 does not apply this suite-wide: it resolves the predicate per
+     * projection from that projection's own threshold metric, so its shift and
+     * disparity projections compare bitwise and only its ratio projections land
+     * here. Everything else compares bitwise through [assertBitwise].
      */
     private fun assertClose(
         expected: Double,
@@ -711,8 +712,8 @@ class ReferenceTest {
                     // contraction on an arm64 runner, where the compiler is free to fuse a
                     // multiply into an add and change the last bit of a draw. The
                     // exact-selection estimator suites compare bitwise for the same reason;
-                    // only the libm-backed ones (ratio, compare2, the non-uniform
-                    // distributions) keep a tolerance.
+                    // only the libm-backed ones (ratio, the ratio projections of compare2,
+                    // the non-uniform distributions) keep a tolerance.
                     val actual = List(testData.input.count) { rng.uniformDouble() }
                     assertBitwise(testData.output, actual, "uniformDouble()")
                 },
@@ -1637,9 +1638,29 @@ class ReferenceTest {
                     for (i in result.indices) {
                         val expected = testData.output.projections[i]
                         val actual = result[i]
-                        assertClose(expected.estimate, actual.estimate.value)
-                        assertClose(expected.lower, actual.bounds.lower)
-                        assertClose(expected.upper, actual.bounds.upper)
+                        // The predicate follows the metric of the projection's own threshold,
+                        // not the weakest metric in the suite. compare2 emits one projection
+                        // per threshold in threshold order (the order-* fixtures pin that), so
+                        // threshold i names the estimator behind projection i, and every field
+                        // of a projection (estimate, lower, upper) comes from that one
+                        // estimator and shares its class.
+                        //
+                        // shift and disparity select an element out of the pairwise set and are
+                        // bit-identical across conforming libm implementations, exactly as the
+                        // standalone shift/disparity/shift-bounds/disparity-bounds suites above
+                        // already assert. Only ratio composes exp(median(log x - log y)) and is
+                        // genuinely approximate. A suite-wide tolerance had to be the weakest
+                        // predicate present, so 5 ratio thresholds out of 33 were checking the
+                        // other 28 projections as though they might drift.
+                        if (thresholds[i].metric == Metric.Ratio) {
+                            assertClose(expected.estimate, actual.estimate.value)
+                            assertClose(expected.lower, actual.bounds.lower)
+                            assertClose(expected.upper, actual.bounds.upper)
+                        } else {
+                            assertBitwise(expected.estimate, actual.estimate.value, "projection[$i].estimate")
+                            assertBitwise(expected.lower, actual.bounds.lower, "projection[$i].lower")
+                            assertBitwise(expected.upper, actual.bounds.upper, "projection[$i].upper")
+                        }
                         assertEquals(expected.verdict, actual.verdict.name.lowercase())
                     }
                 },

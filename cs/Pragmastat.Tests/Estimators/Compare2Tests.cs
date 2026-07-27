@@ -28,8 +28,47 @@ public class Compare2Tests
 
     var testCase = controller.LoadTestCase(testName);
     var actual = controller.Run(testCase.Input);
-    Assert.True(controller.Assert(testCase.Output, actual),
-      $"Test: {testName}, Projections mismatch");
+
+    // Projection i answers threshold i: the two lists carry the same length and the same order,
+    // and the order-* fixtures pin that. So each projection is checked against the conformance
+    // class of its own metric instead of the weakest class present in the suite.
+    var thresholds = testCase.Input.GetThresholds();
+    var expected = testCase.Output.Projections;
+    var produced = actual.Projections;
+    Assert.Equal(thresholds.Count, expected.Length);
+    Assert.Equal(expected.Length, produced.Length);
+    for (int i = 0; i < expected.Length; i++)
+    {
+      string context = $"Suite: {SuiteName}, test {testName}, projection {i}";
+      bool approximate = thresholds[i].Metric == Metric.Ratio;
+      AssertField(approximate, expected[i].Estimate, produced[i].Estimate, context + ", estimate");
+      AssertField(approximate, expected[i].Lower, produced[i].Lower, context + ", lower");
+      AssertField(approximate, expected[i].Upper, produced[i].Upper, context + ", upper");
+      Assert.Equal(expected[i].Verdict, produced[i].Verdict);
+    }
+  }
+
+  /// <summary>
+  /// Tolerance kept for ratio projections, matching the one the suite used to apply to everything.
+  /// </summary>
+  private const double RatioTolerance = 1e-9;
+
+  /// <summary>
+  /// Every field of a projection follows the class of its threshold's metric. Shift and disparity
+  /// select their answer out of a finite set built from the input, so a divergence is never small
+  /// and the payloads must be identical. Ratio evaluates exp(median(log x - log y)), which two
+  /// conforming libm implementations may place a few ULP apart, so it keeps a tolerance.
+  /// </summary>
+  private static void AssertField(bool approximate, double expected, double actual, string context)
+  {
+    if (!approximate)
+    {
+      BitwiseAssert.Equal(expected, actual, context);
+      return;
+    }
+
+    Assert.True(Math.Abs(expected - actual) < RatioTolerance,
+      $"{context}: expected {expected:R}, got {actual:R}");
   }
 
   // ── API-validation unit tests ─────────────────────────────────────────────

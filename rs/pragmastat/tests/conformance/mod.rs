@@ -25,9 +25,9 @@ use float_cmp::approx_eq;
 ///
 /// `Tolerant` survives only where that perturbation does move the result: `ratio`
 /// is `exp(median(log x - log y))`, which shifts on 94% of the fixtures by up to
-/// 16 ULP. `compare2` composes ratio projections next to exact ones, and a
-/// per-suite mode cannot express "exact for shift, approximate for ratio", so it
-/// stays tolerant as a whole.
+/// 16 ULP. `compare2` composes ratio projections next to exact ones, so it picks
+/// the class per projection from that projection's threshold metric: the ratio
+/// ones are tolerant, and the shift and disparity ones beside them stay exact.
 #[derive(Clone, Copy)]
 pub enum Conformance {
     Exact,

@@ -155,6 +155,21 @@ fn verify_error(
     }
 }
 
+/// The conformance class of one projection, read off its threshold's metric.
+///
+/// Every number in a projection (estimate, lower, upper) is produced by the bounds
+/// estimator for that one metric, so the class is a property of the metric and not
+/// of the field. `ratio` is `exp(median(log x - log y))`, which a conforming libm
+/// can move; the selection-based metrics next to it are bit-reproducible and must
+/// not be checked as though they were not. Matched exhaustively so that a new
+/// metric has to state its class rather than inherit one.
+fn conformance_for(metric: Metric) -> Conformance {
+    match metric {
+        Metric::Ratio => Conformance::Tolerant,
+        Metric::Center | Metric::Spread | Metric::Shift | Metric::Disparity => Conformance::Exact,
+    }
+}
+
 /// Compares one projection (estimate + bounds + verdict) against its fixture.
 fn check_projection(
     failures: &mut Vec<String>,
@@ -411,31 +426,39 @@ fn run_compare2_tests() {
 
         let expected_output = test_case.output.expect("Test case must have output");
 
-        if actual_output.len() != expected_output.projections.len() {
+        // One projection per threshold, in threshold order: that is what makes
+        // `thresholds[i]` the metric of projection `i`, and the order-* fixtures in
+        // this suite exist to pin it. Checked before the loop so a drift in either
+        // length is reported instead of silently truncating the zip below.
+        if actual_output.len() != expected_output.projections.len()
+            || thresholds.len() != expected_output.projections.len()
+        {
             failures.push(format!(
-                "{file_name:?}: expected {} projections, got {}",
+                "{file_name:?}: expected {} projections for {} thresholds, got {}",
                 expected_output.projections.len(),
+                thresholds.len(),
                 actual_output.len()
             ));
             continue;
         }
 
-        for (i, (actual, expected)) in actual_output
+        for (i, ((actual, expected), threshold)) in actual_output
             .iter()
             .zip(expected_output.projections.iter())
+            .zip(thresholds.iter())
             .enumerate()
         {
             // Compare2 mixes exact projections (shift, disparity) with the
-            // approximate ratio one in a single list, and a per-suite mode cannot
-            // say "exact here, approximate there", so the whole suite stays
-            // tolerant.
+            // approximate ratio one in a single list. Each is held to its own
+            // metric's class, so the one approximate case does not lower the
+            // guarantee on the exact ones standing next to it.
             check_projection(
                 &mut failures,
                 file_name,
                 i,
                 actual,
                 expected,
-                Conformance::Tolerant,
+                conformance_for(threshold.metric()),
             );
         }
     }

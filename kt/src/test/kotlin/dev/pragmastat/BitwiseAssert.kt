@@ -56,9 +56,11 @@ import kotlin.test.fail
  * platform libm returns, it returns it twice.
  *
  * The suites that keep a tolerance are genuinely approximate, and the reasons sit
- * on `ReferenceTest.assertClose` (ratio and compare2 across implementations) and
- * on `InvarianceTest` (equivariance properties, where the expectation carries its
- * own inexact arithmetic).
+ * on `ReferenceTest.assertClose` (ratio, and the ratio projections of compare2,
+ * across implementations) and on `InvarianceTest` (equivariance properties, where
+ * the expectation carries its own inexact arithmetic). compare2 is resolved per
+ * projection rather than per suite: a projection is compared here unless its own
+ * threshold names the ratio metric.
  *
  * [label] names the position being compared (which field, which index, which
  * bound, or which pair of paths); for the fixture suites the fixture itself is the

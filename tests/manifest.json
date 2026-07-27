@@ -4,6 +4,7 @@
   "conformance_notes": {
     "exact": "The seven implementations must return identical bits. Loaders compare raw binary64 payloads, not a tolerance.",
     "approximate": "The seven agree to the tolerance recorded with the suite. The reason is stated per suite; it is always a library function the specification does not fix, never accumulated arithmetic error.",
+    "per-projection": "The suite carries cases of both kinds, and the loader picks per result rather than per suite. A suite-wide predicate has to be the weakest one present, which lets one approximate case lower the guarantee on every exact one beside it.",
     "why": "IEEE 754 fixes the result of each operation but not how many operations an implementation performs. A tolerance is the right instrument only where the output is continuous in the input; where the output is an element selected out of a set, a divergence is not a small error but a different element, and no epsilon bounds it.",
     "how_established": "Measured, not assumed: each estimator is recomputed with every call to log, exp, pow and cos returning the neighbouring representable value, the smallest difference two conforming libm implementations can have. An estimator whose output never moves under that perturbation cannot diverge for this reason in any language. sqrt is deliberately not perturbed: IEEE 754 requires it correctly rounded."
   },
@@ -183,8 +184,8 @@
       "languages": ["cs", "go", "kt", "py", "r", "rs", "ts"]
     },
     "compare2": {
-      "conformance": "approximate",
-      "conformance_reason": "Composes ratio projections alongside exact ones. A single tolerance cannot express 'bitwise for shift and disparity, approximate for ratio', so the suite as a whole is checked at a tolerance.",
+      "conformance": "per-projection",
+      "conformance_reason": "One projection per threshold, and the class follows the threshold's metric: shift and disparity projections come from bounds estimators that are exact, the ratio projection from one that is not. Checking the suite with a single predicate meant taking the weakest, so 24 of the 29 projections were compared at a tolerance because of the 5 that needed one.",
       "directory": "compare2",
       "generator": "cs/Pragmastat.TestGenerator",
       "pattern": "*.json",

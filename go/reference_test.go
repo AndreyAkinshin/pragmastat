@@ -1552,20 +1552,49 @@ func mustParseVerdict(t *testing.T, s string) ComparisonVerdict {
 	}
 }
 
+// projectionMode is the comparison one projection is held to, decided by the
+// metric of the threshold it answers.
+//
+// A projection is produced by the bounds estimator of its own metric, so the
+// comparison belongs per projection and not per suite. Shift and disparity
+// select their result out of the pairwise set and are therefore bit-exact;
+// ratio passes through log and exp and is not. A suite-wide mode would have to
+// be the weakest one present, which is how a single ratio threshold ends up
+// lowering the guarantee on every exact projection standing next to it.
+func projectionMode(metric string) compareMode {
+	if metric == "ratio" {
+		return compareTolerant
+	}
+	return compareExact
+}
+
 // assertProjections compares a comparison result against the fixture's
-// projections under mode.
-func assertProjections(t *testing.T, mode compareMode, actual []Projection, expected []ProjectionOutput) {
+// projections, each under the mode its own threshold's metric earns.
+//
+// metrics comes from the fixture's input.thresholds, which the fixture keeps
+// aligned with output.projections one-to-one and in order; the order-* fixtures
+// exist to pin that alignment. Every field of a projection is in the same
+// class as the projection, so estimate, lower and upper share one mode.
+func assertProjections(t *testing.T, metrics []string, actual []Projection, expected []ProjectionOutput) {
 	t.Helper()
 	if len(actual) != len(expected) {
 		t.Fatalf("Expected %d projections, got %d", len(expected), len(actual))
 	}
+	// Reachable only for a self-inconsistent fixture, and worth keeping for exactly that: a
+	// case listing three thresholds beside two projections would pass the check above and then
+	// silently drop the third, comparing two projections against the wrong two metrics.
+	if len(metrics) != len(expected) {
+		t.Fatalf("Fixture lists %d thresholds but %d projections", len(metrics), len(expected))
+	}
 	for i, proj := range actual {
 		exp := expected[i]
-		assertFloat(t, mode, fmt.Sprintf("Projection %d: Estimate", i), proj.Estimate.Value, exp.Estimate)
-		assertFloat(t, mode, fmt.Sprintf("Projection %d: Lower", i), proj.Bounds.Lower, exp.Lower)
-		assertFloat(t, mode, fmt.Sprintf("Projection %d: Upper", i), proj.Bounds.Upper, exp.Upper)
+		mode := projectionMode(metrics[i])
+		label := fmt.Sprintf("Projection %d (%s)", i, metrics[i])
+		assertFloat(t, mode, label+": Estimate", proj.Estimate.Value, exp.Estimate)
+		assertFloat(t, mode, label+": Lower", proj.Bounds.Lower, exp.Lower)
+		assertFloat(t, mode, label+": Upper", proj.Bounds.Upper, exp.Upper)
 		if proj.Verdict != mustParseVerdict(t, exp.Verdict) {
-			t.Errorf("Projection %d: Verdict = %v, want %v", i, proj.Verdict, exp.Verdict)
+			t.Errorf("%s: Verdict = %v, want %v", label, proj.Verdict, exp.Verdict)
 		}
 	}
 }
@@ -1645,12 +1674,14 @@ func TestCompare1Reference(t *testing.T) {
 			sx := mustSample(t, input.X)
 
 			thresholds := make([]*Threshold, len(input.Thresholds))
+			metrics := make([]string, len(input.Thresholds))
 			for i, th := range input.Thresholds {
 				thresholds[i] = &Threshold{
 					Metric:  mustParseMetric(t, th.Metric),
 					Value:   NewNumberMeasurement(th.Value),
 					Misrate: th.Misrate,
 				}
+				metrics[i] = th.Metric
 			}
 
 			actual, err := Compare1WithSeed(sx, thresholds, input.Seed)
@@ -1659,8 +1690,9 @@ func TestCompare1Reference(t *testing.T) {
 			}
 
 			// compare1 projects center and spread only, both of which select
-			// their result out of the pairwise set.
-			assertProjections(t, compareExact, actual, expected.Projections)
+			// their result out of the pairwise set, so every projection here
+			// resolves to compareExact.
+			assertProjections(t, metrics, actual, expected.Projections)
 		})
 	}
 }
@@ -1747,12 +1779,14 @@ func TestCompare2Reference(t *testing.T) {
 			}
 
 			thresholds := make([]*Threshold, len(input.Thresholds))
+			metrics := make([]string, len(input.Thresholds))
 			for i, th := range input.Thresholds {
 				thresholds[i] = &Threshold{
 					Metric:  mustParseMetric(t, th.Metric),
 					Value:   NewNumberMeasurement(th.Value),
 					Misrate: th.Misrate,
 				}
+				metrics[i] = th.Metric
 			}
 
 			actual, err := Compare2WithSeed(sx, sy, thresholds, input.Seed)
@@ -1760,10 +1794,9 @@ func TestCompare2Reference(t *testing.T) {
 				t.Fatalf("Compare2 error: %v", err)
 			}
 
-			// compare2 composes ratio projections alongside exact ones. A
-			// per-suite mode cannot express "exact for shift, approximate for
-			// ratio", so the suite stays tolerant as a whole.
-			assertProjections(t, compareTolerant, actual, expected.Projections)
+			// compare2 composes ratio projections alongside exact ones, so each
+			// projection is compared according to its own threshold's metric.
+			assertProjections(t, metrics, actual, expected.Projections)
 		})
 	}
 }

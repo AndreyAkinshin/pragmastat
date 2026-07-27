@@ -1112,12 +1112,20 @@ describe('Reference Tests', () => {
 
   // Compare2 tests
   //
-  // Stays tolerant as a whole: its projections mix `shift`/`disparity`, which are
-  // exact, with `ratio`, which is not. A per-suite predicate cannot express "exact
-  // for these projections, approximate for that one", so the weakest member sets
-  // the bar. Splitting it would mean keying the comparator off the threshold
-  // metric, which buys exactness on projections the dedicated shift/disparity
-  // suites already cover bitwise.
+  // Compared per projection rather than per suite, because the class differs from
+  // one projection to the next. Each is produced by the bounds estimator for its
+  // threshold's metric: `shift` and `disparity` select an element out of a pairwise
+  // set and are exact, `ratio` runs through `log` and `exp` and is not. A suite-wide
+  // predicate has to be the weakest one present, so a handful of ratio thresholds
+  // used to put every shift and disparity projection standing beside them on a
+  // tolerance too.
+  //
+  // The metric of projection i is `input.thresholds[i].metric`: the fixture emits one
+  // projection per threshold, in order, and the `order-*` fixtures exist to pin that
+  // alignment. Reading it off the fixture rather than off the returned projection
+  // keeps the expectation independent of the code under test. Every field of a
+  // projection follows the same class, so estimate and bounds are compared together;
+  // the verdict is a string and is exact regardless.
   describe('compare2', () => {
     const dirPath = path.join(testDataPath, 'compare2');
     if (fs.existsSync(dirPath)) {
@@ -1166,10 +1174,17 @@ describe('Reference Tests', () => {
 
           expect(results.length).toBe(data.output.projections.length);
           for (let i = 0; i < results.length; i++) {
-            expect(results[i].estimate.value).toBeCloseTo(data.output.projections[i].estimate, 9);
-            expect(results[i].bounds.lower).toBeCloseTo(data.output.projections[i].lower, 9);
-            expect(results[i].bounds.upper).toBeCloseTo(data.output.projections[i].upper, 9);
-            expect(results[i].verdict).toBe(data.output.projections[i].verdict);
+            const subject = `compare2/${fileName} projection ${i}`;
+            const projection = data.output.projections[i];
+            if (data.input.thresholds[i].metric === Metric.Ratio) {
+              expect(results[i].estimate.value).toBeCloseTo(projection.estimate, 9);
+              expect(results[i].bounds.lower).toBeCloseTo(projection.lower, 9);
+              expect(results[i].bounds.upper).toBeCloseTo(projection.upper, 9);
+            } else {
+              expectBitwise(`${subject}.estimate`, results[i].estimate.value, projection.estimate);
+              expectBitwiseBounds(subject, results[i].bounds, projection);
+            }
+            expect(results[i].verdict).toBe(projection.verdict);
           }
         });
       });

@@ -67,18 +67,18 @@
     "seed": "compare2-tests",
     "thresholds": [
       {
-        "metric": "disparity",
+        "metric": "shift",
         "value": 0,
-        "misrate": 0.05
+        "misrate": 0.02
       }
     ]
   },
   "output": {
     "projections": [
       {
-        "estimate": -2.2222222222222223,
-        "lower": -13,
-        "upper": -0.9333333333333333,
+        "estimate": -20,
+        "lower": -26,
+        "upper": -14,
         "verdict": "less"
       }
     ]

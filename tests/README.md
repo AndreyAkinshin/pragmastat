@@ -18,6 +18,11 @@ describes the way it fails, and it hides the failure it appears to guard against
 stated per suite. It is always a library function the specification does not fix — a logarithm, an
 exponential — never accumulated arithmetic error.
 
+`per-projection` means the suite carries results of both kinds and the loader picks per result.
+A single predicate for a whole suite has to be the weakest one present, so one approximate result
+would otherwise lower the guarantee on every exact result beside it. `compare2` is the case:
+its shift and disparity projections are bitwise, its ratio projections are not.
+
 The classes are measured rather than asserted. `mise run tests:check:conformance` recomputes every
 estimator with each call to `log`, `exp`, `pow` and `cos` returning the neighbouring representable
 value, which is the smallest difference two conforming implementations of those functions can
