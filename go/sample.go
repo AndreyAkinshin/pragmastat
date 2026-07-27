@@ -23,13 +23,16 @@ type Sample struct {
 	sortCache *sortedCache
 }
 
-// sortedCache holds the lazily-computed sorted values/weights. It lives behind a
-// pointer so the Sample struct stays copy-safe (the sync.Once is not embedded in
-// Sample) and so a unit-converted view can keep its own cache.
+// sortedCache holds the lazily-computed sorted values. It lives behind a pointer so the
+// Sample struct stays copy-safe (the sync.Once is not embedded in Sample) and so a
+// unit-converted view can keep its own cache.
+//
+// It used to carry co-sorted weights as well, produced by an unstable index sort. Nothing
+// ever read them: no estimator accepts a weighted sample, so the permutation had no
+// consumer and the co-sort had no purpose.
 type sortedCache struct {
-	once    sync.Once
-	values  []float64
-	weights []float64
+	once   sync.Once
+	values []float64
 }
 
 // Values returns a defensive copy of the sample values.
@@ -166,33 +169,9 @@ func (s *Sample) ensureSorted() {
 }
 
 func (s *Sample) computeSorted() {
-	n := len(s.values)
-	sortedValues := make([]float64, n)
+	sortedValues := make([]float64, len(s.values))
 	copy(sortedValues, s.values)
-
-	if s.isWeighted && s.weights != nil {
-		sortedWeights := make([]float64, n)
-		copy(sortedWeights, s.weights)
-		// Co-sort values and weights
-		indices := make([]int, n)
-		for i := range indices {
-			indices[i] = i
-		}
-		sort.Slice(indices, func(i, j int) bool {
-			return sortedValues[indices[i]] < sortedValues[indices[j]]
-		})
-		tmpV := make([]float64, n)
-		tmpW := make([]float64, n)
-		for i, idx := range indices {
-			tmpV[i] = sortedValues[idx]
-			tmpW[i] = sortedWeights[idx]
-		}
-		copy(sortedValues, tmpV)
-		copy(sortedWeights, tmpW)
-		s.sortCache.weights = sortedWeights
-	} else {
-		sort.Float64s(sortedValues)
-	}
+	sort.Float64s(sortedValues)
 	s.sortCache.values = sortedValues
 }
 
