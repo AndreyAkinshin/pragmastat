@@ -26,6 +26,7 @@ pub mod measurement_unit;
 pub mod sample;
 pub mod unit_registry;
 
+pub(crate) mod binomial;
 pub(crate) mod gauss_cdf;
 pub(crate) mod min_misrate;
 pub(crate) mod pairwise_margin;

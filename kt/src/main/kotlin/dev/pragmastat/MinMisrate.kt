@@ -1,6 +1,5 @@
 package dev.pragmastat
 
-import kotlin.math.min
 import kotlin.math.pow
 
 /**
@@ -36,26 +35,7 @@ internal fun minAchievableMisrateTwoSample(
     if (m <= 0) {
         throw AssumptionException(Violation(AssumptionId.DOMAIN, Subject.Y))
     }
+    // Shares one binomial with the exact pairwise-margin distribution (see Binomial.kt):
+    // the floor and the distribution it guards must be computed by the same route.
     return 2.0 / binomialCoefficient(n + m, n)
-}
-
-/**
- * Computes binomial coefficient C(n, k) using integer arithmetic
- */
-private fun binomialCoefficient(
-    n: Int,
-    k: Int,
-): Double {
-    var kk = k
-    if (kk > n) return 0.0
-    if (kk == 0 || kk == n) return 1.0
-
-    kk = min(kk, n - kk) // Take advantage of symmetry
-    var result = 1.0
-
-    for (i in 0 until kk) {
-        result = result * (n - i) / (i + 1)
-    }
-
-    return result
 }

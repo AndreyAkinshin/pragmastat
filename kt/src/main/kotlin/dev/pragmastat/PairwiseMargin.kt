@@ -3,7 +3,6 @@ package dev.pragmastat
 import kotlin.math.*
 
 private const val MAX_EXACT_SIZE = 400
-private const val MAX_ACCEPTABLE_BINOM_N = 62
 
 /**
  * PairwiseMargin determines how many extreme pairwise differences to exclude
@@ -71,12 +70,7 @@ private fun pairwiseMarginExactRaw(
     m: Int,
     p: Double,
 ): Int {
-    val total =
-        if (n + m < MAX_ACCEPTABLE_BINOM_N) {
-            binomialCoefficient(n + m, m)
-        } else {
-            binomialCoefficientFloat(n + m, m)
-        }
+    val total = binomialCoefficient(n + m, m)
 
     val pmf = mutableListOf(1.0) // pmf[0] = 1
     val sigma = mutableListOf(0.0) // sigma[0] is unused
@@ -234,89 +228,4 @@ private fun edgeworthCdf(
 
     // Clamp to [0, 1]
     return max(0.0, min(1.0, edgeworth))
-}
-
-/**
- * Computes binomial coefficient C(n, k) using integer arithmetic
- */
-private fun binomialCoefficient(
-    n: Int,
-    k: Int,
-): Double {
-    var kk = k
-    if (kk > n) return 0.0
-    if (kk == 0 || kk == n) return 1.0
-
-    kk = minOf(kk, n - kk) // Take advantage of symmetry
-    var result = 1L // exact integer arithmetic: each partial product is divisible
-
-    for (i in 0 until kk) {
-        result = result * (n - i) / (i + 1)
-    }
-
-    return result.toDouble()
-}
-
-/**
- * Computes binomial coefficient using floating-point logarithms for large values
- */
-private fun binomialCoefficientFloat(
-    n: Int,
-    k: Int,
-): Double {
-    var kk = k
-    if (kk > n) return 0.0
-    if (kk == 0 || kk == n) return 1.0
-
-    kk = minOf(kk, n - kk) // Take advantage of symmetry
-
-    // Use log-factorial function: C(n, k) = exp(log(n!) - log(k!) - log((n-k)!))
-    val logResult = logFactorial(n) - logFactorial(kk) - logFactorial(n - kk)
-    return exp(logResult)
-}
-
-/**
- * Computes the natural logarithm of n!
- */
-private fun logFactorial(n: Int): Double {
-    if (n == 0 || n == 1) return 0.0
-
-    val x = (n + 1).toDouble() // n! = Gamma(n+1)
-
-    if (x < 1e-5) return 0.0
-
-    // DONT TOUCH: Stirling's approximation is inaccurate for small x.
-    // Use Gamma recurrence: Gamma(x) = Gamma(x+k) / (x*(x+1)*...*(x+k-1))
-    // These branches appear unreachable in current usage (n+m >= 65), but
-    // are retained for correctness if the function is used in other contexts.
-    return when {
-        x < 1.0 -> stirlingApproxLog(x + 3.0) - ln(x * (x + 1.0) * (x + 2.0))
-        x < 2.0 -> stirlingApproxLog(x + 2.0) - ln(x * (x + 1.0))
-        x < 3.0 -> stirlingApproxLog(x + 1.0) - ln(x)
-        else -> stirlingApproxLog(x)
-    }
-}
-
-/**
- * Stirling's approximation with Bernoulli correction
- */
-private fun stirlingApproxLog(x: Double): Double {
-    var result = x * ln(x) - x + ln(2.0 * PI / x) / 2.0
-
-    // Bernoulli correction series
-    val B2 = 1.0 / 6.0
-    val B4 = -1.0 / 30.0
-    val B6 = 1.0 / 42.0
-    val B8 = -1.0 / 30.0
-    val B10 = 5.0 / 66.0
-
-    val x2 = x * x
-    val x3 = x2 * x
-    val x5 = x3 * x2
-    val x7 = x5 * x2
-    val x9 = x7 * x2
-
-    result += B2 / (2.0 * x) + B4 / (12.0 * x3) + B6 / (30.0 * x5) + B8 / (56.0 * x7) + B10 / (90.0 * x9)
-
-    return result
 }

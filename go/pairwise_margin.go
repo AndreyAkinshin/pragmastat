@@ -246,66 +246,29 @@ func binomialCoefficient(n, k int) int64 {
 	return result
 }
 
-// binomialCoefficientFloat computes C(n, k) for large values using logarithms.
+// binomialCoefficientFloat computes C(n, k) in binary64 by the multiplicative recurrence
+// C(n, k) = prod_{i=1..k} (n-k+i)/i.
+//
+// It replaced an exp-of-Stirling formulation, for two reasons. The specification defines the
+// admissible misrate as `misrate >= 2 / C(n+m, n)`, an exact integer quantity; Stirling
+// approximated it to a worst relative error of 8.1e-9 over 4 <= n+m <= 400, while this
+// recurrence is within 2.2e-15. And Stirling reached the answer through math.Log and math.Exp,
+// which every language takes from a different libm: perturbing those by a single ulp moved the
+// computed misrate floor on 75579 of 79797 sample-size pairs. This form calls nothing, so the
+// same perturbation moves none of them.
+//
+// Normalizing k to the smaller half also makes the function symmetric by construction, which
+// matters because the two call sites ask for C(n+m, n) and C(n+m, m). Those are the same
+// number, and now they are also the same bits, so the comparison at the misrate floor cannot
+// be decided by which of the two rounded higher.
 func binomialCoefficientFloat(n, k float64) float64 {
-	return math.Exp(logBinomialCoefficient(n, k))
-}
-
-// logBinomialCoefficient computes log(C(n, k)).
-func logBinomialCoefficient(n, k float64) float64 {
-	return logFactorial(n) - logFactorial(k) - logFactorial(n-k)
-}
-
-// logFactorial computes log(n!) using Stirling's approximation for large n.
-// Since n! = Gamma(n+1), we compute log(Gamma(n+1)) using stirlingApproxLog.
-func logFactorial(n float64) float64 {
-	if n < 1e-5 {
-		return 0
+	nn, kk := int(n), int(k)
+	if kk > nn-kk {
+		kk = nn - kk
 	}
-
-	// n! = Gamma(n+1), so work with x = n+1
-	x := n + 1
-
-	// Numerical stability note: Stirling's approximation is inaccurate for small x.
-	// Use Gamma recurrence: Gamma(x) = Gamma(x+k) / (x*(x+1)*...*(x+k-1))
-	// These branches handle small arguments to maintain precision.
-	// Currently unreachable (n+m >= 65), but retained for standalone correctness.
-	if x < 1 {
-		return stirlingApproxLog(x+3) - math.Log(x*(x+1)*(x+2))
+	acc := 1.0
+	for i := 1; i <= kk; i++ {
+		acc = acc * float64(nn-kk+i) / float64(i)
 	}
-	if x < 2 {
-		return stirlingApproxLog(x+2) - math.Log(x*(x+1))
-	}
-	if x < 3 {
-		return stirlingApproxLog(x+1) - math.Log(x)
-	}
-
-	return stirlingApproxLog(x)
-}
-
-// stirlingApproxLog computes Stirling's approximation with Bernoulli correction.
-func stirlingApproxLog(x float64) float64 {
-	result := float64(x*math.Log(x)) - x + float64(math.Log(2*math.Pi/x)/2)
-
-	// Add Bernoulli correction series
-	// Bernoulli numbers: B2 = 1/6, B4 = -1/30, B6 = 1/42, B8 = -1/30, B10 = 5/66
-	const b2 = 1.0 / 6
-	const b4 = -1.0 / 30
-	const b6 = 1.0 / 42
-	const b8 = -1.0 / 30
-	const b10 = 5.0 / 66
-
-	x2 := x * x
-	x3 := x2 * x
-	x5 := x3 * x2
-	x7 := x5 * x2
-	x9 := x7 * x2
-
-	result += b2/(2*x) +
-		b4/(12*x3) +
-		b6/(30*x5) +
-		b8/(56*x7) +
-		b10/(90*x9)
-
-	return result
+	return acc
 }

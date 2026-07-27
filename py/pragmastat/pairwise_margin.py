@@ -7,12 +7,12 @@ for small samples (n+m <= 400) and Edgeworth approximation for larger samples.
 
 import math
 
+from ._binomial import binomial_coefficient as _binomial_coefficient
 from .assumptions import AssumptionError
 from .gauss_cdf import gauss_cdf as _gauss_cdf
 from .min_misrate import min_achievable_misrate_two_sample
 
 MAX_EXACT_SIZE = 400
-MAX_ACCEPTABLE_BINOM_N = 62
 
 
 def pairwise_margin(n: int, m: int, misrate: float) -> int:
@@ -65,10 +65,7 @@ def _pairwise_margin_exact_raw(n: int, m: int, p: float) -> int:
     Inversed implementation of Andreas Löffler's (1982)
     "Über eine Partition der nat. Zahlen und ihre Anwendung beim U-Test"
     """
-    if n + m < MAX_ACCEPTABLE_BINOM_N:
-        total = _binomial_coefficient(n + m, m)
-    else:
-        total = _binomial_coefficient_float(n + m, m)
+    total = _binomial_coefficient(n + m, m)
 
     pmf: list[float] = [1.0]  # pmf[0] = 1
     sigma: list[float] = [0.0]  # sigma[0] is unused
@@ -199,78 +196,3 @@ def _edgeworth_cdf(n: int, m: int, u: int) -> float:
 
     # Clamp to [0, 1]
     return max(0.0, min(1.0, edgeworth))
-
-
-def _binomial_coefficient(n: int, k: int) -> float:
-    """Computes binomial coefficient C(n, k) using integer arithmetic."""
-    if k > n:
-        return 0.0
-    if k == 0 or k == n:
-        return 1.0
-
-    k = min(k, n - k)  # Take advantage of symmetry
-    result = 1  # exact integer arithmetic: each partial product is divisible
-
-    for i in range(k):
-        result = result * (n - i) // (i + 1)
-
-    return float(result)
-
-
-def _binomial_coefficient_float(n: int, k: int) -> float:
-    """Computes binomial coefficient using floating-point logarithms for large values."""
-    if k > n:
-        return 0.0
-    if k == 0 or k == n:
-        return 1.0
-
-    k = min(k, n - k)  # Take advantage of symmetry
-
-    # Use log-factorial function: C(n, k) = exp(log(n!) - log(k!) - log((n-k)!))
-    log_result = _log_factorial(n) - _log_factorial(k) - _log_factorial(n - k)
-    return math.exp(log_result)
-
-
-def _log_factorial(n: int) -> float:
-    """Computes the natural logarithm of n!."""
-    if n == 0 or n == 1:
-        return 0.0
-
-    x = float(n + 1)  # n! = Gamma(n+1)
-
-    if x < 1e-5:
-        return 0.0
-
-    # DONT TOUCH: Stirling's approximation is inaccurate for small x.
-    # Use Gamma recurrence: Gamma(x) = Gamma(x+k) / (x*(x+1)*...*(x+k-1))
-    # These branches appear unreachable in current usage (n+m >= 65), but
-    # are retained for correctness if the function is used in other contexts.
-    if x < 1.0:
-        return _stirling_approx_log(x + 3.0) - math.log(x * (x + 1.0) * (x + 2.0))
-    if x < 2.0:
-        return _stirling_approx_log(x + 2.0) - math.log(x * (x + 1.0))
-    if x < 3.0:
-        return _stirling_approx_log(x + 1.0) - math.log(x)
-    return _stirling_approx_log(x)
-
-
-def _stirling_approx_log(x: float) -> float:
-    """Stirling's approximation with Bernoulli correction."""
-    result = x * math.log(x) - x + math.log(2.0 * math.pi / x) / 2.0
-
-    # Bernoulli correction series
-    B2 = 1.0 / 6.0
-    B4 = -1.0 / 30.0
-    B6 = 1.0 / 42.0
-    B8 = -1.0 / 30.0
-    B10 = 5.0 / 66.0
-
-    x2 = x * x
-    x3 = x2 * x
-    x5 = x3 * x2
-    x7 = x5 * x2
-    x9 = x7 * x2
-
-    result += B2 / (2.0 * x) + B4 / (12.0 * x3) + B6 / (30.0 * x5) + B8 / (56.0 * x7) + B10 / (90.0 * x9)
-
-    return result

@@ -21,10 +21,11 @@ min_achievable_misrate_two_sample <- function(n, m) {
   if (n <= 0) stop(assumption_error(ASSUMPTION_IDS$DOMAIN, SUBJECTS$X))
   if (m <= 0) stop(assumption_error(ASSUMPTION_IDS$DOMAIN, SUBJECTS$Y))
   # Exact integer binomial below n + m = 62 (matches the other six ports);
-  # logarithmic approximation above, where the value exceeds 64-bit range.
+  # the binary64 multiplicative recurrence above, where the value exceeds
+  # 64-bit range.
   if (n + m < 62) {
     2 / exact_binomial(n + m, n)
   } else {
-    2 / exp(lchoose(n + m, n))
+    2 / binomial_coefficient_float(n + m, n)
   }
 }

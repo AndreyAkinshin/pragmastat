@@ -29,6 +29,7 @@ py/
 │   ├── sign_margin.py             # Sign margin for binomial CDF inversion
 │   ├── signed_rank_margin.py      # Signed-rank margin computation
 │   ├── min_misrate.py             # Minimum achievable misrate calculation
+│   ├── _binomial.py               # Binomial coefficient shared by the two above (internal)
 │   ├── gauss_cdf.py               # Standard normal CDF (ACM Algorithm 209)
 │   ├── rng.py                     # Deterministic xoshiro256++ PRNG
 │   ├── xoshiro256.py              # PRNG core implementation

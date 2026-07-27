@@ -3,6 +3,7 @@
  */
 
 import { AssumptionError } from './assumptions';
+import { binomialCoefficient } from './binomial';
 
 /**
  * Computes the minimum achievable misrate for one-sample bounds.
@@ -35,26 +36,7 @@ export function minAchievableMisrateTwoSample(n: number, m: number): number {
   if (m <= 0) {
     throw AssumptionError.domain('y');
   }
+  // Shares one binomial with the exact pairwise-margin distribution (see binomial.ts):
+  // the floor and the distribution it guards must be computed by the same route.
   return 2.0 / binomialCoefficient(n + m, n);
-}
-
-/**
- * Computes binomial coefficient C(n, k) using integer arithmetic
- */
-function binomialCoefficient(n: number, k: number): number {
-  if (k > n) {
-    return 0;
-  }
-  if (k === 0 || k === n) {
-    return 1;
-  }
-
-  k = Math.min(k, n - k); // Take advantage of symmetry
-  let result = 1;
-
-  for (let i = 0; i < k; i++) {
-    result = (result * (n - i)) / (i + 1);
-  }
-
-  return result;
 }

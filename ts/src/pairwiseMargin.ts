@@ -6,11 +6,11 @@
  */
 
 import { AssumptionError } from './assumptions';
+import { binomialCoefficient } from './binomial';
 import { gaussCdf } from './gaussCdf';
 import { minAchievableMisrateTwoSample } from './minMisrate';
 
 const MAX_EXACT_SIZE = 400;
-const MAX_ACCEPTABLE_BINOM_N = 62;
 
 /**
  * PairwiseMargin determines how many extreme pairwise differences to exclude
@@ -66,10 +66,9 @@ function pairwiseMarginApprox(n: number, m: number, misrate: number): number {
  * "Über eine Partition der nat. Zahlen und ihre Anwendung beim U-Test"
  */
 function pairwiseMarginExactRaw(n: number, m: number, p: number): number {
-  const total =
-    n + m < MAX_ACCEPTABLE_BINOM_N
-      ? binomialCoefficient(n + m, m)
-      : binomialCoefficientFloat(n + m, m);
+  // Same entry point the misrate floor uses for C(n+m, n): at the floor the check
+  // `1/total >= misrate/2` compares the two against each other, so they must agree bitwise.
+  const total = binomialCoefficient(n + m, m);
 
   const pmf: number[] = [1]; // pmf[0] = 1
   const sigma: number[] = [0]; // sigma[0] is unused
@@ -209,98 +208,4 @@ function edgeworthCdf(n: number, m: number, u: number): number {
 
   // Clamp to [0, 1]
   return Math.max(0, Math.min(1, edgeworth));
-}
-
-/**
- * Computes binomial coefficient C(n, k) using integer arithmetic
- */
-function binomialCoefficient(n: number, k: number): number {
-  if (k > n) {
-    return 0;
-  }
-  if (k === 0 || k === n) {
-    return 1;
-  }
-
-  k = Math.min(k, n - k); // Take advantage of symmetry
-  let result = 1n; // exact integer arithmetic: each partial product is divisible
-
-  for (let i = 0; i < k; i++) {
-    result = (result * BigInt(n - i)) / BigInt(i + 1);
-  }
-
-  return Number(result);
-}
-
-/**
- * Computes binomial coefficient using floating-point logarithms for large values
- */
-function binomialCoefficientFloat(n: number, k: number): number {
-  if (k > n) {
-    return 0;
-  }
-  if (k === 0 || k === n) {
-    return 1;
-  }
-
-  k = Math.min(k, n - k); // Take advantage of symmetry
-
-  // Use log-factorial function: C(n, k) = exp(log(n!) - log(k!) - log((n-k)!))
-  const logResult = logFactorial(n) - logFactorial(k) - logFactorial(n - k);
-  return Math.exp(logResult);
-}
-
-/**
- * Computes the natural logarithm of n!
- */
-function logFactorial(n: number): number {
-  if (n === 0 || n === 1) {
-    return 0;
-  }
-
-  const x = n + 1; // n! = Gamma(n+1)
-
-  if (x < 1e-5) {
-    return 0;
-  }
-
-  // DONT TOUCH: Stirling's approximation is inaccurate for small x.
-  // Use Gamma recurrence: Gamma(x) = Gamma(x+k) / (x*(x+1)*...*(x+k-1))
-  // These branches appear unreachable in current usage (n+m >= 65), but
-  // are retained for correctness if the function is used in other contexts.
-  if (x < 1) {
-    return stirlingApproxLog(x + 3) - Math.log(x * (x + 1) * (x + 2));
-  }
-  if (x < 2) {
-    return stirlingApproxLog(x + 2) - Math.log(x * (x + 1));
-  }
-  if (x < 3) {
-    return stirlingApproxLog(x + 1) - Math.log(x);
-  }
-
-  return stirlingApproxLog(x);
-}
-
-/**
- * Stirling's approximation with Bernoulli correction
- */
-function stirlingApproxLog(x: number): number {
-  let result = x * Math.log(x) - x + Math.log((2 * Math.PI) / x) / 2;
-
-  // Bernoulli correction series
-  const B2 = 1.0 / 6.0;
-  const B4 = -1.0 / 30.0;
-  const B6 = 1.0 / 42.0;
-  const B8 = -1.0 / 30.0;
-  const B10 = 5.0 / 66.0;
-
-  const x2 = x * x;
-  const x3 = x2 * x;
-  const x5 = x3 * x2;
-  const x7 = x5 * x2;
-  const x9 = x7 * x2;
-
-  result += B2 / (2 * x) + B4 / (12 * x3) + B6 / (30 * x5) + B8 / (56 * x7) + B10 / (90 * x9);
-
-  return result;
 }

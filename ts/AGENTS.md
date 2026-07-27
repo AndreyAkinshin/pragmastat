@@ -25,6 +25,7 @@ ts/
 │   ├── signMargin.ts          # Sign margin for binomial CDF inversion
 │   ├── signedRankMargin.ts    # Signed-rank margin computation
 │   ├── minMisrate.ts          # Minimum achievable misrate calculation
+│   ├── binomial.ts            # Binomial coefficient shared by the two above (internal)
 │   ├── gaussCdf.ts            # Standard normal CDF (ACM Algorithm 209)
 │   ├── rng.ts                 # Deterministic xoshiro256++ PRNG
 │   ├── xoshiro256.ts          # PRNG core implementation

@@ -45,11 +45,11 @@ pairwise_margin_approx <- function(n, m, misrate) {
 # Reference: "Über eine Partition der nat. Zahlen und ihre Anwendung beim U-Test"
 pairwise_margin_exact_raw <- function(n, m, p) {
   # Exact integer binomial for small samples (matches the other six ports
-  # bit-for-bit); logarithmic approximation for large values.
+  # bit-for-bit); the binary64 multiplicative recurrence for large values.
   if (n + m < 62) {
     total <- exact_binomial(n + m, m)
   } else {
-    total <- exp(lchoose(n + m, m))
+    total <- binomial_coefficient_float(n + m, m)
   }
 
   pmf <- c(1) # pmf[1] = 1 (R uses 1-based indexing)

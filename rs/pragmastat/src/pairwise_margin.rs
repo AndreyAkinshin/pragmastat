@@ -4,9 +4,9 @@
 //! based on the distribution of dominance statistics.
 
 use crate::assumptions::{AssumptionError, Subject};
+use crate::binomial::binomial_coefficient;
 
 const MAX_EXACT_SIZE: usize = 400;
-const MAX_ACCEPTABLE_BINOM_N: usize = 62;
 
 /// PairwiseMargin determines how many extreme pairwise differences to exclude
 /// when constructing bounds based on the distribution of dominance statistics.
@@ -63,11 +63,7 @@ fn pairwise_margin_approx(n: usize, m: usize, misrate: f64) -> u64 {
 /// Inversed implementation of Andreas Löffler's (1982)
 /// "Über eine Partition der nat. Zahlen und ihre Anwendung beim U-Test"
 fn pairwise_margin_exact_raw(n: usize, m: usize, p: f64) -> usize {
-    let total = if n + m < MAX_ACCEPTABLE_BINOM_N {
-        binomial_coefficient(n + m, m)
-    } else {
-        binomial_coefficient_float(n + m, m)
-    };
+    let total = binomial_coefficient(n + m, m);
 
     let capacity = n * m + 1;
     let mut pmf = Vec::with_capacity(capacity);
@@ -218,96 +214,9 @@ fn edgeworth_cdf(n: usize, m: usize, u: u64) -> f64 {
     edgeworth.clamp(0.0, 1.0)
 }
 
-/// Computes binomial coefficient C(n, k) using integer arithmetic
-fn binomial_coefficient(n: usize, k: usize) -> f64 {
-    if k > n {
-        return 0.0;
-    }
-    if k == 0 || k == n {
-        return 1.0;
-    }
-
-    let k = k.min(n - k); // Take advantage of symmetry
-    let mut result = 1u128;
-
-    for i in 0..k {
-        result = result * (n - i) as u128 / (i + 1) as u128;
-    }
-
-    result as f64
-}
-
-/// Computes binomial coefficient using floating-point logarithms for large values
-fn binomial_coefficient_float(n: usize, k: usize) -> f64 {
-    if k > n {
-        return 0.0;
-    }
-    if k == 0 || k == n {
-        return 1.0;
-    }
-
-    let k = k.min(n - k); // Take advantage of symmetry
-
-    // Use log-factorial function: C(n, k) = exp(log(n!) - log(k!) - log((n-k)!))
-    let log_result = log_factorial(n) - log_factorial(k) - log_factorial(n - k);
-    log_result.exp()
-}
-
-/// Computes the natural logarithm of n!
-fn log_factorial(n: usize) -> f64 {
-    if n == 0 || n == 1 {
-        return 0.0;
-    }
-
-    let x = (n + 1) as f64; // n! = Gamma(n+1)
-
-    if x < 1e-5 {
-        return 0.0;
-    }
-
-    // DONT TOUCH: Stirling's approximation is inaccurate for small x.
-    // Use Gamma recurrence: Gamma(x) = Gamma(x+k) / (x*(x+1)*...*(x+k-1))
-    // These branches appear unreachable in current usage (n+m >= 65), but
-    // are retained for correctness if the function is used in other contexts.
-    if x < 1.0 {
-        return stirling_approx_log(x + 3.0) - (x * (x + 1.0) * (x + 2.0)).ln();
-    }
-    if x < 2.0 {
-        return stirling_approx_log(x + 2.0) - (x * (x + 1.0)).ln();
-    }
-    if x < 3.0 {
-        return stirling_approx_log(x + 1.0) - x.ln();
-    }
-
-    stirling_approx_log(x)
-}
-
-/// Stirling's approximation with Bernoulli correction
-fn stirling_approx_log(x: f64) -> f64 {
-    let mut result = x * x.ln() - x + (2.0 * std::f64::consts::PI / x).ln() / 2.0;
-
-    // Bernoulli correction series
-    const B2: f64 = 1.0 / 6.0;
-    const B4: f64 = -1.0 / 30.0;
-    const B6: f64 = 1.0 / 42.0;
-    const B8: f64 = -1.0 / 30.0;
-    const B10: f64 = 5.0 / 66.0;
-
-    let x2 = x * x;
-    let x3 = x2 * x;
-    let x5 = x3 * x2;
-    let x7 = x5 * x2;
-    let x9 = x7 * x2;
-
-    result +=
-        B2 / (2.0 * x) + B4 / (12.0 * x3) + B6 / (30.0 * x5) + B8 / (56.0 * x7) + B10 / (90.0 * x9);
-
-    result
-}
-
 #[cfg(test)]
 mod tests {
-    use super::pairwise_margin;
+    use super::{MAX_EXACT_SIZE, binomial_coefficient, pairwise_margin};
     use serde::Deserialize;
     use std::fs;
     use std::path::PathBuf;
@@ -462,6 +371,53 @@ mod tests {
         let v = result.unwrap_err().violation();
         assert_eq!(v.id, AssumptionId::Domain);
         assert_eq!(v.subject, Subject::Misrate);
+    }
+
+    /// The specification admits `misrate >= 2 / C(n+m, n)`, and at that floor the whole
+    /// sample is the interval: `pairwise_margin` excludes nothing and returns 0.
+    ///
+    /// It only does so if the binomial behind the floor and the binomial behind the
+    /// exact pass are the same f64, because `1/total >= misrate/2` is then an exact tie.
+    /// When the two were computed by different code, 28412 of these 79800 pairs came
+    /// back non-zero: the function rejected nothing, then acted as if the caller had
+    /// asked for less than it did. This is the cheap analytic form of the comparison,
+    /// run over every pair the exact path serves; `margin_is_zero_at_misrate_floor`
+    /// checks the same thing end to end.
+    #[test]
+    fn misrate_floor_is_attainable() {
+        for n in 1..MAX_EXACT_SIZE {
+            for m in 1..=(MAX_EXACT_SIZE - n) {
+                let floor = crate::min_misrate::min_achievable_misrate_two_sample(n, m).unwrap();
+                let total = binomial_coefficient(n + m, m);
+                assert!(
+                    1.0 / total >= floor / 2.0,
+                    "n={n} m={m}: 1/{total} < {floor}/2"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn margin_is_zero_at_misrate_floor() {
+        for (n, m) in [
+            (1, 1),
+            (2, 2),
+            (5, 5),
+            (30, 31),
+            (1, 61),
+            (31, 31),
+            (1, 62),
+            (31, 32),
+            (60, 66),
+            (64, 64),
+        ] {
+            let floor = crate::min_misrate::min_achievable_misrate_two_sample(n, m).unwrap();
+            assert_eq!(
+                pairwise_margin(n, m, floor).unwrap(),
+                0,
+                "n={n} m={m} floor={floor}"
+            );
+        }
     }
 
     #[test]

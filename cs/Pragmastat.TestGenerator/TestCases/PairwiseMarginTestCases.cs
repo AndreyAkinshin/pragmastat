@@ -70,6 +70,31 @@ public static class PairwiseMarginTestCases
       }
     }
 
+    // At the misrate floor.
+    //
+    // The floor is `2 / C(n+m, n)`, so `cdf >= misrate/2` there is `1/C >= 1/C`: an exact
+    // equality in exact arithmetic, decided entirely by how the two sides rounded. Nothing else
+    // in this suite samples it. The boundary-overflow cases above are named for the same
+    // n+m range but ask at 0.1 and 0.001, which for n+m = 62 is fifteen orders of magnitude
+    // away from where the answer is actually in doubt.
+    //
+    // The range spans the switch from the exact integer binomial to the multiplicative
+    // recurrence, and covers both symmetric and lopsided splits, because the two call sites ask
+    // for C(n+m, n) and C(n+m, m) and those must agree bit for bit.
+    int[] floorTotals = [55, 58, 60, 61, 62, 63, 64, 66, 70, 90, 128, 200, 340];
+    foreach (var total in floorTotals)
+    {
+      int[] splits = [total / 2, total / 3, total / 7, 4, 1];
+      foreach (var n in splits)
+      {
+        int m = total - n;
+        if (n < 1 || m < 1) continue;
+        double floor = MinAchievableMisrate.TwoSample(n, m);
+        if (double.IsNaN(floor) || floor <= 0 || floor >= 1) continue;
+        inputBuilder.Add($"floor-n{n}_m{m}", new PairwiseMarginInput(n, m, floor));
+      }
+    }
+
     // Comprehensive grid, filtered by min_misrate
     // Misrates to test
     double[] misrates = [1e-1, 1e-2, 1e-3, 1e-4, 1e-5, 1e-6];
