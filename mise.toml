@@ -524,6 +524,19 @@ description = "Generate RNG and distribution reference test files"
 dir = "rs/pragmastat"
 run = "cargo run --example gen_rng_tests"
 
+[tasks."tests:check:conformance"]
+description = "Assert every estimator holds the conformance class it declares"
+# The manual publishes a conformance class per suite and the manifest records it. Both rest
+# on a measurement: recompute each estimator with every call to log, exp, pow and cos
+# returning the neighbouring representable value, the smallest difference two conforming
+# implementations of those functions can legitimately have. An estimator that does not move
+# under that perturbation cannot diverge for this reason in any language.
+#
+# A published measurement nobody can rerun stops being a measurement, which this repository
+# has already learned once from a fixture generator that had not run in months. So the
+# experiment lives here rather than in somebody's notes.
+run = "tests/conformance_probe.sh"
+
 [tasks."tests:check:rng-fixtures"]
 description = "Assert the deterministic randomization fixtures still match their generator"
 # The fixtures under tests/ are an oracle, and an oracle that nobody can regenerate silently
@@ -926,7 +939,7 @@ depends = ["cs:demo", "go:demo", "kt:demo", "py:demo", "r:demo", "rs:demo", "ts:
 
 [tasks."ci"]
 description = "Run CI pipeline for all language implementations"
-depends = ["cs:ci", "go:ci", "kt:ci", "py:ci", "r:ci", "rs:ci", "ts:ci", "docs:ci", "tests:check:rng-fixtures"]
+depends = ["cs:ci", "go:ci", "kt:ci", "py:ci", "r:ci", "rs:ci", "ts:ci", "docs:ci", "tests:check:rng-fixtures", "tests:check:conformance"]
 
 # ==========================================================================
 # Version Task

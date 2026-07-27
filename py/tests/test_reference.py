@@ -40,6 +40,7 @@ from pragmastat.estimators import (
 )
 from pragmastat.pairwise_margin import pairwise_margin
 from pragmastat.signed_rank_margin import signed_rank_margin
+from pragmastat.unit_registry import UnitRegistry
 
 
 def _assert_violation(err: AssumptionError, expected: dict, context: str = "", skip_subject: bool = False) -> None:
@@ -773,46 +774,52 @@ class TestSampleConstruction:
 
 
 class TestUnitPropagation:
-    """Tests from tests/unit-propagation/ cross-language test data."""
+    """Driven by the fixtures in tests/unit-propagation/.
 
-    def test_center_preserves_unit(self):
-        s = Sample([1, 2, 3, 4, 5], unit=NUMBER_UNIT)
-        result = center(s)
-        assert isinstance(result, Measurement)
-        assert result.value == 3  # exact: center is bitwise
-        assert result.unit == NUMBER_UNIT
+    These used to be hand-written methods carrying their own copies of the inputs, which
+    meant the suite was named after a directory it never opened: adding a fixture there
+    changed nothing on this port. The values are read from the files now, like every other
+    implementation reads them.
+    """
 
-    def test_spread_preserves_unit(self):
-        s = Sample([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], unit=NUMBER_UNIT)
-        result = spread(s)
-        assert isinstance(result, Measurement)
-        assert result.unit == NUMBER_UNIT
+    @staticmethod
+    def _sample(values, unit_id, weights=None):
+        registry = UnitRegistry.standard()
+        unit = registry.resolve(unit_id) if unit_id else NUMBER_UNIT
+        return Sample(values, weights=weights, unit=unit)
 
-    def test_shift_preserves_unit(self):
-        sx = Sample([1, 2, 3, 4, 5], unit=NUMBER_UNIT)
-        sy = Sample([6, 7, 8, 9, 10], unit=NUMBER_UNIT)
-        result = shift(sx, sy)
-        assert isinstance(result, Measurement)
-        assert result.unit == NUMBER_UNIT
+    @pytest.mark.parametrize(("fixture_name", "test_case"), _load_fixtures("unit-propagation"))
+    def test_unit_propagation(self, fixture_name, test_case):
+        inp = test_case["input"]
+        estimator = inp["estimator"]
+        sx = self._sample(inp["x"], inp.get("x_unit"), inp.get("x_weights"))
+        sy = None
+        if "y" in inp:
+            sy = self._sample(inp["y"], inp.get("y_unit"), inp.get("y_weights"))
 
-    def test_ratio_returns_ratio_unit(self):
-        sx = Sample([1, 2, 3, 4, 5], unit=NUMBER_UNIT)
-        sy = Sample([6, 7, 8, 9, 10], unit=NUMBER_UNIT)
-        result = ratio(sx, sy)
-        assert isinstance(result, Measurement)
-        assert result.unit == RATIO_UNIT
+        one_sample = {"center": center, "spread": spread}
+        two_sample = {"shift": shift, "ratio": ratio, "disparity": disparity}
 
-    def test_disparity_returns_disparity_unit(self):
-        sx = Sample([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], unit=NUMBER_UNIT)
-        sy = Sample([11, 12, 13, 14, 15, 16, 17, 18, 19, 20], unit=NUMBER_UNIT)
-        result = disparity(sx, sy)
-        assert isinstance(result, Measurement)
-        assert result.unit == DISPARITY_UNIT
+        def run():
+            if estimator in one_sample:
+                return one_sample[estimator](sx)
+            if estimator in two_sample:
+                return two_sample[estimator](sx, sy)
+            raise AssertionError(f"Unknown estimator {estimator!r} in {fixture_name}")
 
-    def test_weighted_rejected(self):
-        s = Sample([1, 2, 3], weights=[0.5, 0.3, 0.2])
-        with pytest.raises(AssumptionError, match="weighted samples are not supported"):
-            center(s)
+        if "expected_error" in test_case:
+            with pytest.raises(AssumptionError):
+                run()
+            return
+
+        result = run()
+        assert isinstance(result, Measurement), f"{fixture_name}: expected a Measurement"
+        output = test_case["output"]
+        registry = UnitRegistry.standard()
+        assert result.unit == registry.resolve(output["unit"]), f"{fixture_name}: unit mismatch"
+        if "value" in output:
+            # Bitwise: every estimator this suite exercises is in the exact class.
+            _assert_scalar(result.value, output["value"], f"Failed value ({fixture_name})", bitwise=True)
 
 
 class TestBoundsUnitReattachment:
