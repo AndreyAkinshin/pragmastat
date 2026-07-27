@@ -1,3 +1,4 @@
+using Pragmastat.Functions;
 using Pragmastat.TestGenerator.Framework;
 using Pragmastat.TestGenerator.Framework.SignedRankMargin;
 using Spectre.Console;
@@ -31,6 +32,16 @@ public static class SignedRankMarginTestCases
     inputBuilder.Add("boundary-loose", new SignedRankMarginInput(5, 0.9));
     inputBuilder.Add("boundary-tight", new SignedRankMarginInput(10, 0.01));
     inputBuilder.Add("boundary-very-tight", new SignedRankMarginInput(20, 0.001));
+
+    // At the Edgeworth crossover (see CrossoverMisrate below).
+    foreach (var n in new[] { 64, 65, 80, 100, 150, 200, 300 })
+    {
+      double crossover = CrossoverMisrate(mr => SignedRankMargin.Instance.Calc(n, mr), 1e-4, 0.2);
+      if (double.IsNaN(crossover)) continue;
+      inputBuilder.Add($"edgeworth-n{n}", new SignedRankMarginInput(n, crossover));
+      double below = BitDecrement(crossover);
+      if (below > 0) inputBuilder.Add($"edgeworth-n{n}-below", new SignedRankMarginInput(n, below));
+    }
 
     // Larger sample sizes (still exact for n <= 250) - all misrates achievable for these sizes
     int[] mediumSizes = [15, 20, 30, 50, 100];
@@ -94,4 +105,34 @@ public static class SignedRankMarginTestCases
     int exponent = -(int)Math.Round(Math.Log10(misrate));
     return $"e{exponent}";
   }
+
+  // At the Edgeworth crossover.
+  //
+  // Above the exact threshold the margin comes from an Edgeworth expansion whose value is
+  // compared against the misrate, and the comparison decides an integer index. An index
+  // selects an order statistic, so a difference in the last bits of the expansion does not
+  // shift the answer slightly, it returns a different observation.
+  //
+  // Nothing else in this suite samples that crossover. The medium and large cases ask at
+  // round misrates, which sit far from any point where the comparison is in doubt, so a
+  // port evaluating a different normal approximation agreed with everyone on every fixture
+  // while disagreeing in general. R did exactly that, and this is what would have caught it.
+  //
+  // Each case is found by bisecting for a misrate where the returned margin changes between
+  // one representable value and the next, then asking on both sides of it.
+  static double CrossoverMisrate(Func<double, int> margin, double lo, double hi)
+  {
+    int marginLo = margin(lo);
+    if (marginLo == margin(hi)) return double.NaN;
+    for (int i = 0; i < 200; i++)
+    {
+      double mid = (lo + hi) / 2;
+      if (mid <= lo || mid >= hi) break;
+      if (margin(mid) == marginLo) lo = mid;
+      else hi = mid;
+    }
+    return hi;
+  }
+
+  static double BitDecrement(double v) => BitConverter.Int64BitsToDouble(BitConverter.DoubleToInt64Bits(v) - 1);
 }

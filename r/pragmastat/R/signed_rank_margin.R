@@ -91,10 +91,8 @@ signed_rank_edgeworth_cdf <- function(n, w) {
 
   # +0.5 continuity correction: computing P(W <= w) for a left-tail discrete CDF
   z <- (w - mu + 0.5) / sigma
-  # Note: uses R's built-in pnorm/dnorm (more accurate than ACM Algorithm 209 used by other languages).
-  # Results may differ at the last few bits of floating-point precision.
-  phi <- dnorm(z)
-  big_phi <- pnorm(z)
+  phi <- gauss_pdf(z)
+  big_phi <- gauss_cdf(z)
 
   nf <- as.double(n)
   kappa4 <- -nf * (nf + 1) * (2 * nf + 1) * (3 * nf * nf + 3 * nf - 1) / 240.0

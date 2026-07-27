@@ -95,6 +95,20 @@ public static class PairwiseMarginTestCases
       }
     }
 
+    // At the Edgeworth crossover. Above the exact threshold the margin comes from an
+    // Edgeworth expansion compared against the misrate, and that comparison decides an
+    // integer index which selects an order statistic. Round misrates never sit near it, so a
+    // port evaluating a different normal approximation agreed on every fixture while
+    // disagreeing in general; R did exactly that until it was unified.
+    foreach (var (n, m) in new[] { (201, 200), (150, 150), (100, 300), (250, 60), (400, 400) })
+    {
+      double crossover = CrossoverMisrate(mr => PairwiseMargin.Instance.Calc(n, m, mr), 1e-4, 0.2);
+      if (double.IsNaN(crossover)) continue;
+      inputBuilder.Add($"edgeworth-n{n}_m{m}", new PairwiseMarginInput(n, m, crossover));
+      double below = BitDecrement(crossover);
+      if (below > 0) inputBuilder.Add($"edgeworth-n{n}_m{m}-below", new PairwiseMarginInput(n, m, below));
+    }
+
     // Comprehensive grid, filtered by min_misrate
     // Misrates to test
     double[] misrates = [1e-1, 1e-2, 1e-3, 1e-4, 1e-5, 1e-6];
@@ -143,4 +157,22 @@ public static class PairwiseMarginTestCases
     int exponent = -(int)Math.Round(Math.Log10(misrate));
     return exponent.ToString();
   }
+
+  // Bisects for a misrate where the returned margin changes between one representable value
+  // and the next, so the fixture sits exactly where the comparison is in doubt.
+  static double CrossoverMisrate(Func<double, int> margin, double lo, double hi)
+  {
+    int marginLo = margin(lo);
+    if (marginLo == margin(hi)) return double.NaN;
+    for (int i = 0; i < 200; i++)
+    {
+      double mid = (lo + hi) / 2;
+      if (mid <= lo || mid >= hi) break;
+      if (margin(mid) == marginLo) lo = mid;
+      else hi = mid;
+    }
+    return hi;
+  }
+
+  static double BitDecrement(double v) => BitConverter.Int64BitsToDouble(BitConverter.DoubleToInt64Bits(v) - 1);
 }

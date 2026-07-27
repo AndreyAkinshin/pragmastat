@@ -124,45 +124,49 @@ pairwise_margin_approx_raw <- function(n, m, misrate) {
 
 # edgeworth_cdf computes the CDF using Edgeworth expansion
 edgeworth_cdf <- function(n, m, u) {
-  mu <- (n * m) / 2.0
-  su <- sqrt((n * m * (n + m + 1)) / 12.0)
+  mu <- (as.double(n) * as.double(m)) / 2.0
+  su <- sqrt((as.double(n) * as.double(m) * (as.double(n) + as.double(m) + 1)) / 12.0)
   # -0.5 continuity correction: computing P(U >= u) for a right-tail discrete CDF
   z <- (u - mu - 0.5) / su
 
-  # Note: uses R's built-in pnorm/dnorm (more accurate than ACM Algorithm 209 used by other languages).
-  # Results may differ at the last few bits of floating-point precision.
-  phi <- dnorm(z) # Standard normal PDF
-  Phi <- pnorm(z) # Standard normal CDF
+  phi <- gauss_pdf(z)
+  Phi <- gauss_cdf(z) # Standard normal CDF
 
-  # Pre-compute powers of n and m for efficiency
-  n2 <- n * n
-  n3 <- n2 * n
+  # Pre-compute powers of n and m. Held as doubles from the start, exactly as the other
+  # six ports hold them: R integers are 32-bit, and n^4 overflows for n above about 215,
+  # which silently produces NA rather than a wrong number. The comparison downstream then
+  # fails with "missing value where TRUE/FALSE needed" instead of returning a margin, so
+  # this was a crash for n + m near 400 rather than a rounding difference.
+  nf <- as.double(n)
+  mf <- as.double(m)
+  n2 <- nf * nf
+  n3 <- n2 * nf
   n4 <- n2 * n2
-  m2 <- m * m
-  m3 <- m2 * m
+  m2 <- mf * mf
+  m3 <- m2 * mf
   m4 <- m2 * m2
 
   # Compute moments
-  mu2 <- (n * m * (n + m + 1)) / 12.0
-  mu4 <- (n * m * (n + m + 1)) *
-    (5 * m * n * (m + n) -
+  mu2 <- (nf * mf * (nf + mf + 1)) / 12.0
+  mu4 <- (nf * mf * (nf + mf + 1)) *
+    (5 * mf * nf * (mf + nf) -
       2 * (m2 + n2) +
-      3 * m * n -
-      2 * (n + m)) / 240.0
+      3 * mf * nf -
+      2 * (nf + mf)) / 240.0
 
-  mu6 <- (n * m * (n + m + 1)) *
+  mu6 <- (nf * mf * (nf + mf + 1)) *
     (35 * m2 * n2 * (m2 + n2) +
       70 * m3 * n3 -
-      42 * m * n * (m3 + n3) -
-      14 * m2 * n2 * (n + m) +
+      42 * mf * nf * (m3 + n3) -
+      14 * m2 * n2 * (nf + mf) +
       16 * (n4 + m4) -
-      52 * n * m * (n2 + m2) -
+      52 * nf * mf * (n2 + m2) -
       43 * n2 * m2 +
       32 * (m3 + n3) +
-      14 * m * n * (n + m) +
+      14 * mf * nf * (nf + mf) +
       8 * (n2 + m2) +
-      16 * n * m -
-      8 * (n + m)) / 4032.0
+      16 * nf * mf -
+      8 * (nf + mf)) / 4032.0
 
   # Pre-compute powers of mu2 and related terms
   mu2_2 <- mu2 * mu2

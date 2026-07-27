@@ -101,7 +101,7 @@
     },
     "spread-bounds": {
       "conformance": "exact",
-      
+
       "directory": "spread-bounds",
       "generator": "cs/Pragmastat.TestGenerator",
       "pattern": "*.json",
