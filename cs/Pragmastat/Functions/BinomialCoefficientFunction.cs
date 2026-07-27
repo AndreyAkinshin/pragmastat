@@ -2,9 +2,12 @@ using Pragmastat.Internal;
 
 namespace Pragmastat.Functions;
 
-public static class BinomialCoefficientFunction
+// Internal, matching every other port: Go keeps this unexported, Rust pub(crate), Python
+// under a leading underscore. It was public here alone, which is how a double-typed
+// signature survived on a function whose arguments are sample sizes.
+internal static class BinomialCoefficientFunction
 {
-  public const int MaxAcceptableN = 62;
+  internal const int MaxAcceptableN = 62;
 
   private static readonly Lazy<long[,]> PascalTriangle = new(BuildPascalTriangle);
 
@@ -24,7 +27,7 @@ public static class BinomialCoefficientFunction
     }
   }
 
-  public static long BinomialCoefficient(int n, int k)
+  internal static long BinomialCoefficientExact(int n, int k)
   {
     if (n < 0 || n > MaxAcceptableN)
       throw new ArgumentOutOfRangeException(nameof(n));
@@ -35,43 +38,49 @@ public static class BinomialCoefficientFunction
   }
 
   /// <summary>
-  /// C(n, k) in binary64 by the multiplicative recurrence C(n, k) = prod_{i=1..k} (n-k+i)/i.
-  /// Both arguments are integral by contract: the callers pass sample sizes.
+  /// C(n, k) in binary64.
   /// </summary>
   /// <remarks>
-  /// It replaced an exp(LogFactorial) formulation, for three reasons. The specification defines
-  /// the admissible misrate as `misrate &gt;= 2 / C(n+m, n)`, an exact integer quantity; measured
-  /// against exact BigInteger binomials over all 79797 pairs with 4 &lt;= n+m &lt;= 400, the
-  /// Stirling path missed the nearest double on 99.9% of them with a worst relative error of
-  /// 9.5e-13, while this recurrence misses on 75.6% with a worst relative error of 2.3e-15.
+  /// Below <see cref="MaxAcceptableN"/> the exact integer from Pascal's triangle, converted
+  /// once; above it the multiplicative recurrence C(n, k) = prod_{i=1..k} (n-k+i)/i.
   ///
-  /// It is also portable. Stirling reached the answer through Log and Exp, which every language
-  /// takes from a different libm, so the last bit of the misrate floor was a property of the host
-  /// runtime rather than of the specification. This form calls nothing.
+  /// The arguments are integers because the callers pass sample sizes. They used to be
+  /// doubles, which was a trap rather than a generalization: the body truncates, so a
+  /// non-integral argument was silently answered for its floor. A type is the right place
+  /// to say what a function accepts.
   ///
-  /// Normalizing k to the smaller half makes the function symmetric by construction, which matters
-  /// because the two call sites ask for C(n+m, n) and C(n+m, m). Those are the same number, yet
-  /// the Stirling path returned different bits for them on 59052 of those 79797 pairs, leaving the
-  /// comparison at the misrate floor to be decided by which of the two rounded higher. This form
-  /// returns the same bits for both.
+  /// The recurrence replaced an exp-of-Stirling formulation for two reasons. Against exact
+  /// big-integer binomials over 4 &lt;= n &lt;= 400, Stirling missed the nearest double on 99.9%
+  /// of cases with a worst relative error of 8.1e-9; the recurrence is within 2.2e-15. And
+  /// Stirling reached the answer through Log and Exp, which every language takes from a
+  /// different library: perturbing those by a single ulp moved the computed misrate floor on
+  /// 75579 of 79797 sample-size pairs, and moves none of them now.
   ///
-  /// Every step is one binary64 multiply followed by one binary64 divide. Do not reassociate it,
-  /// do not accumulate numerator and denominator separately: all seven implementations perform
-  /// the identical sequence, and that is the property being preserved.
+  /// Normalizing k to the smaller half makes the function symmetric by construction, which
+  /// matters because the two call sites ask for C(n+m, n) and C(n+m, m). Those are the same
+  /// number, and now they are also the same bits, so the comparison at the misrate floor
+  /// cannot be decided by which of the two rounded higher.
+  ///
+  /// Every step is one binary64 multiply followed by one binary64 divide. Do not reassociate
+  /// it and do not accumulate numerator and denominator separately: all seven implementations
+  /// perform the identical sequence, and that is the property being preserved.
   /// </remarks>
-  public static double BinomialCoefficient(double n, double k)
+  internal static double BinomialCoefficient(int n, int k)
   {
     Assertion.Positive(nameof(n), n);
-    Assertion.InRangeInclusive(nameof(k), k, 0, n);
+    if (k < 0 || k > n)
+      throw new ArgumentOutOfRangeException(nameof(k));
 
-    int nn = (int)n;
-    int kk = (int)k;
-    if (kk > nn - kk)
-      kk = nn - kk;
+    if (n < MaxAcceptableN)
+      return BinomialCoefficientExact(n, k);
+
+    int kk = k;
+    if (kk > n - kk)
+      kk = n - kk;
 
     double acc = 1.0;
     for (int i = 1; i <= kk; i++)
-      acc = acc * (double)(nn - kk + i) / (double)i;
+      acc = acc * (double)(n - kk + i) / (double)i;
     return acc;
   }
 }

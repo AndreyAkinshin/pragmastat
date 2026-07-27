@@ -40,8 +40,6 @@ internal static class MinAchievableMisrate
       throw AssumptionException.Domain(Subject.X);
     if (m <= 0)
       throw AssumptionException.Domain(Subject.Y);
-    return n + m < BinomialCoefficientFunction.MaxAcceptableN
-      ? 2.0 / BinomialCoefficientFunction.BinomialCoefficient(n + m, n)
-      : 2.0 / BinomialCoefficientFunction.BinomialCoefficient(n + m, n * 1.0);
+    return 2.0 / BinomialCoefficientFunction.BinomialCoefficient(n + m, n);
   }
 }

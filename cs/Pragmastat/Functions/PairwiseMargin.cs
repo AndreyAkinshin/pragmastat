@@ -52,9 +52,7 @@ internal class PairwiseMargin(int threshold = PairwiseMargin.MaxExactSize)
   // Inversed implementation of Andreas Löffler's (1982) "Über eine Partition der nat. Zahlen und ihre Anwendung beim U-Test"
   private static int CalcExactRaw(int n, int m, double p)
   {
-    double total = n + m < BinomialCoefficientFunction.MaxAcceptableN
-      ? BinomialCoefficientFunction.BinomialCoefficient(n + m, m)
-      : BinomialCoefficientFunction.BinomialCoefficient(n + m, m * 1.0);
+    double total = BinomialCoefficientFunction.BinomialCoefficient(n + m, m);
 
     var pmf = new List<double> { 1 }; // pmf[0] = 1
     var sigma = new List<double> { 0 }; // sigma[0] is unused
