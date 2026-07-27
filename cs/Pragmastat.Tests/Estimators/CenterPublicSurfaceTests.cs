@@ -26,6 +26,6 @@ public class CenterPublicSurfaceTests
     var x = new double[] { 1, 2, 3, 4, 5, 6, 7, 8 };
     var orig = (double[])x.Clone();
     Toolkit.Center(x, assumeSorted: true);
-    Assert.Equal(orig, x);
+    BitwiseAssert.Equal(orig, x, "Center(x, assumeSorted: true): x");
   }
 }

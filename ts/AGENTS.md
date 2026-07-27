@@ -36,6 +36,7 @@ ts/
 │   ├── constants.ts           # Internal constants
 │   └── distributions/         # Uniform, Additive, Exp, Power, Multiplic
 ├── tests/
+│   ├── bitwise.ts                 # The binary64-payload comparison every exact suite uses
 │   ├── reference.test.ts          # JSON fixture validation
 │   ├── invariance.test.ts         # Mathematical property tests
 │   ├── assumeSorted.test.ts       # assumeSorted=true vs default-path equivalence
@@ -118,7 +119,7 @@ class Multiplic implements Distribution { constructor(location: number, scale: n
 
 - **Reference tests**: Load JSON fixtures from `../tests/` directory
 - **Invariance tests**: Verify mathematical properties
-- **Comparison**: bitwise (`Object.is` on binary64) for every selection estimator
+- **Comparison**: bitwise (raw binary64 payloads, `tests/bitwise.ts`) for every selection estimator
   and the randomization suites. A selection estimator returns an element of the
   pairwise set, so a divergence is a different element, not a small error, and no
   epsilon bounds it. Only `ratio`/`ratio-bounds`, `compare2` and the

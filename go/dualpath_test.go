@@ -51,9 +51,30 @@ const (
 	compareTolerant
 )
 
+// sameFloatBits reports whether two binary64 values carry the same payload.
+//
+// This is the ONE spelling of "these two doubles are identical" in the Go
+// suite: every comparison that claims exactness goes through it, scalars and
+// sequences alike. == is not that predicate and cannot be substituted for it.
+// == reads -0 and +0 as equal, so a sign-of-zero divergence passes a check
+// whose entire claim is that all seven implementations return the same bits;
+// and == reads every NaN as unequal, so two identical NaNs fail a check that
+// bit equality passes. Neither reading is uniformly stronger than the other,
+// and the payload is what the claim is about.
+func sameFloatBits(a, b float64) bool {
+	return math.Float64bits(a) == math.Float64bits(b)
+}
+
+// sameFloat32Bits is sameFloatBits for binary32, for the one exact suite that
+// compares float32 draws. The argument is identical, one exponent width down.
+func sameFloat32Bits(a, b float32) bool {
+	return math.Float32bits(a) == math.Float32bits(b)
+}
+
 // assertFloat compares one computed binary64 against a fixture's expected
 // value. A bitwise mismatch prints both raw payloads: a one-ULP difference is
-// invisible in the decimal rendering, and being able to read it is the entire
+// invisible in the decimal rendering, and a sign-of-zero difference is
+// invisible in it twice over, so being able to read the bits is the entire
 // point of comparing bitwise.
 func assertFloat(t *testing.T, mode compareMode, label string, actual, expected float64) {
 	t.Helper()
@@ -63,8 +84,16 @@ func assertFloat(t *testing.T, mode compareMode, label string, actual, expected 
 		}
 		return
 	}
-	if actual != expected {
+	if !sameFloatBits(actual, expected) {
 		t.Errorf("%s = %s, want %s", label, formatFloatBits(actual), formatFloatBits(expected))
+	}
+}
+
+// assertExactFloat32 is the assertFloat exact branch for a binary32 value.
+func assertExactFloat32(t *testing.T, label string, actual, expected float32) {
+	t.Helper()
+	if !sameFloat32Bits(actual, expected) {
+		t.Errorf("%s = %s, want %s", label, formatFloat32Bits(actual), formatFloat32Bits(expected))
 	}
 }
 
@@ -76,7 +105,7 @@ func assertExactSequence(t *testing.T, label string, actual, expected []float64)
 		t.Fatalf("%s length = %d, want %d", label, len(actual), len(expected))
 	}
 	for i := range actual {
-		if actual[i] != expected[i] {
+		if !sameFloatBits(actual[i], expected[i]) {
 			t.Errorf("%s at index %d = %s, want %s",
 				label, i, formatFloatBits(actual[i]), formatFloatBits(expected[i]))
 		}
@@ -87,6 +116,11 @@ func assertExactSequence(t *testing.T, label string, actual, expected []float64)
 // followed by its raw payload.
 func formatFloatBits(v float64) string {
 	return fmt.Sprintf("%v (0x%016x)", v, math.Float64bits(v))
+}
+
+// formatFloat32Bits is formatFloatBits for binary32.
+func formatFloat32Bits(v float32) string {
+	return fmt.Sprintf("%v (0x%08x)", v, math.Float32bits(v))
 }
 
 // expectedError is the shape of the "expected_error" object in fixtures.

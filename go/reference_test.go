@@ -411,9 +411,7 @@ func TestRngUniformReference(t *testing.T) {
 			for i := range testData.Input.Count {
 				actual := rng.UniformFloat64()
 				expected := testData.Output[i]
-				if actual != expected {
-					t.Errorf("UniformFloat64() at index %d = %v, want %v", i, actual, expected)
-				}
+				assertFloat(t, compareExact, fmt.Sprintf("UniformFloat64() at index %d", i), actual, expected)
 			}
 		})
 	}
@@ -498,9 +496,7 @@ func TestRngStringSeedReference(t *testing.T) {
 			for i := range testData.Input.Count {
 				actual := rng.UniformFloat64()
 				expected := testData.Output[i]
-				if actual != expected {
-					t.Errorf("UniformFloat64() at index %d = %v, want %v", i, actual, expected)
-				}
+				assertFloat(t, compareExact, fmt.Sprintf("UniformFloat64() at index %d", i), actual, expected)
 			}
 		})
 	}
@@ -541,10 +537,10 @@ func TestRngUniformRangeReference(t *testing.T) {
 			for i := range testData.Input.Count {
 				actual := rng.UniformFloat64Range(testData.Input.Min, testData.Input.Max)
 				expected := testData.Output[i]
-				if actual != expected {
-					t.Errorf("UniformFloat64Range(%v, %v) at index %d = %v, want %v",
-						testData.Input.Min, testData.Input.Max, i, actual, expected)
-				}
+				assertFloat(t, compareExact,
+					fmt.Sprintf("UniformFloat64Range(%v, %v) at index %d",
+						testData.Input.Min, testData.Input.Max, i),
+					actual, expected)
 			}
 		})
 	}
@@ -585,9 +581,7 @@ func TestRngUniformFloat32Reference(t *testing.T) {
 			for i := range testData.Input.Count {
 				actual := rng.UniformFloat32()
 				expected := testData.Output[i]
-				if actual != expected {
-					t.Errorf("UniformFloat32() at index %d = %v, want %v", i, actual, expected)
-				}
+				assertExactFloat32(t, fmt.Sprintf("UniformFloat32() at index %d", i), actual, expected)
 			}
 		})
 	}
@@ -824,9 +818,7 @@ func TestUniformDistributionReference(t *testing.T) {
 			for i := range testData.Input.Count {
 				actual := dist.Sample(rng)
 				expected := testData.Output[i]
-				if actual != expected {
-					t.Errorf("Uniform sample at index %d = %v, want %v", i, actual, expected)
-				}
+				assertFloat(t, compareExact, fmt.Sprintf("Uniform sample at index %d", i), actual, expected)
 			}
 		})
 	}
@@ -1321,11 +1313,11 @@ func TestSampleConstruction(t *testing.T) {
 			// associative. A tolerance here would accept an implementation that reduces
 			// pairwise or accumulates in extended precision, which is exactly the
 			// divergence these fields exist to pin.
-			if output.TotalWeight != nil && s.TotalWeight() != *output.TotalWeight {
-				t.Errorf("TotalWeight = %v, want %v", s.TotalWeight(), *output.TotalWeight)
+			if output.TotalWeight != nil {
+				assertFloat(t, compareExact, "TotalWeight", s.TotalWeight(), *output.TotalWeight)
 			}
-			if output.WeightedSize != nil && s.WeightedSize() != *output.WeightedSize {
-				t.Errorf("WeightedSize = %v, want %v", s.WeightedSize(), *output.WeightedSize)
+			if output.WeightedSize != nil {
+				assertFloat(t, compareExact, "WeightedSize", s.WeightedSize(), *output.WeightedSize)
 			}
 		})
 	}

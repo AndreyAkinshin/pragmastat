@@ -40,11 +40,15 @@ py/
 │   ├── _constants.py              # Internal constants
 │   └── distributions/             # Uniform, Additive, Exp, Power, Multiplic
 ├── tests/
+│   ├── binary64.py                # Shared exactness predicates (payload comparison, hex reports)
 │   ├── test_assume_sorted.py      # assume-sorted equivalence + convergence-guard misuse
+│   ├── test_binary64.py           # Covers the exactness predicates themselves
 │   ├── test_invariance.py         # Mathematical property tests
 │   ├── test_mutation.py           # Raw-API input-mutation safety
+│   ├── test_pairwise_margin_consistency.py  # Binomial regressions behind the pairwise margin
 │   ├── test_performance.py        # Performance smoke test
-│   └── test_reference.py          # JSON fixture validation (includes sample-construction, unit-propagation)
+│   ├── test_reference.py          # JSON fixture validation (includes sample-construction, unit-propagation)
+│   └── test_shift_overflow.py     # Shift on extreme finite input
 ├── examples/
 │   └── demo.py
 └── pyproject.toml
@@ -147,7 +151,12 @@ Weighted samples are rejected by all estimators.
 - **Sample construction tests**: From `../tests/sample-construction/`
 - **Unit propagation tests**: From `../tests/unit-propagation/`
 - **Invariance tests**: Verify mathematical properties
-- **Tolerance**: `1e-9` for floating-point comparisons
+- **Exact comparisons**: `tests/binary64.py` is the single spelling of "these two
+  doubles are identical". It compares the raw binary64 payloads, never `==` (which
+  passes `-0.0` against `+0.0` and fails a pair of identical NaNs), and every
+  failure prints both payloads in hex next to the decimal values.
+- **Tolerance**: `1e-9`, for the genuinely approximate suites only (ratio,
+  ratio-bounds, compare2, the transcendental distributions, invariance)
 
 ```bash
 mise run py:test                 # All tests (preferred)

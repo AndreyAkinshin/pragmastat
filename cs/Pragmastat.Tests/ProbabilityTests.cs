@@ -23,6 +23,6 @@ public class ProbabilityTests
   public void Probability_AcceptsInRange(double value)
   {
     var p = new Probability(value);
-    Assert.Equal(value, p.Value);
+    BitwiseAssert.Equal(value, p.Value, $"Probability({value:R}).Value");
   }
 }

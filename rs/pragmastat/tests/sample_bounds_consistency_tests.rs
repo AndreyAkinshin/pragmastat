@@ -15,25 +15,14 @@
 
 mod conformance;
 
-use conformance::Conformance;
+// The two sides of every comparison below are the same kernel reached by two
+// entry points, so the only admissible outcome is identical payloads. Routed
+// through the crate's shared `assert_bits_eq` so that "exact" means the same
+// thing here as in the fixture suites, and so that a mismatch reports the bit
+// patterns and not just the two decimal renderings.
+use conformance::assert_bits_eq;
 use pragmastat::estimators::raw;
 use pragmastat::{Sample, disparity_bounds_with_seed, spread_bounds_with_seed};
-
-/// Asserts bit-for-bit equality of two binary64 values.
-///
-/// The two sides are the same kernel reached by two entry points, so the only
-/// admissible outcome is identical payloads. Routed through the crate's shared
-/// `Conformance::Exact` so that "exact" means the same thing here as in the
-/// fixture suites, and so that a mismatch reports the bit patterns and not just
-/// the two decimal renderings.
-#[track_caller]
-fn assert_bits_eq(label: &str, got: f64, want: f64) {
-    assert!(
-        Conformance::Exact.matches(got, want),
-        "{}",
-        Conformance::Exact.mismatch(label, want, got)
-    );
-}
 
 const UNSORTED_X: [f64; 20] = [
     5.0, 3.0, 1.0, 4.0, 2.0, 9.0, 7.0, 6.0, 8.0, 10.0, 15.0, 11.0, 13.0, 12.0, 14.0, 20.0, 18.0,

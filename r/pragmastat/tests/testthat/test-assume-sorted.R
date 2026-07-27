@@ -149,6 +149,11 @@ test_that("disparity_bounds is flag-invariant on the same input and seed", {
 # read-only). Every raw estimator must leave the caller's vector byte-for-byte
 # unchanged under BOTH flag values, and a Sample's cached $sorted_values must
 # survive estimator calls that alias it read-only.
+#
+# "byte-for-byte" is meant literally, so the comparison is expect_exact (payload
+# per element) and not expect_identical, whose num.eq = TRUE default compares the
+# numbers: a kernel that wrote -0.0 over a +0.0 element would leave the caller
+# with a different double and the guard would still pass.
 test_that("raw estimators do not mutate the caller's vector (assume_sorted FALSE/TRUE)", {
   m <- 0.3
 
@@ -165,32 +170,32 @@ test_that("raw estimators do not mutate the caller's vector (assume_sorted FALSE
 
     # One-sample point + bounds estimators.
     one_sample <- list(
-      function(v) center(v, assume_sorted = flag),
-      function(v) spread(v, assume_sorted = flag),
-      function(v) center_bounds(v, misrate = m, assume_sorted = flag),
-      function(v) spread_bounds(v, misrate = m, seed = 42, assume_sorted = flag)
+      center = function(v) center(v, assume_sorted = flag),
+      spread = function(v) spread(v, assume_sorted = flag),
+      center_bounds = function(v) center_bounds(v, misrate = m, assume_sorted = flag),
+      spread_bounds = function(v) spread_bounds(v, misrate = m, seed = 42, assume_sorted = flag)
     )
-    for (est in one_sample) {
+    for (est_name in names(one_sample)) {
       x_before <- xv + 0
-      est(xv)
-      expect_identical(xv, x_before)
+      one_sample[[est_name]](xv)
+      expect_exact(xv, x_before, sprintf("%s(assume_sorted=%s) left x", est_name, flag))
     }
 
     # Two-sample point + bounds estimators.
     two_sample <- list(
-      function(a, b) shift(a, b, assume_sorted = flag),
-      function(a, b) ratio(a, b, assume_sorted = flag),
-      function(a, b) disparity(a, b, assume_sorted = flag),
-      function(a, b) shift_bounds(a, b, misrate = m, assume_sorted = flag),
-      function(a, b) ratio_bounds(a, b, misrate = m, assume_sorted = flag),
-      function(a, b) disparity_bounds(a, b, misrate = m, seed = 42, assume_sorted = flag)
+      shift = function(a, b) shift(a, b, assume_sorted = flag),
+      ratio = function(a, b) ratio(a, b, assume_sorted = flag),
+      disparity = function(a, b) disparity(a, b, assume_sorted = flag),
+      shift_bounds = function(a, b) shift_bounds(a, b, misrate = m, assume_sorted = flag),
+      ratio_bounds = function(a, b) ratio_bounds(a, b, misrate = m, assume_sorted = flag),
+      disparity_bounds = function(a, b) disparity_bounds(a, b, misrate = m, seed = 42, assume_sorted = flag)
     )
-    for (est in two_sample) {
+    for (est_name in names(two_sample)) {
       x_before <- xv + 0
       y_before <- yv + 0
-      est(xv, yv)
-      expect_identical(xv, x_before)
-      expect_identical(yv, y_before)
+      two_sample[[est_name]](xv, yv)
+      expect_exact(xv, x_before, sprintf("%s(assume_sorted=%s) left x", est_name, flag))
+      expect_exact(yv, y_before, sprintf("%s(assume_sorted=%s) left y", est_name, flag))
     }
   }
 })
@@ -272,17 +277,17 @@ test_that("Sample $sorted_values is unchanged after estimator calls (read-only a
   r1_ratio <- ratio(sx, sy)$value
   r1_disparity <- disparity(sx, sy)$value
 
-  expect_identical(sx$sorted_values, sorted_x_before)
-  expect_identical(sy$sorted_values, sorted_y_before)
+  expect_exact(sx$sorted_values, sorted_x_before, "round 1 left sx$sorted_values")
+  expect_exact(sy$sorted_values, sorted_y_before, "round 1 left sy$sorted_values")
 
   # Two successive calls must return identical results: the cached buffer was not
   # disturbed by the first call (pins the read-only aliasing invariant).
-  expect_identical(center(sx)$value, r1_center)
-  expect_identical(spread(sx)$value, r1_spread)
-  expect_identical(shift(sx, sy)$value, r1_shift)
-  expect_identical(ratio(sx, sy)$value, r1_ratio)
-  expect_identical(disparity(sx, sy)$value, r1_disparity)
+  expect_exact(center(sx)$value, r1_center, "center(sx) call 2 vs call 1")
+  expect_exact(spread(sx)$value, r1_spread, "spread(sx) call 2 vs call 1")
+  expect_exact(shift(sx, sy)$value, r1_shift, "shift(sx, sy) call 2 vs call 1")
+  expect_exact(ratio(sx, sy)$value, r1_ratio, "ratio(sx, sy) call 2 vs call 1")
+  expect_exact(disparity(sx, sy)$value, r1_disparity, "disparity(sx, sy) call 2 vs call 1")
 
-  expect_identical(sx$sorted_values, sorted_x_before)
-  expect_identical(sy$sorted_values, sorted_y_before)
+  expect_exact(sx$sorted_values, sorted_x_before, "round 2 left sx$sorted_values")
+  expect_exact(sy$sorted_values, sorted_y_before, "round 2 left sy$sorted_values")
 })

@@ -1,4 +1,5 @@
 import pytest
+from binary64 import identical
 
 from pragmastat import Rng, Sample, center, disparity, ratio, shift, spread
 from pragmastat.estimators import _avg_spread as avg_spread
@@ -93,7 +94,9 @@ class TestRandomizationInvariance:
             x = list(range(n))
             rng = Rng(42)
             shuffled = rng.shuffle(x)
-            assert sorted(shuffled) == x
+            # A permutation carries its values through untouched, so the sorted
+            # shuffle must reproduce the input payload for payload.
+            assert all(identical(a, b) for a, b in zip(sorted(shuffled), x, strict=True))
 
     def test_sample_correct_size(self):
         x = list(range(10))

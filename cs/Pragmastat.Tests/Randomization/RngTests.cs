@@ -259,9 +259,10 @@ public class RngTests
       Assert.Equal(count, output.GetArrayLength());
       for (int i = 0; i < count; i++)
       {
+        // Bitwise on the binary32 payload, for the same reason as the binary64 stream above.
         float actual = rng.UniformSingle();
         float expected = output[i].GetSingle();
-        Assert.Equal(expected, actual);
+        BitwiseAssert.Equal(expected, actual, filePath, i);
       }
     }
   }

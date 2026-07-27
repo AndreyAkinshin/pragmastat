@@ -97,9 +97,9 @@ func performTestOneExact(t *testing.T, expr1 func([]float64) float64, expr2 func
 		x := uniformVec(rng, n)
 		result1 := expr1(x)
 		result2 := expr2(x)
-		if math.Float64bits(result1) != math.Float64bits(result2) {
-			t.Errorf("Failed for n=%d: %v (0x%016X) != %v (0x%016X)",
-				n, result1, math.Float64bits(result1), result2, math.Float64bits(result2))
+		if !sameFloatBits(result1, result2) {
+			t.Errorf("Failed for n=%d: %s != %s",
+				n, formatFloatBits(result1), formatFloatBits(result2))
 		}
 	}
 }
@@ -113,9 +113,9 @@ func performTestTwoExact(t *testing.T, expr1 func([]float64, []float64) float64,
 		y := uniformVec(rng, n)
 		result1 := expr1(x, y)
 		result2 := expr2(x, y)
-		if math.Float64bits(result1) != math.Float64bits(result2) {
-			t.Errorf("Failed for n=%d: %v (0x%016X) != %v (0x%016X)",
-				n, result1, math.Float64bits(result1), result2, math.Float64bits(result2))
+		if !sameFloatBits(result1, result2) {
+			t.Errorf("Failed for n=%d: %s != %s",
+				n, formatFloatBits(result1), formatFloatBits(result2))
 		}
 	}
 }
@@ -306,9 +306,12 @@ func TestShuffleInvariance(t *testing.T) {
 			sortedShuffled := make([]float64, len(shuffled))
 			copy(sortedShuffled, shuffled)
 			sort.Float64s(sortedShuffled)
+			// A permutation carries its values through untouched, so the sorted
+			// shuffle must reproduce the input payload for payload.
 			for i, v := range x {
-				if sortedShuffled[i] != v {
-					t.Errorf("n=%d: sorted shuffle mismatch at %d", n, i)
+				if !sameFloatBits(sortedShuffled[i], v) {
+					t.Errorf("n=%d: sorted shuffle mismatch at %d: %s != %s",
+						n, i, formatFloatBits(sortedShuffled[i]), formatFloatBits(v))
 				}
 			}
 		}

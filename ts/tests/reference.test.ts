@@ -24,6 +24,7 @@ import { MeasurementUnit } from '../src/measurement-unit';
 import { Measurement } from '../src/measurement';
 import { UnitRegistry } from '../src/unit-registry';
 import { Metric, Threshold, compare1, compare2 } from '../src/compare';
+import { expectBitwise, expectBitwiseBounds, expectBitwiseSequence } from './bitwise';
 
 /**
  * Reference tests comparing against expected values from JSON files
@@ -62,65 +63,6 @@ function expectError(
     isSampleCreation && expectedError.subject === 'y' && expectedError.id === 'validity';
   if (!skipSubject) {
     expect(thrownError!.violation!.subject).toBe(expectedError.subject);
-  }
-}
-
-/** Raw binary64 bits of a double, so that a one-ULP report is unambiguous. */
-function f64Bits(value: number): string {
-  const view = new DataView(new ArrayBuffer(8));
-  view.setFloat64(0, value);
-  return `0x${view.getBigUint64(0).toString(16).padStart(16, '0')}`;
-}
-
-/**
- * Asserts a single double against a fixture bit for bit.
- *
- * Every suite that uses this returns an element selected out of a pairwise set
- * (or an average of two such elements). A divergence is therefore never a small
- * error: either the same element was selected and the answer is bit-identical,
- * or a different one was, and the gap is data-dependent and unbounded by any
- * epsilon. A tolerance hides exactly the failure it appears to guard against.
- * The suites that keep a tolerance, and the reason, are listed at
- * `TOLERANT_VALUE_DIRS` and above `describe('compare2')`.
- *
- * Exactness here is measured, not assumed: recomputing every estimator with each
- * call to `log`, `exp`, `pow` and `cos` returning the neighbouring representable
- * value (the largest legitimate difference between two conforming libm
- * implementations) moved none of them, on any input.
- *
- * `Object.is` is the same predicate as `expect(...).toBe(...)`; this wrapper
- * exists only so a one-ULP failure is readable, printing both bit patterns
- * alongside the subject that names the fixture and the entry point.
- */
-function expectBitwise(subject: string, actual: number, expected: number): void {
-  if (!Object.is(actual, expected)) {
-    throw new Error(
-      `${subject}: bitwise mismatch: ` +
-        `expected ${expected} (${f64Bits(expected)}), ` +
-        `actual ${actual} (${f64Bits(actual)})`,
-    );
-  }
-}
-
-/**
- * Asserts a generated sequence against a randomization fixture bit for bit.
- *
- * The randomization contract is bitwise: `new Rng(seed)` must produce an
- * identical sequence in every language implementation, and the manual states
- * so. "Close enough" is therefore not the property under test — a tolerance
- * reports a broken contract as a pass. That is not theoretical: a compiler is
- * free to fuse a multiply into an add and change the last bit of a draw (Go's
- * arm64 backend does exactly this in `UniformFloat64Range`), and the tolerant
- * comparison that used to live here would have shipped it.
- *
- * The additive/multiplic/exp/power distributions stay tolerant on purpose:
- * their draws go through `log`, `exp`, `cos` and `pow`, which every language
- * takes from a different libm, so bitwise equality there is not achievable.
- */
-function expectBitwiseSequence(subject: string, actual: number[], expected: number[]): void {
-  expect(actual).toHaveLength(expected.length);
-  for (let i = 0; i < actual.length; i++) {
-    expectBitwise(`${subject} at index ${i}`, actual[i], expected[i]);
   }
 }
 
@@ -259,12 +201,27 @@ describe('Reference Tests', () => {
   };
 
   /**
-   * Suites that stay on a tolerance, and why.
+   * Every estimator suite is compared bit for bit (`expectBitwise`) unless it is
+   * listed below.
+   *
+   * The default is exactness because these estimators return an element selected
+   * out of a pairwise set (or an average of two such elements). A divergence is
+   * therefore never a small error: either the same element was selected and the
+   * answer is bit-identical, or a different one was, and the gap is
+   * data-dependent and unbounded by any epsilon. A tolerance hides exactly the
+   * failure it appears to guard against. That is measured, not assumed:
+   * recomputing every estimator with each call to `log`, `exp`, `pow` and `cos`
+   * returning the neighbouring representable value (the largest legitimate
+   * difference between two conforming libm implementations) moved none of them,
+   * on any input.
+   *
+   * Suites that stay on a tolerance, and why:
    *
    * `ratio` is `exp(median(log x - log y))`: unlike the selection estimators it
    * really is approximate. Perturbing libm by one ULP moves it on 94% of inputs,
    * by up to 16 ULP, so exact equality across implementations is not a property
-   * it has. `ratio-bounds` inherits this from the same projection.
+   * it has. `ratio-bounds` inherits this from the same projection. `compare2`
+   * keeps a tolerance for the reason given above its own `describe`.
    */
   const TOLERANT_VALUE_DIRS = new Set(['ratio']);
   const TOLERANT_BOUNDS_DIRS = new Set(['ratio-bounds']);
@@ -291,8 +248,7 @@ describe('Reference Tests', () => {
     (subject: string, exact: boolean) =>
     (result: BoundsResult, expected: { lower: number; upper: number }, entryName: string): void => {
       if (exact) {
-        expectBitwise(`${subject} [${entryName}].lower`, result.lower, expected.lower);
-        expectBitwise(`${subject} [${entryName}].upper`, result.upper, expected.upper);
+        expectBitwiseBounds(`${subject} [${entryName}]`, result, expected);
       } else {
         expect(result.lower).toBeCloseTo(expected.lower, 9);
         expect(result.upper).toBeCloseTo(expected.upper, 9);
@@ -484,6 +440,20 @@ describe('Reference Tests', () => {
     }
   });
 
+  // The randomization contract is bitwise: `new Rng(seed)` must produce an
+  // identical sequence in every language implementation, and the manual states
+  // so. "Close enough" is therefore not the property under test — a tolerance
+  // reports a broken contract as a pass. That is not theoretical: a compiler is
+  // free to fuse a multiply into an add and change the last bit of a draw (Go's
+  // arm64 backend does exactly this in `UniformFloat64Range`), and the tolerant
+  // comparison that used to live here would have shipped it. So every suite
+  // below (rng, shuffle, sample, resample, uniform distribution) compares
+  // payloads.
+  //
+  // The additive/multiplic/exp/power distributions stay tolerant on purpose:
+  // their draws go through `log`, `exp`, `cos` and `pow`, which every language
+  // takes from a different libm, so bitwise equality there is not achievable.
+
   // Rng uniform tests
   describe('rng-uniform', () => {
     const dirPath = path.join(testDataPath, 'rng');
@@ -528,7 +498,11 @@ describe('Reference Tests', () => {
             rng.uniformInt(data.input.min, data.input.max),
           );
 
-          expect(actual).toEqual(data.output);
+          expectBitwiseSequence(
+            `uniformInt(${data.input.min}, ${data.input.max})`,
+            actual,
+            data.output,
+          );
         });
       });
     }
@@ -911,8 +885,7 @@ describe('Reference Tests', () => {
           const sx = Sample.of(data.input.x);
           const sy = Sample.of(data.input.y);
           const result = avgSpreadBounds(sx, sy, data.input.misrate, data.input.seed);
-          expectBitwise(`avg-spread-bounds/${fileName}.lower`, result.lower, data.output.lower);
-          expectBitwise(`avg-spread-bounds/${fileName}.upper`, result.upper, data.output.upper);
+          expectBitwiseBounds(`avg-spread-bounds/${fileName}`, result, data.output);
         });
       });
     }
@@ -962,16 +935,24 @@ describe('Reference Tests', () => {
 
           expect(sample.size).toBe(data.output.size);
           expect(sample.isWeighted).toBe(data.output.is_weighted);
-          // Bitwise (toBe, not toBeCloseTo). Both are public values derived by summing
+          // Bitwise, not toBeCloseTo. Both are public values derived by summing
           // the weights, and a sum depends on the order it is taken in: floating-point
           // addition is not associative. A tolerance here would accept an implementation
           // that reduces pairwise or accumulates in extended precision, which is exactly
           // the divergence these fields exist to pin. Absent on unweighted fixtures.
           if (data.output.total_weight !== undefined) {
-            expect(sample.totalWeight).toBe(data.output.total_weight);
+            expectBitwise(
+              `sample-construction/${fileName}.totalWeight`,
+              sample.totalWeight,
+              data.output.total_weight,
+            );
           }
           if (data.output.weighted_size !== undefined) {
-            expect(sample.weightedSize).toBe(data.output.weighted_size);
+            expectBitwise(
+              `sample-construction/${fileName}.weightedSize`,
+              sample.weightedSize,
+              data.output.weighted_size,
+            );
           }
         });
       });

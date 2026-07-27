@@ -50,7 +50,8 @@ impl Conformance {
     }
 
     /// Renders a mismatch. Under `Exact` the bit patterns are part of the message:
-    /// a one-ULP report is only worth having if it is readable.
+    /// a one-ULP report is only worth having if it is readable, and a sign-of-zero
+    /// report is unreadable without them.
     pub fn mismatch(self, what: &str, expected: f64, actual: f64) -> String {
         match self {
             Conformance::Exact => format!(
@@ -60,5 +61,68 @@ impl Conformance {
             ),
             Conformance::Tolerant => format!("{what}: expected {expected}, got {actual}"),
         }
+    }
+}
+
+/// Asserts that two binary64 values are the same to the last bit.
+///
+/// The assert form of [`Conformance::Exact`], for the tests that compare a single
+/// pair rather than collecting failures across a fixture directory. Every such
+/// test routes through here rather than through `assert_eq!`, which compares
+/// numbers and not payloads: `-0.0 == 0.0` holds and `NaN == NaN` does not, so
+/// `==` both passes a sign-of-zero divergence and fails a pair of identical NaNs.
+/// Neither predicate is the stronger one; the one that matches the claim these
+/// tests make is bit equality.
+#[track_caller]
+pub fn assert_bits_eq(what: &str, actual: f64, expected: f64) {
+    assert!(
+        Conformance::Exact.matches(actual, expected),
+        "{}",
+        Conformance::Exact.mismatch(what, expected, actual)
+    );
+}
+
+/// Sequence counterpart of [`assert_bits_eq`], element by element.
+///
+/// A slice compared with `==` has the same blind spots as a scalar compared with
+/// `==`, once per element, so a sequence gets the same predicate and the same
+/// message rather than its own.
+#[track_caller]
+pub fn assert_bits_eq_slice(what: &str, actual: &[f64], expected: &[f64]) {
+    assert_eq!(
+        actual.len(),
+        expected.len(),
+        "{what}: expected {} values, got {}",
+        expected.len(),
+        actual.len()
+    );
+    for (i, (&actual_val, &expected_val)) in actual.iter().zip(expected.iter()).enumerate() {
+        assert_bits_eq(&format!("{what}[{i}]"), actual_val, expected_val);
+    }
+}
+
+/// The binary32 counterpart of [`assert_bits_eq_slice`].
+///
+/// `Conformance` is binary64 throughout because every estimator is; the single
+/// non-double that crosses a fixture boundary is the RNG's f32 draw stream, whose
+/// contract is bit-identical draws in every language. It gets the payload
+/// comparison and the hex report for the same reason, in the same place, with the
+/// narrower payload spelled out at its own width.
+#[track_caller]
+pub fn assert_bits_eq_f32_slice(what: &str, actual: &[f32], expected: &[f32]) {
+    assert_eq!(
+        actual.len(),
+        expected.len(),
+        "{what}: expected {} values, got {}",
+        expected.len(),
+        actual.len()
+    );
+    for (i, (&actual_val, &expected_val)) in actual.iter().zip(expected.iter()).enumerate() {
+        assert!(
+            actual_val.to_bits() == expected_val.to_bits(),
+            "{what}[{i}]: expected {expected_val} (0x{:08X}), got {actual_val} (0x{:08X})",
+            expected_val.to_bits(),
+            actual_val.to_bits()
+        );
     }
 }

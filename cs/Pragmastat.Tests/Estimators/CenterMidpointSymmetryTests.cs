@@ -17,8 +17,8 @@ public class CenterMidpointSymmetryTests
     double reversed = Toolkit.Center(new[] { -1.8, -5.0 }, assumeSorted: true);
 
     // Exact bit equality (not approximate): both must be exactly -3.4.
-    Assert.Equal(forward, reversed);
-    Assert.Equal(-3.4, forward);
-    Assert.Equal(-3.4, reversed);
+    BitwiseAssert.Equal(forward, reversed, "Center([-5, -1.8]) vs Center([-1.8, -5])");
+    BitwiseAssert.Equal(-3.4, forward, "Center([-5, -1.8])");
+    BitwiseAssert.Equal(-3.4, reversed, "Center([-1.8, -5])");
   }
 }

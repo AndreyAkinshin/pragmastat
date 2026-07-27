@@ -14,6 +14,9 @@ test_that("n==2 center midpoint is order-symmetric (exact bit-equality)", {
   reversed <- center(c(-1.8, -5.0), assume_sorted = TRUE)
 
   # Exact, not approximate: the old a+(b-a)*0.5 form diverged by 1 ULP.
-  expect_identical(forward, reversed)
-  expect_identical(forward, -3.4)
+  # expect_exact compares payloads; expect_identical() defaults to num.eq = TRUE,
+  # which is `==` on the numbers and would pass a midpoint that came back as -0.0
+  # where +0.0 was expected.
+  expect_exact(forward, reversed, "center([a, b]) vs center([b, a])")
+  expect_exact(forward, -3.4, "center([-5.0, -1.8])")
 })

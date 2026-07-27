@@ -23,8 +23,12 @@ func TestShift_Overflow(t *testing.T) {
 		if err != nil {
 			t.Fatalf("%s: unexpected error: %v", tt.name, err)
 		}
-		if got != tt.want {
-			t.Errorf("%s: Shift = %v, want %v", tt.name, got, tt.want)
+		// Bitwise: the clamped search has to land on the exact pairwise value,
+		// and a sign-of-zero slip in the midpoint is precisely the kind of
+		// damage this regression guards against.
+		if !sameFloatBits(got, tt.want) {
+			t.Errorf("%s: Shift = %s, want %s",
+				tt.name, formatFloatBits(got), formatFloatBits(tt.want))
 		}
 	}
 }

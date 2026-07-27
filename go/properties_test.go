@@ -165,11 +165,12 @@ func TestCenterMidpointOrderSymmetry(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Center reverse: %v", err)
 	}
-	if forward != reverse {
-		t.Errorf("center order asymmetry: forward=%v (bits %#x) reverse=%v (bits %#x)",
-			forward, math.Float64bits(forward), reverse, math.Float64bits(reverse))
+	if !sameFloatBits(forward, reverse) {
+		t.Errorf("center order asymmetry: forward=%s reverse=%s",
+			formatFloatBits(forward), formatFloatBits(reverse))
 	}
-	if forward != -3.4 {
-		t.Errorf("center([-5.0,-1.8]) = %v, want exactly -3.4", forward)
+	if !sameFloatBits(forward, -3.4) {
+		t.Errorf("center([-5.0,-1.8]) = %s, want exactly %s",
+			formatFloatBits(forward), formatFloatBits(-3.4))
 	}
 }

@@ -306,7 +306,9 @@ class InvarianceTest {
             val x = (0 until n).map { it.toDouble() }
             val rng = Rng(42)
             val shuffled = rng.shuffle(x)
-            assertEquals(x, shuffled.sorted())
+            // Bitwise: a shuffle permutes the caller's values, it does not compute
+            // new ones, so sorting it back must reproduce them exactly.
+            assertBitwise(x, shuffled.sorted(), "shuffle(n=$n) sorted back")
         }
     }
 

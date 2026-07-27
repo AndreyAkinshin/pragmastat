@@ -1,7 +1,6 @@
-import struct
-
 import numpy as np
 import pytest
+from binary64 import fmt, identical
 
 from pragmastat import (
     Sample,
@@ -33,20 +32,10 @@ _ARRAY_VARIANTS = [
 ]
 
 
-def _payload(value):
-    """Return the raw binary64 payload of ``value`` as a 64-bit unsigned integer."""
-    return struct.unpack("<Q", struct.pack("<d", float(value)))[0]
-
-
-def _fmt(value):
-    """Render a float so a one-ULP difference is unmistakable in a failure message."""
-    return f"{value!r} [{float(value).hex()}]"
-
-
 def _mutation_report(actual, original):
     """Describe every element whose raw binary64 payload changed."""
-    changed = [i for i in range(original.size) if _payload(actual[i]) != _payload(original[i])]
-    return ", ".join(f"[{i}] {_fmt(original[i])} -> {_fmt(actual[i])}" for i in changed)
+    changed = [i for i in range(original.size) if not identical(actual[i], original[i])]
+    return ", ".join(f"[{i}] {fmt(original[i])} -> {fmt(actual[i])}" for i in changed)
 
 
 def _assert_unchanged(actual, original, what):
@@ -55,7 +44,7 @@ def _assert_unchanged(actual, original, what):
     The comparison is on the bytes, not on ``==``: a kernel that overwrites 0.0
     with -0.0 (or one NaN payload with another) leaves the array numerically
     equal while still having written to memory the caller owns. Only a payload
-    comparison calls that what it is.
+    comparison calls that what it is (see :mod:`binary64`).
     """
     assert actual.tobytes() == original.tobytes(), f"{what} mutated its input: {_mutation_report(actual, original)}"
 

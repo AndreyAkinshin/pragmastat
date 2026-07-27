@@ -11,7 +11,11 @@ public class ShiftOverflowTests
   public void ShiftDoesNotOverflowOnExtremeFiniteInput()
   {
     const double max = double.MaxValue;
-    Assert.Equal(0.0, Toolkit.Shift(new[] { -max, max }, new[] { -max, max }, assumeSorted: true));
-    Assert.Equal(max, Toolkit.Shift(new[] { 0.0, max }, new[] { -max, 0.0 }, assumeSorted: true));
+    // Bitwise: the claim is the exact finite shift, and the first case is a difference of
+    // symmetric samples, where +0.0 and -0.0 are both reachable and == cannot tell them apart.
+    BitwiseAssert.Equal(0.0, Toolkit.Shift(new[] { -max, max }, new[] { -max, max }, assumeSorted: true),
+      "Shift([-max, max], [-max, max])");
+    BitwiseAssert.Equal(max, Toolkit.Shift(new[] { 0.0, max }, new[] { -max, 0.0 }, assumeSorted: true),
+      "Shift([0, max], [-max, 0])");
   }
 }

@@ -253,6 +253,11 @@ pub(crate) fn prepare_pair<'a>(
 #[cfg(test)]
 mod tests {
     use super::*;
+    // Both value sequences below are exact: a sort reorders payloads without
+    // touching them, and doubling a small integer is exact in binary64. Compared
+    // element by element on the payload, since a slice compared with `==` carries
+    // the blind spots of `==` once per element.
+    use crate::conformance::assert_bits_eq_slice;
 
     // Sample must stay shareable across threads (e.g. Arc<Sample>, rayon &Sample).
     // The lazily-cached sorted view uses OnceLock (Sync), not OnceCell (!Sync) — this
@@ -290,9 +295,9 @@ mod tests {
     fn sorted_values_cached() {
         let s = Sample::new(vec![3.0, 1.0, 2.0]).unwrap();
         let sorted = s.sorted_values();
-        assert_eq!(sorted, &[1.0, 2.0, 3.0]);
+        assert_bits_eq_slice("sorted_values", sorted, &[1.0, 2.0, 3.0]);
         let sorted2 = s.sorted_values();
-        assert_eq!(sorted, sorted2);
+        assert_bits_eq_slice("sorted_values, second call", sorted2, sorted);
         // The cache must be REUSED, not recomputed: both calls must hand back the
         // exact same backing allocation. Value-equality alone would pass even with
         // no caching, so assert pointer-identity of the slices.
@@ -324,7 +329,7 @@ mod tests {
     fn mul_scalar() {
         let s = Sample::new(vec![1.0, 2.0, 3.0]).unwrap();
         let result = (&s * 2.0).unwrap();
-        assert_eq!(result.values(), &[2.0, 4.0, 6.0]);
+        assert_bits_eq_slice("values scaled by 2", result.values(), &[2.0, 4.0, 6.0]);
     }
 
     #[test]

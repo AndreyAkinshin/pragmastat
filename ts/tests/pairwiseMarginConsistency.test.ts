@@ -1,6 +1,7 @@
 import { binomialCoefficient } from '../src/binomial';
 import { minAchievableMisrateTwoSample } from '../src/minMisrate';
 import { pairwiseMargin } from '../src/pairwiseMargin';
+import { expectBitwise } from './bitwise';
 
 // Regressions on the binomial coefficient behind the pairwise margin.
 //
@@ -18,7 +19,11 @@ describe('pairwiseMargin consistency', () => {
   it('computes a binomial symmetric in k <-> n-k', () => {
     for (let n = 0; n <= 400; n++) {
       for (let k = 0; k <= n; k++) {
-        expect(binomialCoefficient(n, k)).toBe(binomialCoefficient(n, n - k));
+        expectBitwise(
+          `binomialCoefficient(${n}, ${k})`,
+          binomialCoefficient(n, k),
+          binomialCoefficient(n, n - k),
+        );
       }
     }
   });
@@ -28,8 +33,16 @@ describe('pairwiseMargin consistency', () => {
   // contract, not a defect: all seven implementations run this sequence of multiplies
   // and divides and all return this float. An accuracy fix here is a divergence.
   it('pins both sides of the exact/recurrence threshold', () => {
-    expect(binomialCoefficient(61, 30)).toBe(2.3271417662763053e17);
-    expect(binomialCoefficient(62, 31)).toBe(4.6542835325526125e17);
+    expectBitwise(
+      'binomialCoefficient(61, 30)',
+      binomialCoefficient(61, 30),
+      2.3271417662763053e17,
+    );
+    expectBitwise(
+      'binomialCoefficient(62, 31)',
+      binomialCoefficient(62, 31),
+      4.6542835325526125e17,
+    );
   });
 
   // The misrate floor is 2 / C(n+m, n) and the exact pass normalizes its pmf by
@@ -45,7 +58,11 @@ describe('pairwiseMargin consistency', () => {
 
   // Past the point where C(n+m, n) leaves binary64 range the floor is 0, not an error.
   it('saturates the misrate floor beyond binary64 range', () => {
-    expect(minAchievableMisrateTwoSample(515, 515)).toBe(0);
+    expectBitwise(
+      'minAchievableMisrateTwoSample(515, 515)',
+      minAchievableMisrateTwoSample(515, 515),
+      0,
+    );
     const margin = pairwiseMargin(600, 600, 1e-3);
     expect(margin).toBeGreaterThan(0);
     expect(margin % 2).toBe(0);

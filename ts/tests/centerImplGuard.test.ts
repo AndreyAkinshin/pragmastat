@@ -1,6 +1,7 @@
 import { centerImpl } from '../src/centerImpl';
 import { center, Bounds } from '../src/estimators';
 import { MeasurementUnit } from '../src/measurement-unit';
+import { expectBitwise } from './bitwise';
 
 /**
  * centerImpl's Monahan-selection loop must terminate even when
@@ -33,10 +34,15 @@ describe('centerImpl convergence guard', () => {
   it('still converges correctly on valid sorted input (guard never triggers)', () => {
     const sorted = [...unsorted].sort((a, b) => a - b);
     // assumeSorted=true on genuinely sorted input must equal the unsorted path
-    // BITWISE (toBe, not toBeCloseTo): the flag only decides who sorts, so both
-    // sides feed the kernel the same array and run the same operations on it.
-    // Equal to the last bit, or the two routes differ and that is the bug.
-    expect(centerImpl(sorted, true)).toBe(center(unsorted, false));
+    // BITWISE (payload comparison, not toBeCloseTo): the flag only decides who
+    // sorts, so both sides feed the kernel the same array and run the same
+    // operations on it. Equal to the last bit, or the two routes differ and
+    // that is the bug.
+    expectBitwise(
+      'centerImpl(sorted, true) vs center(unsorted, false)',
+      centerImpl(sorted, true),
+      center(unsorted, false),
+    );
   });
 });
 

@@ -18,7 +18,8 @@ Two contracts are checked:
   ``assume_sorted=True`` on unsorted input as undefined behavior); the shuffle then
   runs on the identical order regardless, so the two results must be byte-identical.
 
-Both contracts are asserted on the raw binary64 payloads, with no tolerance.
+Both contracts are asserted on the raw binary64 payloads (through the shared
+:mod:`binary64` predicates), with no tolerance.
 The two sides are not two computations whose results should be close: they are
 the SAME kernel fed the SAME sorted values, reached by two routes. The
 ``assume_sorted=False`` route sorts internally and hands the kernel exactly the
@@ -34,10 +35,9 @@ cancel out of the comparison. (Cross-implementation ratio comparisons stay
 tolerant, because there the two sides use different libm builds.)
 """
 
-import struct
-
 import numpy as np
 import pytest
+from binary64 import assert_bounds_identical, assert_identical
 
 import pragmastat.center_impl as center_impl_module
 import pragmastat.spread_impl as spread_impl_module
@@ -53,27 +53,6 @@ from pragmastat import (
     spread,
     spread_bounds,
 )
-
-
-def _payload(value):
-    """Return the raw binary64 payload of ``value`` as a 64-bit unsigned integer."""
-    return struct.unpack("<Q", struct.pack("<d", float(value)))[0]
-
-
-def _fmt(value):
-    """Render a float so a one-ULP difference is unmistakable in a failure message."""
-    return f"{value!r} [{float(value).hex()}]"
-
-
-def _assert_identical(actual, expected, what):
-    """Assert two binary64 results agree bit for bit (see the module docstring)."""
-    assert _payload(actual) == _payload(expected), f"{what}: expected {_fmt(expected)}, got {_fmt(actual)}"
-
-
-def _assert_bounds_identical(actual, expected, what):
-    """Assert both ends of two :class:`Bounds` agree bit for bit."""
-    _assert_identical(actual.lower, expected.lower, f"{what} (lower)")
-    _assert_identical(actual.upper, expected.upper, f"{what} (upper)")
 
 
 @pytest.fixture(params=["c", "python"])
@@ -112,42 +91,42 @@ class TestOrderIndependentRoundtrip:
     def test_center(self):
         unsorted = center(X_UNSORTED, assume_sorted=False)
         presorted = center(_sorted(X_UNSORTED), assume_sorted=True)
-        _assert_identical(presorted, unsorted, "center: sorted+assume_sorted vs unsorted")
+        assert_identical(presorted, unsorted, "center: sorted+assume_sorted vs unsorted")
 
     def test_spread(self):
         unsorted = spread(X_UNSORTED, assume_sorted=False)
         presorted = spread(_sorted(X_UNSORTED), assume_sorted=True)
-        _assert_identical(presorted, unsorted, "spread: sorted+assume_sorted vs unsorted")
+        assert_identical(presorted, unsorted, "spread: sorted+assume_sorted vs unsorted")
 
     def test_shift(self):
         unsorted = shift(X_UNSORTED, Y_UNSORTED, assume_sorted=False)
         presorted = shift(_sorted(X_UNSORTED), _sorted(Y_UNSORTED), assume_sorted=True)
-        _assert_identical(presorted, unsorted, "shift: sorted+assume_sorted vs unsorted")
+        assert_identical(presorted, unsorted, "shift: sorted+assume_sorted vs unsorted")
 
     def test_ratio(self):
         unsorted = ratio(X_UNSORTED, Y_UNSORTED, assume_sorted=False)
         presorted = ratio(_sorted(X_UNSORTED), _sorted(Y_UNSORTED), assume_sorted=True)
-        _assert_identical(presorted, unsorted, "ratio: sorted+assume_sorted vs unsorted")
+        assert_identical(presorted, unsorted, "ratio: sorted+assume_sorted vs unsorted")
 
     def test_disparity(self):
         unsorted = disparity(X_UNSORTED, Y_UNSORTED, assume_sorted=False)
         presorted = disparity(_sorted(X_UNSORTED), _sorted(Y_UNSORTED), assume_sorted=True)
-        _assert_identical(presorted, unsorted, "disparity: sorted+assume_sorted vs unsorted")
+        assert_identical(presorted, unsorted, "disparity: sorted+assume_sorted vs unsorted")
 
     def test_center_bounds(self):
         unsorted = center_bounds(X_UNSORTED, MISRATE, assume_sorted=False)
         presorted = center_bounds(_sorted(X_UNSORTED), MISRATE, assume_sorted=True)
-        _assert_bounds_identical(presorted, unsorted, "center_bounds: sorted+assume_sorted vs unsorted")
+        assert_bounds_identical(presorted, unsorted, "center_bounds: sorted+assume_sorted vs unsorted")
 
     def test_shift_bounds(self):
         unsorted = shift_bounds(X_UNSORTED, Y_UNSORTED, MISRATE, assume_sorted=False)
         presorted = shift_bounds(_sorted(X_UNSORTED), _sorted(Y_UNSORTED), MISRATE, assume_sorted=True)
-        _assert_bounds_identical(presorted, unsorted, "shift_bounds: sorted+assume_sorted vs unsorted")
+        assert_bounds_identical(presorted, unsorted, "shift_bounds: sorted+assume_sorted vs unsorted")
 
     def test_ratio_bounds(self):
         unsorted = ratio_bounds(X_UNSORTED, Y_UNSORTED, MISRATE, assume_sorted=False)
         presorted = ratio_bounds(_sorted(X_UNSORTED), _sorted(Y_UNSORTED), MISRATE, assume_sorted=True)
-        _assert_bounds_identical(presorted, unsorted, "ratio_bounds: sorted+assume_sorted vs unsorted")
+        assert_bounds_identical(presorted, unsorted, "ratio_bounds: sorted+assume_sorted vs unsorted")
 
 
 class TestShuffleBoundsFlagInvariant:
@@ -164,12 +143,12 @@ class TestShuffleBoundsFlagInvariant:
     def test_spread_bounds(self):
         false_result = spread_bounds(self.X_SORTED, MISRATE, SEED, assume_sorted=False)
         true_result = spread_bounds(self.X_SORTED, MISRATE, SEED, assume_sorted=True)
-        _assert_bounds_identical(true_result, false_result, "spread_bounds: assume_sorted=True vs False")
+        assert_bounds_identical(true_result, false_result, "spread_bounds: assume_sorted=True vs False")
 
     def test_disparity_bounds(self):
         false_result = disparity_bounds(self.X_SORTED, self.Y_SORTED, MISRATE, SEED, assume_sorted=False)
         true_result = disparity_bounds(self.X_SORTED, self.Y_SORTED, MISRATE, SEED, assume_sorted=True)
-        _assert_bounds_identical(true_result, false_result, "disparity_bounds: assume_sorted=True vs False")
+        assert_bounds_identical(true_result, false_result, "disparity_bounds: assume_sorted=True vs False")
 
 
 class TestAssumeSortedMisuseTerminates:

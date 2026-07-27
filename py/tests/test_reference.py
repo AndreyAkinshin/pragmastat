@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 
 import pytest
+from binary64 import assert_identical, assert_sequence_identical
 
 from pragmastat import (
     DISPARITY_UNIT,
@@ -139,16 +140,25 @@ def _load_fixtures(estimator_name):
 #                         different libm. distributions/uniform is pure binary64
 #                         arithmetic on the RNG output and is exact.
 #
+# The sequence suites (rng, shuffle, sample, resample, distributions/uniform)
+# ---------------------------------------------------------------------------
+# The randomization contract is bitwise: ``Rng(seed)`` must produce an identical
+# stream in all seven language implementations, and the manual says so. Exact
+# equality is therefore the property under test, and a tolerance would report a
+# broken contract as a pass. Concretely, a compiler that fuses a multiply into an
+# add (FMA contraction on arm64) shifts the last bit of a draw; only a payload
+# comparison sees it. Shuffle, sample and resample carry the input values through
+# untouched, so any inexactness there would be a wrong element, not a rounding
+# error.
+#
 # JSON is safe to compare against directly: Python's ``json`` module parses a
 # numeric literal straight to binary64 via ``float()``, which is correctly
 # rounded, so a shortest-round-trip fixture literal reproduces the generator's
 # exact bits. (This is the trap Rust needed ``serde_json``/``float_roundtrip``
 # for; CPython has no equivalent knob to get wrong.)
-
-
-def _fmt(value):
-    """Render a float so a one-ULP difference is unmistakable in a failure message."""
-    return f"{value!r} [{float(value).hex()}]"
+#
+# "Exact" means one thing here, and :mod:`binary64` is where it is spelled: the
+# raw binary64 payloads, never ``==`` on the doubles.
 
 
 def _assert_scalar(actual, expected, what, *, bitwise):
@@ -156,12 +166,11 @@ def _assert_scalar(actual, expected, what, *, bitwise):
 
     ``bitwise`` is passed explicitly by every caller so the exactness decision is
     visible per suite rather than inherited from a default. When it is set the
-    predicate is raw ``==`` on the doubles and the failure message prints both
-    values with their hex payloads, because a one-ULP report has to be readable
-    to be worth anything.
+    comparison is on the raw binary64 payloads (see :mod:`binary64`), which is
+    what "bitwise" claims and what ``==`` on two doubles does not deliver.
     """
     if bitwise:
-        assert actual == expected, f"{what}: expected {_fmt(expected)}, got {_fmt(actual)}"
+        assert_identical(actual, expected, what)
     else:
         assert abs(actual - expected) < 1e-9, f"{what}: expected: {expected}, got: {actual}"
 
@@ -309,21 +318,6 @@ def _parse_sample_values(raw_values):
     return result
 
 
-def _assert_bitwise(actual, expected, context):
-    """Assert a drawn sequence equals the fixture exactly, with no tolerance.
-
-    The randomization contract is bitwise: ``Rng(seed)`` must produce an
-    identical stream in all seven language implementations, and the manual says
-    so. Exact equality is therefore the property under test -- a tolerance would
-    report a broken contract as a pass. Concretely, a compiler that fuses a
-    multiply into an add (FMA contraction on arm64) shifts the last bit of a
-    draw; only ``==`` sees it.
-    """
-    assert len(actual) == len(expected), f"Length mismatch for {context}: {len(actual)} vs {len(expected)}"
-    for i, (act, exp) in enumerate(zip(actual, expected, strict=True)):
-        assert act == exp, f"Failed for {context}, index {i}: expected {_fmt(exp)}, got {_fmt(act)}"
-
-
 def _assert_projections(projections, expected_projections, fixture_name, *, bitwise):
     """Compare a compare1/compare2 projection list against its fixture.
 
@@ -368,7 +362,7 @@ def run_distribution_tests(dist_name, dist_factory, *, bitwise):
         actual = [dist.sample(rng) for _ in range(input_data["count"])]
 
         if bitwise:
-            _assert_bitwise(actual, expected, json_file.name)
+            assert_sequence_identical(actual, expected, f"Failed for {json_file.name}")
             continue
 
         assert len(actual) == len(expected), f"Length mismatch for {json_file.name}: {len(actual)} vs {len(expected)}"
@@ -462,8 +456,9 @@ class TestReference:
             rng = Rng(seed)
             actual = [rng.uniform_float() for _ in range(count)]
 
-            # Bitwise: see _assert_bitwise for why this suite has no tolerance.
-            _assert_bitwise(actual, expected, json_file.name)
+            # Bitwise: see the exactness predicates above for why this suite has
+            # no tolerance.
+            assert_sequence_identical(actual, expected, f"Failed for {json_file.name}")
 
     def test_rng_uniform_int_reference(self):
         """Test Rng uniform_int() against reference data."""
@@ -507,7 +502,7 @@ class TestReference:
             rng = Rng(seed)
             actual = [rng.uniform_float() for _ in range(count)]
 
-            _assert_bitwise(actual, expected, json_file.name)
+            assert_sequence_identical(actual, expected, f"Failed for {json_file.name}")
 
     def test_rng_uniform_float_range_reference(self):
         """Test Rng uniform_float_range() against reference data."""
@@ -532,7 +527,7 @@ class TestReference:
 
             # The fixture that a tolerance hid: uniform-range-seed-1729--50-50
             # drifts by one ULP under an FMA-contracting compiler.
-            _assert_bitwise(actual, expected, json_file.name)
+            assert_sequence_identical(actual, expected, f"Failed for {json_file.name}")
 
     def test_rng_uniform_bool_reference(self):
         """Test Rng uniform_bool() against reference data."""
@@ -576,7 +571,7 @@ class TestReference:
 
             # A permutation carries the input values through untouched, so any
             # inexactness here would be a wrong element, not a rounding error.
-            _assert_bitwise(actual, expected, json_file.name)
+            assert_sequence_identical(actual, expected, f"Failed for {json_file.name}")
 
     def test_sample_reference(self):
         """Test Rng sample() against reference data."""
@@ -598,7 +593,7 @@ class TestReference:
             rng = Rng(seed)
             actual = rng.sample(x, k)
 
-            _assert_bitwise(actual, expected, json_file.name)
+            assert_sequence_identical(actual, expected, f"Failed for {json_file.name}")
 
     def test_resample_reference(self):
         """Test Rng resample() against reference data."""
@@ -620,7 +615,7 @@ class TestReference:
             rng = Rng(seed)
             actual = rng.resample(x, k)
 
-            _assert_bitwise(actual, expected, json_file.name)
+            assert_sequence_identical(actual, expected, f"Failed for {json_file.name}")
 
     def test_uniform_distribution_reference(self):
         # Uniform draws are min + u * (max - min) on the raw RNG output: pure
@@ -975,8 +970,8 @@ class TestCenterMidpointSymmetry:
     def test_center_n2_midpoint_order_symmetric(self):
         forward = center([-5.0, -1.8], assume_sorted=True)
         reversed_ = center([-1.8, -5.0], assume_sorted=True)
-        assert forward == reversed_  # exact bit equality, not approximate
-        assert forward == -3.4
+        assert_identical(reversed_, forward, "center n=2 midpoint: reversed vs forward order")
+        assert_identical(forward, -3.4, "center n=2 midpoint")
 
 
 class TestCompare1:
@@ -1033,7 +1028,8 @@ class TestCompare1:
 
         [projection] = compare1(sx, thresholds)
 
-        assert projection.estimate.value == 5.5  # exact: center is bitwise
+        # Exact: center is in the bitwise class.
+        assert_identical(projection.estimate.value, 5.5, "compare1 center estimate")
         assert projection.estimate.unit == ms
         assert projection.bounds.unit == ms
         assert projection.verdict.value == "greater"

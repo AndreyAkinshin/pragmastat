@@ -439,14 +439,19 @@ impl Rng {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::conformance::{assert_bits_eq, assert_bits_eq_slice};
+
+    // The determinism contract is bit-identical draws, so these compare payloads.
+    // A draw that differed only in the sign of its zero would satisfy `==` while
+    // breaking the contract these two tests exist to state.
 
     #[test]
     fn from_seed_deterministic() {
         let mut rng1 = Rng::from_seed(1729);
         let mut rng2 = Rng::from_seed(1729);
 
-        for _ in 0..100 {
-            assert_eq!(rng1.uniform_f64(), rng2.uniform_f64());
+        for i in 0..100 {
+            assert_bits_eq(&format!("draw {i}"), rng2.uniform_f64(), rng1.uniform_f64());
         }
     }
 
@@ -455,8 +460,8 @@ mod tests {
         let mut rng1 = Rng::from_string("test");
         let mut rng2 = Rng::from_string("test");
 
-        for _ in 0..100 {
-            assert_eq!(rng1.uniform_f64(), rng2.uniform_f64());
+        for i in 0..100 {
+            assert_bits_eq(&format!("draw {i}"), rng2.uniform_f64(), rng1.uniform_f64());
         }
     }
 
@@ -610,7 +615,7 @@ mod tests {
         let mut rng2 = Rng::from_seed(1729);
         let shuffled2 = rng2.shuffle(&data);
 
-        assert_eq!(shuffled1, shuffled2);
+        assert_bits_eq_slice("shuffle is deterministic", &shuffled1, &shuffled2);
     }
 
     #[test]
@@ -632,7 +637,7 @@ mod tests {
         let mut rng2 = Rng::from_seed(1729);
         let sampled2 = rng2.sample(&data, 3);
 
-        assert_eq!(sampled1, sampled2);
+        assert_bits_eq_slice("sample is deterministic", &sampled1, &sampled2);
     }
 
     #[test]
@@ -641,6 +646,6 @@ mod tests {
         let data: Vec<f64> = vec![1.0, 2.0, 3.0];
         let sampled = rng.sample(&data, 10);
 
-        assert_eq!(sampled, data);
+        assert_bits_eq_slice("sample with k > n returns the input", &sampled, &data);
     }
 }

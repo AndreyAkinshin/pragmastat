@@ -71,7 +71,11 @@ rs/pragmastat/
   exceptions are `ratio`, `ratio-bounds`, `compare2` and the `additive` /
   `multiplic` / `exp` / `power` distributions, which run through the platform
   libm and keep a tolerance. `tests/conformance/mod.rs` (integration tests) and
-  `src/conformance.rs` (crate-internal fixture loaders) hold the predicate.
+  `src/conformance.rs` (crate-internal tests) hold the predicate: every exact
+  comparison, scalar or sequence, goes through `assert_bits_eq` /
+  `assert_bits_eq_slice` there. Never `assert_eq!` on an f64 in an exact path —
+  it compares numbers, so it passes `-0.0` against `0.0` and fails a NaN against
+  itself.
 
 ```bash
 mise run rs:test              # All tests (preferred)

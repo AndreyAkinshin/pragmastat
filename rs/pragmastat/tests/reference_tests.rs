@@ -17,6 +17,11 @@ struct Expectation<'a> {
     conformance: Conformance,
 }
 
+/// Names a fixture file in a failure message.
+fn fixture_label(json_file: &Path) -> String {
+    format!("test file {:?}", json_file.file_name().unwrap())
+}
+
 /// Asserts that a randomization stream matches its fixture bit for bit.
 ///
 /// The randomization contract is that a seeded stream is identical in every
@@ -24,47 +29,18 @@ struct Expectation<'a> {
 /// already a broken contract, and a tolerance reports it as a pass. This is what
 /// catches a compiler fusing a multiply into an add on arm64 and changing the last
 /// bit of a draw.
+///
+/// The comparison itself belongs to `Conformance::Exact` like every other exact
+/// comparison in this crate; this only names the fixture the stream came from.
+#[track_caller]
 fn assert_bitwise_f64(json_file: &Path, actual: &[f64], expected: &[f64]) {
-    assert_eq!(
-        actual.len(),
-        expected.len(),
-        "Failed for test file: {:?}, length mismatch",
-        json_file.file_name().unwrap()
-    );
-    for (i, (&actual_val, &expected_val)) in actual.iter().zip(expected.iter()).enumerate() {
-        assert!(
-            actual_val.to_bits() == expected_val.to_bits(),
-            "Failed for test file: {:?}, index {}, expected: {} (0x{:016X}), got: {} (0x{:016X})",
-            json_file.file_name().unwrap(),
-            i,
-            expected_val,
-            expected_val.to_bits(),
-            actual_val,
-            actual_val.to_bits()
-        );
-    }
+    conformance::assert_bits_eq_slice(&fixture_label(json_file), actual, expected);
 }
 
 /// Bitwise counterpart of [`assert_bitwise_f64`] for the f32 draw stream.
+#[track_caller]
 fn assert_bitwise_f32(json_file: &Path, actual: &[f32], expected: &[f32]) {
-    assert_eq!(
-        actual.len(),
-        expected.len(),
-        "Failed for test file: {:?}, length mismatch",
-        json_file.file_name().unwrap()
-    );
-    for (i, (&actual_val, &expected_val)) in actual.iter().zip(expected.iter()).enumerate() {
-        assert!(
-            actual_val.to_bits() == expected_val.to_bits(),
-            "Failed for test file: {:?}, index {}, expected: {} (0x{:08X}), got: {} (0x{:08X})",
-            json_file.file_name().unwrap(),
-            i,
-            expected_val,
-            expected_val.to_bits(),
-            actual_val,
-            actual_val.to_bits()
-        );
-    }
+    conformance::assert_bits_eq_f32_slice(&fixture_label(json_file), actual, expected);
 }
 
 #[derive(Debug, Deserialize, Serialize)]

@@ -13,7 +13,9 @@ public class RngInvarianceTests
       var rng = new Rng(42);
       var shuffled = rng.Shuffle<double>(x);
       var sortedShuffled = shuffled.OrderBy(v => v).ToList();
-      Assert.Equal(x, sortedShuffled);
+      // Bitwise: a shuffle permutes, it does not compute, so every element must come back with
+      // the payload it went in with.
+      BitwiseAssert.Equal(x, sortedShuffled, $"Shuffle preserves the multiset, n={n}");
     }
   }
 

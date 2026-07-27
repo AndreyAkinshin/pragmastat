@@ -1,7 +1,6 @@
 package pragmastat
 
 import (
-	"reflect"
 	"testing"
 )
 
@@ -24,8 +23,11 @@ func TestSortedValuesMutationSafety(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Center failed after mutation: %v", err)
 	}
-	if center1.Value != center2.Value {
-		t.Errorf("Center changed after SortedValues mutation: %v -> %v", center1.Value, center2.Value)
+	// The same sample re-evaluated by the same kernel: identical to the last
+	// bit, or the returned slice aliased the internal cache.
+	if !sameFloatBits(center1.Value, center2.Value) {
+		t.Errorf("Center changed after SortedValues mutation: %s -> %s",
+			formatFloatBits(center1.Value), formatFloatBits(center2.Value))
 	}
 }
 
@@ -41,15 +43,13 @@ func TestWeightsMutationSafety(t *testing.T) {
 	weights[0] = 999.0
 
 	want := []float64{1.0, 2.0, 3.0}
-	if got := s.Weights(); !reflect.DeepEqual(got, want) {
-		t.Errorf("sample weights aliased the caller's slice: got %v, want %v", got, want)
-	}
+	assertBitsUnchanged(t, "sample weights", s.Weights(), want)
 
 	// Verify Weights() also returns a copy
 	w := s.Weights()
 	w[0] = 888.0
 	w2 := s.Weights()
-	if w2[0] == 888.0 {
+	if sameFloatBits(w2[0], 888.0) {
 		t.Error("Weights() returned internal reference instead of copy")
 	}
 }

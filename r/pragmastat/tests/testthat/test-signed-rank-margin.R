@@ -28,9 +28,9 @@ test_that("signed_rank_margin satisfies reference tests", {
 
     actual_output <- signed_rank_margin(n, misrate)
 
-    expect_equal(actual_output, expected_output,
-      tolerance = 0, # Exact integer match
-      info = paste("Failed for test file:", basename(json_file))
-    )
+    # A count, exact by construction in every port: compare payloads, not a
+    # tolerance. `tolerance = 0` used to stand in for that and is not the same
+    # predicate.
+    expect_exact(actual_output, expected_output, basename(json_file))
   }
 })

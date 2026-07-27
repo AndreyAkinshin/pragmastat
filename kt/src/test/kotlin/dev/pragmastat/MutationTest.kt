@@ -1,7 +1,6 @@
 package dev.pragmastat
 
 import org.junit.jupiter.api.Test
-import kotlin.test.assertEquals
 
 /**
  * Regression guard: the raw (native-array) List-based API must NOT mutate the
@@ -17,6 +16,10 @@ import kotlin.test.assertEquals
  *   be unchanged afterward.
  *
  * Both one- and two-sample shapes are covered for each branch.
+ *
+ * The list-against-snapshot comparison is BITWISE, through [assertBitwise]: the
+ * claim is that the caller's values are untouched, so any change to any payload
+ * is a defect, and there is no rounding for a tolerance to absorb.
  */
 class MutationTest {
     private val misrate = 0.3
@@ -34,25 +37,25 @@ class MutationTest {
             val x = fresh()
             val snapshot = x.toList()
             center(x)
-            assertEquals(snapshot, x, "center mutated its input")
+            assertBitwise(snapshot, x, "center mutated its input")
         }
         run {
             val x = fresh()
             val snapshot = x.toList()
             spread(x)
-            assertEquals(snapshot, x, "spread mutated its input")
+            assertBitwise(snapshot, x, "spread mutated its input")
         }
         run {
             val x = fresh()
             val snapshot = x.toList()
             centerBounds(x, misrate)
-            assertEquals(snapshot, x, "centerBounds mutated its input")
+            assertBitwise(snapshot, x, "centerBounds mutated its input")
         }
         run {
             val x = fresh()
             val snapshot = x.toList()
             spreadBounds(x, misrate)
-            assertEquals(snapshot, x, "spreadBounds mutated its input")
+            assertBitwise(snapshot, x, "spreadBounds mutated its input")
         }
     }
 
@@ -71,8 +74,8 @@ class MutationTest {
             val snapshotX = x.toList()
             val snapshotY = y.toList()
             estimator(x, y)
-            assertEquals(snapshotX, x, "$name mutated its x input")
-            assertEquals(snapshotY, y, "$name mutated its y input")
+            assertBitwise(snapshotX, x, "$name mutated its x input")
+            assertBitwise(snapshotY, y, "$name mutated its y input")
         }
 
         val boundsEstimators: List<Pair<String, (List<Double>, List<Double>) -> Unit>> =
@@ -87,8 +90,8 @@ class MutationTest {
             val snapshotX = x.toList()
             val snapshotY = y.toList()
             estimator(x, y)
-            assertEquals(snapshotX, x, "$name mutated its x input")
-            assertEquals(snapshotY, y, "$name mutated its y input")
+            assertBitwise(snapshotX, x, "$name mutated its x input")
+            assertBitwise(snapshotY, y, "$name mutated its y input")
         }
     }
 
@@ -108,7 +111,7 @@ class MutationTest {
             val x = freshSorted()
             val snapshot = x.toList()
             estimator(x)
-            assertEquals(snapshot, x, "$name(assumeSorted = true) mutated its input")
+            assertBitwise(snapshot, x, "$name(assumeSorted = true) mutated its input")
         }
     }
 
@@ -130,8 +133,8 @@ class MutationTest {
             val snapshotX = x.toList()
             val snapshotY = y.toList()
             estimator(x, y)
-            assertEquals(snapshotX, x, "$name(assumeSorted = true) mutated its x input")
-            assertEquals(snapshotY, y, "$name(assumeSorted = true) mutated its y input")
+            assertBitwise(snapshotX, x, "$name(assumeSorted = true) mutated its x input")
+            assertBitwise(snapshotY, y, "$name(assumeSorted = true) mutated its y input")
         }
     }
 }

@@ -1,21 +1,20 @@
 package pragmastat
 
 import (
-	"math"
 	"sort"
 	"testing"
 )
 
 // assertSameBits fails unless got and want carry the same binary64 payload.
 //
-// The comparison is bitwise rather than ==, because == reads +0 and -0 as equal
-// and every NaN as unequal: two routes into the same kernel have to agree on
-// the payload, not merely on the numeric reading. The message prints both raw
+// The comparison is sameFloatBits rather than ==, because == reads +0 and -0 as
+// equal and every NaN as unequal: two routes into the same kernel have to agree
+// on the payload, not merely on the numeric reading. The message prints both raw
 // payloads, since a one-ULP disagreement is invisible in the decimal rendering
 // and being able to read it is the entire point of comparing bitwise.
 func assertSameBits(t *testing.T, label string, got, want float64) {
 	t.Helper()
-	if math.Float64bits(got) != math.Float64bits(want) {
+	if !sameFloatBits(got, want) {
 		t.Errorf("%s: assumeSorted=true %s != assumeSorted=false %s",
 			label, formatFloatBits(got), formatFloatBits(want))
 	}

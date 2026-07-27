@@ -77,6 +77,7 @@ fn recurrence(n: usize, k: usize) -> f64 {
 #[cfg(test)]
 mod tests {
     use super::binomial_coefficient;
+    use crate::conformance::assert_bits_eq;
 
     /// C(n, k) and C(n, n-k) are the same number, so they have to be the same bits.
     /// The misrate floor compares one against the other and a one-ULP gap decides it.
@@ -84,25 +85,25 @@ mod tests {
     fn symmetric_in_k() {
         for n in 0..=400usize {
             for k in 0..=n {
-                let a = binomial_coefficient(n, k);
-                let b = binomial_coefficient(n, n - k);
-                assert_eq!(
-                    a.to_bits(),
-                    b.to_bits(),
-                    "C({n}, {k}) = {a} but C({n}, {}) = {b}",
-                    n - k
+                assert_bits_eq(
+                    &format!("C({n}, {}) against C({n}, {k})", n - k),
+                    binomial_coefficient(n, n - k),
+                    binomial_coefficient(n, k),
                 );
             }
         }
     }
 
+    /// The returned f64 is the contract, so these pin payloads rather than numbers:
+    /// `assert_eq!` would accept a -0.0 for the k > n case, which is a different
+    /// binary64 value than the one the other six implementations return.
     #[test]
     fn small_values() {
-        assert_eq!(binomial_coefficient(0, 0), 1.0);
-        assert_eq!(binomial_coefficient(5, 0), 1.0);
-        assert_eq!(binomial_coefficient(5, 5), 1.0);
-        assert_eq!(binomial_coefficient(5, 2), 10.0);
-        assert_eq!(binomial_coefficient(5, 6), 0.0);
+        assert_bits_eq("C(0, 0)", binomial_coefficient(0, 0), 1.0);
+        assert_bits_eq("C(5, 0)", binomial_coefficient(5, 0), 1.0);
+        assert_bits_eq("C(5, 5)", binomial_coefficient(5, 5), 1.0);
+        assert_bits_eq("C(5, 2)", binomial_coefficient(5, 2), 10.0);
+        assert_bits_eq("C(5, 6)", binomial_coefficient(5, 6), 0.0);
     }
 
     /// Pins both sides of the switch from exact integers to the recurrence.
@@ -113,7 +114,15 @@ mod tests {
     /// return this one. An accuracy fix here is a cross-language divergence.
     #[test]
     fn across_the_threshold() {
-        assert_eq!(binomial_coefficient(61, 30), 2.3271417662763053e17);
-        assert_eq!(binomial_coefficient(62, 31), 4.6542835325526125e17);
+        assert_bits_eq(
+            "C(61, 30)",
+            binomial_coefficient(61, 30),
+            2.3271417662763053e17,
+        );
+        assert_bits_eq(
+            "C(62, 31)",
+            binomial_coefficient(62, 31),
+            4.6542835325526125e17,
+        );
     }
 }

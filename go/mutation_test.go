@@ -1,15 +1,13 @@
 package pragmastat
 
 import (
-	"math"
-	"reflect"
 	"testing"
 )
 
 // TestRawAPIDoesNotMutateInput is a regression guard: the public raw
 // (native-slice) API must never mutate the caller's slice. The kernels sort a
 // copy, so the caller's slice must remain byte-for-byte unchanged after every
-// estimator call.
+// estimator call, which is what assertBitsUnchanged checks.
 func TestRawAPIDoesNotMutateInput(t *testing.T) {
 	const misrate = 0.3
 
@@ -31,9 +29,7 @@ func TestRawAPIDoesNotMutateInput(t *testing.T) {
 			t.Fatalf("SpreadBounds: %v", err)
 		}
 
-		if !reflect.DeepEqual(x, snapshot) {
-			t.Errorf("x was mutated: got %v, want %v", x, snapshot)
-		}
+		assertBitsUnchanged(t, "x", x, snapshot)
 	})
 
 	// Two-sample estimators.
@@ -62,25 +58,25 @@ func TestRawAPIDoesNotMutateInput(t *testing.T) {
 			t.Fatalf("DisparityBounds: %v", err)
 		}
 
-		if !reflect.DeepEqual(x, snapshotX) {
-			t.Errorf("x was mutated: got %v, want %v", x, snapshotX)
-		}
-		if !reflect.DeepEqual(y, snapshotY) {
-			t.Errorf("y was mutated: got %v, want %v", y, snapshotY)
-		}
+		assertBitsUnchanged(t, "x", x, snapshotX)
+		assertBitsUnchanged(t, "y", y, snapshotY)
 	})
 }
 
 // assertBitsUnchanged fails if any element of got differs from snapshot at the
-// bit level (stricter than ==, which cannot see a 0.0 -> -0.0 rewrite).
+// bit level. It goes through sameFloatBits rather than == (or reflect.DeepEqual,
+// which is == for a float64 element), because == cannot see a 0.0 -> -0.0
+// rewrite, and a kernel that rewrote the caller's buffer that way has mutated it
+// just as surely as one that changed the magnitude.
 func assertBitsUnchanged(t *testing.T, label string, got, snapshot []float64) {
 	t.Helper()
 	if len(got) != len(snapshot) {
 		t.Fatalf("%s length changed: got %d, want %d", label, len(got), len(snapshot))
 	}
 	for i := range got {
-		if math.Float64bits(got[i]) != math.Float64bits(snapshot[i]) {
-			t.Errorf("%s[%d] was mutated: got %v, want %v", label, i, got[i], snapshot[i])
+		if !sameFloatBits(got[i], snapshot[i]) {
+			t.Errorf("%s[%d] was mutated: got %s, want %s",
+				label, i, formatFloatBits(got[i]), formatFloatBits(snapshot[i]))
 		}
 	}
 }

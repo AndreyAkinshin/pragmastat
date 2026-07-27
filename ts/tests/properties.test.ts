@@ -20,6 +20,7 @@ import {
 import { AssumptionError } from '../src/assumptions';
 import { MeasurementUnit } from '../src/measurement-unit';
 import { Sample } from '../src/sample';
+import { expectBitwise } from './bitwise';
 
 // A non-default unit to prove center/spread/shift propagate x's (finer) unit
 // rather than hard-coding Number.
@@ -130,7 +131,7 @@ describe('n==2 center midpoint is order-symmetric', () => {
   it('center([-5,-1.8]) bit-equals center([-1.8,-5])', () => {
     const forward = center([-5.0, -1.8]);
     const reversed = center([-1.8, -5.0]);
-    expect(reversed).toBe(forward);
-    expect(forward).toBe(-3.4);
+    expectBitwise('center([-1.8,-5]) vs center([-5,-1.8])', reversed, forward);
+    expectBitwise('center([-5,-1.8])', forward, -3.4);
   });
 });

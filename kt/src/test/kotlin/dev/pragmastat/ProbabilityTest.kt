@@ -2,7 +2,6 @@ package dev.pragmastat
 
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import kotlin.test.assertEquals
 
 /**
  * [Probability] is the typed [0, 1] wrapper used by the Sample-based public APIs.
@@ -26,10 +25,12 @@ class ProbabilityTest {
         assertThrows<IllegalArgumentException> { Probability(Double.NaN) }
     }
 
+    // Bitwise, through [assertBitwise]: the wrapper stores the caller's value, so
+    // the claim is that the payload survives the round trip untouched.
     @Test
     fun acceptsBoundaryAndInteriorValues() {
-        assertEquals(0.0, Probability(0.0).value)
-        assertEquals(1.0, Probability(1.0).value)
-        assertEquals(0.5, Probability(0.5).value)
+        assertBitwise(0.0, Probability(0.0).value, "Probability(0.0).value")
+        assertBitwise(1.0, Probability(1.0).value, "Probability(1.0).value")
+        assertBitwise(0.5, Probability(0.5).value, "Probability(0.5).value")
     }
 }

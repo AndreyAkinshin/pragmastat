@@ -25,8 +25,8 @@ public class RawMutationTests
     Toolkit.Ratio(x, y, assumeSorted: false);
     Toolkit.Disparity(x, y, assumeSorted: false);
 
-    Assert.Equal(origX, x);
-    Assert.Equal(origY, y);
+    BitwiseAssert.Equal(origX, x, "raw point estimators: x");
+    BitwiseAssert.Equal(origY, y, "raw point estimators: y");
   }
 
   [Fact]
@@ -43,8 +43,8 @@ public class RawMutationTests
     Toolkit.RatioBounds(x, y, Misrate, assumeSorted: false);
     Toolkit.DisparityBounds(x, y, Misrate, assumeSorted: false);
 
-    Assert.Equal(origX, x);
-    Assert.Equal(origY, y);
+    BitwiseAssert.Equal(origX, x, "raw bounds estimators: x");
+    BitwiseAssert.Equal(origY, y, "raw bounds estimators: y");
   }
 
   // --- Aliasing branch: assumeSorted=true on genuinely SORTED input. The kernels see the
@@ -65,8 +65,8 @@ public class RawMutationTests
     Toolkit.Ratio(x, y, assumeSorted: true);
     Toolkit.Disparity(x, y, assumeSorted: true);
 
-    Assert.Equal(origX, x);
-    Assert.Equal(origY, y);
+    BitwiseAssert.Equal(origX, x, "raw point estimators, assumeSorted: true: x");
+    BitwiseAssert.Equal(origY, y, "raw point estimators, assumeSorted: true: y");
   }
 
   [Fact]
@@ -83,7 +83,7 @@ public class RawMutationTests
     Toolkit.RatioBounds(x, y, Misrate, assumeSorted: true);
     Toolkit.DisparityBounds(x, y, Misrate, assumeSorted: true);
 
-    Assert.Equal(origX, x);
-    Assert.Equal(origY, y);
+    BitwiseAssert.Equal(origX, x, "raw bounds estimators, assumeSorted: true: x");
+    BitwiseAssert.Equal(origY, y, "raw bounds estimators, assumeSorted: true: y");
   }
 }

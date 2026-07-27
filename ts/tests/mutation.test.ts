@@ -1,4 +1,5 @@
 import { Sample } from '../src/sample';
+import { expectBitwiseSequence } from './bitwise';
 import {
   center,
   spread,
@@ -32,7 +33,7 @@ describe('raw native-array API does not mutate the caller array', () => {
     ratioBounds(a, b, 0.3);
     disparityBounds(a, b, 0.3);
 
-    expect(a).toEqual(o);
+    expectBitwiseSequence('a', a, o);
   });
 
   it('leaves SORTED input arrays unchanged under assumeSorted=true (aliased, no copy)', () => {
@@ -58,8 +59,8 @@ describe('raw native-array API does not mutate the caller array', () => {
     ratioBounds(a, b, 0.3, true);
     disparityBounds(a, b, 0.3, undefined, true);
 
-    expect(a).toEqual(o);
-    expect(b).toEqual(p);
+    expectBitwiseSequence('a', a, o);
+    expectBitwiseSequence('b', b, p);
   });
 });
 

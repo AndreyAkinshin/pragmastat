@@ -26,27 +26,16 @@
 
 mod conformance;
 
-use conformance::Conformance;
+// Routed through the crate's shared `assert_bits_eq` rather than a private
+// comparison so that "exact" means the same thing here as in the fixture suites.
+// It compares the raw payloads rather than `==`, which has blind spots:
+// `-0.0 == 0.0` holds and `NaN == NaN` does not, and either would misreport a
+// genuine divergence between the two paths.
+use conformance::assert_bits_eq;
 use pragmastat::estimators::raw;
 
 const MISRATE: f64 = 0.3;
 const SEED: &str = "pragmastat";
-
-/// Asserts bit-for-bit equality of two binary64 values.
-///
-/// Routed through the crate's shared `Conformance::Exact` rather than a private
-/// comparison so that "exact" means the same thing here as in the fixture
-/// suites. It compares the raw payloads rather than `==`, which has blind spots:
-/// `-0.0 == 0.0` holds and `NaN == NaN` does not, and either would misreport a
-/// genuine divergence between the two paths.
-#[track_caller]
-fn assert_bits_eq(label: &str, got: f64, want: f64) {
-    assert!(
-        Conformance::Exact.matches(got, want),
-        "{}",
-        Conformance::Exact.mismatch(label, want, got)
-    );
-}
 
 fn sorted_copy(x: &[f64]) -> Vec<f64> {
     let mut v = x.to_vec();

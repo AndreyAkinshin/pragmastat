@@ -24,10 +24,9 @@ public class SampleConstructionTests
 
     values[0] = 999.0; // mutate the caller-owned array
 
-    Assert.Equal(1.0, sample.Values[0]);
-    Assert.Equal(1.0, sample.SortedValues[0]);
-    Assert.Equal(2.0, sample.SortedValues[1]);
-    Assert.Equal(3.0, sample.SortedValues[2]);
+    // Bitwise: the claim is that the copy still holds the exact values it was built from.
+    BitwiseAssert.Equal(1.0, sample.Values[0], "Values[0]");
+    BitwiseAssert.Equal(new[] { 1.0, 2.0, 3.0 }, sample.SortedValues, "SortedValues");
   }
 
   [Theory]

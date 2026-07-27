@@ -12,15 +12,48 @@ find_repo_root <- function() {
   repo_root
 }
 
-# An "exact" tolerance means bitwise equality. identical(num.eq = FALSE) is the
-# only comparison in R that separates -0.0 from +0.0 while keeping NaN equal to
-# NaN, which is what a bit pattern check gives the other implementations.
+# The raw binary64 payload of every element of `x`: one "0x" + 16 hex digit
+# string per element, most significant byte first.
+#
+# This is the single spelling of "which double is this" in the R suite. Both the
+# comparison and the failure message go through it, so a report can never
+# describe a value the comparison did not look at. The byte -> hex-pair
+# rendering is injective, so two payload strings are equal exactly when the two
+# doubles occupy the same 64 bits.
+#
+# Bits, not `==`, because the claim these suites make is that seven
+# implementations return the identical double, and `==` answers a different
+# question in both directions: it calls -0.0 and +0.0 equal although they are
+# distinct doubles that two implementations reach by different arithmetic (a
+# difference or an average of symmetric values is enough), and it calls a NaN
+# unequal to itself although two NaNs with the same payload are the same double.
+#
+# endian = "big" fixes the byte order, so a payload reads the same whatever the
+# host's native order is.
+double_bits <- function(x) {
+  x <- as.double(x)
+  if (length(x) == 0) {
+    return(character(0))
+  }
+  bytes <- writeBin(x, raw(), size = 8, endian = "big")
+  dim(bytes) <- c(8L, length(x))
+  paste0("0x", apply(bytes, 2L, function(b) paste0(as.character(b), collapse = "")))
+}
+
+# An "exact" tolerance means bitwise equality: element i of `actual` and element
+# i of `expected` occupy the same 64 bits. Sequences are compared element by
+# element, on the payloads, never on `==`.
 #
 # Doubles are reported with %.17g, the shortest format that round-trips every
-# binary64: a shorter one prints both sides of a one-ULP disagreement
-# identically and hides exactly the defect this comparison exists to catch.
+# binary64, ALONGSIDE their payload. The decimal alone is not a report: it prints
+# -0 and 0 the same way, and prints the two sides of a one-ULP disagreement
+# differently only if you count seventeen digits. The payload settles both at a
+# glance, which is the whole reason for printing it.
+#
+# Logical fixtures (uniform_bool) have no payload and compare as logicals.
 expect_exact <- function(actual, expected, label) {
-  if (is.logical(expected)) {
+  logical_mode <- is.logical(expected)
+  if (logical_mode) {
     actual <- as.logical(actual)
   } else {
     actual <- as.double(actual)
@@ -32,19 +65,28 @@ expect_exact <- function(actual, expected, label) {
   if (length(actual) != length(expected)) {
     return(invisible(NULL))
   }
+  actual_bits <- if (logical_mode) NULL else double_bits(actual)
+  expected_bits <- if (logical_mode) NULL else double_bits(expected)
   for (i in seq_along(expected)) {
-    expect_true(identical(actual[i], expected[i], num.eq = FALSE),
+    same <- if (logical_mode) {
+      identical(actual[i], expected[i])
+    } else {
+      identical(actual_bits[i], expected_bits[i])
+    }
+    expect_true(same,
+      label = sprintf("%s[%d] exact equality", label, i),
       info = sprintf(
         "%s[%d]: expected %s, actual %s", label, i,
-        format_exact(expected[i]), format_exact(actual[i])
+        format_exact(expected[i], expected_bits[i]),
+        format_exact(actual[i], actual_bits[i])
       )
     )
   }
   invisible(NULL)
 }
 
-format_exact <- function(x) {
-  if (is.double(x)) sprintf("%.17g", x) else as.character(x)
+format_exact <- function(value, bits) {
+  if (is.null(bits)) as.character(value) else sprintf("%.17g (%s)", value, bits)
 }
 
 # Extract a plain numeric value from either a raw numeric result or a Measurement.

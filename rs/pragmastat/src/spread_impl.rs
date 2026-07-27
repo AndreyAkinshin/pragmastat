@@ -322,12 +322,7 @@ mod tests {
         // previous `is_finite() && > 0.0` pair asserted almost nothing.
         let values: Vec<f64> = (0..101).map(|i| i as f64).collect();
         let result = spread_impl(&values, true).unwrap();
-        assert!(
-            result.to_bits() == 30.0f64.to_bits(),
-            "spread of 0..=100: got {result} (0x{got:016x}), want 30 (0x{want:016x})",
-            got = result.to_bits(),
-            want = 30.0f64.to_bits()
-        );
+        crate::conformance::assert_bits_eq("spread of 0..=100", result, 30.0);
     }
 
     #[test]

@@ -6,6 +6,7 @@ import {
   _avgSpread as avgSpread,
   disparity,
 } from '../src/estimators';
+import { expectBitwiseSequence } from './bitwise';
 import { Rng } from '../src';
 import { Sample } from '../src/sample';
 
@@ -196,7 +197,13 @@ describe('shuffle', () => {
       const x = Array.from({ length: n }, (_, i) => i);
       const rng = new Rng(42);
       const shuffled = rng.shuffle(x);
-      expect([...shuffled].sort((a, b) => a - b)).toEqual(x);
+      // A permutation carries its values through untouched, so the sorted shuffle must
+      // reproduce the input payload for payload.
+      expectBitwiseSequence(
+        'shuffle',
+        [...shuffled].sort((a, b) => a - b),
+        x,
+      );
     }
   });
 });

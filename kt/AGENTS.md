@@ -44,6 +44,7 @@ kt/
 │       ├── Power.kt
 │       └── Multiplic.kt
 ├── src/test/kotlin/dev/pragmastat/
+│   ├── BitwiseAssert.kt                   # Raw-payload equality: the one exact comparison
 │   ├── ReferenceTest.kt                   # JSON fixture validation
 │   ├── MetrologyTest.kt                   # JSON fixtures for the unit/metrology system
 │   ├── InvarianceTest.kt                  # Mathematical property tests
@@ -112,7 +113,14 @@ class Multiplic(location: Double, scale: Double) : Distribution
 
 - **Reference tests**: Load JSON fixtures from `../tests/` directory
 - **Invariance tests**: Verify mathematical properties
-- **Tolerance**: `1e-9` for floating-point comparisons
+- **Exact comparisons**: `BitwiseAssert.kt` is the single spelling of "these two
+  doubles are identical", for scalars and for sequences. It compares the raw
+  binary64 payloads (`toRawBits`), never `==` (which passes `-0.0` against `+0.0`
+  and fails a pair of identical NaNs) and never boxed `equals` (which collapses
+  every NaN payload into one), and every failure prints both payloads in hex next
+  to the decimal values.
+- **Tolerance**: `1e-9`, for the genuinely approximate suites only (ratio,
+  ratio-bounds, compare2, the transcendental distributions, invariance)
 
 ```bash
 mise run kt:test            # All tests (preferred)

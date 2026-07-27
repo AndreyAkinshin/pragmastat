@@ -273,12 +273,7 @@ mod tests {
         // only widen the window in which a regression goes unreported.
         let values: Vec<f64> = (0..101).map(|i| i as f64).collect();
         let result = center_impl(&values, true).unwrap();
-        assert!(
-            result.to_bits() == 50.0f64.to_bits(),
-            "center of 0..=100: got {result} (0x{got:016x}), want 50 (0x{want:016x})",
-            got = result.to_bits(),
-            want = 50.0f64.to_bits()
-        );
+        crate::conformance::assert_bits_eq("center of 0..=100", result, 50.0);
     }
 
     #[test]
