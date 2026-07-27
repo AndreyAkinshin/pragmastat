@@ -4,8 +4,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertThrows
 import java.util.concurrent.TimeUnit
-import kotlin.math.abs
-import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 /**
@@ -21,7 +19,7 @@ import kotlin.test.assertTrue
  *   centerBounds, shiftBounds, ratioBounds, and the internal avgSpread/
  *   avgSpreadBounds): sorting the input ascending and calling with
  *   `assumeSorted=true` must equal the call on the UNSORTED input with
- *   `assumeSorted=false` (within ~1e-9).
+ *   `assumeSorted=false`.
  * - SHUFFLE-based bounds (spreadBounds, disparityBounds): `assumeSorted` only
  *   affects the order-independent sparity / shift-bounds sub-computations, never
  *   the disjoint-pair shuffle. On an already-SORTED array with a fixed seed the
@@ -29,6 +27,19 @@ import kotlin.test.assertTrue
  *   used so the order-independent sub-checks receive valid input under both flag
  *   values (the kernels treat `assumeSorted=true` on unsorted input as undefined
  *   behavior); the shuffle then runs on the identical order regardless.
+ *
+ * Every comparison here is BITWISE, through [assertBitwise], and a tolerance
+ * would be wrong rather than merely loose. The two sides are not two
+ * computations that happen to agree: `assumeSorted=false` sorts a copy of the
+ * input and then runs the identical kernel that `assumeSorted=true` runs on the
+ * already-sorted list. Sorting a permutation of a list is exact, so both sides
+ * feed the kernel the same array in the same order, and the kernel then performs
+ * the same operations in the same sequence. There is no arithmetic between the
+ * paths for a rounding to enter. Either the payloads match to the last bit or
+ * one path does something the other does not, which is a defect that an epsilon
+ * would hide. This holds for [ratioRoundtrip] too: ratio goes through log and
+ * exp, but BOTH sides take that route on identical inputs, so the transcendental
+ * results are identical whatever the platform libm returns.
  *
  * A spreadBounds unsorted-inertness assertion (`true == false` on UNSORTED
  * input) is deliberately absent: with `assumeSorted = true` on unsorted input
@@ -38,7 +49,6 @@ import kotlin.test.assertTrue
 class AssumeSortedTest {
     private val misrate = 0.3
     private val seed = "assume-sorted-roundtrip"
-    private val tol = 1e-9
 
     // Unsorted, strictly positive (so ratio is defined), 8 elements (large enough
     // for the 0.3 misrate used by the bounds estimators).
@@ -48,57 +58,59 @@ class AssumeSortedTest {
     private val xSorted = xUnsorted.sorted()
     private val ySorted = yUnsorted.sorted()
 
-    private fun assertClose(
-        expected: Double,
-        actual: Double,
-    ) {
-        assertTrue(
-            abs(expected - actual) < tol,
-            "Expected $expected but got $actual (difference: ${abs(expected - actual)})",
-        )
-    }
-
     // --- Order-independent point estimators ---
 
     @Test
     fun centerRoundtrip() {
-        assertClose(center(xUnsorted, assumeSorted = false), center(xSorted, assumeSorted = true))
+        assertBitwise(
+            center(xUnsorted, assumeSorted = false),
+            center(xSorted, assumeSorted = true),
+            "center: unsorted+sort vs presorted",
+        )
     }
 
     @Test
     fun spreadRoundtrip() {
-        assertClose(spread(xUnsorted, assumeSorted = false), spread(xSorted, assumeSorted = true))
+        assertBitwise(
+            spread(xUnsorted, assumeSorted = false),
+            spread(xSorted, assumeSorted = true),
+            "spread: unsorted+sort vs presorted",
+        )
     }
 
     @Test
     fun shiftRoundtrip() {
-        assertClose(
+        assertBitwise(
             shift(xUnsorted, yUnsorted, assumeSorted = false),
             shift(xSorted, ySorted, assumeSorted = true),
+            "shift: unsorted+sort vs presorted",
         )
     }
 
     @Test
     fun ratioRoundtrip() {
-        assertClose(
+        assertBitwise(
             ratio(xUnsorted, yUnsorted, assumeSorted = false),
             ratio(xSorted, ySorted, assumeSorted = true),
+            "ratio: unsorted+sort vs presorted",
         )
     }
 
     @Test
     fun disparityRoundtrip() {
-        assertClose(
+        assertBitwise(
             disparity(xUnsorted, yUnsorted, assumeSorted = false),
             disparity(xSorted, ySorted, assumeSorted = true),
+            "disparity: unsorted+sort vs presorted",
         )
     }
 
     @Test
     fun avgSpreadRoundtrip() {
-        assertClose(
+        assertBitwise(
             avgSpread(xUnsorted, yUnsorted, assumeSorted = false),
             avgSpread(xSorted, ySorted, assumeSorted = true),
+            "avgSpread: unsorted+sort vs presorted",
         )
     }
 
@@ -108,24 +120,24 @@ class AssumeSortedTest {
     fun centerBoundsRoundtrip() {
         val unsorted = centerBounds(xUnsorted, misrate, assumeSorted = false)
         val presorted = centerBounds(xSorted, misrate, assumeSorted = true)
-        assertClose(unsorted.lower, presorted.lower)
-        assertClose(unsorted.upper, presorted.upper)
+        assertBitwise(unsorted.lower, presorted.lower, "centerBounds.lower: unsorted+sort vs presorted")
+        assertBitwise(unsorted.upper, presorted.upper, "centerBounds.upper: unsorted+sort vs presorted")
     }
 
     @Test
     fun shiftBoundsRoundtrip() {
         val unsorted = shiftBounds(xUnsorted, yUnsorted, misrate, assumeSorted = false)
         val presorted = shiftBounds(xSorted, ySorted, misrate, assumeSorted = true)
-        assertClose(unsorted.lower, presorted.lower)
-        assertClose(unsorted.upper, presorted.upper)
+        assertBitwise(unsorted.lower, presorted.lower, "shiftBounds.lower: unsorted+sort vs presorted")
+        assertBitwise(unsorted.upper, presorted.upper, "shiftBounds.upper: unsorted+sort vs presorted")
     }
 
     @Test
     fun ratioBoundsRoundtrip() {
         val unsorted = ratioBounds(xUnsorted, yUnsorted, misrate, assumeSorted = false)
         val presorted = ratioBounds(xSorted, ySorted, misrate, assumeSorted = true)
-        assertClose(unsorted.lower, presorted.lower)
-        assertClose(unsorted.upper, presorted.upper)
+        assertBitwise(unsorted.lower, presorted.lower, "ratioBounds.lower: unsorted+sort vs presorted")
+        assertBitwise(unsorted.upper, presorted.upper, "ratioBounds.upper: unsorted+sort vs presorted")
     }
 
     @Test
@@ -136,8 +148,8 @@ class AssumeSortedTest {
         // byte-identical to not passing them.
         val withoutViews = avgSpreadBounds(xSorted, ySorted, misrate, seed)
         val withViews = avgSpreadBounds(xSorted, ySorted, misrate, seed, xSorted, ySorted)
-        assertEquals(withoutViews.lower, withViews.lower)
-        assertEquals(withoutViews.upper, withViews.upper)
+        assertBitwise(withoutViews.lower, withViews.lower, "avgSpreadBounds.lower: no views vs sorted views")
+        assertBitwise(withoutViews.upper, withViews.upper, "avgSpreadBounds.upper: no views vs sorted views")
     }
 
     // --- centerImpl convergence guard on pathological (unsorted) input ---
@@ -195,16 +207,16 @@ class AssumeSortedTest {
     fun spreadBoundsSortedFlagInvariant() {
         val falseResult = spreadBounds(xSorted, misrate, seed, assumeSorted = false)
         val trueResult = spreadBounds(xSorted, misrate, seed, assumeSorted = true)
-        assertEquals(falseResult.lower, trueResult.lower)
-        assertEquals(falseResult.upper, trueResult.upper)
+        assertBitwise(falseResult.lower, trueResult.lower, "spreadBounds.lower: assumeSorted false vs true")
+        assertBitwise(falseResult.upper, trueResult.upper, "spreadBounds.upper: assumeSorted false vs true")
     }
 
     @Test
     fun disparityBoundsSortedFlagInvariant() {
         val falseResult = disparityBounds(xSorted, ySorted, misrate, seed, assumeSorted = false)
         val trueResult = disparityBounds(xSorted, ySorted, misrate, seed, assumeSorted = true)
-        assertEquals(falseResult.lower, trueResult.lower)
-        assertEquals(falseResult.upper, trueResult.upper)
+        assertBitwise(falseResult.lower, trueResult.lower, "disparityBounds.lower: assumeSorted false vs true")
+        assertBitwise(falseResult.upper, trueResult.upper, "disparityBounds.upper: assumeSorted false vs true")
     }
 
     // --- spreadBounds UNSORTED-inertness ---

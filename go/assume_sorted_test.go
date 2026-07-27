@@ -1,9 +1,32 @@
 package pragmastat
 
 import (
+	"math"
 	"sort"
 	"testing"
 )
+
+// assertSameBits fails unless got and want carry the same binary64 payload.
+//
+// The comparison is bitwise rather than ==, because == reads +0 and -0 as equal
+// and every NaN as unequal: two routes into the same kernel have to agree on
+// the payload, not merely on the numeric reading. The message prints both raw
+// payloads, since a one-ULP disagreement is invisible in the decimal rendering
+// and being able to read it is the entire point of comparing bitwise.
+func assertSameBits(t *testing.T, label string, got, want float64) {
+	t.Helper()
+	if math.Float64bits(got) != math.Float64bits(want) {
+		t.Errorf("%s: assumeSorted=true %s != assumeSorted=false %s",
+			label, formatFloatBits(got), formatFloatBits(want))
+	}
+}
+
+// assertBoundsSameBits applies assertSameBits to both ends of an interval.
+func assertBoundsSameBits(t *testing.T, label string, got, want Bounds) {
+	t.Helper()
+	assertSameBits(t, label+" lower", got.Lower, want.Lower)
+	assertSameBits(t, label+" upper", got.Upper, want.Upper)
+}
 
 // TestAssumeSortedRoundtrip directly exercises the raw API's assumeSorted=true
 // branch. The dual-path reference tests only ever pass assumeSorted=false; the
@@ -17,10 +40,18 @@ import (
 // For SHUFFLE-based bounds, assumeSorted only affects the internal sparity
 // check, never the shuffle, so the result must be IDENTICAL for true vs false
 // on the SAME unsorted slice with the SAME seed.
+//
+// Every assertion here is EXACT, down to the binary64 payload. The flag decides
+// only whether the kernel sorts a copy or reads the caller's already-sorted
+// buffer; either way the kernel then sees the same sorted data and runs the
+// same sequence of operations, so the two calls agree to the last bit or the
+// flag changed the arithmetic, which is a defect. That holds for Ratio and
+// RatioBounds too: both sides take the same trip through log and exp, so the
+// libm results cancel exactly. A tolerance here would express no numerical
+// fact, only a window in which a real bug goes unreported.
 func TestAssumeSortedRoundtrip(t *testing.T) {
 	const misrate = 0.3
 	const seed = "pragmastat"
-	const eps = 1e-9
 
 	x := []float64{3, 1, 2, 5, 4, 8, 6, 7}
 	y := []float64{9, 11, 10, 13, 12, 16, 14, 15}
@@ -41,9 +72,7 @@ func TestAssumeSortedRoundtrip(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if !floatEquals(got, want, eps) {
-			t.Errorf("Center: assumeSorted=true %v != assumeSorted=false %v", got, want)
-		}
+		assertSameBits(t, "Center", got, want)
 	})
 
 	t.Run("Spread", func(t *testing.T) {
@@ -55,9 +84,7 @@ func TestAssumeSortedRoundtrip(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if !floatEquals(got, want, eps) {
-			t.Errorf("Spread: assumeSorted=true %v != assumeSorted=false %v", got, want)
-		}
+		assertSameBits(t, "Spread", got, want)
 	})
 
 	t.Run("Shift", func(t *testing.T) {
@@ -69,9 +96,7 @@ func TestAssumeSortedRoundtrip(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if !floatEquals(got, want, eps) {
-			t.Errorf("Shift: assumeSorted=true %v != assumeSorted=false %v", got, want)
-		}
+		assertSameBits(t, "Shift", got, want)
 	})
 
 	t.Run("Ratio", func(t *testing.T) {
@@ -83,9 +108,7 @@ func TestAssumeSortedRoundtrip(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if !floatEquals(got, want, eps) {
-			t.Errorf("Ratio: assumeSorted=true %v != assumeSorted=false %v", got, want)
-		}
+		assertSameBits(t, "Ratio", got, want)
 	})
 
 	t.Run("Disparity", func(t *testing.T) {
@@ -97,9 +120,7 @@ func TestAssumeSortedRoundtrip(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if !floatEquals(got, want, eps) {
-			t.Errorf("Disparity: assumeSorted=true %v != assumeSorted=false %v", got, want)
-		}
+		assertSameBits(t, "Disparity", got, want)
 	})
 
 	// --- Order-independent bounds estimators ---
@@ -113,10 +134,7 @@ func TestAssumeSortedRoundtrip(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if !floatEquals(got.Lower, want.Lower, eps) || !floatEquals(got.Upper, want.Upper, eps) {
-			t.Errorf("CenterBounds: assumeSorted=true [%v,%v] != assumeSorted=false [%v,%v]",
-				got.Lower, got.Upper, want.Lower, want.Upper)
-		}
+		assertBoundsSameBits(t, "CenterBounds", got, want)
 	})
 
 	t.Run("ShiftBounds", func(t *testing.T) {
@@ -128,10 +146,7 @@ func TestAssumeSortedRoundtrip(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if !floatEquals(got.Lower, want.Lower, eps) || !floatEquals(got.Upper, want.Upper, eps) {
-			t.Errorf("ShiftBounds: assumeSorted=true [%v,%v] != assumeSorted=false [%v,%v]",
-				got.Lower, got.Upper, want.Lower, want.Upper)
-		}
+		assertBoundsSameBits(t, "ShiftBounds", got, want)
 	})
 
 	t.Run("RatioBounds", func(t *testing.T) {
@@ -143,10 +158,7 @@ func TestAssumeSortedRoundtrip(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if !floatEquals(got.Lower, want.Lower, eps) || !floatEquals(got.Upper, want.Upper, eps) {
-			t.Errorf("RatioBounds: assumeSorted=true [%v,%v] != assumeSorted=false [%v,%v]",
-				got.Lower, got.Upper, want.Lower, want.Upper)
-		}
+		assertBoundsSameBits(t, "RatioBounds", got, want)
 	})
 
 	// --- Shuffle-based bounds: assumeSorted is INERT only on SORTED input.
@@ -168,10 +180,7 @@ func TestAssumeSortedRoundtrip(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if got.Lower != want.Lower || got.Upper != want.Upper {
-			t.Errorf("SpreadBounds: assumeSorted=true [%v,%v] != assumeSorted=false [%v,%v]",
-				got.Lower, got.Upper, want.Lower, want.Upper)
-		}
+		assertBoundsSameBits(t, "SpreadBounds", got, want)
 	})
 
 	// NOTE: There is deliberately NO "SpreadBounds inert on UNSORTED input" test.
@@ -190,9 +199,6 @@ func TestAssumeSortedRoundtrip(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if got.Lower != want.Lower || got.Upper != want.Upper {
-			t.Errorf("DisparityBounds: assumeSorted=true [%v,%v] != assumeSorted=false [%v,%v]",
-				got.Lower, got.Upper, want.Lower, want.Upper)
-		}
+		assertBoundsSameBits(t, "DisparityBounds", got, want)
 	})
 }

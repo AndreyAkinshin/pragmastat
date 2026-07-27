@@ -439,6 +439,13 @@ An estimator whose output never moves under that perturbation cannot diverge for
 The square root is deliberately left alone: IEEE 754 requires it to be correctly rounded, so every
   conforming implementation already returns the same bits.
 
+#v(0.3em)
+The experiment is part of the repository rather than a note about it.
+It runs on every build, it prints the table below, and it fails when an estimator no longer holds
+  the class it declares, naming both possibilities: the estimator acquired a dependency on a
+  library function, or the recorded class is wrong.
+A measurement nobody can repeat stops being a measurement.
+
 #v(0.5em)
 *The classes as measured*
 

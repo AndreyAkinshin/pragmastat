@@ -3,6 +3,26 @@
 This directory contains reference test data shared across all language implementations.
 Each language loads these JSON files to verify correctness and cross-language consistency.
 
+## How closely the implementations must agree
+
+Every suite in `manifest.json` carries a `conformance` field, and the loaders enforce it.
+
+`exact` means the seven return identical bits, and the loader compares raw binary64 payloads
+rather than a difference against an epsilon. Most estimators here return an element selected out
+of the pairwise set, so a divergence is never a small error: either the same element was selected
+and the answer is identical, or a different one was, and the gap between them is data-dependent
+and unbounded. A tolerance on such a suite states something that neither holds by construction nor
+describes the way it fails, and it hides the failure it appears to guard against.
+
+`approximate` means the seven agree to the tolerance recorded with the suite, and the reason is
+stated per suite. It is always a library function the specification does not fix — a logarithm, an
+exponential — never accumulated arithmetic error.
+
+The classes are measured rather than asserted. `mise run tests:check:conformance` recomputes every
+estimator with each call to `log`, `exp`, `pow` and `cos` returning the neighbouring representable
+value, which is the smallest difference two conforming implementations of those functions can
+legitimately have, and fails when an estimator no longer holds the class it declares.
+
 ## Directory Structure
 
 ```
@@ -157,6 +177,7 @@ Test cases follow a consistent naming taxonomy:
 | `medium-*` | Medium-size sample tests |
 | `misrate-*` | Misrate parameter variation tests |
 | `conservatism-*` | Conservatism tests (discreteness effects across sample sizes) |
+| `floor-*` | At the minimum achievable misrate, where the admissibility test is an exact tie |
 
 ### Misrate notation
 

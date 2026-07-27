@@ -13,12 +13,40 @@
 //! the supplied pre-sorted view; it never affects the shuffle (which always runs
 //! on the ORIGINAL order). So on a genuinely SORTED slice with a fixed seed the
 //! result must be byte-identical for `true` vs `false`.
+//!
+//! Every comparison here is BIT-EXACT on the binary64 payload, not approximate.
+//! Both sides are the same kernel fed the same values in the same order; the
+//! flag only decides whether that order is re-established by an internal sort or
+//! taken on trust. `assume_sorted = false` sorts a copy with `total_cmp`, which
+//! yields exactly the slice the `= true` leg is handed, so there is no
+//! arithmetic anywhere between the two paths for a rounding to enter. A
+//! tolerance would not describe a numerical fact, it would only hide a defect.
+//! The `ratio` legs go through log/exp, but BOTH legs go through the same
+//! log/exp on the same values, so they are exact for the same reason.
 
+mod conformance;
+
+use conformance::Conformance;
 use pragmastat::estimators::raw;
 
 const MISRATE: f64 = 0.3;
 const SEED: &str = "pragmastat";
-const EPS: f64 = 1e-9;
+
+/// Asserts bit-for-bit equality of two binary64 values.
+///
+/// Routed through the crate's shared `Conformance::Exact` rather than a private
+/// comparison so that "exact" means the same thing here as in the fixture
+/// suites. It compares the raw payloads rather than `==`, which has blind spots:
+/// `-0.0 == 0.0` holds and `NaN == NaN` does not, and either would misreport a
+/// genuine divergence between the two paths.
+#[track_caller]
+fn assert_bits_eq(label: &str, got: f64, want: f64) {
+    assert!(
+        Conformance::Exact.matches(got, want),
+        "{}",
+        Conformance::Exact.mismatch(label, want, got)
+    );
+}
 
 fn sorted_copy(x: &[f64]) -> Vec<f64> {
     let mut v = x.to_vec();
@@ -42,7 +70,7 @@ fn center_sorted_true_equals_unsorted_false() {
     let sorted = sorted_copy(&x);
     let want = raw::center(&x, false).unwrap();
     let got = raw::center(&sorted, true).unwrap();
-    assert!((got - want).abs() < EPS, "center: {got} != {want}");
+    assert_bits_eq("center", got, want);
 }
 
 #[test]
@@ -51,7 +79,7 @@ fn spread_sorted_true_equals_unsorted_false() {
     let sorted = sorted_copy(&x);
     let want = raw::spread(&x, false).unwrap();
     let got = raw::spread(&sorted, true).unwrap();
-    assert!((got - want).abs() < EPS, "spread: {got} != {want}");
+    assert_bits_eq("spread", got, want);
 }
 
 #[test]
@@ -60,7 +88,7 @@ fn shift_sorted_true_equals_unsorted_false() {
     let y = unsorted_y();
     let want = raw::shift(&x, &y, false).unwrap();
     let got = raw::shift(&sorted_copy(&x), &sorted_copy(&y), true).unwrap();
-    assert!((got - want).abs() < EPS, "shift: {got} != {want}");
+    assert_bits_eq("shift", got, want);
 }
 
 #[test]
@@ -69,7 +97,7 @@ fn ratio_sorted_true_equals_unsorted_false() {
     let y = unsorted_y();
     let want = raw::ratio(&x, &y, false).unwrap();
     let got = raw::ratio(&sorted_copy(&x), &sorted_copy(&y), true).unwrap();
-    assert!((got - want).abs() < EPS, "ratio: {got} != {want}");
+    assert_bits_eq("ratio", got, want);
 }
 
 #[test]
@@ -78,7 +106,7 @@ fn disparity_sorted_true_equals_unsorted_false() {
     let y = unsorted_y();
     let want = raw::disparity(&x, &y, false).unwrap();
     let got = raw::disparity(&sorted_copy(&x), &sorted_copy(&y), true).unwrap();
-    assert!((got - want).abs() < EPS, "disparity: {got} != {want}");
+    assert_bits_eq("disparity", got, want);
 }
 
 // --- Order-independent bounds estimators ---
@@ -88,14 +116,8 @@ fn center_bounds_sorted_true_equals_unsorted_false() {
     let x = unsorted_x();
     let want = raw::center_bounds(&x, MISRATE, false).unwrap();
     let got = raw::center_bounds(&sorted_copy(&x), MISRATE, true).unwrap();
-    assert!(
-        (got.lower - want.lower).abs() < EPS && (got.upper - want.upper).abs() < EPS,
-        "center_bounds: [{},{}] != [{},{}]",
-        got.lower,
-        got.upper,
-        want.lower,
-        want.upper
-    );
+    assert_bits_eq("center_bounds lower", got.lower, want.lower);
+    assert_bits_eq("center_bounds upper", got.upper, want.upper);
 }
 
 #[test]
@@ -104,14 +126,8 @@ fn shift_bounds_sorted_true_equals_unsorted_false() {
     let y = unsorted_y();
     let want = raw::shift_bounds(&x, &y, MISRATE, false).unwrap();
     let got = raw::shift_bounds(&sorted_copy(&x), &sorted_copy(&y), MISRATE, true).unwrap();
-    assert!(
-        (got.lower - want.lower).abs() < EPS && (got.upper - want.upper).abs() < EPS,
-        "shift_bounds: [{},{}] != [{},{}]",
-        got.lower,
-        got.upper,
-        want.lower,
-        want.upper
-    );
+    assert_bits_eq("shift_bounds lower", got.lower, want.lower);
+    assert_bits_eq("shift_bounds upper", got.upper, want.upper);
 }
 
 #[test]
@@ -120,14 +136,11 @@ fn ratio_bounds_sorted_true_equals_unsorted_false() {
     let y = unsorted_y();
     let want = raw::ratio_bounds(&x, &y, MISRATE, false).unwrap();
     let got = raw::ratio_bounds(&sorted_copy(&x), &sorted_copy(&y), MISRATE, true).unwrap();
-    assert!(
-        (got.lower - want.lower).abs() < EPS && (got.upper - want.upper).abs() < EPS,
-        "ratio_bounds: [{},{}] != [{},{}]",
-        got.lower,
-        got.upper,
-        want.lower,
-        want.upper
-    );
+    // Both legs log-transform, run the same shift bounds, and exponentiate back;
+    // sorting a positive sample and log-transforming it produces exactly the
+    // array the other leg sorts, because log is monotonic. Same route, so exact.
+    assert_bits_eq("ratio_bounds lower", got.lower, want.lower);
+    assert_bits_eq("ratio_bounds upper", got.upper, want.upper);
 }
 
 // --- Shuffle-based bounds: identical on a SORTED slice with a fixed seed ---
@@ -141,8 +154,8 @@ fn spread_bounds_sorted_true_equals_false_byte_identical() {
     let sorted = sorted_copy(&unsorted_x());
     let want = raw::spread_bounds_with_seed(&sorted, MISRATE, SEED, false).unwrap();
     let got = raw::spread_bounds_with_seed(&sorted, MISRATE, SEED, true).unwrap();
-    assert_eq!(got.lower, want.lower, "spread_bounds lower");
-    assert_eq!(got.upper, want.upper, "spread_bounds upper");
+    assert_bits_eq("spread_bounds lower", got.lower, want.lower);
+    assert_bits_eq("spread_bounds upper", got.upper, want.upper);
 }
 
 #[test]
@@ -151,8 +164,8 @@ fn disparity_bounds_sorted_true_equals_false_byte_identical() {
     let sorted_y = sorted_copy(&unsorted_y());
     let want = raw::disparity_bounds_with_seed(&sorted_x, &sorted_y, MISRATE, SEED, false).unwrap();
     let got = raw::disparity_bounds_with_seed(&sorted_x, &sorted_y, MISRATE, SEED, true).unwrap();
-    assert_eq!(got.lower, want.lower, "disparity_bounds lower");
-    assert_eq!(got.upper, want.upper, "disparity_bounds upper");
+    assert_bits_eq("disparity_bounds lower", got.lower, want.lower);
+    assert_bits_eq("disparity_bounds upper", got.upper, want.upper);
 }
 
 // NOTE: There is deliberately NO "spread_bounds inert on UNSORTED input" test.
@@ -176,7 +189,7 @@ fn disparity_bounds_sorted_true_equals_false_byte_identical() {
 fn center_n2_midpoint_is_order_symmetric() {
     let forward = raw::center(&[-5.0, -1.8], true).unwrap();
     let reversed = raw::center(&[-1.8, -5.0], true).unwrap();
-    assert_eq!(forward, -3.4);
-    assert_eq!(reversed, -3.4);
-    assert_eq!(forward, reversed); // bit-exact, not approx
+    assert_bits_eq("center n=2 forward", forward, -3.4);
+    assert_bits_eq("center n=2 reversed", reversed, -3.4);
+    assert_bits_eq("center n=2 order symmetry", reversed, forward);
 }

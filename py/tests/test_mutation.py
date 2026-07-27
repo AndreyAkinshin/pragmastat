@@ -1,3 +1,5 @@
+import struct
+
 import numpy as np
 import pytest
 
@@ -31,6 +33,33 @@ _ARRAY_VARIANTS = [
 ]
 
 
+def _payload(value):
+    """Return the raw binary64 payload of ``value`` as a 64-bit unsigned integer."""
+    return struct.unpack("<Q", struct.pack("<d", float(value)))[0]
+
+
+def _fmt(value):
+    """Render a float so a one-ULP difference is unmistakable in a failure message."""
+    return f"{value!r} [{float(value).hex()}]"
+
+
+def _mutation_report(actual, original):
+    """Describe every element whose raw binary64 payload changed."""
+    changed = [i for i in range(original.size) if _payload(actual[i]) != _payload(original[i])]
+    return ", ".join(f"[{i}] {_fmt(original[i])} -> {_fmt(actual[i])}" for i in changed)
+
+
+def _assert_unchanged(actual, original, what):
+    """Assert the caller's buffer is unchanged down to the raw binary64 payloads.
+
+    The comparison is on the bytes, not on ``==``: a kernel that overwrites 0.0
+    with -0.0 (or one NaN payload with another) leaves the array numerically
+    equal while still having written to memory the caller owns. Only a payload
+    comparison calls that what it is.
+    """
+    assert actual.tobytes() == original.tobytes(), f"{what} mutated its input: {_mutation_report(actual, original)}"
+
+
 @pytest.mark.parametrize(("label", "base", "kwargs"), _ARRAY_VARIANTS, ids=[v[0] for v in _ARRAY_VARIANTS])
 def test_raw_api_does_not_mutate_caller_array(label, base, kwargs):
     """The public raw (native-array) API must NOT mutate the caller's array.
@@ -56,28 +85,28 @@ def test_raw_api_does_not_mutate_caller_array(label, base, kwargs):
         arr = fresh()
         orig = arr.copy()
         estimator(arr, **kwargs)
-        assert np.array_equal(arr, orig), f"{estimator.__name__} mutated its input [{label}]"
+        _assert_unchanged(arr, orig, f"{estimator.__name__} [{label}]")
 
     # Two-sample point estimators (same array passed as x and y).
     for estimator in (shift, ratio, disparity):
         arr = fresh()
         orig = arr.copy()
         estimator(arr, arr, **kwargs)
-        assert np.array_equal(arr, orig), f"{estimator.__name__} mutated its input [{label}]"
+        _assert_unchanged(arr, orig, f"{estimator.__name__} [{label}]")
 
     # One-sample bounds estimators.
     for bounds in (center_bounds, spread_bounds):
         arr = fresh()
         orig = arr.copy()
         bounds(arr, _MISRATE, **kwargs)
-        assert np.array_equal(arr, orig), f"{bounds.__name__} mutated its input [{label}]"
+        _assert_unchanged(arr, orig, f"{bounds.__name__} [{label}]")
 
     # Two-sample bounds estimators (same array passed as x and y).
     for bounds in (shift_bounds, ratio_bounds, disparity_bounds):
         arr = fresh()
         orig = arr.copy()
         bounds(arr, arr, _MISRATE, **kwargs)
-        assert np.array_equal(arr, orig), f"{bounds.__name__} mutated its input [{label}]"
+        _assert_unchanged(arr, orig, f"{bounds.__name__} [{label}]")
 
 
 def test_sample_values_are_immutable():

@@ -118,6 +118,9 @@ dir = "go"
 run = """
 test -z "$(go fmt ./...)" || { echo "Code is not formatted"; exit 1; }
 golangci-lint run
+# The conformance probe sits behind a build tag, so the default run does not see it. A file
+# nobody lints is a file that rots, and this one exists to be trusted.
+golangci-lint run --build-tags conformance
 mise run go:check:fma
 """
 

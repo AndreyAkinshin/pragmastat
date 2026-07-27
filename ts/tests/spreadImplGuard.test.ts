@@ -38,7 +38,10 @@ describe('spreadImpl convergence guard', () => {
 
   it('still converges correctly on valid sorted input (guard never triggers)', () => {
     const sorted = [...unsorted].sort((a, b) => a - b);
-    // assumeSorted=true on genuinely sorted input must equal the unsorted path.
-    expect(spreadImpl(sorted, true)).toBeCloseTo(spread(unsorted, false) as number, 9);
+    // assumeSorted=true on genuinely sorted input must equal the unsorted path
+    // BITWISE (toBe, not toBeCloseTo): the flag only decides who sorts, so both
+    // sides feed the kernel the same array and run the same operations on it.
+    // Equal to the last bit, or the two routes differ and that is the bug.
+    expect(spreadImpl(sorted, true)).toBe(spread(unsorted, false) as number);
   });
 });

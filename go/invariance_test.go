@@ -21,6 +21,17 @@ func floatEquals(a, b, epsilon float64) bool {
 }
 
 const invarianceSeed int64 = 1729
+
+// Used only where the two sides are genuinely different computations: the input or the
+// expectation is transformed by a factor that is not exact in binary64, so a rounding
+// legitimately separates them. Measured rather than assumed — flipping every invariance
+// test to bitwise leaves six failing, and they are exactly the ones carrying an inexact
+// transformation (+2, +3/+2, the 2/3 factor, x5/x3).
+//
+// An identity between two routes to the same computation does not belong here. Those use
+// performTestOneExact / performTestTwoExact, because there is no arithmetic between the two
+// sides for a rounding to creep into and a tolerance would only widen the window in which a
+// real defect goes unreported.
 const invarianceTolerance float64 = 1e-9
 
 func uniformVec(rng *Rng, n int) []float64 {
@@ -77,6 +88,38 @@ func performTestOne(t *testing.T, expr1 func([]float64) float64, expr2 func([]fl
 }
 
 // performTestTwo tests a two-sample invariance property across sizes 2-10
+// performTestOneExact is performTestOne for an identity rather than a property: the two
+// sides reach the same computation, so they must agree to the last bit.
+func performTestOneExact(t *testing.T, expr1 func([]float64) float64, expr2 func([]float64) float64) {
+	t.Helper()
+	rng := NewRngFromSeed(invarianceSeed)
+	for n := 2; n <= 10; n++ {
+		x := uniformVec(rng, n)
+		result1 := expr1(x)
+		result2 := expr2(x)
+		if math.Float64bits(result1) != math.Float64bits(result2) {
+			t.Errorf("Failed for n=%d: %v (0x%016X) != %v (0x%016X)",
+				n, result1, math.Float64bits(result1), result2, math.Float64bits(result2))
+		}
+	}
+}
+
+// performTestTwoExact is performTestTwo for an identity rather than a property.
+func performTestTwoExact(t *testing.T, expr1 func([]float64, []float64) float64, expr2 func([]float64, []float64) float64) {
+	t.Helper()
+	rng := NewRngFromSeed(invarianceSeed)
+	for n := 2; n <= 10; n++ {
+		x := uniformVec(rng, n)
+		y := uniformVec(rng, n)
+		result1 := expr1(x, y)
+		result2 := expr2(x, y)
+		if math.Float64bits(result1) != math.Float64bits(result2) {
+			t.Errorf("Failed for n=%d: %v (0x%016X) != %v (0x%016X)",
+				n, result1, math.Float64bits(result1), result2, math.Float64bits(result2))
+		}
+	}
+}
+
 func performTestTwo(t *testing.T, expr1 func([]float64, []float64) float64, expr2 func([]float64, []float64) float64) {
 	t.Helper()
 	rng := NewRngFromSeed(invarianceSeed)
@@ -158,7 +201,7 @@ func TestShiftScale(t *testing.T) {
 }
 
 func TestShiftAntisymmetry(t *testing.T) {
-	performTestTwo(t,
+	performTestTwoExact(t,
 		func(x, y []float64) float64 { return mustVal((mustSampleOf(x)).Shift(mustSampleOf(y))) },
 		func(x, y []float64) float64 { return -1 * mustVal((mustSampleOf(y)).Shift(mustSampleOf(x))) },
 	)
@@ -178,14 +221,14 @@ func TestRatioScale(t *testing.T) {
 // AvgSpread invariance tests
 
 func TestAvgSpreadEqual(t *testing.T) {
-	performTestOne(t,
+	performTestOneExact(t,
 		func(x []float64) float64 { return mustVal((mustSampleOf(x)).avgSpread(mustSampleOf(x))) },
 		func(x []float64) float64 { return mustVal((mustSampleOf(x)).Spread()) },
 	)
 }
 
 func TestAvgSpreadSymmetry(t *testing.T) {
-	performTestTwo(t,
+	performTestTwoExact(t,
 		func(x, y []float64) float64 { return mustVal((mustSampleOf(x)).avgSpread(mustSampleOf(y))) },
 		func(x, y []float64) float64 { return mustVal((mustSampleOf(y)).avgSpread(mustSampleOf(x))) },
 	)
@@ -241,7 +284,7 @@ func TestDisparityScaleNeg(t *testing.T) {
 }
 
 func TestDisparityAntisymmetry(t *testing.T) {
-	performTestTwo(t,
+	performTestTwoExact(t,
 		func(x, y []float64) float64 { return mustVal((mustSampleOf(x)).Disparity(mustSampleOf(y))) },
 		func(x, y []float64) float64 {
 			return -1 * mustVal((mustSampleOf(y)).Disparity(mustSampleOf(x)))

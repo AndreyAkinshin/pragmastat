@@ -1,7 +1,6 @@
 package dev.pragmastat
 
 import org.junit.jupiter.api.Test
-import kotlin.test.assertEquals
 
 /**
  * Pins exact order symmetry of the n==2 center midpoint.
@@ -15,8 +14,13 @@ import kotlin.test.assertEquals
  * gets to swap such a form in without this test going red.
  *
  * assumeSorted=true is required so the midpoint sees the RAW argument order; the
- * normalizing sort would otherwise hide the asymmetry. This asserts EXACT (bit)
- * equality, not approximate.
+ * normalizing sort would otherwise hide the asymmetry.
+ *
+ * The comparison is BITWISE, through [assertBitwise]. The whole point of this
+ * guard is a ONE-ULP difference between two orderings of the same two values,
+ * which is exactly what any tolerance absorbs: an epsilon here would accept the
+ * order-dependent formula the test exists to reject. Bitwise also pins the sign
+ * of zero, which a primitive `==` would not.
  */
 class CenterMidpointSymmetryTest {
     @Test
@@ -24,9 +28,8 @@ class CenterMidpointSymmetryTest {
         val forward = center(listOf(-5.0, -1.8), assumeSorted = true)
         val reversed = center(listOf(-1.8, -5.0), assumeSorted = true)
 
-        // Exact equality, both must be exactly -3.4.
-        assertEquals(forward, reversed)
-        assertEquals(-3.4, forward)
-        assertEquals(-3.4, reversed)
+        assertBitwise(forward, reversed, "center([-5.0, -1.8]) vs center([-1.8, -5.0])")
+        assertBitwise(-3.4, forward, "center([-5.0, -1.8])")
+        assertBitwise(-3.4, reversed, "center([-1.8, -5.0])")
     }
 }

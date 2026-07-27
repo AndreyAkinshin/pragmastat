@@ -1,10 +1,11 @@
 //! How the fixture loaders compare floating-point results.
 //!
-//! Shared by every integration test that reads `tests/**/*.json`, so that "exact"
-//! means one thing in this crate rather than one thing per file. Each test binary
-//! links only the parts it uses, which is what the allow below is for: a
-//! suite that is exact end to end never constructs `Tolerant`, and that is the
-//! intended state, not dead code to clean up.
+//! Shared by every integration test that compares one floating-point result
+//! against another, whether it comes from `tests/**/*.json` or from a second call
+//! into the crate, so that "exact" means one thing in this crate rather than one
+//! thing per file. Each test binary links only the parts it uses, which is what
+//! the allow below is for: a suite that is exact end to end never constructs
+//! `Tolerant`, and that is the intended state, not dead code to clean up.
 #![allow(dead_code)]
 
 use float_cmp::approx_eq;

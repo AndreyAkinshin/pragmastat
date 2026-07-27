@@ -13,8 +13,27 @@
 //! raw legs of the dual-path reference tests would not catch it.
 //! These tests lock the Sample API to the raw API directly.
 
+mod conformance;
+
+use conformance::Conformance;
 use pragmastat::estimators::raw;
 use pragmastat::{Sample, disparity_bounds_with_seed, spread_bounds_with_seed};
+
+/// Asserts bit-for-bit equality of two binary64 values.
+///
+/// The two sides are the same kernel reached by two entry points, so the only
+/// admissible outcome is identical payloads. Routed through the crate's shared
+/// `Conformance::Exact` so that "exact" means the same thing here as in the
+/// fixture suites, and so that a mismatch reports the bit patterns and not just
+/// the two decimal renderings.
+#[track_caller]
+fn assert_bits_eq(label: &str, got: f64, want: f64) {
+    assert!(
+        Conformance::Exact.matches(got, want),
+        "{}",
+        Conformance::Exact.mismatch(label, want, got)
+    );
+}
 
 const UNSORTED_X: [f64; 20] = [
     5.0, 3.0, 1.0, 4.0, 2.0, 9.0, 7.0, 6.0, 8.0, 10.0, 15.0, 11.0, 13.0, 12.0, 14.0, 20.0, 18.0,
@@ -45,13 +64,15 @@ fn sample_spread_bounds_matches_raw_on_unsorted_input() {
         "test setup is vacuous: spread bounds are not order-dependent here"
     );
 
-    assert_eq!(
-        via_sample.lower, via_raw.lower,
-        "spread lower: Sample API diverges from raw API on unsorted input"
+    assert_bits_eq(
+        "spread lower: Sample API diverges from raw API on unsorted input",
+        via_sample.lower,
+        via_raw.lower,
     );
-    assert_eq!(
-        via_sample.upper, via_raw.upper,
-        "spread upper: Sample API diverges from raw API on unsorted input"
+    assert_bits_eq(
+        "spread upper: Sample API diverges from raw API on unsorted input",
+        via_sample.upper,
+        via_raw.upper,
     );
 }
 
@@ -78,12 +99,14 @@ fn sample_disparity_bounds_matches_raw_on_unsorted_input() {
         "test setup is vacuous: disparity bounds are not order-dependent here"
     );
 
-    assert_eq!(
-        via_sample.lower, via_raw.lower,
-        "disparity lower: Sample API diverges from raw API on unsorted input"
+    assert_bits_eq(
+        "disparity lower: Sample API diverges from raw API on unsorted input",
+        via_sample.lower,
+        via_raw.lower,
     );
-    assert_eq!(
-        via_sample.upper, via_raw.upper,
-        "disparity upper: Sample API diverges from raw API on unsorted input"
+    assert_bits_eq(
+        "disparity upper: Sample API diverges from raw API on unsorted input",
+        via_sample.upper,
+        via_raw.upper,
     );
 }

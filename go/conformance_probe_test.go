@@ -29,7 +29,9 @@ var probeOut *os.File
 func probeBits(v float64) string { return strconv.FormatFloat(v, 'b', -1, 64) }
 
 func probePrintf(format string, args ...interface{}) {
-	fmt.Fprintf(probeOut, format, args...)
+	if _, err := fmt.Fprintf(probeOut, format, args...); err != nil {
+		panic(err)
+	}
 }
 
 func probeScalar(tag string, v float64, err error) {
@@ -68,7 +70,7 @@ func probeMisrates(n, m int) []float64 {
 	f, err := minAchievableMisrateTwoSample(n, m)
 	if err == nil && f > 0 && f < 1 {
 		out = append(out, f)
-		for k := 0; k < 4; k++ {
+		for range 4 {
 			f = math.Nextafter(f, 1.0)
 			out = append(out, f)
 		}
@@ -85,7 +87,11 @@ func TestConformanceProbe(t *testing.T) {
 	if err != nil {
 		t.Fatalf("cannot open the probe output: %v", err)
 	}
-	defer f.Close()
+	defer func() {
+		if err := f.Close(); err != nil {
+			t.Errorf("cannot close the probe output: %v", err)
+		}
+	}()
 	probeOut = f
 
 	sizes := []int{3, 4, 5, 6, 8, 11, 16, 23, 32, 47, 64, 89, 128, 180, 256}

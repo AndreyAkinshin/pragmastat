@@ -16,93 +16,112 @@
 # Passing assume_sorted = TRUE on UNSORTED input is documented undefined
 # behavior (the C sparity kernel relies on the sorted invariant), so we do not
 # exercise that misuse here.
-
-tol <- 1e-9
+#
+# EVERY comparison below is BITWISE (expect_exact / expect_exact_bounds), never
+# an epsilon. Both sides are the same kernel over the same values reached by two
+# routes: the assume_sorted = FALSE call sorts a copy internally and lands on
+# exactly the buffer the assume_sorted = TRUE call is handed directly. No
+# arithmetic separates the two routes, so either they execute the identical
+# sequence of operations and agree to the last bit, or one route does something
+# the other does not, which is a defect. A tolerance would state no numerical
+# fact here, it would only widen the window in which that defect goes
+# unreported. This holds for ratio too: it routes through log/exp, but BOTH
+# sides take that same route, so the libm calls see identical arguments.
 
 x_unsorted <- c(5, 2, 8, 1, 9, 3, 7, 4)
 y_unsorted <- c(6, 2, 9, 1, 4, 7, 3, 8)
 x_sorted <- sort(x_unsorted)
 y_sorted <- sort(y_unsorted)
 
+# Bitwise comparison of the two endpoints of a raw bounds result. The raw path
+# returns a plain list(lower, upper), so both fields are compared separately and
+# each reports its own label on failure.
+expect_exact_bounds <- function(actual, expected, label) {
+  expect_exact(actual$lower, expected$lower, paste(label, "lower"))
+  expect_exact(actual$upper, expected$upper, paste(label, "upper"))
+}
+
 test_that("center assume_sorted=TRUE on sorted input equals unsorted call", {
-  expect_equal(
+  expect_exact(
     center(x_sorted, assume_sorted = TRUE),
     center(x_unsorted, assume_sorted = FALSE),
-    tolerance = tol
+    "center assume_sorted=TRUE vs FALSE"
   )
 })
 
 test_that("spread assume_sorted=TRUE on sorted input equals unsorted call", {
-  expect_equal(
+  expect_exact(
     spread(x_sorted, assume_sorted = TRUE),
     spread(x_unsorted, assume_sorted = FALSE),
-    tolerance = tol
+    "spread assume_sorted=TRUE vs FALSE"
   )
 })
 
 test_that("shift assume_sorted=TRUE on sorted input equals unsorted call", {
-  expect_equal(
+  expect_exact(
     shift(x_sorted, y_sorted, assume_sorted = TRUE),
     shift(x_unsorted, y_unsorted, assume_sorted = FALSE),
-    tolerance = tol
+    "shift assume_sorted=TRUE vs FALSE"
   )
 })
 
 test_that("ratio assume_sorted=TRUE on sorted input equals unsorted call", {
-  expect_equal(
+  # Exact despite the log/exp route: both sides take it, over the same values.
+  expect_exact(
     ratio(x_sorted, y_sorted, assume_sorted = TRUE),
     ratio(x_unsorted, y_unsorted, assume_sorted = FALSE),
-    tolerance = tol
+    "ratio assume_sorted=TRUE vs FALSE"
   )
 })
 
 test_that("disparity assume_sorted=TRUE on sorted input equals unsorted call", {
-  expect_equal(
+  expect_exact(
     disparity(x_sorted, y_sorted, assume_sorted = TRUE),
     disparity(x_unsorted, y_unsorted, assume_sorted = FALSE),
-    tolerance = tol
+    "disparity assume_sorted=TRUE vs FALSE"
   )
 })
 
 test_that("center_bounds assume_sorted=TRUE on sorted input equals unsorted call", {
-  expect_equal(
+  expect_exact_bounds(
     center_bounds(x_sorted, misrate = 0.3, assume_sorted = TRUE),
     center_bounds(x_unsorted, misrate = 0.3, assume_sorted = FALSE),
-    tolerance = tol
+    "center_bounds assume_sorted=TRUE vs FALSE"
   )
 })
 
 test_that("shift_bounds assume_sorted=TRUE on sorted input equals unsorted call", {
-  expect_equal(
+  expect_exact_bounds(
     shift_bounds(x_sorted, y_sorted, misrate = 0.3, assume_sorted = TRUE),
     shift_bounds(x_unsorted, y_unsorted, misrate = 0.3, assume_sorted = FALSE),
-    tolerance = tol
+    "shift_bounds assume_sorted=TRUE vs FALSE"
   )
 })
 
 test_that("ratio_bounds assume_sorted=TRUE on sorted input equals unsorted call", {
-  expect_equal(
+  # Exact despite the log-space route: both sides take it, over the same values.
+  expect_exact_bounds(
     ratio_bounds(x_sorted, y_sorted, misrate = 0.3, assume_sorted = TRUE),
     ratio_bounds(x_unsorted, y_unsorted, misrate = 0.3, assume_sorted = FALSE),
-    tolerance = tol
+    "ratio_bounds assume_sorted=TRUE vs FALSE"
   )
 })
 
 test_that("spread_bounds is flag-invariant on the same input and seed", {
   # spread_bounds shuffles internally; the assume_sorted flag only affects the
   # sparity check, never the shuffle. Same input + same seed must be identical.
-  expect_equal(
+  expect_exact_bounds(
     spread_bounds(x_sorted, misrate = 0.3, seed = 42, assume_sorted = TRUE),
     spread_bounds(x_sorted, misrate = 0.3, seed = 42, assume_sorted = FALSE),
-    tolerance = tol
+    "spread_bounds assume_sorted=TRUE vs FALSE"
   )
 })
 
 test_that("disparity_bounds is flag-invariant on the same input and seed", {
-  expect_equal(
+  expect_exact_bounds(
     disparity_bounds(x_sorted, y_sorted, misrate = 0.3, seed = 42, assume_sorted = TRUE),
     disparity_bounds(x_sorted, y_sorted, misrate = 0.3, seed = 42, assume_sorted = FALSE),
-    tolerance = tol
+    "disparity_bounds assume_sorted=TRUE vs FALSE"
   )
 })
 

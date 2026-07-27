@@ -313,11 +313,21 @@ mod tests {
 
     #[test]
     fn sorted_input_converges() {
-        // Valid sorted input must converge well within the iteration cap.
+        // Valid sorted input must converge well within the iteration cap, and
+        // must converge to the exact answer. Over 0..=100 the pairwise absolute
+        // difference d occurs 101 - d times, so ranks 2495..=2565 of the 5050
+        // ordered differences are all 30; the two middle ones (2525, 2526) are
+        // therefore both 30 and their midpoint is 30.0 exactly. Integer-valued
+        // and exactly representable, so this is a bit-exact expectation. The
+        // previous `is_finite() && > 0.0` pair asserted almost nothing.
         let values: Vec<f64> = (0..101).map(|i| i as f64).collect();
         let result = spread_impl(&values, true).unwrap();
-        assert!(result.is_finite());
-        assert!(result > 0.0);
+        assert!(
+            result.to_bits() == 30.0f64.to_bits(),
+            "spread of 0..=100: got {result} (0x{got:016x}), want 30 (0x{want:016x})",
+            got = result.to_bits(),
+            want = 30.0f64.to_bits()
+        );
     }
 
     #[test]

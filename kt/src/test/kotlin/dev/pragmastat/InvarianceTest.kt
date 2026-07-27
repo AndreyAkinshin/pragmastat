@@ -5,6 +5,28 @@ import kotlin.math.abs
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
+/**
+ * Equivariance properties of the estimators, plus the [Rng] helper contracts.
+ *
+ * This suite keeps a TOLERANCE, and deliberately so. Nothing here compares two
+ * routes to one computation the way [AssumeSortedTest] and [ReferenceTest] do:
+ * every case feeds the estimator a DIFFERENT input (shifted, scaled, negated, or
+ * with the two arguments swapped) and asserts that the answer moves the way the
+ * mathematics says it should. The expectation side therefore carries its own
+ * arithmetic (`+ shift`, `* scale`), and both sides round independently. A
+ * mismatch in the last bits is a rounding, not a defect, so an exact comparison
+ * would report noise as failure.
+ *
+ * That is measured, not assumed: flipping this helper to compare raw binary64
+ * payloads fails 14 of the 22 property tests, every one of them a case whose
+ * transformation is inexact in binary64 (+10, *2.5, *5, *3, or the 2/3 factor).
+ * The 8 that survive are the ones whose transformation is exact (negation,
+ * scaling by +/-2, swapping the arguments), and they survive by luck of being
+ * exact rather than by being identities, so they are not worth splitting the
+ * suite over.
+ *
+ * The exact-comparison argument and where it does apply sit on [assertBitwise].
+ */
 class InvarianceTest {
     private val epsilon = 1e-9
 
