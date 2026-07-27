@@ -55,6 +55,28 @@ test_that("sample construction satisfies reference tests", {
       expect_equal(s$is_weighted, output$is_weighted,
         info = paste("IsWeighted mismatch:", file_label)
       )
+
+      # Bitwise, via expect_exact. Both fields are public values derived by
+      # summing the weights, and a sum depends on the order it is taken in:
+      # floating-point addition is not associative. A tolerance here would
+      # accept an implementation that reduces pairwise or accumulates in
+      # extended precision (which is what R's own sum() does on x86-64), and
+      # that divergence is exactly what these fields exist to pin.
+      #
+      # Both are absent from the unweighted fixtures, so each is checked only
+      # when the fixture carries it.
+      if (!is.null(output$total_weight)) {
+        expect_exact(
+          s$total_weight, output$total_weight,
+          paste(file_label, "total_weight")
+        )
+      }
+      if (!is.null(output$weighted_size)) {
+        expect_exact(
+          s$weighted_size, output$weighted_size,
+          paste(file_label, "weighted_size")
+        )
+      }
     }
   }
 })

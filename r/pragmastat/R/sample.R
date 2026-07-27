@@ -31,13 +31,25 @@ Sample <- R6::R6Class(
         if (any(weights < 0)) {
           stop("all weights must be non-negative")
         }
-        total_w <- sum(weights)
+        # Sequential, left to right, not sum(). Floating-point addition is not
+        # associative, and R's sum() accumulates in long double on x86-64, so it lands
+        # on a different double from the plain loop the other six implementations run.
+        # Measured over 20000 random weight vectors, the two disagree on 72% of the
+        # squared sums, moving weighted_size by up to 2.8e-15 relative. weighted_size
+        # is public API, so that is a cross-language divergence in the surface.
+        ww <- as.double(weights)
+        total_w <- 0.0
+        total_w_sq <- 0.0
+        for (wi in ww) {
+          total_w <- total_w + wi
+          total_w_sq <- total_w_sq + wi * wi
+        }
         if (total_w < 1e-9) {
           stop("total weight must be positive")
         }
-        private$.weights <- as.double(weights)
+        private$.weights <- ww
         private$.total_weight <- total_w
-        private$.weighted_size <- (total_w * total_w) / sum(weights * weights)
+        private$.weighted_size <- (total_w * total_w) / total_w_sq
       } else {
         private$.total_weight <- 1.0
         private$.weighted_size <- as.double(length(values))

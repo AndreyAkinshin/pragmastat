@@ -84,6 +84,19 @@ class MetrologyTest {
 
                     assertEquals(expectedSize, sample.size, "size mismatch")
                     assertEquals(expectedIsWeighted, sample.isWeighted, "isWeighted mismatch")
+
+                    // Bitwise, and only when the fixture carries the field: the unweighted
+                    // cases omit both. totalWeight and weightedSize are public values derived
+                    // by summing the weights, and a floating-point sum depends on the order it
+                    // is taken in. A tolerance would accept a pairwise reduction or an
+                    // extended-precision accumulator, which is the divergence these two fields
+                    // exist to pin: the normative form is one left-to-right pass.
+                    output["total_weight"]?.let {
+                        assertBitwise(parseFloat(it), sample.totalWeight, "totalWeight")
+                    }
+                    output["weighted_size"]?.let {
+                        assertBitwise(parseFloat(it), sample.weightedSize, "weightedSize")
+                    }
                 },
             )
         }

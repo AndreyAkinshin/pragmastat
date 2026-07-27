@@ -5,6 +5,8 @@
   },
   "output": {
     "size": 3,
-    "is_weighted": true
+    "is_weighted": true,
+    "total_weight": 1.0,
+    "weighted_size": 2.6315789473684212
   }
 }

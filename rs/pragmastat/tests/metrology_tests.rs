@@ -94,6 +94,11 @@ fn test_sample_construction() {
         let output = &raw["output"];
         let expected_size = output["size"].as_u64().unwrap() as usize;
         let expected_is_weighted = output["is_weighted"].as_bool().unwrap();
+        // Only the weighted fixtures carry these two, so absence is a skip rather than a
+        // default to compare against. Present-but-not-a-number is a broken fixture, hence
+        // the unwrap inside the map rather than an and_then that would quietly drop it.
+        let expected_total_weight = output.get("total_weight").map(|v| v.as_f64().unwrap());
+        let expected_weighted_size = output.get("weighted_size").map(|v| v.as_f64().unwrap());
 
         let result = if let Some(ref w) = weights {
             Sample::weighted(values, w.clone(), MeasurementUnit::number())
@@ -114,6 +119,28 @@ fn test_sample_construction() {
                         "{file_name:?}: is_weighted = {}, want {expected_is_weighted}",
                         s.is_weighted()
                     ));
+                }
+                // Exact, not tolerant. Both are public values obtained by summing the
+                // weights, and the order of that sum is the property under test: addition
+                // is not associative, so a pairwise reduction (numpy) or an extended-
+                // precision accumulator (R's sum) lands on a different double. An epsilon
+                // here would pass exactly the implementations these fixtures exist to
+                // reject; three of them carry weights chosen to make the order observable.
+                if let Some(ev) = expected_total_weight {
+                    if !Conformance::Exact.matches(s.total_weight(), ev) {
+                        failures.push(format!(
+                            "{file_name:?}: {}",
+                            Conformance::Exact.mismatch("total_weight", ev, s.total_weight())
+                        ));
+                    }
+                }
+                if let Some(ev) = expected_weighted_size {
+                    if !Conformance::Exact.matches(s.weighted_size(), ev) {
+                        failures.push(format!(
+                            "{file_name:?}: {}",
+                            Conformance::Exact.mismatch("weighted_size", ev, s.weighted_size())
+                        ));
+                    }
                 }
             }
             Err(e) => {

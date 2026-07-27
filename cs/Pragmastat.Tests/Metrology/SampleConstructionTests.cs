@@ -67,6 +67,17 @@ public class SampleConstructionTests
 
     Assert.Equal(expectedSize, sample.Size);
     Assert.Equal(expectedIsWeighted, sample.IsWeighted);
+
+    // Bitwise, not tolerant. Both fields are public values derived by summing the weights, and a
+    // sum depends on the order it is taken in: floating-point addition is not associative. A
+    // tolerance would accept an implementation that reduces pairwise or accumulates in extended
+    // precision, which is exactly the divergence these fields exist to pin. The unweighted
+    // fixtures omit both, so each is checked only when the fixture carries it.
+    string context = $"Suite: {SuiteName}, test {testName}";
+    if (output.TryGetProperty("total_weight", out var expectedTotalWeight))
+      BitwiseAssert.Equal(expectedTotalWeight.GetDouble(), sample.TotalWeight, context + ", total_weight");
+    if (output.TryGetProperty("weighted_size", out var expectedWeightedSize))
+      BitwiseAssert.Equal(expectedWeightedSize.GetDouble(), sample.WeightedSize, context + ", weighted_size");
   }
 
   private static double[] ParseValuesWithSpecialFloats(JsonElement array)

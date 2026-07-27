@@ -735,48 +735,41 @@ class TestReference:
 class TestSampleConstruction:
     """Tests from tests/sample-construction/ cross-language test data."""
 
-    def test_valid_single(self):
-        s = Sample([42.0])
-        assert s.size == 1
-        assert s.is_weighted is False
+    def test_sample_construction_reference(self):
+        """Test Sample construction against reference data.
 
-    def test_valid_multiple(self):
-        s = Sample([1.0, 2.0, 3.0, 4.0, 5.0])
-        assert s.size == 5
-        assert s.is_weighted is False
+        Driven by the fixture directory rather than by hand-written cases: the
+        weighted fixtures carry 100-element weight vectors chosen so the
+        summation order is observable, and transcribing those into test source
+        is how a suite stops tracking the fixtures it claims to check.
+        """
+        for fixture_name, test_case in _load_fixtures("sample-construction"):
+            context = f" for {fixture_name}"
+            values = _parse_sample_values(test_case["input"]["values"])
+            weights = test_case["input"].get("weights")
 
-    def test_valid_weighted(self):
-        s = Sample([1.0, 2.0, 3.0], weights=[0.5, 0.3, 0.2])
-        assert s.size == 3
-        assert s.is_weighted is True
+            if "expected_error" in test_case:
+                with pytest.raises(AssumptionError) as exc_info:
+                    Sample(values, weights=weights)
+                _assert_violation(exc_info.value, test_case["expected_error"], context)
+                continue
 
-    def test_error_empty(self):
-        with pytest.raises(AssumptionError) as exc_info:
-            Sample([])
-        assert exc_info.value.violation is not None
-        assert exc_info.value.violation.id.value == "validity"
-        assert exc_info.value.violation.subject == "x"
+            output = test_case["output"]
+            s = Sample(values, weights=weights)
+            assert s.size == output["size"], f"Failed size{context}"
+            assert s.is_weighted == output["is_weighted"], f"Failed is_weighted{context}"
 
-    def test_error_nan(self):
-        with pytest.raises(AssumptionError) as exc_info:
-            Sample([1.0, float("nan"), 3.0])
-        assert exc_info.value.violation is not None
-        assert exc_info.value.violation.id.value == "validity"
-        assert exc_info.value.violation.subject == "x"
-
-    def test_error_inf(self):
-        with pytest.raises(AssumptionError) as exc_info:
-            Sample([1.0, float("inf"), 3.0])
-        assert exc_info.value.violation is not None
-        assert exc_info.value.violation.id.value == "validity"
-        assert exc_info.value.violation.subject == "x"
-
-    def test_error_neg_inf(self):
-        with pytest.raises(AssumptionError) as exc_info:
-            Sample([1.0, float("-inf"), 3.0])
-        assert exc_info.value.violation is not None
-        assert exc_info.value.violation.id.value == "validity"
-        assert exc_info.value.violation.subject == "x"
+            # Bitwise, not pytest.approx. Both fields are public values derived by
+            # summing the weights, and a sum depends on the order it is taken in:
+            # floating-point addition is not associative. A tolerance here would
+            # accept an implementation that reduces pairwise (np.sum) or accumulates
+            # in extended precision (R's sum()), which is exactly the divergence
+            # these fields exist to pin. Present only on the weighted fixtures, so
+            # each is checked only when the fixture carries it -- no default.
+            if "total_weight" in output:
+                _assert_scalar(s.total_weight, output["total_weight"], f"Failed total_weight{context}", bitwise=True)
+            if "weighted_size" in output:
+                _assert_scalar(s.weighted_size, output["weighted_size"], f"Failed weighted_size{context}", bitwise=True)
 
 
 class TestUnitPropagation:

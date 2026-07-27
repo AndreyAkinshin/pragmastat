@@ -962,6 +962,17 @@ describe('Reference Tests', () => {
 
           expect(sample.size).toBe(data.output.size);
           expect(sample.isWeighted).toBe(data.output.is_weighted);
+          // Bitwise (toBe, not toBeCloseTo). Both are public values derived by summing
+          // the weights, and a sum depends on the order it is taken in: floating-point
+          // addition is not associative. A tolerance here would accept an implementation
+          // that reduces pairwise or accumulates in extended precision, which is exactly
+          // the divergence these fields exist to pin. Absent on unweighted fixtures.
+          if (data.output.total_weight !== undefined) {
+            expect(sample.totalWeight).toBe(data.output.total_weight);
+          }
+          if (data.output.weighted_size !== undefined) {
+            expect(sample.weightedSize).toBe(data.output.weighted_size);
+          }
         });
       });
     }

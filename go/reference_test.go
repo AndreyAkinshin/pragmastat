@@ -1291,8 +1291,10 @@ func TestSampleConstruction(t *testing.T) {
 			}
 
 			var output struct {
-				Size       int  `json:"size"`
-				IsWeighted bool `json:"is_weighted"`
+				Size         int      `json:"size"`
+				IsWeighted   bool     `json:"is_weighted"`
+				TotalWeight  *float64 `json:"total_weight"`
+				WeightedSize *float64 `json:"weighted_size"`
 			}
 			if err := json.Unmarshal(raw["output"], &output); err != nil {
 				t.Fatalf("Failed to parse output: %v", err)
@@ -1313,6 +1315,17 @@ func TestSampleConstruction(t *testing.T) {
 			}
 			if s.IsWeighted() != output.IsWeighted {
 				t.Errorf("IsWeighted = %v, want %v", s.IsWeighted(), output.IsWeighted)
+			}
+			// Bitwise. Both are public values derived by summing the weights, and a sum
+			// depends on the order it is taken in: floating-point addition is not
+			// associative. A tolerance here would accept an implementation that reduces
+			// pairwise or accumulates in extended precision, which is exactly the
+			// divergence these fields exist to pin.
+			if output.TotalWeight != nil && s.TotalWeight() != *output.TotalWeight {
+				t.Errorf("TotalWeight = %v, want %v", s.TotalWeight(), *output.TotalWeight)
+			}
+			if output.WeightedSize != nil && s.WeightedSize() != *output.WeightedSize {
+				t.Errorf("WeightedSize = %v, want %v", s.WeightedSize(), *output.WeightedSize)
 			}
 		})
 	}
