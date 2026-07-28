@@ -586,6 +586,37 @@ fi
 echo "deterministic randomization fixtures match their generator"
 """
 
+[tasks."go:check:arm64"]
+description = "Run the Go suite on arm64, where the compiler is allowed to fuse"
+# go:check:fma reads the generated assembly and fails on an FMA instruction, which is a static
+# argument. This is the dynamic one: it runs the whole suite on an architecture where gc does
+# contract, and requires it to agree with the fixtures produced on amd64.
+#
+# Both are worth having. The static check names the site; this one would catch a divergence
+# arriving through some route nobody thought to grep for. The bug it exists for was real: Go
+# returned a different confidence interval on arm64 on 8268 of 79797 sampled margins.
+#
+# Not part of `mise run ci`, which runs inside a container without qemu. The GitHub job installs
+# it and runs this there, so the check is enforced rather than optional.
+run = """
+#!/usr/bin/env bash
+set -euo pipefail
+if ! command -v qemu-aarch64-static >/dev/null 2>&1; then
+  echo "ERROR: qemu-aarch64-static is not installed, so the arm64 check cannot run." >&2
+  echo "Install qemu-user-static, or run this outside the toolbox." >&2
+  exit 1
+fi
+binary="$(mktemp -d)/pragmastat-arm64.test"
+trap 'rm -rf "$(dirname "$binary")"' EXIT
+# Built and run from go/: the suite resolves the fixture tree as ../tests, so running it from
+# anywhere else silently finds no data and passes with nothing loaded. -race is unavailable
+# under emulation and is covered by go:test on the host architecture anyway.
+cd go
+GOOS=linux GOARCH=arm64 go test -c -o "$binary" .
+qemu-aarch64-static "$binary" -test.count=1
+echo "the Go suite agrees with the fixtures on arm64"
+"""
+
 [tasks."tests:check:generator-drift"]
 description = "Assert the generated fixtures still match the generator that owns them"
 # tests:check:rng-fixtures makes this check for the five suites the Rust generator owns. The

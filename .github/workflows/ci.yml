@@ -289,6 +289,16 @@ jobs:
     - name: Test
       run: mise run go:test
 
+    # gc contracts a multiply into an add on arm64 and never on amd64, so the suite passing
+    # here is not evidence it passes there. It did not: Go returned a different confidence
+    # interval on arm64 on 8268 of 79797 sampled margins. go:check:fma reads the assembly;
+    # this runs the suite.
+    - name: Install qemu for the arm64 run
+      run: sudo apt-get update && sudo apt-get install -y qemu-user-static
+
+    - name: Test on arm64
+      run: mise run go:check:arm64
+
     - name: Build
       run: mise run go:build
 
