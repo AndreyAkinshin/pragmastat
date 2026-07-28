@@ -59,12 +59,20 @@ func probeInt(tag string, v int, err error) {
 }
 
 // probeMisrates returns the misrates worth asking about for a given pair of sizes: a few
-// ordinary ones, plus the achievable floor and its first few neighbours.
+// ordinary ones, the achievable floor with its first few neighbours, and the misrates that
+// sit exactly on an Edgeworth decision.
 //
 // The floor is where this matters. There the admissibility test compares a quantity
 // against itself computed by another route, so it is an exact tie in exact arithmetic and
 // rounding alone decides it. A sweep of round misrates never lands there, which is
 // precisely why this class of divergence stayed invisible for so long.
+//
+// The Edgeworth decisions are the same argument applied to the other search. Both margins
+// binary-search for the largest index whose expansion stays below the misrate, so feeding
+// back an expansion value produces a comparison that exact arithmetic leaves tied. The
+// floor and the crossover are separate boundaries and covering one does not cover the
+// other: this probe reported every margin unmoved while the crossover was returning a
+// different integer in three of the seven ports.
 func probeMisrates(n, m int) []float64 {
 	out := []float64{1e-3, 1e-2, 0.05, 0.1, 0.5}
 	f, err := minAchievableMisrateTwoSample(n, m)
@@ -73,6 +81,31 @@ func probeMisrates(n, m int) []float64 {
 		for range 4 {
 			f = math.Nextafter(f, 1.0)
 			out = append(out, f)
+		}
+	}
+	out = append(out, probeEdgeworthMisrates(n, m)...)
+	return out
+}
+
+// probeEdgeworthMisrates returns misrates that land on an Edgeworth decision boundary.
+//
+// Each margin doubles a one-sided search, so the misrate that ties the comparison at index
+// i is twice the expansion there. Values outside (0, 1) are dropped: they are ties the
+// domain check rejects before the search runs, so they measure nothing.
+func probeEdgeworthMisrates(n, m int) []float64 {
+	var out []float64
+	add := func(v float64) {
+		if v > 0 && v < 1 {
+			out = append(out, v, math.Nextafter(v, 0), math.Nextafter(v, 1))
+		}
+	}
+	for _, q := range []float64{0.05, 0.1, 0.2, 0.3, 0.4} {
+		if n > signedRankMaxExactSize {
+			w := int64(q * float64(n) * float64(n+1) / 2)
+			add(2 * signedRankEdgeworthCdf(n, w))
+		}
+		if n+m > maxExactSize {
+			add(2 * edgeworthCdf(n, m, int64(q*float64(n)*float64(m))))
 		}
 	}
 	return out
