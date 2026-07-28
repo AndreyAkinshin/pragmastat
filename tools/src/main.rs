@@ -181,6 +181,26 @@ fn ensure_xrefs_resolved(xref_map: &xref::XRefMap) -> Result<()> {
     Ok(())
 }
 
+/// Removes pages left by an earlier generation, before the current set is written.
+///
+/// The output directory is gitignored, so switching branches does not clean it. A page whose
+/// source exists only on another branch therefore stays on disk and continues to be served: a
+/// branch that had never defined the Dist family was publishing three of its pages.
+fn clear_previously_generated_pages(web_content_path: &Path) -> Result<()> {
+    let mut cleared = 0;
+    for entry in std::fs::read_dir(web_content_path)? {
+        let path = entry?.path();
+        if path.extension().is_some_and(|e| e == "mdx") {
+            std::fs::remove_file(&path)?;
+            cleared += 1;
+        }
+    }
+    if cleared > 0 {
+        println!("  Cleared {cleared} previously generated pages");
+    }
+    Ok(())
+}
+
 fn build_web(base_path: &Path) -> Result<()> {
     println!("Building web output...");
 
@@ -192,6 +212,8 @@ fn build_web(base_path: &Path) -> Result<()> {
     // Create output directories
     std::fs::create_dir_all(&web_content_path)?;
     std::fs::create_dir_all(&web_public_img_path)?;
+
+    clear_previously_generated_pages(&web_content_path)?;
 
     // Load definitions
     let definitions = definitions::load_definitions(&manual_path.join("definitions.yaml"))?;

@@ -7,6 +7,12 @@ use std::collections::HashMap;
 use std::fmt::Write;
 
 /// Convert Typst math content to LaTeX string
+/// Stand-in for Typst's escaped solidus `\\/` while fractions are converted.
+///
+/// U+2044 FRACTION SLASH never appears in the manual's sources, so it cannot collide with real
+/// content, and no fraction scanner recognises it, so a literal slash passes through untouched.
+const LITERAL_SOLIDUS: &str = "\u{2044}";
+
 pub fn typst_to_latex(
     typst_math: &str,
     definitions: &HashMap<String, String>,
@@ -14,14 +20,14 @@ pub fn typst_to_latex(
 ) -> String {
     let mut result = typst_math.to_string();
 
-    // Convert Typst \/ (explicit fraction) depending on display mode
-    if display {
-        // Display mode: convert \/ to U+2044 marker for \frac conversion
-        result = result.replace("\\/", "\u{2044}");
-    } else {
-        // Inline mode: convert \/ to plain slash (flat fraction)
-        result = result.replace("\\/", "/");
-    }
+    // In Typst math, `/` builds a fraction and `\/` is an escaped, literal solidus. This
+    // converter used to expand `\/` into \frac and leave `/` alone inside some contexts, so the
+    // website disagreed with the PDF on the same source: manual/median/median.typ writes both
+    // forms in one equation, and the two outputs swapped them.
+    //
+    // `\/` is therefore carried through as a marker that survives fraction conversion untouched
+    // and becomes a plain slash at the end, which is what Typst prints.
+    result = result.replace("\\/", LITERAL_SOLIDUS);
 
     // Handle Typst op() function before other processing
     result = convert_op(&result);
@@ -306,14 +312,20 @@ fn convert_upright(input: &str) -> String {
 fn convert_floor_ceil_abs(input: &str) -> String {
     let mut result = input.to_string();
 
-    // Process floor() calls
-    result = convert_delimiter_func(&result, "floor(", "\\lfloor ", " \\rfloor");
+    // \left and \right so the delimiters take the height of what they enclose. Without them a
+    // floor around a fraction renders as full-height content between half-height brackets, which
+    // is the one typesetting error a reader notices immediately. They are inert when the content
+    // is a single symbol, so there is no case where the plain form would be preferable.
+    result = convert_delimiter_func(&result, "floor(", "\\left\\lfloor ", " \\right\\rfloor");
+    result = convert_delimiter_func(&result, "ceil(", "\\left\\lceil ", " \\right\\rceil");
+    // \lvert/\rvert rather than | so the delimiter cannot be read as a markdown table separator.
+    result = convert_delimiter_func(&result, "abs(", "\\left\\lvert ", " \\right\\rvert");
 
-    // Process ceil() calls
-    result = convert_delimiter_func(&result, "ceil(", "\\lceil ", " \\rceil");
-
-    // Process abs() calls (use \lvert/\rvert to avoid | conflicting with markdown tables)
-    result = convert_delimiter_func(&result, "abs(", "\\lvert ", " \\rvert");
+    // Alphabet functions. Without these the wrapper name reached the page as literal text:
+    // `cal(N)` rendered as the three letters "cal" followed by a parenthesised N.
+    result = convert_delimiter_func(&result, "cal(", "\\mathcal{", "}");
+    result = convert_delimiter_func(&result, "frak(", "\\mathfrak{", "}");
+    result = convert_delimiter_func(&result, "upright(", "\\mathrm{", "}");
 
     result
 }
@@ -368,33 +380,53 @@ fn convert_cases(input: &str) -> String {
     // This is a simplified conversion for common patterns
     if let Some(start_byte) = result.find("cases(") {
         let after_cases = &result[start_byte + 6..];
-        if let Some(end_char) = find_matching_paren(after_cases) {
-            // Convert character index to byte index for proper string slicing
-            // find_matching_paren returns character position, not byte position
-            let chars: Vec<char> = after_cases.chars().collect();
-            let inner: String = chars[..end_char].iter().collect();
+        if let Some(end) = find_matching_paren(after_cases) {
+            let inner: String = after_cases[..end].to_string();
 
-            // Convert inner content:
-            // - & stays as &
-            // - , at end of line becomes \\
-            let latex_inner = inner
-                .lines()
-                .map(str::trim)
-                .filter(|line| !line.is_empty())
-                .map(|line| line.trim_end_matches(','))
+            // Branches are separated by top-level commas, which is how Typst reads them. Source
+            // newlines are only formatting: splitting on those collapsed every one-line
+            // `cases(...)` into a single row, which then ran off the side of the column.
+            let latex_inner = split_top_level_commas(&inner)
+                .into_iter()
+                .map(|branch| branch.trim().to_string())
+                .filter(|branch| !branch.is_empty())
                 .collect::<Vec<_>>()
                 .join(" \\\\ ");
 
             let latex_cases = format!("\\begin{{cases}} {latex_inner} \\end{{cases}}");
 
-            // Calculate byte offset for the content after the closing paren
-            let after_end: String = chars[end_char + 1..].iter().collect();
+            let after_end = &after_cases[end + 1..];
 
             result = format!("{}{}{}", &result[..start_byte], latex_cases, after_end);
         }
     }
 
     result
+}
+
+/// Splits on commas that are not inside a bracket, brace or parenthesis.
+fn split_top_level_commas(input: &str) -> Vec<String> {
+    let mut parts = Vec::new();
+    let mut current = String::new();
+    let mut depth = 0i32;
+    for c in input.chars() {
+        match c {
+            '(' | '[' | '{' => {
+                depth += 1;
+                current.push(c);
+            }
+            ')' | ']' | '}' => {
+                depth -= 1;
+                current.push(c);
+            }
+            ',' if depth == 0 => {
+                parts.push(std::mem::take(&mut current));
+            }
+            _ => current.push(c),
+        }
+    }
+    parts.push(current);
+    parts
 }
 
 /// Convert Typst `attach(base, b: bottom)` to LaTeX `\underset{bottom}{base}`
@@ -462,9 +494,16 @@ fn find_unescaped_comma(s: &str) -> Option<usize> {
 }
 
 /// Find matching closing parenthesis, accounting for nesting
+/// Byte offset of the `)` closing a group whose `(` has already been consumed.
+///
+/// The offset is in bytes because every caller but one slices the string with it directly, and
+/// they were doing that while this returned a character index. The two agree on ASCII, which is
+/// why it went unnoticed: the first piece of prose to put a non-ASCII character inside a converted
+/// group was a fraction slash, and it panicked on a char boundary rather than quietly
+/// mis-slicing.
 fn find_matching_paren(s: &str) -> Option<usize> {
     let mut depth = 1;
-    for (i, c) in s.chars().enumerate() {
+    for (i, c) in s.char_indices() {
         match c {
             '(' => depth += 1,
             ')' => {
@@ -481,22 +520,59 @@ fn find_matching_paren(s: &str) -> Option<usize> {
 
 /// Convert Typst "text" to LaTeX \text{text}
 fn convert_text_quotes(input: &str) -> String {
+    let chars: Vec<char> = input.chars().collect();
     let mut result = String::new();
-    let chars = input.chars().peekable();
     let mut in_quote = false;
+    let mut i = 0;
 
-    for c in chars {
-        if c == '"' {
-            if in_quote {
-                result.push('}');
-                in_quote = false;
-            } else {
-                result.push_str("\\text{");
-                in_quote = true;
-            }
-        } else {
+    while i < chars.len() {
+        let c = chars[i];
+        if c != '"' {
             result.push(c);
+            i += 1;
+            continue;
         }
+        if !in_quote {
+            // Symmetric to the gap inserted after a closing quote: `n "is odd"` needs the same
+            // thin space on this side, since the source space between them carries no width.
+            // Mirror of the rule above: only an adjacent atom earns the gap. A script marker
+            // binds to what follows it, so it is excluded even though it ends in a letter.
+            let trimmed = result.trim_end();
+            let needs_gap = trimmed
+                .chars()
+                .last()
+                .is_some_and(|c| c.is_alphanumeric() || c == '}')
+                && !trimmed.ends_with('_')
+                && !trimmed.ends_with('^');
+            if needs_gap {
+                result.truncate(trimmed.len());
+                result.push_str("\\;");
+            }
+            result.push_str("\\text{");
+            in_quote = true;
+            i += 1;
+            continue;
+        }
+        result.push('}');
+        in_quote = false;
+        i += 1;
+
+        // Typst separates a quoted word from what follows it. LaTeX does not, and a literal
+        // space carries no width in math mode, so `"if" n "is odd"` rendered as a single run of
+        // letters. A thin space restores the gap. Source spaces are dropped because they
+        // contribute nothing on their own.
+        let mut j = i;
+        while j < chars.len() && chars[j].is_whitespace() {
+            j += 1;
+        }
+        // A thin space belongs only between the word and an adjacent atom: a variable, a number
+        // or another word. LaTeX already spaces relations, delimiters and separators, so adding
+        // one there is stray width rather than a gap.
+        let needs_gap = j < chars.len() && (chars[j].is_alphanumeric() || chars[j] == '"');
+        if needs_gap {
+            result.push_str("\\;");
+        }
+        i = j;
     }
 
     // Close any unclosed text brace
@@ -581,18 +657,6 @@ fn convert_syntax(input: &str, display: bool) -> String {
         result = result.replace(typst, latex);
     }
 
-    // Special operators that need \prefix form
-    let operator_mappings = [
-        (" sum", " \\sum"),
-        (" prod", " \\prod"),
-        ("(sum", "(\\sum"),
-        ("(prod", "(\\prod"),
-    ];
-
-    for (typst, latex) in operator_mappings {
-        result = result.replace(typst, latex);
-    }
-
     // Comparison operators (must come before word mappings to handle multi-char operators)
     // These are literal replacements, not word-boundary
     // Order matters: longer patterns first to avoid partial matches
@@ -654,6 +718,8 @@ fn convert_syntax(input: &str, display: bool) -> String {
         ("arrow.l.double", "\\Leftarrow"),
         ("arrow.lr.double", "\\Leftrightarrow"),
         ("infinity", "\\infty"),
+        // Typst's short spelling of the same symbol. Without it the literal "oo" reached the page.
+        ("oo", "\\infty"),
         ("arrow.r", "\\rightarrow"),
         ("arrow.l", "\\leftarrow"),
         ("forall", "\\forall"),
@@ -662,6 +728,9 @@ fn convert_syntax(input: &str, display: bool) -> String {
         ("dots.c", "\\cdots"),
         ("dots.v", "\\vdots"),
         ("dots.h", "\\ldots"),
+        // Bare `dots` is Typst's default spelling and must come after the qualified ones, which
+        // are longer matches. Without it the word reached the page set as a product of variables.
+        ("dots", "\\dots"),
         ("times", "\\times"),
         ("tilde", "\\sim"),
         ("star", "\\star"),
@@ -689,6 +758,16 @@ fn convert_syntax(input: &str, display: bool) -> String {
         ("ln", "\\ln"),
         ("...", "\\ldots"),
         // neq, leq, geq are handled by operator_replacements (!=, <=, >=)
+        ("in", "\\in"),
+        // Large operators. These were matched by the literal prefixes " sum" and "(sum", so one
+        // starting a math run converted nowhere and reached the page as three italic letters.
+        ("sum", "\\sum"),
+        ("prod", "\\prod"),
+        ("integral", "\\int"),
+        // Logical connectives, which otherwise set as a product of italic letters.
+        ("and", "\\land"),
+        ("or", "\\lor"),
+        ("not", "\\lnot"),
         ("cup", "\\cup"),
         ("cap", "\\cap"),
         ("hat", "\\hat"),
@@ -697,6 +776,9 @@ fn convert_syntax(input: &str, display: bool) -> String {
         ("dot", "\\cdot"),
         // Note: lr(|...|) is handled by convert_lr function, not here
         // Don't add |) -> \right| here as it incorrectly matches |x|) patterns
+        // Typst's spelled-out forms, which must precede the two-letter abbreviations below.
+        ("plus.minus", "\\pm"),
+        ("minus.plus", "\\mp"),
         ("pm", "\\pm"),
         ("mp", "\\mp"),
     ];
@@ -780,8 +862,12 @@ fn convert_syntax(input: &str, display: bool) -> String {
         if typst.contains('(') || typst.contains('|') || typst.contains('.') {
             result = result.replace(typst, latex);
         } else {
-            // Use word boundary matching - treats _ as word character so x_min won't convert
-            let pattern = format!(r"\b{}\b", regex::escape(typst));
+            // Word boundary on the left only. `_` counts as a word character, which is what keeps
+            // `x_min` from turning into `x_\min`, but it also suppressed the right-hand boundary
+            // for an operator carrying its own script: `sum_(i=0)` matched nothing and the symbol
+            // reached the page as three italic letters. The right side is checked below instead,
+            // where a following letter or digit rejects the match and a script marker does not.
+            let pattern = format!(r"\b{}", regex::escape(typst));
             if let Ok(re) = regex::Regex::new(&pattern) {
                 let mut new_result = String::new();
                 let mut last_end = 0;
@@ -790,12 +876,17 @@ fn convert_syntax(input: &str, display: bool) -> String {
                     // Check if preceded by backslash
                     let preceded_by_backslash =
                         m.start() > 0 && result.as_bytes()[m.start() - 1] == b'\\';
+                    // A following letter or digit means this is part of a longer identifier.
+                    let inside_identifier = result[m.end()..]
+                        .chars()
+                        .next()
+                        .is_some_and(|c| c.is_ascii_alphanumeric());
 
                     // Add text before this match
                     new_result.push_str(&result[last_end..m.start()]);
 
                     // Add replacement or original depending on backslash
-                    if preceded_by_backslash {
+                    if preceded_by_backslash || inside_identifier {
                         new_result.push_str(m.as_str());
                     } else {
                         new_result.push_str(latex);
@@ -835,13 +926,127 @@ fn convert_syntax(input: &str, display: bool) -> String {
         result = convert_fractions(&result);
     }
 
+    // The escaped solidus has passed the fraction scanners untouched; restore it before any
+    // later stage can see a multi-byte character it does not expect.
+    result = result.replace(LITERAL_SOLIDUS, "/");
+
+    // Braces the author wrote are set notation; braces this converter emitted are grouping. By
+    // this point every emitted brace belongs to a LaTeX command, so what remains unattached is
+    // the author's and needs escaping: `{2, 3, 4}` was reaching the page as a bare `2, 3, 4`.
+    result = escape_set_braces(&result);
+
     // Convert Typst lr() for auto-sizing delimiters
     result = convert_lr(&result);
+
+    // Typst sizes paired delimiters to their content automatically; LaTeX does not. Without this
+    // an interval like [0, 1/4] renders as a full-height fraction between half-height brackets.
+    if display {
+        result = size_delimiters_to_content(&result);
+    }
 
     // Escape % for LaTeX (comment character in LaTeX, literal in Typst)
     result = result.replace('%', "\\%");
 
     result
+}
+
+/// Escapes braces that are set notation rather than LaTeX grouping.
+///
+/// A grouping brace always follows a command (`\frac{`, `\text{`), a script marker (`_{`, `^{`),
+/// another grouping brace, or the close of a previous argument (`\frac{a}{b}`). Anything else
+/// opening a brace is the author writing a set, and LaTeX would silently swallow it.
+fn escape_set_braces(input: &str) -> String {
+    let chars: Vec<char> = input.chars().collect();
+    let mut result = String::new();
+    let mut grouping_depth: Vec<bool> = Vec::new();
+    for (i, &c) in chars.iter().enumerate() {
+        match c {
+            '{' => {
+                let prev = i.checked_sub(1).map(|k| chars[k]);
+                let is_grouping = matches!(prev, Some('_' | '^' | '{' | '}'))
+                    || prev.is_some_and(|p| p.is_ascii_alphanumeric() || p == '\\');
+                grouping_depth.push(is_grouping);
+                result.push_str(if is_grouping { "{" } else { "\\{" });
+            }
+            '}' => {
+                let is_grouping = grouping_depth.pop().unwrap_or(true);
+                result.push_str(if is_grouping { "}" } else { "\\}" });
+            }
+            _ => result.push(c),
+        }
+    }
+    result
+}
+
+/// Wrap paired delimiters in `\left`/`\right` when what they enclose is tall.
+///
+/// Applied only where the content actually grows: a fraction, a radical, a binomial, or a large
+/// operator. Wrapping everything would be harmless typographically but would churn every formula
+/// in the manual for no visible gain, and `\left(` around a single symbol costs a little extra
+/// space in some renderers.
+fn size_delimiters_to_content(input: &str) -> String {
+    const TALL: [&str; 5] = ["\\frac", "\\sqrt", "\\binom", "\\sum", "\\int"];
+    let bytes = input.as_bytes();
+    let mut result = String::with_capacity(input.len());
+    let mut i = 0;
+    while i < input.len() {
+        let c = bytes[i] as char;
+
+        // Subscripts and superscripts are set small, and a stretched delimiter there inflates the
+        // script rather than fitting it. Copy those groups through untouched.
+        let script_group = ((c == '_' || c == '^') && bytes.get(i + 1) == Some(&b'{'))
+            .then(|| matching_delimiter(input, i + 1, '{', '}'))
+            .flatten();
+        if let Some(end) = script_group {
+            result.push_str(&input[i..=end]);
+            i = end + 1;
+            continue;
+        }
+
+        let closing = match c {
+            '(' => Some(')'),
+            '[' => Some(']'),
+            _ => None,
+        };
+        // A delimiter already carrying \left, or one that is part of a LaTeX command's argument
+        // list, must be left alone.
+        let already_sized = result.ends_with("\\left") || result.ends_with("\\right");
+        if let (Some(close), false, Some(end)) = (
+            closing,
+            already_sized,
+            closing.and_then(|close| matching_delimiter(input, i, c, close)),
+        ) {
+            let inner = &input[i + 1..end];
+            if TALL.iter().any(|t| inner.contains(t)) {
+                let _ = write!(
+                    result,
+                    "\\left{c}{}\\right{close}",
+                    size_delimiters_to_content(inner)
+                );
+                i = end + 1;
+                continue;
+            }
+        }
+        result.push(c);
+        i += c.len_utf8();
+    }
+    result
+}
+
+/// Byte offset of the delimiter closing the one at `open_at`, or None if unbalanced.
+fn matching_delimiter(s: &str, open_at: usize, open: char, close: char) -> Option<usize> {
+    let mut depth = 0usize;
+    for (i, c) in s[open_at..].char_indices() {
+        if c == open {
+            depth += 1;
+        } else if c == close {
+            depth -= 1;
+            if depth == 0 {
+                return Some(open_at + i);
+            }
+        }
+    }
+    None
 }
 
 /// Convert capital Greek letters that might not be followed by (
@@ -889,79 +1094,23 @@ fn convert_greek_capitals(input: &str) -> String {
 }
 
 /// Convert Typst fractions to LaTeX
-/// Handles two cases:
-/// 1. Explicit fractions marked with ⁄ (from Typst \/) - always converted
-/// 2. Regular / - only converted in simple contexts, not inside subscripts
+/// Only `/` builds a fraction in Typst; `\/` is an escaped literal slash and is carried past
+/// this stage as `LITERAL_SOLIDUS`.
 fn convert_fractions(input: &str) -> String {
-    // First pass: convert all explicit fractions (⁄ marker from Typst \/)
-    // These are always converted regardless of context
-    // Loop until no more changes to handle nested explicit fractions
-    // (e.g., a \/ b^(c\/d) has two explicit fractions, inner one gets included
-    // in denominator and needs another pass to convert)
+    // Only `/` builds a fraction. The escaped form is carried as LITERAL_SOLIDUS, which no
+    // scanner here recognises, so it survives to the end and becomes a plain slash.
+    //
+    // The loop handles fractions nested inside another fraction's parts: the scanner takes the
+    // whole exponent into the denominator on the first pass and converts what is inside it on
+    // the next, which is what Typst prints for `x / (1 - U)^(1/alpha)`.
     let mut result = input.to_string();
     loop {
-        let next = convert_explicit_fractions(&result);
+        let next = convert_regular_fractions(&result);
         if next == result {
-            break;
+            return result;
         }
         result = next;
     }
-
-    // Second pass: convert regular / fractions (only in simple contexts)
-    result = convert_regular_fractions(&result);
-
-    result
-}
-
-/// Convert explicit Typst fractions (marked with ⁄ from \/)
-fn convert_explicit_fractions(input: &str) -> String {
-    let chars: Vec<char> = input.chars().collect();
-    let mut result = String::new();
-    let mut i = 0;
-
-    while i < chars.len() {
-        if chars[i] == '\u{2044}' {
-            // Find the numerator (content before the fraction slash)
-            if let Some((num_start, num_end)) = find_fraction_part_before(&chars, i) {
-                // Find the denominator (content after the fraction slash)
-                if let Some((den_start, den_end)) = find_fraction_part_after(&chars, i + 1) {
-                    // Calculate how many characters to remove from result
-                    // This includes the numerator plus any whitespace between numerator and slash
-                    let chars_to_remove = i - num_start;
-                    for _ in 0..chars_to_remove {
-                        result.pop();
-                    }
-
-                    // Get numerator and denominator content
-                    let num: String = chars[num_start..num_end].iter().collect();
-                    let den: String = chars[den_start..den_end].iter().collect();
-
-                    // Strip single layer of parens if the entire expression is wrapped
-                    let num = strip_outer_parens(&num);
-                    let den = strip_outer_parens(&den);
-
-                    let _ = write!(result, "\\frac{{{num}}}{{{den}}}");
-                    // Process only one ⁄ per call to avoid a position
-                    // mismatch: the \frac expansion may be longer than the
-                    // original chars span, making chars_to_remove wrong
-                    // for any subsequent ⁄. The outer loop in
-                    // convert_fractions re-calls with a fresh chars array.
-                    let tail: String = chars[den_end..].iter().collect();
-                    result.push_str(&tail);
-                    return result;
-                }
-            }
-            // If we couldn't convert, output as regular slash
-            result.push('/');
-            i += 1;
-            continue;
-        }
-
-        result.push(chars[i]);
-        i += 1;
-    }
-
-    result
 }
 
 /// Convert regular / fractions (only in simple contexts)
@@ -974,13 +1123,6 @@ fn convert_regular_fractions(input: &str) -> String {
         if chars[i] == '/' {
             // Skip if inside subscript context
             if is_inside_subscript_context(&chars, i) {
-                result.push(chars[i]);
-                i += 1;
-                continue;
-            }
-
-            // Skip if inside a cases environment (too complex to handle correctly)
-            if is_inside_cases_environment(&chars, i) {
                 result.push(chars[i]);
                 i += 1;
                 continue;
@@ -1021,30 +1163,6 @@ fn convert_regular_fractions(input: &str) -> String {
     }
 
     result
-}
-
-/// Check if position is inside a \begin{cases}...\end{cases} environment
-/// Returns true if we're between \begin{cases} and \end{cases}
-fn is_inside_cases_environment(chars: &[char], pos: usize) -> bool {
-    let s: String = chars.iter().collect();
-
-    // Find the last \begin{cases} before pos
-    let before = &s[..pos];
-    let last_begin = before.rfind("\\begin{cases}");
-
-    if let Some(begin_pos) = last_begin {
-        // Find the first \end{cases} after begin_pos
-        let after_begin = &s[begin_pos..];
-        if let Some(end_offset) = after_begin.find("\\end{cases}") {
-            let end_pos = begin_pos + end_offset;
-            // We're inside if pos is between begin and end
-            return pos > begin_pos && pos < end_pos;
-        }
-        // No \end{cases} found after begin, we're inside an unclosed cases env
-        return true;
-    }
-
-    false
 }
 
 /// Check if position is inside a subscript/superscript context
@@ -1272,10 +1390,15 @@ fn find_fraction_part_before(chars: &[char], slash_pos: usize) -> Option<(usize,
 
     // Otherwise, collect alphanumeric and common math chars
     // Don't include { or } - those indicate LaTeX command boundaries
+    // A decimal point counts when it sits between two digits, so that 4.8 stays one number.
     while start > 0
         && (chars[start - 1].is_alphanumeric()
             || chars[start - 1] == '_'
-            || chars[start - 1] == '\\')
+            || chars[start - 1] == '\\'
+            || (chars[start - 1] == '.'
+                && start >= 2
+                && chars[start - 2].is_ascii_digit()
+                && chars[start].is_ascii_digit()))
     {
         start -= 1;
     }
@@ -1355,9 +1478,18 @@ fn find_fraction_part_after(chars: &[char], start_pos: usize) -> Option<(usize, 
         return Some((start, end));
     }
 
-    // Collect alphanumeric, backslash, and underscores
+    // Collect alphanumeric, backslash, and underscores. A decimal point counts when it sits
+    // between two digits: without that, a denominator of 3.8 ends at the 3 and the .8 lands
+    // outside the fraction, which is silently wrong rather than visibly broken.
     while end < chars.len()
-        && (chars[end].is_alphanumeric() || chars[end] == '_' || chars[end] == '\\')
+        && (chars[end].is_alphanumeric()
+            || chars[end] == '_'
+            || chars[end] == '\\'
+            || (chars[end] == '.'
+                && end > start
+                && chars[end - 1].is_ascii_digit()
+                && end + 1 < chars.len()
+                && chars[end + 1].is_ascii_digit()))
     {
         end += 1;
     }
@@ -1512,10 +1644,12 @@ fn wrap_multichar_scripts(input: &str, prefix: &str) -> String {
                 i += 1;
                 continue;
             }
-            // Count consecutive alphabetic chars
+            // Count consecutive alphanumeric chars. Digits belong here as much as letters:
+            // LaTeX takes one character after ^, so 10^308 set 10 cubed followed by 08, which
+            // is a different number rather than a visibly broken one.
             let ident_start = after;
             let mut j = after;
-            while j < chars.len() && chars[j].is_ascii_alphabetic() {
+            while j < chars.len() && chars[j].is_ascii_alphanumeric() {
                 j += 1;
             }
             let ident_len = j - ident_start;
@@ -1740,8 +1874,10 @@ mod tests {
 
     #[test]
     fn convert_text_in_quotes() {
+        // The thin space is deliberate: a literal space carries no width in math mode, so
+        // without it the words and the variable render as one run of letters.
         let result = convert_text_quotes(r#""if" n "is odd""#);
-        assert_eq!(result, "\\text{if} n \\text{is odd}");
+        assert_eq!(result, "\\text{if}\\;n\\;\\text{is odd}");
     }
 
     #[test]
@@ -1773,7 +1909,7 @@ mod tests {
     fn convert_explicit_fraction_in_subscript() {
         let defs = HashMap::new();
         // Typst: x_(((n+1)\/2)) should become x_{(\frac{n+1}{2})}
-        let result = typst_to_latex("x_(((n+1)\\/2))", &defs, true);
+        let result = typst_to_latex("x_(((n+1)/2))", &defs, true);
         assert_eq!(result, "x_{(\\frac{n+1}{2})}");
     }
 
@@ -1952,7 +2088,7 @@ mod tests {
     fn convert_floor() {
         let defs = HashMap::new();
         let result = typst_to_latex("floor(x)", &defs, true);
-        assert_eq!(result, "\\lfloor x \\rfloor");
+        assert_eq!(result, "\\left\\lfloor x \\right\\rfloor");
     }
 
     #[test]
@@ -1967,14 +2103,14 @@ mod tests {
     fn convert_ceil() {
         let defs = HashMap::new();
         let result = typst_to_latex("ceil(x)", &defs, true);
-        assert_eq!(result, "\\lceil x \\rceil");
+        assert_eq!(result, "\\left\\lceil x \\right\\rceil");
     }
 
     #[test]
     fn convert_abs() {
         let defs = HashMap::new();
         let result = typst_to_latex("abs(x)", &defs, true);
-        assert_eq!(result, "\\lvert x \\rvert");
+        assert_eq!(result, "\\left\\lvert x \\right\\rvert");
     }
 
     #[test]
@@ -2079,7 +2215,7 @@ mod tests {
     fn convert_fraction_with_binom() {
         let defs = HashMap::new();
         // Test the problematic case: 1\/binom(12, 6) should become \frac{1}{\binom{12}{6}}
-        let result = typst_to_latex("1\\/binom(12, 6)", &defs, true);
+        let result = typst_to_latex("1/binom(12, 6)", &defs, true);
         eprintln!("Result: {result}");
         assert!(
             result.contains("\\binom{12}{6}"),
@@ -2444,7 +2580,7 @@ mod tests {
     fn convert_fraction_with_superscript_in_denominator() {
         // Test that (1-U)^{2} stays together as denominator
         let defs = HashMap::new();
-        let result = typst_to_latex("x_min \\/ (1 - U)^(2)", &defs, true);
+        let result = typst_to_latex("x_min / (1 - U)^(2)", &defs, true);
         eprintln!("Result: {result}");
         // The entire (1 - U)^{2} should be in the denominator
         assert!(
@@ -2455,9 +2591,9 @@ mod tests {
 
     #[test]
     fn convert_fraction_with_nested_fraction_exponent() {
-        // Test x_min \/ (1 - U)^(1\/alpha) - the exponent has a fraction inside
+        // Test x_min / (1 - U)^(1/alpha) - the exponent has a fraction inside
         let defs = HashMap::new();
-        let result = typst_to_latex("x_min \\/ (1 - U)^(1\\/alpha)", &defs, true);
+        let result = typst_to_latex("x_min / (1 - U)^(1/alpha)", &defs, true);
         eprintln!("Result: {result}");
         // The denominator should include the entire (1-U)^{...} expression
         // Note: alpha gets converted to \alpha by Greek letter conversion
@@ -2494,7 +2630,7 @@ mod tests {
     fn convert_explicit_fraction_factorial() {
         // Test explicit fraction with factorial
         let defs = HashMap::new();
-        let result = typst_to_latex("(n! dot m!) \\/ (n+m)!", &defs, true);
+        let result = typst_to_latex("(n! dot m!) / (n+m)!", &defs, true);
         eprintln!("Result: {result}");
         // Should be \frac{n! \cdot m!}{(n+m)!}
         assert!(
@@ -2687,11 +2823,293 @@ mod tests {
         assert_eq!(result, "a/b");
     }
 
+    /// A decimal number is one term on either side of a fraction slash.
+    ///
+    /// The scanners collected alphanumerics and stopped at the point, so `(2t - 4.8) \/ 3.8`
+    /// produced a denominator of 3 with a stray `.8` left outside the fraction. That renders as
+    /// something a reader can misread as a different expression rather than as visible breakage.
+    #[test]
+    fn decimal_numbers_survive_a_fraction() {
+        let defs = HashMap::new();
+        let result = typst_to_latex("u = (2 t - 4.8) / 3.8", &defs, true);
+        assert!(
+            result.contains("{3.8}"),
+            "denominator lost its decimal part: {result}"
+        );
+        assert!(
+            !result.contains(".8 "),
+            "a decimal fragment escaped the fraction: {result}"
+        );
+        let flipped = typst_to_latex("3.8 / (2 t - 4.8)", &defs, true);
+        assert!(
+            flipped.contains("{3.8}"),
+            "numerator lost its decimal part: {flipped}"
+        );
+    }
+
+    /// Set membership is an operator, not the English word.
+    #[test]
+    fn set_membership_converts() {
+        let defs = HashMap::new();
+        let result = typst_to_latex("s = t^2 in [0, 1 / 4]", &defs, true);
+        assert!(result.contains("\\in"), "in was not converted: {result}");
+    }
+
+    /// Paired delimiters take the height of what they enclose.
+    ///
+    /// Typst sizes them automatically, LaTeX does not, so an interval holding a fraction rendered
+    /// as full-height content between half-height brackets.
+    #[test]
+    fn delimiters_grow_with_tall_content() {
+        let defs = HashMap::new();
+        let interval = typst_to_latex("s = t^2 in [0, 1 / 4]", &defs, true);
+        assert!(
+            interval.contains("\\left[") && interval.contains("\\right]"),
+            "interval brackets did not grow: {interval}"
+        );
+
+        // Nothing tall inside: leave it alone rather than churn every formula in the manual.
+        let plain = typst_to_latex("f(x) = (a + b)", &defs, true);
+        assert!(
+            !plain.contains("\\left("),
+            "a plain group was needlessly stretched: {plain}"
+        );
+
+        // Scripts are set small, where a stretched delimiter inflates rather than fits.
+        let script = typst_to_latex("x_((n+1) / 2)", &defs, true);
+        assert!(
+            !script.contains("\\left("),
+            "a subscript group was stretched: {script}"
+        );
+
+        // Inline mode keeps fractions flat, so nothing needs stretching there either.
+        let inline = typst_to_latex("s in [0, 1 / 4]", &defs, false);
+        assert!(
+            !inline.contains("\\left["),
+            "inline math was stretched: {inline}"
+        );
+    }
+
+    /// Braces the author wrote are set notation and must survive to the page.
+    ///
+    /// LaTeX treats a bare brace as grouping and drops it, so `{2, 3, 4}` rendered as `2, 3, 4`
+    /// and every set in the manual silently lost its delimiters.
+    #[test]
+    fn set_braces_are_escaped_but_grouping_braces_are_not() {
+        let defs = HashMap::new();
+
+        let set = typst_to_latex("n in {2, 3, 4}", &defs, true);
+        assert!(
+            set.contains("\\{2, 3, 4\\}"),
+            "set braces were swallowed: {set}"
+        );
+
+        // Braces the converter emits itself belong to commands and must stay bare.
+        for (input, want) in [
+            ("(a + b) / 2", "\\frac{a + b}{2}"),
+            ("x_min", "x_{min}"),
+            ("binom(n, k)", "\\binom{n}{k}"),
+            ("\"if\" n", "\\text{if}"),
+        ] {
+            let result = typst_to_latex(input, &defs, true);
+            assert!(
+                result.contains(want),
+                "a grouping brace was escaped in {input:?}: {result}"
+            );
+            assert!(
+                !result.contains("\\\\{"),
+                "a grouping brace was escaped in {input:?}: {result}"
+            );
+        }
+    }
+
+    /// A multi-character exponent or subscript is one group.
+    ///
+    /// LaTeX takes a single character after `^`, so `10^308` set ten cubed followed by 08. That is
+    /// a different number rather than visibly broken output, which is why it survived review.
+    #[test]
+    fn multi_character_scripts_are_grouped() {
+        let defs = HashMap::new();
+        for (input, want) in [
+            ("10^308", "10^{308}"),
+            ("2^64", "2^{64}"),
+            ("x_min", "x_{min}"),
+            ("8.475 dot 10^307", "10^{307}"),
+        ] {
+            let result = typst_to_latex(input, &defs, true);
+            assert!(
+                result.contains(want),
+                "expected {want} in the conversion of {input:?}: {result}"
+            );
+        }
+        // A single character needs no braces and should not gain any.
+        let single = typst_to_latex("x^2", &defs, true);
+        assert_eq!(
+            single, "x^2",
+            "a one-character exponent was needlessly braced"
+        );
+    }
+
+    /// A quoted word keeps its separation from what follows.
+    ///
+    /// Typst renders `"if" n "is odd"` with gaps; LaTeX closes `\text{if}` and starts the next
+    /// token immediately, so the page showed a single run of letters.
+    #[test]
+    fn quoted_words_stay_separated() {
+        let defs = HashMap::new();
+        let result = typst_to_latex("\"if\" n \"is odd\"", &defs, true);
+        assert!(
+            result.contains("\\text{if}\\;n"),
+            "the quoted word ran into the variable: {result}"
+        );
+        // Punctuation should sit tight against the word rather than after a space.
+        let punctuated = typst_to_latex("\"for\", x", &defs, true);
+        assert!(
+            !punctuated.contains("\\text{for}\\;,"),
+            "a space was inserted before punctuation: {punctuated}"
+        );
+    }
+
+    /// Typst's two division forms mean opposite things, and the conversion must preserve that.
+    ///
+    /// `/` is the fraction operator and `\/` is an escaped literal solidus. This converter used to
+    /// expand `\/` into a fraction and leave `/` flat in some contexts, so the website contradicted
+    /// the PDF on the same source. Verified against Typst itself: `$a \/ b$` prints `a/b` and
+    /// `$a / b$` prints a built-up fraction.
+    #[test]
+    fn the_two_division_forms_keep_their_meanings() {
+        let defs = HashMap::new();
+
+        let built = typst_to_latex("a / b", &defs, true);
+        assert!(
+            built.contains("\\frac{a}{b}"),
+            "the fraction operator must build a fraction in display: {built}"
+        );
+
+        let literal = typst_to_latex("a \\/ b", &defs, true);
+        assert!(
+            !literal.contains("\\frac"),
+            "the escaped solidus must stay flat in display: {literal}"
+        );
+        assert!(
+            !literal.contains('\u{2044}'),
+            "the internal marker leaked into the output: {literal}"
+        );
+        assert!(
+            literal.contains('/'),
+            "the escaped solidus must survive as a slash: {literal}"
+        );
+
+        // Inline keeps everything flat, so the two agree there.
+        for input in ["a / b", "a \\/ b"] {
+            let inline = typst_to_latex(input, &defs, false);
+            assert!(
+                !inline.contains("\\frac") && !inline.contains('\u{2044}'),
+                "inline math must stay flat for {input:?}: {inline}"
+            );
+        }
+
+        // The shape from manual/median/median.typ, which is where the disagreement showed.
+        let mixed = typst_to_latex("x_(((n+1)\\/2)) + (a + b) / 2", &defs, true);
+        assert!(
+            mixed.contains("x_{((n+1)/2)}"),
+            "the escaped form must stay flat inside a subscript: {mixed}"
+        );
+        assert!(
+            mixed.contains("\\frac{a + b}{2}"),
+            "the operator form must build a fraction beside it: {mixed}"
+        );
+    }
+
+    /// Typst's spelled-out symbol names convert, not only their abbreviations.
+    #[test]
+    fn spelled_out_symbol_names_convert() {
+        let defs = HashMap::new();
+        for (input, want) in [("x plus.minus y", "\\pm"), ("x minus.plus y", "\\mp")] {
+            let result = typst_to_latex(input, &defs, true);
+            assert!(
+                result.contains(want),
+                "expected {want} in the conversion of {input:?}: {result}"
+            );
+            assert!(
+                !result.contains("plus.minus") && !result.contains("minus.plus"),
+                "the spelled-out name leaked through in {input:?}: {result}"
+            );
+        }
+    }
+
+    /// Ellipses are a symbol in every spelling Typst accepts.
+    #[test]
+    fn ellipsis_converts_in_every_spelling() {
+        let defs = HashMap::new();
+        for (input, want) in [
+            ("1 \\/ 2, 1 \\/ 6, dots", "\\dots"),
+            ("a_1, dots.h, a_n", "\\ldots"),
+            ("a_1 dots.c a_n", "\\cdots"),
+            ("x_1, ..., x_n", "\\ldots"),
+        ] {
+            let result = typst_to_latex(input, &defs, true);
+            assert!(
+                result.contains(want),
+                "expected {want} in the conversion of {input:?}: {result}"
+            );
+        }
+    }
+
+    /// Both spellings of infinity reach the page as a symbol.
+    #[test]
+    fn infinity_converts_in_either_spelling() {
+        let defs = HashMap::new();
+        for input in ["x in (-oo, +oo)", "x in (-infinity, +infinity)"] {
+            let result = typst_to_latex(input, &defs, true);
+            assert!(
+                result.contains("\\infty"),
+                "infinity survived as text in {input:?}: {result}"
+            );
+            assert!(
+                !result.contains("oo"),
+                "the short spelling leaked through in {input:?}: {result}"
+            );
+        }
+    }
+
     #[test]
     fn inline_explicit_fraction_stays_flat() {
         let defs = HashMap::new();
         let result = typst_to_latex("a\\/b", &defs, false);
         assert_eq!(result, "a/b");
+    }
+
+    /// A group containing a multi-byte character must not be mis-sliced.
+    ///
+    /// `find_matching_paren` returned a character index while its callers sliced with it as a byte
+    /// offset. The two agree on ASCII, so this went unnoticed until a section put an explicit
+    /// fraction inside a converted group: `\/` becomes U+2044 before these callers run, so the
+    /// group then holds a three-byte character and the slice lands mid-character.
+    #[test]
+    fn multibyte_inside_a_group_does_not_panic() {
+        let defs = HashMap::new();
+        // The first is the display equation that actually panicked, from the ExpFunction section:
+        // a delimiter-taking function whose argument holds two explicit fractions, so the second
+        // marker sits past the point the mis-scaled index lands on.
+        for input in [
+            "k = floor(y \\/ ln 2 + 1 \\/ 2), quad r = y - k ln 2, quad e^y = 2^k dot e^r",
+            "e^y = (p dot 2^\"half\") dot 2^(k - \"half\"), quad \"half\" = \"trunc\"(k \\/ 2)",
+            "abs(r) <= (ln 2) \\/ 2 approx 0.347",
+            "AdditiveCumulative(z) = cases((1 + \"erf\"(t)) \\/ 2 & \"for\" z >= 0, \"erfc\"(t) \\/ 2 & \"for\" z < 0,)",
+        ] {
+            for display in [true, false] {
+                let result = typst_to_latex(input, &defs, display);
+                assert!(
+                    !result.is_empty(),
+                    "conversion produced nothing for {input:?}"
+                );
+                assert!(
+                    !result.contains('\u{2044}'),
+                    "the fraction marker survived conversion in {input:?}: {result}"
+                );
+            }
+        }
     }
 
     #[test]
