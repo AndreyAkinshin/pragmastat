@@ -38,7 +38,7 @@ jobs:
 
     # --- Rust tools (for Typst → MDX conversion) ---
     - name: Set up Rust
-      uses: dtolnay/rust-toolchain@1.97.1  # sync: [tools].rust in mise.toml
+      uses: dtolnay/rust-toolchain@1.100.0  # sync: [tools].rust in mise.toml
       with:
         components: rustfmt, clippy  # docs:ci runs tools:check
 
@@ -202,7 +202,7 @@ jobs:
       uses: jdx/mise-action@v4
 
     - name: Set up Rust
-      uses: dtolnay/rust-toolchain@1.97.1  # sync: [tools].rust in mise.toml
+      uses: dtolnay/rust-toolchain@1.100.0  # sync: [tools].rust in mise.toml
       with:
         components: rustfmt, clippy
 

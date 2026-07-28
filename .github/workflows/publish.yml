@@ -228,7 +228,7 @@ jobs:
     - uses: actions/checkout@v7
 
     - name: Set up Rust
-      uses: dtolnay/rust-toolchain@1.97.1  # sync: [tools].rust in mise.toml
+      uses: dtolnay/rust-toolchain@1.100.0  # sync: [tools].rust in mise.toml
 
     - name: Download rs artifacts
       uses: actions/download-artifact@v8
