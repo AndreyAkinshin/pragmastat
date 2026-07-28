@@ -9,6 +9,7 @@ import { AssumptionError } from './assumptions';
 import { binomialCoefficient } from './binomial';
 import { gaussCdf } from './gaussCdf';
 import { minAchievableMisrateTwoSample } from './minMisrate';
+import { portableExp } from './portableExp';
 
 const MAX_EXACT_SIZE = 400;
 
@@ -147,8 +148,10 @@ function edgeworthCdf(n: number, m: number, u: number): number {
   // -0.5 continuity correction: computing P(U ≥ u) for a right-tail discrete CDF
   const z = (u - mu - 0.5) / su;
 
-  // Standard normal PDF and CDF
-  const phi = Math.exp((-z * z) / 2) / Math.sqrt(2 * Math.PI);
+  // Standard normal PDF and CDF. portableExp rather than Math.exp: the platform's exponential
+  // differs between runtimes in the last bit, and this density feeds a search that selects an
+  // integer margin.
+  const phi = portableExp((-z * z) / 2) / Math.sqrt(2 * Math.PI);
   const bigPhi = gaussCdf(z);
 
   // Pre-compute powers of n and m for efficiency

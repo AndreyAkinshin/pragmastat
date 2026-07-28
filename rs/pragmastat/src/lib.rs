@@ -30,6 +30,7 @@ pub(crate) mod binomial;
 pub(crate) mod gauss_cdf;
 pub(crate) mod min_misrate;
 pub(crate) mod pairwise_margin;
+pub(crate) mod portable_exp;
 pub mod rng;
 pub(crate) mod sign_margin;
 pub(crate) mod signed_rank_margin;

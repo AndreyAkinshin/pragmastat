@@ -1,77 +1,80 @@
-//! Standard normal CDF using ACM Algorithm 209
+//! Standard normal CDF.
 
-/// Computes the standard normal CDF using ACM Algorithm 209.
-/// Returns P(Z <= x) where Z is a standard normal random variable.
+use crate::portable_exp::portable_exp;
+
+/// Computes the standard normal CDF: `P(Z <= x)` for a standard normal `Z`.
 ///
-/// Calculates (1/sqrt(2*pi)) * integral from -infinity to x of e^(-u^2/2) du
-/// by means of polynomial approximations due to A. M. Murray of Aberdeen University.
+/// Two Chebyshev-fitted Horner chains and one exponential. The coefficients are produced by
+/// `tests/oracles/fit_gauss_cdf.py` against a reference good to 36 digits, so they are
+/// reproducible rather than transcribed.
 ///
-/// See: http://dl.acm.org/citation.cfm?id=367664
-///
-/// # Arguments
-///
-/// * `x` - -infinity..+infinity
-///
-/// # Returns
-///
-/// Area under the Standard Normal Curve from -infinity to x
+/// Every product is written as `p * u + c` and never as `p.mul_add(u, c)`. rustc does not
+/// contract on its own, so the two roundings this spells out are the two roundings that run,
+/// which is what the other six implementations do. `rs:check:fma` keeps it that way.
 pub fn gauss_cdf(x: f64) -> f64 {
-    let z: f64;
-    if x.abs() < 1e-9 {
-        z = 0.0;
-    } else {
-        let mut y = x.abs() / 2.0;
-        if y >= 3.0 {
-            z = 1.0;
-        } else if y < 1.0 {
-            let w = y * y;
-            z = ((((((((0.000124818987 * w - 0.001075204047) * w + 0.005198775019) * w
-                - 0.019198292004)
-                * w
-                + 0.059054035642)
-                * w
-                - 0.151968751364)
-                * w
-                + 0.319152932694)
-                * w
-                - 0.531923007300)
-                * w
-                + 0.797884560593)
-                * y
-                * 2.0;
+    let t = x.abs() / std::f64::consts::SQRT_2;
+    if t < 0.5 {
+        // erf(t)/t as a polynomial in u = 8*t^2 - 1.
+        let s = t * t;
+        let u = 8.0 * s - 1.0;
+        let mut p = -1.2757552949301143e-19;
+        p = p * u + 1.2307154179828511e-17;
+        p = p * u - 1.0890239994332592e-15;
+        p = p * u + 8.774530700097397e-14;
+        p = p * u - 6.3744178527620835e-12;
+        p = p * u + 4.1270254211564467e-10;
+        p = p * u - 2.347229163519518e-08;
+        p = p * u + 1.151603779513705e-06;
+        p = p * u - 4.762336934468491e-05;
+        p = p * u + 0.0016130716680617086;
+        p = p * u - 0.04364205888669792;
+        p = p * u + 1.0830752376761712;
+        let erf = t * p;
+        return if x >= 0.0 {
+            0.5 * (1.0 + erf)
         } else {
-            y -= 2.0;
-            z = (((((((((((((-0.000045255659 * y + 0.000152529290) * y - 0.000019538132)
-                * y
-                - 0.000676904986)
-                * y
-                + 0.001390604284)
-                * y
-                - 0.000794620820)
-                * y
-                - 0.002034254874)
-                * y
-                + 0.006549791214)
-                * y
-                - 0.010557625006)
-                * y
-                + 0.011630447319)
-                * y
-                - 0.009279453341)
-                * y
-                + 0.005353579108)
-                * y
-                - 0.002141268741)
-                * y
-                + 0.000535310849)
-                * y
-                + 0.999936657524;
-        }
+            0.5 * (1.0 - erf)
+        };
     }
 
-    if x > 0.0 {
-        (z + 1.0) / 2.0
+    // erfc(t) for 0.5 <= t <= 4.3, as exp(-t^2) times a polynomial in u = (2t - 4.8) / 3.8.
+    // Past t = 4.3 the tail is below the resolution of the result and is taken as zero.
+    let mut erfc = 0.0;
+    if t <= 4.3 {
+        let u = (2.0 * t - 4.8) / 3.8;
+        let mut p = 2.403093649825437e-09;
+        p = p * u - 6.533436159455495e-09;
+        p = p * u + 1.334437871983186e-09;
+        p = p * u - 2.5055474016226743e-09;
+        p = p * u + 5.2376178949357336e-08;
+        p = p * u - 1.341394638617228e-07;
+        p = p * u + 2.5376572107855777e-07;
+        p = p * u - 6.147631059669139e-07;
+        p = p * u + 1.561533370779237e-06;
+        p = p * u - 3.688982809059467e-06;
+        p = p * u + 8.492013869441648e-06;
+        p = p * u - 1.9344330869926753e-05;
+        p = p * u + 4.3285002216779125e-05;
+        p = p * u - 9.489727696113043e-05;
+        p = p * u + 0.0002037912849869451;
+        p = p * u - 0.0004282777524202283;
+        p = p * u + 0.00087969639542425;
+        p = p * u - 0.001763698443638436;
+        p = p * u + 0.0034462452415540026;
+        p = p * u - 0.00655166763664565;
+        p = p * u + 0.012094345026186722;
+        p = p * u - 0.021629099761798037;
+        p = p * u + 0.037371670355588804;
+        p = p * u - 0.06218492139115531;
+        p = p * u + 0.09925390090168178;
+        p = p * u - 0.15121195850373031;
+        p = p * u + 0.21849873453703333;
+        erfc = portable_exp(-(t * t)) * p;
+    }
+
+    if x >= 0.0 {
+        1.0 - 0.5 * erfc
     } else {
-        (1.0 - z) / 2.0
+        0.5 * erfc
     }
 }

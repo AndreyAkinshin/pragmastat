@@ -480,6 +480,36 @@ For the approximate suites the perturbation moves $Ratio$ on 94% of inputs by up
   last place, and $RatioBounds$ on 96% by up to 16; in neither case does the selection itself flip,
   so the divergence stays proportional rather than becoming a jump.
 
+#v(0.5em)
+*Where conformance is not accuracy*
+
+Conformance asks whether the seven agree with each other; accuracy asks whether they agree with
+  the mathematics.
+The classes above answer the first question, and one place is worth naming where the second answer
+  is weaker than a reader would assume.
+
+#v(0.3em)
+The normal distribution function inside the Edgeworth branches of both margins is ACM Algorithm
+  209, a polynomial evaluated identically by all seven.
+It is chosen for being identical, not for being close: measured against a sixty-digit reference,
+  its worst relative error is $4.5 dot 10^(-7)$ over $abs(x) <= 3$ and $4.7 dot 10^(-4)$ once the
+  tails are included, against roughly $10^(-15)$ for a library implementation.
+That gap reaches the answer rather than staying under it.
+Recomputing the margins over the Edgeworth region with an accurate distribution function changes
+  13 of 2961 of them, so on about $0.4%$ of those inputs all seven agree on an integer that is not
+  the right one.
+
+#v(0.3em)
+Agreeing is still the more important property, because the value is compared against the misrate
+  and the comparison selects an order statistic: being the most accurate of seven and returning a
+  different observation is worse than being uniformly approximate.
+But the two are not in opposition here, which is the part worth recording.
+The density beside it is already $exp(-z^2\/2) \/ sqrt(2 pi)$ in every implementation, so the
+  branch depends on a library function regardless, and an accurate distribution function built the
+  same way was measured not to move under the perturbation at all.
+The approximation is inherited rather than argued for, and replacing it is a change to the numbers
+  this toolkit returns, which is why it is stated here rather than done quietly.
+
 #v(0.3em)
 The measurement is also what corrected the diagnosis when it was wrong.
 $SpreadBounds$ was for a time the one estimator that moved under the perturbation, and the obvious

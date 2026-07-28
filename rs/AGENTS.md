@@ -23,7 +23,8 @@ rs/pragmastat/
 │   ├── sign_margin.rs             # Sign margin for binomial CDF inversion (internal)
 │   ├── signed_rank_margin.rs      # Signed-rank margin computation (internal)
 │   ├── min_misrate.rs             # Minimum achievable misrate calculation (internal)
-│   ├── gauss_cdf.rs               # Standard normal CDF (ACM Algorithm 209) (internal)
+│   ├── gauss_cdf.rs               # Standard normal CDF (Chebyshev erf/erfc fit) (internal)
+│   ├── portable_exp.rs            # Reproducible exp, replacing the platform's (internal)
 │   ├── rng.rs                     # Deterministic xoshiro256++ PRNG
 │   ├── distributions/             # Sampling distributions (Uniform, Additive, Exp, Power, Multiplic)
 │   ├── center_impl.rs             # O(n log n) Hodges-Lehmann algorithm (internal)

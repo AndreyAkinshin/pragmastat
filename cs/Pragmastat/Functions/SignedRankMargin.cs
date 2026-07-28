@@ -109,8 +109,8 @@ internal class SignedRankMargin(int threshold = SignedRankMargin.MaxExactSize)
 
     // +0.5 continuity correction: computing P(W ≤ w) for a left-tail discrete CDF
     double z = (w - mu + 0.5) / sigma;
-    double phi = Exp(-z * z / 2) / Sqrt(2 * PI);
-    double Phi = AcmAlgorithm209.Gauss(z);
+    double phi = PortableExp.Value(-z * z / 2) / Sqrt(2 * PI);
+    double Phi = GaussCdf.Value(z);
 
     double nd = n;
     double kappa4 = -nd * (nd + 1) * (2 * nd + 1) * (3 * nd * nd + 3 * nd - 1) / 240.0;

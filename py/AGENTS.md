@@ -30,7 +30,8 @@ py/
 │   ├── signed_rank_margin.py      # Signed-rank margin computation
 │   ├── min_misrate.py             # Minimum achievable misrate calculation
 │   ├── _binomial.py               # Binomial coefficient shared by the two above (internal)
-│   ├── gauss_cdf.py               # Standard normal CDF (ACM Algorithm 209)
+│   ├── gauss_cdf.py               # Standard normal CDF (Chebyshev-fitted erf/erfc)
+│   ├── portable_exp.py            # Reproducible exp: range reduction plus fitted polynomial
 │   ├── rng.py                     # Deterministic xoshiro256++ PRNG
 │   ├── xoshiro256.py              # PRNG core implementation
 │   ├── center_impl.py             # O(n log n) Hodges-Lehmann algorithm

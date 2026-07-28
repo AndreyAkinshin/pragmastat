@@ -1,7 +1,6 @@
 package dev.pragmastat
 
 import kotlin.math.PI
-import kotlin.math.exp
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sqrt
@@ -133,7 +132,7 @@ private fun edgeworthCdf(
     val sigma = sqrt(sigma2)
 
     val z = (w - mu + 0.5) / sigma
-    val phi = exp(-z * z / 2) / sqrt(2 * PI)
+    val phi = portableExp(-z * z / 2) / sqrt(2 * PI)
     val bigPhi = gaussCdf(z)
 
     val nk = n.toDouble()

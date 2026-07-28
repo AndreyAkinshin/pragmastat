@@ -20,8 +20,8 @@ public static class ApproximationTestCases
     double[] milliles = Uniform(0, 1, 1001, 1);
     double[] normalMilliles = milliles.Select(p => ((IContinuousDistribution)Additive.Standard).Quantile(p)).ToArray();
 
-    functions["acm209"] = AcmAlgorithm209.Gauss;
-    inputBuilder.Add("acm209", new SingleDoubleValueInput("acm209", normalMilliles));
+    functions["gauss_cdf"] = GaussCdf.Value;
+    inputBuilder.Add("gauss_cdf", new SingleDoubleValueInput("gauss_cdf", normalMilliles));
 
     functions["erf"] = AbramowitzStegunErf.Value;
     inputBuilder.Add("erf", new SingleDoubleValueInput("erf", normalMilliles));

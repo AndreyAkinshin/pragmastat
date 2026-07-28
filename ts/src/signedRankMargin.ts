@@ -6,6 +6,7 @@
 
 import { gaussCdf } from './gaussCdf';
 import { minAchievableMisrateOneSample } from './minMisrate';
+import { portableExp } from './portableExp';
 import { AssumptionError } from './assumptions';
 
 // Maximum n for exact computation. Limited to 63 because 2^n must fit in a BigInt
@@ -113,7 +114,9 @@ function signedRankEdgeworthCdf(n: number, w: number): number {
 
   // +0.5 continuity correction: computing P(W ≤ w) for a left-tail discrete CDF
   const z = (w - mu + 0.5) / sigma;
-  const phi = Math.exp((-z * z) / 2) / Math.sqrt(2 * Math.PI);
+  // portableExp rather than Math.exp: the platform's exponential differs between runtimes in
+  // the last bit, and this density feeds a search that selects an integer margin.
+  const phi = portableExp((-z * z) / 2) / Math.sqrt(2 * Math.PI);
   const bigPhi = gaussCdf(z);
 
   const kappa4 = (-n * (n + 1) * (2 * n + 1) * (3 * n * n + 3 * n - 1)) / 240.0;

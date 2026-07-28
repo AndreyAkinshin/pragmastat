@@ -121,8 +121,8 @@ internal class PairwiseMargin(int threshold = PairwiseMargin.MaxExactSize)
     double su = Sqrt(nm * (n + m + 1) / 12.0);
     // -0.5 continuity correction: computing P(U ≥ u) for a right-tail discrete CDF
     double z = (u - mu - 0.5) / su;
-    double phi = Exp(-z.Sqr() / 2) / Sqrt(2 * PI);
-    double Phi = AcmAlgorithm209.Gauss(z);
+    double phi = PortableExp.Value(-z.Sqr() / 2) / Sqrt(2 * PI);
+    double Phi = GaussCdf.Value(z);
 
     // Pre-compute powers of n and m for efficiency
     double n2 = (double)n * n;

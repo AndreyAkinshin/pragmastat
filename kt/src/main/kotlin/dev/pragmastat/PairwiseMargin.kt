@@ -164,7 +164,7 @@ private fun edgeworthCdf(
     val z = (uf - mu - 0.5) / su
 
     // Standard normal PDF and CDF
-    val phi = exp((-z * z) / 2.0) / sqrt(2.0 * PI)
+    val phi = portableExp((-z * z) / 2.0) / sqrt(2.0 * PI)
     val bigPhi = gaussCdf(z)
 
     // Pre-compute powers of n and m for efficiency

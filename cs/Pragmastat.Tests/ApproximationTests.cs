@@ -13,7 +13,7 @@ public class ApproximationTests
   {
     var functions = new Dictionary<string, Func<double, double>>
     {
-      ["acm209"] = AcmAlgorithm209.Gauss,
+      ["gauss_cdf"] = GaussCdf.Value,
       ["erf"] = AbramowitzStegunErf.Value,
       ["erf_inverse"] = ErfInverse.Value
     };

@@ -38,6 +38,8 @@ r/pragmastat/
 │   ├── sign_margin.R            # Sign margin for binomial CDF inversion
 │   ├── signed_rank_margin.R     # Signed-rank margin computation
 │   ├── min_misrate.R            # Minimum achievable misrate calculation
+│   ├── gauss_cdf.R              # Standard normal CDF (Chebyshev-fitted erf/erfc)
+│   ├── portable_exp.R           # Reproducible exp: range reduction plus fitted polynomial
 │   ├── center_impl.R            # O(n log n) Hodges-Lehmann algorithm
 │   ├── center_quantiles_impl.R  # Center quantile binary search
 │   ├── spread_impl.R            # O(n log n) Shamos algorithm

@@ -2,69 +2,72 @@ package pragmastat
 
 import "math"
 
-// Every product below is wrapped in float64(), and none of those conversions is
-// redundant. The Go specification lets an implementation fuse a multiply into a
-// following add as a single rounding, and gc does exactly that on arm64,
-// ppc64le, s390x, riscv64 and loong64 while never doing it on amd64, where CI
-// runs. A fused Horner step lands a fraction of an ULP away from the same step
-// in the other six languages, none of which fuse, and gaussCdf feeds threshold
-// comparisons that turn a last-bit difference into a different order statistic.
-// An explicit conversion is the only way the language offers to pin an
-// intermediate rounding, so every product gets one. The two sites that scale by
-// a power of two are inert rather than dangerous: scaling by a power of two is
-// exact, and the residual the fused form carries is far too small to move the
-// scaled result, so fused and unfused agree bit for bit. They are pinned anyway,
-// so that no future reader has to re-derive which sites were the safe ones.
+// gaussCdf computes the standard normal CDF.
 //
-// Each chain is written as one product per statement rather than as a nested
-// expression: a Horner chain in which every level carries its own conversion is
-// unreadable.
-
-// gaussCdf computes the standard normal CDF using ACM Algorithm 209.
-// Calculates (1/sqrt(2*pi)) * integral from -infinity to x of e^(-u^2/2) du
-// Returns P(Z <= x) where Z is a standard normal random variable.
+// Two Chebyshev-fitted Horner chains and one exponential. The coefficients are produced by
+// tests/oracles/fit_gauss_cdf.py against a reference good to 36 digits, so they are
+// reproducible rather than transcribed.
+//
+// Every product is pinned with an explicit float64 conversion for the same reason the rest of
+// the kernels are: the Go compiler fuses a multiply into an add on every FMA-capable target
+// and the other six implementations do not.
 func gaussCdf(x float64) float64 {
-	var z float64
-	if math.Abs(x) < 1e-9 {
-		z = 0.0
-	} else {
-		y := float64(math.Abs(x) / 2)
-		if y >= 3.0 {
-			z = 1.0
-		} else if y < 1.0 {
-			w := y * y
-			p := 0.000124818987
-			p = float64(p*w) - 0.001075204047
-			p = float64(p*w) + 0.005198775019
-			p = float64(p*w) - 0.019198292004
-			p = float64(p*w) + 0.059054035642
-			p = float64(p*w) - 0.151968751364
-			p = float64(p*w) + 0.319152932694
-			p = float64(p*w) - 0.531923007300
-			p = float64(p*w) + 0.797884560593
-			z = float64(p*y) * 2.0
-		} else {
-			y = y - 2.0
-			p := -0.000045255659
-			p = float64(p*y) + 0.000152529290
-			p = float64(p*y) - 0.000019538132
-			p = float64(p*y) - 0.000676904986
-			p = float64(p*y) + 0.001390604284
-			p = float64(p*y) - 0.000794620820
-			p = float64(p*y) - 0.002034254874
-			p = float64(p*y) + 0.006549791214
-			p = float64(p*y) - 0.010557625006
-			p = float64(p*y) + 0.011630447319
-			p = float64(p*y) - 0.009279453341
-			p = float64(p*y) + 0.005353579108
-			p = float64(p*y) - 0.002141268741
-			p = float64(p*y) + 0.000535310849
-			z = float64(p*y) + 0.999936657524
+	t := math.Abs(x) / math.Sqrt2
+	if t < 0.5 {
+		s := float64(t * t)
+		u := float64(8.0*s) - 1.0
+		p := -1.2757552949301143e-19
+		p = float64(p*u) + 1.2307154179828511e-17
+		p = float64(p*u) - 1.0890239994332592e-15
+		p = float64(p*u) + 8.774530700097397e-14
+		p = float64(p*u) - 6.3744178527620835e-12
+		p = float64(p*u) + 4.1270254211564467e-10
+		p = float64(p*u) - 2.347229163519518e-08
+		p = float64(p*u) + 1.151603779513705e-06
+		p = float64(p*u) - 4.762336934468491e-05
+		p = float64(p*u) + 0.0016130716680617086
+		p = float64(p*u) - 0.04364205888669792
+		p = float64(p*u) + 1.0830752376761712
+		erf := float64(t * p)
+		if x >= 0 {
+			return float64(0.5 * (1.0 + erf))
 		}
+		return float64(0.5 * (1.0 - erf))
 	}
-
-	if x > 0.0 {
-		return (z + 1.0) / 2
+	var erfc float64
+	if t <= 4.3 {
+		u := float64((2.0*t - 4.8) / 3.8)
+		p := 2.403093649825437e-09
+		p = float64(p*u) - 6.533436159455495e-09
+		p = float64(p*u) + 1.334437871983186e-09
+		p = float64(p*u) - 2.5055474016226743e-09
+		p = float64(p*u) + 5.2376178949357336e-08
+		p = float64(p*u) - 1.341394638617228e-07
+		p = float64(p*u) + 2.5376572107855777e-07
+		p = float64(p*u) - 6.147631059669139e-07
+		p = float64(p*u) + 1.561533370779237e-06
+		p = float64(p*u) - 3.688982809059467e-06
+		p = float64(p*u) + 8.492013869441648e-06
+		p = float64(p*u) - 1.9344330869926753e-05
+		p = float64(p*u) + 4.3285002216779125e-05
+		p = float64(p*u) - 9.489727696113043e-05
+		p = float64(p*u) + 0.0002037912849869451
+		p = float64(p*u) - 0.0004282777524202283
+		p = float64(p*u) + 0.00087969639542425
+		p = float64(p*u) - 0.001763698443638436
+		p = float64(p*u) + 0.0034462452415540026
+		p = float64(p*u) - 0.00655166763664565
+		p = float64(p*u) + 0.012094345026186722
+		p = float64(p*u) - 0.021629099761798037
+		p = float64(p*u) + 0.037371670355588804
+		p = float64(p*u) - 0.06218492139115531
+		p = float64(p*u) + 0.09925390090168178
+		p = float64(p*u) - 0.15121195850373031
+		p = float64(p*u) + 0.21849873453703333
+		erfc = float64(portableExp(-float64(t*t)) * p)
 	}
-	return (1.0 - z) / 2
+	if x >= 0 {
+		return 1.0 - float64(0.5*erfc)
+	}
+	return float64(0.5 * erfc)
 }

@@ -28,7 +28,8 @@ kt/
 │   ├── SignMargin.kt            # Sign margin for binomial CDF inversion
 │   ├── SignedRankMargin.kt      # Signed-rank margin computation
 │   ├── MinMisrate.kt            # Minimum achievable misrate calculation
-│   ├── GaussCdf.kt              # Standard normal CDF (ACM Algorithm 209)
+│   ├── GaussCdf.kt              # Standard normal CDF (Chebyshev-fitted erf/erfc)
+│   ├── PortableExp.kt           # Reproducible exp: range reduction plus fitted polynomial
 │   ├── Rng.kt                   # Deterministic xoshiro256++ PRNG
 │   ├── Xoshiro256.kt            # PRNG core implementation
 │   ├── CenterImpl.kt            # O(n log n) Hodges-Lehmann algorithm

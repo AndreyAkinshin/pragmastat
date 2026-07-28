@@ -11,6 +11,7 @@ from ._binomial import binomial_coefficient as _binomial_coefficient
 from .assumptions import AssumptionError
 from .gauss_cdf import gauss_cdf as _gauss_cdf
 from .min_misrate import min_achievable_misrate_two_sample
+from .portable_exp import portable_exp
 
 MAX_EXACT_SIZE = 400
 
@@ -133,7 +134,7 @@ def _edgeworth_cdf(n: int, m: int, u: int) -> float:
     z = (uf - mu - 0.5) / su
 
     # Standard normal PDF and CDF
-    phi = math.exp((-z * z) / 2.0) / math.sqrt(2.0 * math.pi)
+    phi = portable_exp((-z * z) / 2.0) / math.sqrt(2.0 * math.pi)
     big_phi = _gauss_cdf(z)
 
     # Pre-compute powers of n and m for efficiency

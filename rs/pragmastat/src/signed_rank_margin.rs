@@ -116,7 +116,7 @@ fn signed_rank_edgeworth_cdf(n: usize, w: usize) -> f64 {
 
     // +0.5 continuity correction: computing P(W ≤ w) for a left-tail discrete CDF
     let z = (w as f64 - mu + 0.5) / sigma;
-    let phi = (-z * z / 2.0).exp() / (2.0 * std::f64::consts::PI).sqrt();
+    let phi = crate::portable_exp::portable_exp(-z * z / 2.0) / (2.0 * std::f64::consts::PI).sqrt();
     let big_phi = gauss_cdf(z);
 
     let kappa4 =

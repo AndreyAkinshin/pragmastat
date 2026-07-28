@@ -84,7 +84,7 @@ public sealed class Additive : IDistribution, IContinuousDistribution
 
   double IContinuousDistribution.Cdf(double x)
   {
-    return AcmAlgorithm209.Gauss((x - Mean) / StdDev);
+    return GaussCdf.Value((x - Mean) / StdDev);
   }
 
   double IContinuousDistribution.Quantile(Probability p)

@@ -8,6 +8,7 @@ import math
 from .assumptions import AssumptionError
 from .gauss_cdf import gauss_cdf
 from .min_misrate import min_achievable_misrate_one_sample
+from .portable_exp import portable_exp
 
 # Maximum n for exact computation. Limited to 63 because 2^n must fit in a 64-bit integer.
 SIGNED_RANK_MAX_EXACT_SIZE = 63
@@ -102,7 +103,7 @@ def _signed_rank_edgeworth_cdf(n: int, w: int) -> float:
 
     # +0.5 continuity correction: computing P(W ≤ w) for a left-tail discrete CDF
     z = (float(w) - mu + 0.5) / sigma
-    phi = math.exp(-z * z / 2.0) / math.sqrt(2.0 * math.pi)
+    phi = portable_exp(-z * z / 2.0) / math.sqrt(2.0 * math.pi)
     big_phi = gauss_cdf(z)
 
     kappa4 = -n_f64 * (n_f64 + 1.0) * (2.0 * n_f64 + 1.0) * (3.0 * n_f64 * n_f64 + 3.0 * n_f64 - 1.0) / 240.0
