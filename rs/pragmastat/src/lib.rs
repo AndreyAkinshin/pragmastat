@@ -56,6 +56,8 @@ mod disparity_bounds_tests;
 #[cfg(test)]
 mod pairwise_margin_tests;
 #[cfg(test)]
+mod portable_exp_tests;
+#[cfg(test)]
 mod ratio_bounds_tests;
 #[cfg(test)]
 mod signed_rank_margin_tests;

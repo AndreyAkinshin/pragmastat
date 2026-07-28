@@ -40,6 +40,7 @@ from pragmastat.estimators import (
     _avg_spread_bounds as avg_spread_bounds,
 )
 from pragmastat.pairwise_margin import pairwise_margin
+from pragmastat.portable_exp import portable_exp
 from pragmastat.signed_rank_margin import signed_rank_margin
 from pragmastat.unit_registry import UnitRegistry
 
@@ -152,6 +153,15 @@ def _load_fixtures(estimator_name):
 # comparison sees it. Shuffle, sample and resample carry the input values through
 # untouched, so any inexactness there would be a wrong element, not a rounding
 # error.
+#
+# The exponential the exact class rests on (portable-exp)
+# ------------------------------------------------------
+# The margins reach an exponential, IEEE 754 fixes nothing about one, and a
+# last-bit difference there selects a different order statistic. That is why all
+# seven ports evaluate :func:`pragmastat.portable_exp.portable_exp` instead of the
+# platform's. Every other suite reaches that function only through a margin, which
+# samples it wherever an Edgeworth expansion happens to look; portable-exp checks
+# it directly, over the working band, the finite range and the boundaries.
 #
 # JSON is safe to compare against directly: Python's ``json`` module parses a
 # numeric literal straight to binary64 via ``float()``, which is correctly
@@ -719,6 +729,41 @@ class TestReference:
             assert actual_output == expected_output, (
                 f"Failed for test file: {json_file.name}, expected: {expected_output}, got: {actual_output}"
             )
+
+    def test_portable_exp_reference(self):
+        """Test portable_exp against reference data, argument by argument.
+
+        Bitwise, like the manifest declares this suite: a tolerance here would pass
+        on exactly the last-bit divergence the fixtures exist to catch (see the
+        exactness predicates above).
+
+        Two properties of the fixtures the comparison has to survive:
+
+        * Signed zero. ``boundaries.json`` carries both ``0`` and ``-0``, JSON does
+          not distinguish them, and Python hands back ``+0.0`` for both. Both map to
+          exp(0) = 1, so nothing is lost. Only the OUTPUTS are compared: the
+          arguments are inputs to the function, not results of it.
+        * Denormals. The outputs run down to the smallest denormal, 5e-324. CPython
+          parses a numeric literal through correctly-rounded ``float()``, so those
+          survive the round trip -- and the payload comparison below is what proves
+          it, since a parser that mangled them would report a mismatch here rather
+          than let the file pass.
+        """
+        checked = 0
+        for fixture_name, test_case in _load_fixtures("portable-exp"):
+            args = test_case["input"]["arg"]
+            expected = test_case["output"]
+            # float() only because JSON integer literals (0, 709, -746) arrive as
+            # Python ints; every one of them is exactly representable in binary64.
+            actual = [portable_exp(float(arg)) for arg in args]
+            assert_sequence_identical(actual, expected, f"Failed for {fixture_name}")
+            checked += len(args)
+
+        # A loader that matches no file, or a fixture that lost its arguments,
+        # satisfies every assertion above by having nothing to compare. Pinning the
+        # total is what makes that visible; raise it deliberately when the generator
+        # adds cases.
+        assert checked == 1032, f"portable-exp: compared {checked} arguments, expected 1032"
 
     def test_center_bounds_reference(self):
         run_bounds_reference_tests(

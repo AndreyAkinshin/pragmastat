@@ -17,7 +17,12 @@ script produces.
 
 The fitted quantity is Q(r) = (exp(r) - 1 - r) / r^2 rather than exp(r) itself. The two leading
 terms then carry no fitting error at all and the polynomial only has to supply a correction of
-at most 0.07, which is what keeps the assembled result inside a couple of ulp.
+at most 0.07, which is what keeps the assembled result inside one ulp of correctly rounded.
+
+The ports assemble that as 1 - ((lo - r*r*Q) - hi) rather than the obvious 1 + r + r*r*Q. Both
+compute the same expression; the first keeps the two halves of the reduction apart until the end,
+and the second throws away the low bits of r when it adds r to 1. The difference is a factor of
+two in worst relative error and 17 points of correctly-rounded share, for no extra operation.
 """
 
 import sys

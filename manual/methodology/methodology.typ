@@ -536,12 +536,62 @@ So the exponential is now the toolkit's own, in all seven: a range reduction int
   from the same reference.
 Every step is an operation the standard pins, so the result is reproducible by construction
   rather than by measurement.
-It is also slightly more accurate than the platform function it replaces, at
-  $2.1 dot 10^(-16)$ against $2.3 dot 10^(-16)$ worst relative error over the range these
-  estimators reach.
 With it the sweep reports zero movement on every estimator declared exact, including the
   crossover; restoring a single library call to confirm the instrument still sees returns the
   failure immediately.
+
+#v(0.3em)
+What that costs in accuracy is worth stating plainly, because owning a function does not make it
+  better than the ones written by people who do it for a living.
+Measured against a sixty-digit reference over the range these estimators reach, it has a worst
+  relative error of $1.2 dot 10^(-16)$ and returns the correctly rounded result on 90% of inputs.
+The best platform libraries are better, at $1.1 dot 10^(-16)$ and 99.9%.
+No implementation measured here, the toolkit's included, is ever more than one unit in the last
+  place from the correctly rounded value, so the whole spread is one bit wide.
+Being within a bit of every library and identical to itself everywhere is the trade, and it is the
+  right way round: an estimator that returns the most accurate of seven different observations is
+  worse than one that returns the same observation everywhere.
+
+#v(0.3em)
+How far apart those libraries are is the part that justifies the work.
+Across the runtimes the seven ports are built on, measured on the same 200001 arguments, the
+  fraction of inputs on which two of them return different bits reaches 16%, and the platform
+  identified as "the system library" turns out not to be one implementation at all: two of them
+  agree exactly because both descend from the same 1993 source, two others differ from each other
+  by which of two routines the virtual machine substitutes, and one library ships the same
+  algorithm compiled twice and selects between them at load time by processor feature.
+That last one disagrees with itself on 0.06% of arguments inside a single installation.
+The same runtime can also change between its own releases, and one of them replaced its
+  exponential outright while this chapter was being written.
+There is no version of "just use the platform's" that is stable enough to build an integer
+  decision on.
+
+#v(0.3em)
+The construction is deliberately the simplest one that reaches that.
+It is the shape of Sun's #emph[fdlibm] without the division that version needs to compensate for a
+  lower-degree polynomial, and the same accuracy follows without it.
+The tables that modern library implementations gained around 2018 reduce the argument by a further
+  factor of 128 and do better still, at 263 constants against 15, transcribed into seven languages
+  where every one of them is a chance to mistype a digit.
+Two prototypes of that here came out an order of magnitude worse than the polynomial they were
+  meant to improve on, which is the argument for the simple construction: not that the table is
+  wrong, but that a thing reimplemented seven times should be a thing that is hard to get wrong.
+
+#v(0.3em)
+The approach is not novel and its precedents are instructive.
+Java specifies one of its two exponentials by naming the 1993 implementation it must reproduce,
+  making the algorithm rather than the accuracy the published contract, which is the same
+  substitution made here.
+A multiplayer game studio reached the same conclusion in 2014 and wrote its own trigonometric
+  functions after discovering that replays desynchronised when loaded on another operating system,
+  reporting that the issue was never precision but getting the same possibly imprecise outcome
+  everywhere.
+Others go further and remove floating point from the problem, running their simulations in fixed
+  point with tabulated transcendentals.
+The route not taken is a correctly rounded implementation, which would deliver identity and
+  half-an-ulp accuracy together; it needs either fused multiply-add or emulated extended precision
+  in every language, which two of these seven do not have cheaply, for a value that exists to be
+  compared against a misrate.
 
 #v(0.3em)
 The measurement is also what corrected the diagnosis when it was wrong.

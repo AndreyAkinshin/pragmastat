@@ -19,6 +19,7 @@ string[] ownedSharedSuites =
   "shift", "shift-bounds", "ratio", "ratio-bounds",
   "disparity", "disparity-bounds", "avg-spread", "avg-spread-bounds",
   "compare1", "compare2", "pairwise-margin", "signed-rank-margin",
+  "portable-exp",
 ];
 
 foreach (string suite in ownedSharedSuites)
@@ -45,6 +46,7 @@ OneSampleTestCases.Generate();
 TwoSampleTestCases.Generate();
 DistributionTestCases.Generate();
 ApproximationTestCases.Generate();
+PortableExpTestCases.Generate();
 PairwiseMarginTestCases.Generate();
 ShiftBoundsTestCases.Generate();
 RatioBoundsTestCases.Generate();

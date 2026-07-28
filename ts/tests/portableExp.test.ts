@@ -3,24 +3,25 @@ import { expectBitwise } from './bitwise';
 
 // The exponential is the one library call on the margin path that IEEE 754 leaves free, so
 // this suite treats it the way the selection estimators are treated: by payload, never by
-// tolerance. Two claims are checked here.
+// tolerance.
+//
+// What is checked here is what the shared fixture cannot check. The agreement of the seven
+// implementations is checked by tests/portable-exp, argument by argument, loaded in
+// reference.test.ts; this file holds the two claims that fixture has no way to carry.
 //
 // The first is that `2 ** n` is exact. JavaScript has no ldexp, and ECMAScript defines the
 // exponentiation operator as implementation-approximated rather than correctly-rounded, so
 // the scaling step of the reduction rests on a property of the runtime rather than of the
 // standard. It is therefore checked against a construction that cannot be wrong: the binary64
 // with biased exponent n + 1023 and a zero significand is 2^n by the definition of the format.
+// This is a claim about the runtime rather than about the shared behaviour, which is why the
+// range it covers is derived from the constants below rather than shared with the other ports.
 //
-// The second is that the assembled result matches the other ports bit for bit. The expected
-// payloads below were produced by go/portable_exp.go.
+// The second is the behaviour outside the finite range. JSON has no literal for an infinity or
+// a NaN, so no fixture can state that the top of the range overflows or that the special values
+// pass through.
 
 const scratch = new DataView(new ArrayBuffer(8));
-
-/** The double carrying this binary64 payload, written as 16 hex digits. */
-function fromHex(hex: string): number {
-  scratch.setBigUint64(0, BigInt(`0x${hex}`));
-  return scratch.getFloat64(0);
-}
 
 /** 2^n from the format definition: biased exponent n + 1023, significand zero. */
 function pow2FromExponentField(n: number): number {
@@ -55,32 +56,12 @@ describe('portableExp', () => {
     }
   });
 
-  // Arguments and results as binary64 payloads, from go/portable_exp.go. The band, both
-  // cutoffs, the denormal results below -708, and a few values a reader can check against a
-  // table: exp(1) = 2.718281828459045 and exp(-1) = 0.36787944117144233.
-  it('returns the payload the other ports return', () => {
-    const cases: [string, string][] = [
-      ['c08749999999999a', '0000000000000000'], // exp(-745.2), the low cutoff
-      ['c087480000000000', '0000000000000001'], // exp(-745), the smallest denormal
-      ['c08624cccccccccd', '000d0d8838ef6116'], // exp(-708.6), denormal
-      ['c085e00000000000', '00d14f2b0fb9307f'], // exp(-700)
-      ['c059000000000000', '36ea8c1f14e2af5d'], // exp(-100)
-      ['bff0000000000000', '3fd78b56362cef38'], // exp(-1)
-      ['bfe0000000000000', '3fe368b2fc6f960a'], // exp(-0.5)
-      ['bfd62e42fefa39ef', '3fe6a09e667f3bcc'], // exp(-ln2/2), a reduction endpoint
-      ['0000000000000000', '3ff0000000000000'], // exp(0)
-      ['3fd62e42fefa39ef', '3ff6a09e667f3bcc'], // exp(ln2/2), the other endpoint
-      ['3fe62e42fefa39ef', '4000000000000000'], // exp(ln2)
-      ['3fe0000000000000', '3ffa61298e1e069c'], // exp(0.5)
-      ['3ff0000000000000', '4005bf0a8b145769'], // exp(1)
-      ['4059000000000000', '48f3494a9b171bf5'], // exp(100)
-      ['40862e3d70a3d70a', '7fefe9ce5c4c52b4'], // exp(709.78), the largest finite result
-      ['40862e51eb851eb8', '7ff0000000000000'], // exp(709.79), the high cutoff
-    ];
-    for (const [argHex, expectedHex] of cases) {
-      const arg = fromHex(argHex);
-      expectBitwise(`portableExp(${arg})`, portableExp(arg), fromHex(expectedHex));
-    }
+  // The fixture stops at 709 and 709.78 because the next representable results are not finite.
+  // The high cutoff itself is not the early return: `y > 709.79` is false at 709.79, so the
+  // reduction runs and the scaling is what overflows. The early return is above it.
+  it('overflows to infinity at the top of the range', () => {
+    expect(portableExp(MAX_ARG)).toBe(Infinity);
+    expect(portableExp(710)).toBe(Infinity);
   });
 
   it('carries the infinities and NaN through', () => {

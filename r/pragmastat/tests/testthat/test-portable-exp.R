@@ -26,11 +26,62 @@ test_that("2^n is exact for every n portable_exp can reach", {
   expect_identical(double_bits(as_written), double_bits(by_doubling))
 })
 
-# Bit-identity with the other six is checked by the shared margin fixtures, which is a
-# closed loop: it would pass just as happily on six copies of the same wrong reduction.
-# This is the open end of it. The polynomial and the range reduction are supposed to
-# reproduce the true exponential to a couple of ulp, and R's own exp is an independent
-# witness to that.
+# The direct cross-language check: four files, 1032 arguments, compared on binary64 payloads.
+#
+# Before this suite existed the seven ports met only through the margin fixtures, which reach
+# the exponential wherever an Edgeworth expansion happens to look and nowhere else. The
+# reduction endpoints, the underflow cutoff and the denormal tail went unwitnessed, and those
+# are where implementations of an exponential actually part company.
+#
+# expect_exact, never a tolerance: the manifest declares this suite exact, and a tolerance here
+# passes on precisely the divergence the suite exists to catch.
+test_that("portable_exp reproduces the shared portable-exp fixture bit for bit", {
+  repo_root <- find_repo_root()
+  test_data_dir <- file.path(repo_root, "tests", "portable-exp")
+
+  json_files <- list.files(test_data_dir, pattern = "\\.json$", full.names = TRUE)
+  expect_true(length(json_files) > 0, "No JSON test files found")
+
+  # A loader that silently finds nothing passes every assertion inside the loop, so the number
+  # of arguments actually compared is asserted rather than assumed. Widening the fixture is
+  # meant to move this number with it.
+  checked <- 0L
+  denormals_seen <- 0L
+
+  for (json_file in json_files) {
+    label <- basename(json_file)
+    test_case <- jsonlite::fromJSON(json_file)
+    expect_identical(test_case$input$name, "portable_exp", info = paste(label, "suite name"))
+
+    args <- as.double(test_case$input$arg)
+    expected <- as.double(test_case$output)
+    expect_identical(length(args), length(expected),
+      info = paste(label, "arg/output length")
+    )
+
+    # Only the outputs are compared. JSON does not distinguish -0 from 0, so the two signed
+    # zeros in boundaries.json both arrive as +0; both exponentiate to 1, so nothing is lost,
+    # and comparing the inputs would turn a property of the format into a failure.
+    actual <- vapply(args, portable_exp, numeric(1))
+    expect_exact(actual, expected, label)
+
+    checked <- checked + length(args)
+    denormals_seen <- denormals_seen +
+      sum(expected != 0 & abs(expected) < 2^-1022)
+  }
+
+  expect_identical(checked, 1032L)
+
+  # The fixture runs down to the smallest denormal, which is the part a JSON reader is most
+  # likely to mangle. A reader that flushed those to zero would fail the payload comparison
+  # above with a message blaming the port, so the parse is stated on its own here.
+  expect_gt(denormals_seen, 0L)
+})
+
+# Bit-identity with the other six is checked by the fixture above, which is a closed loop:
+# it would pass just as happily on seven copies of the same wrong reduction. This is the
+# open end of it. The polynomial and the range reduction are supposed to reproduce the true
+# exponential to a couple of ulp, and R's own exp is an independent witness to that.
 test_that("portable_exp tracks the platform exponential to about 2 ulp", {
   ys <- seq(-700, 700, by = 0.37)
   actual <- vapply(ys, portable_exp, numeric(1))

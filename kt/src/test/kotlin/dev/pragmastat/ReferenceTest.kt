@@ -1669,4 +1669,98 @@ class ReferenceTest {
 
         return tests
     }
+
+    // Portable exponential reference tests
+
+    /**
+     * The shape of a single-value suite: one function name, one vector of arguments,
+     * one vector of results. Named for the shape rather than for `portable-exp`,
+     * which is the only such suite this port loads today.
+     */
+    data class SingleDoubleValueInput(
+        val name: String,
+        val arg: List<Double>,
+    )
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    data class SingleDoubleValueTestData(
+        val input: SingleDoubleValueInput,
+        val output: List<Double>,
+    )
+
+    /**
+     * [portableExp] against the shared fixture, argument by argument, bit for bit.
+     *
+     * The seven ports carry their own exponential because IEEE 754 fixes nothing
+     * about one and a margin selects an order statistic, so a last-bit difference is
+     * a different confidence interval. Until this suite existed nothing checked the
+     * seven directly: they met only through the margin fixtures, which reach the
+     * exponential wherever an Edgeworth expansion happens to look and nowhere else.
+     *
+     * Bitwise, never a tolerance. The manifest declares the suite `exact`, and the
+     * divergence being hunted here is one ulp: a tolerance passes on precisely the
+     * thing the fixture was built to catch.
+     *
+     * Two details of the fixture are deliberate and must not be "fixed":
+     *
+     * - `boundaries` carries both `0` and `-0`, which JSON does not distinguish, so
+     *   both arrive as `+0.0`. Both map to `exp(0) = 1`, so nothing is lost. Only
+     *   the outputs are compared; the inputs are fed to the implementation, never
+     *   asserted.
+     * - The expected results run down to the smallest denormal (`1e-323`, `5e-324`).
+     *   Comparing those by payload is also what proves Jackson round-trips them: a
+     *   parser that mangles a subnormal cannot agree with [portableExp] bit for bit.
+     */
+    @TestFactory
+    fun testPortableExp(): List<DynamicTest> {
+        val testDir = File("../tests/portable-exp")
+        val loaded =
+            testDir
+                .listFiles { _, name -> name.endsWith(".json") }
+                ?.sortedBy { it.name }
+                .orEmpty()
+                .map { file -> file.nameWithoutExtension to mapper.readValue<SingleDoubleValueTestData>(file) }
+
+        val tests = mutableListOf<DynamicTest>()
+        val total = loaded.sumOf { (_, data) -> data.input.arg.size }
+
+        // This suite does not skip when the fixture is missing, unlike the suites
+        // above. A loader that finds no files reports all zero of its comparisons as
+        // passes, which is the exact failure this fixture replaced: the TypeScript
+        // port checked the exponential against a hand-copied table, and the copy went
+        // stale in silence. The four files below are the suite, so their absence is a
+        // broken loader or a broken checkout, not a reason to stay quiet. The
+        // argument count rides in the test name so a report states the coverage.
+        val expectedFiles = listOf("boundaries", "edgeworth-band", "finite-range", "working-band")
+        tests.add(
+            DynamicTest.dynamicTest("portable-exp/coverage: $total arguments over ${loaded.size} files") {
+                val found = loaded.map { (name, _) -> name }
+                assertTrue(
+                    found.containsAll(expectedFiles),
+                    "Expected portable-exp fixtures $expectedFiles but found $found",
+                )
+                assertTrue(total > 0, "portable-exp fixtures carry no arguments")
+            },
+        )
+
+        for ((name, data) in loaded) {
+            tests.add(
+                DynamicTest.dynamicTest("portable-exp/$name (${data.input.arg.size} arguments)") {
+                    assertEquals("portable_exp", data.input.name, "$name: unexpected function name")
+                    assertEquals(
+                        data.input.arg.size,
+                        data.output.size,
+                        "$name: fixture has ${data.input.arg.size} arguments but ${data.output.size} results",
+                    )
+                    // The argument, not the index, goes in the label: a one-ulp report on
+                    // a 401-point grid is only actionable if it names the point.
+                    for (i in data.input.arg.indices) {
+                        assertBitwise(data.output[i], portableExp(data.input.arg[i]), "portableExp(${data.input.arg[i]})")
+                    }
+                },
+            )
+        }
+
+        return tests
+    }
 }

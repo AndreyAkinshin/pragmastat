@@ -210,6 +210,15 @@
       "description": "SignedRankMargin function tests",
       "languages": ["cs", "go", "kt", "py", "r", "rs", "ts"]
     },
+    "portable-exp": {
+      "conformance": "exact",
+      "directory": "portable-exp",
+      "generator": "cs/Pragmastat.TestGenerator",
+      "pattern": "*.json",
+      "description": "The reproducible exponential, compared by binary64 payload",
+      "conformance_reason": "This is the function the exact class rests on: the margins reach an exponential, IEEE 754 fixes nothing about one, and a last-bit difference there selects a different order statistic. Every other suite reaches it only through a margin, so it is checked directly here.",
+      "languages": ["cs", "go", "kt", "py", "r", "rs", "ts"]
+    },
     "sample-construction": {
       "conformance": "exact",
       "directory": "sample-construction",
