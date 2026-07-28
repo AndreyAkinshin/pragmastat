@@ -2,7 +2,8 @@
 
 $ SignedRankMargin(n, misrate) $
 
-The $SignedRankMargin$ test suite contains 37 correctness test cases (4 demo + 6 boundary + 7 exact + 20 medium).
+The $SignedRankMargin$ test suite contains 51 correctness test cases (4 demo + 6 boundary +
+  7 exact + 20 medium + 14 Edgeworth crossover).
 
 *Demo examples* ($n = 30$) — from manual introduction:
 

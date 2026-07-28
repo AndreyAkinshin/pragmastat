@@ -922,6 +922,10 @@ run = [
     # that build puts them back, which is true and which makes `clean` followed by a blanket
     # `git add -A` a way to commit their deletion without noticing. It has happened once.
     # `git ls-files --deleted` is the invariant that catches it, and it costs nothing.
+    # Every fixture count stated in the manual must match the directory it describes. They are
+    # prose, they ship in the PDF and on the website, and four of them went stale the moment
+    # fixtures were added at the decision boundaries.
+    "python3 tests/check_manual_counts.py .",
     "test -z \"$(git ls-files --deleted)\" || { echo 'ERROR: tracked files are missing from the working tree:' >&2; git ls-files --deleted >&2; echo 'A clean task removed a committed artifact and the build did not put it back.' >&2; exit 1; }",
     { task = "pdf:build" },
     { task = "web:build" },

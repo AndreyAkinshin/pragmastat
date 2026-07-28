@@ -437,8 +437,10 @@ Each estimator is recomputed with every call to the logarithm, the exponential, 
   general power returning the neighbouring representable value.
 That is the smallest difference two conforming implementations of those functions can legitimately
   have, so it stands in for the whole space of libraries the seven ports might be built against.
-An estimator whose output never moves under that perturbation cannot diverge for this reason in any
-  language, which is a proof rather than an observation.
+An estimator whose output never moves under that perturbation does not depend on those functions
+  over the inputs swept, which is stronger than agreeing with the fixtures and weaker than a proof.
+The sweep is large and deliberately includes the points where the answer is in doubt, but it is a
+  sweep: the classes below are measured, not derived.
 The square root is deliberately left alone: IEEE 754 requires it to be correctly rounded, so every
   conforming implementation already returns the same bits.
 

@@ -183,6 +183,7 @@ Test cases follow a consistent naming taxonomy:
 | `misrate-*` | Misrate parameter variation tests |
 | `conservatism-*` | Conservatism tests (discreteness effects across sample sizes) |
 | `floor-*` | At the minimum achievable misrate, where the admissibility test is an exact tie |
+| `edgeworth-*` | At the crossover where the Edgeworth expansion decides a different integer |
 
 ### Misrate notation
 

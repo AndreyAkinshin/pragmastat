@@ -1,6 +1,6 @@
 #import "/manual/definitions.typ": *
 
-The $Rng$ test suite contains 55 test cases validating the deterministic pseudo-random number generator across seven output categories.
+The $Rng$ test suite contains 58 test cases validating the deterministic pseudo-random number generator across seven output categories.
 All tests verify reproducibility: given the same seed, every language implementation must produce identical sequences.
 Seeds can be integers or strings (string seeds are hashed to produce an integer seed).
 
@@ -22,11 +22,14 @@ Seeds can be integers or strings (string seeds are hashed to produce an integer 
 - Each generates 100 boolean values
 - Validates the threshold-based boolean conversion
 
-*uniform-range* (7 tests) --- $Uniform(min, max)$ generation with real-valued bounds:
+*uniform-range* (10 tests) --- $Uniform(min, max)$ generation with real-valued bounds:
 
-- Seeds and ranges: seed $0$ with $[-1, 1]$; seed $123$ with $[0, 1]$; seed $999$ with $[0, 100]$; seed $1729$ with $[-1, 1]$, $[-50, 50]$, $[0, 1]$, $[0, 100]$
+- Seeds and ranges: seed $0$ with $[-1, 1]$; seed $42$ with $[5, 6.7]$; seed $123$ with $[0, 1]$; seed $999$ with $[0, 100]$; seed $1729$ with $[-1, 1]$, $[-50, 50]$, $[-273.15, 100]$, $[0, 0.7]$ starting at $0.1$, $[0, 1]$, $[0, 100]$
 - Each generates 20 values in $[min, max)$
 - Validates affine transformation of base uniform
+- The last three are there because the others cannot see the transformation go wrong: a range
+  whose width is a power of two, or whose lower bound is zero, has an exact product, so a fused
+  multiply-add returns the same bits as an unfused one. Only an inexact product tells them apart.
 
 *uniform-int* (8 tests) --- uniform integer generation in $[min, max)$:
 

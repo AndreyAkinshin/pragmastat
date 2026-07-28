@@ -15,7 +15,8 @@ Define $k_L = r + 1$ and $k_U = m - r$.
 
 Return $[L, U] = [d_((k_L)), d_((k_U))]$.
 
-The $SpreadBounds$ test suite contains 44 test cases (3 demo + 4 natural + 4 property + 7 edge + 3 additive + 2 uniform + 5 misrate + 5 conservatism + 8 unsorted + 3 error).
+The $SpreadBounds$ test suite contains 53 test cases (3 demo + 4 natural + 4 property + 7 edge +
+  3 additive + 2 uniform + 5 misrate + 5 conservatism + 8 unsorted + 3 error + 9 misrate floor).
 Since $SpreadBounds$ returns bounds rather than a point estimate, tests validate that bounds are well-formed and satisfy equivariance properties under a fixed seed.
 Each test case output is a JSON object with `lower` and `upper` fields representing the interval bounds.
 Because pairing and cutoff selection are randomized, tests fix `seed` to keep outputs deterministic.
