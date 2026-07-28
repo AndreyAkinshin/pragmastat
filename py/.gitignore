@@ -138,3 +138,6 @@ cython_debug/
 
 # PyCharm
 .idea/
+# uv resolves from pyproject.toml; the lockfile was dropped deliberately (d07ad00) and
+# regenerates itself on every `uv sync`, so ignoring it is what keeps it gone.
+uv.lock

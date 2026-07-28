@@ -301,11 +301,11 @@ jobs:
         retention-days: 1
 
   # The repository-level conformance gates. They are not part of any language job because
-  # they are not about one language: one regenerates the shared fixtures and requires a
-  # byte-identical result, the other measures whether every estimator still holds the
-  # conformance class it declares in tests/manifest.json.
+  # they are not about one language: two regenerate the shared fixtures and require a
+  # byte-identical result, one from each generator, and the third measures whether every
+  # estimator still holds the conformance class it declares in tests/manifest.json.
   #
-  # Both existed for a while and ran only when somebody typed `mise run ci` locally, which is
+  # They existed for a while and ran only when somebody typed `mise run ci` locally, which is
   # the same failure they were built to prevent: a check nobody runs is not a check.
   ci-conformance:
     runs-on: ubuntu-24.04
@@ -315,8 +315,11 @@ jobs:
     - name: Set up mise
       uses: jdx/mise-action@v4
 
-    - name: Fixtures still match their generator
+    - name: Randomization fixtures still match their generator
       run: mise run tests:check:rng-fixtures
+
+    - name: Estimator fixtures still match their generator
+      run: mise run tests:check:generator-drift
 
     - name: Every estimator holds its declared conformance class
       run: mise run tests:check:conformance

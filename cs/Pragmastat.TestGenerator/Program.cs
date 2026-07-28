@@ -1,4 +1,4 @@
-using Pragmastat.Internal;
+using Pragmastat.TestGenerator.Framework;
 using Pragmastat.TestGenerator.TestCases;
 using Spectre.Console;
 
@@ -11,7 +11,7 @@ AnsiConsole.MarkupLine("");
 // (sample-construction, unit-propagation), and the README/manifest metadata —
 // none of which may be touched here. Deleting a suite directory (rather than
 // overwriting files) removes cases orphaned by renames.
-var repositoryRoot = SourceRepositoryLocator.RepositoryRoot;
+var repositoryRoot = ReferenceTestSuiteHelper.TestsRoot;
 
 string[] ownedSharedSuites =
 [

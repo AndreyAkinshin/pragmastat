@@ -7,11 +7,27 @@ namespace Pragmastat.TestGenerator.Framework;
 
 public static class ReferenceTestSuiteHelper
 {
+  /// <summary>
+  /// Root the fixtures are read from and written to, the repository unless
+  /// PRAGMASTAT_TESTS_ROOT names somewhere else.
+  /// </summary>
+  /// <remarks>
+  /// The redirect exists so that mise task "tests:check:generator-drift" can regenerate into a
+  /// scratch directory and compare, rather than over the tree seven language suites are reading.
+  /// Without it a fixture can be edited by hand and never diverge from its generator loudly:
+  /// tests/compare2/demo-disparity-less.json spent several commits describing a shift threshold
+  /// under a name and a generator that both said disparity, and nothing failed.
+  /// </remarks>
+  public static string TestsRoot { get; } =
+    Environment.GetEnvironmentVariable("PRAGMASTAT_TESTS_ROOT") is { Length: > 0 } root
+      ? root
+      : SourceRepositoryLocator.RepositoryRoot;
+
   public static string GetTestSuiteDirectory(string suiteName, bool shared = false)
   {
     return shared
-      ? Path.Combine(SourceRepositoryLocator.RepositoryRoot, "tests", suiteName)
-      : Path.Combine(SourceRepositoryLocator.RepositoryRoot, "cs", "tests", suiteName);
+      ? Path.Combine(TestsRoot, "tests", suiteName)
+      : Path.Combine(TestsRoot, "cs", "tests", suiteName);
   }
 
   private static string[] LoadTestNames(string suiteName, bool shared = false)

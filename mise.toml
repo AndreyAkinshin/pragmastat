@@ -586,6 +586,44 @@ fi
 echo "deterministic randomization fixtures match their generator"
 """
 
+[tasks."tests:check:generator-drift"]
+description = "Assert the generated fixtures still match the generator that owns them"
+# tests:check:rng-fixtures makes this check for the five suites the Rust generator owns. The
+# other sixteen shared suites and the whole of cs/tests come from the C# generator, and nothing
+# compared them, so a fixture could be edited by hand and stay edited.
+#
+# One was. tests/compare2/demo-disparity-less.json carried a shift threshold at misrate 0.02
+# while its filename and its generator both said disparity at 0.05, and it survived several
+# commits that way: the suites read the fixture, the fixture agreed with itself, and the
+# generator was never asked. A fixture nobody regenerates is a claim nobody checks.
+#
+# Regeneration goes to a scratch directory. This task runs beside every language's suite, all of
+# which read the fixture tree, so writing there would hand them half-written files.
+run = """
+#!/usr/bin/env bash
+set -euo pipefail
+scratch="$(mktemp -d)"
+trap 'rm -rf "$scratch"' EXIT
+PRAGMASTAT_TESTS_ROOT="$scratch" dotnet run --project \\
+  cs/Pragmastat.TestGenerator/Pragmastat.TestGenerator.csproj >/dev/null
+status=0
+# The suites this generator owns, and only those: tests/ also holds Rust-generated and
+# hand-maintained suites it must not be blamed for.
+owned="center center-bounds spread spread-bounds shift shift-bounds ratio ratio-bounds \\
+       disparity disparity-bounds avg-spread avg-spread-bounds compare1 compare2 \\
+       pairwise-margin signed-rank-margin"
+for suite in $owned; do
+  diff -r -q "tests/$suite" "$scratch/tests/$suite" || status=1
+done
+diff -r -q cs/tests "$scratch/cs/tests" || status=1
+if [ "$status" -ne 0 ]; then
+  echo "ERROR: a generated fixture no longer matches its generator." >&2
+  echo "Run 'mise run cs:gen' and commit the result, or fix the generator." >&2
+  exit 1
+fi
+echo "generated fixtures match the generator that owns them"
+"""
+
 [tasks."rs:doc"]
 description = "Build Rust documentation"
 dir = "rs/pragmastat"
@@ -974,7 +1012,7 @@ depends = ["cs:demo", "go:demo", "kt:demo", "py:demo", "r:demo", "rs:demo", "ts:
 
 [tasks."ci"]
 description = "Run CI pipeline for all language implementations"
-depends = ["cs:ci", "go:ci", "kt:ci", "py:ci", "r:ci", "rs:ci", "ts:ci", "docs:ci", "tests:check:rng-fixtures", "tests:check:conformance"]
+depends = ["cs:ci", "go:ci", "kt:ci", "py:ci", "r:ci", "rs:ci", "ts:ci", "docs:ci", "tests:check:rng-fixtures", "tests:check:conformance", "tests:check:generator-drift"]
 
 # ==========================================================================
 # Version Task
