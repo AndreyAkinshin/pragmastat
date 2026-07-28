@@ -51,6 +51,6 @@ public class DisparityEstimator : ITwoSampleEstimator
     var shiftVal = ShiftImpl.Estimate(x, y, [0.5], assumeSorted)[0];
     var avgSpreadVal = (n * spreadX + m * spreadY) / (n + m);
 
-    return shiftVal / avgSpreadVal;
+    return (shiftVal / avgSpreadVal).NormalizeZero();
   }
 }

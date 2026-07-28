@@ -1,5 +1,16 @@
 # Bounds represents an interval [lower, upper] with an associated measurement unit.
 
+# Pairs two endpoints into the list(lower, upper) that the native-array bounds
+# API returns, normalizing both (see normalize_zero).
+#
+# Every bounds result passes through here: the vector path returns this list
+# as-is, and the Sample path builds its Bounds object out of the same list. One
+# spot covers both public surfaces, instead of the endpoint construction sites
+# scattered across the bounds estimators.
+bounds_list <- function(lower, upper) {
+  list(lower = normalize_zero(lower), upper = normalize_zero(upper))
+}
+
 #' @export
 Bounds <- R6::R6Class(
   "Bounds",

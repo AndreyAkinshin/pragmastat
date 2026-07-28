@@ -29,7 +29,7 @@ shift_impl <- function(x, y, assume_sorted, sorted_x = NULL, sorted_y = NULL) {
   check_validity(y, SUBJECTS$Y)
   xs <- if (!is.null(sorted_x)) sorted_x else x
   ys <- if (!is.null(sorted_y)) sorted_y else y
-  shift_impl_compute(xs, ys, p = 0.5, assume_sorted = assume_sorted)
+  normalize_zero(shift_impl_compute(xs, ys, p = 0.5, assume_sorted = assume_sorted))
 }
 
 # Internal Sample-based estimator: thin adapter over shift_impl.

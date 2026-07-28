@@ -35,6 +35,6 @@ public class CenterEstimator : IOneSampleEstimator
   internal static double EstimateRaw(IReadOnlyList<double> x, bool assumeSorted)
   {
     Assertion.Validity(x, Subject.X);
-    return CenterImpl.Estimate(x, assumeSorted: assumeSorted);
+    return CenterImpl.Estimate(x, assumeSorted: assumeSorted).NormalizeZero();
   }
 }

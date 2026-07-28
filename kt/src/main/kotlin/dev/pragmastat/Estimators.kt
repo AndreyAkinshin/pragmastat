@@ -6,6 +6,25 @@ import kotlin.math.max
 import kotlin.math.min
 
 /**
+ * Replaces a negative zero with a positive one.
+ *
+ * A sample that holds both `+0.0` and `-0.0` makes the reported value depend on which of the two
+ * the sort happened to place in the selected position: comparison cannot tell them apart, so that
+ * position is decided by the sorting algorithm rather than by the data. Each port sorts its own
+ * way, and they disagreed, e.g. `center(listOf(0.0, -0.0, 0.0, -0.0, 1.0))` yielded `-0.0` in one
+ * port and `+0.0` in another. The `exact` conformance class promises identical bits from identical
+ * inputs, so that is a divergence and not a cosmetic difference.
+ *
+ * The sign of a zero carries no statistical meaning here: `-0.0 == 0.0`, and no estimate becomes
+ * less accurate once the sign is dropped. Every estimator therefore normalizes it away on the way
+ * out, which closes the whole class of divergence rather than the one sample that exposed it.
+ *
+ * Only outputs are normalized: a sample may still contain `-0.0`, and infinities and NaN pass
+ * through untouched.
+ */
+internal fun normalizeZero(v: Double): Double = if (v == 0.0) 0.0 else v
+
+/**
  * Estimates the central value of the data (Center)
  *
  * Calculates the median of all pairwise averages (x[i] + x[j])/2.
@@ -29,7 +48,7 @@ fun center(
 ): Double {
     // Check validity (priority 0)
     checkValidity(x, Subject.X)
-    return centerImpl(x, assumeSorted)
+    return normalizeZero(centerImpl(x, assumeSorted))
 }
 
 /**
@@ -63,7 +82,7 @@ fun spread(
     if (spreadVal <= 0.0) {
         throw AssumptionException(Violation(AssumptionId.SPARITY, Subject.X))
     }
-    return spreadVal
+    return normalizeZero(spreadVal)
 }
 
 /**
@@ -91,7 +110,7 @@ fun shift(
     // Check validity (priority 0)
     checkValidity(x, Subject.X)
     checkValidity(y, Subject.Y)
-    return shiftImpl(x, y, assumeSorted = assumeSorted)[0]
+    return normalizeZero(shiftImpl(x, y, assumeSorted = assumeSorted)[0])
 }
 
 /**
@@ -130,7 +149,7 @@ fun ratio(
     // Check positivity for y (priority 1, subject y)
     checkPositivity(y, Subject.Y)
 
-    return ratioImpl(x, y, assumeSorted = assumeSorted)[0]
+    return normalizeZero(ratioImpl(x, y, assumeSorted = assumeSorted)[0])
 }
 
 /**
@@ -169,7 +188,7 @@ internal fun avgSpread(
         throw AssumptionException(Violation(AssumptionId.SPARITY, Subject.Y))
     }
 
-    return (n * spreadX + m * spreadY) / (n + m).toDouble()
+    return normalizeZero((n * spreadX + m * spreadY) / (n + m).toDouble())
 }
 
 /**
@@ -217,7 +236,7 @@ fun disparity(
     val shiftVal = shiftImpl(x, y, assumeSorted = assumeSorted)[0]
     val avgSpreadVal = (n * spreadX + m * spreadY) / (n + m).toDouble()
 
-    return shiftVal / avgSpreadVal
+    return normalizeZero(shiftVal / avgSpreadVal)
 }
 
 const val DEFAULT_MISRATE = 1e-3
@@ -240,6 +259,19 @@ data class Bounds(
     /** Returns a copy of this Bounds with the given [unit]. */
     internal fun withUnit(unit: MeasurementUnit): Bounds = copy(unit = unit)
 }
+
+/**
+ * Builds unitless [Bounds] with both endpoints passed through [normalizeZero].
+ *
+ * Every bounds estimator returns through here, so the guarantee that no endpoint carries a
+ * negative zero lives at one site instead of being restated at each construction point.
+ * [Bounds.withUnit] only re-labels an already-built pair, so the unit-carrying results of the
+ * [Sample] API inherit the guarantee.
+ */
+internal fun boundsOf(
+    lower: Double,
+    upper: Double,
+): Bounds = Bounds(normalizeZero(lower), normalizeZero(upper))
 
 /**
  * Provides bounds on the Shift estimator with specified misclassification rate (ShiftBounds)
@@ -289,7 +321,7 @@ fun shiftBounds(
     // Special case: when there's only one pairwise difference, bounds collapse to a single value
     if (total == 1L) {
         val value = xs[0] - ys[0]
-        return Bounds(value, value)
+        return boundsOf(value, value)
     }
 
     val margin = pairwiseMargin(n, m, misrate)
@@ -306,7 +338,7 @@ fun shiftBounds(
     val lower = minOf(bounds[0], bounds[1])
     val upper = maxOf(bounds[0], bounds[1])
 
-    return Bounds(lower, upper)
+    return boundsOf(lower, upper)
 }
 
 /**
@@ -359,7 +391,7 @@ fun ratioBounds(
     val logBounds = shiftBounds(logX, logY, misrate, assumeSorted)
 
     // Exp-transform back to ratio-space
-    return Bounds(
+    return boundsOf(
         exp(logBounds.lower),
         exp(logBounds.upper),
     )
@@ -421,7 +453,7 @@ fun centerBounds(
     val sorted = if (assumeSorted) x else x.sorted()
     val (lo, hi) = CenterQuantilesImpl.bounds(sorted, kLeft, kRight)
 
-    return Bounds(lo, hi)
+    return boundsOf(lo, hi)
 }
 
 /**
@@ -529,7 +561,7 @@ internal fun spreadBoundsInner(
         }
     diffs.sort()
 
-    return Bounds(diffs[kLeft - 1], diffs[kRight - 1])
+    return boundsOf(diffs[kLeft - 1], diffs[kRight - 1])
 }
 
 /**
@@ -549,24 +581,24 @@ internal fun disparityBoundsFromComponents(
         val r4 = us / ua
         val lower = min(min(r1, r2), min(r3, r4))
         val upper = max(max(r1, r2), max(r3, r4))
-        return Bounds(lower, upper)
+        return boundsOf(lower, upper)
     }
 
     if (ua <= 0.0) {
-        if (ls == 0.0 && us == 0.0) return Bounds(0.0, 0.0)
-        if (ls >= 0.0) return Bounds(0.0, Double.POSITIVE_INFINITY)
-        if (us <= 0.0) return Bounds(Double.NEGATIVE_INFINITY, 0.0)
-        return Bounds(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY)
+        if (ls == 0.0 && us == 0.0) return boundsOf(0.0, 0.0)
+        if (ls >= 0.0) return boundsOf(0.0, Double.POSITIVE_INFINITY)
+        if (us <= 0.0) return boundsOf(Double.NEGATIVE_INFINITY, 0.0)
+        return boundsOf(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY)
     }
 
     // Default: ua > 0 && la <= 0
-    if (ls > 0.0) return Bounds(ls / ua, Double.POSITIVE_INFINITY)
-    if (us < 0.0) return Bounds(Double.NEGATIVE_INFINITY, us / ua)
-    if (ls == 0.0 && us == 0.0) return Bounds(0.0, 0.0)
-    if (ls == 0.0 && us > 0.0) return Bounds(0.0, Double.POSITIVE_INFINITY)
-    if (ls < 0.0 && us == 0.0) return Bounds(Double.NEGATIVE_INFINITY, 0.0)
+    if (ls > 0.0) return boundsOf(ls / ua, Double.POSITIVE_INFINITY)
+    if (us < 0.0) return boundsOf(Double.NEGATIVE_INFINITY, us / ua)
+    if (ls == 0.0 && us == 0.0) return boundsOf(0.0, 0.0)
+    if (ls == 0.0 && us > 0.0) return boundsOf(0.0, Double.POSITIVE_INFINITY)
+    if (ls < 0.0 && us == 0.0) return boundsOf(Double.NEGATIVE_INFINITY, 0.0)
 
-    return Bounds(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY)
+    return boundsOf(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY)
 }
 
 /**
@@ -753,7 +785,7 @@ internal fun avgSpreadBoundsInner(
     val weightX = n.toDouble() / (n + m).toDouble()
     val weightY = m.toDouble() / (n + m).toDouble()
 
-    return Bounds(
+    return boundsOf(
         weightX * boundsX.lower + weightY * boundsY.lower,
         weightX * boundsX.upper + weightY * boundsY.upper,
     )

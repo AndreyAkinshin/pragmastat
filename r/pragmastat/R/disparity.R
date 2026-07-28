@@ -55,7 +55,7 @@ disparity_impl <- function(x, y, assume_sorted, sorted_x = NULL, sorted_y = NULL
   shift_val <- shift_impl_compute(xs, ys, p = 0.5, assume_sorted = (sorted_x_flag && sorted_y_flag))
   avg_spread_val <- (n * spread_x + m * spread_y) / (n + m)
 
-  shift_val / avg_spread_val
+  normalize_zero(shift_val / avg_spread_val)
 }
 
 # Internal Sample-based estimator: thin adapter over disparity_impl.

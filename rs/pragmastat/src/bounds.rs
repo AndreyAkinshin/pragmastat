@@ -1,5 +1,6 @@
 //! Bounds: an interval [lower, upper] paired with a measurement unit.
 
+use crate::estimators::normalize_zero;
 use crate::measurement_unit::MeasurementUnit;
 use std::fmt;
 
@@ -13,17 +14,21 @@ pub struct Bounds {
 
 impl Bounds {
     /// Creates new bounds with the given lower, upper, and unit.
+    ///
+    /// Both endpoints are normalized: a negative zero becomes a positive one, for the reason
+    /// given on `estimators::normalize_zero`. Every bounds estimator re-attaches its unit here,
+    /// so this is the single place the unit-carrying half of the API has to hold that guarantee.
     pub fn new(lower: f64, upper: f64, unit: MeasurementUnit) -> Self {
-        Self { lower, upper, unit }
+        Self {
+            lower: normalize_zero(lower),
+            upper: normalize_zero(upper),
+            unit,
+        }
     }
 
     /// Creates new bounds with the default number unit.
     pub fn number(lower: f64, upper: f64) -> Self {
-        Self {
-            lower,
-            upper,
-            unit: MeasurementUnit::number(),
-        }
+        Self::new(lower, upper, MeasurementUnit::number())
     }
 
     /// Returns true if `value` is within [lower, upper].

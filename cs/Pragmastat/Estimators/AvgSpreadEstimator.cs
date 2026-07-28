@@ -23,6 +23,6 @@ internal class AvgSpreadEstimator : ITwoSampleEstimator
     if (spreadY <= 0)
       throw AssumptionException.Sparity(Subject.Y);
 
-    return ((x.Size * spreadX + y.Size * spreadY) / (x.Size + y.Size)).WithUnitOf(x);
+    return ((x.Size * spreadX + y.Size * spreadY) / (x.Size + y.Size)).NormalizeZero().WithUnitOf(x);
   }
 }

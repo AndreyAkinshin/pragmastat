@@ -34,7 +34,7 @@ import kotlin.test.fail
  * bit-identical, or a different one was, and then the gap is data-dependent and no
  * epsilon bounds it. A tolerance hides exactly the failure it appears to guard
  * against. Exactness here is measured, not assumed: recomputing every estimator
- * with each call to log, exp, pow and cos returning the neighbouring representable
+ * with each call to log, exp, pow and cos returning the neighboring representable
  * value (the largest difference two conforming libm implementations can
  * legitimately have) left center, spread, shift, disparity, avg-spread, all of
  * their bounds, compare1 and the margins unmoved on every input. The seeded
@@ -127,6 +127,25 @@ internal fun assertBitwise(
     for (i in expected.indices) {
         assertBitwise(expected[i], actual[i], "$label: element $i")
     }
+}
+
+/**
+ * Asserts that a binary64 value is not a negative zero.
+ *
+ * The negated form of the same claim, for the positions where the expected value is not known in
+ * advance and only the sign of a possible zero is being pinned: no public estimator may report
+ * `-0.0` (see `normalizeZero`). It lives here because the payload is the only way to state it —
+ * `actual == -0.0` is true of `+0.0` as well, and so asserts nothing at all.
+ */
+internal fun assertNotNegativeZero(
+    actual: Double,
+    label: String,
+) {
+    val actualBits = actual.toRawBits()
+    if (actualBits != (-0.0).toRawBits()) {
+        return
+    }
+    fail("$label: expected 0.0 (${hexBits(0.0.toRawBits())}) but got $actual (${hexBits(actualBits)})")
 }
 
 /** Sequence form of the binary32 comparison. See the binary64 overload. */

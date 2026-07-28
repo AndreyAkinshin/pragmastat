@@ -43,7 +43,7 @@ avg_spread_impl <- function(x, y, sorted_x = NULL, sorted_y = NULL) {
     stop(assumption_error(ASSUMPTION_IDS$SPARITY, SUBJECTS$Y))
   }
 
-  (n * spread_x + m * spread_y) / (n + m)
+  normalize_zero((n * spread_x + m * spread_y) / (n + m))
 }
 
 # Internal Sample-based estimator: thin adapter over avg_spread_impl.

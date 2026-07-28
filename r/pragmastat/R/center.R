@@ -27,7 +27,7 @@ center <- function(x, assume_sorted = FALSE) {
 # Delegates the O(n log n) Monahan selection to the C kernel.
 center_impl <- function(values, assume_sorted = FALSE) {
   check_validity(values, SUBJECTS$X)
-  center_impl_compute(values, assume_sorted)
+  normalize_zero(center_impl_compute(values, assume_sorted))
 }
 
 # Internal Sample-based estimator: thin adapter over center_impl.

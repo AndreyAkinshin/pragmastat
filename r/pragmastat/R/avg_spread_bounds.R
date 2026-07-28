@@ -55,9 +55,9 @@ avg_spread_bounds_impl <- function(x, y, misrate, seed, sorted_x = NULL, sorted_
   weight_x <- n / (n + m)
   weight_y <- m / (n + m)
 
-  list(
-    lower = weight_x * bounds_x$lower + weight_y * bounds_y$lower,
-    upper = weight_x * bounds_x$upper + weight_y * bounds_y$upper
+  bounds_list(
+    weight_x * bounds_x$lower + weight_y * bounds_y$lower,
+    weight_x * bounds_x$upper + weight_y * bounds_y$upper
   )
 }
 

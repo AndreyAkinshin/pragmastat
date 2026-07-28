@@ -52,7 +52,7 @@ from .assumptions import AssumptionError, check_positivity, check_validity, log
 from .bounds import Bounds
 from .center_impl import _center_impl
 from .measurement import Measurement
-from .measurement_unit import DISPARITY_UNIT, NUMBER_UNIT, RATIO_UNIT
+from .measurement_unit import DISPARITY_UNIT, NUMBER_UNIT, RATIO_UNIT, MeasurementUnit
 from .min_misrate import (
     min_achievable_misrate_one_sample,
     min_achievable_misrate_two_sample,
@@ -94,15 +94,51 @@ def _sorted_view(values: NDArray, assume_sorted: bool) -> NDArray | None:
     return values if assume_sorted else None
 
 
+def _normalize_zero(value: float) -> float:
+    """Replace a negative zero with a positive one.
+
+    A sample holding both ``+0.0`` and ``-0.0`` makes the reported value depend on
+    which of the two the sort happened to leave in the selected position.
+    Comparison cannot separate them, so that position is settled by the sorting
+    algorithm rather than by the data, and each of the seven ports brings its own
+    sort: ``center([0.0, -0.0, 0.0, -0.0, 1.0])`` came out of this one as ``-0.0``
+    and out of Go as ``+0.0``, against an ``exact`` conformance class that promises
+    identical bits from identical inputs.
+
+    The sign of a zero carries no statistical meaning here: ``-0.0 == 0.0``, and no
+    estimate loses accuracy by shedding it. Normalizing on the way out of every
+    estimator closes the whole class of divergence instead of the one sample that
+    exposed it.
+
+    Only outputs are normalized. A sample may still CONTAIN ``-0.0``, and infinities
+    and NaN pass through untouched.
+    """
+    return 0.0 if value == 0 else value
+
+
+def _new_bounds(lower: float, upper: float, unit: MeasurementUnit) -> Bounds:
+    """Build a :class:`Bounds` with both endpoints normalized (see :func:`_normalize_zero`).
+
+    Every bounds estimator returns through here, so no individual construction site
+    has to remember to do it.
+    """
+    return Bounds(_normalize_zero(lower), _normalize_zero(upper), unit)
+
+
 # =============================================================================
 # Raw (native-array) estimator implementations — the single source of truth.
 # Each returns a plain float, or a plain (lower, upper) tuple for bounds.
+#
+# The scalar raws normalize their result (see _normalize_zero); the bounds raws
+# leave their tuple alone and let _new_bounds normalize both endpoints at the
+# single construction site. A tuple is never a public result: it is either
+# consumed by another raw or handed straight to _new_bounds.
 # =============================================================================
 
 
 def _center_raw(x: NDArray, assume_sorted: bool) -> float:
     check_validity(x, "x")
-    return float(_center_impl(x, assume_sorted=assume_sorted))
+    return _normalize_zero(float(_center_impl(x, assume_sorted=assume_sorted)))
 
 
 def _spread_raw(x: NDArray, assume_sorted: bool) -> float:
@@ -110,13 +146,13 @@ def _spread_raw(x: NDArray, assume_sorted: bool) -> float:
     spread_val = _spread_impl(x, assume_sorted=assume_sorted)
     if spread_val <= 0:
         raise AssumptionError.sparity("x")
-    return float(spread_val)
+    return _normalize_zero(float(spread_val))
 
 
 def _shift_raw(x: NDArray, y: NDArray, assume_sorted: bool) -> float:
     check_validity(x, "x")
     check_validity(y, "y")
-    return float(_shift_impl(x, y, p=0.5, assume_sorted=assume_sorted))
+    return _normalize_zero(float(_shift_impl(x, y, p=0.5, assume_sorted=assume_sorted)))
 
 
 def _ratio_raw(x: NDArray, y: NDArray, assume_sorted: bool) -> float:
@@ -128,7 +164,7 @@ def _ratio_raw(x: NDArray, y: NDArray, assume_sorted: bool) -> float:
     log_y = np.log(y)
     # log is monotonic: sorted positive input -> sorted log output.
     log_result = _shift_impl(log_x, log_y, p=0.5, assume_sorted=assume_sorted)
-    return float(np.exp(log_result))
+    return _normalize_zero(float(np.exp(log_result)))
 
 
 def _disparity_raw(x: NDArray, y: NDArray, assume_sorted: bool) -> float:
@@ -144,7 +180,7 @@ def _disparity_raw(x: NDArray, y: NDArray, assume_sorted: bool) -> float:
         raise AssumptionError.sparity("y")
     shift_val = float(_shift_impl(x, y, p=0.5, assume_sorted=assume_sorted))
     avg_spread_val = (n * spread_x + m * spread_y) / (n + m)
-    return shift_val / avg_spread_val
+    return _normalize_zero(shift_val / avg_spread_val)
 
 
 def _shift_bounds_raw(
@@ -571,7 +607,7 @@ def _avg_spread(x: Sample, y: Sample) -> Measurement:
     spread_y = _spread_impl(y.sorted_values, assume_sorted=True)
     if spread_y <= 0:
         raise AssumptionError.sparity("y")
-    return Measurement((n * spread_x + m * spread_y) / (n + m), x.unit)
+    return Measurement(_normalize_zero((n * spread_x + m * spread_y) / (n + m)), x.unit)
 
 
 def disparity(
@@ -626,9 +662,9 @@ def shift_bounds(
     if isinstance(x, Sample) or isinstance(y, Sample):
         sx, sy = _coerce_pair(x, y)
         lower, upper = _shift_bounds_raw(sx.sorted_values, sy.sorted_values, misrate, assume_sorted=True)
-        return Bounds(lower, upper, sx.unit)
+        return _new_bounds(lower, upper, sx.unit)
     lower, upper = _shift_bounds_raw(_as_array(x), _as_array(y), misrate, assume_sorted)
-    return Bounds(lower, upper, NUMBER_UNIT)
+    return _new_bounds(lower, upper, NUMBER_UNIT)
 
 
 def ratio_bounds(
@@ -656,9 +692,9 @@ def ratio_bounds(
     if isinstance(x, Sample) or isinstance(y, Sample):
         sx, sy = _coerce_pair(x, y)
         lower, upper = _ratio_bounds_raw(sx.sorted_values, sy.sorted_values, misrate, assume_sorted=True)
-        return Bounds(lower, upper, RATIO_UNIT)
+        return _new_bounds(lower, upper, RATIO_UNIT)
     lower, upper = _ratio_bounds_raw(_as_array(x), _as_array(y), misrate, assume_sorted)
-    return Bounds(lower, upper, NUMBER_UNIT)
+    return _new_bounds(lower, upper, NUMBER_UNIT)
 
 
 def center_bounds(
@@ -684,9 +720,9 @@ def center_bounds(
     if isinstance(x, Sample):
         _check_non_weighted("x", x)
         lower, upper = _center_bounds_raw(x.sorted_values, misrate, assume_sorted=True)
-        return Bounds(lower, upper, x.unit)
+        return _new_bounds(lower, upper, x.unit)
     lower, upper = _center_bounds_raw(_as_array(x), misrate, assume_sorted)
-    return Bounds(lower, upper, NUMBER_UNIT)
+    return _new_bounds(lower, upper, NUMBER_UNIT)
 
 
 def spread_bounds(
@@ -718,10 +754,10 @@ def spread_bounds(
         _check_non_weighted("x", x)
         # Shuffle runs on the original order; the cached sorted view is sparity-only.
         lower, upper = _spread_bounds_raw(x.values, x.sorted_values, misrate, seed)
-        return Bounds(lower, upper, x.unit)
+        return _new_bounds(lower, upper, x.unit)
     arr = _as_array(x)
     lower, upper = _spread_bounds_raw(arr, _sorted_view(arr, assume_sorted), misrate, seed)
-    return Bounds(lower, upper, NUMBER_UNIT)
+    return _new_bounds(lower, upper, NUMBER_UNIT)
 
 
 def disparity_bounds(
@@ -756,13 +792,13 @@ def disparity_bounds(
         sx, sy = _coerce_pair(x, y)
         # Shuffle runs on the original order; the cached sorted views are sparity-only.
         lower, upper = _disparity_bounds_raw(sx.values, sx.sorted_values, sy.values, sy.sorted_values, misrate, seed)
-        return Bounds(lower, upper, DISPARITY_UNIT)
+        return _new_bounds(lower, upper, DISPARITY_UNIT)
     ax = _as_array(x)
     ay = _as_array(y)
     lower, upper = _disparity_bounds_raw(
         ax, _sorted_view(ax, assume_sorted), ay, _sorted_view(ay, assume_sorted), misrate, seed
     )
-    return Bounds(lower, upper, NUMBER_UNIT)
+    return _new_bounds(lower, upper, NUMBER_UNIT)
 
 
 def _avg_spread_bounds(
@@ -780,7 +816,7 @@ def _avg_spread_bounds(
     _check_non_weighted("y", y)
     x, y = _prepare_pair(x, y)
     lower, upper = _avg_spread_bounds_raw(x.values, x.sorted_values, y.values, y.sorted_values, misrate, seed)
-    return Bounds(lower, upper, x.unit)
+    return _new_bounds(lower, upper, x.unit)
 
 
 def _coerce_pair(x: Sample | ArrayLike, y: Sample | ArrayLike) -> tuple[Sample, Sample]:

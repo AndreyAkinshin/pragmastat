@@ -37,6 +37,6 @@ public class ShiftEstimator : ITwoSampleEstimator
   {
     Assertion.Validity(x, Subject.X);
     Assertion.Validity(y, Subject.Y);
-    return ShiftImpl.Estimate(x, y, [0.5], assumeSorted).Single();
+    return ShiftImpl.Estimate(x, y, [0.5], assumeSorted).Single().NormalizeZero();
   }
 }

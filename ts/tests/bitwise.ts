@@ -44,6 +44,24 @@ export function expectBitwise(subject: string, actual: number, expected: number)
   }
 }
 
+/** The payload every negative zero carries, and the only one that does. */
+const NEGATIVE_ZERO = 0x8000000000000000n;
+
+/**
+ * Asserts that a double is not a negative zero.
+ *
+ * The weaker sibling of `expectBitwise`, for results whose value is not fixed in advance: it
+ * pins only the sign of a zero. Neither `=== 0` nor `!== -0` can express this, since the two
+ * zeros compare equal, so the check reads the payload.
+ */
+export function expectNoNegativeZero(subject: string, value: number): void {
+  if (payload(value) === NEGATIVE_ZERO) {
+    throw new Error(
+      `${subject}: negative zero (${f64Hex(value)}), expected +0 (0x0000000000000000)`,
+    );
+  }
+}
+
 /** A lower/upper pair, structurally: `Bounds` and the fixture objects both fit. */
 interface BoundsLike {
   lower: number;

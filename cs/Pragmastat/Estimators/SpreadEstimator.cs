@@ -37,6 +37,6 @@ public class SpreadEstimator : IOneSampleEstimator
     var spreadVal = SpreadImpl.Estimate(x, assumeSorted: assumeSorted);
     if (spreadVal <= 0)
       throw AssumptionException.Sparity(Subject.X);
-    return spreadVal;
+    return spreadVal.NormalizeZero();
   }
 }

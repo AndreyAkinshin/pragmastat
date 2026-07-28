@@ -39,6 +39,6 @@ public class RatioEstimator : ITwoSampleEstimator
     Assertion.Validity(y, Subject.Y);
     Assertion.PositivityAssumption(x, Subject.X);
     Assertion.PositivityAssumption(y, Subject.Y);
-    return RatioImpl.Estimate(x, y, [0.5], assumeSorted).Single();
+    return RatioImpl.Estimate(x, y, [0.5], assumeSorted).Single().NormalizeZero();
   }
 }

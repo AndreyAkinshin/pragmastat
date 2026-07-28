@@ -44,6 +44,12 @@ type Bounds struct {
 	Unit  *MeasurementUnit
 }
 
+// newBounds builds a Bounds with both endpoints normalized, for the reason given on
+// normalizeZero.
+func newBounds(lower, upper float64, unit *MeasurementUnit) Bounds {
+	return Bounds{Lower: normalizeZero(lower), Upper: normalizeZero(upper), Unit: unit}
+}
+
 // Contains returns true if value is within [Lower, Upper].
 func (b Bounds) Contains(value float64) bool {
 	return b.Lower <= value && value <= b.Upper
@@ -96,6 +102,24 @@ func checkValidity(x []float64, subject Subject) error {
 	return nil
 }
 
+// normalizeZero replaces a negative zero with a positive one.
+//
+// A sample containing both +0.0 and -0.0 makes the reported value depend on which of them the
+// sort happened to place in the selected position, and comparison cannot tell them apart, so
+// that position is decided by the sorting algorithm rather than by the data. The seven ports
+// use their own sorts and disagreed: center([0, -0, 0, -0, 1]) returned -0.0 in Python and
+// +0.0 in the other six.
+//
+// The sign of a zero carries no statistical meaning here, since -0.0 == 0.0 and no estimate
+// becomes less accurate, so every estimator normalizes it away on the way out. This is the
+// whole class of divergence, not the one sample that exposed it.
+func normalizeZero(v float64) float64 {
+	if v == 0 {
+		return 0
+	}
+	return v
+}
+
 // Center estimates the central value of the data.
 // Calculates the median of all pairwise averages (x[i] + x[j])/2.
 //
@@ -105,7 +129,8 @@ func Center(x []float64, assumeSorted bool) (float64, error) {
 	if err := checkValidity(x, SubjectX); err != nil {
 		return 0, err
 	}
-	return centerImpl(x, assumeSorted)
+	v, err := centerImpl(x, assumeSorted)
+	return normalizeZero(v), err
 }
 
 // Spread estimates data dispersion (variability or scatter).
@@ -127,7 +152,7 @@ func Spread(x []float64, assumeSorted bool) (float64, error) {
 	if spreadVal <= 0 {
 		return 0, NewSparityError(SubjectX)
 	}
-	return spreadVal, nil
+	return normalizeZero(spreadVal), nil
 }
 
 // Shift measures the typical difference between elements of x and y.
@@ -146,7 +171,7 @@ func Shift(x, y []float64, assumeSorted bool) (float64, error) {
 	if err != nil {
 		return 0, err
 	}
-	return result[0], nil
+	return normalizeZero(result[0]), nil
 }
 
 // Ratio measures how many times larger x is compared to y.
@@ -179,7 +204,7 @@ func Ratio(x, y []float64, assumeSorted bool) (float64, error) {
 	if err != nil {
 		return 0, err
 	}
-	return result[0], nil
+	return normalizeZero(result[0]), nil
 }
 
 // avgSpread measures the typical variability when considering both samples together.
@@ -292,7 +317,7 @@ func ShiftBounds(x, y []float64, misrate float64, assumeSorted bool) (Bounds, er
 
 	if total == 1 {
 		value := xSorted[0] - ySorted[0]
-		return Bounds{Lower: value, Upper: value, Unit: NumberUnit}, nil
+		return newBounds(value, value, NumberUnit), nil
 	}
 
 	margin, err := pairwiseMargin(n, m, misrate)
@@ -321,7 +346,7 @@ func ShiftBounds(x, y []float64, misrate float64, assumeSorted bool) (Bounds, er
 		lower, upper = upper, lower
 	}
 
-	return Bounds{Lower: lower, Upper: upper, Unit: NumberUnit}, nil
+	return newBounds(lower, upper, NumberUnit), nil
 }
 
 // RatioBounds provides bounds on the Ratio estimator with specified misclassification rate.
@@ -419,7 +444,7 @@ func CenterBounds(x []float64, misrate float64, assumeSorted bool) (Bounds, erro
 	kRight := totalPairs - halfMargin
 
 	lo, hi := centerQuantileBoundsImpl(sortedOne(x, assumeSorted), kLeft, kRight)
-	return Bounds{Lower: lo, Upper: hi, Unit: NumberUnit}, nil
+	return newBounds(lo, hi, NumberUnit), nil
 }
 
 // SpreadBounds provides distribution-free bounds for Spread using disjoint pairs.
@@ -551,7 +576,7 @@ func spreadBoundsInner(x []float64, misrate float64, rng *Rng) (Bounds, error) {
 	}
 	sort.Float64s(diffs)
 
-	return Bounds{Lower: diffs[kLeft-1], Upper: diffs[kRight-1], Unit: NumberUnit}, nil
+	return newBounds(diffs[kLeft-1], diffs[kRight-1], NumberUnit), nil
 }
 
 // avgSpreadBoundsImpl computes weighted-average spread bounds. x/y are always in
@@ -703,40 +728,40 @@ func disparityBoundsImpl(x, sortedX, y, sortedY []float64, misrate float64, rngX
 		r4 := us / ua
 		lower := math.Min(math.Min(r1, r2), math.Min(r3, r4))
 		upper := math.Max(math.Max(r1, r2), math.Max(r3, r4))
-		return Bounds{Lower: lower, Upper: upper, Unit: unit}, nil
+		return newBounds(lower, upper, unit), nil
 	}
 
 	if ua <= 0.0 {
 		if ls == 0.0 && us == 0.0 {
-			return Bounds{Lower: 0.0, Upper: 0.0, Unit: unit}, nil
+			return newBounds(0.0, 0.0, unit), nil
 		}
 		if ls >= 0.0 {
-			return Bounds{Lower: 0.0, Upper: math.Inf(1), Unit: unit}, nil
+			return newBounds(0.0, math.Inf(1), unit), nil
 		}
 		if us <= 0.0 {
-			return Bounds{Lower: math.Inf(-1), Upper: 0.0, Unit: unit}, nil
+			return newBounds(math.Inf(-1), 0.0, unit), nil
 		}
-		return Bounds{Lower: math.Inf(-1), Upper: math.Inf(1), Unit: unit}, nil
+		return newBounds(math.Inf(-1), math.Inf(1), unit), nil
 	}
 
 	// Default: ua > 0 && la <= 0
 	if ls > 0.0 {
-		return Bounds{Lower: ls / ua, Upper: math.Inf(1), Unit: unit}, nil
+		return newBounds(ls/ua, math.Inf(1), unit), nil
 	}
 	if us < 0.0 {
-		return Bounds{Lower: math.Inf(-1), Upper: us / ua, Unit: unit}, nil
+		return newBounds(math.Inf(-1), us/ua, unit), nil
 	}
 	if ls == 0.0 && us == 0.0 {
-		return Bounds{Lower: 0.0, Upper: 0.0, Unit: unit}, nil
+		return newBounds(0.0, 0.0, unit), nil
 	}
 	if ls == 0.0 && us > 0.0 {
-		return Bounds{Lower: 0.0, Upper: math.Inf(1), Unit: unit}, nil
+		return newBounds(0.0, math.Inf(1), unit), nil
 	}
 	if ls < 0.0 && us == 0.0 {
-		return Bounds{Lower: math.Inf(-1), Upper: 0.0, Unit: unit}, nil
+		return newBounds(math.Inf(-1), 0.0, unit), nil
 	}
 
-	return Bounds{Lower: math.Inf(-1), Upper: math.Inf(1), Unit: unit}, nil
+	return newBounds(math.Inf(-1), math.Inf(1), unit), nil
 }
 
 // sortedOne returns a sorted view of x: returns x unchanged if assumeSorted,
@@ -844,7 +869,7 @@ func (s *Sample) CenterBounds(misrate float64) (Bounds, error) {
 	if err != nil {
 		return Bounds{}, err
 	}
-	return Bounds{Lower: rb.Lower, Upper: rb.Upper, Unit: s.unit}, nil
+	return newBounds(rb.Lower, rb.Upper, s.unit), nil
 }
 
 // SpreadBounds provides distribution-free bounds for Spread.
@@ -866,7 +891,7 @@ func (s *Sample) spreadBoundsWithRng(misrate float64, rng *Rng) (Bounds, error) 
 	if err != nil {
 		return Bounds{}, err
 	}
-	return Bounds{Lower: rb.Lower, Upper: rb.Upper, Unit: s.unit}, nil
+	return newBounds(rb.Lower, rb.Upper, s.unit), nil
 }
 
 // ShiftBounds provides bounds on Shift relative to other.
@@ -879,7 +904,7 @@ func (s *Sample) ShiftBounds(other *Sample, misrate float64) (Bounds, error) {
 	if err != nil {
 		return Bounds{}, err
 	}
-	return Bounds{Lower: rb.Lower, Upper: rb.Upper, Unit: x.unit}, nil
+	return newBounds(rb.Lower, rb.Upper, x.unit), nil
 }
 
 // RatioBounds provides bounds on Ratio relative to other.
@@ -892,7 +917,7 @@ func (s *Sample) RatioBounds(other *Sample, misrate float64) (Bounds, error) {
 	if err != nil {
 		return Bounds{}, err
 	}
-	return Bounds{Lower: rb.Lower, Upper: rb.Upper, Unit: RatioUnit}, nil
+	return newBounds(rb.Lower, rb.Upper, RatioUnit), nil
 }
 
 // DisparityBounds provides bounds on Disparity relative to other.
@@ -919,7 +944,7 @@ func (s *Sample) disparityBoundsWithRngs(other *Sample, misrate float64, rngX, r
 	if err != nil {
 		return Bounds{}, err
 	}
-	return Bounds{Lower: rb.Lower, Upper: rb.Upper, Unit: DisparityUnit}, nil
+	return newBounds(rb.Lower, rb.Upper, DisparityUnit), nil
 }
 
 // avgSpreadBoundsWithRngs is the internal Sample-based weighted-average spread bounds.
@@ -936,7 +961,7 @@ func (s *Sample) avgSpreadBoundsWithRngs(other *Sample, misrate float64, rngX, r
 	if err != nil {
 		return Bounds{}, err
 	}
-	return Bounds{Lower: rb.Lower, Upper: rb.Upper, Unit: x.unit}, nil
+	return newBounds(rb.Lower, rb.Upper, x.unit), nil
 }
 
 // preparePair validates both samples are non-weighted, checks unit

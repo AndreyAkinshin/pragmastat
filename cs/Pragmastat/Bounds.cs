@@ -1,12 +1,16 @@
 using System.Globalization;
+using Pragmastat.Internal;
 using Pragmastat.Metrology;
 
 namespace Pragmastat;
 
 public class Bounds(double lower, double upper, MeasurementUnit unit)
 {
-  public double Lower { get; } = lower;
-  public double Upper { get; } = upper;
+  // Every bounds estimator reaches its caller through this constructor, so normalizing here is
+  // the single place that keeps a negative zero out of every endpoint the library hands back.
+  // See DoubleExtensions.NormalizeZero for why the sign of a zero must not survive.
+  public double Lower { get; } = lower.NormalizeZero();
+  public double Upper { get; } = upper.NormalizeZero();
   public MeasurementUnit Unit { get; } = unit;
 
   public bool Contains(double x) => Lower <= x && x <= Upper;

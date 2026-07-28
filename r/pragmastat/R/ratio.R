@@ -37,7 +37,7 @@ ratio_impl <- function(x, y, assume_sorted) {
   log_x <- log_transform(x, SUBJECTS$X)
   log_y <- log_transform(y, SUBJECTS$Y)
   log_result <- shift_impl_compute(log_x, log_y, p = 0.5, assume_sorted = assume_sorted)
-  exp(log_result)
+  normalize_zero(exp(log_result))
 }
 
 # Internal Sample-based estimator: thin adapter over ratio_impl.

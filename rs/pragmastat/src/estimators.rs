@@ -15,6 +15,25 @@ use crate::sample::{Sample, check_non_weighted, prepare_pair};
 /// Default misclassification rate for bounds estimators.
 pub const DEFAULT_MISRATE: f64 = 1e-3;
 
+/// Replaces a negative zero with a positive one.
+///
+/// A sample holding both `+0.0` and `-0.0` makes the reported value depend on which of the two
+/// the sort placed in the selected position. Comparison cannot tell them apart, so that position
+/// belongs to the sorting algorithm rather than to the data, and the seven implementations sort
+/// their own way: `center([0.0, -0.0, 0.0, -0.0, 1.0])` came back `-0.0` from one of them and
+/// `+0.0` from the rest, against an `exact` conformance class that promises identical payloads
+/// from identical inputs.
+///
+/// The sign of a zero carries no statistical meaning here (`-0.0 == 0.0`, and no estimate loses
+/// accuracy by dropping the sign), so every estimator normalizes it away on the way out. That
+/// retires the whole class of divergence rather than the one sample that exposed it.
+///
+/// Outputs only. A sample is free to contain `-0.0`, and NaN and the infinities pass through
+/// untouched: `v == 0.0` is false for all of them.
+pub(crate) fn normalize_zero(v: f64) -> f64 {
+    if v == 0.0 { 0.0 } else { v }
+}
+
 // =============================================================================
 // Raw (slice-based) estimator functions — low-level public slice API
 // =============================================================================
@@ -47,9 +66,24 @@ pub mod raw {
         pub upper: f64,
     }
 
+    impl RawBounds {
+        /// Builds bounds with both endpoints normalized, for the reason given on
+        /// `normalize_zero`. Every bounds estimator in this module returns through here, so
+        /// that the guarantee holds by construction and not by remembering it at each of the
+        /// twenty-odd exits.
+        fn new(lower: f64, upper: f64) -> Self {
+            RawBounds {
+                lower: normalize_zero(lower),
+                upper: normalize_zero(upper),
+            }
+        }
+    }
+
     pub fn center(x: &[f64], assume_sorted: bool) -> Result<f64, EstimatorError> {
         check_validity(x, Subject::X)?;
-        crate::center_impl::center_impl(x, assume_sorted).map_err(EstimatorError::from)
+        crate::center_impl::center_impl(x, assume_sorted)
+            .map(normalize_zero)
+            .map_err(EstimatorError::from)
     }
 
     pub fn spread(x: &[f64], assume_sorted: bool) -> Result<f64, EstimatorError> {
@@ -59,16 +93,16 @@ pub mod raw {
         if spread_val <= 0.0 {
             return Err(EstimatorError::from(AssumptionError::sparity(Subject::X)));
         }
-        Ok(spread_val)
+        Ok(normalize_zero(spread_val))
     }
 
     pub fn shift(x: &[f64], y: &[f64], assume_sorted: bool) -> Result<f64, EstimatorError> {
         check_validity(x, Subject::X)?;
         check_validity(y, Subject::Y)?;
-        Ok(
+        Ok(normalize_zero(
             crate::shift_impl::shift_quantiles_impl(x, y, &[0.5], assume_sorted)
                 .map_err(EstimatorError::from)?[0],
-        )
+        ))
     }
 
     pub fn ratio(x: &[f64], y: &[f64], assume_sorted: bool) -> Result<f64, EstimatorError> {
@@ -76,10 +110,10 @@ pub mod raw {
         check_validity(y, Subject::Y)?;
         check_positivity(x, Subject::X)?;
         check_positivity(y, Subject::Y)?;
-        Ok(
+        Ok(normalize_zero(
             crate::shift_impl::ratio_quantiles_impl(x, y, &[0.5], assume_sorted)
                 .map_err(EstimatorError::from)?[0],
-        )
+        ))
     }
 
     #[cfg(test)]
@@ -102,7 +136,9 @@ pub mod raw {
         if spread_y <= 0.0 {
             return Err(EstimatorError::from(AssumptionError::sparity(Subject::Y)));
         }
-        Ok((n as f64 * spread_x + m as f64 * spread_y) / (n + m) as f64)
+        Ok(normalize_zero(
+            (n as f64 * spread_x + m as f64 * spread_y) / (n + m) as f64,
+        ))
     }
 
     pub fn disparity(x: &[f64], y: &[f64], assume_sorted: bool) -> Result<f64, EstimatorError> {
@@ -123,7 +159,7 @@ pub mod raw {
         let shift_val = crate::shift_impl::shift_quantiles_impl(x, y, &[0.5], assume_sorted)
             .map_err(EstimatorError::from)?[0];
         let avg_spread_val = (n as f64 * spread_x + m as f64 * spread_y) / (n + m) as f64;
-        Ok(shift_val / avg_spread_val)
+        Ok(normalize_zero(shift_val / avg_spread_val))
     }
 
     pub fn shift_bounds(
@@ -152,10 +188,7 @@ pub mod raw {
         if total == 1 {
             let (xv, yv) = sorted_pair(x, y, assume_sorted);
             let value = xv[0] - yv[0];
-            return Ok(RawBounds {
-                lower: value,
-                upper: value,
-            });
+            return Ok(RawBounds::new(value, value));
         }
         let margin =
             crate::pairwise_margin::pairwise_margin(n, m, misrate).map_err(EstimatorError::from)?;
@@ -173,7 +206,7 @@ pub mod raw {
             .map_err(EstimatorError::from)?;
         let lower = bounds[0].min(bounds[1]);
         let upper = bounds[0].max(bounds[1]);
-        Ok(RawBounds { lower, upper })
+        Ok(RawBounds::new(lower, upper))
     }
 
     pub fn ratio_bounds(
@@ -200,10 +233,10 @@ pub mod raw {
         let log_y = log(y, Subject::Y)?;
         // log is monotonic: sorted positive input → sorted log output
         let log_bounds = shift_bounds(&log_x, &log_y, misrate, assume_sorted)?;
-        Ok(RawBounds {
-            lower: log_bounds.lower.exp(),
-            upper: log_bounds.upper.exp(),
-        })
+        Ok(RawBounds::new(
+            log_bounds.lower.exp(),
+            log_bounds.upper.exp(),
+        ))
     }
 
     pub fn center_bounds(
@@ -239,10 +272,7 @@ pub mod raw {
         let sorted = sorted_one(x, assume_sorted);
         let (lo, hi) =
             crate::center_quantiles_impl::center_quantile_bounds_impl(&sorted, k_left, k_right);
-        Ok(RawBounds {
-            lower: lo,
-            upper: hi,
-        })
+        Ok(RawBounds::new(lo, hi))
     }
 
     pub fn spread_bounds(
@@ -365,10 +395,10 @@ pub mod raw {
         let bounds_y = spread_bounds_with_rng_inner(y, m / 2, alpha, rng_y)?;
         let weight_x = n as f64 / (n + m) as f64;
         let weight_y = m as f64 / (n + m) as f64;
-        Ok(RawBounds {
-            lower: weight_x * bounds_x.lower + weight_y * bounds_y.lower,
-            upper: weight_x * bounds_x.upper + weight_y * bounds_y.upper,
-        })
+        Ok(RawBounds::new(
+            weight_x * bounds_x.lower + weight_y * bounds_y.lower,
+            weight_x * bounds_x.upper + weight_y * bounds_y.upper,
+        ))
     }
 
     pub fn disparity_bounds(
@@ -534,7 +564,7 @@ pub mod raw {
         buf.sort_unstable_by(|a, b| a.total_cmp(b));
         let lower = buf[k_left - 1];
         let upper = buf[k_right - 1];
-        Ok(RawBounds { lower, upper })
+        Ok(RawBounds::new(lower, upper))
     }
 
     /// Computes disparity bounds from shift bounds (ls, us) and avg-spread bounds (la, ua).
@@ -551,66 +581,36 @@ pub mod raw {
             let r4 = us / ua;
             let lower = r1.min(r2).min(r3).min(r4);
             let upper = r1.max(r2).max(r3).max(r4);
-            return Ok(RawBounds { lower, upper });
+            return Ok(RawBounds::new(lower, upper));
         }
         if ua <= 0.0 {
             if ls == 0.0 && us == 0.0 {
-                return Ok(RawBounds {
-                    lower: 0.0,
-                    upper: 0.0,
-                });
+                return Ok(RawBounds::new(0.0, 0.0));
             }
             if ls >= 0.0 {
-                return Ok(RawBounds {
-                    lower: 0.0,
-                    upper: f64::INFINITY,
-                });
+                return Ok(RawBounds::new(0.0, f64::INFINITY));
             }
             if us <= 0.0 {
-                return Ok(RawBounds {
-                    lower: f64::NEG_INFINITY,
-                    upper: 0.0,
-                });
+                return Ok(RawBounds::new(f64::NEG_INFINITY, 0.0));
             }
-            return Ok(RawBounds {
-                lower: f64::NEG_INFINITY,
-                upper: f64::INFINITY,
-            });
+            return Ok(RawBounds::new(f64::NEG_INFINITY, f64::INFINITY));
         }
         if ls > 0.0 {
-            return Ok(RawBounds {
-                lower: ls / ua,
-                upper: f64::INFINITY,
-            });
+            return Ok(RawBounds::new(ls / ua, f64::INFINITY));
         }
         if us < 0.0 {
-            return Ok(RawBounds {
-                lower: f64::NEG_INFINITY,
-                upper: us / ua,
-            });
+            return Ok(RawBounds::new(f64::NEG_INFINITY, us / ua));
         }
         if ls == 0.0 && us == 0.0 {
-            return Ok(RawBounds {
-                lower: 0.0,
-                upper: 0.0,
-            });
+            return Ok(RawBounds::new(0.0, 0.0));
         }
         if ls == 0.0 && us > 0.0 {
-            return Ok(RawBounds {
-                lower: 0.0,
-                upper: f64::INFINITY,
-            });
+            return Ok(RawBounds::new(0.0, f64::INFINITY));
         }
         if ls < 0.0 && us == 0.0 {
-            return Ok(RawBounds {
-                lower: f64::NEG_INFINITY,
-                upper: 0.0,
-            });
+            return Ok(RawBounds::new(f64::NEG_INFINITY, 0.0));
         }
-        Ok(RawBounds {
-            lower: f64::NEG_INFINITY,
-            upper: f64::INFINITY,
-        })
+        Ok(RawBounds::new(f64::NEG_INFINITY, f64::INFINITY))
     }
 
     // =========================================================================

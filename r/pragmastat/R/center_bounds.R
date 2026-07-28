@@ -54,7 +54,7 @@ center_bounds_impl <- function(x, misrate, sorted = NULL) {
   sorted_x <- if (!is.null(sorted)) sorted else sort(x)
 
   result <- center_quantile_bounds_impl(sorted_x, k_left, k_right)
-  list(lower = result$lower, upper = result$upper)
+  bounds_list(result$lower, result$upper)
 }
 
 # Internal Sample-based estimator: thin adapter over center_bounds_impl.

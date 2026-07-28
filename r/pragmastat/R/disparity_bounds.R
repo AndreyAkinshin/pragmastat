@@ -103,38 +103,38 @@ disparity_bounds_from_components <- function(ls, us, la, ua) {
     r4 <- us / ua
     lower <- min(r1, r2, r3, r4)
     upper <- max(r1, r2, r3, r4)
-    return(list(lower = lower, upper = upper))
+    return(bounds_list(lower, upper))
   }
 
   if (ua <= 0.0) {
     if (ls == 0.0 && us == 0.0) {
-      return(list(lower = 0.0, upper = 0.0))
+      return(bounds_list(0.0, 0.0))
     }
     if (ls >= 0.0) {
-      return(list(lower = 0.0, upper = Inf))
+      return(bounds_list(0.0, Inf))
     }
     if (us <= 0.0) {
-      return(list(lower = -Inf, upper = 0.0))
+      return(bounds_list(-Inf, 0.0))
     }
-    return(list(lower = -Inf, upper = Inf))
+    return(bounds_list(-Inf, Inf))
   }
 
   # Default: ua > 0 && la <= 0
   if (ls > 0.0) {
-    return(list(lower = ls / ua, upper = Inf))
+    return(bounds_list(ls / ua, Inf))
   }
   if (us < 0.0) {
-    return(list(lower = -Inf, upper = us / ua))
+    return(bounds_list(-Inf, us / ua))
   }
   if (ls == 0.0 && us == 0.0) {
-    return(list(lower = 0.0, upper = 0.0))
+    return(bounds_list(0.0, 0.0))
   }
   if (ls == 0.0 && us > 0.0) {
-    return(list(lower = 0.0, upper = Inf))
+    return(bounds_list(0.0, Inf))
   }
   if (ls < 0.0 && us == 0.0) {
-    return(list(lower = -Inf, upper = 0.0))
+    return(bounds_list(-Inf, 0.0))
   }
 
-  return(list(lower = -Inf, upper = Inf))
+  return(bounds_list(-Inf, Inf))
 }

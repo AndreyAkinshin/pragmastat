@@ -59,17 +59,45 @@ import { Sample, checkNonWeighted, checkCompatibleUnits, convertToFiner } from '
 import { Rng } from './rng';
 
 /**
+ * Replaces a negative zero with a positive one.
+ *
+ * A sample holding both `+0` and `-0` makes the reported value depend on which of the two the
+ * sort happened to place in the selected position. Comparison cannot tell them apart, so that
+ * position is decided by the sorting algorithm rather than by the data, and the seven ports
+ * each bring their own sort. They disagreed: `center([0, -0, 0, -0, 1])` returned `-0` in
+ * Python and `+0` elsewhere, which contradicts the `exact` conformance class the toolkit
+ * publishes.
+ *
+ * The sign of a zero carries no statistical meaning here, since `-0 === 0` and no estimate
+ * becomes less accurate once the sign is dropped. Every estimator therefore normalizes it away
+ * on the way out, which closes the whole class of divergence instead of the one sample that
+ * exposed it. Inputs are untouched: a sample may still contain `-0`.
+ *
+ * `===` cannot observe the difference, so tests for this compare `Object.is` or raw payloads.
+ */
+function normalizeZero(value: number): number {
+  return value === 0 ? 0 : value;
+}
+
+/**
  * Represents an interval with lower and upper bounds and a unit.
  *
  * The RAW API returns `Bounds` carrying `MeasurementUnit.NUMBER` (unitless);
  * the Sample API returns `Bounds` carrying the propagated unit.
+ *
+ * The constructor is the single construction site for every bounds estimator, so both
+ * endpoints are normalized here rather than at each call site (see `normalizeZero`).
  */
 export class Bounds {
-  constructor(
-    readonly lower: number,
-    readonly upper: number,
-    readonly unit: MeasurementUnit,
-  ) {}
+  readonly lower: number;
+  readonly upper: number;
+  readonly unit: MeasurementUnit;
+
+  constructor(lower: number, upper: number, unit: MeasurementUnit) {
+    this.lower = normalizeZero(lower);
+    this.upper = normalizeZero(upper);
+    this.unit = unit;
+  }
 
   contains(value: number): boolean {
     return this.lower <= value && value <= this.upper;
@@ -119,7 +147,7 @@ function spreadForSparity(orig: readonly number[], sorted: readonly number[] | n
 
 function centerCore(x: readonly number[], assumeSorted: boolean): number {
   checkValidity(x, 'x');
-  return centerImpl(x, assumeSorted);
+  return normalizeZero(centerImpl(x, assumeSorted));
 }
 
 function spreadCore(x: readonly number[], assumeSorted: boolean): number {
@@ -128,13 +156,13 @@ function spreadCore(x: readonly number[], assumeSorted: boolean): number {
   if (spreadVal <= 0) {
     throw AssumptionError.sparity('x');
   }
-  return spreadVal;
+  return normalizeZero(spreadVal);
 }
 
 function shiftCore(x: readonly number[], y: readonly number[], assumeSorted: boolean): number {
   checkValidity(x, 'x');
   checkValidity(y, 'y');
-  return shiftImpl(x, y, [0.5], assumeSorted)[0];
+  return normalizeZero(shiftImpl(x, y, [0.5], assumeSorted)[0]);
 }
 
 function ratioCore(x: readonly number[], y: readonly number[], assumeSorted: boolean): number {
@@ -146,7 +174,7 @@ function ratioCore(x: readonly number[], y: readonly number[], assumeSorted: boo
   // fast path carries through the log-transform.
   const logX = log(x, 'x');
   const logY = log(y, 'y');
-  return Math.exp(shiftImpl(logX, logY, [0.5], assumeSorted)[0]);
+  return normalizeZero(Math.exp(shiftImpl(logX, logY, [0.5], assumeSorted)[0]));
 }
 
 function disparityCore(x: readonly number[], y: readonly number[], assumeSorted: boolean): number {
@@ -164,7 +192,7 @@ function disparityCore(x: readonly number[], y: readonly number[], assumeSorted:
   }
   const shiftVal = shiftImpl(x, y, [0.5], assumeSorted)[0];
   const avgSpreadVal = (nx * spreadX + ny * spreadY) / (nx + ny);
-  return shiftVal / avgSpreadVal;
+  return normalizeZero(shiftVal / avgSpreadVal);
 }
 
 function shiftBoundsImpl(
@@ -764,7 +792,7 @@ function avgSpread(x: Sample, y: Sample): Measurement {
   }
 
   const result = (nx * spreadX + ny * spreadY) / (nx + ny);
-  return new Measurement(result, resultUnit);
+  return new Measurement(normalizeZero(result), resultUnit);
 }
 
 /**

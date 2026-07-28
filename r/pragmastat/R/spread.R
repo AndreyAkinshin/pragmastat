@@ -36,7 +36,7 @@ spread_impl <- function(values, assume_sorted) {
   if (spread_val <= 0) {
     stop(assumption_error(ASSUMPTION_IDS$SPARITY, SUBJECTS$X))
   }
-  spread_val
+  normalize_zero(spread_val)
 }
 
 # Internal Sample-based estimator: thin adapter over spread_impl.

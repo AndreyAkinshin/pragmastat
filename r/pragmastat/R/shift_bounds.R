@@ -51,7 +51,7 @@ shift_bounds_impl <- function(x, y, misrate, sorted_x = NULL, sorted_y = NULL) {
 
   if (total == 1) {
     value <- xs[1] - ys[1]
-    return(list(lower = value, upper = value))
+    return(bounds_list(value, value))
   }
 
   margin <- pairwise_margin(n, m, misrate)
@@ -68,7 +68,7 @@ shift_bounds_impl <- function(x, y, misrate, sorted_x = NULL, sorted_y = NULL) {
   lower <- min(quantiles[1], quantiles[2])
   upper <- max(quantiles[1], quantiles[2])
 
-  list(lower = lower, upper = upper)
+  bounds_list(lower, upper)
 }
 
 # Internal Sample-based estimator: thin adapter over shift_bounds_impl.

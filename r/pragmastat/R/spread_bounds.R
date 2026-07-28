@@ -84,7 +84,7 @@ spread_bounds_inner_impl <- function(values, n, misrate, seed) {
   }
   diffs <- sort(diffs)
 
-  list(lower = diffs[k_left], upper = diffs[k_right])
+  bounds_list(diffs[k_left], diffs[k_right])
 }
 
 # Internal Sample-based estimator: thin adapter over spread_bounds_impl.

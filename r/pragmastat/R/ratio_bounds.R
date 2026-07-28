@@ -67,7 +67,7 @@ ratio_bounds_impl <- function(x, y, misrate, assume_sorted = FALSE,
     sorted_x = log_sorted_x, sorted_y = log_sorted_y
   )
 
-  list(lower = exp(log_bounds$lower), upper = exp(log_bounds$upper))
+  bounds_list(exp(log_bounds$lower), exp(log_bounds$upper))
 }
 
 # Internal Sample-based estimator: thin adapter over ratio_bounds_impl.
