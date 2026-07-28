@@ -300,6 +300,27 @@ jobs:
         path: go/
         retention-days: 1
 
+  # The repository-level conformance gates. They are not part of any language job because
+  # they are not about one language: one regenerates the shared fixtures and requires a
+  # byte-identical result, the other measures whether every estimator still holds the
+  # conformance class it declares in tests/manifest.json.
+  #
+  # Both existed for a while and ran only when somebody typed `mise run ci` locally, which is
+  # the same failure they were built to prevent: a check nobody runs is not a check.
+  ci-conformance:
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v7
+
+    - name: Set up mise
+      uses: jdx/mise-action@v4
+
+    - name: Fixtures still match their generator
+      run: mise run tests:check:rng-fixtures
+
+    - name: Every estimator holds its declared conformance class
+      run: mise run tests:check:conformance
+
   ci-kt:
     runs-on: ubuntu-24.04
     steps:
@@ -362,7 +383,7 @@ jobs:
   ci-success:
     name: CI Success
     runs-on: ubuntu-24.04
-    needs: [ci-manual, ci-r, ci-cs, ci-py, ci-rs, ci-ts, ci-go, ci-kt]
+    needs: [ci-manual, ci-r, ci-cs, ci-py, ci-rs, ci-ts, ci-go, ci-kt, ci-conformance]
     if: always()
     steps:
       - name: Check all jobs passed
@@ -374,7 +395,8 @@ jobs:
              [[ "${{ needs.ci-rs.result }}" != "success" ]] || \
              [[ "${{ needs.ci-ts.result }}" != "success" ]] || \
              [[ "${{ needs.ci-go.result }}" != "success" ]] || \
-             [[ "${{ needs.ci-kt.result }}" != "success" ]]; then
+             [[ "${{ needs.ci-kt.result }}" != "success" ]] || \
+             [[ "${{ needs.ci-conformance.result }}" != "success" ]]; then
             echo "One or more required jobs failed"
             exit 1
           fi
