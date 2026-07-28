@@ -13,6 +13,9 @@ Disparity: \operatorname{Disparity}
 PairwiseMargin: \operatorname{PairwiseMargin}
 SignMargin: \operatorname{SignMargin}
 SignedRankMargin: \operatorname{SignedRankMargin}
+MedianBounds: \operatorname{MedianBounds}
+AdditiveCumulative: \operatorname{AdditiveCumulative}
+ExpFunction: \operatorname{ExpFunction}
 ShiftBounds: \operatorname{ShiftBounds}
 RatioBounds: \operatorname{RatioBounds}
 CenterBounds: \operatorname{CenterBounds}

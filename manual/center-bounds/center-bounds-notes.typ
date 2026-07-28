@@ -1,7 +1,5 @@
 #import "/manual/definitions.typ": *
 
-#let MedianBounds = math.op("MedianBounds")
-
 ==== On Bootstrap for Center Bounds
 
 A natural question arises: can bootstrap resampling improve $CenterBounds$ coverage

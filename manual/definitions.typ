@@ -82,11 +82,14 @@
 #let SignMargin = math.op("SignMargin")
 #let SignedRankMargin = math.op("SignedRankMargin")
 #let Dominance = math.op("Dominance")
+#let AdditiveCumulative = math.op("AdditiveCumulative")
+#let ExpFunction = math.op("ExpFunction")
 
 // ==========================================================================
 // Traditional Estimators
 // ==========================================================================
 #let Median = math.op("Median")
+#let MedianBounds = math.op("MedianBounds")
 #let Mean = math.op("Mean")
 #let StdDev = math.op("StdDev")
 #let Var = math.op("Var")

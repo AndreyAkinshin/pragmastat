@@ -995,6 +995,9 @@ run = [
     # prose, they ship in the PDF and on the website, and four of them went stale the moment
     # fixtures were added at the decision boundaries.
     "python3 tests/check_manual_counts.py .",
+    # An operator defined inside a chapter is invisible to the website converter, so the PDF and
+    # the page disagree on one source without anything failing.
+    "python3 tests/check_local_operators.py .",
     "test -z \"$(git ls-files --deleted)\" || { echo 'ERROR: tracked files are missing from the working tree:' >&2; git ls-files --deleted >&2; echo 'A clean task removed a committed artifact and the build did not put it back.' >&2; exit 1; }",
     { task = "pdf:build" },
     { task = "web:build" },
