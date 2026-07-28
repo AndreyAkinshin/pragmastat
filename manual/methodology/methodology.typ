@@ -441,6 +441,9 @@ An estimator whose output never moves under that perturbation does not depend on
   over the inputs swept, which is stronger than agreeing with the fixtures and weaker than a proof.
 The sweep is large and deliberately includes the points where the answer is in doubt, but it is a
   sweep: the classes below are measured, not derived.
+It is worth knowing what that costs, and the section after the table describes the occasion when
+  it cost something: a boundary the sweep did not visit hid a real divergence for as long as the
+  sweep did not visit it.
 The square root is deliberately left alone: IEEE 754 requires it to be correctly rounded, so every
   conforming implementation already returns the same bits.
 
@@ -465,7 +468,7 @@ A measurement nobody can repeat stops being a measurement.
   [$Center$, $Spread$, $Shift$], [exact], [Selection over exactly-computed pairwise values],
   [$Disparity$, $AvgSpread$], [exact], [Arithmetic on exact inputs],
   [$Compare1$], [exact], [Composes only exact estimators],
-  [$PairwiseMargin$, $SignedRankMargin$], [exact], [Exact binomial; no library call since the recurrence replaced Stirling],
+  [$PairwiseMargin$, $SignedRankMargin$], [exact], [Exact binomial, and no library call on the path since the exponential became the toolkit's own],
   [$CenterBounds$, $ShiftBounds$, $DisparityBounds$], [exact], [Margin selection over exact candidates],
   [$SpreadBounds$], [exact], [Bitwise on every fixture; see the note below],
   [$Uniform$ sampling], [exact], [One multiply and one add, both pinned],
@@ -481,34 +484,64 @@ For the approximate suites the perturbation moves $Ratio$ on 94% of inputs by up
   so the divergence stays proportional rather than becoming a jump.
 
 #v(0.5em)
-*Where conformance is not accuracy*
+*Where conformance met accuracy*
 
 Conformance asks whether the seven agree with each other; accuracy asks whether they agree with
   the mathematics.
-The classes above answer the first question, and one place is worth naming where the second answer
-  is weaker than a reader would assume.
+The two were in tension in one place, and resolving it turned out to require answering a third
+  question the classes above had never been asked.
 
 #v(0.3em)
-The normal distribution function inside the Edgeworth branches of both margins is ACM Algorithm
-  209, a polynomial evaluated identically by all seven.
-It is chosen for being identical, not for being close: measured against a sixty-digit reference,
-  its worst relative error is $4.5 dot 10^(-7)$ over $abs(x) <= 3$ and $4.7 dot 10^(-4)$ once the
-  tails are included, against roughly $10^(-15)$ for a library implementation.
-That gap reaches the answer rather than staying under it.
+The normal distribution function inside the Edgeworth branches of both margins used to be ACM
+  Algorithm 209, a polynomial evaluated identically by all seven.
+It was chosen for being identical, not for being close, and it was not close: measured against a
+  reference good to thirty-six digits, its worst relative error is $4.5 dot 10^(-7)$ near the
+  centre, and past $abs(x) = 6$ it returns exactly zero, a relative error of $1$.
+That gap reached the answer rather than staying under it.
 Recomputing the margins over the Edgeworth region with an accurate distribution function changes
-  13 of 2961 of them, so on about $0.4%$ of those inputs all seven agree on an integer that is not
-  the right one.
+  13 of 2961 of them, so on about $0.4%$ of those inputs all seven agreed on an integer that was
+  not the right one.
 
 #v(0.3em)
-Agreeing is still the more important property, because the value is compared against the misrate
-  and the comparison selects an order statistic: being the most accurate of seven and returning a
-  different observation is worse than being uniformly approximate.
-But the two are not in opposition here, which is the part worth recording.
-The density beside it is already $exp(-z^2\/2) \/ sqrt(2 pi)$ in every implementation, so the
-  branch depends on a library function regardless, and an accurate distribution function built the
-  same way was measured not to move under the perturbation at all.
-The approximation is inherited rather than argued for, and replacing it is a change to the numbers
-  this toolkit returns, which is why it is stated here rather than done quietly.
+It is now a pair of Chebyshev-fitted polynomial chains whose coefficients are produced from that
+  reference rather than transcribed from a paper, with a worst relative error of
+  $9.1 dot 10^(-15)$ over $abs(x) <= 6$.
+The 13 margins it changes are byte-identical to what an independent implementation of the
+  complementary error function produces, which is the confirmation that matters: two
+  implementations sharing no coefficients agree on exactly the same set.
+
+#v(0.3em)
+Accuracy in the tail needs an exponential, and that is where the third question appeared.
+IEEE 754 fixes the result of every arithmetic operation and of the square root, and fixes nothing
+  about the exponential; conforming libraries disagree in the last bit and do.
+Two implementations returning neighbouring values is normally harmless, but here the value is
+  compared against a misrate and the comparison selects an order statistic, so a last-bit
+  difference becomes a different confidence interval from identical inputs.
+It did: on one Edgeworth crossover the margin came out 2830 under two implementations of the
+  exponential and 2832 under the other four.
+
+#v(0.3em)
+The instrument had reported none of this, because it had been sweeping the wrong boundary.
+It covered the achievable misrate floor, where an exact tie is decided by rounding, and never the
+  crossover, where the search compares the expansion against a misrate that can equal it.
+Covering one boundary is not covering the other.
+Once the sweep was extended to feed each expansion value back as a misrate, it reported $612$ of
+  $2616$ results moving under a one-unit perturbation, and against the previous release's code the
+  same sweep reports $216$ of $2460$: the exposure predated the accurate distribution function,
+  since the density beside it had always been an exponential.
+
+#v(0.3em)
+So the exponential is now the toolkit's own, in all seven: a range reduction into
+  $2^k dot exp(r)$ with $abs(r) <= (ln 2) \/ 2$, and a polynomial for the reduced argument fitted
+  from the same reference.
+Every step is an operation the standard pins, so the result is reproducible by construction
+  rather than by measurement.
+It is also slightly more accurate than the platform function it replaces, at
+  $2.1 dot 10^(-16)$ against $2.3 dot 10^(-16)$ worst relative error over the range these
+  estimators reach.
+With it the sweep reports zero movement on every estimator declared exact, including the
+  crossover; restoring a single library call to confirm the instrument still sees returns the
+  failure immediately.
 
 #v(0.3em)
 The measurement is also what corrected the diagnosis when it was wrong.
