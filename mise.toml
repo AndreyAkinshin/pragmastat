@@ -105,7 +105,14 @@ run = "go build ./..."
 [tasks."go:test"]
 description = "Run Go tests"
 dir = "go"
-run = "go test -race ./..."
+# -count=1 disables the test cache. Go keys that cache on the test binary and the files it
+# opens through the toolchain, not on files a test reads at runtime, so an edit anywhere under
+# tests/ leaves a passing result cached and `go test` reports ok without running anything.
+# Verified by perturbing a fixture by one ulp: the suite still said "(cached)".
+#
+# This is the same shape as the warm build cache that hid the FMA contraction: a green result
+# that was never computed. A test run that can be skipped is not a check.
+run = "go test -count=1 -race ./..."
 
 [tasks."go:test:verbose"]
 description = "Run Go tests with verbose output"
