@@ -57,6 +57,10 @@ pub fn typst_to_latex(
     // Convert Typst line breaks and handle alignment
     result = convert_alignment(&result);
 
+    // The thin spaces were placed before the word mappings ran; drop the ones that ended up
+    // after a control word, which carries its own spacing.
+    result = drop_thin_space_after_commands(&result);
+
     result
 }
 
@@ -115,10 +119,14 @@ fn apply_definitions_outside_text(input: &str, definitions: &HashMap<String, Str
     result
 }
 
-/// Find matching closing brace, accounting for nesting
+/// Byte offset of the `}` closing a group whose `{` has already been consumed.
+///
+/// Bytes, not character positions, for the reason given on `find_matching_paren`: every caller
+/// slices the string with the result, and the two agree only until the first multibyte character.
+/// This converter produces one itself, since an escaped solidus becomes U+2044 before these run.
 fn find_matching_brace(s: &str) -> Option<usize> {
     let mut depth = 1;
-    for (i, c) in s.chars().enumerate() {
+    for (i, c) in s.char_indices() {
         match c {
             '{' => depth += 1,
             '}' => {
@@ -134,15 +142,16 @@ fn find_matching_brace(s: &str) -> Option<usize> {
 }
 
 /// Convert Typst op("name") to LaTeX \operatorname{name}
+// The walk is over byte offsets, not character positions. find_matching_paren returns a byte
+// offset and the slices below are byte slices, so mixing the two panics on the first multibyte
+// character in the expression and silently mis-slices before that. The manual has multibyte
+// characters in its maths.
 fn convert_op(input: &str) -> String {
     let mut result = String::new();
     let mut i = 0;
-    let chars: Vec<char> = input.chars().collect();
 
-    while i < chars.len() {
-        // Check for op( pattern
-        if i + 3 < chars.len() && chars[i] == 'o' && chars[i + 1] == 'p' && chars[i + 2] == '(' {
-            // Found op(, now look for the content
+    while i < input.len() {
+        if input[i..].starts_with("op(") {
             let start = i + 3;
             if let Some(end) = find_matching_paren(&input[start..]) {
                 let inner = &input[start..start + end];
@@ -153,8 +162,9 @@ fn convert_op(input: &str) -> String {
                 continue;
             }
         }
-        result.push(chars[i]);
-        i += 1;
+        let c = input[i..].chars().next().expect("i is a char boundary");
+        result.push(c);
+        i += c.len_utf8();
     }
 
     result
@@ -257,10 +267,12 @@ fn convert_binom(input: &str) -> String {
     result
 }
 
-/// Find comma separator in function arguments, respecting nesting
+/// Byte offset of the comma separating two arguments at the top level of a call.
+///
+/// Bytes, not character positions: see `find_matching_paren`.
 fn find_comma_in_args(s: &str) -> Option<usize> {
     let mut depth = 0;
-    for (i, c) in s.chars().enumerate() {
+    for (i, c) in s.char_indices() {
         match c {
             '(' | '[' | '{' => depth += 1,
             ')' | ']' | '}' => depth -= 1,
@@ -479,16 +491,16 @@ fn convert_attach(input: &str) -> String {
     result
 }
 
-/// Find the first comma that's not escaped (not preceded by \)
+/// Byte offset of the first comma not preceded by a backslash.
+///
+/// Bytes, not character positions: see `find_matching_paren`.
 fn find_unescaped_comma(s: &str) -> Option<usize> {
-    let chars: Vec<char> = s.chars().collect();
-    for (i, &c) in chars.iter().enumerate() {
-        if c == ',' {
-            // Check if preceded by backslash
-            if i == 0 || chars[i - 1] != '\\' {
-                return Some(i);
-            }
+    let mut previous = None;
+    for (i, c) in s.char_indices() {
+        if c == ',' && previous != Some('\\') {
+            return Some(i);
         }
+        previous = Some(c);
     }
     None
 }
@@ -519,6 +531,49 @@ fn find_matching_paren(s: &str) -> Option<usize> {
 }
 
 /// Convert Typst "text" to LaTeX \text{text}
+/// Removes a thin space that ended up directly after a LaTeX control word.
+///
+/// `convert_text_quotes` inserts the gap before the word mappings run, so at that point a Typst
+/// operator such as `and` is still a bare word and looks like an atom; by the time it becomes
+/// `\land` the gap is already in the string. Control words carry their own spacing and the extra
+/// width shows: after `\begin{cases}` it indents the first branch relative to the others, which
+/// reads as a misaligned column. There were 34 of these in the rendered manual.
+///
+/// `\text`, `\mathrm`, `\operatorname`, `\mathbf` and `\mathit` set an atom rather than spacing,
+/// so a word following one of those still needs separating from it.
+fn drop_thin_space_after_commands(input: &str) -> String {
+    const ATOM_COMMANDS: [&str; 5] = ["text", "mathrm", "operatorname", "mathbf", "mathit"];
+    let mut result = String::with_capacity(input.len());
+    let mut rest = input;
+    while let Some(at) = rest.find(r"\;") {
+        let (before, after) = rest.split_at(at);
+        result.push_str(before);
+        let keep = match before.rfind('\\') {
+            Some(start) => {
+                let word: String = before[start + 1..]
+                    .chars()
+                    .take_while(char::is_ascii_alphabetic)
+                    .collect();
+                let tail = &before[start + 1 + word.len()..];
+                // A control word either stands alone (\land) or takes a braced argument
+                // (\begin{cases}, \text{if}). Both are commands; only the ones that SET an atom
+                // earn a following gap.
+                let is_command = !word.is_empty()
+                    && (tail.is_empty() || (tail.starts_with('{') && tail.ends_with('}')));
+                let sets_an_atom = ATOM_COMMANDS.contains(&word.as_str());
+                !is_command || sets_an_atom
+            }
+            None => true,
+        };
+        if keep {
+            result.push_str(r"\;");
+        }
+        rest = &after[2..];
+    }
+    result.push_str(rest);
+    result
+}
+
 fn convert_text_quotes(input: &str) -> String {
     let chars: Vec<char> = input.chars().collect();
     let mut result = String::new();
@@ -571,8 +626,13 @@ fn convert_text_quotes(input: &str) -> String {
         let needs_gap = j < chars.len() && (chars[j].is_alphanumeric() || chars[j] == '"');
         if needs_gap {
             result.push_str("\\;");
+            i = j;
         }
-        i = j;
+        // Otherwise the source whitespace is left alone rather than swallowed. A row of a display
+        // equation ends with a space and a backslash, and convert_alignment recognizes a row break
+        // by that exact sequence. Dropping the space left `\text{...}\` + newline, which KaTeX
+        // reads as a control space rather than a row break, and four rows of SplitMix64 rendered
+        // as one line.
     }
 
     // Close any unclosed text brace
@@ -990,7 +1050,12 @@ fn size_delimiters_to_content(input: &str) -> String {
     let mut result = String::with_capacity(input.len());
     let mut i = 0;
     while i < input.len() {
-        let c = bytes[i] as char;
+        // Decode the character rather than casting the byte. `bytes[i] as char` yields the wrong
+        // scalar for anything non-ASCII, and the `len_utf8()` that follows then advances by the
+        // wrong stride, so the character is replaced by a substitute and its continuation bytes
+        // are consumed as if they were characters of their own. The manual has no non-ASCII inside
+        // math today, which is the only reason this has not corrupted anything.
+        let c = input[i..].chars().next().expect("i is a char boundary");
 
         // Subscripts and superscripts are set small, and a stretched delimiter there inflates the
         // script rather than fitting it. Copy those groups through untouched.
@@ -1757,18 +1822,13 @@ fn wrap_text_subscripts(input: &str, prefix: &str) -> String {
 /// Typst `lr()` creates auto-sizing delimiters. For example:
 /// - `lr(|x|)` -> `\left\lvert x\right\rvert`
 /// - `lr((a+b))` -> `\left(a+b\right)`
+// Byte offsets throughout, for the reason given on convert_op.
 fn convert_lr(input: &str) -> String {
     let mut result = String::new();
     let mut i = 0;
-    let input_chars: Vec<char> = input.chars().collect();
 
-    while i < input_chars.len() {
-        // Check for lr( pattern
-        if i + 2 < input_chars.len()
-            && input_chars[i] == 'l'
-            && input_chars[i + 1] == 'r'
-            && input_chars[i + 2] == '('
-        {
+    while i < input.len() {
+        if input[i..].starts_with("lr(") {
             // Found lr(, now find the matching closing paren
             let start = i + 3; // After "lr("
             if let Some(end) = find_matching_paren(&input[start..]) {
@@ -1804,8 +1864,9 @@ fn convert_lr(input: &str) -> String {
             }
         }
 
-        result.push(input_chars[i]);
-        i += 1;
+        let c = input[i..].chars().next().expect("i is a char boundary");
+        result.push(c);
+        i += c.len_utf8();
     }
 
     result
@@ -3078,6 +3139,121 @@ mod tests {
         let defs = HashMap::new();
         let result = typst_to_latex("a\\/b", &defs, false);
         assert_eq!(result, "a/b");
+    }
+
+    /// A row of a display equation that ends with a quoted string still ends with a row break.
+    ///
+    /// The thin-space rule after a closing quote used to swallow every following space, including
+    /// the one that separates the row from its trailing backslash. `convert_alignment` recognizes a
+    /// break by that exact sequence, so the break was never doubled and `KaTeX` read the lone
+    /// backslash as a control space: the four rows of `SplitMix64` rendered as one long line.
+    /// A quoted word after a LaTeX control word gets no thin space.
+    ///
+    /// The gap is inserted before the word mappings run, when a Typst operator is still a bare
+    /// word and looks like an atom, so the decision has to be revisited once the mapping has
+    /// happened. Control words carry their own spacing; `\begin{cases}` in particular indents
+    /// the first branch relative to the others when a gap follows it.
+    /// Non-ASCII inside a display equation survives conversion.
+    ///
+    /// Three finders returned character positions while their callers sliced by bytes, and the
+    /// sized-delimiter pass decoded characters by casting a byte. Both defects are invisible on
+    /// ASCII and silent on anything else: the first mis-slices, the second substitutes a
+    /// replacement character and eats the continuation bytes.
+    #[test]
+    fn non_ascii_inside_math_survives() {
+        let defs = HashMap::new();
+        for input in [
+            // The multibyte character has to sit INSIDE the argument list, before the separator:
+            // that is where a character position and a byte offset disagree.
+            "binom(1 \\/ 2, k)",
+            "binom(n \u{2248} m, k \\/ 2)",
+            "attach(1 \\/ 2, b: \"\u{03B1}\")",
+            "alpha = binom(n, k) dot 1 \\/ 2",
+            "lr((1 \\/ 2 + \u{2248} + sqrt(x)))",
+            "\"\u{2248}\" quad x = 1 \\/ 2",
+        ] {
+            for display in [true, false] {
+                let result = typst_to_latex(input, &defs, display);
+                assert!(
+                    !result.is_empty(),
+                    "conversion produced nothing for {input:?}"
+                );
+                assert!(
+                    !result.contains('\u{FFFD}'),
+                    "a character was replaced during conversion of {input:?}: {result}"
+                );
+                assert!(
+                    !result.contains('\u{2044}'),
+                    "the fraction marker survived conversion in {input:?}: {result}"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn a_control_word_does_not_earn_a_thin_space() {
+        let defs = HashMap::new();
+        for (input, forbidden) in [
+            ("metric = Spread and \"seed\" != \"null\"", r"\land\;"),
+            ("x quad \"where\" y", r"\quad\;"),
+            ("a times \"b\"", r"\times\;"),
+        ] {
+            for display in [true, false] {
+                let result = typst_to_latex(input, &defs, display);
+                assert!(
+                    !result.contains(forbidden),
+                    "stray thin space after a control word in {input:?}: {result}"
+                );
+            }
+        }
+
+        // The exception: text-setting commands produce an atom, and a word after one still needs
+        // separating from it.
+        let kept = typst_to_latex("\"if\" \"then\"", &defs, true);
+        assert!(
+            kept.contains(r"\;"),
+            "the gap between two set words was dropped: {kept}"
+        );
+    }
+
+    #[test]
+    fn a_row_ending_in_a_quoted_string_keeps_its_break() {
+        let defs = HashMap::new();
+        let input = "x &<- x + \"0x9e3779b97f4a7c15\" \\\nz &<- z + 1";
+        let result = typst_to_latex(input, &defs, true);
+        assert!(result.contains("\\\\"), "the row break was lost: {result}");
+        assert!(
+            !result.contains("}\\\n"),
+            "a lone backslash survived, which KaTeX reads as a control space: {result}"
+        );
+    }
+
+    /// op(...) and lr(...) survive a multibyte character earlier in the expression.
+    ///
+    /// Both walked character positions and then sliced the input by those positions as if they
+    /// were byte offsets. Before the first multibyte character the two agree, so the defect is
+    /// invisible; after one, the slice either lands mid-character and panics or cuts in the wrong
+    /// place. The fraction marker this converter uses internally is U+2044, three bytes wide.
+    #[test]
+    fn op_and_lr_survive_a_multibyte_character() {
+        let defs = HashMap::new();
+        for input in [
+            "alpha \\/ beta + op(\"erfc\")(t)",
+            "1 \\/ 2 + lr(|x - y|)",
+            "sum_(i=1)^n 1 \\/ n dot lr((x_i - macron(x)))",
+        ] {
+            for display in [true, false] {
+                let result = typst_to_latex(input, &defs, display);
+                assert!(
+                    !result.is_empty(),
+                    "conversion produced nothing for {input:?}"
+                );
+                assert!(
+                    !result.contains('\u{2044}'),
+                    "the fraction marker survived conversion in {input:?}: {result}"
+                );
+            }
+        }
     }
 
     /// A group containing a multi-byte character must not be mis-sliced.
