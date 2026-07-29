@@ -37,10 +37,10 @@ The distribution function of the standard $Additive$ ('Normal') distribution.
 *Properties*
 
 #list(marker: none, tight: true,
-  [*Reflection* #h(2em) $AdditiveCumulative(-z) = 1 - AdditiveCumulative(z)$ to within $6 dot 10^(-17)$ in
-    absolute terms. The two sides are not interchangeable: past the center $1 - AdditiveCumulative(z)$
-    loses most of its significant digits to cancellation, which is why the tail is computed from
-    $"erfc"$ rather than by subtraction],
+  [*Reflection* #h(2em) $AdditiveCumulative(-z) = 1 - AdditiveCumulative(z)$ to within
+    $6 dot 10^(-17)$ in absolute terms. The two sides are not interchangeable: past the center
+    $1 - AdditiveCumulative(z)$ loses most of its significant digits to cancellation, which is why
+    the tail is computed from $"erfc"$ rather than by subtraction],
   [*Bounds* #h(2em) $0 <= AdditiveCumulative(z) <= 1$],
   [*Monotonicity* #h(2em) non-decreasing in $z$ to within two units in the last place; adjacent
     representable arguments invert by at most that much, inside the central chain],

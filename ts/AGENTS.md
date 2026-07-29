@@ -26,7 +26,7 @@ ts/
 │   ├── signedRankMargin.ts    # Signed-rank margin computation
 │   ├── minMisrate.ts          # Minimum achievable misrate calculation
 │   ├── binomial.ts            # Binomial coefficient shared by the two above (internal)
-│   ├── additiveCumulative.ts         # Standard normal CDF (Chebyshev-fitted erf/erfc)
+│   ├── additiveCumulative.ts  # Standard normal CDF (Chebyshev-fitted erf/erfc)
 │   ├── expFunction.ts         # The exponential the margin path uses instead of Math.exp
 │   ├── rng.ts                 # Deterministic xoshiro256++ PRNG
 │   ├── xoshiro256.ts          # PRNG core implementation
@@ -37,16 +37,16 @@ ts/
 │   ├── constants.ts           # Internal constants
 │   └── distributions/         # Uniform, Additive, Exp, Power, Multiplic
 ├── tests/
-│   ├── bitwise.ts                 # The binary64-payload comparison every exact suite uses
-│   ├── expFunction.test.ts        # 2**n exactness and the cross-port payloads of expFunction
-│   ├── reference.test.ts          # JSON fixture validation
-│   ├── invariance.test.ts         # Mathematical property tests
-│   ├── assumeSorted.test.ts       # assumeSorted=true vs default-path equivalence
-│   ├── centerImplGuard.test.ts    # centerImpl convergence guard + Bounds.contains
-│   ├── spreadImplGuard.test.ts    # spreadImpl convergence guard
-│   ├── mutation.test.ts           # Caller arrays and Samples are never mutated
-│   ├── ratioBoundsErrors.test.ts  # ratioBounds assumption-error priority
-│   ├── properties.test.ts         # Unit propagation, misrate domain, n==2 symmetry
+│   ├── bitwise.ts                # The binary64-payload comparison every exact suite uses
+│   ├── expFunction.test.ts       # 2**n exactness and the cross-port payloads of expFunction
+│   ├── reference.test.ts         # JSON fixture validation
+│   ├── invariance.test.ts        # Mathematical property tests
+│   ├── assumeSorted.test.ts      # assumeSorted=true vs default-path equivalence
+│   ├── centerImplGuard.test.ts   # centerImpl convergence guard + Bounds.contains
+│   ├── spreadImplGuard.test.ts   # spreadImpl convergence guard
+│   ├── mutation.test.ts          # Caller arrays and Samples are never mutated
+│   ├── ratioBoundsErrors.test.ts # ratioBounds assumption-error priority
+│   ├── properties.test.ts        # Unit propagation, misrate domain, n==2 symmetry
 │   └── performance.test.ts
 ├── examples/
 │   └── demo.ts

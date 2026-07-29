@@ -20,11 +20,11 @@ mise run cs:gen      # Generate reference test files
 cs/
 ├── Pragmastat/
 │   ├── Algorithms/
-│   │   ├── CenterImpl.cs           # O(n log n) Hodges-Lehmann center
-│   │   ├── CenterQuantilesImpl.cs  # Quantiles of pairwise averages via binary search
-│   │   ├── RatioImpl.cs            # Ratio quantiles via log-transform + ShiftImpl
-│   │   ├── ShiftImpl.cs            # O((m+n) log L) shift quantiles
-│   │   └── SpreadImpl.cs           # O(n log n) Shamos spread
+│   │   ├── CenterImpl.cs          # O(n log n) Hodges-Lehmann center
+│   │   ├── CenterQuantilesImpl.cs # Quantiles of pairwise averages via binary search
+│   │   ├── RatioImpl.cs           # Ratio quantiles via log-transform + ShiftImpl
+│   │   ├── ShiftImpl.cs           # O((m+n) log L) shift quantiles
+│   │   └── SpreadImpl.cs          # O(n log n) Shamos spread
 │   ├── Estimators/
 │   │   ├── IOneSampleEstimator.cs
 │   │   ├── ITwoSampleEstimator.cs
@@ -35,17 +35,17 @@ cs/
 │   ├── Functions/
 │   │   ├── PairwiseMargin.cs
 │   │   ├── ErrorFunction.cs
-│   │   ├── AdditiveCumulative.cs         # Standard normal CDF (Chebyshev-fitted erf/erfc)
-│   │   ├── ExpFunction.cs         # Reproducible exp: range reduction plus fitted polynomial
+│   │   ├── AdditiveCumulative.cs # Standard normal CDF (Chebyshev-fitted erf/erfc)
+│   │   ├── ExpFunction.cs        # Reproducible exp: range reduction plus fitted polynomial
 │   │   └── ...
-│   ├── Bounds.cs               # Lower/upper bound pair
-│   ├── Probability.cs          # Probability value type
-│   ├── Sample.cs               # Core sample type
-│   ├── Toolkit.cs              # Static API entry point
-│   └── Randomization/          # Rng, Xoshiro256
-├── Pragmastat.Demo/            # Demo application
-├── Pragmastat.Tests/           # Unit tests
-└── Pragmastat.TestGenerator/   # Reference test generator
+│   ├── Bounds.cs             # Lower/upper bound pair
+│   ├── Probability.cs        # Probability value type
+│   ├── Sample.cs             # Core sample type
+│   ├── Toolkit.cs            # Static API entry point
+│   └── Randomization/        # Rng, Xoshiro256
+├── Pragmastat.Demo/          # Demo application
+├── Pragmastat.Tests/         # Unit tests
+└── Pragmastat.TestGenerator/ # Reference test generator
 ```
 
 ## Key Types

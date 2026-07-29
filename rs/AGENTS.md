@@ -16,29 +16,29 @@ mise run rs:bench    # Run benchmarks
 ```
 rs/pragmastat/
 ├── src/
-│   ├── lib.rs                     # Public exports
-│   ├── estimators.rs              # Public API: center, spread, shift, etc.
-│   ├── assumptions.rs             # Input validation and error types
-│   ├── pairwise_margin.rs         # Margin calculation for shift bounds (internal)
-│   ├── sign_margin.rs             # Sign margin for binomial CDF inversion (internal)
-│   ├── signed_rank_margin.rs      # Signed-rank margin computation (internal)
-│   ├── min_misrate.rs             # Minimum achievable misrate calculation (internal)
-│   ├── additive_cumulative.rs            # Standard normal CDF (Chebyshev erf/erfc fit) (internal)
-│   ├── exp_function.rs            # Reproducible exp, replacing the platform's (internal)
-│   ├── rng.rs                     # Deterministic xoshiro256++ PRNG
-│   ├── distributions/             # Sampling distributions (Uniform, Additive, Exp, Power, Multiplic)
-│   ├── center_impl.rs             # O(n log n) Hodges-Lehmann algorithm (internal)
-│   ├── center_quantiles_impl.rs   # Center quantile binary search (internal)
-│   ├── spread_impl.rs             # O(n log n) Shamos algorithm (internal)
-│   ├── shift_impl.rs              # O((m+n) log L) shift quantiles (internal)
-│   ├── xoshiro256.rs              # PRNG core implementation (internal)
-│   ├── splitmix64.rs              # Seed mixing (internal)
-│   ├── fnv1a.rs                   # Hash for deterministic seeding (internal)
-│   ├── avg_spread_tests.rs        # Average spread unit tests
-│   ├── avg_spread_bounds_tests.rs # Average spread bounds unit tests
-│   ├── disparity_bounds_tests.rs  # Disparity bounds unit tests
-│   ├── pairwise_margin_tests.rs   # Pairwise margin unit tests
-│   ├── ratio_bounds_tests.rs      # Ratio bounds error-priority tests
+│   ├── lib.rs                      # Public exports
+│   ├── estimators.rs               # Public API: center, spread, shift, etc.
+│   ├── assumptions.rs              # Input validation and error types
+│   ├── pairwise_margin.rs          # Margin calculation for shift bounds (internal)
+│   ├── sign_margin.rs              # Sign margin for binomial CDF inversion (internal)
+│   ├── signed_rank_margin.rs       # Signed-rank margin computation (internal)
+│   ├── min_misrate.rs              # Minimum achievable misrate calculation (internal)
+│   ├── additive_cumulative.rs      # Standard normal CDF (Chebyshev erf/erfc fit) (internal)
+│   ├── exp_function.rs             # Reproducible exp, replacing the platform's (internal)
+│   ├── rng.rs                      # Deterministic xoshiro256++ PRNG
+│   ├── distributions/              # Sampling distributions (Uniform, Additive, Exp, Power, Multiplic)
+│   ├── center_impl.rs              # O(n log n) Hodges-Lehmann algorithm (internal)
+│   ├── center_quantiles_impl.rs    # Center quantile binary search (internal)
+│   ├── spread_impl.rs              # O(n log n) Shamos algorithm (internal)
+│   ├── shift_impl.rs               # O((m+n) log L) shift quantiles (internal)
+│   ├── xoshiro256.rs               # PRNG core implementation (internal)
+│   ├── splitmix64.rs               # Seed mixing (internal)
+│   ├── fnv1a.rs                    # Hash for deterministic seeding (internal)
+│   ├── avg_spread_tests.rs         # Average spread unit tests
+│   ├── avg_spread_bounds_tests.rs  # Average spread bounds unit tests
+│   ├── disparity_bounds_tests.rs   # Disparity bounds unit tests
+│   ├── pairwise_margin_tests.rs    # Pairwise margin unit tests
+│   ├── ratio_bounds_tests.rs       # Ratio bounds error-priority tests
 │   └── signed_rank_margin_tests.rs # Signed-rank margin unit tests
 ├── tests/
 │   ├── assume_sorted_tests.rs             # assume-sorted equivalence

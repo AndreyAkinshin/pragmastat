@@ -104,8 +104,16 @@ mod tests {
     #[test]
     fn carries_nan_through_and_answers_both_infinities() {
         assert!(additive_cumulative(f64::NAN).is_nan());
-        assert_bitwise("additive_cumulative(+inf)", 1.0, additive_cumulative(f64::INFINITY));
-        assert_bitwise("additive_cumulative(-inf)", 0.0, additive_cumulative(f64::NEG_INFINITY));
+        assert_bitwise(
+            "additive_cumulative(+inf)",
+            1.0,
+            additive_cumulative(f64::INFINITY),
+        );
+        assert_bitwise(
+            "additive_cumulative(-inf)",
+            0.0,
+            additive_cumulative(f64::NEG_INFINITY),
+        );
         assert_bitwise("additive_cumulative(+0)", 0.5, additive_cumulative(0.0));
         assert_bitwise("additive_cumulative(-0)", 0.5, additive_cumulative(-0.0));
     }

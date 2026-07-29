@@ -17,40 +17,40 @@ mise run py:pack     # Build and verify with twine
 ```
 py/
 ├── pragmastat/
-│   ├── __init__.py                # Public exports
-│   ├── estimators.py              # Public API: center, spread, shift, etc.
-│   ├── sample.py                  # Sample class with values, weights, unit
-│   ├── measurement.py             # Measurement frozen dataclass (value + unit)
-│   ├── measurement_unit.py        # MeasurementUnit frozen dataclass
-│   ├── bounds.py                  # Bounds frozen dataclass (lower, upper, unit)
-│   ├── unit_registry.py           # UnitRegistry for unit lookup by ID
-│   ├── assumptions.py             # Input validation and error types
-│   ├── pairwise_margin.py         # Margin calculation for shift bounds (internal)
-│   ├── sign_margin.py             # Sign margin for binomial CDF inversion
-│   ├── signed_rank_margin.py      # Signed-rank margin computation
-│   ├── min_misrate.py             # Minimum achievable misrate calculation
-│   ├── _binomial.py               # Binomial coefficient shared by the two above (internal)
-│   ├── additive_cumulative.py            # Standard normal CDF (Chebyshev-fitted erf/erfc)
-│   ├── exp_function.py            # Reproducible exp: range reduction plus fitted polynomial
-│   ├── rng.py                     # Deterministic xoshiro256++ PRNG
-│   ├── xoshiro256.py              # PRNG core implementation
-│   ├── center_impl.py             # O(n log n) Hodges-Lehmann algorithm
-│   ├── _center_quantiles_impl.py  # Center quantile binary search (internal)
-│   ├── spread_impl.py             # O(n log n) Shamos algorithm
-│   ├── shift_impl.py              # O((m+n) log L) shift quantiles
-│   ├── _constants.py              # Internal constants
-│   └── distributions/             # Uniform, Additive, Exp, Power, Multiplic
+│   ├── __init__.py               # Public exports
+│   ├── estimators.py             # Public API: center, spread, shift, etc.
+│   ├── sample.py                 # Sample class with values, weights, unit
+│   ├── measurement.py            # Measurement frozen dataclass (value + unit)
+│   ├── measurement_unit.py       # MeasurementUnit frozen dataclass
+│   ├── bounds.py                 # Bounds frozen dataclass (lower, upper, unit)
+│   ├── unit_registry.py          # UnitRegistry for unit lookup by ID
+│   ├── assumptions.py            # Input validation and error types
+│   ├── pairwise_margin.py        # Margin calculation for shift bounds (internal)
+│   ├── sign_margin.py            # Sign margin for binomial CDF inversion
+│   ├── signed_rank_margin.py     # Signed-rank margin computation
+│   ├── min_misrate.py            # Minimum achievable misrate calculation
+│   ├── _binomial.py              # Binomial coefficient shared by the two above (internal)
+│   ├── additive_cumulative.py    # Standard normal CDF (Chebyshev-fitted erf/erfc)
+│   ├── exp_function.py           # Reproducible exp: range reduction plus fitted polynomial
+│   ├── rng.py                    # Deterministic xoshiro256++ PRNG
+│   ├── xoshiro256.py             # PRNG core implementation
+│   ├── center_impl.py            # O(n log n) Hodges-Lehmann algorithm
+│   ├── _center_quantiles_impl.py # Center quantile binary search (internal)
+│   ├── spread_impl.py            # O(n log n) Shamos algorithm
+│   ├── shift_impl.py             # O((m+n) log L) shift quantiles
+│   ├── _constants.py             # Internal constants
+│   └── distributions/            # Uniform, Additive, Exp, Power, Multiplic
 ├── tests/
-│   ├── binary64.py                # Shared exactness predicates (payload comparison, hex reports)
-│   ├── test_assume_sorted.py      # assume-sorted equivalence + convergence-guard misuse
-│   ├── test_binary64.py           # Covers the exactness predicates themselves
-│   ├── test_invariance.py         # Mathematical property tests
-│   ├── test_mutation.py           # Raw-API input-mutation safety
-│   ├── test_negative_zero.py      # No estimator reports a -0.0 (payload-level)
-│   ├── test_pairwise_margin_consistency.py  # Binomial regressions behind the pairwise margin
-│   ├── test_performance.py        # Performance smoke test
-│   ├── test_reference.py          # JSON fixture validation (includes sample-construction, unit-propagation)
-│   └── test_shift_overflow.py     # Shift on extreme finite input
+│   ├── binary64.py                         # Shared exactness predicates (payload comparison, hex reports)
+│   ├── test_assume_sorted.py               # assume-sorted equivalence + convergence-guard misuse
+│   ├── test_binary64.py                    # Covers the exactness predicates themselves
+│   ├── test_invariance.py                  # Mathematical property tests
+│   ├── test_mutation.py                    # Raw-API input-mutation safety
+│   ├── test_negative_zero.py               # No estimator reports a -0.0 (payload-level)
+│   ├── test_pairwise_margin_consistency.py # Binomial regressions behind the pairwise margin
+│   ├── test_performance.py                 # Performance smoke test
+│   ├── test_reference.py                   # JSON fixture validation (includes sample-construction, unit-propagation)
+│   └── test_shift_overflow.py              # Shift on extreme finite input
 ├── examples/
 │   └── demo.py
 └── pyproject.toml

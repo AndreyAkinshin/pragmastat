@@ -16,26 +16,26 @@ mise run go:coverage # Run tests with coverage
 
 ```
 go/
-├── estimators.go              # Public API: Center, Spread, Shift, etc.
-├── assumptions.go             # Input validation and error types
-├── pairwise_margin.go         # Margin calculation for shift bounds
-├── sign_margin.go             # Sign margin for binomial CDF inversion
-├── signed_rank_margin.go      # Signed-rank margin computation
-├── min_misrate.go             # Minimum achievable misrate calculation
-├── additive_cumulative.go            # Standard normal CDF (Chebyshev-fitted erf/erfc)
-├── exp_function.go            # Reproducible exp: range reduction plus fitted polynomial
-├── rng.go                     # Deterministic xoshiro256++ PRNG
-├── xoshiro256.go              # PRNG core implementation
-├── center_impl.go             # O(n log n) Hodges-Lehmann algorithm
-├── center_quantiles_impl.go   # Center quantile binary search
-├── spread_impl.go             # O(n log n) Shamos algorithm
-├── shift_impl.go              # O((m+n) log L) shift quantiles
-├── distribution.go            # Distribution interface
-├── uniform.go                 # Uniform distribution
-├── additive.go                # Additive (Normal/Gaussian) distribution
-├── exp.go                     # Exponential distribution
-├── power.go                   # Power distribution
-├── multiplic.go               # Multiplicative (Log-Normal) distribution
+├── estimators.go            # Public API: Center, Spread, Shift, etc.
+├── assumptions.go           # Input validation and error types
+├── pairwise_margin.go       # Margin calculation for shift bounds
+├── sign_margin.go           # Sign margin for binomial CDF inversion
+├── signed_rank_margin.go    # Signed-rank margin computation
+├── min_misrate.go           # Minimum achievable misrate calculation
+├── additive_cumulative.go   # Standard normal CDF (Chebyshev-fitted erf/erfc)
+├── exp_function.go          # Reproducible exp: range reduction plus fitted polynomial
+├── rng.go                   # Deterministic xoshiro256++ PRNG
+├── xoshiro256.go            # PRNG core implementation
+├── center_impl.go           # O(n log n) Hodges-Lehmann algorithm
+├── center_quantiles_impl.go # Center quantile binary search
+├── spread_impl.go           # O(n log n) Shamos algorithm
+├── shift_impl.go            # O((m+n) log L) shift quantiles
+├── distribution.go          # Distribution interface
+├── uniform.go               # Uniform distribution
+├── additive.go              # Additive (Normal/Gaussian) distribution
+├── exp.go                   # Exponential distribution
+├── power.go                 # Power distribution
+├── multiplic.go             # Multiplicative (Log-Normal) distribution
 ├── demo/
 │   └── main.go                # Demo application
 ├── assume_sorted_test.go      # assume-sorted equivalence

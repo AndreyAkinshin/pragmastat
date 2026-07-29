@@ -16,27 +16,27 @@ mise run kt:pack     # Create JAR package
 ```
 kt/
 ├── src/main/kotlin/dev/pragmastat/
-│   ├── Estimators.kt            # Raw List-based API: center, spread, shift, etc.
-│   ├── Sample.kt                # Typed Sample API: unit-aware overloads
-│   ├── Measurement.kt           # Value + MeasurementUnit pair
-│   ├── MeasurementUnit.kt       # Unit identity, family, conversion
-│   ├── UnitRegistry.kt          # MeasurementUnit lookup by id
-│   ├── Probability.kt           # Typed [0, 1] wrapper for misrate parameters
-│   ├── Compare.kt               # compare1/compare2 threshold-verdict API
-│   ├── Assumptions.kt           # Input validation and error types
-│   ├── PairwiseMargin.kt        # Margin calculation for shift bounds (internal)
-│   ├── SignMargin.kt            # Sign margin for binomial CDF inversion
-│   ├── SignedRankMargin.kt      # Signed-rank margin computation
-│   ├── MinMisrate.kt            # Minimum achievable misrate calculation
-│   ├── AdditiveCumulative.kt           # Standard normal CDF (Chebyshev-fitted erf/erfc)
-│   ├── ExpFunction.kt           # Reproducible exp: range reduction plus fitted polynomial
-│   ├── Rng.kt                   # Deterministic xoshiro256++ PRNG
-│   ├── Xoshiro256.kt            # PRNG core implementation
-│   ├── CenterImpl.kt            # O(n log n) Hodges-Lehmann algorithm
-│   ├── CenterQuantilesImpl.kt   # Center quantile binary search
-│   ├── SpreadImpl.kt            # O(n log n) Shamos algorithm
-│   ├── ShiftImpl.kt             # O((m+n) log L) shift quantiles
-│   ├── Constants.kt             # Internal constants
+│   ├── Estimators.kt          # Raw List-based API: center, spread, shift, etc.
+│   ├── Sample.kt              # Typed Sample API: unit-aware overloads
+│   ├── Measurement.kt         # Value + MeasurementUnit pair
+│   ├── MeasurementUnit.kt     # Unit identity, family, conversion
+│   ├── UnitRegistry.kt        # MeasurementUnit lookup by id
+│   ├── Probability.kt         # Typed [0, 1] wrapper for misrate parameters
+│   ├── Compare.kt             # compare1/compare2 threshold-verdict API
+│   ├── Assumptions.kt         # Input validation and error types
+│   ├── PairwiseMargin.kt      # Margin calculation for shift bounds (internal)
+│   ├── SignMargin.kt          # Sign margin for binomial CDF inversion
+│   ├── SignedRankMargin.kt    # Signed-rank margin computation
+│   ├── MinMisrate.kt          # Minimum achievable misrate calculation
+│   ├── AdditiveCumulative.kt  # Standard normal CDF (Chebyshev-fitted erf/erfc)
+│   ├── ExpFunction.kt         # Reproducible exp: range reduction plus fitted polynomial
+│   ├── Rng.kt                 # Deterministic xoshiro256++ PRNG
+│   ├── Xoshiro256.kt          # PRNG core implementation
+│   ├── CenterImpl.kt          # O(n log n) Hodges-Lehmann algorithm
+│   ├── CenterQuantilesImpl.kt # Center quantile binary search
+│   ├── SpreadImpl.kt          # O(n log n) Shamos algorithm
+│   ├── ShiftImpl.kt           # O((m+n) log L) shift quantiles
+│   ├── Constants.kt           # Internal constants
 │   └── distributions/
 │       ├── Distribution.kt
 │       ├── Uniform.kt
@@ -45,19 +45,19 @@ kt/
 │       ├── Power.kt
 │       └── Multiplic.kt
 ├── src/test/kotlin/dev/pragmastat/
-│   ├── BitwiseAssert.kt                   # Raw-payload equality: the one exact comparison
-│   ├── ReferenceTest.kt                   # JSON fixture validation
-│   ├── MetrologyTest.kt                   # JSON fixtures for the unit/metrology system
-│   ├── InvarianceTest.kt                  # Mathematical property tests
-│   ├── AssumeSortedTest.kt                # Raw-API assumeSorted=true branch coverage
-│   ├── MutationTest.kt                    # Estimators must not mutate caller lists
-│   ├── CenterMidpointSymmetryTest.kt      # n==2 midpoint exact order symmetry
-│   ├── NegativeZeroTest.kt                # No estimator reports a negative zero
-│   ├── BoundsUnitTest.kt                  # Bounds unit propagation (Sample vs raw)
-│   ├── ProbabilityTest.kt                 # Probability [0, 1] range validation
-│   ├── RawMisrateDomainTest.kt            # Raw-API misrate domain errors
-│   ├── RatioBoundsErrorPriorityTest.kt    # domain-before-positivity error priority
-│   └── PerformanceTest.kt                 # Wall-clock sanity checks on large inputs
+│   ├── BitwiseAssert.kt                # Raw-payload equality: the one exact comparison
+│   ├── ReferenceTest.kt                # JSON fixture validation
+│   ├── MetrologyTest.kt                # JSON fixtures for the unit/metrology system
+│   ├── InvarianceTest.kt               # Mathematical property tests
+│   ├── AssumeSortedTest.kt             # Raw-API assumeSorted=true branch coverage
+│   ├── MutationTest.kt                 # Estimators must not mutate caller lists
+│   ├── CenterMidpointSymmetryTest.kt   # n==2 midpoint exact order symmetry
+│   ├── NegativeZeroTest.kt             # No estimator reports a negative zero
+│   ├── BoundsUnitTest.kt               # Bounds unit propagation (Sample vs raw)
+│   ├── ProbabilityTest.kt              # Probability [0, 1] range validation
+│   ├── RawMisrateDomainTest.kt         # Raw-API misrate domain errors
+│   ├── RatioBoundsErrorPriorityTest.kt # domain-before-positivity error priority
+│   └── PerformanceTest.kt              # Wall-clock sanity checks on large inputs
 └── build.gradle.kts
 ```
 
