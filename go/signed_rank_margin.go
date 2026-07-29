@@ -125,8 +125,8 @@ func signedRankEdgeworthCdf(n int, w int64) float64 {
 
 	// +0.5 continuity correction: computing P(W ≤ w) for a left-tail discrete CDF
 	z := (float64(w) - mu + 0.5) / sigma
-	phi := portableExp(-z*z/2) / math.Sqrt(2*math.Pi)
-	Phi := gaussCdf(z)
+	phi := expFunction(-z*z/2) / math.Sqrt(2*math.Pi)
+	Phi := additiveCumulative(z)
 
 	nf := float64(n)
 	kappa4 := -nf * (nf + 1) * (float64(2*nf) + 1) * (float64(3*nf*nf) + float64(3*nf) - 1) / 240.0

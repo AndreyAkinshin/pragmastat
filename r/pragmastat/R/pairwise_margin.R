@@ -129,8 +129,8 @@ edgeworth_cdf <- function(n, m, u) {
   # -0.5 continuity correction: computing P(U >= u) for a right-tail discrete CDF
   z <- (u - mu - 0.5) / su
 
-  phi <- gauss_pdf(z)
-  Phi <- gauss_cdf(z) # Standard normal CDF
+  phi <- additive_pdf(z)
+  Phi <- additive_cumulative(z) # Standard normal CDF
 
   # Pre-compute powers of n and m. Held as doubles from the start, exactly as the other
   # six ports hold them: R integers are 32-bit, and n^4 overflows for n above about 215,

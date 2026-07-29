@@ -17,7 +17,7 @@ import {
 import { signedRankMargin } from '../src/signedRankMargin';
 import { AssumptionError } from '../src/assumptions';
 import { pairwiseMargin } from '../src/pairwiseMargin';
-import { portableExp } from '../src/portableExp';
+import { expFunction } from '../src/expFunction';
 import { Rng } from '../src/rng';
 import { Additive, Exp, Multiplic, Power, Uniform } from '../src/distributions';
 import { Sample } from '../src/sample';
@@ -845,7 +845,7 @@ describe('Reference Tests', () => {
     }
   });
 
-  // PortableExp tests
+  // ExpFunction tests
   //
   // The exponential every port evaluates in place of the platform's, checked directly.
   // Every other suite reaches it only through a margin, so it is exercised wherever an
@@ -864,8 +864,8 @@ describe('Reference Tests', () => {
   //
   // The fixture is not optional: it is committed beside the others and every port reads
   // it, so a missing directory throws here rather than skipping quietly.
-  describe('portable-exp', () => {
-    interface PortableExpData {
+  describe('exp-function', () => {
+    interface ExpFunctionData {
       input: { name: string; arg: number[] };
       output: number[];
     }
@@ -875,16 +875,16 @@ describe('Reference Tests', () => {
     // over the whole finite range, and 29 boundaries. Pinned rather than derived,
     // because a loader that finds three files out of four satisfies every other
     // assertion here by having less to compare. Raise it when the generator adds cases.
-    const PORTABLE_EXP_ARG_COUNT = 1032;
+    const EXP_FUNCTION_ARG_COUNT = 1032;
 
-    const dirPath = path.join(testDataPath, 'portable-exp');
+    const dirPath = path.join(testDataPath, 'exp-function');
     const testFiles = fs
       .readdirSync(dirPath)
       .filter((f) => f.endsWith('.json'))
       .sort();
 
     const suites = testFiles.map((fileName) => {
-      const data: PortableExpData = JSON.parse(
+      const data: ExpFunctionData = JSON.parse(
         fs.readFileSync(path.join(dirPath, fileName), 'utf8'),
       );
       return { fileName, name: data.input.name, args: data.input.arg, expected: data.output };
@@ -899,13 +899,13 @@ describe('Reference Tests', () => {
       const testName = fileName.replace('.json', '');
 
       it(`should pass ${testName}`, () => {
-        expect(name).toBe('portable_exp');
+        expect(name).toBe('exp_function');
         expect(args.length).toBeGreaterThan(0);
         expect(expected.length).toBe(args.length);
         for (let i = 0; i < args.length; i++) {
           expectBitwise(
-            `portable-exp/${fileName} arg[${i}]=${args[i]}`,
-            portableExp(args[i]),
+            `exp-function/${fileName} arg[${i}]=${args[i]}`,
+            expFunction(args[i]),
             expected[i],
           );
           compared++;
@@ -916,8 +916,8 @@ describe('Reference Tests', () => {
     // Runs after the per-file tests above, which increment `compared` once per comparison
     // actually made. A loader that finds nothing passes every one of them by running
     // nothing, so the count is what says the suite was exercised at all.
-    it(`compares all ${PORTABLE_EXP_ARG_COUNT} arguments`, () => {
-      expect(compared).toBe(PORTABLE_EXP_ARG_COUNT);
+    it(`compares all ${EXP_FUNCTION_ARG_COUNT} arguments`, () => {
+      expect(compared).toBe(EXP_FUNCTION_ARG_COUNT);
     });
   });
 

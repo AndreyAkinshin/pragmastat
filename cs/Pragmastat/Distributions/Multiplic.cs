@@ -76,7 +76,11 @@ public sealed class Multiplic : IDistribution, IContinuousDistribution
   double IContinuousDistribution.Cdf(double x)
   {
     if (x < 1e-9) return 0;
-    return 0.5 * (1 + ErrorFunction.Value((Math.Log(x) - LogMean) / (Constants.Sqrt2 * LogStdDev)));
+    // A lognormal variable's distribution function is the normal one applied to log x, so this
+    // goes through AdditiveCumulative rather than spelling the same thing out through erf. The previous
+    // form reached AbramowitzStegunErf, accurate to 1.5e-7, which left two neighboring
+    // distributions in this library eight orders of magnitude apart for no reason.
+    return AdditiveCumulative.Value((Math.Log(x) - LogMean) / LogStdDev);
   }
 
   double IContinuousDistribution.Quantile(Probability p)

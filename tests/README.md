@@ -58,13 +58,13 @@ tests/
 ├── avg-spread-bounds/   # AvgSpreadBounds estimator tests
 ├── pairwise-margin/     # PairwiseMargin function tests
 ├── signed-rank-margin/  # SignedRankMargin function tests
-├── portable-exp/        # The reproducible exponential, by payload
+├── exp-function/        # The reproducible exponential, by payload
 │
 │   # Other
 └── distributions/       # Distribution sampling tests
 ```
 
-`portable-exp/` is the only suite that tests a function no public API exposes. It is there because
+`exp-function/` is the only suite that tests a function no public API exposes. It is there because
 the margins reach an exponential, IEEE 754 fixes nothing about one, and a last-bit difference
 there selects a different order statistic — so the seven implementations evaluate their own rather
 than the platform's. Every other suite reaches that function only through a margin, which covers

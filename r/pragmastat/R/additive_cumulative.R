@@ -13,7 +13,7 @@
 # returned 34394 against 34396. Both are Edgeworth-branch inputs, and both agree now.
 #
 # The shape is two Chebyshev-fitted Horner chains and one exponential. The coefficients are
-# produced by tests/oracles/fit_gauss_cdf.py against a reference good to 36 digits, so they
+# produced by tests/oracles/fit_additive_cumulative.py against a reference good to 36 digits, so they
 # are reproducible rather than transcribed; the worst relative error over |x| <= 6 is 9.1e-15.
 #
 # The chains are written one product per line to match the other six exactly. Do not
@@ -22,9 +22,9 @@
 # needs pinning here, unlike Go: R evaluates each arithmetic operator on its own and never
 # fuses a multiply into an add.
 
-# gauss_cdf computes P(Z <= x) for a standard normal Z.
-gauss_cdf <- function(x) {
-  t <- abs(x) / sqrt(2)
+# additive_cumulative computes P(Z <= x) for a standard normal Z.
+additive_cumulative <- function(z) {
+  t <- abs(z) / sqrt(2)
   if (t < 0.5) {
     s <- t * t
     u <- 8.0 * s - 1.0
@@ -41,7 +41,7 @@ gauss_cdf <- function(x) {
     p <- p * u - 0.04364205888669792
     p <- p * u + 1.0830752376761712
     erf <- t * p
-    if (x >= 0) {
+    if (z >= 0) {
       return(0.5 * (1.0 + erf))
     }
     return(0.5 * (1.0 - erf))
@@ -77,18 +77,18 @@ gauss_cdf <- function(x) {
     p <- p * u + 0.09925390090168178
     p <- p * u - 0.15121195850373031
     p <- p * u + 0.21849873453703333
-    erfc <- portable_exp(-(t * t)) * p
+    erfc <- exp_function(-(t * t)) * p
   }
 
-  if (x >= 0) {
+  if (z >= 0) {
     return(1.0 - 0.5 * erfc)
   }
   0.5 * erfc
 }
 
-# gauss_pdf computes the standard normal density, spelled as the other six spell it. Both
+# additive_pdf computes the standard normal density, spelled as the other six spell it. Both
 # Edgeworth expansions reach their phi through here, so the two call sites the other ports
 # write out separately are this one line.
-gauss_pdf <- function(z) {
-  portable_exp(-z * z / 2) / sqrt(2 * pi)
+additive_pdf <- function(z) {
+  exp_function(-z * z / 2) / sqrt(2 * pi)
 }

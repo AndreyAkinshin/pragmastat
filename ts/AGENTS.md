@@ -26,8 +26,8 @@ ts/
 │   ├── signedRankMargin.ts    # Signed-rank margin computation
 │   ├── minMisrate.ts          # Minimum achievable misrate calculation
 │   ├── binomial.ts            # Binomial coefficient shared by the two above (internal)
-│   ├── gaussCdf.ts            # Standard normal CDF (Chebyshev-fitted erf/erfc)
-│   ├── portableExp.ts         # The exponential the margin path uses instead of Math.exp
+│   ├── additiveCumulative.ts         # Standard normal CDF (Chebyshev-fitted erf/erfc)
+│   ├── expFunction.ts         # The exponential the margin path uses instead of Math.exp
 │   ├── rng.ts                 # Deterministic xoshiro256++ PRNG
 │   ├── xoshiro256.ts          # PRNG core implementation
 │   ├── centerImpl.ts          # O(n log n) Hodges-Lehmann algorithm
@@ -38,7 +38,7 @@ ts/
 │   └── distributions/         # Uniform, Additive, Exp, Power, Multiplic
 ├── tests/
 │   ├── bitwise.ts                 # The binary64-payload comparison every exact suite uses
-│   ├── portableExp.test.ts        # 2**n exactness and the cross-port payloads of portableExp
+│   ├── expFunction.test.ts        # 2**n exactness and the cross-port payloads of expFunction
 │   ├── reference.test.ts          # JSON fixture validation
 │   ├── invariance.test.ts         # Mathematical property tests
 │   ├── assumeSorted.test.ts       # assumeSorted=true vs default-path equivalence

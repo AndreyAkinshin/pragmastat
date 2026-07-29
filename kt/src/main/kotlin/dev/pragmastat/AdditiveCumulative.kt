@@ -1,37 +1,28 @@
-"""Standard normal CDF.
+package dev.pragmastat
 
-Two Chebyshev-fitted Horner chains and one exponential. The coefficients are produced by
-tests/oracles/fit_gauss_cdf.py against a reference good to 36 digits, so they are
-reproducible rather than transcribed.
+import kotlin.math.abs
+import kotlin.math.sqrt
 
-No rounding pins are needed here: Python evaluates every product and every sum as a
-separate binary64 operation and has no multiply-add contraction to disable. Plain floats
-only, since a numpy expression may reassociate.
-"""
-
-import math
-
-from .portable_exp import portable_exp
-
-_SQRT2 = math.sqrt(2.0)
-
-
-def gauss_cdf(x: float) -> float:
-    """
-    Computes the standard normal CDF.
-
-    Args:
-        x: -infinity..+infinity
-
-    Returns:
-        Area under the standard normal curve from -infinity to x
-    """
-    t = abs(x) / _SQRT2
-    if t < 0.5:
-        # erf(t) / t as a polynomial in u = 8 * t^2 - 1
-        s = t * t
-        u = 8.0 * s - 1.0
-        p = -1.2757552949301143e-19
+/**
+ * Computes the standard normal CDF.
+ *
+ * Two Chebyshev-fitted Horner chains and one exponential. The coefficients are produced by
+ * tests/oracles/fit_additive_cumulative.py against a reference good to 36 digits, so they are
+ * reproducible rather than transcribed.
+ *
+ * No rounding pins are needed here: the JVM never contracts a multiply and an add into a fused
+ * multiply-add, so every product lands in binary64 on its own, which is what the Go port has to
+ * spell out with explicit float64 conversions.
+ *
+ * @param x Value in range (-infinity, +infinity)
+ * @return Area under the Standard Normal Curve from -infinity to x
+ */
+internal fun additiveCumulative(z: Double): Double {
+    val t = abs(z) / sqrt(2.0)
+    if (t < 0.5) {
+        val s = t * t
+        val u = 8.0 * s - 1.0
+        var p = -1.2757552949301143e-19
         p = p * u + 1.2307154179828511e-17
         p = p * u - 1.0890239994332592e-15
         p = p * u + 8.774530700097397e-14
@@ -43,16 +34,14 @@ def gauss_cdf(x: float) -> float:
         p = p * u + 0.0016130716680617086
         p = p * u - 0.04364205888669792
         p = p * u + 1.0830752376761712
-        erf = t * p
-        if x >= 0:
-            return 0.5 * (1.0 + erf)
-        return 0.5 * (1.0 - erf)
+        val erf = t * p
+        return if (z >= 0.0) 0.5 * (1.0 + erf) else 0.5 * (1.0 - erf)
+    }
 
-    erfc = 0.0
-    if t <= 4.3:
-        # erfc(t) * exp(t^2) as a polynomial in u = (2 * t - 4.8) / 3.8
-        u = (2.0 * t - 4.8) / 3.8
-        p = 2.403093649825437e-09
+    var erfc = 0.0
+    if (t <= 4.3) {
+        val u = (2.0 * t - 4.8) / 3.8
+        var p = 2.403093649825437e-09
         p = p * u - 6.533436159455495e-09
         p = p * u + 1.334437871983186e-09
         p = p * u - 2.5055474016226743e-09
@@ -79,8 +68,8 @@ def gauss_cdf(x: float) -> float:
         p = p * u + 0.09925390090168178
         p = p * u - 0.15121195850373031
         p = p * u + 0.21849873453703333
-        erfc = portable_exp(-(t * t)) * p
+        erfc = expFunction(-(t * t)) * p
+    }
 
-    if x >= 0:
-        return 1.0 - 0.5 * erfc
-    return 0.5 * erfc
+    return if (z >= 0.0) 1.0 - 0.5 * erfc else 0.5 * erfc
+}

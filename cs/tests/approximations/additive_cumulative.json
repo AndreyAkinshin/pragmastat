@@ -1,6 +1,6 @@
 {
   "input": {
-    "name": "gauss_cdf",
+    "name": "additive_cumulative",
     "arg": [
       -3.090252595110711,
       -2.878172129210258,

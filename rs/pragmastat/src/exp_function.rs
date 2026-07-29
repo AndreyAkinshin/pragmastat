@@ -10,7 +10,7 @@
 #[allow(clippy::approx_constant)]
 const INV_LN2: f64 = 1.4426950408889634;
 
-/// High half of ln 2. Split so that `k * LN2_HI` is exact: `LN2_HI` carries 33 significant bits
+/// High half of ln 2. Split so that `k * LN2_HI` is exact: `LN2_HI` carries 32 significant bits
 /// and `|k|` needs at most 11, which leaves the product inside the 53 available. Without the
 /// split the reduction would lose the low bits of `r`, and `r` is where the accuracy lives.
 const LN2_HI: f64 = 0.6931471803691238;
@@ -26,7 +26,7 @@ const LN2_LO: f64 = 1.9082149292705877e-10;
 /// equivalent (`math.Ldexp`, `Math.ScaleB`, `Math.scalb`, `math.ldexp`); this is the same value
 /// they get.
 ///
-/// The cutoffs in `portable_exp` bound `n` to roughly `[-538, 512]`, comfortably inside the
+/// The cutoffs in `exp_function` bound `n` to roughly `[-538, 512]`, comfortably inside the
 /// normal range. The assertion is here because a hand-built exponent field, unlike a library
 /// call, has no defined behavior outside it: it would silently produce a denormal, an
 /// infinity or a NaN rather than a wrong-but-obvious answer.
@@ -63,7 +63,7 @@ fn pow2(n: i32) -> f64 {
 ///
 /// Every product is written as `a * b + c` and never as `a.mul_add(b, c)`, for the reason given
 /// at the top of `lib.rs`. `rs:check:fma` is the guard.
-pub(crate) fn portable_exp(y: f64) -> f64 {
+pub(crate) fn exp_function(y: f64) -> f64 {
     if y.is_nan() {
         return y;
     }
@@ -114,7 +114,7 @@ pub(crate) fn portable_exp(y: f64) -> f64 {
 
 #[cfg(test)]
 mod tests {
-    use super::{INV_LN2, portable_exp, pow2};
+    use super::{INV_LN2, exp_function, pow2};
 
     /// The claim the `approx_constant` suppression rests on.
     #[test]
@@ -149,7 +149,7 @@ mod tests {
         let steps = 200_000;
         for i in 0..=steps {
             let y = -745.0 + (709.0 - (-745.0)) * (i as f64) / (steps as f64);
-            let ours = portable_exp(y);
+            let ours = exp_function(y);
             let theirs = y.exp();
             // ulp of the reference value, from the neighbor above it.
             let next = f64::from_bits(theirs.to_bits() + 1);
@@ -168,11 +168,11 @@ mod tests {
 
     #[test]
     fn cutoffs_and_nan() {
-        assert!(portable_exp(f64::NAN).is_nan());
-        assert_eq!(portable_exp(709.8), f64::INFINITY);
-        assert_eq!(portable_exp(f64::INFINITY), f64::INFINITY);
-        assert_eq!(portable_exp(-745.3), 0.0);
-        assert_eq!(portable_exp(f64::NEG_INFINITY), 0.0);
-        assert_eq!(portable_exp(0.0), 1.0);
+        assert!(exp_function(f64::NAN).is_nan());
+        assert_eq!(exp_function(709.8), f64::INFINITY);
+        assert_eq!(exp_function(f64::INFINITY), f64::INFINITY);
+        assert_eq!(exp_function(-745.3), 0.0);
+        assert_eq!(exp_function(f64::NEG_INFINITY), 0.0);
+        assert_eq!(exp_function(0.0), 1.0);
     }
 }

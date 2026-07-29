@@ -2,8 +2,8 @@
 //!
 //! One-sample analog of PairwiseMargin using Wilcoxon signed-rank distribution.
 
+use crate::additive_cumulative::additive_cumulative;
 use crate::assumptions::AssumptionError;
-use crate::gauss_cdf::gauss_cdf;
 use crate::min_misrate::min_achievable_misrate_one_sample;
 
 /// Maximum n for exact computation. Limited to 63 because 2^n must fit in a 64-bit integer.
@@ -116,8 +116,8 @@ fn signed_rank_edgeworth_cdf(n: usize, w: usize) -> f64 {
 
     // +0.5 continuity correction: computing P(W ≤ w) for a left-tail discrete CDF
     let z = (w as f64 - mu + 0.5) / sigma;
-    let phi = crate::portable_exp::portable_exp(-z * z / 2.0) / (2.0 * std::f64::consts::PI).sqrt();
-    let big_phi = gauss_cdf(z);
+    let phi = crate::exp_function::exp_function(-z * z / 2.0) / (2.0 * std::f64::consts::PI).sqrt();
+    let big_phi = additive_cumulative(z);
 
     let kappa4 =
         -n_f64 * (n_f64 + 1.0) * (2.0 * n_f64 + 1.0) * (3.0 * n_f64 * n_f64 + 3.0 * n_f64 - 1.0)

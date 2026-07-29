@@ -210,9 +210,9 @@
       "description": "SignedRankMargin function tests",
       "languages": ["cs", "go", "kt", "py", "r", "rs", "ts"]
     },
-    "portable-exp": {
+    "exp-function": {
       "conformance": "exact",
-      "directory": "portable-exp",
+      "directory": "exp-function",
       "generator": "cs/Pragmastat.TestGenerator",
       "pattern": "*.json",
       "description": "The reproducible exponential, compared by binary64 payload",

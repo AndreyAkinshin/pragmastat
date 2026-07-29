@@ -28,19 +28,19 @@ namespace Pragmastat.TestGenerator.TestCases;
 /// them either.
 /// </para>
 /// </remarks>
-public static class PortableExpTestCases
+public static class ExpFunctionTestCases
 {
   public static void Generate()
   {
-    const string suiteName = "portable-exp";
+    const string suiteName = "exp-function";
     AnsiConsole.MarkupLine($"[yellow]→[/] Generating tests for: [bold]{suiteName}[/]");
 
-    var functions = new Dictionary<string, Func<double, double>> { ["portable_exp"] = PortableExp.Value };
+    var functions = new Dictionary<string, Func<double, double>> { ["exp_function"] = ExpFunction.Value };
     var inputBuilder = new ReferenceTestCaseInputBuilder<SingleDoubleValueInput>();
 
-    inputBuilder.Add("working-band", new SingleDoubleValueInput("portable_exp", Grid(-18.5, 0.0, 401)));
-    inputBuilder.Add("edgeworth-band", new SingleDoubleValueInput("portable_exp", Grid(-40.0, 0.0, 201)));
-    inputBuilder.Add("finite-range", new SingleDoubleValueInput("portable_exp", Grid(-745.0, 709.0, 401)));
+    inputBuilder.Add("working-band", new SingleDoubleValueInput("exp_function", Grid(-18.5, 0.0, 401)));
+    inputBuilder.Add("edgeworth-band", new SingleDoubleValueInput("exp_function", Grid(-40.0, 0.0, 201)));
+    inputBuilder.Add("finite-range", new SingleDoubleValueInput("exp_function", Grid(-745.0, 709.0, 401)));
 
     // The reduction endpoints, the underflow cutoff and its neighbors, and the first denormals:
     // every place the construction changes behavior rather than merely continues.
@@ -49,7 +49,7 @@ public static class PortableExpTestCases
     // write one. The overflow cutoff is checked in each port's own unit tests, where a language
     // can name its infinity; everything JSON can carry is here.
     const double ln2 = 0.69314718055994531;
-    inputBuilder.Add("boundaries", new SingleDoubleValueInput("portable_exp",
+    inputBuilder.Add("boundaries", new SingleDoubleValueInput("exp_function",
     [
       0.0, -0.0, 1.0, -1.0, 0.5, -0.5, 100.0, -100.0,
       ln2, -ln2, ln2 / 2, -ln2 / 2, 3 * ln2 / 2, -3 * ln2 / 2,

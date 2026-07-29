@@ -4,7 +4,7 @@ import kotlin.math.floor
 
 // Constants of the range reduction, emitted by tests/oracles/fit_exp.py.
 //
-// ln 2 is split so that k*LN2_HI is exact: LN2_HI carries 33 significant bits and |k| needs at
+// ln 2 is split so that k*LN2_HI is exact: LN2_HI carries 32 significant bits and |k| needs at
 // most 11, which leaves the product inside the 53 available. Without the split the reduction
 // would lose the low bits of r, and r is where the accuracy lives.
 private const val INV_LN2 = 1.4426950408889634e+00
@@ -48,7 +48,7 @@ private const val LN2_LO = 1.9082149292705877e-10
  * @param y Exponent
  * @return e raised to the power of [y]
  */
-internal fun portableExp(y: Double): Double {
+internal fun expFunction(y: Double): Double {
     if (y.isNaN()) {
         return y
     }

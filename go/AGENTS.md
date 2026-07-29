@@ -22,7 +22,8 @@ go/
 ├── sign_margin.go             # Sign margin for binomial CDF inversion
 ├── signed_rank_margin.go      # Signed-rank margin computation
 ├── min_misrate.go             # Minimum achievable misrate calculation
-├── gauss_cdf.go               # Standard normal CDF (ACM Algorithm 209)
+├── additive_cumulative.go            # Standard normal CDF (Chebyshev-fitted erf/erfc)
+├── exp_function.go            # Reproducible exp: range reduction plus fitted polynomial
 ├── rng.go                     # Deterministic xoshiro256++ PRNG
 ├── xoshiro256.go              # PRNG core implementation
 ├── center_impl.go             # O(n log n) Hodges-Lehmann algorithm

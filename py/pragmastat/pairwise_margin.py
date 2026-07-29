@@ -8,10 +8,10 @@ for small samples (n+m <= 400) and Edgeworth approximation for larger samples.
 import math
 
 from ._binomial import binomial_coefficient as _binomial_coefficient
+from .additive_cumulative import additive_cumulative as _additive_cumulative
 from .assumptions import AssumptionError
-from .gauss_cdf import gauss_cdf as _gauss_cdf
+from .exp_function import exp_function
 from .min_misrate import min_achievable_misrate_two_sample
-from .portable_exp import portable_exp
 
 MAX_EXACT_SIZE = 400
 
@@ -134,8 +134,8 @@ def _edgeworth_cdf(n: int, m: int, u: int) -> float:
     z = (uf - mu - 0.5) / su
 
     # Standard normal PDF and CDF
-    phi = portable_exp((-z * z) / 2.0) / math.sqrt(2.0 * math.pi)
-    big_phi = _gauss_cdf(z)
+    phi = exp_function((-z * z) / 2.0) / math.sqrt(2.0 * math.pi)
+    big_phi = _additive_cumulative(z)
 
     # Pre-compute powers of n and m for efficiency
     n2 = nf * nf

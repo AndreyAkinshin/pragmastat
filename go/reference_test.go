@@ -1808,16 +1808,16 @@ type SingleDoubleValueInput struct {
 	Arg  []float64 `json:"arg"`
 }
 
-// portableExpArgCount is how many arguments the portable-exp fixtures carry
+// expFunctionArgCount is how many arguments the exp-function fixtures carry
 // between them: 401 over the band exp(-t*t) reaches, 201 over the wider band the
 // Edgeworth expansion reaches, 401 over the whole finite range, and 29
 // boundaries. It is asserted because a loader that finds no files, or three
 // files out of four, passes every other check in this test.
-const portableExpArgCount = 1032
+const expFunctionArgCount = 1032
 
-// TestPortableExpReference checks the reproducible exponential directly.
+// TestExpFunctionReference checks the reproducible exponential directly.
 //
-// Every other suite reaches portableExp only through a margin, which evaluates
+// Every other suite reaches expFunction only through a margin, which evaluates
 // it wherever an Edgeworth expansion happens to look and nowhere else. The
 // exact class of all those suites rests on this one function agreeing in all
 // seven languages, so it is worth checking on its own arguments rather than
@@ -1833,11 +1833,11 @@ const portableExpArgCount = 1032
 // both; both map to exp(0) = 1, and the suite makes no claim about the payload
 // of an input. The outputs do reach down to the smallest denormal, and
 // comparing those by payload is what shows the parser round-trips them.
-func TestPortableExpReference(t *testing.T) {
+func TestExpFunctionReference(t *testing.T) {
 	checked := 0
-	forEachFixture(t, "portable-exp", func(t *testing.T, td TestData, input SingleDoubleValueInput) {
-		if input.Name != "portable_exp" {
-			t.Fatalf("Fixture names function %q, want %q", input.Name, "portable_exp")
+	forEachFixture(t, "exp-function", func(t *testing.T, td TestData, input SingleDoubleValueInput) {
+		if input.Name != "exp_function" {
+			t.Fatalf("Fixture names function %q, want %q", input.Name, "exp_function")
 		}
 		var expected []float64
 		if err := json.Unmarshal(td.Output, &expected); err != nil {
@@ -1847,12 +1847,12 @@ func TestPortableExpReference(t *testing.T) {
 			t.Fatalf("Fixture has %d arguments and %d outputs", len(input.Arg), len(expected))
 		}
 		for i, arg := range input.Arg {
-			label := fmt.Sprintf("portableExp(%s)", formatFloatBits(arg))
-			assertFloat(t, compareExact, label, portableExp(arg), expected[i])
+			label := fmt.Sprintf("expFunction(%s)", formatFloatBits(arg))
+			assertFloat(t, compareExact, label, expFunction(arg), expected[i])
 		}
 		checked += len(input.Arg)
 	})
-	if checked != portableExpArgCount {
-		t.Errorf("Checked %d arguments, want %d", checked, portableExpArgCount)
+	if checked != expFunctionArgCount {
+		t.Errorf("Checked %d arguments, want %d", checked, expFunctionArgCount)
 	}
 }

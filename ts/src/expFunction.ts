@@ -5,7 +5,7 @@
 /**
  * Constants of the range reduction, emitted by tests/oracles/fit_exp.py.
  *
- * ln 2 is split so that k*LN2_HI is exact: LN2_HI carries 33 significant bits and |k| needs at
+ * ln 2 is split so that k*LN2_HI is exact: LN2_HI carries 32 significant bits and |k| needs at
  * most 11, which leaves the product inside the 53 available. Without the split the reduction
  * would lose the low bits of r, and r is where the accuracy lives.
  */
@@ -19,8 +19,8 @@ const LN2_LO = 1.9082149292705877e-10;
  * JavaScript has no ldexp, so this is the exponentiation operator. ECMAScript defines that
  * operator as an implementation-approximated function rather than a correctly-rounded one, so
  * exactness here is a claim about the runtime and not about the standard. It is checked rather
- * than assumed: tests/portableExp.test.ts compares this against a bit-pattern construction for
- * every exponent portableExp can reach, which is -538..512.
+ * than assumed: tests/expFunction.test.ts compares this against a bit-pattern construction for
+ * every exponent expFunction can reach, which is -538..512.
  *
  * @param n Integer exponent
  * @returns The power of two with that exponent
@@ -30,7 +30,7 @@ export function pow2(n: number): number {
 }
 
 /**
- * portableExp is the exponential every port evaluates, in place of the platform's.
+ * expFunction is the exponential every port evaluates, in place of the platform's.
  *
  * IEEE 754 fixes the result of each arithmetic operation and of the square root, and fixes
  * nothing about the exponential. Conforming libraries disagree in the last bit and do:
@@ -57,7 +57,7 @@ export function pow2(n: number): number {
  * @param y -infinity..+infinity
  * @returns e raised to y
  */
-export function portableExp(y: number): number {
+export function expFunction(y: number): number {
   if (Number.isNaN(y)) {
     return y;
   }

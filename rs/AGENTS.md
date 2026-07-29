@@ -23,8 +23,8 @@ rs/pragmastat/
 │   ├── sign_margin.rs             # Sign margin for binomial CDF inversion (internal)
 │   ├── signed_rank_margin.rs      # Signed-rank margin computation (internal)
 │   ├── min_misrate.rs             # Minimum achievable misrate calculation (internal)
-│   ├── gauss_cdf.rs               # Standard normal CDF (Chebyshev erf/erfc fit) (internal)
-│   ├── portable_exp.rs            # Reproducible exp, replacing the platform's (internal)
+│   ├── additive_cumulative.rs            # Standard normal CDF (Chebyshev erf/erfc fit) (internal)
+│   ├── exp_function.rs            # Reproducible exp, replacing the platform's (internal)
 │   ├── rng.rs                     # Deterministic xoshiro256++ PRNG
 │   ├── distributions/             # Sampling distributions (Uniform, Additive, Exp, Power, Multiplic)
 │   ├── center_impl.rs             # O(n log n) Hodges-Lehmann algorithm (internal)
@@ -46,9 +46,11 @@ rs/pragmastat/
 │   ├── error_tests.rs                     # Error path coverage
 │   ├── invariance_tests.rs                # Mathematical property tests
 │   ├── metrology_tests.rs                 # Bounds unit re-attachment
+│   ├── negative_zero_tests.rs             # No estimator returns a negative zero
 │   ├── performance_tests.rs               # Performance smoke test
 │   ├── reference_tests.rs                 # JSON fixture validation
-│   └── sample_bounds_consistency_tests.rs # Sample vs raw bounds on unsorted input
+│   ├── sample_bounds_consistency_tests.rs # Sample vs raw bounds on unsorted input
+│   └── shift_overflow_tests.rs            # Shift search bounds on extreme finite input
 └── examples/
     └── demo.rs
 ```

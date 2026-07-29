@@ -2,16 +2,16 @@
  * Standard normal CDF.
  */
 
-import { portableExp } from './portableExp';
+import { expFunction } from './expFunction';
 
 /**
  * Computes the standard normal CDF.
  *
  * Two Chebyshev-fitted Horner chains and one exponential. The coefficients are produced by
- * tests/oracles/fit_gauss_cdf.py against a reference good to 36 digits, so they are
+ * tests/oracles/fit_additive_cumulative.py against a reference good to 36 digits, so they are
  * reproducible rather than transcribed.
  *
- * The exponential is portableExp rather than Math.exp: the platform's differs between
+ * The exponential is expFunction rather than Math.exp: the platform's differs between
  * runtimes in the last bit, and this value reaches a comparison that selects an integer.
  *
  * No product needs pinning here: ECMAScript specifies every multiply and add as a separate
@@ -20,8 +20,8 @@ import { portableExp } from './portableExp';
  * @param x -infinity..+infinity
  * @returns Area under the standard normal curve from -infinity to x
  */
-export function gaussCdf(x: number): number {
-  const t = Math.abs(x) / Math.SQRT2;
+export function additiveCumulative(z: number): number {
+  const t = Math.abs(z) / Math.SQRT2;
   if (t < 0.5) {
     const s = t * t;
     const u = 8.0 * s - 1.0;
@@ -38,7 +38,7 @@ export function gaussCdf(x: number): number {
     p = p * u - 0.04364205888669792;
     p = p * u + 1.0830752376761712;
     const erf = t * p;
-    return x >= 0 ? 0.5 * (1.0 + erf) : 0.5 * (1.0 - erf);
+    return z >= 0 ? 0.5 * (1.0 + erf) : 0.5 * (1.0 - erf);
   }
 
   let erfc = 0.0;
@@ -71,8 +71,8 @@ export function gaussCdf(x: number): number {
     p = p * u + 0.09925390090168178;
     p = p * u - 0.15121195850373031;
     p = p * u + 0.21849873453703333;
-    erfc = portableExp(-(t * t)) * p;
+    erfc = expFunction(-(t * t)) * p;
   }
 
-  return x >= 0 ? 1.0 - 0.5 * erfc : 0.5 * erfc;
+  return z >= 0 ? 1.0 - 0.5 * erfc : 0.5 * erfc;
 }

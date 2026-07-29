@@ -2,17 +2,17 @@ package pragmastat
 
 import "math"
 
-// gaussCdf computes the standard normal CDF.
+// additiveCumulative computes the standard normal CDF.
 //
 // Two Chebyshev-fitted Horner chains and one exponential. The coefficients are produced by
-// tests/oracles/fit_gauss_cdf.py against a reference good to 36 digits, so they are
+// tests/oracles/fit_additive_cumulative.py against a reference good to 36 digits, so they are
 // reproducible rather than transcribed.
 //
 // Every product is pinned with an explicit float64 conversion for the same reason the rest of
 // the kernels are: the Go compiler fuses a multiply into an add on every FMA-capable target
 // and the other six implementations do not.
-func gaussCdf(x float64) float64 {
-	t := math.Abs(x) / math.Sqrt2
+func additiveCumulative(z float64) float64 {
+	t := math.Abs(z) / math.Sqrt2
 	if t < 0.5 {
 		s := float64(t * t)
 		u := float64(8.0*s) - 1.0
@@ -29,7 +29,7 @@ func gaussCdf(x float64) float64 {
 		p = float64(p*u) - 0.04364205888669792
 		p = float64(p*u) + 1.0830752376761712
 		erf := float64(t * p)
-		if x >= 0 {
+		if z >= 0 {
 			return float64(0.5 * (1.0 + erf))
 		}
 		return float64(0.5 * (1.0 - erf))
@@ -64,9 +64,9 @@ func gaussCdf(x float64) float64 {
 		p = float64(p*u) + 0.09925390090168178
 		p = float64(p*u) - 0.15121195850373031
 		p = float64(p*u) + 0.21849873453703333
-		erfc = float64(portableExp(-float64(t*t)) * p)
+		erfc = float64(expFunction(-float64(t*t)) * p)
 	}
-	if x >= 0 {
+	if z >= 0 {
 		return 1.0 - float64(0.5*erfc)
 	}
 	return float64(0.5 * erfc)

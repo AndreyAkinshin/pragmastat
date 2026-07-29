@@ -1,6 +1,6 @@
-//! The reproducible exponential against the shared `portable-exp` fixture.
+//! The reproducible exponential against the shared `exp-function` fixture.
 //!
-//! Every port carries its own `portable_exp` because IEEE 754 fixes nothing about the
+//! Every port carries its own `exp_function` because IEEE 754 fixes nothing about the
 //! exponential, and the margins turn a last-bit difference into a different order statistic and
 //! so into a different confidence interval. Until this suite existed, nothing compared the seven
 //! implementations directly: they met only through the margin fixtures, which reach the
@@ -10,11 +10,11 @@
 //! payload. A tolerance here would pass on precisely the divergence the suite exists to catch:
 //! two implementations one ULP apart agree to 1e-15 and disagree on the interval.
 //!
-//! This module lives in `src` rather than in `tests/` because `portable_exp` is `pub(crate)`,
+//! This module lives in `src` rather than in `tests/` because `exp_function` is `pub(crate)`,
 //! the same reason `pairwise_margin_tests` and `signed_rank_margin_tests` do.
 
 use crate::conformance::bitwise_mismatch;
-use crate::portable_exp::portable_exp;
+use crate::exp_function::exp_function;
 use serde::Deserialize;
 use std::fs;
 use std::path::PathBuf;
@@ -25,14 +25,14 @@ use std::path::PathBuf;
 /// single-value suite, so a file from a different suite deserializes into this struct without
 /// complaint and would be silently checked against the wrong function.
 #[derive(Debug, Deserialize)]
-struct PortableExpInput {
+struct ExpFunctionInput {
     name: String,
     arg: Vec<f64>,
 }
 
 #[derive(Debug, Deserialize)]
-struct PortableExpTestCase {
-    input: PortableExpInput,
+struct ExpFunctionTestCase {
+    input: ExpFunctionInput,
     output: Vec<f64>,
 }
 
@@ -48,7 +48,7 @@ fn find_repo_root() -> PathBuf {
     }
 }
 
-/// Checks `portable_exp` on every argument of every file in the suite.
+/// Checks `exp_function` on every argument of every file in the suite.
 ///
 /// Only the outputs are compared. `boundaries.json` lists both `0` and `-0`, which JSON does not
 /// distinguish and which serde therefore hands over as `+0.0` twice; both are arguments to
@@ -60,9 +60,9 @@ fn find_repo_root() -> PathBuf {
 /// correctly rounded, and an ULP at that magnitude is the entire value. A parser that mangled
 /// them would fail here rather than pass quietly, since the comparison is on payloads.
 #[test]
-fn test_portable_exp_reference() {
+fn test_exp_function_reference() {
     let repo_root = find_repo_root();
-    let test_data_dir = repo_root.join("tests").join("portable-exp");
+    let test_data_dir = repo_root.join("tests").join("exp-function");
 
     if !test_data_dir.exists() {
         panic!("Test data directory not found: {test_data_dir:?}");
@@ -94,12 +94,12 @@ fn test_portable_exp_reference() {
 
     for json_file in &json_files {
         let content = fs::read_to_string(json_file).unwrap();
-        let test_case: PortableExpTestCase = serde_json::from_str(&content).unwrap();
+        let test_case: ExpFunctionTestCase = serde_json::from_str(&content).unwrap();
         let file_name = json_file.file_name().unwrap();
 
         assert_eq!(
-            test_case.input.name, "portable_exp",
-            "{file_name:?}: expected the portable_exp suite, got \"{}\"",
+            test_case.input.name, "exp_function",
+            "{file_name:?}: expected the exp_function suite, got \"{}\"",
             test_case.input.name
         );
         assert_eq!(
@@ -127,7 +127,7 @@ fn test_portable_exp_reference() {
             if let Some(mismatch) = bitwise_mismatch(
                 &format!("exp({arg}) [arg {i}]"),
                 expected,
-                portable_exp(arg),
+                exp_function(arg),
             ) {
                 failures.push(format!("{file_name:?}: {mismatch}"));
             }

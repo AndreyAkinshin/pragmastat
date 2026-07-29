@@ -8,22 +8,22 @@ namespace Pragmastat.Functions;
 /// <remarks>
 /// <para>
 /// Two Chebyshev-fitted Horner chains and one exponential. The coefficients are produced by
-/// tests/oracles/fit_gauss_cdf.py against a reference good to 36 digits, so they are
+/// tests/oracles/fit_additive_cumulative.py against a reference good to 36 digits, so they are
 /// reproducible rather than transcribed.
 /// </para>
 /// <para>
 /// Worst relative error is 9.1e-15 over |x| &lt;= 6, measured in binary64 against that reference.
 /// </para>
 /// </remarks>
-internal static class GaussCdf
+internal static class AdditiveCumulative
 {
   /// <summary>
   /// Area under the standard normal curve from negative infinity to <paramref name="x"/>.
   /// </summary>
-  /// <param name="x">-infinity..+infinity</param>
-  public static double Value(double x)
+  /// <param name="z">-infinity..+infinity</param>
+  public static double Value(double z)
   {
-    double t = Abs(x) / Constants.Sqrt2;
+    double t = Abs(z) / Constants.Sqrt2;
     if (t < 0.5)
     {
       double s = t * t;
@@ -41,7 +41,7 @@ internal static class GaussCdf
       p = p * u - 0.04364205888669792;
       p = p * u + 1.0830752376761712;
       double erf = t * p;
-      return x >= 0 ? 0.5 * (1.0 + erf) : 0.5 * (1.0 - erf);
+      return z >= 0 ? 0.5 * (1.0 + erf) : 0.5 * (1.0 - erf);
     }
 
     double erfc = 0.0;
@@ -75,9 +75,9 @@ internal static class GaussCdf
       p = p * u + 0.09925390090168178;
       p = p * u - 0.15121195850373031;
       p = p * u + 0.21849873453703333;
-      erfc = PortableExp.Value(-(t * t)) * p;
+      erfc = ExpFunction.Value(-(t * t)) * p;
     }
 
-    return x >= 0 ? 1.0 - 0.5 * erfc : 0.5 * erfc;
+    return z >= 0 ? 1.0 - 0.5 * erfc : 0.5 * erfc;
   }
 }

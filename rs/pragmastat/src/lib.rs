@@ -26,11 +26,11 @@ pub mod measurement_unit;
 pub mod sample;
 pub mod unit_registry;
 
+pub(crate) mod additive_cumulative;
 pub(crate) mod binomial;
-pub(crate) mod gauss_cdf;
+pub(crate) mod exp_function;
 pub(crate) mod min_misrate;
 pub(crate) mod pairwise_margin;
-pub(crate) mod portable_exp;
 pub mod rng;
 pub(crate) mod sign_margin;
 pub(crate) mod signed_rank_margin;
@@ -54,9 +54,9 @@ mod conformance;
 #[cfg(test)]
 mod disparity_bounds_tests;
 #[cfg(test)]
-mod pairwise_margin_tests;
+mod exp_function_tests;
 #[cfg(test)]
-mod portable_exp_tests;
+mod pairwise_margin_tests;
 #[cfg(test)]
 mod ratio_bounds_tests;
 #[cfg(test)]

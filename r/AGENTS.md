@@ -22,6 +22,7 @@ r/pragmastat/
 ├── R/
 │   ├── aaa_constants.R          # Internal constants (loaded first)
 │   ├── aa_assumptions.R         # Input validation and error types
+│   ├── normalize_zero.R         # Drops the sign of a negative zero on estimator output
 │   ├── center.R                 # Center estimator
 │   ├── center_bounds.R          # Center confidence bounds
 │   ├── spread.R                 # Spread estimator
@@ -38,8 +39,8 @@ r/pragmastat/
 │   ├── sign_margin.R            # Sign margin for binomial CDF inversion
 │   ├── signed_rank_margin.R     # Signed-rank margin computation
 │   ├── min_misrate.R            # Minimum achievable misrate calculation
-│   ├── gauss_cdf.R              # Standard normal CDF (Chebyshev-fitted erf/erfc)
-│   ├── portable_exp.R           # Reproducible exp: range reduction plus fitted polynomial
+│   ├── additive_cumulative.R           # Standard normal CDF (Chebyshev-fitted erf/erfc)
+│   ├── exp_function.R           # Reproducible exp: range reduction plus fitted polynomial
 │   ├── center_impl.R            # O(n log n) Hodges-Lehmann algorithm
 │   ├── center_quantiles_impl.R  # Center quantile binary search
 │   ├── spread_impl.R            # O(n log n) Shamos algorithm

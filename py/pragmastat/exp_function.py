@@ -28,7 +28,7 @@ import math
 
 # Constants of the range reduction, emitted by tests/oracles/fit_exp.py.
 #
-# ln 2 is split so that k*ln2_hi is exact: ln2_hi carries 33 significant bits and |k| needs at
+# ln 2 is split so that k*ln2_hi is exact: ln2_hi carries 32 significant bits and |k| needs at
 # most 11, which leaves the product inside the 53 available. Without the split the reduction
 # would lose the low bits of r, and r is where the accuracy lives.
 _INV_LN2 = 1.4426950408889634e00
@@ -36,7 +36,7 @@ _LN2_HI = 6.9314718036912382e-01
 _LN2_LO = 1.9082149292705877e-10
 
 
-def portable_exp(y: float) -> float:
+def exp_function(y: float) -> float:
     """
     Computes exp(y) identically on every platform.
 

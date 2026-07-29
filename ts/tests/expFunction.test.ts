@@ -1,4 +1,4 @@
-import { pow2, portableExp } from '../src/portableExp';
+import { pow2, expFunction } from '../src/expFunction';
 import { expectBitwise } from './bitwise';
 
 // The exponential is the one library call on the margin path that IEEE 754 leaves free, so
@@ -6,7 +6,7 @@ import { expectBitwise } from './bitwise';
 // tolerance.
 //
 // What is checked here is what the shared fixture cannot check. The agreement of the seven
-// implementations is checked by tests/portable-exp, argument by argument, loaded in
+// implementations is checked by tests/exp-function, argument by argument, loaded in
 // reference.test.ts; this file holds the two claims that fixture has no way to carry.
 //
 // The first is that `2 ** n` is exact. JavaScript has no ldexp, and ECMAScript defines the
@@ -29,13 +29,13 @@ function pow2FromExponentField(n: number): number {
   return scratch.getFloat64(0);
 }
 
-// Mirrors the cutoffs and the reciprocal of ln 2 in src/portableExp.ts, so that the exponent
+// Mirrors the cutoffs and the reciprocal of ln 2 in src/expFunction.ts, so that the exponent
 // range the scaling can reach is derived here rather than asserted from memory.
 const INV_LN2 = 1.4426950408889634;
 const MAX_ARG = 709.79;
 const MIN_ARG = -745.2;
 
-describe('portableExp', () => {
+describe('expFunction', () => {
   // k = floor(y*INV_LN2 + 1/2) is non-decreasing in y, so over the band the cutoffs admit it
   // is bounded by its values at the two ends. The scaling then uses trunc(k/2) and k - trunc(k/2).
   it('reaches exponents -538..512 and no others', () => {
@@ -60,13 +60,13 @@ describe('portableExp', () => {
   // The high cutoff itself is not the early return: `y > 709.79` is false at 709.79, so the
   // reduction runs and the scaling is what overflows. The early return is above it.
   it('overflows to infinity at the top of the range', () => {
-    expect(portableExp(MAX_ARG)).toBe(Infinity);
-    expect(portableExp(710)).toBe(Infinity);
+    expect(expFunction(MAX_ARG)).toBe(Infinity);
+    expect(expFunction(710)).toBe(Infinity);
   });
 
   it('carries the infinities and NaN through', () => {
-    expect(portableExp(Infinity)).toBe(Infinity);
-    expectBitwise('portableExp(-Infinity)', portableExp(-Infinity), 0);
-    expect(Number.isNaN(portableExp(NaN))).toBe(true);
+    expect(expFunction(Infinity)).toBe(Infinity);
+    expectBitwise('expFunction(-Infinity)', expFunction(-Infinity), 0);
+    expect(Number.isNaN(expFunction(NaN))).toBe(true);
   });
 });

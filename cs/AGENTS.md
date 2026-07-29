@@ -35,6 +35,8 @@ cs/
 │   ├── Functions/
 │   │   ├── PairwiseMargin.cs
 │   │   ├── ErrorFunction.cs
+│   │   ├── AdditiveCumulative.cs         # Standard normal CDF (Chebyshev-fitted erf/erfc)
+│   │   ├── ExpFunction.cs         # Reproducible exp: range reduction plus fitted polynomial
 │   │   └── ...
 │   ├── Bounds.cs               # Lower/upper bound pair
 │   ├── Probability.cs          # Probability value type

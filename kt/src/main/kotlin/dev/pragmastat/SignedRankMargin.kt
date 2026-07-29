@@ -132,8 +132,8 @@ private fun edgeworthCdf(
     val sigma = sqrt(sigma2)
 
     val z = (w - mu + 0.5) / sigma
-    val phi = portableExp(-z * z / 2) / sqrt(2 * PI)
-    val bigPhi = gaussCdf(z)
+    val phi = expFunction(-z * z / 2) / sqrt(2 * PI)
+    val bigPhi = additiveCumulative(z)
 
     val nk = n.toDouble()
     val kappa4 = -nk * (nk + 1) * (2 * nk + 1) * (3 * nk * nk + 3 * nk - 1) / 240.0

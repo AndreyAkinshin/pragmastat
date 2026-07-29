@@ -38,11 +38,11 @@ namespace Pragmastat.Functions;
 /// rounds them to even, so naming a rounding is naming a disagreement.
 /// </para>
 /// </remarks>
-internal static class PortableExp
+internal static class ExpFunction
 {
   // Constants of the range reduction, emitted by tests/oracles/fit_exp.py.
   //
-  // ln 2 is split so that k*Ln2Hi is exact: Ln2Hi carries 33 significant bits and |k| needs at
+  // ln 2 is split so that k*Ln2Hi is exact: Ln2Hi carries 32 significant bits and |k| needs at
   // most 11, which leaves the product inside the 53 available. Without the split the reduction
   // would lose the low bits of r, and r is where the accuracy lives.
   private const double InvLn2 = 1.4426950408889634e+00;

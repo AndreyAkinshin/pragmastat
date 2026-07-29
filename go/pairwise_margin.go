@@ -171,8 +171,8 @@ func edgeworthCdf(n, m int, u int64) float64 {
 	su := math.Sqrt(nm * float64(n+m+1) / 12.0)
 	// -0.5 continuity correction: computing P(U ≥ u) for a right-tail discrete CDF
 	z := (float64(u) - mu - 0.5) / su
-	phi := portableExp(-z*z/2) / math.Sqrt(2*math.Pi)
-	Phi := gaussCdf(z)
+	phi := expFunction(-z*z/2) / math.Sqrt(2*math.Pi)
+	Phi := additiveCumulative(z)
 
 	// Pre-compute powers of n and m as float64 (avoids int64 overflow for large n, m)
 	nf := float64(n)

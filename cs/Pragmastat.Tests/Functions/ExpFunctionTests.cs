@@ -27,9 +27,9 @@ namespace Pragmastat.Tests.Functions;
 /// would fail here rather than pass quietly.
 /// </para>
 /// </remarks>
-public class PortableExpTests
+public class ExpFunctionTests
 {
-  private const string SuiteName = "portable-exp";
+  private const string SuiteName = "exp-function";
 
   // The size of the generated fixture: four files, 1032 arguments. Pinned rather than counted from
   // whatever the loader happened to find, because a count derived from the loader's own result
@@ -42,7 +42,7 @@ public class PortableExpTests
   // route through BitwiseAssert, which reports the divergent index and both payloads.
   private readonly SingleDoubleValueController controller = new(
     SuiteName,
-    new Dictionary<string, Func<double, double>> { ["portable_exp"] = PortableExp.Value },
+    new Dictionary<string, Func<double, double>> { ["exp_function"] = ExpFunction.Value },
     eps: 0,
     shared: true);
 
@@ -52,7 +52,7 @@ public class PortableExpTests
 
   [Theory]
   [MemberData(nameof(TestDataNames))]
-  public void PortableExpTest(string testName)
+  public void ExpFunctionTest(string testName)
   {
     var testCase = controller.LoadTestCase(testName);
     var actual = controller.Run(testCase.Input);

@@ -1,18 +1,18 @@
 //! Standard normal CDF.
 
-use crate::portable_exp::portable_exp;
+use crate::exp_function::exp_function;
 
 /// Computes the standard normal CDF: `P(Z <= x)` for a standard normal `Z`.
 ///
 /// Two Chebyshev-fitted Horner chains and one exponential. The coefficients are produced by
-/// `tests/oracles/fit_gauss_cdf.py` against a reference good to 36 digits, so they are
+/// `tests/oracles/fit_additive_cumulative.py` against a reference good to 36 digits, so they are
 /// reproducible rather than transcribed.
 ///
 /// Every product is written as `p * u + c` and never as `p.mul_add(u, c)`. rustc does not
 /// contract on its own, so the two roundings this spells out are the two roundings that run,
 /// which is what the other six implementations do. `rs:check:fma` keeps it that way.
-pub fn gauss_cdf(x: f64) -> f64 {
-    let t = x.abs() / std::f64::consts::SQRT_2;
+pub fn additive_cumulative(z: f64) -> f64 {
+    let t = z.abs() / std::f64::consts::SQRT_2;
     if t < 0.5 {
         // erf(t)/t as a polynomial in u = 8*t^2 - 1.
         let s = t * t;
@@ -30,7 +30,7 @@ pub fn gauss_cdf(x: f64) -> f64 {
         p = p * u - 0.04364205888669792;
         p = p * u + 1.0830752376761712;
         let erf = t * p;
-        return if x >= 0.0 {
+        return if z >= 0.0 {
             0.5 * (1.0 + erf)
         } else {
             0.5 * (1.0 - erf)
@@ -69,10 +69,10 @@ pub fn gauss_cdf(x: f64) -> f64 {
         p = p * u + 0.09925390090168178;
         p = p * u - 0.15121195850373031;
         p = p * u + 0.21849873453703333;
-        erfc = portable_exp(-(t * t)) * p;
+        erfc = exp_function(-(t * t)) * p;
     }
 
-    if x >= 0.0 {
+    if z >= 0.0 {
         1.0 - 0.5 * erfc
     } else {
         0.5 * erfc

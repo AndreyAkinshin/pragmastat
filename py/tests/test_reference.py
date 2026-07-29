@@ -39,8 +39,8 @@ from pragmastat.estimators import (
 from pragmastat.estimators import (
     _avg_spread_bounds as avg_spread_bounds,
 )
+from pragmastat.exp_function import exp_function
 from pragmastat.pairwise_margin import pairwise_margin
-from pragmastat.portable_exp import portable_exp
 from pragmastat.signed_rank_margin import signed_rank_margin
 from pragmastat.unit_registry import UnitRegistry
 
@@ -154,13 +154,13 @@ def _load_fixtures(estimator_name):
 # untouched, so any inexactness there would be a wrong element, not a rounding
 # error.
 #
-# The exponential the exact class rests on (portable-exp)
+# The exponential the exact class rests on (exp-function)
 # ------------------------------------------------------
 # The margins reach an exponential, IEEE 754 fixes nothing about one, and a
 # last-bit difference there selects a different order statistic. That is why all
-# seven ports evaluate :func:`pragmastat.portable_exp.portable_exp` instead of the
+# seven ports evaluate :func:`pragmastat.exp_function.exp_function` instead of the
 # platform's. Every other suite reaches that function only through a margin, which
-# samples it wherever an Edgeworth expansion happens to look; portable-exp checks
+# samples it wherever an Edgeworth expansion happens to look; exp-function checks
 # it directly, over the working band, the finite range and the boundaries.
 #
 # JSON is safe to compare against directly: Python's ``json`` module parses a
@@ -730,8 +730,8 @@ class TestReference:
                 f"Failed for test file: {json_file.name}, expected: {expected_output}, got: {actual_output}"
             )
 
-    def test_portable_exp_reference(self):
-        """Test portable_exp against reference data, argument by argument.
+    def test_exp_function_reference(self):
+        """Test exp_function against reference data, argument by argument.
 
         Bitwise, like the manifest declares this suite: a tolerance here would pass
         on exactly the last-bit divergence the fixtures exist to catch (see the
@@ -750,12 +750,12 @@ class TestReference:
           than let the file pass.
         """
         checked = 0
-        for fixture_name, test_case in _load_fixtures("portable-exp"):
+        for fixture_name, test_case in _load_fixtures("exp-function"):
             args = test_case["input"]["arg"]
             expected = test_case["output"]
             # float() only because JSON integer literals (0, 709, -746) arrive as
             # Python ints; every one of them is exactly representable in binary64.
-            actual = [portable_exp(float(arg)) for arg in args]
+            actual = [exp_function(float(arg)) for arg in args]
             assert_sequence_identical(actual, expected, f"Failed for {fixture_name}")
             checked += len(args)
 
@@ -763,7 +763,7 @@ class TestReference:
         # satisfies every assertion above by having nothing to compare. Pinning the
         # total is what makes that visible; raise it deliberately when the generator
         # adds cases.
-        assert checked == 1032, f"portable-exp: compared {checked} arguments, expected 1032"
+        assert checked == 1032, f"exp-function: compared {checked} arguments, expected 1032"
 
     def test_center_bounds_reference(self):
         run_bounds_reference_tests(

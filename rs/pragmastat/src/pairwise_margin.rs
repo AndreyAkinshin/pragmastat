@@ -150,8 +150,8 @@ fn edgeworth_cdf(n: usize, m: usize, u: u64) -> f64 {
     let z = (u_f64 - mu - 0.5) / su;
 
     // Standard normal PDF and CDF
-    let phi = crate::portable_exp::portable_exp(-z * z / 2.0) / (2.0 * std::f64::consts::PI).sqrt();
-    let big_phi = crate::gauss_cdf::gauss_cdf(z);
+    let phi = crate::exp_function::exp_function(-z * z / 2.0) / (2.0 * std::f64::consts::PI).sqrt();
+    let big_phi = crate::additive_cumulative::additive_cumulative(z);
 
     // Pre-compute powers of n and m for efficiency
     let n2 = n_f64 * n_f64;

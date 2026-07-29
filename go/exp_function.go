@@ -8,7 +8,7 @@ import "math"
 
 // Constants of the range reduction, emitted by tests/oracles/fit_exp.py.
 //
-// ln 2 is split so that k*ln2Hi is exact: ln2Hi carries 33 significant bits and |k| needs at
+// ln 2 is split so that k*ln2Hi is exact: ln2Hi carries 32 significant bits and |k| needs at
 // most 11, which leaves the product inside the 53 available. Without the split the reduction
 // would lose the low bits of r, and r is where the accuracy lives.
 const (
@@ -17,7 +17,7 @@ const (
 	ln2Lo  = 1.9082149292705877e-10
 )
 
-// portableExp is the exponential every port evaluates, in place of the platform's.
+// expFunction is the exponential every port evaluates, in place of the platform's.
 //
 // IEEE 754 fixes the result of each arithmetic operation and of the square root, and fixes
 // nothing about the exponential. Conforming libraries disagree in the last bit and do:
@@ -45,7 +45,7 @@ const (
 //
 // floor(x + 1/2) rather than a rounding function: Go rounds halves away from zero and R
 // rounds them to even, so naming a rounding is naming a disagreement.
-func portableExp(y float64) float64 {
+func expFunction(y float64) float64 {
 	if math.IsNaN(y) {
 		return y
 	}

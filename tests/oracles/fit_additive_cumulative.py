@@ -2,7 +2,7 @@ import sys
 from decimal import Decimal as D, getcontext
 sys.path.insert(0, ".")
 getcontext().prec = 80
-from gauss_reference import erf_series, erfc_cf
+from additive_reference import erf_series, erfc_cf
 from chebyshev import cheb_fit, horner
 
 def erfc_d(x): return (1 - erf_series(x)) if x < D("2.5") else erfc_cf(x)

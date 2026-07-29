@@ -91,8 +91,8 @@ signed_rank_edgeworth_cdf <- function(n, w) {
 
   # +0.5 continuity correction: computing P(W <= w) for a left-tail discrete CDF
   z <- (w - mu + 0.5) / sigma
-  phi <- gauss_pdf(z)
-  big_phi <- gauss_cdf(z)
+  phi <- additive_pdf(z)
+  big_phi <- additive_cumulative(z)
 
   nf <- as.double(n)
   kappa4 <- -nf * (nf + 1) * (2 * nf + 1) * (3 * nf * nf + 3 * nf - 1) / 240.0

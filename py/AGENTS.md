@@ -30,8 +30,8 @@ py/
 │   ├── signed_rank_margin.py      # Signed-rank margin computation
 │   ├── min_misrate.py             # Minimum achievable misrate calculation
 │   ├── _binomial.py               # Binomial coefficient shared by the two above (internal)
-│   ├── gauss_cdf.py               # Standard normal CDF (Chebyshev-fitted erf/erfc)
-│   ├── portable_exp.py            # Reproducible exp: range reduction plus fitted polynomial
+│   ├── additive_cumulative.py            # Standard normal CDF (Chebyshev-fitted erf/erfc)
+│   ├── exp_function.py            # Reproducible exp: range reduction plus fitted polynomial
 │   ├── rng.py                     # Deterministic xoshiro256++ PRNG
 │   ├── xoshiro256.py              # PRNG core implementation
 │   ├── center_impl.py             # O(n log n) Hodges-Lehmann algorithm
@@ -46,6 +46,7 @@ py/
 │   ├── test_binary64.py           # Covers the exactness predicates themselves
 │   ├── test_invariance.py         # Mathematical property tests
 │   ├── test_mutation.py           # Raw-API input-mutation safety
+│   ├── test_negative_zero.py      # No estimator reports a -0.0 (payload-level)
 │   ├── test_pairwise_margin_consistency.py  # Binomial regressions behind the pairwise margin
 │   ├── test_performance.py        # Performance smoke test
 │   ├── test_reference.py          # JSON fixture validation (includes sample-construction, unit-propagation)
@@ -117,6 +118,16 @@ take original-order values plus optional pre-sorted views (`sorted_view` /
 `sorted_x` / `sorted_y`) used only for the order-independent sub-computations;
 the `Sample` path passes `values` together with the cached `sorted_values`.
 
+## Signed Zeros
+
+No estimator reports a `-0.0`. A sample holding both `+0.0` and `-0.0` would
+otherwise make the result depend on which of the two the sort left in the
+selected position, which is a property of the sorting algorithm rather than of
+the data, and the seven ports each bring their own sort. The scalar `_*_raw`
+helpers return through `_normalize_zero`, and every `Bounds` is built by
+`_new_bounds`, which normalizes both endpoints. Only outputs are normalized: a
+sample may still contain `-0.0`, and infinities pass through untouched.
+
 ## Unit Propagation Rules
 
 | Estimator | Output Unit |
@@ -156,6 +167,9 @@ Weighted samples are rejected by all estimators.
   doubles are identical". It compares the raw binary64 payloads, never `==` (which
   passes `-0.0` against `+0.0` and fails a pair of identical NaNs), and every
   failure prints both payloads in hex next to the decimal values.
+- **Signed zeros**: `tests/test_negative_zero.py` pins the no-`-0.0` output
+  invariant by payload, since `-0.0 == 0.0` makes an equality assertion pass on
+  exactly the results it exists to reject.
 - **Tolerance**: `1e-9`, for the genuinely approximate suites only (ratio,
   ratio-bounds, compare2, the transcendental distributions, invariance)
 

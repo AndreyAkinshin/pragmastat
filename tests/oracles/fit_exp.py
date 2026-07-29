@@ -70,7 +70,7 @@ def fmt(p):
 
 
 # ln2 split so that k * LN2_HI is exact for every k the reduction can produce. LN2_HI keeps
-# the leading 33 bits and k needs at most 11, so the product fits the 53 available.
+# the leading 32 bits and k needs at most 11, so the product fits the 53 available.
 LN2_HI = float.fromhex("0x1.62e42fee00000p-1")
 LN2_LO = float(LN2 - D(LN2_HI))
 

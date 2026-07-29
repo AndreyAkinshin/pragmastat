@@ -1674,7 +1674,7 @@ class ReferenceTest {
 
     /**
      * The shape of a single-value suite: one function name, one vector of arguments,
-     * one vector of results. Named for the shape rather than for `portable-exp`,
+     * one vector of results. Named for the shape rather than for `exp-function`,
      * which is the only such suite this port loads today.
      */
     data class SingleDoubleValueInput(
@@ -1689,7 +1689,7 @@ class ReferenceTest {
     )
 
     /**
-     * [portableExp] against the shared fixture, argument by argument, bit for bit.
+     * [expFunction] against the shared fixture, argument by argument, bit for bit.
      *
      * The seven ports carry their own exponential because IEEE 754 fixes nothing
      * about one and a margin selects an order statistic, so a last-bit difference is
@@ -1709,11 +1709,11 @@ class ReferenceTest {
      *   asserted.
      * - The expected results run down to the smallest denormal (`1e-323`, `5e-324`).
      *   Comparing those by payload is also what proves Jackson round-trips them: a
-     *   parser that mangles a subnormal cannot agree with [portableExp] bit for bit.
+     *   parser that mangles a subnormal cannot agree with [expFunction] bit for bit.
      */
     @TestFactory
-    fun testPortableExp(): List<DynamicTest> {
-        val testDir = File("../tests/portable-exp")
+    fun testExpFunction(): List<DynamicTest> {
+        val testDir = File("../tests/exp-function")
         val loaded =
             testDir
                 .listFiles { _, name -> name.endsWith(".json") }
@@ -1733,20 +1733,20 @@ class ReferenceTest {
         // argument count rides in the test name so a report states the coverage.
         val expectedFiles = listOf("boundaries", "edgeworth-band", "finite-range", "working-band")
         tests.add(
-            DynamicTest.dynamicTest("portable-exp/coverage: $total arguments over ${loaded.size} files") {
+            DynamicTest.dynamicTest("exp-function/coverage: $total arguments over ${loaded.size} files") {
                 val found = loaded.map { (name, _) -> name }
                 assertTrue(
                     found.containsAll(expectedFiles),
-                    "Expected portable-exp fixtures $expectedFiles but found $found",
+                    "Expected exp-function fixtures $expectedFiles but found $found",
                 )
-                assertTrue(total > 0, "portable-exp fixtures carry no arguments")
+                assertTrue(total > 0, "exp-function fixtures carry no arguments")
             },
         )
 
         for ((name, data) in loaded) {
             tests.add(
-                DynamicTest.dynamicTest("portable-exp/$name (${data.input.arg.size} arguments)") {
-                    assertEquals("portable_exp", data.input.name, "$name: unexpected function name")
+                DynamicTest.dynamicTest("exp-function/$name (${data.input.arg.size} arguments)") {
+                    assertEquals("exp_function", data.input.name, "$name: unexpected function name")
                     assertEquals(
                         data.input.arg.size,
                         data.output.size,
@@ -1755,7 +1755,7 @@ class ReferenceTest {
                     // The argument, not the index, goes in the label: a one-ulp report on
                     // a 401-point grid is only actionable if it names the point.
                     for (i in data.input.arg.indices) {
-                        assertBitwise(data.output[i], portableExp(data.input.arg[i]), "portableExp(${data.input.arg[i]})")
+                        assertBitwise(data.output[i], expFunction(data.input.arg[i]), "expFunction(${data.input.arg[i]})")
                     }
                 },
             )

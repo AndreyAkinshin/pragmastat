@@ -1,6 +1,6 @@
 """A reference for the normal distribution function, good to more digits than binary64 has.
 
-Used to fit the coefficients in gauss_cdf and to check what they deliver. It depends on nothing
+Used to fit the coefficients in additive_cumulative and to check what they deliver. It depends on nothing
 beyond the standard library on purpose: an oracle with a dependency is an oracle that stops
 running, and this repository has already had one of those.
 

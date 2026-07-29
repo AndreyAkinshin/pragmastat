@@ -28,8 +28,8 @@ kt/
 │   ├── SignMargin.kt            # Sign margin for binomial CDF inversion
 │   ├── SignedRankMargin.kt      # Signed-rank margin computation
 │   ├── MinMisrate.kt            # Minimum achievable misrate calculation
-│   ├── GaussCdf.kt              # Standard normal CDF (Chebyshev-fitted erf/erfc)
-│   ├── PortableExp.kt           # Reproducible exp: range reduction plus fitted polynomial
+│   ├── AdditiveCumulative.kt           # Standard normal CDF (Chebyshev-fitted erf/erfc)
+│   ├── ExpFunction.kt           # Reproducible exp: range reduction plus fitted polynomial
 │   ├── Rng.kt                   # Deterministic xoshiro256++ PRNG
 │   ├── Xoshiro256.kt            # PRNG core implementation
 │   ├── CenterImpl.kt            # O(n log n) Hodges-Lehmann algorithm
@@ -52,6 +52,7 @@ kt/
 │   ├── AssumeSortedTest.kt                # Raw-API assumeSorted=true branch coverage
 │   ├── MutationTest.kt                    # Estimators must not mutate caller lists
 │   ├── CenterMidpointSymmetryTest.kt      # n==2 midpoint exact order symmetry
+│   ├── NegativeZeroTest.kt                # No estimator reports a negative zero
 │   ├── BoundsUnitTest.kt                  # Bounds unit propagation (Sample vs raw)
 │   ├── ProbabilityTest.kt                 # Probability [0, 1] range validation
 │   ├── RawMisrateDomainTest.kt            # Raw-API misrate domain errors
@@ -119,7 +120,8 @@ class Multiplic(location: Double, scale: Double) : Distribution
   binary64 payloads (`toRawBits`), never `==` (which passes `-0.0` against `+0.0`
   and fails a pair of identical NaNs) and never boxed `equals` (which collapses
   every NaN payload into one), and every failure prints both payloads in hex next
-  to the decimal values.
+  to the decimal values. It also holds the negated form, "this value is not a
+  negative zero", for the positions where only the sign of a zero is being pinned.
 - **Tolerance**: `1e-9`, for the genuinely approximate suites only (ratio,
   ratio-bounds, compare2, the transcendental distributions, invariance)
 
