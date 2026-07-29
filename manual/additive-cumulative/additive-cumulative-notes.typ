@@ -27,8 +27,11 @@ That approximation is short and requires no library calls, which is why it was c
 
 Its accuracy was assessed twice in print soon after publication (@pike1964, @hill1967), the second
   time alongside six other algorithms for the same function.
-Measured here against a reference accurate to 36 digits, its worst relative error reaches
-  $4.5 dot 10^(-7)$ near the center, where the margins spend most of their evaluations.
+Measured here against a reference accurate to 36 digits, its relative error grows with distance
+  from the center: $6 dot 10^(-10)$ within one spread, $4.5 dot 10^(-7)$ at three, $4.7 dot
+  10^(-4)$ at five, and exactly $1$ past six, where it returns zero.
+The margins spend most of their evaluations near the center, but the answer is decided in the
+  tail, which is where the approximation is weakest.
 That gap reaches the returned value rather than remaining beneath it.
 Recomputing the margins over the Edgeworth region with an accurate distribution function changes
   13 of 2961 of them, so on roughly $0.4%$ of those inputs all seven implementations agreed on an

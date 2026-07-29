@@ -80,9 +80,11 @@ The TypeScript runtime replaced its exponential outright during the preparation 
 *Accuracy relative to the alternatives*
 
 Writing a function does not make it better than the ones written by specialists.
-Each row below reports the worst relative error over the band these estimators reach, measured
-  against a sixty-digit reference, together with the share of arguments where the result is the
-  correctly rounded double.
+Each row below reports the worst relative error over $-40 <= y <= 0$, the band these estimators
+  reach, measured against a sixty-digit reference on a uniform grid of 200001 arguments, together
+  with the share of those arguments where the result is the correctly rounded double.
+Every row was measured in one run on one machine, so the rows are comparable to each other; the
+  absolute figures depend on the grid.
 
 #table(
   columns: 3,
@@ -92,15 +94,17 @@ Each row below reports the worst relative error over the band these estimators r
   [*Implementation*], [*Worst relative error*], [*Correctly rounded*],
   table.hline(),
   [Table-based system library], [$1.11 dot 10^(-16)$], [$99.9%$],
-  [Table-based vendor library], [$1.11 dot 10^(-16)$], [$99.7%$],
-  [$ExpFunction$], [$1.30 dot 10^(-16)$], [$90.0%$],
-  [1993 reference code], [$1.30 dot 10^(-16)$], [$90.0%$],
-  [One language runtime], [$2.55 dot 10^(-16)$], [$86.4%$],
+  [$ExpFunction$], [$1.27 dot 10^(-16)$], [$90.2%$],
+  [1993 reference code], [$1.30 dot 10^(-16)$], [$90.2%$],
+  [One language runtime], [$2.42 dot 10^(-16)$], [$86.5%$],
   table.hline(),
 )
 
-The function places third of five, matching the long-standing reference implementation that two of
-  the runtimes descend from and exceeding one of the runtimes it replaces.
+The function places second of four: behind the table-based library the system provides, a little
+  ahead of the long-standing reference implementation that two of the runtimes descend from, and
+  well ahead of one of the runtimes it replaces.
+The table-based library reaches its accuracy with a lookup table this deliberately does not have,
+  since a table is one more thing seven implementations would have to agree on bit for bit.
 
 Two qualifications bound what those figures mean.
 The tabulated errors are maxima over a uniform grid; searching the same range adversarially raises

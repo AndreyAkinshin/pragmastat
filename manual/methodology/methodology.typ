@@ -496,8 +496,9 @@ The $Additive$ ('Normal') distribution function inside the Edgeworth branches of
   used to be ACM
   Algorithm 209, a polynomial evaluated identically by all seven.
 It was chosen for being identical, not for being close, and it was not close: measured against a
-  reference good to thirty-six digits, its worst relative error is $4.5 dot 10^(-7)$ near the
-  center, and past $abs(z) = 6$ it returns exactly zero, a relative error of $1$.
+  reference good to thirty-six digits, its relative error grows with distance from the center,
+  from $6 dot 10^(-10)$ within one spread to $4.5 dot 10^(-7)$ at three and $4.7 dot 10^(-4)$ at
+  five, and past $abs(z) = 6$ it returns exactly zero, a relative error of $1$.
 That gap reached the answer rather than staying under it.
 Recomputing the margins over the Edgeworth region with an accurate distribution function changes
   13 of 2961 of them, so on about $0.4%$ of those inputs all seven agreed on an integer that was
@@ -546,7 +547,7 @@ What that costs in accuracy is worth stating plainly, because owning a function 
   better than the ones written by people who do it for a living.
 Measured against a sixty-digit reference over the range these estimators reach, it has a worst
   relative error of $1.3 dot 10^(-16)$ and returns the correctly rounded result on 90% of inputs.
-The best platform libraries are better, at $1.1 dot 10^(-16)$ and 99.9%.
+The table-based library the system provides is better, at $1.1 dot 10^(-16)$ and 99.9%.
 No implementation measured here, the toolkit's included, is ever more than one unit in the last
   place from the correctly rounded value, so the whole spread is one bit wide.
 Being within a bit of every library and identical to itself everywhere is the trade, and it is the

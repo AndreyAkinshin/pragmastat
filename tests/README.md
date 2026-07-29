@@ -64,7 +64,8 @@ tests/
 └── distributions/       # Distribution sampling tests
 ```
 
-`exp-function/` is the only suite that tests a function no public API exposes. It is there because
+`exp-function/` is the only suite whose function is internal in all seven ports. The margin
+suites test functions that are public in some of them and internal in others. It is there because
 the margins reach an exponential, IEEE 754 fixes nothing about one, and a last-bit difference
 there selects a different order statistic — so the seven implementations evaluate their own rather
 than the platform's. Every other suite reaches that function only through a margin, which covers

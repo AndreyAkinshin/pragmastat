@@ -62,9 +62,10 @@ Reconstructing the sum from the two halves preserves them: $"hi"$ is exact, and 
   term $r^2 Q(r)$ is exposed to the rounded $r$.
 
 This single line accounts for most of the accuracy the function achieves.
-Measured against a sixty-digit reference, it reduces the worst relative error from
-  $2.19 dot 10^(-16)$ to $1.30 dot 10^(-16)$ and raises the share of correctly rounded results from
-  $72.6%$ to $90.0%$, at no cost: the same operations in a different order.
+Measured against a sixty-digit reference over the same band as the table in the notes, it reduces
+  the worst relative error from $2.18 dot 10^(-16)$ to $1.27 dot 10^(-16)$ and raises the share of
+  correctly rounded results from $73.6%$ to $90.2%$, at no cost: the same operations in a different
+  order.
 
 *The scaling proceeds in two steps*
 

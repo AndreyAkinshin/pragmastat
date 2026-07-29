@@ -18,7 +18,10 @@ All seven implementations compare the results by binary64 payload rather than by
 
 *Finite range* — 401 points over $[-745, 709]$:
 
-- Spans the largest finite result down through the subnormal range to the smallest denormal.
+- Reaches from $8.2 dot 10^307$ down through the subnormal range to the smallest denormal, so 11
+  of the 401 results are subnormal and the last one is the smallest positive double there is.
+  The grid stops short of the overflow cutoff on purpose: the largest finite result, $1.79 dot
+  10^308$ at $y = 709.78$, is in the boundaries file, where the values that decide behavior belong.
 
 *Boundaries* — 29 points at the values where the construction changes behavior:
 
@@ -27,9 +30,8 @@ All seven implementations compare the results by binary64 payload rather than by
 - The first denormals, and both signed zeros
 
 Arguments above $709.78$ are absent because their result is infinite and JSON provides no way to
-  express one.
-Each implementation keeps its own unit test for the overflow cutoff, where a language can name its
-  infinity.
+  express one, and neither NaN nor the two infinities can appear as arguments for the same reason.
+Each implementation keeps its own unit test for those, where a language can name its own infinity.
 
 *Why this suite exists separately*
 
@@ -54,8 +56,15 @@ Both compare it against a construction that cannot be wrong, across every expone
 *Monotonicity*.
 Both margins binary-search an expansion under the assumption that it is monotone in the index,
   which rests on this function being monotone.
-A single inversion would allow the search to return either neighbor.
-No inversion has been found.
+A single inversion would allow the search to return either neighbor, and the two neighbors are
+  different confidence bounds.
+The sweep walks adjacent representable arguments rather than a grid, since an inversion between
+  two neighbors is exactly what the search can hit and a grid steps over it; 180000 of them across
+  nine bands produce none.
+One port runs it: all seven return identical bits on every argument, which this suite is what
+  pins, so a property measured in one holds in all.
+The distribution function above does not have this property to the same strength, and the
+  expansion the pairwise search bisects inverts by up to one unit in the last place.
 
 *That the fixture is actually compared*.
 A fixture loader that finds no files reports success.

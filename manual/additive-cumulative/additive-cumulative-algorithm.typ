@@ -47,10 +47,19 @@ The truncated quantity there is $"erfc"(4.3) \/ 2 approx 6 dot 10^(-10)$, so the
   merely imprecise beyond that point: it is wrong by a relative error of $1$, as any approximation
   that stops is.
 
-The cutoff is placed where no estimator reaches rather than where the truncated value becomes
-  negligible, and the accuracy claim below is scoped to $abs(z) <= 6$ for the same reason.
-Both margins evaluate this function on a standardized statistic whose magnitude stays far inside
-  that range for every sample size the Edgeworth branches serve.
+The cutoff is reachable, and the accuracy claim below is scoped to $abs(z) <= 6$ for that reason.
+Both margins search their whole support on every call, so both evaluate this function past the
+  cutoff routinely; what matters is whether the returned index lands there.
+It does once the requested misrate falls far enough into the tail that every candidate the search
+  compares is answered with the same $0$, at which point the returned margin stops changing.
+How far is a function of the sample size, since the reachable range of the statistic grows with it:
+  just past the exact branches, at $n = 201$ and $m = 200$, the margin stops moving below about
+  $10^(-10)$, while at $n = m = 500$ it is still moving at $10^(-158)$.
+The approximation this replaced saturated one decade earlier on the first of those, at about
+  $10^(-9)$, so replacing it moved the boundary without removing it.
+Below that point the delivered misrate is the one the plateau implies rather than the one asked
+  for, and nothing says so: the exact branches reject a misrate under their own floor, and the
+  Edgeworth branches have no equivalent.
 
 *Origin of the coefficients*
 
