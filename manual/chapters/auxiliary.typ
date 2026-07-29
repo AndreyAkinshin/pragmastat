@@ -18,3 +18,9 @@
 
 #pagebreak()
 #include "../signed-rank-margin/signed-rank-margin.typ"
+
+#pagebreak()
+#include "../additive-cumulative/additive-cumulative.typ"
+
+#pagebreak()
+#include "../exp-function/exp-function.typ"

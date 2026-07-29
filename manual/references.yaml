@@ -284,3 +284,155 @@ boxmuller1958:
   page-range: 610-611
   doi: 10.1214/aoms/1177706645
   url: https://projecteuclid.org/euclid.aoms/1177706645
+
+ibbetson1963:
+  type: article
+  title: "Algorithm 209: Gauss"
+  author:
+    - name: Ibbetson
+      given-name: D.
+  date: 1963-10
+  parent:
+    - type: periodical
+      title: Communications of the ACM
+      volume: 6
+      issue: 10
+  page-range: 616
+  doi: 10.1145/367651.367664
+  url: https://doi.org/10.1145/367651.367664
+
+pike1964:
+  type: article
+  title: "Certification of Algorithm 209: Gauss"
+  author:
+    - name: Pike
+      given-name: M. C.
+  date: 1964-08
+  parent:
+    - type: periodical
+      title: Communications of the ACM
+      volume: 7
+      issue: 8
+  page-range: 482
+  doi: 10.1145/355586.364808
+  url: https://doi.org/10.1145/355586.364808
+
+hill1967:
+  type: article
+  title: "Remarks on Algorithm 209: Gauss"
+  author:
+    - name: Hill
+      given-name: I. D.
+    - name: Joyce
+      given-name: S. A.
+  date: 1967-06
+  parent:
+    - type: periodical
+      title: Communications of the ACM
+      volume: 10
+      issue: 6
+  page-range: 377
+  doi: 10.1145/363332.365435
+  url: https://doi.org/10.1145/363332.365435
+
+cody1969:
+  type: article
+  title: Rational Chebyshev Approximations for the Error Function
+  author:
+    - name: Cody
+      given-name: W. J.
+  date: 1969
+  parent:
+    - type: periodical
+      title: Mathematics of Computation
+      volume: 23
+      issue: 107
+  page-range: 631-637
+  doi: 10.1090/S0025-5718-1969-0247736-4
+  url: https://doi.org/10.1090/S0025-5718-1969-0247736-4
+
+codywaite1980:
+  type: book
+  title: "Software Manual for the Elementary Functions"
+  author:
+    - name: Cody
+      given-name: William J.
+      suffix: Jr.
+    - name: Waite
+      given-name: William
+  date: 1980
+  publisher: Prentice-Hall
+  location: Englewood Cliffs, New Jersey
+  isbn: 9780138220648
+
+ziv1991:
+  type: article
+  title: "Fast evaluation of elementary mathematical functions with correctly rounded last bit"
+  author:
+    - name: Ziv
+      given-name: Abraham
+  date: 1991
+  parent:
+    - type: periodical
+      title: ACM Transactions on Mathematical Software
+      volume: 17
+      issue: 3
+  page-range: 410-423
+  doi: 10.1145/114697.116813
+  url: https://doi.org/10.1145/114697.116813
+
+ng1993:
+  type: repository
+  title: "FDLIBM: Freely Distributable Math Library"
+  author:
+    - name: Ng
+      given-name: K. C.
+  date: 1993
+  organization: Sun Microsystems
+  serial-number: Version 5.3
+  url: https://www.netlib.org/fdlibm/
+
+muller2016:
+  type: book
+  title: "Elementary Functions: Algorithms and Implementation"
+  author:
+    - name: Muller
+      given-name: Jean-Michel
+  date: 2016
+  edition: 3
+  publisher: Birkhäuser Boston
+  isbn: 9781489979810
+  doi: 10.1007/978-1-4899-7983-4
+  url: https://doi.org/10.1007/978-1-4899-7983-4
+
+ieee2019:
+  type: report
+  title: "IEEE Standard for Floating-Point Arithmetic"
+  author:
+    - name: IEEE
+  date: 2019
+  organization: IEEE
+  serial-number: IEEE Std 754-2019
+  doi: 10.1109/IEEESTD.2019.8766229
+  url: https://doi.org/10.1109/IEEESTD.2019.8766229
+
+trefethen2019:
+  type: book
+  title: "Approximation Theory and Approximation Practice, Extended Edition"
+  author:
+    - name: Trefethen
+      given-name: Lloyd N.
+  date: 2019
+  publisher: Society for Industrial and Applied Mathematics
+  location: Philadelphia
+  isbn: 9781611975932
+  doi: 10.1137/1.9781611975949
+  url: https://doi.org/10.1137/1.9781611975949
+
+oracle2025:
+  type: web
+  title: "StrictMath (Java SE 25 & JDK 25 API Specification)"
+  author:
+    - name: Oracle
+  date: 2025
+  url: https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/StrictMath.html

@@ -492,11 +492,12 @@ The two were in tension in one place, and resolving it turned out to require ans
   question the classes above had never been asked.
 
 #v(0.3em)
-The normal distribution function inside the Edgeworth branches of both margins used to be ACM
+The $Additive$ ('Normal') distribution function inside the Edgeworth branches of both margins
+  used to be ACM
   Algorithm 209, a polynomial evaluated identically by all seven.
 It was chosen for being identical, not for being close, and it was not close: measured against a
   reference good to thirty-six digits, its worst relative error is $4.5 dot 10^(-7)$ near the
-  center, and past $abs(x) = 6$ it returns exactly zero, a relative error of $1$.
+  center, and past $abs(z) = 6$ it returns exactly zero, a relative error of $1$.
 That gap reached the answer rather than staying under it.
 Recomputing the margins over the Edgeworth region with an accurate distribution function changes
   13 of 2961 of them, so on about $0.4%$ of those inputs all seven agreed on an integer that was
@@ -505,7 +506,7 @@ Recomputing the margins over the Edgeworth region with an accurate distribution 
 #v(0.3em)
 It is now a pair of Chebyshev-fitted polynomial chains whose coefficients are produced from that
   reference rather than transcribed from a paper, with a worst relative error of
-  $9.1 dot 10^(-15)$ over $abs(x) <= 6$.
+  $9.1 dot 10^(-15)$ over $abs(z) <= 6$.
 The 13 margins it changes are byte-identical to what an independent implementation of the
   complementary error function produces, which is the confirmation that matters: two
   implementations sharing no coefficients agree on exactly the same set.
@@ -517,8 +518,8 @@ IEEE 754 fixes the result of every arithmetic operation and of the square root, 
 Two implementations returning neighboring values is normally harmless, but here the value is
   compared against a misrate and the comparison selects an order statistic, so a last-bit
   difference becomes a different confidence interval from identical inputs.
-It did: on one Edgeworth crossover the margin came out 2830 under two implementations of the
-  exponential and 2832 under the other four.
+It did: on one Edgeworth crossover the margin came out 2830 under two of the seven ports and
+  2832 under the remaining five, split by which exponential each language runtime calls.
 
 #v(0.3em)
 The instrument had reported none of this, because it had been sweeping the wrong boundary.
@@ -544,7 +545,7 @@ With it the sweep reports zero movement on every estimator declared exact, inclu
 What that costs in accuracy is worth stating plainly, because owning a function does not make it
   better than the ones written by people who do it for a living.
 Measured against a sixty-digit reference over the range these estimators reach, it has a worst
-  relative error of $1.2 dot 10^(-16)$ and returns the correctly rounded result on 90% of inputs.
+  relative error of $1.3 dot 10^(-16)$ and returns the correctly rounded result on 90% of inputs.
 The best platform libraries are better, at $1.1 dot 10^(-16)$ and 99.9%.
 No implementation measured here, the toolkit's included, is ever more than one unit in the last
   place from the correctly rounded value, so the whole spread is one bit wide.
