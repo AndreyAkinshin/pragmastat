@@ -135,6 +135,13 @@ class ReferenceTest {
     private val mapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
     private val epsilon = 1e-9
 
+    private companion object {
+        // The size of the generated exp-function fixture: 1032 arguments over four files. Pinned
+        // rather than counted from the directory, because counting the directory and asserting
+        // the count matches it asserts nothing.
+        const val EXP_FUNCTION_ARGUMENT_COUNT = 1032
+    }
+
     /**
      * Create the y-argument sample for the Sample-based two-sample path.
      *
@@ -1739,7 +1746,15 @@ class ReferenceTest {
                     found.containsAll(expectedFiles),
                     "Expected exp-function fixtures $expectedFiles but found $found",
                 )
-                assertTrue(total > 0, "exp-function fixtures carry no arguments")
+                // The argument count is pinned, not merely required to be positive. A file that
+                // keeps its name and loses its contents satisfies both assertions above, and the
+                // other six ports pin this number, so a truncated fixture would show up as this
+                // port alone still passing.
+                assertEquals(
+                    EXP_FUNCTION_ARGUMENT_COUNT,
+                    total,
+                    "exp-function: loaded $total arguments, expected $EXP_FUNCTION_ARGUMENT_COUNT",
+                )
             },
         )
 

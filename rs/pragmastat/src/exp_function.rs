@@ -100,8 +100,8 @@ pub(crate) fn exp_function(y: f64) -> f64 {
     // falls off the end. Reconstructing the same sum from the two halves of the reduction keeps
     // them, and costs nothing, being the same operations in a different order. Measured against a
     // 60-digit reference over the band these estimators reach, it halves the worst relative error,
-    // from 2.19e-16 to 1.20e-16, and raises the share of correctly rounded results from 72.6% to
-    // 90.0%. That is where fdlibm sits, which reaches it with a division this does not need.
+    // from 2.19e-16 to 1.28e-16, and raises the share of correctly rounded results from 72.6% to
+    // 90.3%. That is where fdlibm sits, which reaches it with a division this does not need.
     let p = 1.0 - ((lo - r * r * q) - hi);
 
     // Two scalings rather than one. Splitting k in half keeps the first factor inside the
@@ -164,6 +164,34 @@ mod tests {
             worst_ulp <= 2.0,
             "worst disagreement with the platform exp: {worst_ulp} ulp at y = {worst_at}"
         );
+    }
+
+    /// Both margins binary-search an expansion whose density term is this function, under the
+    /// assumption that the expansion is monotone in the index. A single inversion here would let
+    /// the search return either neighbor, and the two neighbors are different confidence bounds.
+    ///
+    /// The sweep walks adjacent doubles rather than a grid: an inversion between two representable
+    /// arguments is what the search can hit, and a grid steps straight over it. One port suffices
+    /// because all seven return identical bits on every argument, which the shared fixture pins.
+    #[test]
+    fn monotone_across_adjacent_doubles() {
+        for start in [-745.0, -100.0, -1.0, -0.3, 0.0, 0.3, 1.0, 100.0, 709.0] {
+            let mut y = start;
+            let mut previous = exp_function(y);
+            for _ in 0..20_000 {
+                y = f64::from_bits(if y >= 0.0 {
+                    y.to_bits() + 1
+                } else {
+                    y.to_bits() - 1
+                });
+                let current = exp_function(y);
+                assert!(
+                    current >= previous,
+                    "exp_function inverted at y = {y}: {current} < {previous}"
+                );
+                previous = current;
+            }
+        }
     }
 
     #[test]

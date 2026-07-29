@@ -89,6 +89,16 @@ test_that("exp_function tracks the platform exponential to about 2 ulp", {
   expect_lt(max(abs(actual - expected) / expected), 2^-51)
 })
 
+test_that("additive_cumulative carries NaN through and answers both infinities", {
+  # Both of the function's range comparisons yield NA for a NaN, so without an explicit guard the
+  # branch errors instead of returning. The approximation this replaced propagated NaN.
+  expect_identical(additive_cumulative(NaN), NaN)
+  expect_identical(additive_cumulative(NA_real_), NA_real_)
+  expect_identical(additive_cumulative(Inf), 1)
+  expect_identical(additive_cumulative(-Inf), 0)
+  expect_identical(additive_cumulative(0), 0.5)
+})
+
 test_that("exp_function returns the declared values outside the reduction band", {
   expect_identical(exp_function(NaN), NaN)
   expect_identical(exp_function(NA_real_), NA_real_)

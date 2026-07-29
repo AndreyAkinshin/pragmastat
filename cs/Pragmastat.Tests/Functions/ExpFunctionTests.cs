@@ -75,4 +75,35 @@ public class ExpFunctionTests
     Assert.Equal(FixtureFileCount, testNames.Length);
     Assert.Equal(FixtureArgumentCount, testNames.Sum(name => controller.LoadTestCase(name).Input.Arg.Length));
   }
+
+  /// <summary>
+  /// Both of AdditiveCumulative's range comparisons are false for a NaN, so without an explicit guard it
+  /// leaves the tail branch as a finite 0 or 1: an undefined input answered rather than reported.
+  /// The approximation it replaced propagated NaN, so losing that would be a regression.
+  /// </summary>
+  [Fact]
+  public void AdditiveCumulativeCarriesNaNThroughAndAnswersBothInfinities()
+  {
+    Assert.True(double.IsNaN(AdditiveCumulative.Value(double.NaN)));
+    BitwiseAssert.Equal(1.0, AdditiveCumulative.Value(double.PositiveInfinity), "AdditiveCumulative(+Inf)");
+    BitwiseAssert.Equal(0.0, AdditiveCumulative.Value(double.NegativeInfinity), "AdditiveCumulative(-Inf)");
+    BitwiseAssert.Equal(0.5, AdditiveCumulative.Value(0.0), "AdditiveCumulative(+0)");
+    BitwiseAssert.Equal(0.5, AdditiveCumulative.Value(-0.0), "AdditiveCumulative(-0)");
+  }
+
+  /// <summary>
+  /// The values outside the reduction band, which the shared fixture cannot carry: JSON has no way
+  /// to express an infinity, so the generated suite stops at 709.78 and these arguments are
+  /// covered here or nowhere.
+  /// </summary>
+  [Fact]
+  public void ReturnsTheDeclaredValuesOutsideTheReductionBand()
+  {
+    Assert.True(double.IsNaN(ExpFunction.Value(double.NaN)));
+    BitwiseAssert.Equal(double.PositiveInfinity, ExpFunction.Value(709.8), "ExpFunction(709.8)");
+    BitwiseAssert.Equal(double.PositiveInfinity, ExpFunction.Value(double.PositiveInfinity), "ExpFunction(+Inf)");
+    BitwiseAssert.Equal(0.0, ExpFunction.Value(-745.3), "ExpFunction(-745.3)");
+    BitwiseAssert.Equal(0.0, ExpFunction.Value(double.NegativeInfinity), "ExpFunction(-Inf)");
+    BitwiseAssert.Equal(1.0, ExpFunction.Value(0.0), "ExpFunction(0)");
+  }
 }

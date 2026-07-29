@@ -1,4 +1,5 @@
 import { pow2, expFunction } from '../src/expFunction';
+import { additiveCumulative } from '../src/additiveCumulative';
 import { expectBitwise } from './bitwise';
 
 // The exponential is the one library call on the margin path that IEEE 754 leaves free, so
@@ -68,5 +69,18 @@ describe('expFunction', () => {
     expect(expFunction(Infinity)).toBe(Infinity);
     expectBitwise('expFunction(-Infinity)', expFunction(-Infinity), 0);
     expect(Number.isNaN(expFunction(NaN))).toBe(true);
+  });
+});
+
+describe('additiveCumulative', () => {
+  // Both of the function's range comparisons are false for a NaN, so without an explicit guard
+  // it leaves the tail branch as a finite 0 or 1: an undefined input answered rather than
+  // reported. The approximation this replaced propagated NaN, so losing it would be a regression.
+  it('carries NaN through and answers both infinities', () => {
+    expect(Number.isNaN(additiveCumulative(NaN))).toBe(true);
+    expectBitwise('additiveCumulative(Infinity)', additiveCumulative(Infinity), 1);
+    expectBitwise('additiveCumulative(-Infinity)', additiveCumulative(-Infinity), 0);
+    expectBitwise('additiveCumulative(0)', additiveCumulative(0), 0.5);
+    expectBitwise('additiveCumulative(-0)', additiveCumulative(-0), 0.5);
   });
 });

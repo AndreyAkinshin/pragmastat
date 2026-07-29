@@ -134,10 +134,23 @@ fn test_exp_function_reference() {
         }
     }
 
-    assert!(
-        checked > 0,
-        "No arguments were checked out of {} files",
+    // The size of the generated fixture: four files, 1032 arguments. Pinned rather than counted
+    // from the directory, because counting the directory and then asserting the count matches the
+    // directory asserts nothing. The other six ports pin the same two numbers; a loader that only
+    // asserts it did some work cannot see a file that stopped being read or an argument list that
+    // was truncated.
+    const FIXTURE_FILE_COUNT: usize = 4;
+    const FIXTURE_ARGUMENT_COUNT: usize = 1032;
+
+    assert_eq!(
+        json_files.len(),
+        FIXTURE_FILE_COUNT,
+        "exp-function: read {} files, expected {FIXTURE_FILE_COUNT}",
         json_files.len()
+    );
+    assert_eq!(
+        checked, FIXTURE_ARGUMENT_COUNT,
+        "exp-function: compared {checked} arguments, expected {FIXTURE_ARGUMENT_COUNT}"
     );
 
     assert!(
