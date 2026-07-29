@@ -59,8 +59,29 @@ def erfc_ref(xf: float) -> D:
         return 1 - erf_series(x)
     return erfc_cf(x)
 
-if __name__ == "__main__":
-    # cross-check the two regimes on their overlap
+# The two regimes are used on either side of x = 2.5, and both converge on the overlap around it.
+# The continued fraction converges faster the larger x is, so the agreement is worst at the low end
+# of the overlap: 3e-47 at x = 2.0 against 2.8e-58 at the switch itself. The threshold is set below
+# the worst of those with room to spare. It was 1e-60 once, which nothing on the overlap reaches,
+# and the check printed a line saying so on every run without failing.
+AGREEMENT_THRESHOLD = D(10) ** -45
+
+def check_regimes_agree() -> bool:
+    """Cross-check the two regimes on their overlap. Returns True when they agree."""
+    ok = True
     for t in ("2.0", "2.2", "2.4", "2.49"):
-        a = 1 - erf_series(D(t)); b = erfc_cf(D(t))
-        print(f"x={t}: series={str(a)[:24]} cf={str(b)[:24]} agree={abs(a-b)/a < D(10)**-60}")
+        a = 1 - erf_series(D(t))
+        b = erfc_cf(D(t))
+        rel = abs(a - b) / a
+        agree = rel < AGREEMENT_THRESHOLD
+        ok = ok and agree
+        print(f"x={t}: series={str(a)[:24]} cf={str(b)[:24]} relative={rel:.3e} agree={agree}")
+    return ok
+
+if __name__ == "__main__":
+    import sys
+
+    if not check_regimes_agree():
+        print("ERROR: the two regimes disagree on their overlap", file=sys.stderr)
+        sys.exit(1)
+    print("the two regimes agree on their overlap")

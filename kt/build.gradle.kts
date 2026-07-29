@@ -30,6 +30,21 @@ testing {
     }
 }
 
+// The reference fixtures live outside this project, in the repository-wide tests/ directory, and
+// the suites read them at runtime. Gradle keys its up-to-date check on declared inputs, so
+// without this an edited fixture leaves the previous PASSED result in place and `gradlew test`
+// reports success in under a second without running anything. Verified by truncating a fixture:
+// the run stayed green until these lines existed.
+//
+// This is the same defect the Go port had, where the answer was -count=1. Declaring the input is
+// the better shape here: the cache keeps working and starts telling the truth.
+tasks.withType<Test>().configureEach {
+    inputs
+        .dir(rootProject.layout.projectDirectory.dir("../tests"))
+        .withPropertyName("referenceFixtures")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
+}
+
 kotlin {
     jvmToolchain(11)
     sourceSets {

@@ -8,6 +8,11 @@ Both outputs come from one source and quietly disagree.
 That happened with MedianBounds, which rendered upright in the PDF and as eleven italic letters
 on the page, beside a CenterBounds that was upright in both. Nothing failed, because the LaTeX
 was valid.
+
+There are two routes to that state and the check covers both. One is defining the operator inside
+a chapter, where the converter never looks. The other is defining it in definitions.typ and not in
+definitions.yaml: the PDF reads the first file and the website reads the second, so an operator
+present in one and missing from the other produces the same silent divergence.
 """
 
 import re
@@ -15,11 +20,19 @@ import sys
 from pathlib import Path
 
 LOCAL_OP = re.compile(r"^\s*#let\s+(\w+)\s*=\s*math\.(op|underline|upright|bold|bb)\b", re.M)
+SHARED_OP = re.compile(r"^#let\s+(\w+)\s*=\s*math\.(?:op|underline|upright|bold|bb)\b", re.M)
+YAML_ENTRY = re.compile(r"^([A-Za-z]\w*)\s*:", re.M)
+
+# Only one direction is a defect. An operator in definitions.typ with no macro in definitions.yaml
+# renders upright in the PDF and italic on the page, which is the divergence this file exists to
+# stop. The reverse, a macro with no operator, is a dead entry: Typst fails loudly the moment
+# anything uses the name, so nothing can ship in that state.
 
 
 def main(repo_root):
     root = Path(repo_root)
     shared = root / "manual" / "definitions.typ"
+    macros = root / "manual" / "definitions.yaml"
     failures = []
 
     for source in sorted(root.glob("manual/**/*.typ")):
@@ -27,6 +40,12 @@ def main(repo_root):
             continue
         for match in LOCAL_OP.finditer(source.read_text()):
             failures.append(f"  {source.relative_to(root)}: #let {match.group(1)} = math.{match.group(2)}(...)")
+
+    # The PDF renders from definitions.typ and the page from definitions.yaml.
+    typst_ops = set(SHARED_OP.findall(shared.read_text()))
+    yaml_ops = set(YAML_ENTRY.findall(macros.read_text()))
+    for name in sorted(typst_ops - yaml_ops):
+        failures.append(f"  manual/definitions.yaml: no macro for {name}, which definitions.typ defines")
 
     if failures:
         print("ERROR: math operators are defined outside manual/definitions.typ:", file=sys.stderr)

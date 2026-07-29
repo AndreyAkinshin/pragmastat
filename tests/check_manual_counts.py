@@ -30,10 +30,18 @@ def main(repo_root):
     checked = 0
 
     for chapter in sorted(root.glob("manual/*/*-tests.typ")):
+        suite = chapter.parent.name
         match = PATTERN.search(chapter.read_text())
         if not match:
+            # A chapter whose sentence stops matching drops out of this check silently, and the
+            # check then reports success over a smaller set than it did the run before. The
+            # directory decides: a chapter that describes a shared suite has to state its size.
+            if (root / "tests" / suite).is_dir() and any((root / "tests" / suite).glob("*.json")):
+                failures.append(
+                    f"  {chapter.relative_to(root)}: tests/{suite} holds fixtures, but this chapter"
+                    f" states no count in a form this check recognizes"
+                )
             continue
-        suite = chapter.parent.name
         directory = root / "tests" / suite
         if not directory.is_dir():
             failures.append(f"  {chapter.relative_to(root)}: states a count but tests/{suite} does not exist")

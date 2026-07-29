@@ -159,8 +159,19 @@ set -euo pipefail
 cache="$(mktemp -d)"
 trap 'rm -rf "$cache"' EXIT
 for arch in arm64 ppc64le s390x riscv64; do
-  fused="$(GOCACHE="$cache/$arch" GOARCH="$arch" go build -gcflags=-S ./... 2>&1 \\
-    | grep -E 'FMADD|FMSUB|FNMADD|FNMSUB' || true)"
+  # The assembly has to be captured separately from the grep. Piping the build straight into
+  # grep hides its exit status, so a cross-compile that fails prints no assembly, matches no
+  # pattern, and reports success: the guard turns into a no-op exactly when it stops working.
+  if ! asm="$(GOCACHE="$cache/$arch" GOARCH="$arch" go build -gcflags=-S ./... 2>&1)"; then
+    echo "ERROR: cross-compile for $arch failed, so nothing was inspected:" >&2
+    echo "$asm" >&2
+    exit 1
+  fi
+  if [ -z "$asm" ]; then
+    echo "ERROR: cross-compile for $arch produced no assembly to inspect." >&2
+    exit 1
+  fi
+  fused="$(printf '%s' "$asm" | grep -E 'FMADD|FMSUB|FNMADD|FNMSUB' || true)"
   if [ -n "$fused" ]; then
     echo "ERROR: FMA contraction on $arch:" >&2
     echo "$fused" >&2
@@ -617,6 +628,15 @@ qemu-aarch64-static "$binary" -test.count=1
 echo "the Go suite agrees with the fixtures on arm64"
 """
 
+[tasks."tests:check:coefficients"]
+description = "Assert the shipped coefficients still match the scripts that produce them"
+# The manual calls the coefficients "reproducible rather than transcribed" and names the two fit
+# scripts as their source, but nothing ran either script: they printed and exited, and the
+# constants sit as literals in seven files. This runs both, compares every coefficient as a
+# payload against all seven ports, and runs the reference oracle's own self-check, which had been
+# given a failing exit status that nothing invoked.
+run = "python3 tests/check_coefficients.py ."
+
 [tasks."tests:check:spelling"]
 description = "Assert prose across the repository uses one spelling convention"
 # Every port and the manual are written in American English, and main held 169 American forms
@@ -647,14 +667,25 @@ trap 'rm -rf "$scratch"' EXIT
 PRAGMASTAT_TESTS_ROOT="$scratch" dotnet run --project \\
   cs/Pragmastat.TestGenerator/Pragmastat.TestGenerator.csproj >/dev/null
 status=0
-# The suites this generator owns, and only those: tests/ also holds Rust-generated and
-# hand-maintained suites it must not be blamed for.
-owned="center center-bounds spread spread-bounds shift shift-bounds ratio ratio-bounds \\
-       disparity disparity-bounds avg-spread avg-spread-bounds compare1 compare2 \\
-       pairwise-margin signed-rank-margin"
-for suite in $owned; do
-  diff -r -q "tests/$suite" "$scratch/tests/$suite" || status=1
+# Compare against what the regeneration actually produced, rather than against a list of suite
+# names kept anywhere. Two earlier versions kept a list: the first restated it in this file and
+# went stale when the generator gained tests/exp-function, which was then deleted and rewritten on
+# every run while this check compared sixteen other directories and passed; the second scraped the
+# list out of Program.cs, which is a text match that can come back short without coming back empty,
+# and a short list is the same silent gap wearing a different hat.
+#
+# The scratch tree is the generator's own statement of what it owns. Iterating over it needs no
+# list, cannot go stale, and fails loudly if regeneration produced nothing.
+produced="$(find "$scratch/tests" -mindepth 1 -maxdepth 1 -type d | wc -l)"
+if [ "$produced" -eq 0 ]; then
+  echo "ERROR: the generator produced no suites; nothing was compared." >&2
+  exit 1
+fi
+for dir in "$scratch"/tests/*/; do
+  suite="$(basename "$dir")"
+  diff -r -q "tests/$suite" "$dir" || status=1
 done
+echo "compared $produced generated suites"
 diff -r -q cs/tests "$scratch/cs/tests" || status=1
 if [ "$status" -ne 0 ]; then
   echo "ERROR: a generated fixture no longer matches its generator." >&2
@@ -981,6 +1012,27 @@ missing="$(git ls-files --deleted)"
 [ -z "$missing" ] || git checkout -- $missing
 """
 
+[tasks."docs:check"]
+description = "Assert the manual's prose still matches what it describes"
+# These live in their own task because the release pipeline used to restate the documentation
+# pipeline and omit them: docs:ci grew three checks and docs:ci:release kept running the old
+# five steps, so a release built the PDF and the site with none of them enforced.
+run = [
+    # Every fixture count stated in the manual must match the directory it describes. They are
+    # prose, they ship in the PDF and on the website, and four of them went stale the moment
+    # fixtures were added at the decision boundaries.
+    "python3 tests/check_manual_counts.py .",
+    # An operator defined inside a chapter is invisible to the website converter, so the PDF and
+    # the page disagree on one source without anything failing.
+    "python3 tests/check_local_operators.py .",
+    # Fail CI if any tracked file is missing from the working tree. The clean tasks delete
+    # committed generated artifacts (img/logo.png, the bounds-width tables) on the reasoning
+    # that build puts them back, which is true and which makes `clean` followed by a blanket
+    # `git add -A` a way to commit their deletion without noticing. It has happened once.
+    # `git ls-files --deleted` is the invariant that catches it, and it costs nothing.
+    "test -z \"$(git ls-files --deleted)\" || { echo 'ERROR: tracked files are missing from the working tree:' >&2; git ls-files --deleted >&2; echo 'A clean task removed a committed artifact and the build did not put it back.' >&2; exit 1; }",
+]
+
 [tasks."docs:ci"]
 description = "Run documentation CI pipeline"
 run = [
@@ -1000,14 +1052,7 @@ run = [
     # that build puts them back, which is true and which makes `clean` followed by a blanket
     # `git add -A` a way to commit their deletion without noticing. It has happened once.
     # `git ls-files --deleted` is the invariant that catches it, and it costs nothing.
-    # Every fixture count stated in the manual must match the directory it describes. They are
-    # prose, they ship in the PDF and on the website, and four of them went stale the moment
-    # fixtures were added at the decision boundaries.
-    "python3 tests/check_manual_counts.py .",
-    # An operator defined inside a chapter is invisible to the website converter, so the PDF and
-    # the page disagree on one source without anything failing.
-    "python3 tests/check_local_operators.py .",
-    "test -z \"$(git ls-files --deleted)\" || { echo 'ERROR: tracked files are missing from the working tree:' >&2; git ls-files --deleted >&2; echo 'A clean task removed a committed artifact and the build did not put it back.' >&2; exit 1; }",
+    { task = "docs:check" },
     { task = "pdf:build" },
     { task = "web:build" },
 ]
@@ -1021,6 +1066,7 @@ run = [
     { task = "docs:sync" },
     { task = "img:logo" },
     "git diff --exit-code || { echo 'ERROR: docs:sync produced uncommitted drift — regenerate and commit generated docs' >&2; exit 1; }",
+    { task = "docs:check" },
     { task = "pdf:build:release" },
     { task = "web:build:release" },
 ]
@@ -1055,7 +1101,7 @@ depends = ["cs:demo", "go:demo", "kt:demo", "py:demo", "r:demo", "rs:demo", "ts:
 
 [tasks."ci"]
 description = "Run CI pipeline for all language implementations"
-depends = ["cs:ci", "go:ci", "kt:ci", "py:ci", "r:ci", "rs:ci", "ts:ci", "docs:ci", "tests:check:rng-fixtures", "tests:check:conformance", "tests:check:generator-drift", "tests:check:spelling"]
+depends = ["cs:ci", "go:ci", "kt:ci", "py:ci", "r:ci", "rs:ci", "ts:ci", "docs:ci", "tests:check:rng-fixtures", "tests:check:conformance", "tests:check:generator-drift", "tests:check:spelling", "tests:check:coefficients"]
 
 # ==========================================================================
 # Version Task
