@@ -18,6 +18,11 @@ import kotlin.math.sqrt
  * @return Area under the Standard Normal Curve from -infinity to x
  */
 internal fun additiveCumulative(z: Double): Double {
+    // NaN satisfies neither comparison below, so without this it would leave the tail branch as a
+    // finite 0 or 1 and an undefined input would be answered rather than reported.
+    if (z.isNaN()) {
+        return z
+    }
     val t = abs(z) / sqrt(2.0)
     if (t < 0.5) {
         val s = t * t

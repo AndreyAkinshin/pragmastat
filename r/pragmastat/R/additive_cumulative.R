@@ -24,6 +24,11 @@
 
 # additive_cumulative computes P(Z <= x) for a standard normal Z.
 additive_cumulative <- function(z) {
+  # NaN satisfies neither comparison below; in R the comparison yields NA and the branch errors
+  # instead of returning, so an undefined input has to be answered here.
+  if (is.na(z)) {
+    return(z)
+  }
   t <- abs(z) / sqrt(2)
   if (t < 0.5) {
     s <- t * t

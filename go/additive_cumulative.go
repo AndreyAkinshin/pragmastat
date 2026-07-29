@@ -12,6 +12,12 @@ import "math"
 // the kernels are: the Go compiler fuses a multiply into an add on every FMA-capable target
 // and the other six implementations do not.
 func additiveCumulative(z float64) float64 {
+	// NaN reaches neither Horner chain: both comparisons below are false for it, so without
+	// this the tail branch would return a finite 0 or 1 and the caller would never learn that
+	// an undefined input had been asked about. The function it replaced propagated NaN.
+	if math.IsNaN(z) {
+		return z
+	}
 	t := math.Abs(z) / math.Sqrt2
 	if t < 0.5 {
 		s := float64(t * t)

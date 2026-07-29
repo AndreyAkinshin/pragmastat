@@ -24,8 +24,12 @@ def additive_cumulative(z: float) -> float:
         z: a standardized deviation, in units of spread from the center
 
     Returns:
-        Area under the standard normal curve from -infinity to x
+        Area under the standard Additive density from -infinity to z
     """
+    # NaN satisfies neither comparison below, so without this it would leave the tail branch as a
+    # finite 0 or 1 and an undefined input would be answered rather than reported.
+    if math.isnan(z):
+        return z
     t = abs(z) / _SQRT2
     if t < 0.5:
         # erf(t) / t as a polynomial in u = 8 * t^2 - 1

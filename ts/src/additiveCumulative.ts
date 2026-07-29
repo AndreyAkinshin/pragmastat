@@ -21,6 +21,11 @@ import { expFunction } from './expFunction';
  * @returns Area under the standard normal curve from -infinity to x
  */
 export function additiveCumulative(z: number): number {
+  // NaN satisfies neither comparison below, so without this it would leave the tail branch as a
+  // finite 0 or 1 and an undefined input would be answered rather than reported.
+  if (Number.isNaN(z)) {
+    return z;
+  }
   const t = Math.abs(z) / Math.SQRT2;
   if (t < 0.5) {
     const s = t * t;

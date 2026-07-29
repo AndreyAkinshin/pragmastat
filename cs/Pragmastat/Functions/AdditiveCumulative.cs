@@ -23,6 +23,10 @@ internal static class AdditiveCumulative
   /// <param name="z">-infinity..+infinity</param>
   public static double Value(double z)
   {
+    // NaN satisfies neither comparison below, so without this it would leave the tail branch as a
+    // finite 0 or 1 and an undefined input would be answered rather than reported.
+    if (double.IsNaN(z))
+      return z;
     double t = Abs(z) / Constants.Sqrt2;
     if (t < 0.5)
     {

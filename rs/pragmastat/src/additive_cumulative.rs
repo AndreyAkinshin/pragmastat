@@ -12,6 +12,11 @@ use crate::exp_function::exp_function;
 /// contract on its own, so the two roundings this spells out are the two roundings that run,
 /// which is what the other six implementations do. `rs:check:fma` keeps it that way.
 pub fn additive_cumulative(z: f64) -> f64 {
+    // NaN satisfies neither comparison below, so without this it would leave the tail branch
+    // as a finite 0 or 1 and an undefined input would be answered rather than reported.
+    if z.is_nan() {
+        return z;
+    }
     let t = z.abs() / std::f64::consts::SQRT_2;
     if t < 0.5 {
         // erf(t)/t as a polynomial in u = 8*t^2 - 1.
@@ -76,5 +81,22 @@ pub fn additive_cumulative(z: f64) -> f64 {
         1.0 - 0.5 * erfc
     } else {
         0.5 * erfc
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::additive_cumulative;
+
+    /// Both of the function's range comparisons are false for a NaN, so without an explicit guard
+    /// it leaves the tail branch as a finite 0 or 1: an undefined input answered rather than
+    /// reported. The approximation this replaced propagated NaN.
+    #[test]
+    fn carries_nan_through_and_answers_both_infinities() {
+        assert!(additive_cumulative(f64::NAN).is_nan());
+        assert_eq!(additive_cumulative(f64::INFINITY), 1.0);
+        assert_eq!(additive_cumulative(f64::NEG_INFINITY), 0.0);
+        assert_eq!(additive_cumulative(0.0), 0.5);
+        assert_eq!(additive_cumulative(-0.0), 0.5);
     }
 }
