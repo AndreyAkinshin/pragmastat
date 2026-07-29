@@ -280,7 +280,7 @@ func Disparity(x, y []float64, assumeSorted bool) (float64, error) {
 	}
 	avgSpreadVal := (float64(n*spreadX) + float64(m*spreadY)) / (n + m)
 
-	return shiftVal[0] / avgSpreadVal, nil
+	return normalizeZero(shiftVal[0] / avgSpreadVal), nil
 }
 
 // ShiftBounds provides bounds on the Shift estimator with specified misclassification rate.
@@ -393,11 +393,7 @@ func RatioBounds(x, y []float64, misrate float64, assumeSorted bool) (Bounds, er
 		return Bounds{}, err
 	}
 
-	return Bounds{
-		Lower: math.Exp(logBounds.Lower),
-		Upper: math.Exp(logBounds.Upper),
-		Unit:  NumberUnit,
-	}, nil
+	return newBounds(math.Exp(logBounds.Lower), math.Exp(logBounds.Upper), NumberUnit), nil
 }
 
 // CenterBounds provides exact distribution-free bounds for Center (Hodges-Lehmann pseudomedian).
@@ -645,11 +641,11 @@ func avgSpreadBoundsImpl(x, sortedX, y, sortedY []float64, misrate float64, rngX
 	wx := float64(n) / float64(n+m)
 	wy := float64(m) / float64(n+m)
 
-	return Bounds{
-		Lower: float64(wx*boundsX.Lower) + float64(wy*boundsY.Lower),
-		Upper: float64(wx*boundsX.Upper) + float64(wy*boundsY.Upper),
-		Unit:  NumberUnit,
-	}, nil
+	return newBounds(
+		float64(wx*boundsX.Lower)+float64(wy*boundsY.Lower),
+		float64(wx*boundsX.Upper)+float64(wy*boundsY.Upper),
+		NumberUnit,
+	), nil
 }
 
 func disparityBoundsImpl(x, sortedX, y, sortedY []float64, misrate float64, rngX, rngY *Rng) (Bounds, error) {
