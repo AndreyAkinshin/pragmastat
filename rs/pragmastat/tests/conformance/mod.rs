@@ -18,7 +18,7 @@ use float_cmp::approx_eq;
 /// bit-identical, or a different one was, and then the gap is data-dependent and
 /// no epsilon bounds it. A tolerance there hides exactly the failure it looks like
 /// it guards against. This is measured, not assumed: recomputing every estimator
-/// with `log`, `exp`, `pow` and `cos` each returning the neighbouring
+/// with `log`, `exp`, `pow` and `cos` each returning the neighboring
 /// representable value (the largest difference two conforming libm
 /// implementations may legitimately have) leaves these suites unmoved on every
 /// fixture.

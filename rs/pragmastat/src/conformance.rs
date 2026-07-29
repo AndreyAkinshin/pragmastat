@@ -10,7 +10,7 @@
 //! a small error. Either the same element was selected and the answer is
 //! bit-identical, or a different one was, and the gap is data-dependent and
 //! unbounded by any epsilon. Perturbing every `log`, `exp`, `pow` and `cos` call
-//! to the neighbouring representable value (the largest legitimate difference
+//! to the neighboring representable value (the largest legitimate difference
 //! between two conforming libm implementations) does not move any of them.
 
 /// Compares two binary64 payloads. Returns the failure text on a mismatch,

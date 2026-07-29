@@ -24,7 +24,7 @@ would otherwise lower the guarantee on every exact result beside it. `compare2` 
 its shift and disparity projections are bitwise, its ratio projections are not.
 
 The classes are measured rather than asserted. `mise run tests:check:conformance` recomputes every
-estimator with each call to `log`, `exp`, `pow` and `cos` returning the neighbouring representable
+estimator with each call to `log`, `exp`, `pow` and `cos` returning the neighboring representable
 value, which is the smallest difference two conforming implementations of those functions can
 legitimately have, and fails when an estimator no longer holds the class it declares.
 

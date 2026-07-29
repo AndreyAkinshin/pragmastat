@@ -124,7 +124,7 @@ def _load_fixtures(estimator_name):
 # hides exactly the failure it appears to guard against.
 #
 # The exactness is measured, not assumed. A perturbation experiment recomputed
-# every estimator with each call to log/exp/pow/cos returning the neighbouring
+# every estimator with each call to log/exp/pow/cos returning the neighboring
 # representable value -- the smallest legitimate difference between two
 # conforming libm implementations. center, spread, shift, disparity, avg_spread,
 # every bounds variant, the margins and compare1 did not move on any input.
@@ -349,7 +349,7 @@ def _assert_projections(projections, expected_projections, fixture_name, thresho
     The exactness predicate is resolved per projection from the metric of the
     threshold that produced it. The metric is read from the fixture INPUT, never
     from the ``Projection.threshold`` the library handed back: an implementation
-    that mislabelled a projection would otherwise get to pick its own tolerance.
+    that mislabeled a projection would otherwise get to pick its own tolerance.
     ``input.thresholds`` and ``output.projections`` share a length and an order --
     the order-* fixtures exist to pin exactly that -- so threshold i grades
     projection i.

@@ -59,7 +59,7 @@ func probeInt(tag string, v int, err error) {
 }
 
 // probeMisrates returns the misrates worth asking about for a given pair of sizes: a few
-// ordinary ones, the achievable floor with its first few neighbours, and the misrates that
+// ordinary ones, the achievable floor with its first few neighbors, and the misrates that
 // sit exactly on an Edgeworth decision.
 //
 // The floor is where this matters. There the admissibility test compares a quantity

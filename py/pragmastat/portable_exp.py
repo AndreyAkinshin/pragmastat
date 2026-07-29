@@ -2,7 +2,7 @@
 
 IEEE 754 fixes the result of each arithmetic operation and of the square root, and fixes
 nothing about the exponential. Conforming libraries disagree in the last bit and do:
-measured on one Edgeworth crossover, Go's software exp and glibc's return neighbouring
+measured on one Edgeworth crossover, Go's software exp and glibc's return neighboring
 values, which moved the reported margin by two. Since a margin selects an order statistic,
 that is a different confidence interval from the same inputs.
 
@@ -88,9 +88,9 @@ def portable_exp(y: float) -> float:
     p = 1.0 - ((lo - r * r * q) - hi)
 
     # Two scalings rather than one. Splitting k in half keeps the first factor inside the
-    # normal range whatever k is, so only the second can denormalise or overflow, and it does
+    # normal range whatever k is, so only the second can denormalize or overflow, and it does
     # so in a single rounding. The halving truncates toward zero, matching the integer
-    # division the other ports spell; Python's // would floor and pick the other neighbour
+    # division the other ports spell; Python's // would floor and pick the other neighbor
     # for negative odd k.
     half = k // 2 if k >= 0 else -((-k) // 2)
     return (p * math.ldexp(1.0, half)) * math.ldexp(1.0, k - half)

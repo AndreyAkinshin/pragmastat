@@ -28,7 +28,7 @@ const LN2_LO: f64 = 1.9082149292705877e-10;
 ///
 /// The cutoffs in `portable_exp` bound `n` to roughly `[-538, 512]`, comfortably inside the
 /// normal range. The assertion is here because a hand-built exponent field, unlike a library
-/// call, has no defined behaviour outside it: it would silently produce a denormal, an
+/// call, has no defined behavior outside it: it would silently produce a denormal, an
 /// infinity or a NaN rather than a wrong-but-obvious answer.
 fn pow2(n: i32) -> f64 {
     debug_assert!(
@@ -42,7 +42,7 @@ fn pow2(n: i32) -> f64 {
 ///
 /// IEEE 754 fixes the result of each arithmetic operation and of the square root, and fixes
 /// nothing about the exponential. Conforming libraries disagree in the last bit and do:
-/// measured on one Edgeworth crossover, Go's software exp and glibc's return neighbouring
+/// measured on one Edgeworth crossover, Go's software exp and glibc's return neighboring
 /// values, which moved the reported margin by two. Since a margin selects an order statistic,
 /// that is a different confidence interval from the same inputs.
 ///
@@ -105,7 +105,7 @@ pub(crate) fn portable_exp(y: f64) -> f64 {
     let p = 1.0 - ((lo - r * r * q) - hi);
 
     // Two scalings rather than one. Splitting k in half keeps the first factor inside the
-    // normal range whatever k is, so only the second can denormalise or overflow, and it does
+    // normal range whatever k is, so only the second can denormalize or overflow, and it does
     // so in a single rounding. The division truncates toward zero, as it does in every port.
     let k_int = k as i32;
     let half = k_int / 2;
@@ -151,7 +151,7 @@ mod tests {
             let y = -745.0 + (709.0 - (-745.0)) * (i as f64) / (steps as f64);
             let ours = portable_exp(y);
             let theirs = y.exp();
-            // ulp of the reference value, from the neighbour above it.
+            // ulp of the reference value, from the neighbor above it.
             let next = f64::from_bits(theirs.to_bits() + 1);
             let ulp = next - theirs;
             let diff = ((ours - theirs) / ulp).abs();

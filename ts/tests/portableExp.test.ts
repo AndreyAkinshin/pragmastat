@@ -14,10 +14,10 @@ import { expectBitwise } from './bitwise';
 // the scaling step of the reduction rests on a property of the runtime rather than of the
 // standard. It is therefore checked against a construction that cannot be wrong: the binary64
 // with biased exponent n + 1023 and a zero significand is 2^n by the definition of the format.
-// This is a claim about the runtime rather than about the shared behaviour, which is why the
+// This is a claim about the runtime rather than about the shared behavior, which is why the
 // range it covers is derived from the constants below rather than shared with the other ports.
 //
-// The second is the behaviour outside the finite range. JSON has no literal for an infinity or
+// The second is the behavior outside the finite range. JSON has no literal for an infinity or
 // a NaN, so no fixture can state that the top of the range overflows or that the special values
 // pass through.
 

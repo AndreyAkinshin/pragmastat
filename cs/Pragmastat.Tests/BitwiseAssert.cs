@@ -26,7 +26,7 @@ namespace Pragmastat.Tests;
 /// statistic), so a divergence is never a small error. Either the same element was selected and
 /// the answer is bit-identical, or a different one was, and then the gap is data-dependent and
 /// no epsilon bounds it. This is measured, not assumed: recomputing every estimator with log, exp,
-/// pow and cos returning the neighbouring representable value (the largest difference two
+/// pow and cos returning the neighboring representable value (the largest difference two
 /// conforming libm implementations can legitimately have) leaves center, spread, shift, disparity,
 /// avg-spread, all of their bounds, compare1 and the margins unmoved on every input.
 /// </para>

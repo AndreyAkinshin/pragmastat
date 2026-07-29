@@ -212,7 +212,7 @@ describe('Reference Tests', () => {
    * data-dependent and unbounded by any epsilon. A tolerance hides exactly the
    * failure it appears to guard against. That is measured, not assumed:
    * recomputing every estimator with each call to `log`, `exp`, `pow` and `cos`
-   * returning the neighbouring representable value (the largest legitimate
+   * returning the neighboring representable value (the largest legitimate
    * difference between two conforming libm implementations) moved none of them,
    * on any input.
    *

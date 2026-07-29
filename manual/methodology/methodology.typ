@@ -434,7 +434,7 @@ Declaring such a suite conformant "to $10^(-9)$" would state something that neit
 #v(0.3em)
 The class is therefore measured with a perturbation experiment.
 Each estimator is recomputed with every call to the logarithm, the exponential, the cosine and the
-  general power returning the neighbouring representable value.
+  general power returning the neighboring representable value.
 That is the smallest difference two conforming implementations of those functions can legitimately
   have, so it stands in for the whole space of libraries the seven ports might be built against.
 An estimator whose output never moves under that perturbation does not depend on those functions
@@ -496,7 +496,7 @@ The normal distribution function inside the Edgeworth branches of both margins u
   Algorithm 209, a polynomial evaluated identically by all seven.
 It was chosen for being identical, not for being close, and it was not close: measured against a
   reference good to thirty-six digits, its worst relative error is $4.5 dot 10^(-7)$ near the
-  centre, and past $abs(x) = 6$ it returns exactly zero, a relative error of $1$.
+  center, and past $abs(x) = 6$ it returns exactly zero, a relative error of $1$.
 That gap reached the answer rather than staying under it.
 Recomputing the margins over the Edgeworth region with an accurate distribution function changes
   13 of 2961 of them, so on about $0.4%$ of those inputs all seven agreed on an integer that was
@@ -514,7 +514,7 @@ The 13 margins it changes are byte-identical to what an independent implementati
 Accuracy in the tail needs an exponential, and that is where the third question appeared.
 IEEE 754 fixes the result of every arithmetic operation and of the square root, and fixes nothing
   about the exponential; conforming libraries disagree in the last bit and do.
-Two implementations returning neighbouring values is normally harmless, but here the value is
+Two implementations returning neighboring values is normally harmless, but here the value is
   compared against a misrate and the comparison selects an order statistic, so a last-bit
   difference becomes a different confidence interval from identical inputs.
 It did: on one Edgeworth crossover the margin came out 2830 under two implementations of the

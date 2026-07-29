@@ -334,6 +334,9 @@ jobs:
     - name: Every estimator holds its declared conformance class
       run: mise run tests:check:conformance
 
+    - name: Prose uses one spelling convention
+      run: mise run tests:check:spelling
+
   ci-kt:
     runs-on: ubuntu-24.04
     steps:

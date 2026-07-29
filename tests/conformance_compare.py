@@ -3,7 +3,7 @@
 The probe prints one tagged line per estimator evaluation with every float written as an
 exact binary64 payload. `mise run tests:check:conformance` runs it twice, once normally and
 once against a copy of the package whose calls to log, exp, pow and cos each return the
-neighbouring representable value. That single ulp is the smallest difference two conforming
+neighboring representable value. That single ulp is the smallest difference two conforming
 implementations of those functions can legitimately have, so it stands in for the whole
 space of libraries the seven ports may be built against.
 

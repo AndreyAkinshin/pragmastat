@@ -41,7 +41,7 @@ const (
 	//
 	// The exactness was measured, not assumed. A perturbation experiment
 	// recomputed every estimator with each call to log, exp, pow and cos
-	// returning the neighbouring representable value, which is the smallest
+	// returning the neighboring representable value, which is the smallest
 	// difference two conforming libm implementations can legitimately have.
 	// The suites marked compareExact did not move at all, on any input.
 	compareExact compareMode = iota

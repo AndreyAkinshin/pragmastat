@@ -13,7 +13,7 @@ namespace Pragmastat.Tests.Functions;
 /// Every other suite reaches this function through a margin, so it is covered wherever an
 /// Edgeworth expansion happens to look and nowhere else. This one calls it directly on 1032
 /// arguments: the band exp(-t*t) reaches, the wider band the expansions reach, the whole finite
-/// range, and the points where the construction changes behaviour rather than merely continues.
+/// range, and the points where the construction changes behavior rather than merely continues.
 /// </para>
 /// <para>
 /// Compared bitwise, not within a tolerance, because the suite exists to catch a last-bit

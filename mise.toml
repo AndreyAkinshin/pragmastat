@@ -538,7 +538,7 @@ run = "cargo run --example gen_rng_tests"
 description = "Assert every estimator holds the conformance class it declares"
 # The manual publishes a conformance class per suite and the manifest records it. Both rest
 # on a measurement: recompute each estimator with every call to log, exp, pow and cos
-# returning the neighbouring representable value, the smallest difference two conforming
+# returning the neighboring representable value, the smallest difference two conforming
 # implementations of those functions can legitimately have. An estimator that does not move
 # under that perturbation cannot diverge for this reason in any language.
 #
@@ -616,6 +616,15 @@ GOOS=linux GOARCH=arm64 go test -c -o "$binary" .
 qemu-aarch64-static "$binary" -test.count=1
 echo "the Go suite agrees with the fixtures on arm64"
 """
+
+[tasks."tests:check:spelling"]
+description = "Assert prose across the repository uses one spelling convention"
+# Every port and the manual are written in American English, and main held 169 American forms
+# against zero British ones before this check existed. Model-written prose drifts toward British
+# forms without anyone choosing them: fifteen got in across one branch, in comments, docstrings
+# and manual chapters, and nothing failed. Consistency here is not decorative, since a reader
+# grepping for "normalize" should find every place that normalizes.
+run = "python3 tests/check_spelling.py ."
 
 [tasks."tests:check:generator-drift"]
 description = "Assert the generated fixtures still match the generator that owns them"
@@ -1046,7 +1055,7 @@ depends = ["cs:demo", "go:demo", "kt:demo", "py:demo", "r:demo", "rs:demo", "ts:
 
 [tasks."ci"]
 description = "Run CI pipeline for all language implementations"
-depends = ["cs:ci", "go:ci", "kt:ci", "py:ci", "r:ci", "rs:ci", "ts:ci", "docs:ci", "tests:check:rng-fixtures", "tests:check:conformance", "tests:check:generator-drift"]
+depends = ["cs:ci", "go:ci", "kt:ci", "py:ci", "r:ci", "rs:ci", "ts:ci", "docs:ci", "tests:check:rng-fixtures", "tests:check:conformance", "tests:check:generator-drift", "tests:check:spelling"]
 
 # ==========================================================================
 # Version Task

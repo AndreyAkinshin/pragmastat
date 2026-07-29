@@ -1,7 +1,7 @@
 """Fits the polynomial behind the deterministic exponential.
 
 IEEE 754 fixes the result of every arithmetic operation and of the square root, and fixes
-nothing about the exponential. Two conforming libraries may return neighbouring values for
+nothing about the exponential. Two conforming libraries may return neighboring values for
 the same argument, and they do: Go evaluates its own exp in software, V8 carries a third
 implementation, and the ports built on a platform libm follow whatever it does. Every
 difference is a last-bit one, and a last-bit difference is enough when the value is compared
@@ -58,11 +58,11 @@ def q(r: D) -> D:
 
 
 DEGREE = 12
-_normalised = cheb_fit(q, -HALF_LN2, HALF_LN2, DEGREE)
+_normalized = cheb_fit(q, -HALF_LN2, HALF_LN2, DEGREE)
 # cheb_fit works in u = r / (ln2/2); rescaling to r itself removes a multiply from the
 # evaluation and turns the coefficients back into the recognisable 1/2, 1/6, 1/24 series,
 # which is worth having in seven files a reader may check by eye.
-poly = [c / HALF_LN2**d for d, c in enumerate(_normalised)]
+poly = [c / HALF_LN2**d for d, c in enumerate(_normalized)]
 
 
 def fmt(p):

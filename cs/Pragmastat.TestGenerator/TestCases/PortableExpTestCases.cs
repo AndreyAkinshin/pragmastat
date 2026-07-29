@@ -42,8 +42,8 @@ public static class PortableExpTestCases
     inputBuilder.Add("edgeworth-band", new SingleDoubleValueInput("portable_exp", Grid(-40.0, 0.0, 201)));
     inputBuilder.Add("finite-range", new SingleDoubleValueInput("portable_exp", Grid(-745.0, 709.0, 401)));
 
-    // The reduction endpoints, the underflow cutoff and its neighbours, and the first denormals:
-    // every place the construction changes behaviour rather than merely continues.
+    // The reduction endpoints, the underflow cutoff and its neighbors, and the first denormals:
+    // every place the construction changes behavior rather than merely continues.
     //
     // Arguments above 709.78 are absent because their result is infinite and JSON has no way to
     // write one. The overflow cutoff is checked in each port's own unit tests, where a language
