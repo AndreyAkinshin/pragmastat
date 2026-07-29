@@ -92,19 +92,21 @@ test_that("exp_function tracks the platform exponential to about 2 ulp", {
 test_that("additive_cumulative carries NaN through and answers both infinities", {
   # Both of the function's range comparisons yield NA for a NaN, so without an explicit guard the
   # branch errors instead of returning. The approximation this replaced propagated NaN.
+  # expect_identical compares numerically by default, so it reads -0 as 0 and would pass on a
+  # negative zero. expect_exact compares payloads, which is the claim being made.
   expect_identical(additive_cumulative(NaN), NaN)
   expect_identical(additive_cumulative(NA_real_), NA_real_)
-  expect_identical(additive_cumulative(Inf), 1)
-  expect_identical(additive_cumulative(-Inf), 0)
-  expect_identical(additive_cumulative(0), 0.5)
+  expect_exact(additive_cumulative(Inf), 1, "additive_cumulative(Inf)")
+  expect_exact(additive_cumulative(-Inf), 0, "additive_cumulative(-Inf)")
+  expect_exact(additive_cumulative(0), 0.5, "additive_cumulative(0)")
 })
 
 test_that("exp_function returns the declared values outside the reduction band", {
   expect_identical(exp_function(NaN), NaN)
   expect_identical(exp_function(NA_real_), NA_real_)
-  expect_identical(exp_function(710), Inf)
-  expect_identical(exp_function(Inf), Inf)
-  expect_identical(exp_function(-746), 0)
-  expect_identical(exp_function(-Inf), 0)
-  expect_identical(exp_function(0), 1)
+  expect_exact(exp_function(710), Inf, "exp_function(710)")
+  expect_exact(exp_function(Inf), Inf, "exp_function(Inf)")
+  expect_exact(exp_function(-746), 0, "exp_function(-746)")
+  expect_exact(exp_function(-Inf), 0, "exp_function(-Inf)")
+  expect_exact(exp_function(0), 1, "exp_function(0)")
 })

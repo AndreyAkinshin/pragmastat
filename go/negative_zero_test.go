@@ -133,19 +133,92 @@ func TestBoundsReportPositiveZeros(t *testing.T) {
 	assertPositiveZero(t, centerBounds.Upper, "CenterBounds upper")
 }
 
-// TestNoEstimatorReportsNegativeZero sweeps every public exit, including the ones where a negative
-// zero is currently unreachable. Reachability is what changes when the arithmetic behind an exit
-// changes, so the sweep is the part that keeps holding after such a change.
+// TestEveryReachableExitIsNormalized calls each exit with input that PRODUCES a negative zero when
+// the normalizer is removed. That property is what makes the test worth running: with the fix
+// reverted, every case here fails.
+//
+// The inputs were found by reverting normalizeZero to the identity and searching; they are listed
+// per exit rather than shared, because one sample does not reach a negative zero at every exit.
+// A shared sample was the first version of this test, and it passed with the whole fix reverted:
+// [0, -0, 0, -0, 1, -1] estimates to zero at four exits and the sort leaves a POSITIVE zero in the
+// selected position at all four, so nothing was being asserted.
+func TestEveryReachableExitIsNormalized(t *testing.T) {
+	negZero := math.Copysign(0, -1)
+
+	scalar := []struct {
+		name  string
+		value func() (float64, error)
+	}{
+		{"Center", func() (float64, error) { return Center([]float64{negZero, negZero}, false) }},
+		{"Center/3", func() (float64, error) { return Center([]float64{negZero, negZero, negZero}, false) }},
+		{"Shift", func() (float64, error) { return Shift([]float64{negZero}, []float64{0.0}, false) }},
+		{"Disparity", func() (float64, error) {
+			return Disparity([]float64{negZero, 1.0}, []float64{0.0, 1.0}, false)
+		}},
+	}
+	for _, c := range scalar {
+		value, err := c.value()
+		if err != nil {
+			t.Fatalf("%s: %v", c.name, err)
+		}
+		assertPositiveZero(t, value, c.name)
+	}
+
+	bounded := []struct {
+		name   string
+		bounds func() (Bounds, error)
+	}{
+		{"CenterBounds", func() (Bounds, error) {
+			return CenterBounds([]float64{negZero, negZero, negZero}, 0.3, false)
+		}},
+		{"ShiftBounds", func() (Bounds, error) {
+			return ShiftBounds([]float64{negZero}, []float64{0.0}, 1.0, false)
+		}},
+	}
+	for _, c := range bounded {
+		bounds, err := c.bounds()
+		if err != nil {
+			t.Fatalf("%s: %v", c.name, err)
+		}
+		assertPositiveZero(t, bounds.Lower, c.name+" lower")
+		assertPositiveZero(t, bounds.Upper, c.name+" upper")
+	}
+
+	// The Sample entry points reach the same implementations through a different route, and the
+	// unit-carrying half of the API is where a caller actually meets these values.
+	sample, err := NewSample([]float64{negZero, negZero, negZero})
+	if err != nil {
+		t.Fatalf("NewSample: %v", err)
+	}
+	measurement, err := sample.Center()
+	if err != nil {
+		t.Fatalf("Sample.Center: %v", err)
+	}
+	assertPositiveZero(t, measurement.Value, "Sample.Center")
+
+	sampleBounds, err := sample.CenterBounds(0.3)
+	if err != nil {
+		t.Fatalf("Sample.CenterBounds: %v", err)
+	}
+	assertPositiveZero(t, sampleBounds.Lower, "Sample.CenterBounds lower")
+	assertPositiveZero(t, sampleBounds.Upper, "Sample.CenterBounds upper")
+}
+
+// TestNoEstimatorReportsNegativeZero sweeps the exits where a negative zero is UNREACHABLE today.
+//
+// Spread is an absolute difference, Ratio and RatioBounds are exponentials, the average spread is a
+// weighted sum of two positive quantities: none of them can produce a negative zero as the code
+// stands, so this test cannot fail today and is not asserting the fix. It is here because
+// unreachability is a property of the arithmetic behind each exit, not of the API, and the previous
+// change to that arithmetic is what put a negative zero in Disparity. A proof nobody re-checks is
+// how the next one gets in.
 func TestNoEstimatorReportsNegativeZero(t *testing.T) {
 	scalar := []struct {
 		name  string
 		value func() (float64, error)
 	}{
-		{"Center", func() (float64, error) { return Center(mixedSample, false) }},
 		{"Spread", func() (float64, error) { return Spread(mixedSample, false) }},
-		{"Shift", func() (float64, error) { return Shift(mixedSample, mixedSample, false) }},
 		{"Ratio", func() (float64, error) { return Ratio(positiveSample, positiveSample, false) }},
-		{"Disparity", func() (float64, error) { return Disparity(mixedSample, mixedSample, false) }},
 		{"avgSpread", func() (float64, error) { return avgSpread(mixedSample, mixedSample, false) }},
 	}
 	for _, c := range scalar {
@@ -160,9 +233,7 @@ func TestNoEstimatorReportsNegativeZero(t *testing.T) {
 		name   string
 		bounds func() (Bounds, error)
 	}{
-		{"CenterBounds", func() (Bounds, error) { return CenterBounds(mixedSample, 0.3, false) }},
 		{"SpreadBounds", func() (Bounds, error) { return SpreadBoundsWithSeed(mixedSample, 0.5, "seed", false) }},
-		{"ShiftBounds", func() (Bounds, error) { return ShiftBounds(mixedSample, mixedSample, 0.5, false) }},
 		{"RatioBounds", func() (Bounds, error) { return RatioBounds(positiveSample, positiveSample, 0.5, false) }},
 		{"DisparityBounds", func() (Bounds, error) {
 			return DisparityBoundsWithSeed(mixedSample, mixedSample, 0.9, "seed", false)
@@ -253,9 +324,10 @@ func TestAdditiveCumulativePropagatesNaN(t *testing.T) {
 	}
 }
 
-// TestExpFunctionCutoffs pins the values outside the reduction band, where a language can name
-// its infinity and JSON cannot: the shared fixture stops at 709.78 for that reason, so these
-// arguments are covered here or nowhere.
+// TestExpFunctionCutoffs pins the values a JSON fixture cannot carry: NaN and the two infinities,
+// which have no JSON spelling, and 709.8, which sits past the fixture's last argument of 709.78.
+// The finite arguments below are in the shared fixture as well; they are repeated here so the
+// cutoff behavior reads as one statement rather than two halves in different files.
 func TestExpFunctionCutoffs(t *testing.T) {
 	if !math.IsNaN(expFunction(math.NaN())) {
 		t.Error("expFunction(NaN) should be NaN")

@@ -236,7 +236,7 @@ func avgSpread(x, y []float64, assumeSorted bool) (float64, error) {
 		return 0, NewSparityError(SubjectY)
 	}
 
-	return (float64(n*spreadX) + float64(m*spreadY)) / (n + m), nil
+	return normalizeZero((float64(n*spreadX) + float64(m*spreadY)) / (n + m)), nil
 }
 
 // Disparity measures effect size: a normalized difference between x and y.

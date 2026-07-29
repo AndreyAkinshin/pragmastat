@@ -87,6 +87,16 @@ pub fn additive_cumulative(z: f64) -> f64 {
 #[cfg(test)]
 mod tests {
     use super::additive_cumulative;
+    use crate::conformance::bitwise_mismatch;
+
+    /// Payloads, not `==`. Every zero-valued expectation below would pass on a negative zero under
+    /// `assert_eq!`, which is the exact divergence class these suites exist to reject, and the
+    /// other six ports all use their payload predicate here.
+    fn assert_bitwise(what: &str, expected: f64, actual: f64) {
+        if let Some(message) = bitwise_mismatch(what, expected, actual) {
+            panic!("{message}");
+        }
+    }
 
     /// Both of the function's range comparisons are false for a NaN, so without an explicit guard
     /// it leaves the tail branch as a finite 0 or 1: an undefined input answered rather than
@@ -94,9 +104,9 @@ mod tests {
     #[test]
     fn carries_nan_through_and_answers_both_infinities() {
         assert!(additive_cumulative(f64::NAN).is_nan());
-        assert_eq!(additive_cumulative(f64::INFINITY), 1.0);
-        assert_eq!(additive_cumulative(f64::NEG_INFINITY), 0.0);
-        assert_eq!(additive_cumulative(0.0), 0.5);
-        assert_eq!(additive_cumulative(-0.0), 0.5);
+        assert_bitwise("additive_cumulative(+inf)", 1.0, additive_cumulative(f64::INFINITY));
+        assert_bitwise("additive_cumulative(-inf)", 0.0, additive_cumulative(f64::NEG_INFINITY));
+        assert_bitwise("additive_cumulative(+0)", 0.5, additive_cumulative(0.0));
+        assert_bitwise("additive_cumulative(-0)", 0.5, additive_cumulative(-0.0));
     }
 }
