@@ -11,6 +11,14 @@ updates:
       actions:
         patterns: ["*"]
         update-types: ["minor", "patch"]
+    ignore:
+      # dtolnay/rust-toolchain is tagged with the Rust version it installs, and that version is
+      # half of a contract: mise.toml pins the same one, and the workflow says so in a comment
+      # beside it. Dependabot reads the tags as ordinary versions and proposed 1.100.0, which no
+      # Rust release has ever carried, so CI failed at the toolchain download. Even a real bump
+      # would desync the two files, since Dependabot cannot edit the mise pin. This line moves
+      # when a Rust release moves it, by hand, on both sides.
+      - dependency-name: dtolnay/rust-toolchain
 
   - package-ecosystem: nuget
     directory: /cs
