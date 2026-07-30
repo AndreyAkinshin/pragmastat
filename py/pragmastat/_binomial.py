@@ -6,6 +6,8 @@ They share one entry point so they cannot drift onto different routes, which is
 what makes the admissibility check agree with the distribution it guards.
 """
 
+import math
+
 # Below this total, C(n, k) fits the 64-bit integers the other six ports use, so every
 # implementation returns the exactly rounded value; at or above it they all switch to the
 # binary64 multiplicative recurrence. Python's ints are arbitrary precision and would not
@@ -65,4 +67,10 @@ def _recurrence(n: int, k: int) -> float:
     acc = 1.0
     for i in range(1, k + 1):
         acc = acc * float(n - k + i) / float(i)
+        # Once the accumulator reaches infinity the remaining steps cannot bring it back: each
+        # one multiplies by a positive integer and divides by a positive integer. Stopping there
+        # is the same sequence of roundings, arrived at sooner: at n = m = 100000 it is 89 steps
+        # instead of 100000.
+        if math.isinf(acc):
+            break
     return acc

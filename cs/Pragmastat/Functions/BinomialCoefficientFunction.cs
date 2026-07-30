@@ -80,7 +80,16 @@ internal static class BinomialCoefficientFunction
 
     double acc = 1.0;
     for (int i = 1; i <= kk; i++)
+    {
       acc = acc * (double)(n - kk + i) / (double)i;
+      // Once the accumulator reaches infinity the remaining steps cannot bring it back: each
+      // one multiplies by a positive integer and divides by a positive integer. Stopping there
+      // is the same sequence of roundings, arrived at sooner: at n = m = 100000 it is 89 steps
+      // instead of 100000.
+      if (double.IsPositiveInfinity(acc))
+        break;
+    }
+
     return acc;
   }
 }

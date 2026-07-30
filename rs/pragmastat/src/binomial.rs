@@ -70,13 +70,20 @@ fn recurrence(n: usize, k: usize) -> f64 {
     let mut acc = 1.0;
     for i in 1..=k {
         acc = acc * (n - k + i) as f64 / i as f64;
+        // Once the accumulator reaches infinity the remaining steps cannot bring it back: each
+        // one multiplies by a positive integer and divides by a positive integer. Stopping
+        // there is the same sequence of roundings, arrived at sooner: at n = m = 100000 it is
+        // 89 steps instead of 100000.
+        if acc.is_infinite() {
+            break;
+        }
     }
     acc
 }
 
 #[cfg(test)]
 mod tests {
-    use super::binomial_coefficient;
+    use super::{binomial_coefficient, recurrence};
     use crate::conformance::assert_bits_eq;
 
     /// C(n, k) and C(n, n-k) are the same number, so they have to be the same bits.
@@ -124,5 +131,34 @@ mod tests {
             binomial_coefficient(62, 31),
             4.6542835325526125e17,
         );
+    }
+
+    /// The overflow boundary of the recurrence, which the comment above describes and nothing
+    /// pinned.
+    ///
+    /// The intermediate runs above the final value, so the central binomial reaches infinity at
+    /// n = 1021 while the exact value stays inside binary64 through n = 1029. That window is the
+    /// price of the shared operation order, and it is a property worth failing on if it moves:
+    /// the misrate floor is 2/C, so a shift here shifts the smallest misrate the two-sample
+    /// bounds will accept.
+    ///
+    /// One port checks it because all seven perform the identical sequence of roundings, which
+    /// the shared pairwise-margin fixtures are what pin.
+    #[test]
+    fn the_recurrence_overflows_where_it_is_documented_to() {
+        assert!(
+            recurrence(1020, 510).is_finite(),
+            "n = 1020 should still be finite"
+        );
+        assert!(
+            recurrence(1021, 510).is_infinite(),
+            "n = 1021 should overflow"
+        );
+
+        // Stopping at infinity cannot change an answer that is already infinite.
+        assert!(recurrence(100_000, 50_000).is_infinite());
+
+        // And the misrate floor collapses to zero rather than to something unusable.
+        assert_eq!(2.0 / recurrence(1021, 510), 0.0);
     }
 }

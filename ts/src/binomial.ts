@@ -83,6 +83,13 @@ function recurrence(n: number, k: number): number {
   let acc = 1.0;
   for (let i = 1; i <= k; i++) {
     acc = (acc * (n - k + i)) / i;
+    // Once the accumulator reaches infinity the remaining steps cannot bring it back: each one
+    // multiplies by a positive integer and divides by a positive integer. Stopping there is the
+    // same sequence of roundings, arrived at sooner: at n = m = 100000 it is 89 steps instead
+    // of 100000.
+    if (!Number.isFinite(acc)) {
+      break;
+    }
   }
   return acc;
 }
