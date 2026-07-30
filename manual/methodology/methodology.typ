@@ -391,7 +391,7 @@ Where a suite declares its tolerance `exact`, the kernel therefore writes each r
   explicitly, and a build-time check asserts on four such targets that no fusion survived.
 
 #v(0.3em)
-Two limits are stated rather than hidden.
+Three limits are stated rather than hidden.
 Transcendental functions are the first: the logarithm, the exponential, the cosine and the general
   power are polynomial approximations, each language takes its own, and two implementations correct
   to within an ulp still disagree in the last bit.
@@ -399,6 +399,16 @@ Any result computed through one of them conforms at a stated tolerance and not b
   why the parametric distributions other than $Uniform$ are tolerance-bound.
 Accumulated rounding is the second: an estimator that sums or searches over $O(n^2)$ intermediate
   values is reproducible to the tolerance its suite declares, not to the last bit.
+
+#v(0.3em)
+The third is a choice rather than a constraint.
+$SpreadBounds$ and $DisparityBounds$ randomize their pairing and their cutoff, and their
+  seedless overloads draw that randomness from the clock: two calls on one machine with one input
+  return different intervals, so cross-language agreement is not even the question.
+Every such estimator has a seeded overload, and passing a seed restores the full promise; the
+  fixtures use one throughout, which is why the suites can declare a class at all.
+The seedless form exists because a caller who wants an interval and not a reproduction should not
+  have to invent a seed, and it is named so that reaching for it is a decision.
 
 #v(0.3em)
 So the promise is graded, and each suite carries its grade explicitly rather than inheriting a
