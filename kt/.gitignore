@@ -1,6 +1,8 @@
 # Gradle
 .gradle/
 build/
+# The Kotlin build tools daemon writes session and error logs here from Gradle 2.x onward.
+.kotlin/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
