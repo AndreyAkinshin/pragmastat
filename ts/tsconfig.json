@@ -1,8 +1,10 @@
 {
   "compilerOptions": {
     "target": "ES2023",
-    "module": "commonjs",
-    "lib": ["ES2023"],
+    "module": "node16",
+    "lib": [
+      "ES2023"
+    ],
     "outDir": "./dist",
     "rootDir": "./src",
     "strict": true,
@@ -18,8 +20,17 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noImplicitReturns": true,
-    "moduleResolution": "node"
+    "moduleResolution": "node16",
+    "types": [
+      "node"
+    ]
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "tests"]
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "tests"
+  ]
 }
