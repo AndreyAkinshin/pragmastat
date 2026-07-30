@@ -608,8 +608,9 @@ The route not taken is a correctly rounded implementation, which would deliver i
 #v(0.3em)
 The measurement is also what corrected the diagnosis when it was wrong.
 $SpreadBounds$ was for a time the one estimator that moved under the perturbation, and the obvious
-  explanation was that the sign margin inverts the binomial distribution function in logarithmic
-  space, where an exact tie at the misrate floor would be settled by rounding inside the logarithm.
+  explanation was that the sign margin then inverted the binomial distribution function in
+  logarithmic space, where an exact tie at the misrate floor would be settled by rounding inside
+  the logarithm.
 The obvious explanation was wrong.
 The sensitivity was in the floor itself: it is $2^(1-floor(n\/2))$, an exact power of two, and it
   was being computed by asking a general power function for it.

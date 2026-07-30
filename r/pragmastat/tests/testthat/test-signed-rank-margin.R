@@ -34,3 +34,18 @@ test_that("signed_rank_margin satisfies reference tests", {
     expect_exact(actual_output, expected_output, basename(json_file))
   }
 })
+
+test_that("the exact branch accumulates in integers, not doubles", {
+  # The signed-rank distribution is symmetric, so where max_w is odd the cumulative count at the
+  # midpoint is exactly half the total, and `cdf >= p` at p = 1/2 is an exact equality. Accumulated
+  # in a double vector it came out a hair below, and this returned 1654 against 1652 everywhere
+  # else, in a suite the manifest declares exact. n = 57 is inside the window the shared fixtures
+  # skip: they cover 50 and then 64, and above 63 there is no exact branch at all.
+  expect_equal(signed_rank_margin(57L, 1), 1652)
+  expect_equal(signed_rank_margin(55L, 1), 1540)
+  expect_equal(signed_rank_margin(61L, 1), 1890)
+
+  # The counts fit a double; it is the cumulative sum that leaves the exact integer range.
+  expect_equal(signed_rank_margin(63L, 0.05), 1444)
+  expect_equal(signed_rank_margin(60L, 0.01), 1136)
+})

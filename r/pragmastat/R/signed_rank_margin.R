@@ -30,31 +30,20 @@ signed_rank_margin_exact <- function(n, misrate) {
   signed_rank_margin_exact_raw(n, misrate / 2) * 2
 }
 
+# The dynamic programming runs in C, on 64-bit integers, because R has none.
+#
+# The counts themselves fit a double: the largest is 4.5e14 at n = 57, inside the 2^53 a double
+# represents exactly. The cumulative sum does not. It climbs to 2^(n-1), and it feeds a comparison
+# against p, so the bits it loses decide an integer. They did: the signed-rank distribution is
+# symmetric, so where max_w is odd the cumulative at the midpoint is exactly half the total and
+# `cdf >= p` at p = 1/2 is an exact equality. Accumulated in doubles it came out a hair below, and
+# signed_rank_margin(57, 1) returned 1654 here against 1652 in the other six ports, in a suite the
+# manifest declares exact.
+#
+# Same answer as binomial_coefficient_c, for the same reason: an integer by definition is
+# accumulated as one and converted once.
 signed_rank_margin_exact_raw <- function(n, p) {
-  total <- 2^n # R handles big integers via double for n <= 63
-  max_w <- (n * (n + 1)) %/% 2
-
-  count <- rep(0, max_w + 1)
-  count[1] <- 1 # count[1] corresponds to w=0 (1-based indexing)
-
-  for (i in 1:n) {
-    max_wi <- min((i * (i + 1)) %/% 2, max_w)
-    for (w in max_wi:i) {
-      # w is 0-based value, index is w+1
-      count[w + 1] <- count[w + 1] + count[w - i + 1]
-    }
-  }
-
-  cumulative <- 0
-  for (w in 0:max_w) {
-    cumulative <- cumulative + count[w + 1]
-    cdf <- cumulative / total
-    if (cdf >= p) {
-      return(w)
-    }
-  }
-
-  return(max_w)
+  .Call("signed_rank_margin_exact_raw_c", as.integer(n), as.numeric(p), PACKAGE = "pragmastat")
 }
 
 # Computes one-sided margin using Edgeworth approximation for large n.
