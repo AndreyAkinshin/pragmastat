@@ -1,29 +1,27 @@
 package dev.pragmastat
 
-/**
- * The randomized sign margin, computed without a single library call.
- *
- * It used to be evaluated in log space: nine calls to ln and exp, one of them inside a loop that
- * runs n times. IEEE 754 fixes nothing about either function, and this value is not merely
- * returned to the caller: the margin selects an order statistic, so a difference between two
- * conforming implementations becomes a different confidence interval from identical inputs. It
- * did. Two ports disagreed on spreadBounds for a sample of 200 consecutive integers.
- *
- * No logarithm is needed. Binomial(n, 1/2) has an exact rational distribution function, and the
- * two quantities the randomization wants are its partial sum and the next term. Both follow from
- * the same multiplicative recurrence the binomial coefficient uses: one multiply and one divide
- * per step, plus a scaling by a power of two, and IEEE 754 pins all three.
- *
- * The scaling is what makes the recurrence work at any n. pmf(0) is 2^-n, which underflows to zero
- * past n = 1074, so the running term is carried as w * 2^e with the exponent tracked separately:
- * w stays in the normal range and e absorbs the magnitude. Rescaling happens by multiplying by a
- * power of two, which is exact, so it costs no accuracy and changes no bits.
- *
- * Measured against exact rational arithmetic over 195 (n, misrate) pairs spanning n = 1 to 5000
- * and misrate from 1 down to the smallest positive double: the selected index is right every time,
- * and the randomization probability is within 6.1e-13. The log-space version it replaces reached
- * 1.9e-11 on the same set, thirty times further out, and did it differently in each port.
- */
+// The randomized sign margin, computed without a single library call.
+//
+// It used to be evaluated in log space: nine calls to ln and exp, one of them inside a loop that
+// runs n times. IEEE 754 fixes nothing about either function, and this value is not merely
+// returned to the caller: the margin selects an order statistic, so a difference between two
+// conforming implementations becomes a different confidence interval from identical inputs. It
+// did. Two ports disagreed on spreadBounds for a sample of 200 consecutive integers.
+//
+// No logarithm is needed. Binomial(n, 1/2) has an exact rational distribution function, and the
+// two quantities the randomization wants are its partial sum and the next term. Both follow from
+// the same multiplicative recurrence the binomial coefficient uses: one multiply and one divide
+// per step, plus a scaling by a power of two, and IEEE 754 pins all three.
+//
+// The scaling is what makes the recurrence work at any n. pmf(0) is 2^-n, which underflows to zero
+// past n = 1074, so the running term is carried as w * 2^e with the exponent tracked separately:
+// w stays in the normal range and e absorbs the magnitude. Rescaling happens by multiplying by a
+// power of two, which is exact, so it costs no accuracy and changes no bits.
+//
+// Measured against exact rational arithmetic over 195 (n, misrate) pairs spanning n = 1 to 5000
+// and misrate from 1 down to the smallest positive double: the selected index is right every time,
+// and the randomization probability is within 6.1e-13. The log-space version it replaces reached
+// 1.9e-11 on the same set, thirty times further out, and did it differently in each port.
 
 /**
  * How far the running term is rescaled when it grows too large. Any power of two works; 512 keeps

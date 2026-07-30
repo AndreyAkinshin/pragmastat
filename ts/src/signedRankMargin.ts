@@ -65,12 +65,16 @@ function signedRankMarginExactRaw(n: number, p: number): number {
     }
   }
 
-  // Use scaled BigInt division to avoid precision loss for large n (n > 53)
-  const PRECISION = BigInt(10) ** BigInt(18);
+  // Both operands are converted to binary64 and divided once, which is what the other six ports
+  // do: Go writes float64(cumulative) / float64(total) over uint64 counters, and the conversion
+  // rounds to nearest. A scaled BigInt division stood here instead, truncating the quotient to
+  // 1e-18 and returning exactly zero below that, which is a different function: it disagreed with
+  // Go on 1020 of the 2017 values of w at n = 63, and CenterBounds at the achievable floor came
+  // out [2.5, 61.5] here against [1, 63] everywhere else.
   let cumulative = BigInt(0);
   for (let w = 0; w <= maxW; w++) {
     cumulative = cumulative + count[w];
-    const cdf = Number((cumulative * PRECISION) / total) / Number(PRECISION);
+    const cdf = Number(cumulative) / Number(total);
     if (cdf >= p) {
       return w;
     }
