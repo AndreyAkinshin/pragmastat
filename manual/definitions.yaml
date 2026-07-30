@@ -14,6 +14,7 @@ PairwiseMargin: \operatorname{PairwiseMargin}
 SignMargin: \operatorname{SignMargin}
 SignedRankMargin: \operatorname{SignedRankMargin}
 MedianBounds: \operatorname{MedianBounds}
+BinomialCoefficient: \operatorname{BinomialCoefficient}
 AdditiveCumulative: \operatorname{AdditiveCumulative}
 ExpFunction: \operatorname{ExpFunction}
 ShiftBounds: \operatorname{ShiftBounds}

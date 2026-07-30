@@ -20,6 +20,9 @@
 #include "../signed-rank-margin/signed-rank-margin.typ"
 
 #pagebreak()
+#include "../binomial-coefficient/binomial-coefficient.typ"
+
+#pagebreak()
 #include "../additive-cumulative/additive-cumulative.typ"
 
 #pagebreak()

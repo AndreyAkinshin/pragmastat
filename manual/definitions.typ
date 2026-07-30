@@ -82,6 +82,7 @@
 #let SignMargin = math.op("SignMargin")
 #let SignedRankMargin = math.op("SignedRankMargin")
 #let Dominance = math.op("Dominance")
+#let BinomialCoefficient = math.op("BinomialCoefficient")
 #let AdditiveCumulative = math.op("AdditiveCumulative")
 #let ExpFunction = math.op("ExpFunction")
 

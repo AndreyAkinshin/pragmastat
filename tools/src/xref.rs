@@ -81,6 +81,14 @@ impl XRefMap {
             "/signed-rank-margin".into(),
         );
         mappings.insert(
+            "sec-binomial-coefficient".into(),
+            "/binomial-coefficient".into(),
+        );
+        mappings.insert(
+            "sec-alg-binomial-coefficient".into(),
+            "/binomial-coefficient#algorithm".into(),
+        );
+        mappings.insert(
             "sec-additive-cumulative".into(),
             "/additive-cumulative".into(),
         );
