@@ -1520,8 +1520,8 @@ class ReferenceTest {
                         testData.input.thresholds.map { t ->
                             val metric =
                                 when (t.metric) {
-                                    "center" -> Metric.Center
-                                    "spread" -> Metric.Spread
+                                    "center" -> Metric.CENTER
+                                    "spread" -> Metric.SPREAD
                                     else -> throw IllegalArgumentException("Unknown metric: ${t.metric}")
                                 }
                             Threshold(metric, Measurement(t.value), Probability(t.misrate))
@@ -1595,9 +1595,9 @@ class ReferenceTest {
                         testData.input.thresholds.map { t ->
                             val metric =
                                 when (t.metric) {
-                                    "shift" -> Metric.Shift
-                                    "ratio" -> Metric.Ratio
-                                    "disparity" -> Metric.Disparity
+                                    "shift" -> Metric.SHIFT
+                                    "ratio" -> Metric.RATIO
+                                    "disparity" -> Metric.DISPARITY
                                     else -> throw IllegalArgumentException("Unknown metric: ${t.metric}")
                                 }
                             Threshold(metric, Measurement(t.value), Probability(t.misrate))
@@ -1659,7 +1659,7 @@ class ReferenceTest {
                         // genuinely approximate. A suite-wide tolerance had to be the weakest
                         // predicate present, so 5 ratio thresholds out of 33 were checking the
                         // other 28 projections as though they might drift.
-                        if (thresholds[i].metric == Metric.Ratio) {
+                        if (thresholds[i].metric == Metric.RATIO) {
                             assertClose(expected.estimate, actual.estimate.value)
                             assertClose(expected.lower, actual.bounds.lower)
                             assertClose(expected.upper, actual.bounds.upper)

@@ -25,8 +25,8 @@ fun main() {
 
     // --- Confirmatory Comparison ---
 
-    println(compare1(sx, listOf(Threshold(Metric.Center, Measurement(50.0), Probability(1e-3))))[0].verdict.toId()) // greater
-    println(compare2(sx, sy, listOf(Threshold(Metric.Shift, Measurement(0.0), Probability(1e-3))))[0].verdict.toId()) // less
+    println(compare1(sx, listOf(Threshold(Metric.CENTER, Measurement(50.0), Probability(1e-3))))[0].verdict.toId()) // greater
+    println(compare2(sx, sy, listOf(Threshold(Metric.SHIFT, Measurement(0.0), Probability(1e-3))))[0].verdict.toId()) // less
 
     // --- Custom units ---
 

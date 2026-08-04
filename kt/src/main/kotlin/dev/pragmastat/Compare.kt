@@ -4,20 +4,20 @@ package dev.pragmastat
  * Metric types supported by Compare1 and Compare2.
  */
 enum class Metric {
-    Center,
-    Spread,
-    Shift,
-    Ratio,
-    Disparity,
+    CENTER,
+    SPREAD,
+    SHIFT,
+    RATIO,
+    DISPARITY,
 }
 
 /**
  * Verdict from comparing an estimate against a threshold.
  */
 enum class ComparisonVerdict {
-    Less,
-    Greater,
-    Inconclusive,
+    LESS,
+    GREATER,
+    INCONCLUSIVE,
     ;
 
     /** Canonical lowercase identifier ("less"/"greater"/"inconclusive"), matching the other ports. */
@@ -79,13 +79,13 @@ internal object CompareEngine {
     private val compare1Specs =
         listOf(
             MetricSpec(
-                metric = Metric.Center,
+                metric = Metric.CENTER,
                 validateAndNormalize = ::validateCenter,
                 estimate = { x, _ -> Sample.center(x) },
                 bounds = { x, _, misrate -> Sample.centerBounds(x, misrate) },
             ),
             MetricSpec(
-                metric = Metric.Spread,
+                metric = Metric.SPREAD,
                 validateAndNormalize = ::validateSpread,
                 estimate = { x, _ -> Sample.spread(x) },
                 bounds = { x, _, misrate -> Sample.spreadBounds(x, misrate, null) },
@@ -96,19 +96,19 @@ internal object CompareEngine {
     private val compare2Specs =
         listOf(
             MetricSpec(
-                metric = Metric.Shift,
+                metric = Metric.SHIFT,
                 validateAndNormalize = ::validateShift,
                 estimate = { x, y -> Sample.shift(x!!, y!!) },
                 bounds = { x, y, misrate -> Sample.shiftBounds(x!!, y!!, misrate) },
             ),
             MetricSpec(
-                metric = Metric.Ratio,
+                metric = Metric.RATIO,
                 validateAndNormalize = ::validateRatio,
                 estimate = { x, y -> Sample.ratio(x!!, y!!) },
                 bounds = { x, y, misrate -> Sample.ratioBounds(x!!, y!!, misrate) },
             ),
             MetricSpec(
-                metric = Metric.Disparity,
+                metric = Metric.DISPARITY,
                 validateAndNormalize = ::validateDisparity,
                 estimate = { x, y -> Sample.disparity(x!!, y!!) },
                 bounds = { x, y, misrate -> Sample.disparityBounds(x!!, y!!, misrate, null) },
@@ -186,7 +186,7 @@ internal object CompareEngine {
         }
 
         for (threshold in thresholds) {
-            require(threshold.metric == Metric.Center || threshold.metric == Metric.Spread) {
+            require(threshold.metric == Metric.CENTER || threshold.metric == Metric.SPREAD) {
                 "Metric ${threshold.metric} is not supported by Compare1. Use Compare2 instead."
             }
         }
@@ -216,7 +216,7 @@ internal object CompareEngine {
         }
 
         for (threshold in thresholds) {
-            require(threshold.metric == Metric.Shift || threshold.metric == Metric.Ratio || threshold.metric == Metric.Disparity) {
+            require(threshold.metric == Metric.SHIFT || threshold.metric == Metric.RATIO || threshold.metric == Metric.DISPARITY) {
                 "Metric ${threshold.metric} is not supported by Compare2. Use Compare1 instead."
             }
         }
@@ -274,9 +274,9 @@ internal object CompareEngine {
     ): ComparisonVerdict {
         val t = normalizedThreshold.value
         return when {
-            bounds.lower > t -> ComparisonVerdict.Greater
-            bounds.upper < t -> ComparisonVerdict.Less
-            else -> ComparisonVerdict.Inconclusive
+            bounds.lower > t -> ComparisonVerdict.GREATER
+            bounds.upper < t -> ComparisonVerdict.LESS
+            else -> ComparisonVerdict.INCONCLUSIVE
         }
     }
 }
