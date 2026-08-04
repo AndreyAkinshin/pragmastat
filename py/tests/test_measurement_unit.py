@@ -54,3 +54,13 @@ def test_dimensionless_units_keep_their_empty_abbreviation():
         assert unit.id == unit_id
         assert unit.abbreviation == ""
         assert unit.base_units == 1
+
+
+def test_rejects_a_fractional_base_units():
+    with pytest.raises(ValueError, match="whole number"):
+        MeasurementUnit("half", "Time", "h", "Half", 0.5)
+
+
+def test_accepts_a_whole_valued_float():
+    # 1.0 and 1 are the same scale, and the four integer-typed ports cannot tell them apart.
+    assert MeasurementUnit("s", "Time", "s", "Second", 1.0).base_units == 1

@@ -22,6 +22,13 @@ export class MeasurementUnit {
     if (baseUnits <= 0) {
       throw new Error('baseUnits must be positive');
     }
+    // TypeScript has one numeric type, so nothing above stops a fractional scale. The four ports
+    // that type this as a 64-bit integer cannot express one at all, so a unit that constructs here
+    // and nowhere else breaks the promise that one program reads the same in every port.
+    // Number.isInteger also refuses Infinity and NaN, which the positivity test lets through.
+    if (!Number.isInteger(baseUnits)) {
+      throw new Error('baseUnits must be a whole number');
+    }
   }
 
   /** Returns true if both units belong to the same family. */

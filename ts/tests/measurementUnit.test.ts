@@ -40,6 +40,16 @@ describe('MeasurementUnit construction', () => {
     expect(ms.baseUnits).toBe(1e6);
   });
 
+  it('rejects a fractional baseUnits', () => {
+    expect(() => new MeasurementUnit('half', 'Time', 'h', 'Half', 0.5)).toThrow('whole number');
+  });
+
+  it('rejects a baseUnits that is not a finite number', () => {
+    // The positivity test lets both through: Infinity > 0, and NaN <= 0 is false.
+    expect(() => new MeasurementUnit('inf', 'Time', 'i', 'Inf', Infinity)).toThrow('whole number');
+    expect(() => new MeasurementUnit('nan', 'Time', 'n', 'NaN', NaN)).toThrow();
+  });
+
   it('keeps the empty abbreviation of the dimensionless units', () => {
     const units: [string, MeasurementUnit][] = [
       ['number', MeasurementUnit.NUMBER],

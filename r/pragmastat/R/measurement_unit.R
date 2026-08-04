@@ -36,8 +36,15 @@ MeasurementUnit <- R6::R6Class(
       if (!nzchar(family)) {
         stop("family cannot be empty")
       }
-      if (base_units <= 0) {
+      if (!is.finite(base_units) || base_units <= 0) {
         stop("base_units must be positive")
+      }
+      # R has one numeric type, so nothing above stops a fractional scale. The four ports that type
+      # this as a 64-bit integer cannot express one at all, so a unit that constructs here and
+      # nowhere else breaks the promise that one program reads the same in every port. is.finite
+      # above is what rules out Inf: round(Inf) is Inf, so the test below would pass it.
+      if (base_units != round(base_units)) {
+        stop("base_units must be a whole number")
       }
       self$id <- id
       self$family <- family

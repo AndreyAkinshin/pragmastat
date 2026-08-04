@@ -54,3 +54,22 @@ test_that("the dimensionless units keep their empty abbreviation", {
     expect_equal(unit$base_units, 1)
   }
 })
+
+test_that("a fractional base_units is refused", {
+  expect_error(
+    MeasurementUnit$new("half", "Time", "h", "Half", 0.5),
+    "whole number"
+  )
+})
+
+test_that("a base_units that is not finite is refused", {
+  # The positivity test lets Inf through on its own: Inf <= 0 is FALSE, and round(Inf) is Inf,
+  # so the whole-number test would pass it too.
+  expect_error(MeasurementUnit$new("inf", "Time", "i", "Inf", Inf), "positive")
+  expect_error(MeasurementUnit$new("nan", "Time", "n", "NaN", NaN), "positive")
+})
+
+test_that("a whole-valued double is accepted", {
+  # 1 and 1.0 are the same scale, and the four integer-typed ports cannot tell them apart.
+  expect_equal(MeasurementUnit$new("s", "Time", "s", "Second", 1)$base_units, 1)
+})

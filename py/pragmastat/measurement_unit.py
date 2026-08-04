@@ -25,6 +25,12 @@ class MeasurementUnit:
             raise ValueError("family cannot be empty")
         if self.base_units <= 0:
             raise ValueError("base_units must be positive")
+        # The annotation above says int, and an annotation enforces nothing at runtime. The four
+        # ports that type this as a 64-bit integer cannot express a fractional scale at all, so a
+        # unit that constructs here and nowhere else breaks the promise that one program reads the
+        # same in every port. A whole-valued float is accepted: 1.0 and 1 are the same scale.
+        if float(self.base_units) != int(self.base_units):
+            raise ValueError("base_units must be a whole number")
 
     def is_compatible(self, other: "MeasurementUnit") -> bool:
         """Returns True if both units belong to the same family."""
