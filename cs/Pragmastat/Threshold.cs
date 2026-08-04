@@ -14,7 +14,7 @@ public sealed class Threshold
   {
     if (misrate.Value <= 0 || misrate.Value > 1)
       throw AssumptionException.Domain(Subject.Misrate);
-    if (!value.NominalValue.IsFinite())
+    if (!value.Value.IsFinite())
       throw new ArgumentOutOfRangeException(nameof(value), "threshold value must be finite");
 
     Metric = metric;

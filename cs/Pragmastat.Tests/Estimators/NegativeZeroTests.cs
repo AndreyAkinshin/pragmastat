@@ -31,7 +31,7 @@ public class NegativeZeroTests
     foreach (var x in ZeroCenterSamples)
     {
       BitwiseAssert.Equal(0.0, Toolkit.Center(x), $"Center({Describe(x)})");
-      BitwiseAssert.Equal(0.0, Toolkit.Center(new Sample(x)).NominalValue, $"Center(Sample({Describe(x)}))");
+      BitwiseAssert.Equal(0.0, Toolkit.Center(new Sample(x)).Value, $"Center(Sample({Describe(x)}))");
     }
   }
 
@@ -63,7 +63,7 @@ public class NegativeZeroTests
     // A -0.0 sits among the +0.0 differences; which one the search lands on is the port's sort.
     BitwiseAssert.Equal(0.0, Toolkit.Shift([-1.0, -0.0, 1.0], [-1.0, 0.0, 1.0]),
       "Shift([-1, -0, 1], [-1, 0, 1])");
-    BitwiseAssert.Equal(0.0, Toolkit.Shift(new Sample(-0.0, -0.0), new Sample(0.0, 0.0)).NominalValue,
+    BitwiseAssert.Equal(0.0, Toolkit.Shift(new Sample(-0.0, -0.0), new Sample(0.0, 0.0)).Value,
       "Shift(Sample([-0, -0]), Sample([0, 0]))");
   }
 
@@ -88,7 +88,7 @@ public class NegativeZeroTests
     double[] x = [-1.0, -0.0, 1.0];
     double[] y = [-1.0, 0.0, 1.0];
     BitwiseAssert.Equal(0.0, Toolkit.Disparity(x, y), "Disparity([-1, -0, 1], [-1, 0, 1])");
-    BitwiseAssert.Equal(0.0, Toolkit.Disparity(new Sample(x), new Sample(y)).NominalValue,
+    BitwiseAssert.Equal(0.0, Toolkit.Disparity(new Sample(x), new Sample(y)).Value,
       "Disparity(Sample([-1, -0, 1]), Sample([-1, 0, 1]))");
   }
 

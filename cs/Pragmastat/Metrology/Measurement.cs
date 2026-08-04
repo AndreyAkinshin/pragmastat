@@ -4,22 +4,22 @@ using Pragmastat.Internal;
 
 namespace Pragmastat.Metrology;
 
-public class Measurement(double nominalValue, MeasurementUnit? unit = null) : IComparable<Measurement>, IComparable
+public class Measurement(double value, MeasurementUnit? unit = null) : IComparable<Measurement>, IComparable
 {
   public static Measurement Zero(MeasurementUnit? unit = null) => new(0, unit ?? MeasurementUnit.Number);
 
-  public double NominalValue { get; } = nominalValue;
+  public double Value { get; } = value;
   public MeasurementUnit Unit { get; } = unit ?? MeasurementUnit.Number;
 
-  public static implicit operator double(Measurement measurement) => measurement.NominalValue;
+  public static implicit operator double(Measurement measurement) => measurement.Value;
 
   public static Measurement operator +(Measurement a, Measurement b)
   {
     if (!a.Unit.IsCompatible(b.Unit))
       throw new UnitMismatchException(a.Unit, b.Unit);
     var target = MeasurementUnit.Finer(a.Unit, b.Unit);
-    double av = a.NominalValue * MeasurementUnit.ConversionFactor(a.Unit, target);
-    double bv = b.NominalValue * MeasurementUnit.ConversionFactor(b.Unit, target);
+    double av = a.Value * MeasurementUnit.ConversionFactor(a.Unit, target);
+    double bv = b.Value * MeasurementUnit.ConversionFactor(b.Unit, target);
     return new Measurement(av + bv, target);
   }
 
@@ -28,28 +28,28 @@ public class Measurement(double nominalValue, MeasurementUnit? unit = null) : IC
     if (!a.Unit.IsCompatible(b.Unit))
       throw new UnitMismatchException(a.Unit, b.Unit);
     var target = MeasurementUnit.Finer(a.Unit, b.Unit);
-    double av = a.NominalValue * MeasurementUnit.ConversionFactor(a.Unit, target);
-    double bv = b.NominalValue * MeasurementUnit.ConversionFactor(b.Unit, target);
+    double av = a.Value * MeasurementUnit.ConversionFactor(a.Unit, target);
+    double bv = b.Value * MeasurementUnit.ConversionFactor(b.Unit, target);
     return new Measurement(av - bv, target);
   }
 
-  public static Measurement operator +(Measurement a, double b) => new(a.NominalValue + b, a.Unit);
-  public static Measurement operator +(double a, Measurement b) => new(a + b.NominalValue, b.Unit);
-  public static Measurement operator +(Measurement a, int b) => new(a.NominalValue + b, a.Unit);
-  public static Measurement operator +(int a, Measurement b) => new(a + b.NominalValue, b.Unit);
+  public static Measurement operator +(Measurement a, double b) => new(a.Value + b, a.Unit);
+  public static Measurement operator +(double a, Measurement b) => new(a + b.Value, b.Unit);
+  public static Measurement operator +(Measurement a, int b) => new(a.Value + b, a.Unit);
+  public static Measurement operator +(int a, Measurement b) => new(a + b.Value, b.Unit);
 
-  public static Measurement operator -(Measurement a, double b) => new(a.NominalValue - b, a.Unit);
-  public static Measurement operator -(double a, Measurement b) => new(a - b.NominalValue, b.Unit);
-  public static Measurement operator -(Measurement a, int b) => new(a.NominalValue - b, a.Unit);
-  public static Measurement operator -(int a, Measurement b) => new(a - b.NominalValue, b.Unit);
+  public static Measurement operator -(Measurement a, double b) => new(a.Value - b, a.Unit);
+  public static Measurement operator -(double a, Measurement b) => new(a - b.Value, b.Unit);
+  public static Measurement operator -(Measurement a, int b) => new(a.Value - b, a.Unit);
+  public static Measurement operator -(int a, Measurement b) => new(a - b.Value, b.Unit);
 
-  public static Measurement operator *(Measurement a, double b) => new(a.NominalValue * b, a.Unit);
-  public static Measurement operator *(Measurement a, int b) => new(a.NominalValue * b, a.Unit);
-  public static Measurement operator *(double a, Measurement b) => new(a * b.NominalValue, b.Unit);
-  public static Measurement operator *(int a, Measurement b) => new(a * b.NominalValue, b.Unit);
+  public static Measurement operator *(Measurement a, double b) => new(a.Value * b, a.Unit);
+  public static Measurement operator *(Measurement a, int b) => new(a.Value * b, a.Unit);
+  public static Measurement operator *(double a, Measurement b) => new(a * b.Value, b.Unit);
+  public static Measurement operator *(int a, Measurement b) => new(a * b.Value, b.Unit);
 
-  public static Measurement operator /(Measurement a, double b) => new(a.NominalValue / b, a.Unit);
-  public static Measurement operator /(Measurement a, int b) => new(a.NominalValue / b, a.Unit);
+  public static Measurement operator /(Measurement a, double b) => new(a.Value / b, a.Unit);
+  public static Measurement operator /(Measurement a, int b) => new(a.Value / b, a.Unit);
 
   public static bool operator <(Measurement? left, Measurement? right) =>
     Comparer<Measurement?>.Default.Compare(left, right) < 0;
@@ -71,8 +71,8 @@ public class Measurement(double nominalValue, MeasurementUnit? unit = null) : IC
       return 1;
     if (!Unit.IsCompatible(other.Unit))
       throw new InvalidOperationException($"Cannot compare units of different families: {this} and {other}");
-    double a = NominalValue * Unit.BaseUnits;
-    double b = other.NominalValue * other.Unit.BaseUnits;
+    double a = Value * Unit.BaseUnits;
+    double b = other.Value * other.Unit.BaseUnits;
     return a.CompareTo(b);
   }
 
@@ -85,7 +85,7 @@ public class Measurement(double nominalValue, MeasurementUnit? unit = null) : IC
 
   public override string ToString()
   {
-    string value = NominalValue.ToString("G", CultureInfo.InvariantCulture);
+    string value = Value.ToString("G", CultureInfo.InvariantCulture);
     return Unit.Abbreviation.Length > 0 ? $"{value} {Unit.Abbreviation}" : value;
   }
 }
@@ -96,7 +96,7 @@ public static class MeasurementExtensions
   {
     double[] result = new double[measurements.Length];
     for (int i = 0; i < measurements.Length; i++)
-      result[i] = measurements[i].NominalValue;
+      result[i] = measurements[i].Value;
     return result;
   }
 }

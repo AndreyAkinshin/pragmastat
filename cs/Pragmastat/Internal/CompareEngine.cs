@@ -68,10 +68,10 @@ internal static class CompareEngine
   {
     if (!threshold.Value.Unit.IsCompatible(x.Unit))
       throw new UnitMismatchException(threshold.Value.Unit, x.Unit);
-    if (!threshold.Value.NominalValue.IsFinite())
+    if (!threshold.Value.Value.IsFinite())
       throw new ArgumentOutOfRangeException(nameof(threshold), "threshold.Value must be finite");
     double factor = MeasurementUnit.ConversionFactor(threshold.Value.Unit, x.Unit);
-    return new Measurement(threshold.Value.NominalValue * factor, x.Unit);
+    return new Measurement(threshold.Value.Value * factor, x.Unit);
   }
 
   private static Measurement ValidateSpread(Threshold threshold, Sample x, Sample? _) =>
@@ -81,11 +81,11 @@ internal static class CompareEngine
   {
     if (!threshold.Value.Unit.IsCompatible(x.Unit))
       throw new UnitMismatchException(threshold.Value.Unit, x.Unit);
-    if (!threshold.Value.NominalValue.IsFinite())
+    if (!threshold.Value.Value.IsFinite())
       throw new ArgumentOutOfRangeException(nameof(threshold), "threshold.Value must be finite");
     var finerUnit = MeasurementUnit.Finer(x.Unit, y!.Unit);
     double factor = MeasurementUnit.ConversionFactor(threshold.Value.Unit, finerUnit);
-    return new Measurement(threshold.Value.NominalValue * factor, finerUnit);
+    return new Measurement(threshold.Value.Value * factor, finerUnit);
   }
 
   private static Measurement ValidateRatio(Threshold threshold, Sample _, Sample? __)
@@ -93,7 +93,7 @@ internal static class CompareEngine
     var unit = threshold.Value.Unit;
     if (unit != MeasurementUnit.Ratio && unit != MeasurementUnit.Number)
       throw new UnitMismatchException(unit, MeasurementUnit.Ratio);
-    double value = threshold.Value.NominalValue;
+    double value = threshold.Value.Value;
     if (value <= 0 || !value.IsFinite())
       throw new ArgumentOutOfRangeException(nameof(threshold), "Ratio threshold.Value must be finite and positive");
     return new Measurement(value, MeasurementUnit.Ratio);
@@ -104,7 +104,7 @@ internal static class CompareEngine
     var unit = threshold.Value.Unit;
     if (unit != MeasurementUnit.Disparity && unit != MeasurementUnit.Number)
       throw new UnitMismatchException(unit, MeasurementUnit.Disparity);
-    double value = threshold.Value.NominalValue;
+    double value = threshold.Value.Value;
     if (!value.IsFinite())
       throw new ArgumentOutOfRangeException(nameof(threshold), "Disparity threshold.Value must be finite");
     return new Measurement(value, MeasurementUnit.Disparity);
@@ -126,7 +126,7 @@ internal static class CompareEngine
 
     foreach (var threshold in thresholds)
     {
-      if (!threshold.Value.NominalValue.IsFinite())
+      if (!threshold.Value.Value.IsFinite())
         throw new ArgumentOutOfRangeException(nameof(thresholds), "threshold.Value must be finite");
     }
 
@@ -159,7 +159,7 @@ internal static class CompareEngine
 
     foreach (var threshold in thresholds)
     {
-      if (!threshold.Value.NominalValue.IsFinite())
+      if (!threshold.Value.Value.IsFinite())
         throw new ArgumentOutOfRangeException(nameof(thresholds), "threshold.Value must be finite");
     }
 
@@ -214,7 +214,7 @@ internal static class CompareEngine
 
   private static ComparisonVerdict ComputeVerdict(Bounds bounds, Measurement normalizedThreshold)
   {
-    double t = normalizedThreshold.NominalValue;
+    double t = normalizedThreshold.Value;
     if (bounds.Lower > t) return ComparisonVerdict.Greater;
     if (bounds.Upper < t) return ComparisonVerdict.Less;
     return ComparisonVerdict.Inconclusive;

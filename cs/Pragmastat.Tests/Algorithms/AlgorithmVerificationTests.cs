@@ -209,8 +209,8 @@ public class AlgorithmVerificationTests
     var bounds = Toolkit.CenterBounds(sample, new Probability(0.5)); // Loose misrate for small n
 
     Assert.True(
-      bounds.Lower <= center.NominalValue && center.NominalValue <= bounds.Upper,
-      $"Center {center.NominalValue} should be within bounds [{bounds.Lower}, {bounds.Upper}]");
+      bounds.Lower <= center.Value && center.Value <= bounds.Upper,
+      $"Center {center.Value} should be within bounds [{bounds.Lower}, {bounds.Upper}]");
   }
 
 }

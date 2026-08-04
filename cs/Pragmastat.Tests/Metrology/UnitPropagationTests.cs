@@ -53,7 +53,7 @@ public class UnitPropagationTests
           Measurement m = CenterEstimator.Instance.Estimate(sx);
           Assert.Equal(expectedUnitId, m.Unit.Id);
           if (output.TryGetProperty("value", out var valueProp))
-            BitwiseAssert.Equal(valueProp.GetDouble(), m.NominalValue,
+            BitwiseAssert.Equal(valueProp.GetDouble(), m.Value,
               $"Suite: {SuiteName}, test {testName}, value");
           break;
         }

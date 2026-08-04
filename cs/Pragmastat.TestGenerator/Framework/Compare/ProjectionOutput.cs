@@ -16,7 +16,7 @@ public class ProjectionOutput
 
   public ProjectionOutput(Projection p)
   {
-    Estimate = p.Estimate.NominalValue;
+    Estimate = p.Estimate.Value;
     Lower = p.Bounds.Lower;
     Upper = p.Bounds.Upper;
     Verdict = p.Verdict switch
