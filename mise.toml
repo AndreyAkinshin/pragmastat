@@ -1051,10 +1051,6 @@ run = [
     # img:logo regenerates the committed img/logo.png, so the drift check below
     # also catches it going stale against logo.svg — it silently did for months.
     { task = "img:logo" },
-    # Fail CI if regeneration left uncommitted drift in tracked generated docs
-    # (per-language READMEs, width tables, logo.png). Guards against shipping
-    # stale output.
-    "git diff --exit-code || { echo 'ERROR: docs:sync produced uncommitted drift — regenerate and commit generated docs' >&2; exit 1; }",
     # Fail CI if any tracked file is missing from the working tree. The clean tasks delete
     # committed generated artifacts (img/logo.png, the bounds-width tables) on the reasoning
     # that build puts them back, which is true and which makes `clean` followed by a blanket
@@ -1063,6 +1059,11 @@ run = [
     { task = "docs:check" },
     { task = "pdf:build" },
     { task = "web:build" },
+    # Last, not sixth. The gate reports on the whole run, so anything above it that would have
+    # failed should fail on its own terms first. Sixth, a dirty tree stopped the run before
+    # docs:check, pdf:build and web:build had run at all: the result went red having verified
+    # almost nothing, which is the state a developer with uncommitted work is always in.
+    "git diff --exit-code || { echo 'ERROR: docs:sync produced uncommitted drift — regenerate and commit generated docs' >&2; exit 1; }",
 ]
 
 [tasks."docs:ci:release"]
@@ -1073,10 +1074,11 @@ run = [
     { task = "docs:clean" },
     { task = "docs:sync" },
     { task = "img:logo" },
-    "git diff --exit-code || { echo 'ERROR: docs:sync produced uncommitted drift — regenerate and commit generated docs' >&2; exit 1; }",
     { task = "docs:check" },
     { task = "pdf:build:release" },
     { task = "web:build:release" },
+    # Last, for the reason given on docs:ci above.
+    "git diff --exit-code || { echo 'ERROR: docs:sync produced uncommitted drift — regenerate and commit generated docs' >&2; exit 1; }",
 ]
 
 # ==========================================================================
