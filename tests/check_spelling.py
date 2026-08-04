@@ -59,6 +59,18 @@ SKIPPED_SUFFIXES = {".pdf", ".png", ".svg", ".ico", ".lock", ".woff", ".woff2", 
 # references.yaml quotes published titles; this file has to spell the forms it forbids.
 SKIPPED_FILES = {"manual/references.yaml", "tests/check_spelling.py"}
 
+# Tracked files that are not text. Named rather than detected, because "cannot decode it" is also
+# what a text file with a broken encoding looks like, and that one has to be a finding.
+BINARY_FILES = {
+    "cs/pragmastatKey.snk",
+    "kt/gradle/wrapper/gradle-wrapper.jar",
+}
+
+# How many files the sweep reads after the skips above. Pinned because the check reports success by
+# finding nothing, and reading nothing looks exactly the same: an empty `git ls-files`, a bad root
+# argument, or a widened skip rule would all have printed "spelling is consistent" and exited 0.
+EXPECTED_FILES = 820
+
 
 def is_fixture(rel: str) -> bool:
     if rel.startswith(FIXTURE_DIRS):
@@ -81,14 +93,24 @@ def main() -> int:
     root = Path(sys.argv[1] if len(sys.argv) > 1 else ".").resolve()
     pattern = re.compile("|".join(f"(?P<g{i}>{b})" for i, (b, _) in enumerate(FORMS)), re.IGNORECASE)
 
+    tracked = tracked_files(root)
+    if not tracked:
+        print(f"git ls-files listed nothing under {root}; the sweep read no files", file=sys.stderr)
+        return 1
+
     findings = []
-    for rel in tracked_files(root):
+    unreadable = []
+    read = 0
+    for rel in tracked:
         if rel in SKIPPED_FILES or is_fixture(rel) or Path(rel).suffix in SKIPPED_SUFFIXES:
             continue
         try:
             text = (root / rel).read_text()
-        except (UnicodeDecodeError, OSError):
+        except (UnicodeDecodeError, OSError) as error:
+            if rel not in BINARY_FILES:
+                unreadable.append((rel, error))
             continue
+        read += 1
         for number, line in enumerate(text.split("\n"), start=1):
             match = pattern.search(line)
             if match:
@@ -101,7 +123,19 @@ def main() -> int:
             print(f"  {rel}:{number}: {found!r} should be {want!r}", file=sys.stderr)
         return 1
 
-    print("spelling is consistent")
+    if unreadable:
+        print("tracked files the sweep could not read:", file=sys.stderr)
+        for rel, error in unreadable:
+            print(f"  {rel}: {error}", file=sys.stderr)
+        print("add a genuinely binary file to BINARY_FILES; fix the encoding otherwise", file=sys.stderr)
+        return 1
+
+    if read != EXPECTED_FILES:
+        print(f"the sweep read {read} files, expected {EXPECTED_FILES}", file=sys.stderr)
+        print("re-measure and update EXPECTED_FILES if the tree legitimately changed", file=sys.stderr)
+        return 1
+
+    print(f"spelling is consistent across {read} files")
     return 0
 
 
