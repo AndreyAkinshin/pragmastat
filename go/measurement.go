@@ -25,7 +25,7 @@ func NewNumberMeasurement(value float64) Measurement {
 }
 
 func (m Measurement) String() string {
-	s := strconv.FormatFloat(m.Value, 'G', -1, 64)
+	s := strconv.FormatFloat(m.Value, 'g', -1, 64)
 	if m.Unit != nil && len(m.Unit.Abbreviation) > 0 {
 		return fmt.Sprintf("%s %s", s, m.Unit.Abbreviation)
 	}
