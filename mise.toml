@@ -1081,11 +1081,27 @@ depends = ["cs:build", "go:build", "kt:build", "py:build", "r:build", "rs:build"
 
 [tasks."test"]
 description = "Test all language implementations"
-depends = ["cs:test", "go:test", "kt:test", "py:test", "r:test", "rs:test", "ts:test"]
+# tools:test covers the Typst to MDX converter, whose output ships on the website. It was reachable
+# from no aggregate at all, so its 140 tests ran only when someone named the task by hand.
+depends = ["cs:test", "go:test", "kt:test", "py:test", "r:test", "rs:test", "ts:test", "tools:test"]
 
 [tasks."check"]
 description = "Check all language implementations"
-depends = ["cs:check", "go:check", "kt:check", "py:check", "r:check", "rs:check", "ts:check"]
+# Everything with a check task belongs here: this is the documented pre-commit entry point, so a
+# check it does not reach is a check that only runs on GitHub. docs, tools and the simulation crate
+# were reachable from ci and from nothing else.
+depends = [
+    "cs:check",
+    "go:check",
+    "kt:check",
+    "py:check",
+    "r:check",
+    "rs:check",
+    "ts:check",
+    "docs:check",
+    "tools:check",
+    "rs:sim:check",
+]
 
 [tasks."check:fix"]
 description = "Auto-fix all language implementations"
