@@ -22,6 +22,11 @@ pub struct MeasurementUnit {
 
 impl MeasurementUnit {
     /// Creates a new measurement unit.
+    ///
+    /// An empty `abbreviation` is legal: the three dimensionless units have none.
+    ///
+    /// # Panics
+    /// Panics if `id` or `family` is empty, or if `base_units` is not positive.
     pub fn new(
         id: impl Into<String>,
         family: impl Into<String>,
@@ -29,9 +34,17 @@ impl MeasurementUnit {
         full_name: impl Into<String>,
         base_units: i64,
     ) -> Self {
+        let id = id.into();
+        let family = family.into();
+        // A non-positive base_units poisons every conversion through this unit, and it makes
+        // finer pick it over any well-formed one. An empty family makes unrelated units
+        // compatible.
+        assert!(!id.is_empty(), "id cannot be empty");
+        assert!(!family.is_empty(), "family cannot be empty");
+        assert!(base_units > 0, "base_units must be positive");
         Self {
-            id: id.into(),
-            family: family.into(),
+            id,
+            family,
             abbreviation: abbreviation.into(),
             full_name: full_name.into(),
             base_units,
@@ -206,5 +219,48 @@ mod tests {
         assert_eq!(unit.abbreviation(), "s");
         assert_eq!(unit.full_name(), "Second");
         assert_eq!(unit.base_units(), 1_000_000_000);
+    }
+
+    // `new` refuses malformed unit definitions. A non-positive `base_units` poisons every
+    // conversion through the unit and makes `finer` prefer it over any well-formed unit; an
+    // empty `family` makes two unrelated units compatible, because `is_compatible` compares
+    // families. An empty `abbreviation` stays legal: `custom_unit_fields` above builds a unit
+    // with one, and the three dimensionless units have none.
+
+    #[test]
+    #[should_panic(expected = "id cannot be empty")]
+    fn rejects_empty_id() {
+        MeasurementUnit::new("", "Time", "ms", "Millisecond", 1_000_000);
+    }
+
+    #[test]
+    #[should_panic(expected = "family cannot be empty")]
+    fn rejects_empty_family() {
+        MeasurementUnit::new("ms", "", "ms", "Millisecond", 1_000_000);
+    }
+
+    #[test]
+    #[should_panic(expected = "base_units must be positive")]
+    fn rejects_zero_base_units() {
+        MeasurementUnit::new("ms", "Time", "ms", "Millisecond", 0);
+    }
+
+    #[test]
+    #[should_panic(expected = "base_units must be positive")]
+    fn rejects_negative_base_units() {
+        MeasurementUnit::new("ms", "Time", "ms", "Millisecond", -1);
+    }
+
+    #[test]
+    fn dimensionless_units_keep_their_empty_abbreviation() {
+        for (id, unit) in [
+            ("number", MeasurementUnit::number()),
+            ("ratio", MeasurementUnit::ratio()),
+            ("disparity", MeasurementUnit::disparity()),
+        ] {
+            assert_eq!(unit.id(), id);
+            assert_eq!(unit.abbreviation(), "");
+            assert_eq!(unit.base_units(), 1);
+        }
     }
 }

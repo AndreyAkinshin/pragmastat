@@ -1,5 +1,7 @@
 /**
  * Represents a unit of measurement with identity, family, and conversion support.
+ *
+ * An empty abbreviation is legal: the three dimensionless units have none.
  */
 export class MeasurementUnit {
   constructor(
@@ -8,7 +10,19 @@ export class MeasurementUnit {
     readonly abbreviation: string,
     readonly fullName: string,
     readonly baseUnits: number,
-  ) {}
+  ) {
+    // A non-positive baseUnits poisons every conversion through this unit, and it makes finer
+    // pick it over any well-formed one. An empty family makes unrelated units compatible.
+    if (id.length === 0) {
+      throw new Error('id cannot be empty');
+    }
+    if (family.length === 0) {
+      throw new Error('family cannot be empty');
+    }
+    if (baseUnits <= 0) {
+      throw new Error('baseUnits must be positive');
+    }
+  }
 
   /** Returns true if both units belong to the same family. */
   isCompatible(other: MeasurementUnit): boolean {

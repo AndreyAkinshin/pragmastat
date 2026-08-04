@@ -26,6 +26,19 @@ MeasurementUnit <- R6::R6Class(
     #' @param full_name Full name
     #' @param base_units Number of base units
     initialize = function(id, family, abbreviation, full_name, base_units) {
+      # A non-positive base_units poisons every conversion through this unit, and it
+      # makes finer pick it over any well-formed one. An empty family makes unrelated
+      # units compatible. An empty abbreviation is legal: the three dimensionless
+      # units have none.
+      if (!nzchar(id)) {
+        stop("id cannot be empty")
+      }
+      if (!nzchar(family)) {
+        stop("family cannot be empty")
+      }
+      if (base_units <= 0) {
+        stop("base_units must be positive")
+      }
       self$id <- id
       self$family <- family
       self$abbreviation <- abbreviation

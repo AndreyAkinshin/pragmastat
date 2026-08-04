@@ -6,6 +6,10 @@ package dev.pragmastat
  * Units within the same [family] are compatible and can be converted between each other.
  * The [baseUnits] value determines the conversion factor: a unit with smaller baseUnits
  * represents a finer (higher precision) measurement.
+ *
+ * An empty [abbreviation] is legal: the three dimensionless units have none.
+ *
+ * @throws IllegalArgumentException If [id] or [family] is empty, or if [baseUnits] is not positive.
  */
 data class MeasurementUnit(
     /** Unique identifier for this unit (e.g., "ns", "us", "ms"). */
@@ -19,6 +23,15 @@ data class MeasurementUnit(
     /** Number of base units this unit represents. Used for conversion factor calculation. */
     val baseUnits: Long,
 ) {
+    init {
+        // A non-positive baseUnits poisons every conversion through this unit, and it makes
+        // finer pick it over any well-formed one. An empty family makes unrelated units
+        // compatible.
+        require(id.isNotEmpty()) { "id cannot be empty" }
+        require(family.isNotEmpty()) { "family cannot be empty" }
+        require(baseUnits > 0) { "baseUnits must be positive" }
+    }
+
     /** Returns true if this unit is compatible (same family) with [other]. */
     fun isCompatible(other: MeasurementUnit): Boolean = family == other.family
 }

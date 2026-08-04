@@ -3,12 +3,37 @@ package pragmastat
 import "fmt"
 
 // MeasurementUnit represents a unit of measurement with identity, family, and conversion support.
+// Build one with NewMeasurementUnit, which rejects malformed definitions.
 type MeasurementUnit struct {
 	ID           string
 	Family       string
 	Abbreviation string
 	FullName     string
 	BaseUnits    int64
+}
+
+// NewMeasurementUnit creates a measurement unit.
+// An empty Abbreviation is legal: the three dimensionless units have none.
+// Panics if id or family is empty, or if baseUnits is not positive.
+func NewMeasurementUnit(id, family, abbreviation, fullName string, baseUnits int64) *MeasurementUnit {
+	// A non-positive baseUnits poisons every conversion through this unit, and it makes Finer
+	// pick it over any well-formed one. An empty family makes unrelated units compatible.
+	if id == "" {
+		panic("id cannot be empty")
+	}
+	if family == "" {
+		panic("family cannot be empty")
+	}
+	if baseUnits <= 0 {
+		panic("baseUnits must be positive")
+	}
+	return &MeasurementUnit{
+		ID:           id,
+		Family:       family,
+		Abbreviation: abbreviation,
+		FullName:     fullName,
+		BaseUnits:    baseUnits,
+	}
 }
 
 // IsCompatible returns true if both units belong to the same family.
@@ -45,7 +70,7 @@ func (e *UnitMismatchError) Error() string {
 
 // Standard units
 var (
-	NumberUnit    = &MeasurementUnit{ID: "number", Family: "Number", Abbreviation: "", FullName: "Number", BaseUnits: 1}
-	RatioUnit     = &MeasurementUnit{ID: "ratio", Family: "Ratio", Abbreviation: "", FullName: "Ratio", BaseUnits: 1}
-	DisparityUnit = &MeasurementUnit{ID: "disparity", Family: "Disparity", Abbreviation: "", FullName: "Disparity", BaseUnits: 1}
+	NumberUnit    = NewMeasurementUnit("number", "Number", "", "Number", 1)
+	RatioUnit     = NewMeasurementUnit("ratio", "Ratio", "", "Ratio", 1)
+	DisparityUnit = NewMeasurementUnit("disparity", "Disparity", "", "Disparity", 1)
 )

@@ -11,13 +11,7 @@ import (
 
 // testSecond is a custom (non-Number) unit used to prove that center/spread/
 // shift bounds re-attach the *sample's* unit rather than the raw NumberUnit.
-var testSecond = &MeasurementUnit{
-	ID:           "second",
-	Family:       "Time",
-	Abbreviation: "s",
-	FullName:     "Second",
-	BaseUnits:    1,
-}
+var testSecond = NewMeasurementUnit("second", "Time", "s", "Second", 1)
 
 // --- unit re-attachment ---------------------------------------------------
 //

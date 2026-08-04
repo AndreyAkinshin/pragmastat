@@ -3,13 +3,28 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class MeasurementUnit:
-    """A unit of measurement with identity, family, and conversion support."""
+    """A unit of measurement with identity, family, and conversion support.
+
+    An empty abbreviation is legal: the three dimensionless units have none.
+    """
 
     id: str
     family: str
     abbreviation: str
     full_name: str
     base_units: int
+
+    def __post_init__(self) -> None:
+        """Reject malformed unit definitions."""
+        # A non-positive base_units poisons every conversion through this unit, and it makes
+        # finer pick it over any well-formed one. An empty family makes unrelated units
+        # compatible.
+        if not self.id:
+            raise ValueError("id cannot be empty")
+        if not self.family:
+            raise ValueError("family cannot be empty")
+        if self.base_units <= 0:
+            raise ValueError("base_units must be positive")
 
     def is_compatible(self, other: "MeasurementUnit") -> bool:
         """Returns True if both units belong to the same family."""

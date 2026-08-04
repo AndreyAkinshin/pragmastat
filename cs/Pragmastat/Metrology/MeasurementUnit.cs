@@ -1,17 +1,41 @@
 namespace Pragmastat.Metrology;
 
-public class MeasurementUnit(string id, string family, string abbreviation, string fullName, long baseUnits = 1)
-  : IEquatable<MeasurementUnit>
+public class MeasurementUnit : IEquatable<MeasurementUnit>
 {
   public static readonly MeasurementUnit Number = new("number", "Number", "", "Number", 1);
   public static readonly MeasurementUnit Ratio = new("ratio", "Ratio", "", "Ratio", 1);
   public static readonly MeasurementUnit Disparity = new("disparity", "Disparity", "", "Disparity", 1);
 
-  public string Id { get; } = id;
-  public string Family { get; } = family;
-  public string Abbreviation { get; } = abbreviation;
-  public string FullName { get; } = fullName;
-  public long BaseUnits { get; } = baseUnits;
+  /// <summary>
+  /// Creates a measurement unit.
+  /// </summary>
+  /// <remarks>
+  /// An empty abbreviation stays legal: the three dimensionless units have none.
+  /// </remarks>
+  /// <exception cref="ArgumentException">Thrown if id or family is empty.</exception>
+  /// <exception cref="ArgumentOutOfRangeException">Thrown if baseUnits is not positive.</exception>
+  public MeasurementUnit(string id, string family, string abbreviation, string fullName, long baseUnits = 1)
+  {
+    // A non-positive baseUnits poisons every conversion through this unit, and it makes Finer
+    // pick it over any well-formed one. An empty family makes unrelated units compatible.
+    if (string.IsNullOrEmpty(id))
+      throw new ArgumentException("id cannot be empty", nameof(id));
+    if (string.IsNullOrEmpty(family))
+      throw new ArgumentException("family cannot be empty", nameof(family));
+    if (baseUnits <= 0)
+      throw new ArgumentOutOfRangeException(nameof(baseUnits), baseUnits, "baseUnits must be positive");
+    Id = id;
+    Family = family;
+    Abbreviation = abbreviation;
+    FullName = fullName;
+    BaseUnits = baseUnits;
+  }
+
+  public string Id { get; }
+  public string Family { get; }
+  public string Abbreviation { get; }
+  public string FullName { get; }
+  public long BaseUnits { get; }
 
   public bool IsCompatible(MeasurementUnit other) => Family == other.Family;
 
