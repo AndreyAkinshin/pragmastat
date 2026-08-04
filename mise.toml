@@ -388,7 +388,7 @@ if [ ! -d "pragmastat/tests/tests" ]; then
     mkdir -p pragmastat/tests/tests
     cp -r ../tests/* pragmastat/tests/tests/
 fi
-cd pragmastat && Rscript -e "devtools::test()"
+cd pragmastat && Rscript -e "devtools::test(stop_on_failure = TRUE)"
 """
 
 [tasks."r:check"]

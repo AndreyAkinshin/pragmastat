@@ -114,7 +114,7 @@ jobs:
         R CMD build pragmastat
 
     - name: Test package
-      run: cd r/pragmastat && Rscript -e "devtools::test()"
+      run: cd r/pragmastat && Rscript -e "devtools::test(stop_on_failure = TRUE)"
 
     - name: Upload r artifacts
       if: inputs.release
