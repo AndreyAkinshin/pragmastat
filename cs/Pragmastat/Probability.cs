@@ -27,10 +27,12 @@ public readonly struct Probability : IComparable, IComparable<Probability>, IEqu
     return Value.ToString(CultureInfo.InvariantCulture);
   }
 
-  public int CompareTo(object? obj)
+  public int CompareTo(object? obj) => obj switch
   {
-    return Value.CompareTo(obj);
-  }
+    null => 1,
+    Probability other => CompareTo(other),
+    _ => throw new ArgumentException($"Object must be of type {nameof(Probability)}")
+  };
 
   public string ToString(IFormatProvider formatProvider)
   {
