@@ -91,6 +91,17 @@ linters:
   # wsl_v5          — too opinionated about whitespace
 
   settings:
+    staticcheck:
+      # golangci-lint's default excludes the whole ST1xxx family, so staticcheck was enabled and
+      # its style rules were silent. ST1020, ST1021 and ST1022 are the ones worth having: they do
+      # not demand that an exported name carry a comment, only that a comment it does carry opens
+      # with the name it documents. A rename that leaves the old name in the doc comment is
+      # invisible to review and to every other linter here.
+      #
+      # ST1003 stays off: it flags mu4_mu2_2 in pairwise_margin.go, where the underscores are
+      # subscripts from the Edgeworth expansion (mu4 over mu2 squared). Its suggestion, mu4Mu2_2,
+      # keeps an underscore and reads worse than the formula it transcribes.
+      checks: ["all", "-ST1003"]
     nakedret:
       max-func-lines: 0  # disallow naked returns
     godot:
