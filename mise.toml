@@ -646,6 +646,14 @@ description = "Assert prose across the repository uses one spelling convention"
 # grepping for "normalize" should find every place that normalizes.
 run = "python3 tests/check_spelling.py ."
 
+[tasks."tests:check:task-coverage"]
+description = "Assert every task is reachable from the aggregate that should run it"
+# A task and the aggregate that runs it are two separate spellings of one intent, and nothing tied
+# them together. docs:check, tools:check and rs:sim:check were reachable from ci alone, so the
+# documented pre-commit entry point did not run them; tools:test belonged to no aggregate at all.
+# Both were fixed by hand, and this is what stops the next one.
+run = "python3 tests/check_task_coverage.py ."
+
 [tasks."tests:check:generator-drift"]
 description = "Assert the generated fixtures still match the generator that owns them"
 # tests:check:rng-fixtures makes this check for the five suites the Rust generator owns. The
@@ -1105,7 +1113,20 @@ depends = [
 
 [tasks."check:fix"]
 description = "Auto-fix all language implementations"
-depends = ["cs:check:fix", "go:check:fix", "kt:check:fix", "py:check:fix", "r:check:fix", "rs:check:fix", "ts:check:fix"]
+# The fixing half must reach whatever the checking half reaches, or check reports something that
+# check:fix cannot repair. tools and the simulation crate were missing here for the same reason
+# they were missing from check.
+depends = [
+    "cs:check:fix",
+    "go:check:fix",
+    "kt:check:fix",
+    "py:check:fix",
+    "r:check:fix",
+    "rs:check:fix",
+    "ts:check:fix",
+    "tools:check:fix",
+    "rs:sim:check:fix",
+]
 
 [tasks."clean"]
 description = "Clean all build artifacts"
@@ -1117,7 +1138,7 @@ depends = ["cs:demo", "go:demo", "kt:demo", "py:demo", "r:demo", "rs:demo", "ts:
 
 [tasks."ci"]
 description = "Run CI pipeline for all language implementations"
-depends = ["cs:ci", "go:ci", "kt:ci", "py:ci", "r:ci", "rs:ci", "ts:ci", "docs:ci", "tests:check:rng-fixtures", "tests:check:conformance", "tests:check:generator-drift", "tests:check:spelling", "tests:check:coefficients"]
+depends = ["cs:ci", "go:ci", "kt:ci", "py:ci", "r:ci", "rs:ci", "ts:ci", "docs:ci", "tests:check:rng-fixtures", "tests:check:conformance", "tests:check:generator-drift", "tests:check:spelling", "tests:check:coefficients", "tests:check:task-coverage"]
 
 # ==========================================================================
 # Version Task
