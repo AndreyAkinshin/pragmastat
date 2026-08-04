@@ -27,10 +27,16 @@ impl Power {
     /// Create a new power (Pareto) distribution.
     ///
     /// # Panics
-    /// Panics if `min <= 0` or `shape <= 0`.
+    /// Panics if `min` or `shape` is not finite and positive.
     pub fn new(min: f64, shape: f64) -> Self {
-        assert!(min > 0.0, "min must be positive");
-        assert!(shape > 0.0, "shape must be positive");
+        assert!(
+            min.is_finite() && min > 0.0,
+            "min must be finite and positive"
+        );
+        assert!(
+            shape.is_finite() && shape > 0.0,
+            "shape must be finite and positive"
+        );
         Self { min, shape }
     }
 }

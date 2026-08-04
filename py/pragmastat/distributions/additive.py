@@ -31,10 +31,12 @@ class Additive(Distribution):
             std_dev: Scale parameter (standard deviation).
 
         Raises:
-            ValueError: If std_dev <= 0.
+            ValueError: If mean is not finite, or if std_dev is not finite and positive.
         """
-        if std_dev <= 0:
-            raise ValueError("std_dev must be positive")
+        if not math.isfinite(mean):
+            raise ValueError("mean must be finite")
+        if not (math.isfinite(std_dev) and std_dev > 0):
+            raise ValueError("std_dev must be finite and positive")
         self.mean = mean
         self.std_dev = std_dev
 

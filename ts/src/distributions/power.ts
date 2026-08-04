@@ -25,14 +25,14 @@ export class Power implements Distribution {
    *
    * @param min - Minimum value (lower bound, > 0).
    * @param shape - Shape parameter (alpha > 0, controls tail heaviness).
-   * @throws Error if min <= 0 or shape <= 0.
+   * @throws Error if min or shape is not finite and positive.
    */
   constructor(min: number, shape: number) {
-    if (min <= 0) {
-      throw new Error('min must be positive');
+    if (!(Number.isFinite(min) && min > 0)) {
+      throw new Error('min must be finite and positive');
     }
-    if (shape <= 0) {
-      throw new Error('shape must be positive');
+    if (!(Number.isFinite(shape) && shape > 0)) {
+      throw new Error('shape must be finite and positive');
     }
     this.min = min;
     this.shape = shape;

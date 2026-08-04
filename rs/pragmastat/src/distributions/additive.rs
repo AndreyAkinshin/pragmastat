@@ -26,9 +26,13 @@ impl Additive {
     /// Create a new additive (normal) distribution.
     ///
     /// # Panics
-    /// Panics if `std_dev <= 0`.
+    /// Panics if `mean` is not finite, or if `std_dev` is not finite and positive.
     pub fn new(mean: f64, std_dev: f64) -> Self {
-        assert!(std_dev > 0.0, "std_dev must be positive");
+        assert!(mean.is_finite(), "mean must be finite");
+        assert!(
+            std_dev.is_finite() && std_dev > 0.0,
+            "std_dev must be finite and positive"
+        );
         Self { mean, std_dev }
     }
 }

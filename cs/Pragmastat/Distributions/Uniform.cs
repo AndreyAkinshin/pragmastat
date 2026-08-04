@@ -1,3 +1,4 @@
+using Pragmastat.Internal;
 using Pragmastat.Randomization;
 
 namespace Pragmastat.Distributions;
@@ -30,10 +31,16 @@ public sealed class Uniform : IDistribution, IContinuousDistribution
   /// </summary>
   /// <param name="min">Lower bound (inclusive).</param>
   /// <param name="max">Upper bound (exclusive).</param>
-  /// <exception cref="ArgumentException">Thrown if min >= max.</exception>
+  /// <exception cref="ArgumentException">
+  /// Thrown if min or max is not finite, or if min is not less than max.
+  /// </exception>
   public Uniform(double min, double max)
   {
-    if (min >= max)
+    if (!min.IsFinite())
+      throw new ArgumentException("min must be finite");
+    if (!max.IsFinite())
+      throw new ArgumentException("max must be finite");
+    if (!(min < max))
       throw new ArgumentException("min must be less than max");
     Min = min;
     Max = max;

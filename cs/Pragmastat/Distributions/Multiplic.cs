@@ -35,11 +35,15 @@ public sealed class Multiplic : IDistribution, IContinuousDistribution
   /// </summary>
   /// <param name="logMean">Mean of log values (location parameter).</param>
   /// <param name="logStdDev">Standard deviation of log values (scale parameter).</param>
-  /// <exception cref="ArgumentException">Thrown if logStdDev &lt;= 0.</exception>
+  /// <exception cref="ArgumentException">
+  /// Thrown if logMean is not finite, or if logStdDev is not finite and positive.
+  /// </exception>
   public Multiplic(double logMean, double logStdDev)
   {
-    if (logStdDev <= 0)
-      throw new ArgumentException("logStdDev must be positive");
+    if (!logMean.IsFinite())
+      throw new ArgumentException("logMean must be finite");
+    if (!(logStdDev.IsFinite() && logStdDev > 0))
+      throw new ArgumentException("logStdDev must be finite and positive");
     LogMean = logMean;
     LogStdDev = logStdDev;
     _additive = new Additive(logMean, logStdDev);

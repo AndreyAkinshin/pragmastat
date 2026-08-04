@@ -7,9 +7,15 @@ type Uniform struct {
 }
 
 // NewUniform creates a new uniform distribution on [min, max).
-// Panics if min >= max.
+// Panics if min or max is not finite, or if min is not less than max.
 func NewUniform(min, max float64) *Uniform {
-	if min >= max {
+	if !isFinite(min) {
+		panic("min must be finite")
+	}
+	if !isFinite(max) {
+		panic("max must be finite")
+	}
+	if !(min < max) {
 		panic("min must be less than max")
 	}
 	return &Uniform{Min: min, Max: max}

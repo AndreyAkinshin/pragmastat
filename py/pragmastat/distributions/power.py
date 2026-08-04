@@ -31,12 +31,12 @@ class Power(Distribution):
             shape: Shape parameter (alpha > 0, controls tail heaviness).
 
         Raises:
-            ValueError: If min <= 0 or shape <= 0.
+            ValueError: If min or shape is not finite and positive.
         """
-        if min_val <= 0:
-            raise ValueError("min must be positive")
-        if shape <= 0:
-            raise ValueError("shape must be positive")
+        if not (math.isfinite(min_val) and min_val > 0):
+            raise ValueError("min must be finite and positive")
+        if not (math.isfinite(shape) and shape > 0):
+            raise ValueError("shape must be finite and positive")
         self.min = min_val
         self.shape = shape
 

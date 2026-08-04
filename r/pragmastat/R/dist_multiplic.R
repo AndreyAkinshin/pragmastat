@@ -14,8 +14,11 @@
 #'
 #' @export
 dist_multiplic <- function(log_mean, log_std_dev) {
-  if (log_std_dev <= 0) {
-    stop("log_std_dev must be positive")
+  if (!is.finite(log_mean)) {
+    stop("log_mean must be finite")
+  }
+  if (!(is.finite(log_std_dev) && log_std_dev > 0)) {
+    stop("log_std_dev must be finite and positive")
   }
 
   additive <- dist_additive(log_mean, log_std_dev)

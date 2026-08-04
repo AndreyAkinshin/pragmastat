@@ -26,11 +26,11 @@ public sealed class Exp : IDistribution, IContinuousDistribution
   /// Create a new exponential distribution with given rate.
   /// </summary>
   /// <param name="rate">Rate parameter (lambda > 0).</param>
-  /// <exception cref="ArgumentException">Thrown if rate &lt;= 0.</exception>
+  /// <exception cref="ArgumentException">Thrown if rate is not finite and positive.</exception>
   public Exp(double rate)
   {
-    if (rate <= 0)
-      throw new ArgumentException("rate must be positive");
+    if (!(rate.IsFinite() && rate > 0))
+      throw new ArgumentException("rate must be finite and positive");
     Rate = rate;
   }
 

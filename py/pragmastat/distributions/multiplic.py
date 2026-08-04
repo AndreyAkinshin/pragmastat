@@ -31,10 +31,13 @@ class Multiplic(Distribution):
             log_std_dev: Standard deviation of log values (scale parameter).
 
         Raises:
-            ValueError: If log_std_dev <= 0.
+            ValueError: If log_mean is not finite, or if log_std_dev is not finite
+                and positive.
         """
-        if log_std_dev <= 0:
-            raise ValueError("log_std_dev must be positive")
+        if not math.isfinite(log_mean):
+            raise ValueError("log_mean must be finite")
+        if not (math.isfinite(log_std_dev) and log_std_dev > 0):
+            raise ValueError("log_std_dev must be finite and positive")
         self.log_mean = log_mean
         self.log_std_dev = log_std_dev
         self._additive = Additive(log_mean, log_std_dev)

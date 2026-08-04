@@ -13,7 +13,15 @@
 #'
 #' @export
 dist_uniform <- function(min_val, max_val) {
-  if (min_val >= max_val) {
+  # is.finite() comes first on purpose. `!(NaN < 1)` is NA in R, and `if (NA)` raises base R's
+  # "missing value where TRUE/FALSE needed", which names neither the package nor the parameter.
+  if (!is.finite(min_val)) {
+    stop("min must be finite")
+  }
+  if (!is.finite(max_val)) {
+    stop("max must be finite")
+  }
+  if (!(min_val < max_val)) {
     stop("min must be less than max")
   }
 

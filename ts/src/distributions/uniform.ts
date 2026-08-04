@@ -22,10 +22,16 @@ export class Uniform implements Distribution {
    *
    * @param min - Lower bound (inclusive).
    * @param max - Upper bound (exclusive).
-   * @throws Error if min >= max.
+   * @throws Error if min or max is not finite, or if min is not less than max.
    */
   constructor(min: number, max: number) {
-    if (min >= max) {
+    if (!Number.isFinite(min)) {
+      throw new Error('min must be finite');
+    }
+    if (!Number.isFinite(max)) {
+      throw new Error('max must be finite');
+    }
+    if (!(min < max)) {
       throw new Error('min must be less than max');
     }
     this.min = min;

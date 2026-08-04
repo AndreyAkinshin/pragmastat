@@ -1,5 +1,6 @@
 """Uniform distribution."""
 
+import math
 from typing import TYPE_CHECKING
 
 from .distribution import Distribution
@@ -27,9 +28,13 @@ class Uniform(Distribution):
             max_val: Upper bound (exclusive).
 
         Raises:
-            ValueError: If min >= max.
+            ValueError: If min or max is not finite, or if min is not less than max.
         """
-        if min_val >= max_val:
+        if not math.isfinite(min_val):
+            raise ValueError("min must be finite")
+        if not math.isfinite(max_val):
+            raise ValueError("max must be finite")
+        if not min_val < max_val:
             raise ValueError("min must be less than max")
         self.min = min_val
         self.max = max_val

@@ -14,11 +14,11 @@
 #'
 #' @export
 dist_power <- function(min_val, shape) {
-  if (min_val <= 0) {
-    stop("min must be positive")
+  if (!(is.finite(min_val) && min_val > 0)) {
+    stop("min must be finite and positive")
   }
-  if (shape <= 0) {
-    stop("shape must be positive")
+  if (!(is.finite(shape) && shape > 0)) {
+    stop("shape must be finite and positive")
   }
 
   sample_fn <- function(rng) {

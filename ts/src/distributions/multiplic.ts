@@ -24,11 +24,14 @@ export class Multiplic implements Distribution {
    *
    * @param logMean - Mean of log values (location parameter).
    * @param logStdDev - Standard deviation of log values (scale parameter).
-   * @throws Error if logStdDev <= 0.
+   * @throws Error if logMean is not finite, or if logStdDev is not finite and positive.
    */
   constructor(logMean: number, logStdDev: number) {
-    if (logStdDev <= 0) {
-      throw new Error('logStdDev must be positive');
+    if (!Number.isFinite(logMean)) {
+      throw new Error('logMean must be finite');
+    }
+    if (!(Number.isFinite(logStdDev) && logStdDev > 0)) {
+      throw new Error('logStdDev must be finite and positive');
     }
     this.additive = new Additive(logMean, logStdDev);
   }

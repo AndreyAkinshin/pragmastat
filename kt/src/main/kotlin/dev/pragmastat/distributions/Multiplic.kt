@@ -11,7 +11,8 @@ import kotlin.math.exp
  *
  * @property logMean Mean of log values (location parameter).
  * @property logStdDev Standard deviation of log values (scale parameter).
- * @throws IllegalArgumentException If logStdDev <= 0.
+ * @throws IllegalArgumentException If logMean is not finite, or if logStdDev is not finite
+ * and positive.
  */
 class Multiplic(
     private val logMean: Double,
@@ -20,7 +21,8 @@ class Multiplic(
     private val additive: Additive
 
     init {
-        require(logStdDev > 0) { "logStdDev must be positive" }
+        require(logMean.isFinite()) { "logMean must be finite" }
+        require(logStdDev.isFinite() && logStdDev > 0) { "logStdDev must be finite and positive" }
         additive = Additive(logMean, logStdDev)
     }
 

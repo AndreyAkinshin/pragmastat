@@ -25,8 +25,10 @@ impl Uniform {
     /// Create a new uniform distribution on `[min, max)`.
     ///
     /// # Panics
-    /// Panics if `min >= max`.
+    /// Panics if `min` or `max` is not finite, or if `min` is not less than `max`.
     pub fn new(min: f64, max: f64) -> Self {
+        assert!(min.is_finite(), "min must be finite");
+        assert!(max.is_finite(), "max must be finite");
         assert!(min < max, "min must be less than max");
         Self { min, max }
     }

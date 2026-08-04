@@ -9,13 +9,15 @@ import dev.pragmastat.Rng
  *
  * @property min Lower bound (inclusive).
  * @property max Upper bound (exclusive).
- * @throws IllegalArgumentException If min >= max.
+ * @throws IllegalArgumentException If min or max is not finite, or if min is not less than max.
  */
 class Uniform(
     private val min: Double,
     private val max: Double,
 ) : Distribution {
     init {
+        require(min.isFinite()) { "min must be finite" }
+        require(max.isFinite()) { "max must be finite" }
         require(min < max) { "min must be less than max" }
     }
 

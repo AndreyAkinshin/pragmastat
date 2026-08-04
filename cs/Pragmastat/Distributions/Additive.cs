@@ -33,11 +33,15 @@ public sealed class Additive : IDistribution, IContinuousDistribution
   /// </summary>
   /// <param name="mean">Location parameter (center of the distribution).</param>
   /// <param name="stdDev">Scale parameter (standard deviation).</param>
-  /// <exception cref="ArgumentException">Thrown if stdDev &lt;= 0.</exception>
+  /// <exception cref="ArgumentException">
+  /// Thrown if mean is not finite, or if stdDev is not finite and positive.
+  /// </exception>
   public Additive(double mean, double stdDev)
   {
-    if (stdDev <= 0)
-      throw new ArgumentException("stdDev must be positive");
+    if (!mean.IsFinite())
+      throw new ArgumentException("mean must be finite");
+    if (!(stdDev.IsFinite() && stdDev > 0))
+      throw new ArgumentException("stdDev must be finite and positive");
     Mean = mean;
     StdDev = stdDev;
   }

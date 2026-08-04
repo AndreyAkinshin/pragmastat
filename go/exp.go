@@ -9,10 +9,10 @@ type Exp struct {
 }
 
 // NewExp creates a new exponential distribution with given rate.
-// Panics if rate <= 0.
+// Panics if rate is not finite and positive.
 func NewExp(rate float64) *Exp {
-	if rate <= 0 {
-		panic("rate must be positive")
+	if !(isFinite(rate) && rate > 0) {
+		panic("rate must be finite and positive")
 	}
 	return &Exp{Rate: rate}
 }

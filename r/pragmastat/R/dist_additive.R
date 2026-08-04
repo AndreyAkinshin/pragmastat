@@ -14,8 +14,13 @@
 #'
 #' @export
 dist_additive <- function(mean, std_dev) {
-  if (std_dev <= 0) {
-    stop("std_dev must be positive")
+  # is.finite() comes first on purpose. `!(NaN > 0)` is NA in R, and `if (NA)` raises base R's
+  # "missing value where TRUE/FALSE needed", which names neither the package nor the parameter.
+  if (!is.finite(mean)) {
+    stop("mean must be finite")
+  }
+  if (!(is.finite(std_dev) && std_dev > 0)) {
+    stop("std_dev must be finite and positive")
   }
 
   sample_fn <- function(rng) {

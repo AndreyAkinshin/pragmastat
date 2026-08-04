@@ -26,9 +26,12 @@ impl Exp {
     /// Create a new exponential distribution with given rate.
     ///
     /// # Panics
-    /// Panics if `rate <= 0`.
+    /// Panics if `rate` is not finite and positive.
     pub fn new(rate: f64) -> Self {
-        assert!(rate > 0.0, "rate must be positive");
+        assert!(
+            rate.is_finite() && rate > 0.0,
+            "rate must be finite and positive"
+        );
         Self { rate }
     }
 }

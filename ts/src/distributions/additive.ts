@@ -25,11 +25,14 @@ export class Additive implements Distribution {
    *
    * @param mean - Location parameter (center of the distribution).
    * @param stdDev - Scale parameter (standard deviation).
-   * @throws Error if stdDev <= 0.
+   * @throws Error if mean is not finite, or if stdDev is not finite and positive.
    */
   constructor(mean: number, stdDev: number) {
-    if (stdDev <= 0) {
-      throw new Error('stdDev must be positive');
+    if (!Number.isFinite(mean)) {
+      throw new Error('mean must be finite');
+    }
+    if (!(Number.isFinite(stdDev) && stdDev > 0)) {
+      throw new Error('stdDev must be finite and positive');
     }
     this.mean = mean;
     this.stdDev = stdDev;

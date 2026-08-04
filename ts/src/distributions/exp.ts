@@ -23,11 +23,11 @@ export class Exp implements Distribution {
    * Create a new exponential distribution with given rate.
    *
    * @param rate - Rate parameter (lambda > 0).
-   * @throws Error if rate <= 0.
+   * @throws Error if rate is not finite and positive.
    */
   constructor(rate: number) {
-    if (rate <= 0) {
-      throw new Error('rate must be positive');
+    if (!(Number.isFinite(rate) && rate > 0)) {
+      throw new Error('rate must be finite and positive');
     }
     this.rate = rate;
   }

@@ -30,10 +30,10 @@ class Exp(Distribution):
             rate: Rate parameter (lambda > 0).
 
         Raises:
-            ValueError: If rate <= 0.
+            ValueError: If rate is not finite and positive.
         """
-        if rate <= 0:
-            raise ValueError("rate must be positive")
+        if not (math.isfinite(rate) and rate > 0):
+            raise ValueError("rate must be finite and positive")
         self.rate = rate
 
     def sample(self, rng: "Rng") -> float:

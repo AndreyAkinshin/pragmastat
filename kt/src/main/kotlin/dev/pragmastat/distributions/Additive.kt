@@ -12,14 +12,15 @@ import kotlin.math.*
  *
  * @property mean Location parameter (center of the distribution).
  * @property stdDev Scale parameter (standard deviation).
- * @throws IllegalArgumentException If stdDev <= 0.
+ * @throws IllegalArgumentException If mean is not finite, or if stdDev is not finite and positive.
  */
 class Additive(
     private val mean: Double,
     private val stdDev: Double,
 ) : Distribution {
     init {
-        require(stdDev > 0) { "stdDev must be positive" }
+        require(mean.isFinite()) { "mean must be finite" }
+        require(stdDev.isFinite() && stdDev > 0) { "stdDev must be finite and positive" }
     }
 
     override fun sample(rng: Rng): Double {

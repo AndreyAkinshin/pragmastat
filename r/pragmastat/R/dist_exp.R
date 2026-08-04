@@ -13,8 +13,8 @@
 #'
 #' @export
 dist_exp <- function(rate) {
-  if (rate <= 0) {
-    stop("rate must be positive")
+  if (!(is.finite(rate) && rate > 0)) {
+    stop("rate must be finite and positive")
   }
 
   sample_fn <- function(rng) {

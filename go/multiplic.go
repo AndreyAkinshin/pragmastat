@@ -11,10 +11,13 @@ type Multiplic struct {
 }
 
 // NewMultiplic creates a new multiplicative (log-normal) distribution.
-// Panics if logStdDev <= 0.
+// Panics if logMean is not finite, or if logStdDev is not finite and positive.
 func NewMultiplic(logMean, logStdDev float64) *Multiplic {
-	if logStdDev <= 0 {
-		panic("logStdDev must be positive")
+	if !isFinite(logMean) {
+		panic("logMean must be finite")
+	}
+	if !(isFinite(logStdDev) && logStdDev > 0) {
+		panic("logStdDev must be finite and positive")
 	}
 	return &Multiplic{
 		LogMean:   logMean,

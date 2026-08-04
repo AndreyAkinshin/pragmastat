@@ -10,10 +10,13 @@ type Additive struct {
 }
 
 // NewAdditive creates a new additive (normal) distribution.
-// Panics if stdDev <= 0.
+// Panics if mean is not finite, or if stdDev is not finite and positive.
 func NewAdditive(mean, stdDev float64) *Additive {
-	if stdDev <= 0 {
-		panic("stdDev must be positive")
+	if !isFinite(mean) {
+		panic("mean must be finite")
+	}
+	if !(isFinite(stdDev) && stdDev > 0) {
+		panic("stdDev must be finite and positive")
 	}
 	return &Additive{Mean: mean, StdDev: stdDev}
 }

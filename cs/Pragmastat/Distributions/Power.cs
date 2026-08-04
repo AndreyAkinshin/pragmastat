@@ -32,13 +32,15 @@ public sealed class Power : IDistribution, IContinuousDistribution
   /// </summary>
   /// <param name="min">Minimum value (lower bound, > 0).</param>
   /// <param name="shape">Shape parameter (alpha > 0, controls tail heaviness).</param>
-  /// <exception cref="ArgumentException">Thrown if min &lt;= 0 or shape &lt;= 0.</exception>
+  /// <exception cref="ArgumentException">
+  /// Thrown if min or shape is not finite and positive.
+  /// </exception>
   public Power(double min, double shape)
   {
-    if (min <= 0)
-      throw new ArgumentException("min must be positive");
-    if (shape <= 0)
-      throw new ArgumentException("shape must be positive");
+    if (!(min.IsFinite() && min > 0))
+      throw new ArgumentException("min must be finite and positive");
+    if (!(shape.IsFinite() && shape > 0))
+      throw new ArgumentException("shape must be finite and positive");
     Min = min;
     Shape = shape;
   }

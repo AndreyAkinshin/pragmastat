@@ -12,15 +12,15 @@ import kotlin.math.pow
  *
  * @property min Minimum value (lower bound, > 0).
  * @property shape Shape parameter (alpha > 0, controls tail heaviness).
- * @throws IllegalArgumentException If min <= 0 or shape <= 0.
+ * @throws IllegalArgumentException If min or shape is not finite and positive.
  */
 class Power(
     private val min: Double,
     private val shape: Double,
 ) : Distribution {
     init {
-        require(min > 0) { "min must be positive" }
-        require(shape > 0) { "shape must be positive" }
+        require(min.isFinite() && min > 0) { "min must be finite and positive" }
+        require(shape.isFinite() && shape > 0) { "shape must be finite and positive" }
     }
 
     override fun sample(rng: Rng): Double {

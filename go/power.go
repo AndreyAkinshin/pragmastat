@@ -10,13 +10,13 @@ type Power struct {
 }
 
 // NewPower creates a new power (Pareto) distribution.
-// Panics if min <= 0 or shape <= 0.
+// Panics if min or shape is not finite and positive.
 func NewPower(min, shape float64) *Power {
-	if min <= 0 {
-		panic("min must be positive")
+	if !(isFinite(min) && min > 0) {
+		panic("min must be finite and positive")
 	}
-	if shape <= 0 {
-		panic("shape must be positive")
+	if !(isFinite(shape) && shape > 0) {
+		panic("shape must be finite and positive")
 	}
 	return &Power{Min: min, Shape: shape}
 }

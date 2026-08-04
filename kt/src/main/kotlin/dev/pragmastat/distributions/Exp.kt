@@ -11,13 +11,13 @@ import kotlin.math.ln
  * Naturally arises from memoryless processes.
  *
  * @property rate Rate parameter (lambda > 0).
- * @throws IllegalArgumentException If rate <= 0.
+ * @throws IllegalArgumentException If rate is not finite and positive.
  */
 class Exp(
     private val rate: Double,
 ) : Distribution {
     init {
-        require(rate > 0) { "rate must be positive" }
+        require(rate.isFinite() && rate > 0) { "rate must be finite and positive" }
     }
 
     override fun sample(rng: Rng): Double {
