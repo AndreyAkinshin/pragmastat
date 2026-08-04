@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fail when a task exists that its aggregate does not reach.
+"""Fail when a task exists that its aggregate does not reach, or that the workflow never runs.
 
 Every language pipeline is spelled twice: once as a task, once as an entry in the aggregate that
 runs it. Nothing tied the two together, so adding a task and forgetting the aggregate produced a
@@ -15,11 +15,22 @@ The rule is containment by suffix. A task named <something>:check belongs in `ch
 `test`, :ci in `ci`, :check:fix in `check:fix`, and anything under tests:check: is a repository
 guard, which belongs in `ci`. Exemptions are named individually below, so the set this reads is
 everything minus a short list rather than a list that has to be kept complete.
+
+The second direction is the workflow. `.github/workflows/ci.yml` does not run `mise run ci`; it
+names each guard in its own step, so a guard added to the ci aggregate reaches every developer and
+no pull request. This check found exactly that on its first run: tests:check:task-coverage, added
+one commit earlier, was in the aggregate and in no job.
 """
 
+import re
 import sys
 import tomllib
 from pathlib import Path
+
+WORKFLOW = Path(".github/workflows/ci.yml")
+
+# Guards the workflow deliberately does not run, each with the reason. Empty today.
+NOT_IN_THE_WORKFLOW: dict[str, str] = {}
 
 # suffix -> the aggregate that must depend on every task carrying it.
 # Order matters: ":check:fix" is tested before ":check", because a name ending in the former also
@@ -102,7 +113,40 @@ def main() -> int:
         print("re-measure and update EXPECTED_CHECKED if the change is intended", file=sys.stderr)
         return 1
 
-    print(f"every aggregate reaches its tasks: {checked} judged, {len(tasks)} declared")
+    workflow_path = root / WORKFLOW
+    if not workflow_path.is_file():
+        print(f"no workflow at {workflow_path}", file=sys.stderr)
+        return 1
+    invoked = set(re.findall(r"mise run ([\w:-]+)", workflow_path.read_text()))
+    if not invoked:
+        print(f"{WORKFLOW} invokes no mise task at all", file=sys.stderr)
+        return 1
+
+    guards = {n for n in tasks if n.startswith(GUARD_PREFIX)}
+    unrun = sorted(guards - invoked - set(NOT_IN_THE_WORKFLOW))
+    if unrun:
+        print(f"guards the workflow never runs, so they gate no pull request:", file=sys.stderr)
+        for name in unrun:
+            print(f"  {name}", file=sys.stderr)
+        print(f"add a step to {WORKFLOW}, or name it in NOT_IN_THE_WORKFLOW with a reason", file=sys.stderr)
+        return 1
+
+    unknown = sorted(n for n in invoked if n.startswith(GUARD_PREFIX) and n not in tasks)
+    if unknown:
+        print(f"{WORKFLOW} runs guards that mise.toml does not declare:", file=sys.stderr)
+        for name in unknown:
+            print(f"  {name}", file=sys.stderr)
+        return 1
+
+    stale_workflow = sorted(set(NOT_IN_THE_WORKFLOW) - guards)
+    if stale_workflow:
+        print(f"NOT_IN_THE_WORKFLOW names guards that no longer exist: {', '.join(stale_workflow)}", file=sys.stderr)
+        return 1
+
+    print(
+        f"every aggregate reaches its tasks: {checked} judged, {len(tasks)} declared; "
+        f"{len(guards)} guards all run in the workflow"
+    )
     return 0
 
 

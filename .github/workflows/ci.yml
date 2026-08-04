@@ -340,6 +340,9 @@ jobs:
     - name: Shipped coefficients match the scripts that produce them
       run: mise run tests:check:coefficients
 
+    - name: Every task is reachable from the aggregate that runs it
+      run: mise run tests:check:task-coverage
+
   ci-kt:
     runs-on: ubuntu-24.04
     steps:
