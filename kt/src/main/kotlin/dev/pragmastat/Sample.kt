@@ -1,11 +1,9 @@
 package dev.pragmastat
 
-import kotlin.math.ln
-
 /**
  * A statistical sample: a list of numeric values with optional weights and a measurement unit.
  *
- * Samples are immutable. All transformations (convertTo, log, arithmetic operators)
+ * Samples are immutable. All transformations (convertTo, arithmetic operators)
  * return new Sample instances.
  *
  * Use the companion [of] and [weighted] factory methods to create instances.
@@ -63,22 +61,6 @@ class Sample private constructor(
         val factor = conversionFactor(unit, target)
         val converted = values.map { it * factor }
         return Sample(converted, weights?.toList(), target)
-    }
-
-    /**
-     * Log-transform: returns a new sample with ln(value) for each value, unit becomes [NumberUnit].
-     *
-     * @throws AssumptionException with POSITIVITY violation if any value is non-positive
-     */
-    fun log(): Sample {
-        val logValues =
-            values.map { v ->
-                if (v <= 0.0) {
-                    throw AssumptionException(Violation(AssumptionId.POSITIVITY, Subject.X))
-                }
-                ln(v)
-            }
-        return Sample(logValues, weights?.toList(), NumberUnit)
     }
 
     /** Returns a new sample with each value multiplied by [scalar]. */

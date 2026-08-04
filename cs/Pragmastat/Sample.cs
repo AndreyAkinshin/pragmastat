@@ -246,18 +246,4 @@ public class Sample
 
   public Measurement Min() => SortedValues[0].WithUnit(Unit);
   public Measurement Max() => SortedValues[SortedValues.Count - 1].WithUnit(Unit);
-
-  public Sample Log()
-  {
-    double[] logValues = new double[Size];
-    for (int i = 0; i < Size; i++)
-    {
-      if (Values[i] <= 0)
-        throw AssumptionException.Positivity(Subject.X);
-      logValues[i] = Math.Log(Values[i]);
-    }
-    return IsWeighted
-      ? new Sample(logValues, Weights!, MeasurementUnit.Number)
-      : new Sample(logValues, MeasurementUnit.Number);
-  }
 }

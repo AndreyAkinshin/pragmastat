@@ -40,7 +40,6 @@ scalar transformations (e.g. \code{sample * 1000}).
 \section{Methods}{
 \describe{
 \item{\code{convert_to(target)}}{Convert values to a compatible target unit. Returns a new Sample.}
-\item{\code{log_transform()}}{Log-transform values (all must be positive). Returns a new Sample with \code{\link{number_unit}}.}
 }
 }
 \examples{

@@ -71,18 +71,6 @@ Sample <- R6::R6Class(
       Sample$new(converted,
         weights = private$.weights, unit = target
       )
-    },
-
-    #' @description Log-transform the sample values (positivity required)
-    #' @return A new Sample with log-transformed values and NumberUnit
-    log_transform = function() {
-      if (any(private$.values <= 0)) {
-        stop(assumption_error(ASSUMPTION_IDS$POSITIVITY, SUBJECTS$X))
-      }
-      Sample$new(log(private$.values),
-        weights = private$.weights,
-        unit = number_unit
-      )
     }
   ),
   active = list(

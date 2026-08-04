@@ -101,22 +101,6 @@ export class Sample {
     const converted = this.values.map((v) => v * factor);
     return new Sample(converted, this.weights !== null ? [...this.weights] : null, target);
   }
-
-  /** Returns a new sample with log-transformed values and NumberUnit. */
-  log(): Sample {
-    const logValues = new Array<number>(this.values.length);
-    for (let i = 0; i < this.values.length; i++) {
-      if (this.values[i] <= 0) {
-        throw AssumptionError.positivity('x');
-      }
-      logValues[i] = Math.log(this.values[i]);
-    }
-    return new Sample(
-      logValues,
-      this.weights !== null ? [...this.weights] : null,
-      MeasurementUnit.NUMBER,
-    );
-  }
 }
 
 /** Checks that a sample is not weighted; throws AssumptionError if it is. */
