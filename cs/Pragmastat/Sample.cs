@@ -98,8 +98,9 @@ public class Sample
       throw new ArgumentOutOfRangeException(nameof(weights),
         $"All weights in {nameof(weights)} should be non-negative");
     if (totalWeight < 1e-9)
-      throw new ArgumentException(nameof(weights),
-        $"The sum of all elements from {nameof(weights)} should be positive");
+      throw new ArgumentException(
+        $"The sum of all elements from {nameof(weights)} should be positive",
+        nameof(weights));
 
     Values = values.ToArray();
     Weights = weights.ToArray();

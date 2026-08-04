@@ -20,7 +20,7 @@ internal static class Assertion
     if (values == null)
       throw new ArgumentNullException(name, $"{name} can't be null");
     if (values.Count == 0)
-      throw new ArgumentException(name, $"{name} can't be empty");
+      throw new ArgumentException($"{name} can't be empty", name);
   }
 
   [AssertionMethod]
@@ -29,7 +29,7 @@ internal static class Assertion
     if (sample == null)
       throw new ArgumentNullException(name, $"{name} can't be null");
     if (sample.Size == 0)
-      throw new ArgumentException(name, $"{name} can't be empty");
+      throw new ArgumentException($"{name} can't be empty", name);
   }
 
   [AssertionMethod]
