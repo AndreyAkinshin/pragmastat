@@ -28,6 +28,15 @@ Sample <- R6::R6Class(
         if (length(weights) != length(values)) {
           stop("weights length must match values length")
         }
+        # Finiteness first, and by a positive predicate. `any(weights < 0)` is NA when a
+        # weight is NaN, and `if (NA)` raises base R's "missing value where TRUE/FALSE
+        # needed", which names neither the package nor the parameter; an infinity passed
+        # the comparison outright and constructed a sample with an infinite total weight.
+        # is.numeric comes with it for the reason the values already carry one: these
+        # checks run on `weights` while the field is stored from as.double(weights).
+        if (!is.numeric(weights) || !all(is.finite(weights))) {
+          stop("all weights must be finite")
+        }
         if (any(weights < 0)) {
           stop("all weights must be non-negative")
         }

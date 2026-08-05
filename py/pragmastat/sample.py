@@ -40,6 +40,15 @@ class Sample:
             if len(w) != len(arr):
                 msg = f"weights length ({len(w)}) must match values length ({len(arr)})"
                 raise ValueError(msg)
+            # Finiteness first, and by a positive predicate. Every check below is a
+            # comparison, and every comparison is false for NaN, so w < 0 passed it and so
+            # did the total-weight test that follows: a sample built from [NaN, 1] used to
+            # construct and publish a NaN total weight and a NaN weighted size. The values
+            # have carried a finiteness check since construction existed; only the weights
+            # beside them did not.
+            if not np.all(np.isfinite(w)):
+                msg = "all weights must be finite"
+                raise ValueError(msg)
             if np.any(w < 0):
                 msg = "all weights must be non-negative"
                 raise ValueError(msg)

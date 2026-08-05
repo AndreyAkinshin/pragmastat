@@ -11,21 +11,26 @@ test_that("sample construction satisfies reference tests", {
 
     input <- test_case$input
 
-    # Parse values, handling special floats
-    values <- vapply(input$values, function(v) {
-      if (is.character(v)) {
-        switch(v,
-          "NaN" = NaN,
-          "Infinity" = Inf,
-          "-Infinity" = -Inf,
+    # Parse a fixture's number list, where a special float arrives as a string.
+    parse_specials <- function(raw) {
+      vapply(raw, function(v) {
+        if (is.character(v)) {
+          switch(v,
+            "NaN" = NaN,
+            "Infinity" = Inf,
+            "-Infinity" = -Inf,
+            as.numeric(v)
+          )
+        } else {
           as.numeric(v)
-        )
-      } else {
-        as.numeric(v)
-      }
-    }, numeric(1))
+        }
+      }, numeric(1))
+    }
 
-    weights <- if (!is.null(input$weights)) as.numeric(input$weights) else NULL
+    values <- parse_specials(input$values)
+    # Weights go through the same reader as the values. They did not, so as.numeric("NaN")
+    # would have warned and produced NA rather than a NaN weight.
+    weights <- if (!is.null(input$weights)) parse_specials(input$weights) else NULL
 
     if (!is.null(test_case$expected_error)) {
       # Error test case

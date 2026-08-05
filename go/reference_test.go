@@ -1242,37 +1242,28 @@ func TestSampleConstruction(t *testing.T) {
 				t.Fatalf("Failed to parse: %v", err)
 			}
 
+			// Weights are read as interface{} for the same reason the values are: a fixture
+			// states a special float as a string, and []float64 could not hold one at all, so
+			// no fixture could state a NaN weight.
 			var input struct {
 				Values  []interface{} `json:"values"`
-				Weights []float64     `json:"weights"`
+				Weights []interface{} `json:"weights"`
 			}
 			if err := json.Unmarshal(raw["input"], &input); err != nil {
 				t.Fatalf("Failed to parse input: %v", err)
 			}
 
-			// Convert values handling special floats
-			values := make([]float64, len(input.Values))
-			for i, v := range input.Values {
-				switch val := v.(type) {
-				case float64:
-					values[i] = val
-				case string:
-					switch val {
-					case "NaN":
-						values[i] = math.NaN()
-					case "Infinity":
-						values[i] = math.Inf(1)
-					case "-Infinity":
-						values[i] = math.Inf(-1)
-					}
-				}
+			values := parseSpecialFloats(input.Values)
+			var weights []float64
+			if input.Weights != nil {
+				weights = parseSpecialFloats(input.Weights)
 			}
 
 			if _, ok := raw["expected_error"]; ok {
 				var s *Sample
 				var sErr error
-				if input.Weights != nil {
-					s, sErr = NewWeightedSample(values, input.Weights, nil)
+				if weights != nil {
+					s, sErr = NewWeightedSample(values, weights, nil)
 				} else {
 					s, sErr = NewSample(values)
 				}
@@ -1294,8 +1285,8 @@ func TestSampleConstruction(t *testing.T) {
 
 			var s *Sample
 			var sErr error
-			if input.Weights != nil {
-				s, sErr = NewWeightedSample(values, input.Weights, nil)
+			if weights != nil {
+				s, sErr = NewWeightedSample(values, weights, nil)
 			} else {
 				s, sErr = NewSample(values)
 			}
@@ -1855,4 +1846,26 @@ func TestExpFunctionReference(t *testing.T) {
 	if checked != expFunctionArgCount {
 		t.Errorf("Checked %d arguments, want %d", checked, expFunctionArgCount)
 	}
+}
+
+// parseSpecialFloats converts a fixture's number list, where a special float arrives as one of the
+// strings "NaN", "Infinity" or "-Infinity", into float64s.
+func parseSpecialFloats(raw []interface{}) []float64 {
+	out := make([]float64, len(raw))
+	for i, v := range raw {
+		switch val := v.(type) {
+		case float64:
+			out[i] = val
+		case string:
+			switch val {
+			case "NaN":
+				out[i] = math.NaN()
+			case "Infinity":
+				out[i] = math.Inf(1)
+			case "-Infinity":
+				out[i] = math.Inf(-1)
+			}
+		}
+	}
+	return out
 }

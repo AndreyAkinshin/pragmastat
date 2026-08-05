@@ -815,12 +815,23 @@ class TestSampleConstruction:
         for fixture_name, test_case in _load_fixtures("sample-construction"):
             context = f" for {fixture_name}"
             values = _parse_sample_values(test_case["input"]["values"])
-            weights = test_case["input"].get("weights")
+            raw_weights = test_case["input"].get("weights")
+            # Weights go through the same special-float reader as the values. They did not, so a
+            # fixture could not state a NaN weight at all: the string would have reached the
+            # constructor as a string.
+            weights = None if raw_weights is None else _parse_sample_values(raw_weights)
 
             if "expected_error" in test_case:
+                expected = test_case["expected_error"]
+                if isinstance(expected, str):
+                    # A refusal outside the assumption ids, named rather than described. The other
+                    # suites that carry this form assert only that construction is refused.
+                    with pytest.raises((AssumptionError, ValueError)):
+                        Sample(values, weights=weights)
+                    continue
                 with pytest.raises(AssumptionError) as exc_info:
                     Sample(values, weights=weights)
-                _assert_violation(exc_info.value, test_case["expected_error"], context)
+                _assert_violation(exc_info.value, expected, context)
                 continue
 
             output = test_case["output"]

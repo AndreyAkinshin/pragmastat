@@ -120,6 +120,14 @@ class Sample private constructor(
                         "weights length (${weights.size}) must match values length (${values.size})",
                     )
                 }
+                // Finiteness first, and by a positive predicate. Every check below is a
+                // comparison, and every comparison is false for NaN, so w < minW left minW at
+                // MAX_VALUE and minW < 0.0 passed, as did the total-weight test: a sample built
+                // from [NaN, 1] used to construct and publish a NaN total weight and a NaN
+                // weighted size. The values have carried this check all along.
+                if (weights.any { !it.isFinite() }) {
+                    throw AssumptionException("all weights must be finite")
+                }
                 var totalW = 0.0
                 var minW = Double.MAX_VALUE
                 for (w in weights) {

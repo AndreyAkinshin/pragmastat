@@ -33,6 +33,15 @@ export class Sample {
           `weights length (${weights.length}) must match values length (${values.length})`,
         );
       }
+      // Finiteness first, and by a positive predicate. Every check below is a comparison,
+      // and every comparison is false for NaN, so w < 0 passed it and so did the total-weight
+      // test: a sample built from [NaN, 1] used to construct and publish a NaN totalWeight and
+      // a NaN weightedSize. The values have carried this check since construction existed.
+      for (const w of weights) {
+        if (!Number.isFinite(w)) {
+          throw new Error('all weights must be finite');
+        }
+      }
       let totalWeight = 0;
       let totalWeightSq = 0;
       for (const w of weights) {

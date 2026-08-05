@@ -109,6 +109,16 @@ func newSample[T Number](values []T, weights []float64, unit *MeasurementUnit) (
 		if len(weights) != len(values) {
 			return nil, fmt.Errorf("weights length (%d) must match values length (%d)", len(weights), len(values))
 		}
+		// Finiteness first, and by a positive predicate. Every check below is a comparison, and
+		// every comparison is false for NaN, so w < minW left minW at MaxFloat64 and minW < 0
+		// passed, as did the total-weight test: a sample built from [NaN, 1] used to construct
+		// and publish a NaN total weight and a NaN weighted size. The values beside them have
+		// carried a finiteness check since construction existed.
+		for _, w := range weights {
+			if math.IsNaN(w) || math.IsInf(w, 0) {
+				return nil, fmt.Errorf("all weights must be finite")
+			}
+		}
 		var totalWeight, totalWeightSq float64
 		var minW = math.MaxFloat64
 		for _, w := range weights {

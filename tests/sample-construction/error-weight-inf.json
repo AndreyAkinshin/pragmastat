@@ -1,0 +1,7 @@
+{
+  "input": {
+    "values": [1.0, 2.0],
+    "weights": ["Infinity", 1.0]
+  },
+  "expected_error": "weight_not_finite"
+}

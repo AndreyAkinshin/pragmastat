@@ -43,8 +43,11 @@ public class SampleConstructionTests
     var rawValues = input.GetProperty("values");
 
     double[] values = ParseValuesWithSpecialFloats(rawValues);
+    // Weights go through the same reader as the values. They did not, so a fixture could not
+    // state a NaN weight at all: ParseDoubleArray calls GetDouble on a string element, which
+    // throws before the constructor is reached.
     double[]? weights = input.TryGetProperty("weights", out var rawWeights)
-      ? ParseDoubleArray(rawWeights)
+      ? ParseValuesWithSpecialFloats(rawWeights)
       : null;
 
     if (root.TryGetProperty("expected_error", out _))
@@ -98,15 +101,6 @@ public class SampleConstructionTests
         _ => throw new JsonException($"Unexpected JSON value kind: {element.ValueKind}")
       };
     }
-    return values;
-  }
-
-  private static double[] ParseDoubleArray(JsonElement array)
-  {
-    var values = new double[array.GetArrayLength()];
-    int i = 0;
-    foreach (var element in array.EnumerateArray())
-      values[i++] = element.GetDouble();
     return values;
   }
 }

@@ -48,10 +48,10 @@ class MetrologyTest {
                     val root = mapper.readTree(file)
                     val input = root["input"]
                     val values = parseFloatList(input["values"])
-                    val weights: List<Double>? =
-                        input["weights"]?.let { w ->
-                            w.map { it.asDouble() }
-                        }
+                    // Weights go through parseFloatList for the same reason the values do: a
+                    // fixture states a special float as a string, and asDouble returns 0.0 for
+                    // one, so a NaN weight would have arrived here as a zero.
+                    val weights: List<Double>? = input["weights"]?.let { parseFloatList(it) }
 
                     if (root.has("expected_error")) {
                         val threw =

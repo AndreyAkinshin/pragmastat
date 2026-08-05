@@ -85,6 +85,16 @@ impl Sample {
                         "weights length must match values length".to_string(),
                     ));
                 }
+                // Finiteness first, and by a positive predicate. Every check below is a
+                // comparison, and every comparison is false for NaN, so wi < min_w left min_w
+                // at f64::MAX and min_w < 0.0 passed, as did the total-weight test: a sample
+                // built from [NaN, 1] used to construct and publish a NaN total weight and a
+                // NaN weighted size. The values have carried this check all along.
+                if w.iter().any(|wi| !wi.is_finite()) {
+                    return Err(EstimatorError::Other(
+                        "all weights must be finite".to_string(),
+                    ));
+                }
                 let mut total_w = 0.0_f64;
                 let mut total_w_sq = 0.0_f64;
                 let mut min_w = f64::MAX;

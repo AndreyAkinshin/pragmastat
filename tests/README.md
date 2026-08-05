@@ -170,6 +170,22 @@ errors whose fixture attributes them to subject "y" skip the subject assertion. 
 cannot know the argument position, so a y-argument validity error surfaces from construction with the
 fixed subject "x". The raw entry point always validates positionally, so its subject is asserted in full.
 
+A refusal that carries no assumption id states `expected_error` as a plain string naming it:
+
+```json
+{
+  "input": { "values": [1.0, 2.0], "weights": ["NaN", 1.0] },
+  "expected_error": "weight_not_finite"
+}
+```
+
+This form asserts only that the call is refused, not which error object comes back, because the
+refusal is an ordinary argument error whose type differs by port. The string names the case for a
+reader; nothing parses it.
+
+A special float is written as a string in both `values` and `weights`: `"NaN"`, `"Infinity"`,
+`"-Infinity"`.
+
 ## Test Case Naming
 
 Test cases follow a consistent naming taxonomy:

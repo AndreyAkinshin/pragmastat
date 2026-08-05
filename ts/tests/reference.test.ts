@@ -984,18 +984,22 @@ describe('Reference Tests', () => {
         it(`should pass ${testName}`, () => {
           const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
 
-          // Parse special float values (NaN, Infinity, -Infinity)
-          const rawValues: number[] = data.input.values.map((v: string | number) => {
+          // Parse special float values (NaN, Infinity, -Infinity). Weights go through the same
+          // reader as the values: they did not, so a fixture could not state a NaN weight at all
+          // and the string would have reached the constructor as a string.
+          const parseSpecial = (v: string | number): number => {
             if (v === 'NaN') return NaN;
             if (v === 'Infinity') return Infinity;
             if (v === '-Infinity') return -Infinity;
             return v as number;
-          });
+          };
+          const rawValues: number[] = data.input.values.map(parseSpecial);
+          const rawWeights: number[] | undefined = data.input.weights?.map(parseSpecial);
 
           if (data.expected_error) {
             expect(() => {
-              if (data.input.weights) {
-                Sample.weighted(rawValues, data.input.weights);
+              if (rawWeights) {
+                Sample.weighted(rawValues, rawWeights);
               } else {
                 Sample.of(rawValues);
               }
@@ -1004,8 +1008,8 @@ describe('Reference Tests', () => {
           }
 
           let sample: Sample;
-          if (data.input.weights) {
-            sample = Sample.weighted(rawValues, data.input.weights);
+          if (rawWeights) {
+            sample = Sample.weighted(rawValues, rawWeights);
           } else {
             sample = Sample.of(rawValues);
           }

@@ -74,10 +74,13 @@ fn test_sample_construction() {
         let input = &raw["input"];
         let values_arr = input["values"].as_array().unwrap();
         let values = parse_float_vec(values_arr);
-        let weights: Option<Vec<f64>> = input.get("weights").and_then(|w| {
-            w.as_array()
-                .map(|arr| arr.iter().map(|v| v.as_f64().unwrap()).collect())
-        });
+        // Weights go through parse_float_vec for the same reason the values do: a fixture states
+        // a special float as a string, and as_f64 returns None for one, so no fixture could state
+        // a NaN weight without the unwrap here turning into a panic.
+        let weights: Option<Vec<f64>> = input
+            .get("weights")
+            .and_then(|w| w.as_array())
+            .map(|arr| parse_float_vec(arr));
 
         if raw.get("expected_error").is_some() {
             let result = if let Some(ref w) = weights {

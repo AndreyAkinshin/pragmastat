@@ -84,6 +84,17 @@ public class Sample
         $"{nameof(weights)} should have the same number of elements as {nameof(values)}",
         nameof(weights));
 
+    // Finiteness first, and by a positive predicate. Every check below is a comparison, and
+    // every comparison is false for NaN; Math.Min(x, NaN) is NaN besides, so minWeight < 0
+    // passed and so did the total-weight test. A sample built from [NaN, 1] used to construct
+    // and publish a NaN total weight and a NaN weighted size. The values beside them have
+    // carried a finiteness check since construction existed.
+    foreach (double weight in weights)
+      if (!weight.IsFinite())
+        throw new ArgumentException(
+          $"All weights in {nameof(weights)} should be finite",
+          nameof(weights));
+
     double totalWeight = 0, maxWeight = double.MinValue, minWeight = double.MaxValue;
     double totalWeightSquared = 0;
     foreach (double weight in weights)
