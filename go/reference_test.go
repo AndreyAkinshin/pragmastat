@@ -1397,8 +1397,8 @@ func TestUnitPropagation(t *testing.T) {
 				if err != nil {
 					t.Fatalf("Center error: %v", err)
 				}
-				if m.Unit.ID != output.Unit {
-					t.Errorf("Unit = %q, want %q", m.Unit.ID, output.Unit)
+				if m.Unit.ID() != output.Unit {
+					t.Errorf("Unit = %q, want %q", m.Unit.ID(), output.Unit)
 				}
 				if output.Value != nil {
 					assertFloat(t, compareExact, "Value", m.Value, *output.Value)
@@ -1409,8 +1409,8 @@ func TestUnitPropagation(t *testing.T) {
 				if err != nil {
 					t.Fatalf("Spread error: %v", err)
 				}
-				if m.Unit.ID != output.Unit {
-					t.Errorf("Unit = %q, want %q", m.Unit.ID, output.Unit)
+				if m.Unit.ID() != output.Unit {
+					t.Errorf("Unit = %q, want %q", m.Unit.ID(), output.Unit)
 				}
 
 			case "shift":
@@ -1426,8 +1426,8 @@ func TestUnitPropagation(t *testing.T) {
 				if err != nil {
 					t.Fatalf("Shift error: %v", err)
 				}
-				if m.Unit.ID != output.Unit {
-					t.Errorf("Unit = %q, want %q", m.Unit.ID, output.Unit)
+				if m.Unit.ID() != output.Unit {
+					t.Errorf("Unit = %q, want %q", m.Unit.ID(), output.Unit)
 				}
 
 			case "ratio":
@@ -1443,8 +1443,8 @@ func TestUnitPropagation(t *testing.T) {
 				if err != nil {
 					t.Fatalf("Ratio error: %v", err)
 				}
-				if m.Unit.ID != output.Unit {
-					t.Errorf("Unit = %q, want %q", m.Unit.ID, output.Unit)
+				if m.Unit.ID() != output.Unit {
+					t.Errorf("Unit = %q, want %q", m.Unit.ID(), output.Unit)
 				}
 
 			case "disparity":
@@ -1460,8 +1460,8 @@ func TestUnitPropagation(t *testing.T) {
 				if err != nil {
 					t.Fatalf("Disparity error: %v", err)
 				}
-				if m.Unit.ID != output.Unit {
-					t.Errorf("Unit = %q, want %q", m.Unit.ID, output.Unit)
+				if m.Unit.ID() != output.Unit {
+					t.Errorf("Unit = %q, want %q", m.Unit.ID(), output.Unit)
 				}
 
 			default:

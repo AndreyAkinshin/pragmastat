@@ -37,8 +37,8 @@ func formatValue(v float64) string {
 
 func (m Measurement) String() string {
 	s := formatValue(m.Value)
-	if m.Unit != nil && len(m.Unit.Abbreviation) > 0 {
-		return fmt.Sprintf("%s %s", s, m.Unit.Abbreviation)
+	if m.Unit != nil && len(m.Unit.Abbreviation()) > 0 {
+		return fmt.Sprintf("%s %s", s, m.Unit.Abbreviation())
 	}
 	return s
 }

@@ -16,10 +16,10 @@ func NewUnitRegistry() *UnitRegistry {
 
 // Register adds a unit to the registry.
 func (r *UnitRegistry) Register(unit *MeasurementUnit) error {
-	if _, exists := r.byID[unit.ID]; exists {
-		return fmt.Errorf("unit with id '%s' is already registered", unit.ID)
+	if _, exists := r.byID[unit.ID()]; exists {
+		return fmt.Errorf("unit with id '%s' is already registered", unit.ID())
 	}
-	r.byID[unit.ID] = unit
+	r.byID[unit.ID()] = unit
 	return nil
 }
 
