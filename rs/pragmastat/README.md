@@ -30,10 +30,10 @@ fn main() {
 
     println!("{}", center(&x).unwrap().value); // 100.5
     let bounds = center_bounds(&x, 1e-3).unwrap();
-    println!("{{lower: {}, upper: {}}}", bounds.lower, bounds.upper); // {lower: 86, upper: 115}
+    println!("{}", bounds); // [86;115]
     println!("{}", spread(&x).unwrap().value); // 59
     let bounds = spread_bounds_with_seed(&x, 1e-3, "demo").unwrap();
-    println!("{{lower: {}, upper: {}}}", bounds.lower, bounds.upper); // {lower: 44, upper: 87}
+    println!("{}", bounds); // [44;87]
 
     // --- Two-Sample (Sample-based API) ---
 
@@ -42,13 +42,13 @@ fn main() {
 
     println!("{}", shift(&x, &y).unwrap().value); // -100
     let bounds = shift_bounds(&x, &y, 1e-3).unwrap();
-    println!("{{lower: {}, upper: {}}}", bounds.lower, bounds.upper); // {lower: -120, upper: -80}
+    println!("{}", bounds); // [-120;-80]
     println!("{}", ratio(&x, &y).unwrap().value); // 0.5008354224706334
     let bounds = ratio_bounds(&x, &y, 1e-3).unwrap();
-    println!("{{lower: {}, upper: {}}}", bounds.lower, bounds.upper); // {lower: 0.4066666666666668, upper: 0.5958333333333332}
+    println!("{}", bounds); // [0.4066666666666668;0.5958333333333332]
     println!("{}", disparity(&x, &y).unwrap().value); // -1.694915254237288
     let bounds = disparity_bounds_with_seed(&x, &y, 1e-3, "demo").unwrap();
-    println!("{{lower: {}, upper: {}}}", bounds.lower, bounds.upper); // {lower: -3.1025641025641026, upper: -0.8494623655913979}
+    println!("{}", bounds); // [-3.1025641025641026;-0.8494623655913979]
 
     // --- Confirmatory Comparison ---
 
