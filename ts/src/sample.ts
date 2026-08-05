@@ -3,7 +3,7 @@
  */
 
 import { MeasurementUnit } from './measurement-unit';
-import { AssumptionError } from './assumptions';
+import { AssumptionError, Subject } from './assumptions';
 export class Sample {
   readonly values: readonly number[];
   readonly weights: readonly number[] | null;
@@ -16,11 +16,11 @@ export class Sample {
 
   constructor(values: readonly number[], weights: readonly number[] | null, unit: MeasurementUnit) {
     if (values.length === 0) {
-      throw AssumptionError.validity('x');
+      throw AssumptionError.validity(Subject.X);
     }
     for (const v of values) {
       if (!Number.isFinite(v)) {
-        throw AssumptionError.validity('x');
+        throw AssumptionError.validity(Subject.X);
       }
     }
 

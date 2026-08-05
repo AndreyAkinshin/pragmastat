@@ -25,7 +25,7 @@
  */
 
 import { minAchievableMisrateOneSample } from './minMisrate';
-import { AssumptionError } from './assumptions';
+import { AssumptionError, Subject } from './assumptions';
 import { Rng } from './rng';
 
 /**
@@ -35,10 +35,10 @@ import { Rng } from './rng';
 const SCALE_STEP = 512;
 
 export function signMarginRandomized(n: number, misrate: number, rng: Rng): number {
-  if (n <= 0) throw AssumptionError.domain('x');
-  if (isNaN(misrate) || misrate < 0 || misrate > 1) throw AssumptionError.domain('misrate');
+  if (n <= 0) throw AssumptionError.domain(Subject.X);
+  if (isNaN(misrate) || misrate < 0 || misrate > 1) throw AssumptionError.domain(Subject.MISRATE);
   const minMisrate = minAchievableMisrateOneSample(n);
-  if (misrate < minMisrate) throw AssumptionError.domain('misrate');
+  if (misrate < minMisrate) throw AssumptionError.domain(Subject.MISRATE);
 
   const target = misrate / 2;
   if (target <= 0) return 0;

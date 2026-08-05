@@ -47,8 +47,8 @@ function main(): void {
 
   // --- Confirmatory Comparison ---
 
-  console.log(compare1(sx, [new Threshold(Metric.Center, new Measurement(50), 1e-3)])[0].verdict); // greater
-  console.log(compare2(sx, sy, [new Threshold(Metric.Shift, new Measurement(0), 1e-3)])[0].verdict); // less
+  console.log(compare1(sx, [new Threshold(Metric.CENTER, new Measurement(50), 1e-3)])[0].verdict); // greater
+  console.log(compare2(sx, sy, [new Threshold(Metric.SHIFT, new Measurement(0), 1e-3)])[0].verdict); // less
 
   // --- Randomization ---
 

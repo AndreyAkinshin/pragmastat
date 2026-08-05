@@ -1253,7 +1253,7 @@ describe('Reference Tests', () => {
           for (let i = 0; i < results.length; i++) {
             const subject = `compare2/${fileName} projection ${i}`;
             const projection = data.output.projections[i];
-            if (data.input.thresholds[i].metric === Metric.Ratio) {
+            if (data.input.thresholds[i].metric === Metric.RATIO) {
               expect(results[i].estimate.value).toBeCloseTo(projection.estimate, 9);
               expect(results[i].bounds.lower).toBeCloseTo(projection.lower, 9);
               expect(results[i].bounds.upper).toBeCloseTo(projection.upper, 9);

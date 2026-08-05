@@ -5,7 +5,7 @@
  * based on the distribution of dominance statistics.
  */
 
-import { AssumptionError } from './assumptions';
+import { AssumptionError, Subject } from './assumptions';
 import { binomialCoefficient } from './binomial';
 import { additiveCumulative } from './additiveCumulative';
 import { minAchievableMisrateTwoSample } from './minMisrate';
@@ -27,18 +27,18 @@ const MAX_EXACT_SIZE = 400;
  */
 export function pairwiseMargin(n: number, m: number, misrate: number): number {
   if (n <= 0) {
-    throw AssumptionError.domain('x');
+    throw AssumptionError.domain(Subject.X);
   }
   if (m <= 0) {
-    throw AssumptionError.domain('y');
+    throw AssumptionError.domain(Subject.Y);
   }
   if (misrate < 0 || misrate > 1 || Number.isNaN(misrate)) {
-    throw AssumptionError.domain('misrate');
+    throw AssumptionError.domain(Subject.MISRATE);
   }
 
   const minMisrate = minAchievableMisrateTwoSample(n, m);
   if (misrate < minMisrate) {
-    throw AssumptionError.domain('misrate');
+    throw AssumptionError.domain(Subject.MISRATE);
   }
 
   if (n + m <= MAX_EXACT_SIZE) {

@@ -52,7 +52,7 @@ import { signedRankMargin } from './signedRankMargin';
 import { signMarginRandomized } from './signMargin';
 import { centerQuantileBoundsImpl } from './centerQuantilesImpl';
 import { minAchievableMisrateOneSample, minAchievableMisrateTwoSample } from './minMisrate';
-import { AssumptionError, checkValidity, checkPositivity, log } from './assumptions';
+import { AssumptionError, Subject, checkValidity, checkPositivity, log } from './assumptions';
 import { MeasurementUnit } from './measurement-unit';
 import { Measurement } from './measurement';
 import { Sample, checkNonWeighted, checkCompatibleUnits, convertToFiner } from './sample';
@@ -146,49 +146,49 @@ function spreadForSparity(orig: readonly number[], sorted: readonly number[] | n
 // =============================================================================
 
 function centerCore(x: readonly number[], assumeSorted: boolean): number {
-  checkValidity(x, 'x');
+  checkValidity(x, Subject.X);
   return normalizeZero(centerImpl(x, assumeSorted));
 }
 
 function spreadCore(x: readonly number[], assumeSorted: boolean): number {
-  checkValidity(x, 'x');
+  checkValidity(x, Subject.X);
   const spreadVal = spreadImpl(x, assumeSorted);
   if (spreadVal <= 0) {
-    throw AssumptionError.sparity('x');
+    throw AssumptionError.sparity(Subject.X);
   }
   return normalizeZero(spreadVal);
 }
 
 function shiftCore(x: readonly number[], y: readonly number[], assumeSorted: boolean): number {
-  checkValidity(x, 'x');
-  checkValidity(y, 'y');
+  checkValidity(x, Subject.X);
+  checkValidity(y, Subject.Y);
   return normalizeZero(shiftImpl(x, y, [0.5], assumeSorted)[0]);
 }
 
 function ratioCore(x: readonly number[], y: readonly number[], assumeSorted: boolean): number {
-  checkValidity(x, 'x');
-  checkValidity(y, 'y');
-  checkPositivity(x, 'x');
-  checkPositivity(y, 'y');
+  checkValidity(x, Subject.X);
+  checkValidity(y, Subject.Y);
+  checkPositivity(x, Subject.X);
+  checkPositivity(y, Subject.Y);
   // ratio is exp(shift(log x, log y)); log is monotonic, so the assumeSorted
   // fast path carries through the log-transform.
-  const logX = log(x, 'x');
-  const logY = log(y, 'y');
+  const logX = log(x, Subject.X);
+  const logY = log(y, Subject.Y);
   return normalizeZero(Math.exp(shiftImpl(logX, logY, [0.5], assumeSorted)[0]));
 }
 
 function disparityCore(x: readonly number[], y: readonly number[], assumeSorted: boolean): number {
-  checkValidity(x, 'x');
-  checkValidity(y, 'y');
+  checkValidity(x, Subject.X);
+  checkValidity(y, Subject.Y);
   const nx = x.length;
   const ny = y.length;
   const spreadX = spreadImpl(x, assumeSorted);
   if (spreadX <= 0) {
-    throw AssumptionError.sparity('x');
+    throw AssumptionError.sparity(Subject.X);
   }
   const spreadY = spreadImpl(y, assumeSorted);
   if (spreadY <= 0) {
-    throw AssumptionError.sparity('y');
+    throw AssumptionError.sparity(Subject.Y);
   }
   const shiftVal = shiftImpl(x, y, [0.5], assumeSorted)[0];
   const avgSpreadVal = (nx * spreadX + ny * spreadY) / (nx + ny);
@@ -201,10 +201,10 @@ function shiftBoundsImpl(
   misrate: number,
   assumeSorted: boolean,
 ): RawBounds {
-  checkValidity(x, 'x');
-  checkValidity(y, 'y');
+  checkValidity(x, Subject.X);
+  checkValidity(y, Subject.Y);
   if (isNaN(misrate) || misrate < 0 || misrate > 1) {
-    throw AssumptionError.domain('misrate');
+    throw AssumptionError.domain(Subject.MISRATE);
   }
 
   const n = x.length;
@@ -212,7 +212,7 @@ function shiftBoundsImpl(
 
   const minMisrate = minAchievableMisrateTwoSample(n, m);
   if (misrate < minMisrate) {
-    throw AssumptionError.domain('misrate');
+    throw AssumptionError.domain(Subject.MISRATE);
   }
 
   const total = BigInt(n) * BigInt(m);
@@ -249,39 +249,39 @@ function ratioBoundsImpl(
   misrate: number,
   assumeSorted: boolean,
 ): RawBounds {
-  checkValidity(x, 'x');
-  checkValidity(y, 'y');
+  checkValidity(x, Subject.X);
+  checkValidity(y, Subject.Y);
   if (isNaN(misrate) || misrate < 0 || misrate > 1) {
-    throw AssumptionError.domain('misrate');
+    throw AssumptionError.domain(Subject.MISRATE);
   }
 
   const minMisrate = minAchievableMisrateTwoSample(x.length, y.length);
   if (misrate < minMisrate) {
-    throw AssumptionError.domain('misrate');
+    throw AssumptionError.domain(Subject.MISRATE);
   }
 
   // log is monotonic: sorted positive input -> sorted log output, so the
   // assumeSorted flag carries through to the shift-bounds sub-computation.
-  const logX = log(x, 'x');
-  const logY = log(y, 'y');
+  const logX = log(x, Subject.X);
+  const logY = log(y, Subject.Y);
   const logBounds = shiftBoundsImpl(logX, logY, misrate, assumeSorted);
   return { lower: Math.exp(logBounds.lower), upper: Math.exp(logBounds.upper) };
 }
 
 function centerBoundsImpl(x: readonly number[], misrate: number, assumeSorted: boolean): RawBounds {
-  checkValidity(x, 'x');
+  checkValidity(x, Subject.X);
   if (isNaN(misrate) || misrate < 0 || misrate > 1) {
-    throw AssumptionError.domain('misrate');
+    throw AssumptionError.domain(Subject.MISRATE);
   }
 
   const n = x.length;
   if (n < 2) {
-    throw AssumptionError.domain('x');
+    throw AssumptionError.domain(Subject.X);
   }
 
   const minMisrate = minAchievableMisrateOneSample(n);
   if (misrate < minMisrate) {
-    throw AssumptionError.domain('misrate');
+    throw AssumptionError.domain(Subject.MISRATE);
   }
 
   const totalPairs = (BigInt(n) * BigInt(n + 1)) / 2n;
@@ -343,17 +343,17 @@ function spreadBoundsImpl(
   misrate: number,
   rng: Rng,
 ): RawBounds {
-  checkValidity(x, 'x');
-  if (isNaN(misrate) || misrate < 0 || misrate > 1) throw AssumptionError.domain('misrate');
+  checkValidity(x, Subject.X);
+  if (isNaN(misrate) || misrate < 0 || misrate > 1) throw AssumptionError.domain(Subject.MISRATE);
   const n = x.length;
   if (n < 2) {
-    throw AssumptionError.sparity('x');
+    throw AssumptionError.sparity(Subject.X);
   }
   const m = Math.floor(n / 2);
   const minMisrate = minAchievableMisrateOneSample(m);
-  if (misrate < minMisrate) throw AssumptionError.domain('misrate');
+  if (misrate < minMisrate) throw AssumptionError.domain(Subject.MISRATE);
   if (spreadForSparity(x, sortedX) <= 0) {
-    throw AssumptionError.sparity('x');
+    throw AssumptionError.sparity(Subject.X);
   }
   return spreadBoundsShuffle(x, misrate, rng);
 }
@@ -373,25 +373,25 @@ function avgSpreadBoundsImpl(
   rngX: Rng,
   rngY: Rng,
 ): RawBounds {
-  checkValidity(x, 'x');
-  checkValidity(y, 'y');
-  if (isNaN(misrate) || misrate < 0 || misrate > 1) throw AssumptionError.domain('misrate');
+  checkValidity(x, Subject.X);
+  checkValidity(y, Subject.Y);
+  if (isNaN(misrate) || misrate < 0 || misrate > 1) throw AssumptionError.domain(Subject.MISRATE);
 
   const n = x.length;
   const m = y.length;
-  if (n < 2) throw AssumptionError.domain('x');
-  if (m < 2) throw AssumptionError.domain('y');
+  if (n < 2) throw AssumptionError.domain(Subject.X);
+  if (m < 2) throw AssumptionError.domain(Subject.Y);
 
   const alpha = misrate / 2;
   const minX = minAchievableMisrateOneSample(Math.floor(n / 2));
   const minY = minAchievableMisrateOneSample(Math.floor(m / 2));
-  if (alpha < minX || alpha < minY) throw AssumptionError.domain('misrate');
+  if (alpha < minX || alpha < minY) throw AssumptionError.domain(Subject.MISRATE);
 
   if (spreadForSparity(x, sortedX) <= 0) {
-    throw AssumptionError.sparity('x');
+    throw AssumptionError.sparity(Subject.X);
   }
   if (spreadForSparity(y, sortedY) <= 0) {
-    throw AssumptionError.sparity('y');
+    throw AssumptionError.sparity(Subject.Y);
   }
 
   // The shuffle operates on the ORIGINAL order; sorted views are sparity-only.
@@ -449,21 +449,21 @@ function disparityBoundsImpl(
   rngX: Rng,
   rngY: Rng,
 ): RawBounds {
-  checkValidity(x, 'x');
-  checkValidity(y, 'y');
-  if (isNaN(misrate) || misrate < 0 || misrate > 1) throw AssumptionError.domain('misrate');
+  checkValidity(x, Subject.X);
+  checkValidity(y, Subject.Y);
+  if (isNaN(misrate) || misrate < 0 || misrate > 1) throw AssumptionError.domain(Subject.MISRATE);
 
   const n = x.length;
   const m = y.length;
-  if (n < 2) throw AssumptionError.domain('x');
-  if (m < 2) throw AssumptionError.domain('y');
+  if (n < 2) throw AssumptionError.domain(Subject.X);
+  if (m < 2) throw AssumptionError.domain(Subject.Y);
 
   const minShift = minAchievableMisrateTwoSample(n, m);
   const minX = minAchievableMisrateOneSample(Math.floor(n / 2));
   const minY = minAchievableMisrateOneSample(Math.floor(m / 2));
   const minAvg = 2.0 * Math.max(minX, minY);
 
-  if (misrate < minShift + minAvg) throw AssumptionError.domain('misrate');
+  if (misrate < minShift + minAvg) throw AssumptionError.domain(Subject.MISRATE);
 
   const extra = misrate - (minShift + minAvg);
   const alphaShift = minShift + extra / 2.0;
@@ -784,11 +784,11 @@ function avgSpread(x: Sample, y: Sample): Measurement {
 
   const spreadX = spreadImpl(cx.sortedValues, true);
   if (spreadX <= 0) {
-    throw AssumptionError.sparity('x');
+    throw AssumptionError.sparity(Subject.X);
   }
   const spreadY = spreadImpl(cy.sortedValues, true);
   if (spreadY <= 0) {
-    throw AssumptionError.sparity('y');
+    throw AssumptionError.sparity(Subject.Y);
   }
 
   const result = (nx * spreadX + ny * spreadY) / (nx + ny);

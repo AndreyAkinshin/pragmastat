@@ -2,7 +2,7 @@
  * MinAchievableMisrate functions for bounds validation.
  */
 
-import { AssumptionError } from './assumptions';
+import { AssumptionError, Subject } from './assumptions';
 import { binomialCoefficient } from './binomial';
 
 /**
@@ -17,7 +17,7 @@ import { binomialCoefficient } from './binomial';
  */
 export function minAchievableMisrateOneSample(n: number): number {
   if (n <= 0) {
-    throw AssumptionError.domain('x');
+    throw AssumptionError.domain(Subject.X);
   }
   // Repeated halving rather than Math.pow: this is a power of two, and scaling by an exponent is exact in binary64. A general
   // power function returns the same value in every implementation anyone ships, but the
@@ -41,10 +41,10 @@ export function minAchievableMisrateOneSample(n: number): number {
  */
 export function minAchievableMisrateTwoSample(n: number, m: number): number {
   if (n <= 0) {
-    throw AssumptionError.domain('x');
+    throw AssumptionError.domain(Subject.X);
   }
   if (m <= 0) {
-    throw AssumptionError.domain('y');
+    throw AssumptionError.domain(Subject.Y);
   }
   // Shares one binomial with the exact pairwise-margin distribution (see binomial.ts):
   // the floor and the distribution it guards must be computed by the same route.

@@ -20,7 +20,13 @@ export const AssumptionId = {
 
 export type AssumptionId = (typeof AssumptionId)[keyof typeof AssumptionId];
 
-export type Subject = 'x' | 'y' | 'misrate';
+export const Subject = {
+  X: 'x',
+  Y: 'y',
+  MISRATE: 'misrate',
+} as const;
+
+export type Subject = (typeof Subject)[keyof typeof Subject];
 
 export interface Violation {
   id: AssumptionId;

@@ -8,7 +8,7 @@
 import { Measurement } from './measurement';
 import { MeasurementUnit } from './measurement-unit';
 import { Sample, checkNonWeighted, checkCompatibleUnits, convertToFiner } from './sample';
-import { AssumptionError } from './assumptions';
+import { AssumptionError, Subject } from './assumptions';
 import {
   center,
   spread,
@@ -26,22 +26,26 @@ import {
 /**
  * Metric types supported by Compare1 and Compare2.
  */
-export enum Metric {
-  Center = 'center',
-  Spread = 'spread',
-  Shift = 'shift',
-  Ratio = 'ratio',
-  Disparity = 'disparity',
-}
+export const Metric = {
+  CENTER: 'center',
+  SPREAD: 'spread',
+  SHIFT: 'shift',
+  RATIO: 'ratio',
+  DISPARITY: 'disparity',
+} as const;
+
+export type Metric = (typeof Metric)[keyof typeof Metric];
 
 /**
  * Verdict from comparing an estimate against a threshold.
  */
-export enum ComparisonVerdict {
-  Less = 'less',
-  Greater = 'greater',
-  Inconclusive = 'inconclusive',
-}
+export const ComparisonVerdict = {
+  LESS: 'less',
+  GREATER: 'greater',
+  INCONCLUSIVE: 'inconclusive',
+} as const;
+
+export type ComparisonVerdict = (typeof ComparisonVerdict)[keyof typeof ComparisonVerdict];
 
 /**
  * A threshold value with a metric type and misrate for comparison.
@@ -53,7 +57,7 @@ export class Threshold {
     readonly misrate: number,
   ) {
     if (!Number.isFinite(misrate) || misrate <= 0.0 || misrate > 1.0) {
-      throw AssumptionError.domain('misrate');
+      throw AssumptionError.domain(Subject.MISRATE);
     }
     if (!Number.isFinite(value.value)) {
       throw new Error('threshold value must be finite');
@@ -153,13 +157,13 @@ function validateDisparity(threshold: Threshold, _x: Sample, _y: Sample | null):
 /** Compare1 metric specifications. */
 const compare1Specs: MetricSpec[] = [
   {
-    metric: Metric.Center,
+    metric: Metric.CENTER,
     validateAndNormalize: validateCenter,
     estimate: (x, _y) => center(x),
     bounds: (x, _y, misrate, _seed?) => centerBounds(x, misrate),
   },
   {
-    metric: Metric.Spread,
+    metric: Metric.SPREAD,
     validateAndNormalize: validateSpread,
     estimate: (x, _y) => spread(x),
     bounds: (x, _y, misrate, seed?) => spreadBounds(x, misrate, seed),
@@ -169,20 +173,20 @@ const compare1Specs: MetricSpec[] = [
 
 /** Compare2 metric specifications. */
 const compare2Specs: Compare2MetricSpec[] = [
-  { metric: Metric.Shift, validateAndNormalize: validateShift },
-  { metric: Metric.Ratio, validateAndNormalize: validateRatio },
-  { metric: Metric.Disparity, validateAndNormalize: validateDisparity },
+  { metric: Metric.SHIFT, validateAndNormalize: validateShift },
+  { metric: Metric.RATIO, validateAndNormalize: validateRatio },
+  { metric: Metric.DISPARITY, validateAndNormalize: validateDisparity },
 ];
 
 /** Computes the verdict by comparing bounds against a threshold value. */
 function computeVerdict(bounds: Bounds, thresholdValue: number): ComparisonVerdict {
   if (bounds.lower > thresholdValue) {
-    return ComparisonVerdict.Greater;
+    return ComparisonVerdict.GREATER;
   }
   if (bounds.upper < thresholdValue) {
-    return ComparisonVerdict.Less;
+    return ComparisonVerdict.LESS;
   }
-  return ComparisonVerdict.Inconclusive;
+  return ComparisonVerdict.INCONCLUSIVE;
 }
 
 /** Gets the spec for a given metric from the spec array. */
@@ -274,7 +278,7 @@ function executeCompare2(
   }
 
   // Process Shift thresholds
-  const shiftEntries = byMetric.get(Metric.Shift);
+  const shiftEntries = byMetric.get(Metric.SHIFT);
   if (shiftEntries && shiftEntries.length > 0) {
     const estimate = shift(cx, cy);
     for (const entry of shiftEntries) {
@@ -285,7 +289,7 @@ function executeCompare2(
   }
 
   // Process Ratio thresholds
-  const ratioEntries = byMetric.get(Metric.Ratio);
+  const ratioEntries = byMetric.get(Metric.RATIO);
   if (ratioEntries && ratioEntries.length > 0) {
     const estimate = ratio(cx, cy);
     for (const entry of ratioEntries) {
@@ -296,7 +300,7 @@ function executeCompare2(
   }
 
   // Process Disparity thresholds
-  const disparityEntries = byMetric.get(Metric.Disparity);
+  const disparityEntries = byMetric.get(Metric.DISPARITY);
   if (disparityEntries && disparityEntries.length > 0) {
     const estimate = disparity(cx, cy);
     for (const entry of disparityEntries) {
@@ -328,7 +332,7 @@ export function compare1(x: Sample, thresholds: Threshold[], seed?: string): Pro
   }
 
   for (const threshold of thresholds) {
-    if (threshold.metric !== Metric.Center && threshold.metric !== Metric.Spread) {
+    if (threshold.metric !== Metric.CENTER && threshold.metric !== Metric.SPREAD) {
       throw new Error(
         `Metric ${threshold.metric} is not supported by Compare1. Use Compare2 instead.`,
       );
@@ -376,9 +380,9 @@ export function compare2(
 
   for (const threshold of thresholds) {
     if (
-      threshold.metric !== Metric.Shift &&
-      threshold.metric !== Metric.Ratio &&
-      threshold.metric !== Metric.Disparity
+      threshold.metric !== Metric.SHIFT &&
+      threshold.metric !== Metric.RATIO &&
+      threshold.metric !== Metric.DISPARITY
     ) {
       throw new Error(
         `Metric ${threshold.metric} is not supported by Compare2. Use Compare1 instead.`,

@@ -7,7 +7,7 @@
 import { additiveCumulative } from './additiveCumulative';
 import { minAchievableMisrateOneSample } from './minMisrate';
 import { expFunction } from './expFunction';
-import { AssumptionError } from './assumptions';
+import { AssumptionError, Subject } from './assumptions';
 
 // Maximum n for exact computation. Limited to 63 because 2^n must fit in a BigInt
 // (which has arbitrary precision in JS). The CDF division uses scaled BigInt arithmetic
@@ -26,15 +26,15 @@ const SIGNED_RANK_MAX_EXACT_SIZE = 63;
  */
 export function signedRankMargin(n: number, misrate: number): number {
   if (n <= 0) {
-    throw AssumptionError.domain('x');
+    throw AssumptionError.domain(Subject.X);
   }
   if (isNaN(misrate) || misrate < 0 || misrate > 1) {
-    throw AssumptionError.domain('misrate');
+    throw AssumptionError.domain(Subject.MISRATE);
   }
 
   const minMisrate = minAchievableMisrateOneSample(n);
   if (misrate < minMisrate) {
-    throw AssumptionError.domain('misrate');
+    throw AssumptionError.domain(Subject.MISRATE);
   }
 
   if (n <= SIGNED_RANK_MAX_EXACT_SIZE) {

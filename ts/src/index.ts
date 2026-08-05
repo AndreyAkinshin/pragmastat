@@ -5,7 +5,7 @@
  */
 
 // Assumptions
-export { AssumptionId, AssumptionError, type Subject, type Violation } from './assumptions';
+export { AssumptionId, AssumptionError, Subject, type Violation } from './assumptions';
 
 // Metrology
 export { MeasurementUnit } from './measurement-unit';
