@@ -6,8 +6,6 @@ namespace Pragmastat.Metrology;
 
 public class Measurement(double value, MeasurementUnit? unit = null) : IComparable<Measurement>, IComparable
 {
-  public static Measurement Zero(MeasurementUnit? unit = null) => new(0, unit ?? MeasurementUnit.Number);
-
   public double Value { get; } = value;
   public MeasurementUnit Unit { get; } = unit ?? MeasurementUnit.Number;
 

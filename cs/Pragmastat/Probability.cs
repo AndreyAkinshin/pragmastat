@@ -17,8 +17,6 @@ public readonly struct Probability : IComparable, IComparable<Probability>, IEqu
     Value = value;
   }
 
-  public static Probability Of(double value) => new(value);
-
   public static implicit operator double(Probability probability) => probability.Value;
   public static implicit operator Probability(double value) => new(value);
 
@@ -64,7 +62,7 @@ public readonly struct Probability : IComparable, IComparable<Probability>, IEqu
     return Value.CompareTo(other.Value);
   }
 
-  public static Probability[] ToProbabilities(double[] values)
+  internal static Probability[] ToProbabilities(double[] values)
   {
     var probabilities = new Probability[values.Length];
     for (int i = 0; i < values.Length; i++)

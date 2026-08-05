@@ -16,6 +16,11 @@ public class EstimatorInvarianceTests
     return new Sample(values);
   }
 
+  // Each expression answers in double. The left-hand side transforms the Sample, whose operators
+  // stay; the right-hand side does its arithmetic on the estimate, which reaches double through
+  // Measurement's implicit conversion. That is what the six sibling ports write, over estimators
+  // that return plain numbers, and it is why removing Measurement's own arithmetic overloads left
+  // these three lines untouched.
   private static void PerformTestOne(Func<Sample, double> expr1, Func<Sample, double> expr2)
   {
     var rng = new Rng(Seed);

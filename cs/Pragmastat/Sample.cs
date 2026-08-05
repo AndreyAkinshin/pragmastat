@@ -254,7 +254,4 @@ public class Sample
         return false;
     return true;
   }
-
-  public Measurement Min() => SortedValues[0].WithUnit(Unit);
-  public Measurement Max() => SortedValues[SortedValues.Count - 1].WithUnit(Unit);
 }
