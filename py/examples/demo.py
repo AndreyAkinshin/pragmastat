@@ -25,31 +25,27 @@ def main():
     x = Sample(list(range(1, 201)))
 
     result = center(x)
-    print(result.value)  # 100.5
+    print(result)  # 100.5
     bounds = center_bounds(x, 1e-3)
-    print(f"Bounds(lower={bounds.lower}, upper={bounds.upper})")  # Bounds(lower=86.0, upper=115.0)
-    print(spread(x).value)  # 59.0
+    print(bounds)  # [86;115]
+    print(spread(x))  # 59
     bounds = spread_bounds(x, 1e-3, seed="demo")
-    print(f"Bounds(lower={bounds.lower}, upper={bounds.upper})")  # Bounds(lower=44.0, upper=87.0)
+    print(bounds)  # [44;87]
 
     # --- Two-Sample ---
 
     x = Sample(list(range(1, 201)))
     y = Sample(list(range(101, 301)))
 
-    print(shift(x, y).value)  # -100.0
+    print(shift(x, y))  # -100
     bounds = shift_bounds(x, y, 1e-3)
-    print(f"Bounds(lower={bounds.lower}, upper={bounds.upper})")  # Bounds(lower=-120.0, upper=-80.0)
-    print(ratio(x, y).value)  # 0.5008354224706334
+    print(bounds)  # [-120;-80]
+    print(ratio(x, y))  # 0.5008354224706334
     bounds = ratio_bounds(x, y, 1e-3)
-    print(
-        f"Bounds(lower={bounds.lower}, upper={bounds.upper})"
-    )  # Bounds(lower=0.4066666666666668, upper=0.5958333333333332)
-    print(disparity(x, y).value)  # -1.694915254237288
+    print(bounds)  # [0.4066666666666668;0.5958333333333332]
+    print(disparity(x, y))  # -1.694915254237288
     bounds = disparity_bounds(x, y, 1e-3, seed="demo")
-    print(
-        f"Bounds(lower={bounds.lower}, upper={bounds.upper})"
-    )  # Bounds(lower=-3.1025641025641026, upper=-0.8494623655913979)
+    print(bounds)  # [-3.1025641025641026;-0.8494623655913979]
 
     # --- Confirmatory Comparison ---
 
