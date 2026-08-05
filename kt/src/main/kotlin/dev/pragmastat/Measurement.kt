@@ -23,8 +23,8 @@ data class Measurement(
         }
 }
 
-private fun formatValue(v: Double): String {
-    // Use G format to match Go's FormatFloat behavior
-    val s = v.toBigDecimal().stripTrailingZeros().toPlainString()
-    return s
-}
+/**
+ * States a double the way the other ports state it: 86.0 prints as 86, so a carrier built here
+ * reads the same as the one Go and Rust print. Shared by both carriers so neither can drift.
+ */
+internal fun formatValue(v: Double): String = v.toBigDecimal().stripTrailingZeros().toPlainString()

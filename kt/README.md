@@ -39,20 +39,20 @@ fun main() {
 
     val x = Sample.of((1..200).map { it.toDouble() })
     println(center(x)) // 100.5
-    println(spread(x)) // 59.0
-    println(centerBounds(x, Probability(1e-3))) // Bounds(lower=86.0, upper=115.0, unit=...)
-    println(spreadBounds(x, Probability(1e-3), "demo")) // Bounds(lower=44.0, upper=87.0, unit=...)
+    println(spread(x)) // 59
+    println(centerBounds(x, Probability(1e-3))) // [86;115]
+    println(spreadBounds(x, Probability(1e-3), "demo")) // [44;87]
 
     // --- Two-Sample ---
 
     val sx = Sample.of((1..200).map { it.toDouble() })
     val sy = Sample.of((101..300).map { it.toDouble() })
-    println(shift(sx, sy)) // -100.0
-    println(shiftBounds(sx, sy, Probability(1e-3))) // Bounds(lower=-120.0, upper=-80.0, unit=...)
-    println(ratio(sx, sy)) // 0.5008354224706336
-    println(ratioBounds(sx, sy, Probability(1e-3))) // Bounds(lower=0.4066..., upper=0.5958..., unit=...)
+    println(shift(sx, sy)) // -100
+    println(shiftBounds(sx, sy, Probability(1e-3))) // [-120;-80]
+    println(ratio(sx, sy)) // 0.5008354224706334
+    println(ratioBounds(sx, sy, Probability(1e-3))) // [0.4066666666666668;0.5958333333333332]
     println(disparity(sx, sy)) // -1.694915254237288
-    println(disparityBounds(sx, sy, Probability(1e-3), "demo")) // Bounds(lower=-3.1025..., upper=-0.8494..., unit=...)
+    println(disparityBounds(sx, sy, Probability(1e-3), "demo")) // [-3.1025641025641026;-0.8494623655913979]
 
     // --- Confirmatory Comparison ---
 

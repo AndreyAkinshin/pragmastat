@@ -258,6 +258,16 @@ data class Bounds(
 
     /** Returns a copy of this Bounds with the given [unit]. */
     internal fun withUnit(unit: MeasurementUnit): Bounds = copy(unit = unit)
+
+    /**
+     * Renders the interval as "[lower;upper]", with the unit's abbreviation appended when it has
+     * one. This is the form the other ports print, and it replaces the field list a data class
+     * generates, which named the class and nested the whole unit inside the output.
+     */
+    override fun toString(): String {
+        val interval = "[${formatValue(lower)};${formatValue(upper)}]"
+        return if (unit.abbreviation.isNotEmpty()) "$interval ${unit.abbreviation}" else interval
+    }
 }
 
 /**
