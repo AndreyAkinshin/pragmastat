@@ -26,7 +26,7 @@ export {
   centerBounds,
   spreadBounds,
   disparityBounds,
-  type Bounds,
+  Bounds,
 } from './estimators';
 
 // Compare
