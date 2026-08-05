@@ -40,16 +40,16 @@ print(compare2(sx, sy, t2)[[1]]$verdict) # "less"
 
 sx <- Sample$new(1:200)
 m <- center(sx)
-print(paste("center:", m$value, "unit:", m$unit$id))
+print(m) # 100.5
 b <- center_bounds(sx, 1e-3)
-print(paste("center_bounds: [", b$lower, ", ", b$upper, "] unit:", b$unit$id, sep = ""))
+print(b) # [86;115]
 
 sx <- Sample$new(1:200)
 sy <- Sample$new(101:300)
 m <- shift(sx, sy)
-print(paste("shift:", m$value, "unit:", m$unit$id))
+print(m) # -100
 m <- ratio(sx, sy)
-print(paste("ratio:", m$value, "unit:", m$unit$id))
+print(m) # 0.5008354224706334
 
 # --- Randomization ---
 

@@ -42,6 +42,14 @@ Bounds <- R6::R6Class(
     #' @return TRUE if value is within [lower, upper]
     contains = function(value) {
       self$lower <= value && value <= self$upper
+    },
+
+    #' @description Render the interval the way every port renders it
+    #' @param ... Ignored, present for compatibility with the format generic
+    #' @return "[lower;upper]", with the unit's abbreviation when it has one
+    format = function(...) {
+      interval <- paste0("[", format_value(self$lower), ";", format_value(self$upper), "]")
+      if (nzchar(self$unit$abbreviation)) paste(interval, self$unit$abbreviation) else interval
     }
   )
 )

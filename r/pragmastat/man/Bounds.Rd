@@ -18,6 +18,7 @@ An R6 class representing an interval \code{[lower, upper]} with an associated
 \describe{
 \item{\code{initialize(lower, upper, unit = NULL)}}{Create new Bounds. If \code{unit} is \code{NULL}, defaults to \code{\link{number_unit}}.}
 \item{\code{contains(value)}}{Check if \code{value} is within \code{[lower, upper]}. Returns \code{TRUE} or \code{FALSE}.}
+\item{\code{format()}}{Render as \code{"[lower;upper]"}, with the unit's abbreviation appended when it has one. Used by \code{print}.}
 }
 }
 \examples{
@@ -26,6 +27,8 @@ b$lower       # 1.5
 b$upper       # 4.5
 b$contains(3) # TRUE
 b$contains(5) # FALSE
+format(b)     # "[1.5;4.5]"
+
 }
 \seealso{
 \code{\link{Measurement}}, \code{\link{center_bounds}}, \code{\link{shift_bounds}}

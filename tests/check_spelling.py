@@ -69,7 +69,7 @@ BINARY_FILES = {
 # How many files the sweep reads after the skips above. Pinned because the check reports success by
 # finding nothing, and reading nothing looks exactly the same: an empty `git ls-files`, a bad root
 # argument, or a widened skip rule would all have printed "spelling is consistent" and exited 0.
-EXPECTED_FILES = 837
+EXPECTED_FILES = 838
 
 
 def is_fixture(rel: str) -> bool:

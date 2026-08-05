@@ -17,6 +17,7 @@ The S3 method \code{as.numeric} extracts the raw numeric value.
 \section{Methods}{
 \describe{
 \item{\code{initialize(value, unit = NULL)}}{Create a new Measurement. If \code{unit} is \code{NULL}, defaults to \code{\link{number_unit}}.}
+\item{\code{format()}}{Render the value, with the unit's abbreviation appended when it has one. Used by \code{print}.}
 }
 }
 \examples{
@@ -28,6 +29,7 @@ as.numeric(m) # 42.0
 ms <- MeasurementUnit$new("ms", "time", "ms", "milliseconds", 1)
 m <- Measurement$new(3.14, ms)
 m$unit$id  # "ms"
+format(m)  # "3.14 ms"
 }
 \seealso{
 \code{\link{MeasurementUnit}}, \code{\link{Sample}}, \code{\link{Bounds}}
