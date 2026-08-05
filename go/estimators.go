@@ -57,9 +57,9 @@ func (b Bounds) Contains(value float64) bool {
 
 func (b Bounds) String() string {
 	if b.Unit != nil && len(b.Unit.Abbreviation) > 0 {
-		return fmt.Sprintf("[%v;%v] %s", b.Lower, b.Upper, b.Unit.Abbreviation)
+		return fmt.Sprintf("[%s;%s] %s", formatValue(b.Lower), formatValue(b.Upper), b.Unit.Abbreviation)
 	}
-	return fmt.Sprintf("[%v;%v]", b.Lower, b.Upper)
+	return fmt.Sprintf("[%s;%s]", formatValue(b.Lower), formatValue(b.Upper))
 }
 
 // =============================================================================
