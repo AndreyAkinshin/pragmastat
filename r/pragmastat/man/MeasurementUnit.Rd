@@ -7,6 +7,9 @@ Units within the same family are compatible and can be converted between each ot
 using base unit ratios.
 }
 \section{Fields}{
+All five are read-only: they are active bindings, so an assignment raises rather than being
+taken silently. A unit is a process-wide constant, and \code{number_unit$base_units <- 5} would
+rescale every conversion made afterwards, inside the package as well as outside it.
 \describe{
 \item{\code{id}}{Character. Unique identifier for this unit.}
 \item{\code{family}}{Character. Unit family for compatibility checks.}

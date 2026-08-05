@@ -3,22 +3,49 @@
 #' @export
 MeasurementUnit <- R6::R6Class(
   "MeasurementUnit",
-  public = list(
+  private = list(
+    .id = NULL,
+    .family = NULL,
+    .abbreviation = NULL,
+    .full_name = NULL,
+    .base_units = NULL
+  ),
+  # Active bindings rather than public fields. A unit is not a value a caller holds: number_unit
+  # is what every Sample, every Measurement and every conversion in the session reaches, so
+  # `number_unit$base_units <- 5` does not corrupt one object, it rescales conversion_factor and
+  # finer for everything computed afterwards, inside the package as well as outside. Nothing
+  # detects that and nothing can, since a unit is never revalidated after construction, so the
+  # wrong number surfaces somewhere else entirely with no link back to the assignment.
+  #
+  # An R6 public field takes an assignment silently. An active binding with no assignment branch
+  # raises, which is what makes the refusal real rather than documented.
+  active = list(
     #' @field id Unique identifier for this unit
-    id = NULL,
+    id = function(value) {
+      if (missing(value)) private$.id else stop("MeasurementUnit is read-only")
+    },
 
     #' @field family Unit family for compatibility checks
-    family = NULL,
+    family = function(value) {
+      if (missing(value)) private$.family else stop("MeasurementUnit is read-only")
+    },
 
     #' @field abbreviation Short display abbreviation
-    abbreviation = NULL,
+    abbreviation = function(value) {
+      if (missing(value)) private$.abbreviation else stop("MeasurementUnit is read-only")
+    },
 
     #' @field full_name Human-readable full name
-    full_name = NULL,
+    full_name = function(value) {
+      if (missing(value)) private$.full_name else stop("MeasurementUnit is read-only")
+    },
 
     #' @field base_units Number of base units (for conversion)
-    base_units = NULL,
-
+    base_units = function(value) {
+      if (missing(value)) private$.base_units else stop("MeasurementUnit is read-only")
+    }
+  ),
+  public = list(
     #' @description Create a new MeasurementUnit
     #' @param id Unique identifier
     #' @param family Unit family
@@ -46,11 +73,11 @@ MeasurementUnit <- R6::R6Class(
       if (base_units != round(base_units)) {
         stop("base_units must be a whole number")
       }
-      self$id <- id
-      self$family <- family
-      self$abbreviation <- abbreviation
-      self$full_name <- full_name
-      self$base_units <- base_units
+      private$.id <- id
+      private$.family <- family
+      private$.abbreviation <- abbreviation
+      private$.full_name <- full_name
+      private$.base_units <- base_units
     },
 
     #' @description Check if this unit is compatible with another
