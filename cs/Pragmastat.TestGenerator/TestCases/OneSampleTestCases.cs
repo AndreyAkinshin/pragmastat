@@ -11,7 +11,7 @@ public static class OneSampleTestCases
     // Center: 38 test cases (24 original + 14 unsorted)
     // Note: Performance tests (perf-100k) are not stored in the repository because they generate
     // large JSON files. Instead, they should be implemented manually in each language's test suite.
-    var centerController = GenerateTests("center", input => CenterEstimator.Instance.Estimate(input.ToSample()),
+    var centerController = GenerateTests("center", input => CenterEstimator.Instance.Estimate(input.ToSample()).Value,
       new OneSampleInputBuilder()
         // Demo examples (n = 5) - 3 tests
         .Add("demo-1", new Sample(0, 2, 4, 6, 8))
@@ -61,7 +61,7 @@ public static class OneSampleTestCases
     // Spread: 30 test cases (requires sparity: spread > 0, so no constant samples or n=1)
     // Note: Performance tests (perf-100k) are not stored in the repository because they generate
     // large JSON files. Instead, they should be implemented manually in each language's test suite.
-    var spreadController = GenerateTests("spread", input => SpreadEstimator.Instance.Estimate(input.ToSample()),
+    var spreadController = GenerateTests("spread", input => SpreadEstimator.Instance.Estimate(input.ToSample()).Value,
       new OneSampleInputBuilder()
         // Demo examples (n = 5) - 3 tests
         .Add("demo-1", new Sample(0, 2, 4, 6, 8))

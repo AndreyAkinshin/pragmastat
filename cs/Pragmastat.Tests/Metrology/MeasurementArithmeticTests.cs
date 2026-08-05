@@ -52,6 +52,22 @@ public class MeasurementArithmeticTests
   }
 
   /// <summary>
+  /// The conversion to double is explicit, and the reason is overload resolution rather than
+  /// taste: while it was implicit, WriteLine(m) bound WriteLine(double) in preference to
+  /// WriteLine(object), so a 300 ns measurement printed 300 where the other six ports print
+  /// 300 ns. Both calls compiled and nothing warned. This asserts the printed bytes, so making
+  /// the conversion implicit again fails here rather than passing quietly.
+  /// </summary>
+  [Fact]
+  public void PrintingAMeasurementReachesItsStringForm()
+  {
+    var writer = new StringWriter();
+    writer.Write(new Measurement(300, new MeasurementUnit("nanosecond", "Time", "ns", "Nanosecond", 1)));
+
+    Assert.Equal("300 ns", writer.ToString());
+  }
+
+  /// <summary>
   /// A scalar carries no unit of its own, so it acts on the value and leaves the unit in place.
   /// Without these overloads the same expressions answer in double and the unit is gone.
   /// </summary>

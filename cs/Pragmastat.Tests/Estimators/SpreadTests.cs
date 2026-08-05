@@ -11,7 +11,7 @@ public class SpreadTests
   private const string SuiteName = "spread";
 
   private readonly OneSampleEstimatorController sampleController =
-    new(SuiteName, input => SpreadEstimator.Instance.Estimate(input.ToSample()));
+    new(SuiteName, input => SpreadEstimator.Instance.Estimate(input.ToSample()).Value);
   private readonly OneSampleEstimatorController rawController =
     new(SuiteName, input => SpreadEstimator.Instance.Estimate(input.X, assumeSorted: false));
 
@@ -51,6 +51,6 @@ public class SpreadTests
     var sample = new Sample(x);
     var actual = SpreadEstimator.Instance.Estimate(sample);
     const double expected = 29290;
-    Assert.True(sampleController.Assert(expected, actual));
+    Assert.True(sampleController.Assert(expected, actual.Value));
   }
 }

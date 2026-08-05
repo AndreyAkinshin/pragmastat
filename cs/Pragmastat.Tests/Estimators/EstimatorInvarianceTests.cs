@@ -53,19 +53,19 @@ public class EstimatorInvarianceTests
   [Fact]
   public void CenterShift()
   {
-    PerformTestOne(x => Toolkit.Center(x + 2), x => Toolkit.Center(x) + 2);
+    PerformTestOne(x => Toolkit.Center(x + 2).Value, x => Toolkit.Center(x).Value + 2);
   }
 
   [Fact]
   public void CenterScale()
   {
-    PerformTestOne(x => Toolkit.Center(x * 2), x => 2 * Toolkit.Center(x));
+    PerformTestOne(x => Toolkit.Center(x * 2).Value, x => 2 * Toolkit.Center(x).Value);
   }
 
   [Fact]
   public void CenterNegate()
   {
-    PerformTestOne(x => Toolkit.Center(x * -1), x => -1 * Toolkit.Center(x));
+    PerformTestOne(x => Toolkit.Center(x * -1).Value, x => -1 * Toolkit.Center(x).Value);
   }
 
   // Spread tests
@@ -73,19 +73,19 @@ public class EstimatorInvarianceTests
   [Fact]
   public void SpreadShift()
   {
-    PerformTestOne(x => Toolkit.Spread(x + 2), x => Toolkit.Spread(x));
+    PerformTestOne(x => Toolkit.Spread(x + 2).Value, x => Toolkit.Spread(x).Value);
   }
 
   [Fact]
   public void SpreadScale()
   {
-    PerformTestOne(x => Toolkit.Spread(x * 2), x => 2 * Toolkit.Spread(x));
+    PerformTestOne(x => Toolkit.Spread(x * 2).Value, x => 2 * Toolkit.Spread(x).Value);
   }
 
   [Fact]
   public void SpreadNegate()
   {
-    PerformTestOne(x => Toolkit.Spread(x * -1), x => Toolkit.Spread(x));
+    PerformTestOne(x => Toolkit.Spread(x * -1).Value, x => Toolkit.Spread(x).Value);
   }
 
   // Shift tests
@@ -93,19 +93,19 @@ public class EstimatorInvarianceTests
   [Fact]
   public void ShiftShift()
   {
-    PerformTestTwo((x, y) => Toolkit.Shift(x + 3, y + 2), (x, y) => Toolkit.Shift(x, y) + 1);
+    PerformTestTwo((x, y) => Toolkit.Shift(x + 3, y + 2).Value, (x, y) => Toolkit.Shift(x, y).Value + 1);
   }
 
   [Fact]
   public void ShiftScale()
   {
-    PerformTestTwo((x, y) => Toolkit.Shift(x * 2, y * 2), (x, y) => 2 * Toolkit.Shift(x, y));
+    PerformTestTwo((x, y) => Toolkit.Shift(x * 2, y * 2).Value, (x, y) => 2 * Toolkit.Shift(x, y).Value);
   }
 
   [Fact]
   public void ShiftAntisymmetry()
   {
-    PerformTestTwo((x, y) => Toolkit.Shift(x, y), (x, y) => -1 * Toolkit.Shift(y, x));
+    PerformTestTwo((x, y) => Toolkit.Shift(x, y).Value, (x, y) => -1 * Toolkit.Shift(y, x).Value);
   }
 
   // Ratio tests
@@ -113,7 +113,7 @@ public class EstimatorInvarianceTests
   [Fact]
   public void RatioScale()
   {
-    PerformTestTwo((x, y) => Toolkit.Ratio(x * 2, y * 3), (x, y) => (2.0 / 3) * Toolkit.Ratio(x, y));
+    PerformTestTwo((x, y) => Toolkit.Ratio(x * 2, y * 3).Value, (x, y) => (2.0 / 3) * Toolkit.Ratio(x, y).Value);
   }
 
   // AvgSpread tests
@@ -121,25 +121,25 @@ public class EstimatorInvarianceTests
   [Fact]
   public void AvgSpreadEqual()
   {
-    PerformTestOne(x => Toolkit.AvgSpread(x, x), x => Toolkit.Spread(x));
+    PerformTestOne(x => Toolkit.AvgSpread(x, x).Value, x => Toolkit.Spread(x).Value);
   }
 
   [Fact]
   public void AvgSpreadSymmetry()
   {
-    PerformTestTwo((x, y) => Toolkit.AvgSpread(x, y), (x, y) => Toolkit.AvgSpread(y, x));
+    PerformTestTwo((x, y) => Toolkit.AvgSpread(x, y).Value, (x, y) => Toolkit.AvgSpread(y, x).Value);
   }
 
   [Fact]
   public void AvgSpreadAverage()
   {
-    PerformTestOne(x => Toolkit.AvgSpread(x, x * 5), x => 3 * Toolkit.Spread(x));
+    PerformTestOne(x => Toolkit.AvgSpread(x, x * 5).Value, x => 3 * Toolkit.Spread(x).Value);
   }
 
   [Fact]
   public void AvgSpreadScale()
   {
-    PerformTestTwo((x, y) => Toolkit.AvgSpread(x * -2, y * -2), (x, y) => 2 * Toolkit.AvgSpread(x, y));
+    PerformTestTwo((x, y) => Toolkit.AvgSpread(x * -2, y * -2).Value, (x, y) => 2 * Toolkit.AvgSpread(x, y).Value);
   }
 
   // Disparity tests
@@ -147,24 +147,24 @@ public class EstimatorInvarianceTests
   [Fact]
   public void DisparityShift()
   {
-    PerformTestTwo((x, y) => Toolkit.Disparity(x + 2, y + 2), (x, y) => Toolkit.Disparity(x, y));
+    PerformTestTwo((x, y) => Toolkit.Disparity(x + 2, y + 2).Value, (x, y) => Toolkit.Disparity(x, y).Value);
   }
 
   [Fact]
   public void DisparityScale()
   {
-    PerformTestTwo((x, y) => Toolkit.Disparity(x * 2, y * 2), (x, y) => Toolkit.Disparity(x, y));
+    PerformTestTwo((x, y) => Toolkit.Disparity(x * 2, y * 2).Value, (x, y) => Toolkit.Disparity(x, y).Value);
   }
 
   [Fact]
   public void DisparityScaleNeg()
   {
-    PerformTestTwo((x, y) => Toolkit.Disparity(x * -2, y * -2), (x, y) => -1 * Toolkit.Disparity(x, y));
+    PerformTestTwo((x, y) => Toolkit.Disparity(x * -2, y * -2).Value, (x, y) => -1 * Toolkit.Disparity(x, y).Value);
   }
 
   [Fact]
   public void DisparityAntisymmetry()
   {
-    PerformTestTwo((x, y) => Toolkit.Disparity(x, y), (x, y) => -1 * Toolkit.Disparity(y, x));
+    PerformTestTwo((x, y) => Toolkit.Disparity(x, y).Value, (x, y) => -1 * Toolkit.Disparity(y, x).Value);
   }
 }

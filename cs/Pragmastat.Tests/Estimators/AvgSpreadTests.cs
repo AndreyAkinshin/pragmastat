@@ -8,7 +8,7 @@ namespace Pragmastat.Tests.Estimators;
 public class AvgSpreadTests
 {
   private const string SuiteName = "avg-spread";
-  private readonly TwoSampleEstimatorController controller = new(SuiteName, input => Pragmastat.Estimators.AvgSpreadEstimator.Instance.Estimate(input.GetSampleX(), input.GetSampleY()));
+  private readonly TwoSampleEstimatorController controller = new(SuiteName, input => Pragmastat.Estimators.AvgSpreadEstimator.Instance.Estimate(input.GetSampleX(), input.GetSampleY()).Value);
 
   [UsedImplicitly]
   public static readonly TheoryData<string> TestDataNames = ReferenceTestSuiteHelper.GetTheoryData(SuiteName, true);

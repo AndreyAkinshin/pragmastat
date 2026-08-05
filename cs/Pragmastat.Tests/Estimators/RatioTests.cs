@@ -11,7 +11,7 @@ public class RatioTests
   private const string SuiteName = "ratio";
 
   private readonly TwoSampleEstimatorController sampleController =
-    new(SuiteName, input => RatioEstimator.Instance.Estimate(input.GetSampleX(), input.GetSampleY()));
+    new(SuiteName, input => RatioEstimator.Instance.Estimate(input.GetSampleX(), input.GetSampleY()).Value);
   private readonly TwoSampleEstimatorController rawController =
     new(SuiteName, input => RatioEstimator.Instance.Estimate(input.X, input.Y, assumeSorted: false));
 

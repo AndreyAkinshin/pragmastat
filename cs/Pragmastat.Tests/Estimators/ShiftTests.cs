@@ -11,7 +11,7 @@ public class ShiftTests
   private const string SuiteName = "shift";
 
   private readonly TwoSampleEstimatorController sampleController =
-    new(SuiteName, input => ShiftEstimator.Instance.Estimate(input.GetSampleX(), input.GetSampleY()));
+    new(SuiteName, input => ShiftEstimator.Instance.Estimate(input.GetSampleX(), input.GetSampleY()).Value);
   private readonly TwoSampleEstimatorController rawController =
     new(SuiteName, input => ShiftEstimator.Instance.Estimate(input.X, input.Y, assumeSorted: false));
 
@@ -52,6 +52,6 @@ public class ShiftTests
     var sampleY = new Sample(data);
     var actual = ShiftEstimator.Instance.Estimate(sampleX, sampleY);
     const double expected = 0;
-    Assert.True(sampleController.Assert(expected, actual));
+    Assert.True(sampleController.Assert(expected, actual.Value));
   }
 }

@@ -11,7 +11,7 @@ public class DisparityTests
   private const string SuiteName = "disparity";
 
   private readonly TwoSampleEstimatorController sampleController =
-    new(SuiteName, input => DisparityEstimator.Instance.Estimate(input.GetSampleX(), input.GetSampleY()));
+    new(SuiteName, input => DisparityEstimator.Instance.Estimate(input.GetSampleX(), input.GetSampleY()).Value);
   private readonly TwoSampleEstimatorController rawController =
     new(SuiteName, input => DisparityEstimator.Instance.Estimate(input.X, input.Y, assumeSorted: false));
 

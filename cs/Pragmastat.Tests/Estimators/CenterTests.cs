@@ -12,7 +12,7 @@ public class CenterTests
 
   // Both entry points are exercised by the dual-path theory below.
   private readonly OneSampleEstimatorController sampleController =
-    new(SuiteName, input => CenterEstimator.Instance.Estimate(input.ToSample()));
+    new(SuiteName, input => CenterEstimator.Instance.Estimate(input.ToSample()).Value);
   private readonly OneSampleEstimatorController rawController =
     new(SuiteName, input => CenterEstimator.Instance.Estimate(input.X, assumeSorted: false));
 
@@ -52,6 +52,6 @@ public class CenterTests
     var sample = new Sample(x);
     var actual = CenterEstimator.Instance.Estimate(sample);
     const double expected = 50000.5;
-    Assert.True(sampleController.Assert(expected, actual));
+    Assert.True(sampleController.Assert(expected, actual.Value));
   }
 }

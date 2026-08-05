@@ -9,7 +9,12 @@ public class Measurement(double value, MeasurementUnit? unit = null) : IComparab
   public double Value { get; } = value;
   public MeasurementUnit Unit { get; } = unit ?? MeasurementUnit.Number;
 
-  public static implicit operator double(Measurement measurement) => measurement.Value;
+  /// <summary>
+  /// Explicit, because it drops the unit. Implicit, it also won overload resolution: WriteLine(m)
+  /// bound WriteLine(double) in preference to WriteLine(object), so a 300 ns measurement printed
+  /// 300 where the other six ports print 300 ns, and nothing warned about either call.
+  /// </summary>
+  public static explicit operator double(Measurement measurement) => measurement.Value;
 
   public static Measurement operator +(Measurement a, Measurement b)
   {

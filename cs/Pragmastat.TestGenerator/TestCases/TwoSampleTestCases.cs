@@ -11,7 +11,7 @@ public static class TwoSampleTestCases
     // Shift: 60 test cases (42 original + 18 unsorted)
     // Note: Performance tests (perf-100k-100k) are not stored in the repository because they generate
     // large JSON files. Instead, they should be implemented manually in each language's test suite.
-    var shiftController = GenerateTests("shift", input => ShiftEstimator.Instance.Estimate(input.GetSampleX(), input.GetSampleY()),
+    var shiftController = GenerateTests("shift", input => ShiftEstimator.Instance.Estimate(input.GetSampleX(), input.GetSampleY()).Value,
       new TwoSampleInputBuilder()
         // Demo examples (n = m = 5) - 5 tests
         .Add("demo-1", new Sample(0, 2, 4, 6, 8), new Sample(10, 12, 14, 16, 18))
@@ -59,7 +59,7 @@ public static class TwoSampleTestCases
         .AddUnsorted("negative-unsorted-3-3", new Sample(-1, -3, -2), new Sample(-2, -3, -1)));
 
     // Ratio: 37 test cases (25 original + 12 unsorted)
-    var ratioController = GenerateTests("ratio", input => RatioEstimator.Instance.Estimate(input.GetSampleX(), input.GetSampleY()),
+    var ratioController = GenerateTests("ratio", input => RatioEstimator.Instance.Estimate(input.GetSampleX(), input.GetSampleY()).Value,
       new TwoSampleInputBuilder()
         // Demo examples (n = m = 5) - 3 tests
         .Add("demo-1", new Sample(1, 2, 4, 8, 16), new Sample(2, 4, 8, 16, 32))
@@ -83,7 +83,7 @@ public static class TwoSampleTestCases
 
     // AvgSpread: 38 test cases (requires sparity: spread > 0 for both samples)
     // Excluded: single-element samples, constant samples, zero samples
-    var avgSpreadController = GenerateTests("avg-spread", input => Pragmastat.Estimators.AvgSpreadEstimator.Instance.Estimate(input.GetSampleX(), input.GetSampleY()),
+    var avgSpreadController = GenerateTests("avg-spread", input => Pragmastat.Estimators.AvgSpreadEstimator.Instance.Estimate(input.GetSampleX(), input.GetSampleY()).Value,
       new TwoSampleInputBuilder()
         // Demo examples (n = m = 5) - 5 tests
         .Add("demo-1", new Sample(0, 3, 6, 9, 12), new Sample(0, 2, 4, 6, 8))
@@ -114,7 +114,7 @@ public static class TwoSampleTestCases
 
     // Disparity: 28 test cases (16 original + 12 unsorted)
     // Important: Disparity = Shift / AvgSpread, so requires sparity for both samples
-    var disparityController = GenerateTests("disparity", input => DisparityEstimator.Instance.Estimate(input.GetSampleX(), input.GetSampleY()),
+    var disparityController = GenerateTests("disparity", input => DisparityEstimator.Instance.Estimate(input.GetSampleX(), input.GetSampleY()).Value,
       new TwoSampleInputBuilder()
         // Demo examples (n = m = 5) - 4 tests
         .Add("demo-1", new Sample(0, 3, 6, 9, 12), new Sample(0, 2, 4, 6, 8))
