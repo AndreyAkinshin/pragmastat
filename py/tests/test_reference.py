@@ -366,13 +366,13 @@ def _assert_projections(projections, expected_projections, fixture_name, thresho
 
     triples = zip(projections, expected_projections, thresholds, strict=True)
     for i, (actual, expected, threshold) in enumerate(triples):
-        context = f" for {fixture_name}, projection {i} ({threshold.metric.value})"
+        context = f" for {fixture_name}, projection {i} ({threshold.metric})"
         bitwise = _projection_is_bitwise(threshold.metric)
         _assert_scalar(actual.estimate.value, expected["estimate"], f"Estimate mismatch{context}", bitwise=bitwise)
         _assert_scalar(actual.bounds.lower, expected["lower"], f"Lower bound mismatch{context}", bitwise=bitwise)
         _assert_scalar(actual.bounds.upper, expected["upper"], f"Upper bound mismatch{context}", bitwise=bitwise)
-        assert actual.verdict.value == expected["verdict"], (
-            f"Verdict mismatch{context}: expected {expected['verdict']}, got {actual.verdict.value}"
+        assert actual.verdict == expected["verdict"], (
+            f"Verdict mismatch{context}: expected {expected['verdict']}, got {actual.verdict}"
         )
 
 
@@ -1105,7 +1105,7 @@ class TestCompare1:
         assert_identical(projection.estimate.value, 5.5, "compare1 center estimate")
         assert projection.estimate.unit == ms
         assert projection.bounds.unit == ms
-        assert projection.verdict.value == "greater"
+        assert projection.verdict == "greater"
 
 
 class TestCompare2:
@@ -1176,4 +1176,4 @@ class TestCompare2:
         assert_identical(projection.estimate.value, -20_000_000.0, "compare2 shift estimate")
         assert projection.estimate.unit == ns
         assert projection.bounds.unit == ns
-        assert projection.verdict.value == "less"
+        assert projection.verdict == "less"

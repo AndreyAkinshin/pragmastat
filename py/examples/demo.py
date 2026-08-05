@@ -55,12 +55,12 @@ def main():
 
     x = Sample(list(range(1, 201)))
     projection = compare1(x, [Threshold(Metric.CENTER, 50.0, 1e-3)])[0]
-    print(projection.verdict.value)  # greater
+    print(projection.verdict)  # greater
 
     x = Sample(list(range(1, 201)))
     y = Sample(list(range(101, 301)))
     projection = compare2(x, y, [Threshold(Metric.SHIFT, 0.0, 1e-3)])[0]
-    print(projection.verdict.value)  # less
+    print(projection.verdict)  # less
 
     # --- Randomization ---
 

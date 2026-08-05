@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from enum import Enum
+from enum import StrEnum
 from typing import TYPE_CHECKING
 
 from .assumptions import AssumptionError
@@ -44,7 +44,7 @@ if TYPE_CHECKING:
     from .bounds import Bounds
 
 
-class Metric(Enum):
+class Metric(StrEnum):
     """Metric types supported by Compare1 and Compare2."""
 
     CENTER = "center"
@@ -54,7 +54,7 @@ class Metric(Enum):
     DISPARITY = "disparity"
 
 
-class ComparisonVerdict(Enum):
+class ComparisonVerdict(StrEnum):
     """Verdict from comparing an estimate against a threshold."""
 
     LESS = "less"
@@ -262,15 +262,13 @@ def compare1(x: Sample, thresholds: list[Threshold], seed: str | None = None) ->
 
     for threshold in thresholds:
         if threshold.metric not in (Metric.CENTER, Metric.SPREAD):
-            raise AssumptionError(
-                f"metric {threshold.metric.value} is not supported by compare1. Use compare2 instead."
-            )
+            raise AssumptionError(f"metric {threshold.metric} is not supported by compare1. Use compare2 instead.")
 
     normalized_values: list[float] = []
     for threshold in thresholds:
         spec = _get_spec(_COMPARE1_SPECS, threshold.metric)
         if spec is None:
-            raise AssumptionError(f"no spec found for metric {threshold.metric.value}")
+            raise AssumptionError(f"no spec found for metric {threshold.metric}")
         normalized = spec.validate_and_normalize(threshold, x, None)
         normalized_values.append(normalized)
 
@@ -325,9 +323,7 @@ def compare2(x: Sample, y: Sample, thresholds: list[Threshold], seed: str | None
 
     for threshold in thresholds:
         if threshold.metric not in (Metric.SHIFT, Metric.RATIO, Metric.DISPARITY):
-            raise AssumptionError(
-                f"metric {threshold.metric.value} is not supported by compare2. Use compare1 instead."
-            )
+            raise AssumptionError(f"metric {threshold.metric} is not supported by compare2. Use compare1 instead.")
 
     x_conv, y_conv = _convert_to_finer(x, y)
 
@@ -335,7 +331,7 @@ def compare2(x: Sample, y: Sample, thresholds: list[Threshold], seed: str | None
     for threshold in thresholds:
         spec = _get_spec(_COMPARE2_SPECS, threshold.metric)
         if spec is None:
-            raise AssumptionError(f"no spec found for metric {threshold.metric.value}")
+            raise AssumptionError(f"no spec found for metric {threshold.metric}")
         normalized = spec.validate_and_normalize(threshold, x_conv, y_conv)
         normalized_values.append(normalized)
 
