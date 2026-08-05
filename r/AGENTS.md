@@ -9,10 +9,23 @@ mise run r:check     # R CMD check (no tests, no dependencies)
 mise run r:demo      # Run demo
 mise run r:build     # Build source package (.tar.gz)
 mise run r:restore   # Install package locally
-mise run r:doc       # Build documentation with roxygen2
+mise run r:doc       # Regenerate the three roxygen-driven .Rd files
 ```
 
 **Note:** R is not managed by mise. Uses system R via `Rscript`.
+
+**NAMESPACE and most .Rd files are written by hand.** Only three .Rd files are roxygen output,
+all for internal `*_impl_compute` helpers, and they say so in their first line. NAMESPACE carries
+no roxygen header, which is what stops `r:doc` from overwriting it.
+
+Do not hand the exports to roxygen without doing the work first. Measured: 14 of the 39 exports
+have no roxygen block to generate from, and they are `center`, `spread`, `shift`, `ratio`,
+`disparity`, the five `*_bounds`, the three `*_unit` values and `DEFAULT_MISRATE`, which is
+everything a caller of this package actually calls. Generating NAMESPACE today deletes them.
+
+`#' @export` tags used to sit above 28 definitions and produced nothing, since NAMESPACE is not
+generated. They are gone: a tag that looks like it wires an export, and does not, is worse than
+no tag.
 
 **No format gate.** Every other port has a checking half and a fixing half of one pair:
 `dotnet format --verify-no-changes`, `gofmt` with a guard, `ruff format --check`, `cargo fmt

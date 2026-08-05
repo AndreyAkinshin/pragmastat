@@ -11,7 +11,6 @@ bounds_list <- function(lower, upper) {
   list(lower = normalize_zero(lower), upper = normalize_zero(upper))
 }
 
-#' @export
 Bounds <- R6::R6Class(
   "Bounds",
   public = list(

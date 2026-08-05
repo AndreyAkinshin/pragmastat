@@ -11,7 +11,6 @@
 #' dist <- dist_uniform(0, 10)
 #' dist$sample(r)
 #'
-#' @export
 dist_uniform <- function(min_val, max_val) {
   # is.finite() comes first on purpose. `!(NaN < 1)` is NA in R, and `if (NA)` raises base R's
   # "missing value where TRUE/FALSE needed", which names neither the package nor the parameter.

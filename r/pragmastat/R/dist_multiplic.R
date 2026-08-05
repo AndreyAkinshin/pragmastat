@@ -12,7 +12,6 @@
 #' dist <- dist_multiplic(0, 1)
 #' dist$sample(r)
 #'
-#' @export
 dist_multiplic <- function(log_mean, log_std_dev) {
   if (!is.finite(log_mean)) {
     stop("log_mean must be finite")

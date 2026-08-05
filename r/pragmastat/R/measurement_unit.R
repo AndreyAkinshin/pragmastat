@@ -1,6 +1,5 @@
 # MeasurementUnit represents a unit of measurement with identity, family, and conversion support.
 
-#' @export
 MeasurementUnit <- R6::R6Class(
   "MeasurementUnit",
   private = list(

@@ -11,7 +11,6 @@
 #' dist <- dist_exp(1) # rate=1, mean=1
 #' dist$sample(r)
 #'
-#' @export
 dist_exp <- function(rate) {
   if (!(is.finite(rate) && rate > 0)) {
     stop("rate must be finite and positive")

@@ -4,23 +4,15 @@
 # against practical thresholds and return verdicts (Less, Greater, or Inconclusive).
 
 # Metric constants
-#' @export
 METRIC_CENTER <- "center"
-#' @export
 METRIC_SPREAD <- "spread"
-#' @export
 METRIC_SHIFT <- "shift"
-#' @export
 METRIC_RATIO <- "ratio"
-#' @export
 METRIC_DISPARITY <- "disparity"
 
 # Verdict constants
-#' @export
 VERDICT_LESS <- "less"
-#' @export
 VERDICT_GREATER <- "greater"
-#' @export
 VERDICT_INCONCLUSIVE <- "inconclusive"
 
 # Compare1 metric specifications (internal)
@@ -126,7 +118,6 @@ normalize_disparity_threshold <- function(value) {
   threshold_numeric(value)
 }
 
-#' @export
 Threshold <- R6::R6Class("Threshold",
   public = list(
     metric = NULL,
@@ -155,7 +146,6 @@ Threshold <- R6::R6Class("Threshold",
   )
 )
 
-#' @export
 Projection <- R6::R6Class("Projection",
   public = list(
     threshold = NULL,
@@ -199,7 +189,6 @@ build_projection <- function(threshold, estimate, bounds, verdict) {
 #   - estimate: Measurement object (point estimate)
 #   - bounds: Bounds object (lower and upper bounds)
 #   - verdict: "less", "greater", or "inconclusive"
-#' @export
 compare1 <- function(x, thresholds, seed = NULL) {
   sx <- as_compare_sample(x)
   check_non_weighted("x", sx)
@@ -273,7 +262,6 @@ compare1 <- function(x, thresholds, seed = NULL) {
 #   - estimate: Measurement object (point estimate)
 #   - bounds: Bounds object (lower and upper bounds)
 #   - verdict: "less", "greater", or "inconclusive"
-#' @export
 compare2 <- function(x, y, thresholds, seed = NULL) {
   sx <- as_compare_sample(x)
   sy <- as_compare_sample(y)

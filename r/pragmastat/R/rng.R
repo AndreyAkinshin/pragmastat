@@ -23,12 +23,10 @@
 #' r <- rng("demo-sample")
 #' r$sample(0:9, 3)
 #'
-#' @export
 rng <- function(seed = NULL) {
   Rng$new(seed)
 }
 
-#' @export
 Rng <- R6::R6Class(
   "Rng",
   private = list(

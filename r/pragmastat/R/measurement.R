@@ -1,6 +1,5 @@
 # Measurement represents a value with an associated unit.
 
-#' @export
 Measurement <- R6::R6Class(
   "Measurement",
   public = list(
@@ -31,7 +30,6 @@ Measurement <- R6::R6Class(
   )
 )
 
-#' @export
 as.double.Measurement <- function(x, ...) {
   x$value
 }

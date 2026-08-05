@@ -12,7 +12,6 @@
 #' dist <- dist_additive(0, 1) # Standard normal
 #' dist$sample(r)
 #'
-#' @export
 dist_additive <- function(mean, std_dev) {
   # is.finite() comes first on purpose. `!(NaN > 0)` is NA in R, and `if (NA)` raises base R's
   # "missing value where TRUE/FALSE needed", which names neither the package nor the parameter.

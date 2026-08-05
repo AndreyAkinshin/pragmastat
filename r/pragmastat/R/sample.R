@@ -1,6 +1,5 @@
 # Sample wraps values with optional weights and a measurement unit.
 
-#' @export
 Sample <- R6::R6Class(
   "Sample",
   public = list(
@@ -164,7 +163,6 @@ convert_to_finer <- function(a, b) {
 
 # S3 operators for Sample
 
-#' @export
 `*.Sample` <- function(e1, e2) {
   if (inherits(e1, "Sample")) {
     Sample$new(e1$values * e2,
@@ -177,7 +175,6 @@ convert_to_finer <- function(a, b) {
   }
 }
 
-#' @export
 `+.Sample` <- function(e1, e2) {
   if (inherits(e1, "Sample")) {
     Sample$new(e1$values + e2,

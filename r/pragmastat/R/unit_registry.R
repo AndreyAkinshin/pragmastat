@@ -1,6 +1,5 @@
 # UnitRegistry stores measurement units and enables lookup by ID.
 
-#' @export
 UnitRegistry <- R6::R6Class(
   "UnitRegistry",
   public = list(
@@ -37,7 +36,6 @@ UnitRegistry <- R6::R6Class(
 
 #' Create a standard registry pre-populated with Number, Ratio, and Disparity units.
 #' @return UnitRegistry
-#' @export
 standard_registry <- function() {
   reg <- UnitRegistry$new()
   reg$register(number_unit)

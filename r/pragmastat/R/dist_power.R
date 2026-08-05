@@ -12,7 +12,6 @@
 #' dist <- dist_power(1, 2) # min=1, shape=2
 #' dist$sample(r)
 #'
-#' @export
 dist_power <- function(min_val, shape) {
   if (!(is.finite(min_val) && min_val > 0)) {
     stop("min must be finite and positive")
