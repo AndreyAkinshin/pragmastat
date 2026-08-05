@@ -11,25 +11,11 @@ public class UnitRegistry
     _byId[unit.Id] = unit;
   }
 
-  public void RegisterFamily(params MeasurementUnit[] units)
-  {
-    foreach (var unit in units)
-      Register(unit);
-  }
-
   public MeasurementUnit Resolve(string id)
   {
     if (_byId.TryGetValue(id, out var unit))
       return unit;
     throw new ArgumentException($"Unknown unit id: '{id}'");
-  }
-
-  public bool TryResolve(string id, out MeasurementUnit unit)
-  {
-    if (_byId.TryGetValue(id, out unit!))
-      return true;
-    unit = MeasurementUnit.Number;
-    return false;
   }
 
   public static UnitRegistry Standard()
