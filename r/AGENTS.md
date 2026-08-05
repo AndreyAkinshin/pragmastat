@@ -116,11 +116,11 @@ spread(x, assume_sorted = FALSE)                              # Shamos estimator
 shift(x, y, assume_sorted = FALSE)                            # Median of pairwise differences
 ratio(x, y, assume_sorted = FALSE)                            # Geometric median of pairwise ratios
 disparity(x, y, assume_sorted = FALSE)                        # Shift / AvgSpread
-center_bounds(x, misrate = 1e-3, assume_sorted = FALSE)       # Confidence bounds on center
-spread_bounds(x, misrate = 1e-3, seed = NULL, assume_sorted = FALSE)  # Confidence bounds on spread
-shift_bounds(x, y, misrate = 1e-3, assume_sorted = FALSE)     # Confidence bounds on shift
-ratio_bounds(x, y, misrate = 1e-3, assume_sorted = FALSE)     # Confidence bounds on ratio
-disparity_bounds(x, y, misrate = 1e-3, seed = NULL, assume_sorted = FALSE) # Confidence bounds on disparity
+center_bounds(x, misrate = DEFAULT_MISRATE, assume_sorted = FALSE)       # Confidence bounds on center
+spread_bounds(x, misrate = DEFAULT_MISRATE, seed = NULL, assume_sorted = FALSE)  # Confidence bounds on spread
+shift_bounds(x, y, misrate = DEFAULT_MISRATE, assume_sorted = FALSE)     # Confidence bounds on shift
+ratio_bounds(x, y, misrate = DEFAULT_MISRATE, assume_sorted = FALSE)     # Confidence bounds on ratio
+disparity_bounds(x, y, misrate = DEFAULT_MISRATE, seed = NULL, assume_sorted = FALSE) # Confidence bounds on disparity
 ```
 
 Internal (not exported by `NAMESPACE`): `avg_spread(x, y)` and
@@ -132,7 +132,12 @@ no `assume_sorted` flag; the test suite reaches them via the package namespace.
 - **Reference tests**: Load JSON fixtures from `tests/` directory (copied during test)
 - **Invariance tests**: Verify mathematical properties
 - **Test framework**: testthat v3
-- **Tolerance**: `1e-9` for floating-point comparisons
+- **Comparison**: bitwise. `helper-reference-tests.R` defaults to `tolerance = NULL`, which
+  compares bit patterns, and only the ratio family sets a tolerance, because ratio is
+  `exp(median(log x - log y))` and libm may legitimately move it. A selection-based estimator
+  returns an element of the pairwise set or the midpoint of two, so a divergence is not a small
+  error: either the same element was selected and the answer is bit-identical, or a different one
+  was, and no epsilon bounds that gap
 
 ```bash
 mise run r:test              # All tests (preferred)
@@ -169,6 +174,6 @@ Error conditions:
 
 ## Package Structure
 
-- Uses roxygen2 for documentation
+- Documentation is written by hand, except three .Rd files for internal helpers (see above)
 - Follows CRAN submission guidelines
 - MIT license
