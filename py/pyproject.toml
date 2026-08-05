@@ -46,17 +46,14 @@ ignore = [
     "EM101",   # raw-string-in-exception — acceptable for internal errors
     "EM102",   # f-string-in-exception — acceptable for internal errors
     "TRY003",  # raise-vanilla-args — acceptable for domain errors
-    # Documentation gaps (to be addressed incrementally)
-    "D100",    # undocumented-public-module
-    "D101",    # undocumented-public-class
-    "D102",    # undocumented-public-method
-    "D103",    # undocumented-public-function
-    "D104",    # undocumented-public-package
-    "D105",    # undocumented-magic-method
-    "D107",    # undocumented-public-init
-    # Annotation gaps (to be addressed incrementally)
-    "ANN001",  # missing-type-function-argument
-    "ANN201",  # missing-return-type-undocumented-public-function
+    # Documentation debt, with the count each one is hiding as of ruff 0.16.0. The wording here
+    # used to read "to be addressed incrementally", which tracked nothing: three of the rules in
+    # that list were suppressing zero findings, and enabling them cost no edit at all. What is
+    # left is the part with a real backlog, and the numbers say how big it is rather than
+    # implying it.
+    "D100",    # undocumented-public-module — 6
+    "D102",    # undocumented-public-method — 14
+    "D105",    # undocumented-magic-method — 10
     # Relative imports — project convention
     "TID252",  # relative-imports
     # Complexity thresholds — statistical algorithms are inherently complex
@@ -73,11 +70,11 @@ ignore = [
     "ICN001",  # unconventional-import-alias
     "RUF012",  # mutable-class-default
     "PTH123",  # builtin-open — pathlib not required
-    # Docstring formatting — existing conventions
-    "D401",    # non-imperative-mood — descriptive style in existing docstrings
-    "D205",    # missing-blank-line-after-summary — existing style
-    "D400",    # missing-trailing-period — existing style
-    "D413",    # missing-blank-line-after-last-section — existing style
+    # Docstring formatting. These two are style choices with a backlog behind them, counted the
+    # same way: D401 wants imperative mood where these docstrings are descriptive, and D413 wants
+    # a blank line closing every section.
+    "D401",    # non-imperative-mood — 43
+    "D413",    # missing-blank-line-after-last-section — 52
     "D415",    # missing-terminal-punctuation — existing style
     # Code patterns acceptable in statistical code
     "PLW0108", # unnecessary-lambda — used for estimator dispatch tables

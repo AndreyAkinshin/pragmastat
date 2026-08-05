@@ -28,13 +28,14 @@ import math
 
 from .assumptions import AssumptionError, Subject
 from .min_misrate import min_achievable_misrate_one_sample
+from .rng import Rng
 
 # How far the running term is rescaled when it grows too large. Any power of two works; 512 keeps
 # the rescaling rare without letting w approach the overflow threshold.
 _SCALE_STEP = 512
 
 
-def sign_margin_randomized(n: int, misrate: float, rng) -> int:
+def sign_margin_randomized(n: int, misrate: float, rng: Rng) -> int:
     """Compute randomized sign margin for one-sample bounds.
 
     Args:
@@ -71,8 +72,9 @@ def sign_margin_randomized(n: int, misrate: float, rng) -> int:
 
 
 def _binom_cdf_split(n: int, target: float) -> tuple[int, float]:
-    """Largest k whose Binomial(n, 0.5) CDF does not exceed target, and the fraction of the next
-    term needed to reach it.
+    """Largest k whose Binomial(n, 0.5) CDF does not exceed target.
+
+    Returns that k together with the fraction of the next term needed to reach the target.
 
     The caller compares that fraction against a uniform draw, which is what makes the margin
     achieve the requested misrate exactly rather than the next admissible one below it.

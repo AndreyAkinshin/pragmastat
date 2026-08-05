@@ -18,8 +18,9 @@ MAX_EXACT_SIZE = 400
 
 def pairwise_margin(n: int, m: int, misrate: float) -> int:
     """
-    PairwiseMargin determines how many extreme pairwise differences to exclude
-    when constructing bounds based on the distribution of dominance statistics.
+    PairwiseMargin determines how many extreme pairwise differences to exclude.
+
+    The count comes from the distribution of dominance statistics.
 
     Uses exact calculation for small samples (n+m <= 400) and Edgeworth
     approximation for larger samples.
@@ -63,8 +64,9 @@ def _pairwise_margin_approx(n: int, m: int, misrate: float) -> int:
 
 def _pairwise_margin_exact_raw(n: int, m: int, p: float) -> int:
     """
-    Inversed implementation of Andreas Löffler's (1982)
-    "Über eine Partition der nat. Zahlen und ihre Anwendung beim U-Test"
+    Inversed implementation of Andreas Löffler's (1982) partition algorithm.
+
+    "Über eine Partition der nat. Zahlen und ihre Anwendung beim U-Test".
     """
     total = _binomial_coefficient(n + m, m)
 

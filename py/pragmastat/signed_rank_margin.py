@@ -17,7 +17,8 @@ SIGNED_RANK_MAX_EXACT_SIZE = 63
 def signed_rank_margin(n: int, misrate: float) -> int:
     """
     SignedRankMargin computes the margin for one-sample signed-rank bounds.
-    Uses Wilcoxon signed-rank distribution to determine the margin that achieves
+
+    Uses the Wilcoxon signed-rank distribution to determine the margin that achieves
     the specified misrate.
 
     Args:

@@ -1,3 +1,5 @@
+"""Pragmastat: a unified statistical toolkit for reliable analysis of real-world data."""
+
 from .assumptions import (
     AssumptionError,
     AssumptionId,

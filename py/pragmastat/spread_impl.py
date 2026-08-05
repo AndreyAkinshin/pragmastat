@@ -4,6 +4,7 @@ Based on Monahan's selection algorithm adapted for pairwise differences.
 """
 
 import struct
+from collections.abc import Sequence
 
 import numpy as np
 
@@ -243,7 +244,7 @@ def _spread_impl_python(values: list[float], assume_sorted: bool = False) -> flo
     raise RuntimeError("Convergence failure (pathological input)")
 
 
-def _spread_impl(values, assume_sorted: bool = False) -> float:
+def _spread_impl(values: Sequence[float], assume_sorted: bool = False) -> float:
     """
     Compute the median of all pairwise absolute differences |xi - xj| efficiently.
 

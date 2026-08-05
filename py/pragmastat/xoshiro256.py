@@ -18,6 +18,7 @@ class SplitMix64:
     """SplitMix64 PRNG for seed expansion."""
 
     def __init__(self, seed: int) -> None:
+        """Seeds the generator, masked to 64 bits."""
         self._state = seed & U64_MASK
 
     def next(self) -> int:

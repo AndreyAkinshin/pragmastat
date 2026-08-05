@@ -23,6 +23,7 @@ class Sample:
         weights: Sequence[float] | NDArray | None = None,
         unit: MeasurementUnit | None = None,
     ) -> None:
+        """Builds a sample from values, with optional weights and an optional unit."""
         if unit is None:
             unit = NUMBER_UNIT
 

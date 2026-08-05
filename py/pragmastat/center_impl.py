@@ -4,6 +4,7 @@ Based on Monahan's Algorithm 616 (1984).
 """
 
 import struct
+from collections.abc import Sequence
 
 import numpy as np
 
@@ -246,7 +247,7 @@ def _center_impl_python(values: list[float], assume_sorted: bool = False) -> flo
     raise RuntimeError("Convergence failure (pathological input)")
 
 
-def _center_impl(values, assume_sorted: bool = False) -> float:
+def _center_impl(values: Sequence[float], assume_sorted: bool = False) -> float:
     """
     Compute the median of all pairwise averages (xi + xj)/2 efficiently.
 

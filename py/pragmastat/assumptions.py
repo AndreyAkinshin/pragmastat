@@ -57,6 +57,7 @@ class AssumptionError(Exception):
     violation: Violation | None
 
     def __init__(self, violation_or_msg: Violation | str) -> None:
+        """Builds an error from a Violation, or from a plain message with no violation."""
         if isinstance(violation_or_msg, Violation):
             self.violation = violation_or_msg
             super().__init__(str(violation_or_msg))

@@ -41,8 +41,9 @@ def _exact(n: int, k: int) -> float:
 
 
 def _recurrence(n: int, k: int) -> float:
-    """Computes C(n, k) in binary64 by the multiplicative recurrence
-    C(n, k) = prod_{i=1..k} (n-k+i)/i.
+    """Computes C(n, k) in binary64.
+
+    The multiplicative recurrence is C(n, k) = prod_{i=1..k} (n-k+i)/i.
 
     It replaced an exp-of-Stirling formulation, for two reasons. The specification defines
     the admissible misrate as ``misrate >= 2 / C(n+m, n)``, an exact integer quantity;

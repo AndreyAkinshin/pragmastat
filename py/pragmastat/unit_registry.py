@@ -5,6 +5,7 @@ class UnitRegistry:
     """Stores measurement units and enables lookup by ID."""
 
     def __init__(self) -> None:
+        """Builds an empty registry. Use standard() for the three shared units."""
         self._by_id: dict[str, MeasurementUnit] = {}
 
     def register(self, unit: MeasurementUnit) -> None:
