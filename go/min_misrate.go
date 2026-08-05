@@ -7,7 +7,7 @@ import "math"
 // Returns 2^(1-n) which is the smallest possible misrate for a sample of size n.
 func minAchievableMisrateOneSample(n int) (float64, error) {
 	if n <= 0 {
-		return 0, &AssumptionError{Violation: Violation{ID: Domain, Subject: SubjectX}}
+		return 0, &AssumptionError{Violation: Violation{ID: AssumptionDomain, Subject: SubjectX}}
 	}
 	// Ldexp, not Pow: this is a power of two, and scaling by one is exact in binary64
 	// for every representable exponent. A general power function would give the same

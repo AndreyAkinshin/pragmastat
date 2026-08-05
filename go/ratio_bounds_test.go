@@ -17,7 +17,7 @@ func TestRatioBoundsDomainBeforePositivity(t *testing.T) {
 	if !ok {
 		t.Fatalf("expected *AssumptionError, got %T: %v", err, err)
 	}
-	if ae.Violation.ID != Domain || ae.Violation.Subject != SubjectMisrate {
+	if ae.Violation.ID != AssumptionDomain || ae.Violation.Subject != SubjectMisrate {
 		t.Errorf("expected domain(misrate), got %s", ae.Violation)
 	}
 }
@@ -32,7 +32,7 @@ func TestRatioBoundsPositivityWhenMisrateValid(t *testing.T) {
 	if !ok {
 		t.Fatalf("expected *AssumptionError, got %T: %v", err, err)
 	}
-	if ae.Violation.ID != Positivity || ae.Violation.Subject != SubjectX {
+	if ae.Violation.ID != AssumptionPositivity || ae.Violation.Subject != SubjectX {
 		t.Errorf("expected positivity(x), got %s", ae.Violation)
 	}
 }

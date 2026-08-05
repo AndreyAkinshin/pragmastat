@@ -18,7 +18,7 @@ func TestErrorSubjectIsPositional(t *testing.T) {
 
 	// One-sample path: the constant sample reports sparity on subject x.
 	_, err = constant.Spread()
-	if ae, ok := err.(*AssumptionError); !ok || ae.Violation.ID != Sparity || ae.Violation.Subject != SubjectX {
+	if ae, ok := err.(*AssumptionError); !ok || ae.Violation.ID != AssumptionSparity || ae.Violation.Subject != SubjectX {
 		t.Fatalf("Spread(constant): expected sparity(x), got %v", err)
 	}
 
@@ -29,7 +29,7 @@ func TestErrorSubjectIsPositional(t *testing.T) {
 	if !ok {
 		t.Fatalf("Disparity: expected AssumptionError, got %v", err)
 	}
-	if ae.Violation.ID != Sparity || ae.Violation.Subject != SubjectY {
+	if ae.Violation.ID != AssumptionSparity || ae.Violation.Subject != SubjectY {
 		t.Errorf("Disparity(x, constant): expected sparity(y), got %s", ae.Violation)
 	}
 

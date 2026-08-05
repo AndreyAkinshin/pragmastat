@@ -121,8 +121,8 @@ func TestRawBoundsRejectMisrateDomain(t *testing.T) {
 			t.Fatalf("%s: expected *AssumptionError, got %T: %v", label, err, err)
 			return
 		}
-		if ae.Violation.ID != Domain {
-			t.Errorf("%s: id = %q, want %q", label, ae.Violation.ID, Domain)
+		if ae.Violation.ID != AssumptionDomain {
+			t.Errorf("%s: id = %q, want %q", label, ae.Violation.ID, AssumptionDomain)
 		}
 		if ae.Violation.Subject != SubjectMisrate {
 			t.Errorf("%s: subject = %q, want %q", label, ae.Violation.Subject, SubjectMisrate)

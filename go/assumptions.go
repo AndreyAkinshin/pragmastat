@@ -10,10 +10,10 @@ import (
 type AssumptionID string
 
 const (
-	Validity   AssumptionID = "validity"
-	Domain     AssumptionID = "domain"
-	Positivity AssumptionID = "positivity"
-	Sparity    AssumptionID = "sparity"
+	AssumptionValidity   AssumptionID = "validity"
+	AssumptionDomain     AssumptionID = "domain"
+	AssumptionPositivity AssumptionID = "positivity"
+	AssumptionSparity    AssumptionID = "sparity"
 )
 
 // Subject identifies which sample caused the violation in two-sample functions.
@@ -48,19 +48,19 @@ func (e *AssumptionError) Error() string {
 }
 
 func NewValidityError(subject Subject) *AssumptionError {
-	return &AssumptionError{Violation: Violation{ID: Validity, Subject: subject}}
+	return &AssumptionError{Violation: Violation{ID: AssumptionValidity, Subject: subject}}
 }
 
 func NewPositivityError(subject Subject) *AssumptionError {
-	return &AssumptionError{Violation: Violation{ID: Positivity, Subject: subject}}
+	return &AssumptionError{Violation: Violation{ID: AssumptionPositivity, Subject: subject}}
 }
 
 func NewSparityError(subject Subject) *AssumptionError {
-	return &AssumptionError{Violation: Violation{ID: Sparity, Subject: subject}}
+	return &AssumptionError{Violation: Violation{ID: AssumptionSparity, Subject: subject}}
 }
 
 func NewDomainError(subject Subject) *AssumptionError {
-	return &AssumptionError{Violation: Violation{ID: Domain, Subject: subject}}
+	return &AssumptionError{Violation: Violation{ID: AssumptionDomain, Subject: subject}}
 }
 
 // Log log-transforms a slice. Returns error if any value is non-positive.
