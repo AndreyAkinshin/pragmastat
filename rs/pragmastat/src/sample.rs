@@ -142,6 +142,15 @@ impl Sample {
         &self.values
     }
 
+    /// Returns the weights, or `None` for an unweighted sample.
+    ///
+    /// This is the one port that stored the vector, reported `is_weighted`, `total_weight` and
+    /// `weighted_size` off it, and let a caller build a weighted sample without ever seeing the
+    /// weights again. The other six answer.
+    pub fn weights(&self) -> Option<&[f64]> {
+        self.weights.as_deref()
+    }
+
     /// Returns true if this is a weighted sample.
     pub fn is_weighted(&self) -> bool {
         self.is_weighted

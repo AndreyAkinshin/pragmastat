@@ -425,3 +425,27 @@ fn test_unit_propagation() {
         failures.join("\n")
     );
 }
+
+/// A weighted Sample must hand its weights back. This crate stored the vector and reported
+/// is_weighted, total_weight and weighted_size off it while publishing no accessor, so it was the
+/// one port where a caller could build a weighted sample and never see the weights again.
+///
+/// The assertions read the values rather than merely calling the method, since the failure this
+/// guards against is a sample that reports the right derived numbers over the wrong vector.
+#[test]
+fn weighted_sample_hands_its_weights_back() {
+    let weights = vec![0.5, 0.3, 0.2];
+    let sample = Sample::weighted(
+        vec![1.0, 2.0, 3.0],
+        weights.clone(),
+        MeasurementUnit::number(),
+    )
+    .unwrap();
+
+    assert_eq!(sample.weights(), Some(weights.as_slice()));
+    assert!(sample.is_weighted());
+
+    let unweighted = Sample::new(vec![1.0, 2.0, 3.0]).unwrap();
+    assert_eq!(unweighted.weights(), None);
+    assert!(!unweighted.is_weighted());
+}
