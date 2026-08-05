@@ -231,7 +231,7 @@ jobs:
       uses: actions/upload-artifact@v7
       with:
         name: rs
-        path: rs/pragmastat/target/package/*.crate
+        path: rs/pragmastat/target/pack/package/*.crate
         retention-days: 1
 
   ci-ts:
@@ -342,6 +342,9 @@ jobs:
 
     - name: Every task is reachable from the aggregate that runs it
       run: mise run tests:check:task-coverage
+
+    - name: Packaging does not make a later build answer about its own copy
+      run: mise run tests:check:rs-incremental
 
   ci-kt:
     runs-on: ubuntu-24.04

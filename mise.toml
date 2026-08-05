@@ -641,6 +641,10 @@ description = "Assert prose across the repository uses one spelling convention"
 # grepping for "normalize" should find every place that normalizes.
 run = "python3 tests/check_spelling.py ."
 
+[tasks."tests:check:rs-incremental"]
+description = "Packaging must not make a later build answer about its own copy"
+run = "tests/check_rs_incremental.sh"
+
 [tasks."tests:check:task-coverage"]
 description = "Assert every task is reachable from the aggregate that should run it"
 # A task and the aggregate that runs it are two separate spellings of one intent, and nothing tied
@@ -706,12 +710,17 @@ run = "cargo doc --no-deps"
 [tasks."rs:pack"]
 description = "Package Rust crate"
 dir = "rs/pragmastat"
-run = "cargo package --verbose"
+# --target-dir keeps the verification build out of the shared target directory. cargo package
+# verifies the archive by compiling the extracted copy, and doing that in the shared directory
+# left the dep-info naming the snapshot's paths, so every later cargo build compared against
+# those and reported Fresh over a source tree it had never read.
+run = "cargo package --verbose --target-dir target/pack"
 
 [tasks."rs:publish:dry"]
 description = "Dry run of publishing Rust crate"
 dir = "rs/pragmastat"
-run = "cargo publish --dry-run"
+# Same separation as rs:pack: this verifies by compiling an extracted copy too.
+run = "cargo publish --dry-run --target-dir target/pack"
 
 [tasks."rs:ci"]
 description = "Run Rust CI pipeline"
@@ -1134,7 +1143,7 @@ depends = ["cs:demo", "go:demo", "kt:demo", "py:demo", "r:demo", "rs:demo", "ts:
 
 [tasks."ci"]
 description = "Run CI pipeline for all language implementations"
-depends = ["cs:ci", "go:ci", "kt:ci", "py:ci", "r:ci", "rs:ci", "ts:ci", "docs:ci", "tests:check:rng-fixtures", "tests:check:conformance", "tests:check:generator-drift", "tests:check:spelling", "tests:check:coefficients", "tests:check:task-coverage"]
+depends = ["cs:ci", "go:ci", "kt:ci", "py:ci", "r:ci", "rs:ci", "ts:ci", "docs:ci", "tests:check:rng-fixtures", "tests:check:conformance", "tests:check:generator-drift", "tests:check:spelling", "tests:check:coefficients", "tests:check:task-coverage", "tests:check:rs-incremental"]
 
 # ==========================================================================
 # Version Task
