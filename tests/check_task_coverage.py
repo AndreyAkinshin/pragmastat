@@ -52,13 +52,13 @@ EXEMPT: dict[str, str] = {}
 
 # How many tasks the file declares. Pinned because this check reports success by finding no gap,
 # and finding no gap is also what happens when the parse returns nothing.
-EXPECTED_TASKS = 122
+EXPECTED_TASKS = 123
 
 # How many of those tasks a rule above actually claims. Pinned separately, because the count of
 # tasks read and the count of tasks judged are independent: emptying AGGREGATES leaves the first
 # untouched and drops the second to zero, and without this the check stayed green on exactly that
 # mutation. A guard that proves it read something still has to prove it can refuse something.
-EXPECTED_CHECKED = 41
+EXPECTED_CHECKED = 42
 
 
 def main() -> int:

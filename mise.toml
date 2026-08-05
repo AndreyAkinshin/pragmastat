@@ -623,6 +623,14 @@ qemu-aarch64-static "$binary" -test.count=1
 echo "the Go suite agrees with the fixtures on arm64"
 """
 
+[tasks."tests:check:function-oracles"]
+description = "Assert the log-function and exp-function fixtures hold the true values"
+# Every other check on these two compares the seven ports to a fixture that one of them generates,
+# so a reduction wrong the same way everywhere passes all of them. This compares the fixtures
+# themselves against decimal at 60 digits, which determines the correctly rounded result, and so
+# states accuracy rather than agreement. Both functions sit on the ratio path.
+run = "python3 tests/check_function_oracles.py ."
+
 [tasks."tests:check:coefficients"]
 description = "Assert the shipped coefficients still match the scripts that produce them"
 # The manual calls the coefficients "reproducible rather than transcribed" and names the two fit
@@ -1143,7 +1151,7 @@ depends = ["cs:demo", "go:demo", "kt:demo", "py:demo", "r:demo", "rs:demo", "ts:
 
 [tasks."ci"]
 description = "Run CI pipeline for all language implementations"
-depends = ["cs:ci", "go:ci", "kt:ci", "py:ci", "r:ci", "rs:ci", "ts:ci", "docs:ci", "tests:check:rng-fixtures", "tests:check:conformance", "tests:check:generator-drift", "tests:check:spelling", "tests:check:coefficients", "tests:check:task-coverage", "tests:check:rs-incremental"]
+depends = ["cs:ci", "go:ci", "kt:ci", "py:ci", "r:ci", "rs:ci", "ts:ci", "docs:ci", "tests:check:rng-fixtures", "tests:check:conformance", "tests:check:generator-drift", "tests:check:spelling", "tests:check:coefficients", "tests:check:function-oracles", "tests:check:task-coverage", "tests:check:rs-incremental"]
 
 # ==========================================================================
 # Version Task

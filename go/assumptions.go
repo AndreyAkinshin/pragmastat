@@ -3,7 +3,6 @@ package pragmastat
 
 import (
 	"fmt"
-	"math"
 )
 
 // AssumptionID identifies an assumption in canonical priority order.
@@ -71,7 +70,7 @@ func Log[T Number](values []T, subject Subject) ([]float64, error) {
 		if fv <= 0 {
 			return nil, NewPositivityError(subject)
 		}
-		result[i] = math.Log(fv)
+		result[i] = logFunction(fv)
 	}
 	return result, nil
 }

@@ -54,5 +54,5 @@ log_transform <- function(values, subject) {
   if (any(values <= 0)) {
     stop(assumption_error(ASSUMPTION_IDS$POSITIVITY, subject))
   }
-  log(values)
+  vapply(values, log_function, numeric(1))
 }

@@ -11,6 +11,8 @@
  * is reported. For two-sample functions, subject X is checked before Y.
  */
 
+import { logFunction } from './logFunction';
+
 export const AssumptionId = {
   VALIDITY: 'validity',
   DOMAIN: 'domain',
@@ -89,7 +91,7 @@ export function log(values: readonly number[], subject: Subject): number[] {
     if (values[i] <= 0) {
       throw AssumptionError.positivity(subject);
     }
-    result[i] = Math.log(values[i]);
+    result[i] = logFunction(values[i]);
   }
   return result;
 }

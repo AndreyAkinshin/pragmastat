@@ -52,8 +52,8 @@ ratio_bounds_impl <- function(x, y, misrate, assume_sorted = FALSE,
 
   # Reuse a pre-sorted view when available; else honor assume_sorted on the input.
   if (!is.null(sorted_x)) {
-    log_sorted_x <- log(sorted_x)
-    log_sorted_y <- log(sorted_y)
+    log_sorted_x <- vapply(sorted_x, log_function, numeric(1))
+    log_sorted_y <- vapply(sorted_y, log_function, numeric(1))
   } else if (assume_sorted) {
     log_sorted_x <- log_x
     log_sorted_y <- log_y

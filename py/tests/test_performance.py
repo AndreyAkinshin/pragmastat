@@ -1,5 +1,6 @@
 import time
 
+from pragmastat import ratio
 from pragmastat.center_impl import _center_impl
 from pragmastat.shift_impl import _shift_impl
 from pragmastat.spread_impl import _spread_impl
@@ -63,3 +64,26 @@ if __name__ == "__main__":
 
     test_shift_performance()
     print("✓ Shift performance test passed")
+
+
+def test_ratio_performance():
+    # ratio is the one estimator whose cost is dominated by a transcendental rather than by the
+    # selection: it log-transforms both samples before the shift. The toolkit evaluates its own
+    # logarithm element by element, where the platform's was one vectorized numpy call, so this
+    # path carries a real cost that none of the cases above can see. Measured at n = 100000 it is
+    # the majority of the total, which is why it gets a budget of its own rather than being
+    # assumed to be covered by test_shift_performance.
+    n = 100000
+    x = list(range(1, n + 1))
+    y = list(range(1, n + 1))
+
+    start = time.time()
+    result = ratio(x, y)
+    elapsed = time.time() - start
+
+    print(f"\nRatio for n=m={n}: {result:.6f}")
+    print(f"Elapsed time: {elapsed:.3f}s")
+
+    expected = 1.0
+    assert abs(result - expected) < 1e-9, f"Ratio for n=m={n}: expected {expected}, got {result}"
+    assert elapsed < 5.0, f"Performance too slow: {elapsed}s"

@@ -44,7 +44,25 @@ SOURCES = {
     ],
 }
 
-FLOAT = re.compile(r"[-+]?\d+\.\d+[eE][-+]?\d+")
+# The logarithm stores its polynomial as an array and walks it in a loop, so there is no Horner
+# chain in the source to find. The guard covered only the two functions that happened to be
+# written the other way, which is how a coefficient in a new function ends up checked by nothing.
+ARRAYS = {
+    "log": [
+        ("go/log_function.go", "logPolyP"),
+        ("py/pragmastat/log_function.py", "POLY_P"),
+        ("rs/pragmastat/src/log_function.rs", "POLY_P"),
+        ("ts/src/logFunction.ts", "POLY_P"),
+        ("kt/src/main/kotlin/dev/pragmastat/LogFunction.kt", "LOG_POLY_P"),
+        ("cs/Pragmastat/Functions/LogFunction.cs", "PolyP"),
+        ("r/pragmastat/R/log_function.R", "LOG_POLY_P"),
+    ],
+}
+
+# An exponent is optional: fit_exp.py prints every coefficient in scientific notation and
+# fit_log.py prints shortest round-trip, where the leading terms have none. Requiring one
+# silently matched nothing in the second case.
+FLOAT = re.compile(r"[-+]?\d+\.\d+(?:[eE][-+]?\d+)?")
 
 
 def run_fit(root: Path, script: str) -> list[list[float]]:
@@ -103,6 +121,59 @@ def horner_coefficients(root: Path, rel: str, accumulator: str, argument: str) -
     return chains
 
 
+def array_coefficients(root: Path, rel: str, name: str) -> list[float]:
+    """The coefficients of an array-valued polynomial, in source order.
+
+    Anchors on the declaration of `name` followed by an opening bracket, then reads every float
+    literal until the bracket closes. The seven ports spell the declaration differently
+    (`var x = [7]float64{`, `POLY_P = (`, `doubleArrayOf(`, `c(`, `[`), so the pattern keys on the
+    name and the delimiters rather than on the syntax between them. The array lengths in Go's
+    `[7]float64` and Rust's `[f64; 7]` are integers, which a float literal pattern cannot match.
+    """
+    text = (root / rel).read_text()
+    match = re.search(rf"\b{re.escape(name)}\b\s*(?::[^=\n]*)?(?:=|<-)", text)
+    if not match:
+        print(f"ERROR: found no declaration of {name} in {rel}", file=sys.stderr)
+        raise SystemExit(1)
+
+    depth, coefficients, started = 0, [], False
+    for token in re.finditer(r"[\[\](){}]|[-+]?\d+\.\d+(?:[eE][-+]?\d+)?", text[match.end():]):
+        piece = token.group(0)
+        if piece in "[({":
+            depth += 1
+            started = True
+        elif piece in "])}":
+            depth -= 1
+            # Only a bracket pair that actually held literals ends the array. Go declares
+            # `[7]float64{...}` and Rust `[f64; 7] = [...]`, where the first pair carries the
+            # length and closes before the coefficients begin; stopping there read nothing and
+            # reported an empty array rather than the wrong one.
+            if started and depth <= 0 and coefficients:
+                break
+        elif started:
+            coefficients.append(float(piece))
+    if not coefficients:
+        print(f"ERROR: {name} in {rel} declares no coefficients", file=sys.stderr)
+        raise SystemExit(1)
+    return coefficients
+
+
+def compare_arrays(name: str, expected: list[list[float]], root: Path) -> list[str]:
+    """Every port's array against the single polynomial the fit script prints."""
+    failures = []
+    if len(expected) != 1:
+        return [f"  fit for {name} printed {len(expected)} polynomials, expected 1"]
+    want = expected[0]
+    for rel, symbol in ARRAYS[name]:
+        found = array_coefficients(root, rel, symbol)
+        if len(found) != len(want):
+            failures.append(f"  {rel}: {symbol} has {len(found)} coefficients, the fit produces {len(want)}")
+            continue
+        for index, (a, b) in enumerate(zip(found, want)):
+            if a != b:
+                failures.append(f"  {rel}: {symbol}[{index}] is {a!r}, the fit produces {b!r}")
+    return failures
+
 def compare(name: str, expected: list[list[float]], root: Path) -> list[str]:
     failures = []
     for rel, accumulator, argument in SOURCES[name]:
@@ -133,8 +204,13 @@ def main() -> int:
 
     exp_coefficients = run_fit(root, "fit_exp.py")
     additive_coefficients = run_fit(root, "fit_additive_cumulative.py")
+    log_coefficients = run_fit(root, "fit_log.py")
 
-    failures = compare("exp", exp_coefficients, root) + compare("additive", additive_coefficients, root)
+    failures = (
+        compare("exp", exp_coefficients, root)
+        + compare("additive", additive_coefficients, root)
+        + compare_arrays("log", log_coefficients, root)
+    )
 
     python = root / "py" / ".venv" / "bin" / "python"
     interpreter = str(python) if python.exists() else sys.executable
@@ -153,7 +229,11 @@ def main() -> int:
         print("\n".join(failures), file=sys.stderr)
         return 1
 
-    total = sum(len(c) for c in exp_coefficients) + sum(len(c) for c in additive_coefficients)
+    total = (
+        sum(len(c) for c in exp_coefficients)
+        + sum(len(c) for c in additive_coefficients)
+        + sum(len(c) for c in log_coefficients)
+    )
     print(f"{total} coefficients match the fit scripts that produce them, in all seven ports")
     return 0
 

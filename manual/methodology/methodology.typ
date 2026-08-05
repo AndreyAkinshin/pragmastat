@@ -393,10 +393,15 @@ Where a suite declares its tolerance `exact`, the kernel therefore writes each r
 #v(0.3em)
 Three limits are stated rather than hidden.
 Transcendental functions are the first: the logarithm, the exponential, the cosine and the general
-  power are polynomial approximations, each language takes its own, and two implementations correct
-  to within an ulp still disagree in the last bit.
-Any result computed through one of them conforms at a stated tolerance and not bitwise, which is
-  why the parametric distributions other than $Uniform$ are tolerance-bound.
+  power are polynomial approximations, and two implementations correct to within an ulp still
+  disagree in the last bit.
+Two of them the toolkit therefore supplies itself, the same construction in all seven languages:
+  the exponential for the reason #link(<sec-exp-function>)[$ExpFunction$] gives, and the logarithm because $Ratio$ is
+  $exp(Shift(log vx, log vy))$, where a last-bit difference does not shift the answer slightly but
+  selects a different element of the pairwise set.
+The cosine and the general power are still each language's own, so a result computed through one of
+  them conforms at a stated tolerance and not bitwise, which is why the parametric distributions
+  other than $Uniform$ are tolerance-bound.
 Accumulated rounding is the second: an estimator that sums or searches over $O(n^2)$ intermediate
   values is reproducible to the tolerance its suite declares, not to the last bit.
 

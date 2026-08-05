@@ -59,17 +59,22 @@ tests/
 ├── pairwise-margin/     # PairwiseMargin function tests
 ├── signed-rank-margin/  # SignedRankMargin function tests
 ├── exp-function/        # The reproducible exponential, by payload
+├── log-function/        # The reproducible logarithm, by payload
 │
 │   # Other
 └── distributions/       # Distribution sampling tests
 ```
 
-`exp-function/` is the only suite whose function is internal in all seven ports. The margin
-suites test functions that are public in some of them and internal in others. It is there because
-the margins reach an exponential, IEEE 754 fixes nothing about one, and a last-bit difference
-there selects a different order statistic — so the seven implementations evaluate their own rather
-than the platform's. Every other suite reaches that function only through a margin, which covers
-it wherever an Edgeworth expansion happens to look and nowhere else.
+`exp-function/` and `log-function/` are the only suites whose function is internal in all seven
+ports. The margin suites test functions that are public in some of them and internal in others.
+Both are there because IEEE 754 fixes nothing about a transcendental, and both of these sit on a
+decision path, so the seven implementations evaluate their own rather than the platform's.
+
+They differ in what would otherwise cover them. The margins reach an exponential wherever an
+Edgeworth expansion happens to look and nowhere else, so `exp-function/` fills in the range the
+margins never visit. The logarithm is reached by every ratio fixture, but those compare with a
+tolerance, and a tolerance forgives precisely the last-bit divergence that decides which pairwise
+element a median selects. `log-function/` is what makes that comparison exact.
 
 ## Test File Format
 

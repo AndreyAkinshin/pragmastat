@@ -217,7 +217,7 @@ pub(crate) fn log(values: &[f64], subject: Subject) -> Result<Vec<f64>, Assumpti
         if v <= 0.0 {
             return Err(AssumptionError::positivity(subject));
         }
-        result.push(v.ln());
+        result.push(crate::log_function::log_function(v));
     }
     Ok(result)
 }

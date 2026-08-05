@@ -160,8 +160,12 @@ def _ratio_raw(x: NDArray, y: NDArray, assume_sorted: bool) -> float:
     check_validity(y, Subject.Y)
     check_positivity(x, Subject.X)
     check_positivity(y, Subject.Y)
-    log_x = np.log(x)
-    log_y = np.log(y)
+    # log(), not np.log: the toolkit evaluates its own logarithm, and this raw path used the
+    # platform's while _ratio_bounds_raw beside it already used ours. The two entry points of the
+    # same estimator answered with different last bits, and the ratio fixtures compare with a
+    # tolerance, so nothing said so.
+    log_x = log(x, Subject.X)
+    log_y = log(y, Subject.Y)
     # log is monotonic: sorted positive input -> sorted log output.
     log_result = _shift_impl(log_x, log_y, p=0.5, assume_sorted=assume_sorted)
     return _normalize_zero(float(np.exp(log_result)))

@@ -1,4 +1,5 @@
 using Pragmastat.Exceptions;
+using Pragmastat.Functions;
 
 namespace Pragmastat.Internal;
 
@@ -38,7 +39,7 @@ internal static class MathExtensions
     {
       if (values[i] <= 0)
         throw AssumptionException.Positivity(subject);
-      result[i] = Math.Log(values[i]);
+      result[i] = LogFunction.Value(values[i]);
     }
     return result;
   }

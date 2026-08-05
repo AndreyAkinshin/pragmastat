@@ -1848,6 +1848,49 @@ func TestExpFunctionReference(t *testing.T) {
 	}
 }
 
+// logFunctionArgCount is how many arguments the log-function fixtures carry
+// between them: 401 over the band the estimators reach, 401 over the whole
+// finite range, 401 around the zero crossing, 30 boundaries and 512 uniformly
+// random payloads. It is asserted because a loader that finds no files, or four
+// files out of five, passes every other check in this test.
+const logFunctionArgCount = 1745
+
+// TestLogFunctionReference checks the reproducible logarithm directly.
+//
+// The ratio suites reach logFunction on every fixture, and compare with a
+// tolerance, because until this branch the platform logarithm decided the last
+// bits. That is not cover: ratio is exp(median(log x - log y)), so a last-bit
+// difference in log changes which pairwise element the median selects, and a
+// tolerance is exactly what forgives it.
+//
+// Bitwise, via the same assertFloat every exact suite uses.
+//
+// Only the outputs are compared. The suite makes no claim about the payload of
+// an input, and the outputs are what carry the result of the reduction.
+func TestLogFunctionReference(t *testing.T) {
+	checked := 0
+	forEachFixture(t, "log-function", func(t *testing.T, td TestData, input SingleDoubleValueInput) {
+		if input.Name != "log_function" {
+			t.Fatalf("Fixture names function %q, want %q", input.Name, "log_function")
+		}
+		var expected []float64
+		if err := json.Unmarshal(td.Output, &expected); err != nil {
+			t.Fatalf("Failed to parse output data: %v", err)
+		}
+		if len(expected) != len(input.Arg) {
+			t.Fatalf("Fixture has %d arguments and %d outputs", len(input.Arg), len(expected))
+		}
+		for i, arg := range input.Arg {
+			label := fmt.Sprintf("logFunction(%s)", formatFloatBits(arg))
+			assertFloat(t, compareExact, label, logFunction(arg), expected[i])
+		}
+		checked += len(input.Arg)
+	})
+	if checked != logFunctionArgCount {
+		t.Errorf("Checked %d arguments, want %d", checked, logFunctionArgCount)
+	}
+}
+
 // parseSpecialFloats converts a fixture's number list, where a special float arrives as one of the
 // strings "NaN", "Infinity" or "-Infinity", into float64s.
 func parseSpecialFloats(raw []interface{}) []float64 {

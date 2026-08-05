@@ -129,7 +129,7 @@
     },
     "ratio": {
       "conformance": "approximate",
-      "conformance_reason": "exp(median(log x_i - log y_j)). The logarithm and the exponential come from each language's own libm, and two implementations correct to within an ulp still disagree in the last bit. Perturbing them moves the result on 94% of inputs, by up to 3 ulp.",
+      "conformance_reason": "exp(median(log x_i - log y_j)). The logarithm is the toolkit's own and reproducible; the exponential still comes from each language's libm, and two implementations correct to within an ulp disagree in the last bit. Perturbing it moves the result on all 180 probed inputs, by one representable value. Half the transform is reproducible, which is why this is no longer explained by the logarithm.",
       "directory": "ratio",
       "generator": "cs/Pragmastat.TestGenerator",
       "pattern": "*.json",
@@ -138,7 +138,7 @@
     },
     "ratio-bounds": {
       "conformance": "approximate",
-      "conformance_reason": "Same log-exp transform as ratio, with the margin selection on top. Perturbing the libm moves the result on 96% of inputs, by up to 16 ulp; the selection itself does not flip.",
+      "conformance_reason": "Same transform as ratio, with the margin selection on top, and the same split: our logarithm, the platform's exponential. Perturbing the exponential moves the result on 2280 of 2364 probed inputs, by one representable value; the selection itself does not flip.",
       "directory": "ratio-bounds",
       "generator": "cs/Pragmastat.TestGenerator",
       "pattern": "*.json",
@@ -217,6 +217,15 @@
       "pattern": "*.json",
       "description": "The reproducible exponential, compared by binary64 payload",
       "conformance_reason": "This is the function the exact class rests on: the margins reach an exponential, IEEE 754 fixes nothing about one, and a last-bit difference there selects a different order statistic. Every other suite reaches it only through a margin, so it is checked directly here.",
+      "languages": ["cs", "go", "kt", "py", "r", "rs", "ts"]
+    },
+    "log-function": {
+      "conformance": "exact",
+      "directory": "log-function",
+      "generator": "cs/Pragmastat.TestGenerator",
+      "pattern": "*.json",
+      "description": "The reproducible logarithm, compared by binary64 payload",
+      "conformance_reason": "Ratio is exp(median(log x - log y)), so the logarithm feeds a median and a median selects an element of the pairwise set: a last-bit difference there changes which element, not the last bit of the answer. The ratio suites compare with a tolerance and therefore forgive exactly that, so the function is checked directly here.",
       "languages": ["cs", "go", "kt", "py", "r", "rs", "ts"]
     },
     "sample-construction": {

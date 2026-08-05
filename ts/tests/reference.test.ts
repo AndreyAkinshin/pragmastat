@@ -18,6 +18,7 @@ import { signedRankMargin } from '../src/signedRankMargin';
 import { AssumptionError } from '../src/assumptions';
 import { pairwiseMargin } from '../src/pairwiseMargin';
 import { expFunction } from '../src/expFunction';
+import { logFunction } from '../src/logFunction';
 import { Rng } from '../src/rng';
 import { Additive, Exp, Multiplic, Power, Uniform } from '../src/distributions';
 import { Sample } from '../src/sample';
@@ -219,9 +220,11 @@ describe('Reference Tests', () => {
    * Suites that stay on a tolerance, and why:
    *
    * `ratio` is `exp(median(log x - log y))`: unlike the selection estimators it
-   * really is approximate. Perturbing libm by one ULP moves it on 94% of inputs,
-   * by up to 16 ULP, so exact equality across implementations is not a property
-   * it has. `ratio-bounds` inherits this from the same projection. `compare2`
+   * really is approximate. The logarithm is the toolkit's own, but the
+   * exponential still comes from the platform, and perturbing that alone moves
+   * every one of the 180 probed inputs by one representable value, so exact
+   * equality across implementations is not a property it has yet.
+   * `ratio-bounds` inherits this from the same projection. `compare2`
    * keeps a tolerance for the reason given above its own `describe`.
    */
   const TOLERANT_VALUE_DIRS = new Set(['ratio']);
@@ -918,6 +921,68 @@ describe('Reference Tests', () => {
     // nothing, so the count is what says the suite was exercised at all.
     it(`compares all ${EXP_FUNCTION_ARG_COUNT} arguments`, () => {
       expect(compared).toBe(EXP_FUNCTION_ARG_COUNT);
+    });
+  });
+
+  // The logarithm, on its own arguments rather than through a ratio.
+  //
+  // Every ratio fixture reaches logFunction, and every one of them compares with a tolerance,
+  // because until this branch the platform logarithm decided the last bits. A tolerance is what
+  // forgives the divergence that matters: ratio is exp(median(log x - log y)), so a last-bit
+  // difference in log changes which pairwise element the median selects.
+  //
+  // Only the outputs are compared. The suite makes no claim about the payload of an input.
+  describe('log-function', () => {
+    interface LogFunctionData {
+      input: { name: string; arg: number[] };
+      output: number[];
+    }
+
+    // How many arguments the five fixtures carry between them: 401 over the band the
+    // estimators reach, 401 over the whole finite range, 401 around the zero crossing, 30
+    // boundaries and 512 uniformly random payloads. Pinned rather than derived, because a
+    // loader that finds four files out of five satisfies every other assertion here by having
+    // less to compare.
+    const LOG_FUNCTION_ARG_COUNT = 1745;
+
+    const dirPath = path.join(testDataPath, 'log-function');
+    const testFiles = fs
+      .readdirSync(dirPath)
+      .filter((f) => f.endsWith('.json'))
+      .sort();
+
+    const suites = testFiles.map((fileName) => {
+      const data: LogFunctionData = JSON.parse(
+        fs.readFileSync(path.join(dirPath, fileName), 'utf8'),
+      );
+      return { fileName, name: data.input.name, args: data.input.arg, expected: data.output };
+    });
+    let compared = 0;
+
+    it('should have test files', () => {
+      expect(testFiles.length).toBeGreaterThan(0);
+    });
+
+    suites.forEach(({ fileName, name, args, expected }) => {
+      const testName = fileName.replace('.json', '');
+
+      it(`should pass ${testName}`, () => {
+        expect(name).toBe('log_function');
+        expect(args.length).toBeGreaterThan(0);
+        expect(expected.length).toBe(args.length);
+        for (let i = 0; i < args.length; i++) {
+          expectBitwise(
+            `log-function/${fileName} arg[${i}]=${args[i]}`,
+            logFunction(args[i]),
+            expected[i],
+          );
+          compared++;
+        }
+      });
+    });
+
+    it(`compares all ${LOG_FUNCTION_ARG_COUNT} arguments`, () => {
+      expect(compared).toBe(LOG_FUNCTION_ARG_COUNT);
     });
   });
 

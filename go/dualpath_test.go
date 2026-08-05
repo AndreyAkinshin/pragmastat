@@ -46,8 +46,10 @@ const (
 	// The suites marked compareExact did not move at all, on any input.
 	compareExact compareMode = iota
 	// compareTolerant keeps referenceTolerance, for results that genuinely pass
-	// through libm. Under the same perturbation, exp(median(log x - log y))
-	// moves on 94% of inputs, by up to 16 ulp.
+	// through libm. exp(median(log x - log y)) now takes the toolkit's own
+	// logarithm and the platform's exponential, so the perturbation reaches only
+	// the second half; it still moves every one of the 180 probed inputs, by one
+	// representable value.
 	compareTolerant
 )
 

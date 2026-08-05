@@ -140,6 +140,10 @@ class ReferenceTest {
         // rather than counted from the directory, because counting the directory and asserting
         // the count matches it asserts nothing.
         const val EXP_FUNCTION_ARGUMENT_COUNT = 1032
+
+        // The size of the generated log-function fixture: 1745 arguments over five files, pinned
+        // for the same reason.
+        const val LOG_FUNCTION_ARGUMENT_COUNT = 1745
     }
 
     /**
@@ -155,10 +159,12 @@ class ReferenceTest {
      * Tolerant comparison, reserved for the genuinely approximate suites.
      *
      * Only ratio, ratio-bounds, the RATIO projections of compare2 and the
-     * libm-backed distributions use it. ratio is exp(median(log x - log y)):
-     * perturbing log/exp by one representable step (the most two conforming libm
-     * implementations may legitimately differ) moves it on 94% of inputs, by up to
-     * 16 ulp. compare2 does not apply this suite-wide: it resolves the predicate per
+     * libm-backed distributions use it. ratio is exp(median(log x - log y)): the
+     * logarithm is the toolkit's own, the exponential is still the platform's, and
+     * perturbing that half by one representable step (the most two conforming libm
+     * implementations may legitimately differ) moves ratio on all 180 probed inputs
+     * and ratio-bounds on 2280 of 2364, by one representable value. compare2 does
+     * not apply this suite-wide: it resolves the predicate per
      * projection from that projection's own threshold metric, so its shift and
      * disparity projections compare bitwise and only its ratio projections land
      * here. Everything else compares bitwise through [assertBitwise].
@@ -516,7 +522,7 @@ class ReferenceTest {
         return runTwoSampleBoundsTests(
             "ratio-bounds",
             entries,
-            // ratio-bounds inherits ratio's log/exp round trip: genuinely approximate.
+            // ratio-bounds inherits ratio's exponential, which is still the platform's.
             exact = false,
             parse = { file ->
                 val td = mapper.readValue<RatioBoundsTestData>(file)
@@ -1771,6 +1777,72 @@ class ReferenceTest {
                     // a 401-point grid is only actionable if it names the point.
                     for (i in data.input.arg.indices) {
                         assertBitwise(data.output[i], expFunction(data.input.arg[i]), "expFunction(${data.input.arg[i]})")
+                    }
+                },
+            )
+        }
+
+        return tests
+    }
+
+    /**
+     * [logFunction] against the shared fixture, argument by argument, bit for bit.
+     *
+     * The seven ports carry their own logarithm because IEEE 754 fixes nothing about
+     * one and ratio is exp(median(log x - log y)): a last-bit difference in log moves
+     * the median's input and changes which pairwise element is selected. That is a
+     * different answer, not a small error in the same one.
+     *
+     * Unlike the exponential, this function is reached by every ratio fixture. That is
+     * still not cover, because those suites compare with a tolerance, which is exactly
+     * what forgives a last-bit divergence. This suite is declared `exact` and compares
+     * payloads.
+     *
+     * Only the outputs are compared; the inputs are fed to the implementation, never
+     * asserted. It is the ARGUMENTS here that run down to the smallest denormal, which
+     * is also what proves Jackson round-trips them: a parser that mangles a subnormal
+     * hands [logFunction] a different number and cannot agree bit for bit.
+     */
+    @TestFactory
+    fun testLogFunction(): List<DynamicTest> {
+        val testDir = File("../tests/log-function")
+        val loaded =
+            testDir
+                .listFiles { _, name -> name.endsWith(".json") }
+                ?.sortedBy { it.name }
+                .orEmpty()
+                .map { file -> file.nameWithoutExtension to mapper.readValue<SingleDoubleValueTestData>(file) }
+
+        val tests = mutableListOf<DynamicTest>()
+        val total = loaded.sumOf { (_, data) -> data.input.arg.size }
+
+        val expectedFiles = listOf("boundaries", "finite-range", "near-one", "random-payloads", "working-band")
+        tests.add(
+            DynamicTest.dynamicTest("log-function/coverage: $total arguments over ${loaded.size} files") {
+                val found = loaded.map { (name, _) -> name }
+                assertTrue(
+                    found.containsAll(expectedFiles),
+                    "Expected log-function fixtures $expectedFiles but found $found",
+                )
+                assertEquals(
+                    LOG_FUNCTION_ARGUMENT_COUNT,
+                    total,
+                    "log-function: loaded $total arguments, expected $LOG_FUNCTION_ARGUMENT_COUNT",
+                )
+            },
+        )
+
+        for ((name, data) in loaded) {
+            tests.add(
+                DynamicTest.dynamicTest("log-function/$name (${data.input.arg.size} arguments)") {
+                    assertEquals("log_function", data.input.name, "$name: unexpected function name")
+                    assertEquals(
+                        data.input.arg.size,
+                        data.output.size,
+                        "$name: fixture has ${data.input.arg.size} arguments but ${data.output.size} results",
+                    )
+                    for (i in data.input.arg.indices) {
+                        assertBitwise(data.output[i], logFunction(data.input.arg[i]), "logFunction(${data.input.arg[i]})")
                     }
                 },
             )

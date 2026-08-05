@@ -61,6 +61,7 @@ pub mod unit_registry;
 pub(crate) mod additive_cumulative;
 pub(crate) mod binomial;
 pub(crate) mod exp_function;
+pub(crate) mod log_function;
 pub(crate) mod min_misrate;
 pub(crate) mod pairwise_margin;
 pub mod rng;
@@ -87,6 +88,8 @@ mod conformance;
 mod disparity_bounds_tests;
 #[cfg(test)]
 mod exp_function_tests;
+#[cfg(test)]
+mod log_function_tests;
 #[cfg(test)]
 mod pairwise_margin_tests;
 #[cfg(test)]

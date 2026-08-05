@@ -40,6 +40,7 @@ from pragmastat.estimators import (
     _avg_spread_bounds as avg_spread_bounds,
 )
 from pragmastat.exp_function import exp_function
+from pragmastat.log_function import log_function
 from pragmastat.pairwise_margin import pairwise_margin
 from pragmastat.signed_rank_margin import signed_rank_margin
 from pragmastat.unit_registry import UnitRegistry
@@ -131,8 +132,12 @@ def _load_fixtures(estimator_name):
 #
 # The suites that stay tolerant, and why
 # --------------------------------------
-#   ratio / ratio-bounds  exp(median(log x - log y)): the perturbation moves them
-#                         on 94% of inputs, by up to 16 ULP. Genuinely approximate.
+#   ratio / ratio-bounds  exp(median(log x - log y)). The logarithm is the
+#                         toolkit's own; the exponential is still the platform's,
+#                         and the perturbation reaching it alone moves ratio on
+#                         all 180 probed inputs and ratio-bounds on 2280 of 2364,
+#                         by one representable value. Genuinely approximate until
+#                         the exponential goes the way of the logarithm.
 #   compare2              only its ratio projections. The predicate is resolved
 #                         per projection from that projection's own metric (see
 #                         :func:`_projection_is_bitwise`), so the 28 shift and
@@ -764,6 +769,38 @@ class TestReference:
         # total is what makes that visible; raise it deliberately when the generator
         # adds cases.
         assert checked == 1032, f"exp-function: compared {checked} arguments, expected 1032"
+
+    def test_log_function_reference(self):
+        """Test log_function against reference data, argument by argument.
+
+        Bitwise, like the manifest declares this suite. The ratio suites reach this
+        same function on every fixture and compare with a tolerance, which forgives
+        precisely what matters here: ratio is exp(median(log x - log y)), so a
+        last-bit difference in log changes which pairwise element the median
+        selects rather than the last bit of the answer.
+
+        Only the OUTPUTS are compared; the arguments are inputs to the function,
+        not results of it. Unlike the exponential suite, it is the ARGUMENTS that
+        run into the denormal range (``boundaries.json`` carries 5e-324 and 1e-320,
+        and ``finite-range.json`` starts there). CPython parses a numeric literal
+        through correctly-rounded ``float()``, so those survive the round trip, and
+        a parser that mangled them would surface here as a wrong logarithm.
+        """
+        checked = 0
+        for fixture_name, test_case in _load_fixtures("log-function"):
+            args = test_case["input"]["arg"]
+            expected = test_case["output"]
+            # float() only because JSON integer literals (1, 2, 4, 1024) arrive as
+            # Python ints; every one of them is exactly representable in binary64.
+            actual = [log_function(float(arg)) for arg in args]
+            assert_sequence_identical(actual, expected, f"Failed for {fixture_name}")
+            checked += len(args)
+
+        # A loader that matches no file, or a fixture that lost its arguments,
+        # satisfies every assertion above by having nothing to compare. Pinning the
+        # total is what makes that visible; raise it deliberately when the generator
+        # adds cases.
+        assert checked == 1745, f"log-function: compared {checked} arguments, expected 1745"
 
     def test_center_bounds_reference(self):
         run_bounds_reference_tests(

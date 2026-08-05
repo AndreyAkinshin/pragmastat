@@ -18,6 +18,8 @@ from enum import StrEnum
 
 import numpy as np
 
+from .log_function import log_function
+
 
 class AssumptionId(StrEnum):
     """Assumption identifiers in canonical priority order."""
@@ -104,4 +106,4 @@ def log(values: np.ndarray, subject: Subject) -> np.ndarray:
     """Log-transforms an array. Raises AssumptionError if any value is non-positive."""
     if np.any(values <= 0):
         raise AssumptionError.positivity(subject)
-    return np.log(values)
+    return np.array([log_function(float(v)) for v in values], dtype=np.float64)

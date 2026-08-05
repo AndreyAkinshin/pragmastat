@@ -25,8 +25,9 @@
 # sequence of operations and agree to the last bit, or one route does something
 # the other does not, which is a defect. A tolerance would state no numerical
 # fact here, it would only widen the window in which that defect goes
-# unreported. This holds for ratio too: it routes through log/exp, but BOTH
-# sides take that same route, so the libm calls see identical arguments.
+# unreported. This holds for ratio too: it routes through a logarithm and an
+# exponential, but BOTH sides take that same route, so both see identical
+# arguments whether the function behind them is ours or the platform's.
 
 x_unsorted <- c(5, 2, 8, 1, 9, 3, 7, 4)
 y_unsorted <- c(6, 2, 9, 1, 4, 7, 3, 8)

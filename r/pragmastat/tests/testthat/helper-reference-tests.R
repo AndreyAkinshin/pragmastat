@@ -261,8 +261,9 @@ run_bounds_reference_tests <- function(dir_name, bounds_func, n_samples,
 # hides precisely the defect it appears to guard against.
 #
 # A tolerance is set only where the arithmetic is genuinely approximate: the
-# ratio family routes through log/exp from the platform libm, which moves the
-# result by up to ~16 ULP between conforming implementations.
+# ratio family still routes through the platform's exponential. Its logarithm is
+# the toolkit's own and reproducible, so only half the transform is exposed, and
+# perturbing that half moves the result by one representable value.
 run_reference_tests <- function(estimator_name, estimator_func, is_two_sample = FALSE,
                                 supports_assume_sorted = TRUE, tolerance = NULL) {
   repo_root <- find_repo_root()

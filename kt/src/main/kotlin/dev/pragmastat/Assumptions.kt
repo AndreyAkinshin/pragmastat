@@ -72,5 +72,5 @@ internal fun log(
         if (v <= 0.0) {
             throw AssumptionException(Violation(AssumptionId.POSITIVITY, subject))
         }
-        kotlin.math.ln(v)
+        logFunction(v)
     }

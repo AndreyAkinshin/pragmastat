@@ -17,7 +17,7 @@
     "misrate": 0.5
   },
   "output": {
-    "lower": 0.6000000000000001,
+    "lower": 0.6,
     "upper": 1
   }
 }
