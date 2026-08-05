@@ -5,6 +5,38 @@
 //! - Are robust enough to omit outlier handling completely
 //! - Enable simple implementations without advanced statistical libraries
 //! - Provide clear explanations accessible to practitioners without deep statistical training
+//!
+//! # What this crate publishes
+//!
+//! The `pub use` list below is the surface. `pub mod` is what makes each module's path reachable,
+//! so a `pub` item inside one used to be callable as `pragmastat::assumptions::…` whether or not
+//! the re-export list ever named it. The validation the estimators perform on the way in leaked
+//! out that way, and is internal in all six other ports.
+//!
+//! These doc tests are the fence, because they compile as a consumer does. Turning any of the
+//! three back into `pub` makes the corresponding one stop failing, and a `compile_fail` doc test
+//! that stops failing is a test failure.
+//!
+//! ```compile_fail
+//! use pragmastat::assumptions::check_validity;
+//! ```
+//!
+//! ```compile_fail
+//! use pragmastat::assumptions::check_positivity;
+//! ```
+//!
+//! ```compile_fail
+//! use pragmastat::assumptions::log;
+//! ```
+//!
+//! What the crate does publish keeps working, which is the other half of the claim:
+//!
+//! ```
+//! use pragmastat::{Sample, center};
+//!
+//! let x = Sample::new(vec![1.0, 2.0, 3.0, 4.0, 5.0]).unwrap();
+//! assert_eq!(center(&x).unwrap().value, 3.0);
+//! ```
 
 // `a.mul_add(b, c)` is not an optimization of `a * b + c` here, it is a different algorithm:
 // it rounds once where the specification rounds twice. Every estimator in this toolkit is

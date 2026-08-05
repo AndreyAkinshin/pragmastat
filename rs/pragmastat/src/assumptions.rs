@@ -192,7 +192,7 @@ impl From<crate::measurement_unit::UnitMismatchError> for EstimatorError {
 // =============================================================================
 
 /// Checks that a sample is valid (non-empty with finite values).
-pub fn check_validity(values: &[f64], subject: Subject) -> Result<(), AssumptionError> {
+pub(crate) fn check_validity(values: &[f64], subject: Subject) -> Result<(), AssumptionError> {
     if values.is_empty() {
         return Err(AssumptionError::validity(subject));
     }
@@ -203,7 +203,7 @@ pub fn check_validity(values: &[f64], subject: Subject) -> Result<(), Assumption
 }
 
 /// Checks that all values are strictly positive.
-pub fn check_positivity(values: &[f64], subject: Subject) -> Result<(), AssumptionError> {
+pub(crate) fn check_positivity(values: &[f64], subject: Subject) -> Result<(), AssumptionError> {
     if values.iter().any(|&v| v <= 0.0) {
         return Err(AssumptionError::positivity(subject));
     }
@@ -211,7 +211,7 @@ pub fn check_positivity(values: &[f64], subject: Subject) -> Result<(), Assumpti
 }
 
 /// Log-transforms a slice. Returns error if any value is non-positive.
-pub fn log(values: &[f64], subject: Subject) -> Result<Vec<f64>, AssumptionError> {
+pub(crate) fn log(values: &[f64], subject: Subject) -> Result<Vec<f64>, AssumptionError> {
     let mut result = Vec::with_capacity(values.len());
     for &v in values {
         if v <= 0.0 {
