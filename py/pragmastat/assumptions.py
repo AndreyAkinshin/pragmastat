@@ -15,7 +15,6 @@ is reported. For two-sample functions, subject X is checked before Y.
 
 from dataclasses import dataclass
 from enum import StrEnum
-from typing import Literal
 
 import numpy as np
 
@@ -29,7 +28,12 @@ class AssumptionId(StrEnum):
     SPARITY = "sparity"
 
 
-Subject = Literal["x", "y", "misrate"]
+class Subject(StrEnum):
+    """Identifies which input caused an assumption violation."""
+
+    X = "x"
+    Y = "y"
+    MISRATE = "misrate"
 
 
 @dataclass(frozen=True)
@@ -40,7 +44,7 @@ class Violation:
     subject: Subject
 
     def __str__(self) -> str:
-        return f"{self.id.value}({self.subject})"
+        return f"{self.id}({self.subject})"
 
 
 class AssumptionError(Exception):

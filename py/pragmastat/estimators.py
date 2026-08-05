@@ -48,7 +48,7 @@ from typing import TYPE_CHECKING, Union
 import numpy as np
 
 from ._center_quantiles_impl import center_quantile_bounds_impl
-from .assumptions import AssumptionError, check_positivity, check_validity, log
+from .assumptions import AssumptionError, Subject, check_positivity, check_validity, log
 from .bounds import Bounds
 from .center_impl import _center_impl
 from .measurement import Measurement
@@ -137,29 +137,29 @@ def _new_bounds(lower: float, upper: float, unit: MeasurementUnit) -> Bounds:
 
 
 def _center_raw(x: NDArray, assume_sorted: bool) -> float:
-    check_validity(x, "x")
+    check_validity(x, Subject.X)
     return _normalize_zero(float(_center_impl(x, assume_sorted=assume_sorted)))
 
 
 def _spread_raw(x: NDArray, assume_sorted: bool) -> float:
-    check_validity(x, "x")
+    check_validity(x, Subject.X)
     spread_val = _spread_impl(x, assume_sorted=assume_sorted)
     if spread_val <= 0:
-        raise AssumptionError.sparity("x")
+        raise AssumptionError.sparity(Subject.X)
     return _normalize_zero(float(spread_val))
 
 
 def _shift_raw(x: NDArray, y: NDArray, assume_sorted: bool) -> float:
-    check_validity(x, "x")
-    check_validity(y, "y")
+    check_validity(x, Subject.X)
+    check_validity(y, Subject.Y)
     return _normalize_zero(float(_shift_impl(x, y, p=0.5, assume_sorted=assume_sorted)))
 
 
 def _ratio_raw(x: NDArray, y: NDArray, assume_sorted: bool) -> float:
-    check_validity(x, "x")
-    check_validity(y, "y")
-    check_positivity(x, "x")
-    check_positivity(y, "y")
+    check_validity(x, Subject.X)
+    check_validity(y, Subject.Y)
+    check_positivity(x, Subject.X)
+    check_positivity(y, Subject.Y)
     log_x = np.log(x)
     log_y = np.log(y)
     # log is monotonic: sorted positive input -> sorted log output.
@@ -168,16 +168,16 @@ def _ratio_raw(x: NDArray, y: NDArray, assume_sorted: bool) -> float:
 
 
 def _disparity_raw(x: NDArray, y: NDArray, assume_sorted: bool) -> float:
-    check_validity(x, "x")
-    check_validity(y, "y")
+    check_validity(x, Subject.X)
+    check_validity(y, Subject.Y)
     n = len(x)
     m = len(y)
     spread_x = _spread_impl(x, assume_sorted=assume_sorted)
     if spread_x <= 0:
-        raise AssumptionError.sparity("x")
+        raise AssumptionError.sparity(Subject.X)
     spread_y = _spread_impl(y, assume_sorted=assume_sorted)
     if spread_y <= 0:
-        raise AssumptionError.sparity("y")
+        raise AssumptionError.sparity(Subject.Y)
     shift_val = float(_shift_impl(x, y, p=0.5, assume_sorted=assume_sorted))
     avg_spread_val = (n * spread_x + m * spread_y) / (n + m)
     return _normalize_zero(shift_val / avg_spread_val)
@@ -189,18 +189,18 @@ def _shift_bounds_raw(
     misrate: float,
     assume_sorted: bool,
 ) -> tuple[float, float]:
-    check_validity(x, "x")
-    check_validity(y, "y")
+    check_validity(x, Subject.X)
+    check_validity(y, Subject.Y)
 
     if math.isnan(misrate) or misrate < 0 or misrate > 1:
-        raise AssumptionError.domain("misrate")
+        raise AssumptionError.domain(Subject.MISRATE)
 
     n = len(x)
     m = len(y)
 
     min_misrate = min_achievable_misrate_two_sample(n, m)
     if misrate < min_misrate:
-        raise AssumptionError.domain("misrate")
+        raise AssumptionError.domain(Subject.MISRATE)
 
     xs = x if assume_sorted else np.sort(x)
     ys = y if assume_sorted else np.sort(y)
@@ -229,18 +229,18 @@ def _ratio_bounds_raw(
     misrate: float,
     assume_sorted: bool,
 ) -> tuple[float, float]:
-    check_validity(x, "x")
-    check_validity(y, "y")
+    check_validity(x, Subject.X)
+    check_validity(y, Subject.Y)
 
     if math.isnan(misrate) or misrate < 0 or misrate > 1:
-        raise AssumptionError.domain("misrate")
+        raise AssumptionError.domain(Subject.MISRATE)
 
     min_misrate = min_achievable_misrate_two_sample(len(x), len(y))
     if misrate < min_misrate:
-        raise AssumptionError.domain("misrate")
+        raise AssumptionError.domain(Subject.MISRATE)
 
-    log_x = log(x, "x")
-    log_y = log(y, "y")
+    log_x = log(x, Subject.X)
+    log_y = log(y, Subject.Y)
     # log is monotonic: sorted positive input -> sorted log output.
     lower, upper = _shift_bounds_raw(log_x, log_y, misrate, assume_sorted)
     return float(np.exp(lower)), float(np.exp(upper))
@@ -251,18 +251,18 @@ def _center_bounds_raw(
     misrate: float,
     assume_sorted: bool,
 ) -> tuple[float, float]:
-    check_validity(x, "x")
+    check_validity(x, Subject.X)
 
     if math.isnan(misrate) or misrate < 0 or misrate > 1:
-        raise AssumptionError.domain("misrate")
+        raise AssumptionError.domain(Subject.MISRATE)
 
     n = len(x)
     if n < 2:
-        raise AssumptionError.domain("x")
+        raise AssumptionError.domain(Subject.X)
 
     min_misrate = min_achievable_misrate_one_sample(n)
     if misrate < min_misrate:
-        raise AssumptionError.domain("misrate")
+        raise AssumptionError.domain(Subject.MISRATE)
 
     total_pairs = n * (n + 1) // 2
 
@@ -327,20 +327,20 @@ def _spread_bounds_raw(
     order-dependent). ``sorted_view``, when provided, is a pre-sorted view used
     only to speed up the order-independent sparity check.
     """
-    check_validity(x, "x")
+    check_validity(x, Subject.X)
 
     if math.isnan(misrate) or misrate < 0 or misrate > 1:
-        raise AssumptionError.domain("misrate")
+        raise AssumptionError.domain(Subject.MISRATE)
 
     n = len(x)
     if n < 2:
-        raise AssumptionError.sparity("x")
+        raise AssumptionError.sparity(Subject.X)
     m = n // 2
     min_misrate_val = min_achievable_misrate_one_sample(m)
     if misrate < min_misrate_val:
-        raise AssumptionError.domain("misrate")
+        raise AssumptionError.domain(Subject.MISRATE)
     if _spread_for_sparity(x, sorted_view) <= 0:
-        raise AssumptionError.sparity("x")
+        raise AssumptionError.sparity(Subject.X)
 
     rng = Rng(seed) if seed is not None else Rng()
     return _spread_bounds_shuffle(x, m, misrate, rng)
@@ -360,29 +360,29 @@ def _avg_spread_bounds_raw(  # noqa: PLR0913, PLR0917
     order-dependent). ``sorted_x``/``sorted_y``, when provided, are pre-sorted
     views used only to speed up the order-independent sparity check.
     """
-    check_validity(x, "x")
-    check_validity(y, "y")
+    check_validity(x, Subject.X)
+    check_validity(y, Subject.Y)
 
     if math.isnan(misrate) or misrate < 0 or misrate > 1:
-        raise AssumptionError.domain("misrate")
+        raise AssumptionError.domain(Subject.MISRATE)
 
     n = len(x)
     m = len(y)
     if n < 2:
-        raise AssumptionError.domain("x")
+        raise AssumptionError.domain(Subject.X)
     if m < 2:
-        raise AssumptionError.domain("y")
+        raise AssumptionError.domain(Subject.Y)
 
     alpha = misrate / 2.0
     min_x = min_achievable_misrate_one_sample(n // 2)
     min_y = min_achievable_misrate_one_sample(m // 2)
     if alpha < min_x or alpha < min_y:
-        raise AssumptionError.domain("misrate")
+        raise AssumptionError.domain(Subject.MISRATE)
 
     if _spread_for_sparity(x, sorted_x) <= 0:
-        raise AssumptionError.sparity("x")
+        raise AssumptionError.sparity(Subject.X)
     if _spread_for_sparity(y, sorted_y) <= 0:
-        raise AssumptionError.sparity("y")
+        raise AssumptionError.sparity(Subject.Y)
 
     # Validity/domain/sparity already checked; reuse the inner shuffle directly.
     # The shuffle operates on the ORIGINAL order; sorted views are sparity-only.
@@ -451,18 +451,18 @@ def _disparity_bounds_raw(  # noqa: PLR0913, PLR0917
     present, are pre-sorted views used only for the order-independent sparity and
     shift-bounds sub-computations.
     """
-    check_validity(x, "x")
-    check_validity(y, "y")
+    check_validity(x, Subject.X)
+    check_validity(y, Subject.Y)
 
     if math.isnan(misrate) or misrate < 0 or misrate > 1:
-        raise AssumptionError.domain("misrate")
+        raise AssumptionError.domain(Subject.MISRATE)
 
     n = len(x)
     m = len(y)
     if n < 2:
-        raise AssumptionError.domain("x")
+        raise AssumptionError.domain(Subject.X)
     if m < 2:
-        raise AssumptionError.domain("y")
+        raise AssumptionError.domain(Subject.Y)
 
     min_shift = min_achievable_misrate_two_sample(n, m)
     min_x = min_achievable_misrate_one_sample(n // 2)
@@ -470,7 +470,7 @@ def _disparity_bounds_raw(  # noqa: PLR0913, PLR0917
     min_avg = 2.0 * max(min_x, min_y)
 
     if misrate < min_shift + min_avg:
-        raise AssumptionError.domain("misrate")
+        raise AssumptionError.domain(Subject.MISRATE)
 
     extra = misrate - (min_shift + min_avg)
     alpha_shift = min_shift + extra / 2.0
@@ -603,10 +603,10 @@ def _avg_spread(x: Sample, y: Sample) -> Measurement:
     m = len(y.values)
     spread_x = _spread_impl(x.sorted_values, assume_sorted=True)
     if spread_x <= 0:
-        raise AssumptionError.sparity("x")
+        raise AssumptionError.sparity(Subject.X)
     spread_y = _spread_impl(y.sorted_values, assume_sorted=True)
     if spread_y <= 0:
-        raise AssumptionError.sparity("y")
+        raise AssumptionError.sparity(Subject.Y)
     return Measurement(_normalize_zero((n * spread_x + m * spread_y) / (n + m)), x.unit)
 
 

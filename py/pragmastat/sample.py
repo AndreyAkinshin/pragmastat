@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 
-from .assumptions import AssumptionError, check_validity
+from .assumptions import AssumptionError, Subject, check_validity
 from .measurement_unit import NUMBER_UNIT, MeasurementUnit
 
 if TYPE_CHECKING:
@@ -29,7 +29,7 @@ class Sample:
         arr = np.array(values, dtype=np.float64)
         # Construction can't know which argument position this sample fills, so
         # construction-time validity errors are always reported under subject "x".
-        check_validity(arr, "x")
+        check_validity(arr, Subject.X)
 
         _freeze_array(arr)
         self._values: NDArray = arr

@@ -26,7 +26,7 @@ on the same set, thirty times further out, and did it differently in each port.
 
 import math
 
-from .assumptions import AssumptionError
+from .assumptions import AssumptionError, Subject
 from .min_misrate import min_achievable_misrate_one_sample
 
 # How far the running term is rescaled when it grows too large. Any power of two works; 512 keeps
@@ -49,13 +49,13 @@ def sign_margin_randomized(n: int, misrate: float, rng) -> int:
         AssumptionError: If n <= 0 or misrate is out of valid range.
     """
     if n <= 0:
-        raise AssumptionError.domain("x")
+        raise AssumptionError.domain(Subject.X)
     if math.isnan(misrate) or misrate < 0 or misrate > 1:
-        raise AssumptionError.domain("misrate")
+        raise AssumptionError.domain(Subject.MISRATE)
 
     min_misrate = min_achievable_misrate_one_sample(n)
     if misrate < min_misrate:
-        raise AssumptionError.domain("misrate")
+        raise AssumptionError.domain(Subject.MISRATE)
 
     target = misrate / 2.0
     if target <= 0.0:

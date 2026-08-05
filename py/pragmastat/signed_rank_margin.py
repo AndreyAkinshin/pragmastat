@@ -6,7 +6,7 @@ One-sample analog of PairwiseMargin using Wilcoxon signed-rank distribution.
 import math
 
 from .additive_cumulative import additive_cumulative
-from .assumptions import AssumptionError
+from .assumptions import AssumptionError, Subject
 from .exp_function import exp_function
 from .min_misrate import min_achievable_misrate_one_sample
 
@@ -31,13 +31,13 @@ def signed_rank_margin(n: int, misrate: float) -> int:
         ValueError: If inputs are invalid or misrate is below minimum achievable
     """
     if n <= 0:
-        raise AssumptionError.domain("x")
+        raise AssumptionError.domain(Subject.X)
     if math.isnan(misrate) or misrate < 0 or misrate > 1:
-        raise AssumptionError.domain("misrate")
+        raise AssumptionError.domain(Subject.MISRATE)
 
     min_misrate = min_achievable_misrate_one_sample(n)
     if misrate < min_misrate:
-        raise AssumptionError.domain("misrate")
+        raise AssumptionError.domain(Subject.MISRATE)
 
     if n <= SIGNED_RANK_MAX_EXACT_SIZE:
         return _signed_rank_margin_exact(n, misrate)

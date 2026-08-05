@@ -3,7 +3,7 @@
 import math
 
 from ._binomial import binomial_coefficient
-from .assumptions import AssumptionError
+from .assumptions import AssumptionError, Subject
 
 
 def min_achievable_misrate_one_sample(n: int) -> float:
@@ -24,7 +24,7 @@ def min_achievable_misrate_one_sample(n: int) -> float:
         AssumptionError: If n is not positive
     """
     if n <= 0:
-        raise AssumptionError.domain("x")
+        raise AssumptionError.domain(Subject.X)
     # ldexp, not **: this is a power of two, and scaling by an exponent is exact in binary64. A general
     # power function returns the same value in every implementation anyone ships, but the
     # specification does not require it to, and this value is a domain boundary: it decides
@@ -55,7 +55,7 @@ def min_achievable_misrate_two_sample(n: int, m: int) -> float:
         AssumptionError: If n or m is not positive
     """
     if n <= 0:
-        raise AssumptionError.domain("x")
+        raise AssumptionError.domain(Subject.X)
     if m <= 0:
-        raise AssumptionError.domain("y")
+        raise AssumptionError.domain(Subject.Y)
     return 2.0 / binomial_coefficient(n + m, n)

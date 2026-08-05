@@ -11,7 +11,7 @@ from dataclasses import dataclass
 from enum import StrEnum
 from typing import TYPE_CHECKING
 
-from .assumptions import AssumptionError
+from .assumptions import AssumptionError, Subject
 from .estimators import (
     center as center_estimator,
 )
@@ -81,7 +81,7 @@ class Threshold:
 
     def __post_init__(self) -> None:
         if not (0.0 < self.misrate <= 1.0):
-            raise AssumptionError.domain("misrate")
+            raise AssumptionError.domain(Subject.MISRATE)
         if isinstance(self.value, Measurement):
             if not math.isfinite(self.value.value):
                 raise AssumptionError("threshold value must be finite")

@@ -9,7 +9,7 @@ import math
 
 from ._binomial import binomial_coefficient as _binomial_coefficient
 from .additive_cumulative import additive_cumulative as _additive_cumulative
-from .assumptions import AssumptionError
+from .assumptions import AssumptionError, Subject
 from .exp_function import exp_function
 from .min_misrate import min_achievable_misrate_two_sample
 
@@ -36,15 +36,15 @@ def pairwise_margin(n: int, m: int, misrate: float) -> int:
         AssumptionError: If n <= 0, m <= 0, or misrate is outside [0, 1]
     """
     if n <= 0:
-        raise AssumptionError.domain("x")
+        raise AssumptionError.domain(Subject.X)
     if m <= 0:
-        raise AssumptionError.domain("y")
+        raise AssumptionError.domain(Subject.Y)
     if misrate < 0 or misrate > 1 or math.isnan(misrate):
-        raise AssumptionError.domain("misrate")
+        raise AssumptionError.domain(Subject.MISRATE)
 
     min_misrate = min_achievable_misrate_two_sample(n, m)
     if misrate < min_misrate:
-        raise AssumptionError.domain("misrate")
+        raise AssumptionError.domain(Subject.MISRATE)
 
     if n + m <= MAX_EXACT_SIZE:
         return _pairwise_margin_exact(n, m, misrate)
