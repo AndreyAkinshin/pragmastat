@@ -6,7 +6,6 @@
 mise run r:ci        # Full CI: clean → restore → check → build → test
 mise run r:test      # Run tests only
 mise run r:check     # R CMD check (no tests, no dependencies)
-mise run r:check:fix # Format with styler
 mise run r:demo      # Run demo
 mise run r:build     # Build source package (.tar.gz)
 mise run r:restore   # Install package locally
@@ -14,6 +13,14 @@ mise run r:doc       # Build documentation with roxygen2
 ```
 
 **Note:** R is not managed by mise. Uses system R via `Rscript`.
+
+**No format gate.** Every other port has a checking half and a fixing half of one pair:
+`dotnet format --verify-no-changes`, `gofmt` with a guard, `ruff format --check`, `cargo fmt
+--check`, `prettier --check`, `ktlint`. R has neither. A format check is only a check when the
+thing doing the checking is pinned, and each of those is pinned by a lockfile or a toolchain,
+while R here has no lockfile, installs from CRAN HEAD, and mise carries no CRAN backend to pin
+from. An unpinned formatter turns the next styler release into a red build on a commit that
+touched no R.
 
 ## Architecture
 

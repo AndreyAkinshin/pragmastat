@@ -406,11 +406,6 @@ R CMD build pragmastat
 _R_CHECK_FORCE_SUGGESTS_=false R CMD check --no-tests --no-manual pragmastat_*.tar.gz
 """
 
-[tasks."r:check:fix"]
-description = "Format R code with styler"
-dir = "r/pragmastat"
-run = "Rscript -e \"if (!requireNamespace('styler', quietly = TRUE)) install.packages('styler', repos = 'https://cloud.r-project.org'); styler::style_pkg()\""
-
 [tasks."r:clean"]
 description = "Clean R build artifacts"
 dir = "r"
@@ -1123,7 +1118,6 @@ depends = [
     "go:check:fix",
     "kt:check:fix",
     "py:check:fix",
-    "r:check:fix",
     "rs:check:fix",
     "ts:check:fix",
     "tools:check:fix",
