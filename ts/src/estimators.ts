@@ -97,6 +97,7 @@ export class Bounds {
     this.lower = normalizeZero(lower);
     this.upper = normalizeZero(upper);
     this.unit = unit;
+    Object.freeze(this);
   }
 
   contains(value: number): boolean {

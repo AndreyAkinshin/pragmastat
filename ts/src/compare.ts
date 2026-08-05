@@ -65,6 +65,7 @@ export class Threshold {
     this.metric = metric;
     this.value = value;
     this.misrate = misrate;
+    Object.freeze(this);
   }
 }
 
@@ -87,6 +88,7 @@ export class Projection {
     this.estimate = estimate;
     this.bounds = bounds;
     this.verdict = verdict;
+    Object.freeze(this);
   }
 }
 

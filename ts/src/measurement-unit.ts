@@ -40,6 +40,12 @@ export class MeasurementUnit {
     this.abbreviation = abbreviation;
     this.fullName = fullName;
     this.baseUnits = baseUnits;
+    // readonly is a type annotation and survives into no emitted JavaScript, so it protects a
+    // consumer compiling against these types and nobody else. Measured on the built package
+    // before this line existed: MeasurementUnit.NUMBER.baseUnits = 5 succeeded, and the next
+    // conversionFactor(NUMBER, RATIO) answered 5 where it had answered 1. A unit is never
+    // revalidated after construction, so nothing could have detected it.
+    Object.freeze(this);
   }
 
   /** Returns true if both units belong to the same family. */
@@ -61,3 +67,10 @@ export class MeasurementUnit {
   static readonly RATIO = new MeasurementUnit('ratio', 'Ratio', '', 'Ratio', 1);
   static readonly DISPARITY = new MeasurementUnit('disparity', 'Disparity', '', 'Disparity', 1);
 }
+
+// Freezing an instance does not protect the binding that names it, and the three shared units are
+// reached through bindings: MeasurementUnit.NUMBER = other is a plain property write on the class
+// object and rescales the whole session by the other door. These three are read by every
+// Measurement, every Sample and every conversion, which is why the class object is frozen and the
+// rule stays "freeze the statics the library itself depends on" rather than every static there is.
+Object.freeze(MeasurementUnit);

@@ -11,6 +11,7 @@ export class Measurement {
   constructor(value: number, unit: MeasurementUnit = MeasurementUnit.NUMBER) {
     this.value = value;
     this.unit = unit;
+    Object.freeze(this);
   }
 
   /**
