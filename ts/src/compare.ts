@@ -51,17 +51,20 @@ export type ComparisonVerdict = (typeof ComparisonVerdict)[keyof typeof Comparis
  * A threshold value with a metric type and misrate for comparison.
  */
 export class Threshold {
-  constructor(
-    readonly metric: Metric,
-    readonly value: Measurement,
-    readonly misrate: number,
-  ) {
+  readonly metric: Metric;
+  readonly value: Measurement;
+  readonly misrate: number;
+
+  constructor(metric: Metric, value: Measurement, misrate: number) {
     if (!Number.isFinite(misrate) || misrate <= 0.0 || misrate > 1.0) {
       throw AssumptionError.domain(Subject.MISRATE);
     }
     if (!Number.isFinite(value.value)) {
       throw new Error('threshold value must be finite');
     }
+    this.metric = metric;
+    this.value = value;
+    this.misrate = misrate;
   }
 }
 
@@ -69,12 +72,22 @@ export class Threshold {
  * A projection containing estimate, bounds, and verdict for a single threshold.
  */
 export class Projection {
+  readonly threshold: Threshold;
+  readonly estimate: Measurement;
+  readonly bounds: Bounds;
+  readonly verdict: ComparisonVerdict;
+
   constructor(
-    readonly threshold: Threshold,
-    readonly estimate: Measurement,
-    readonly bounds: Bounds,
-    readonly verdict: ComparisonVerdict,
-  ) {}
+    threshold: Threshold,
+    estimate: Measurement,
+    bounds: Bounds,
+    verdict: ComparisonVerdict,
+  ) {
+    this.threshold = threshold;
+    this.estimate = estimate;
+    this.bounds = bounds;
+    this.verdict = verdict;
+  }
 }
 
 /** Function type for validating and normalizing threshold values. */

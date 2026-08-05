@@ -4,12 +4,18 @@
  * An empty abbreviation is legal: the three dimensionless units have none.
  */
 export class MeasurementUnit {
+  readonly id: string;
+  readonly family: string;
+  readonly abbreviation: string;
+  readonly fullName: string;
+  readonly baseUnits: number;
+
   constructor(
-    readonly id: string,
-    readonly family: string,
-    readonly abbreviation: string,
-    readonly fullName: string,
-    readonly baseUnits: number,
+    id: string,
+    family: string,
+    abbreviation: string,
+    fullName: string,
+    baseUnits: number,
   ) {
     // A non-positive baseUnits poisons every conversion through this unit, and it makes finer
     // pick it over any well-formed one. An empty family makes unrelated units compatible.
@@ -29,6 +35,11 @@ export class MeasurementUnit {
     if (!Number.isInteger(baseUnits)) {
       throw new Error('baseUnits must be a whole number');
     }
+    this.id = id;
+    this.family = family;
+    this.abbreviation = abbreviation;
+    this.fullName = fullName;
+    this.baseUnits = baseUnits;
   }
 
   /** Returns true if both units belong to the same family. */

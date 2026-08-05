@@ -5,8 +5,11 @@
 import { MeasurementUnit } from './measurement-unit';
 
 export class Measurement {
-  constructor(
-    readonly value: number,
-    readonly unit: MeasurementUnit = MeasurementUnit.NUMBER,
-  ) {}
+  readonly value: number;
+  readonly unit: MeasurementUnit;
+
+  constructor(value: number, unit: MeasurementUnit = MeasurementUnit.NUMBER) {
+    this.value = value;
+    this.unit = unit;
+  }
 }
