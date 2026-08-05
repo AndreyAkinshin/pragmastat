@@ -81,13 +81,13 @@ public static class ReferenceTestSuiteHelper
   /// </summary>
   public static void AssertErrorMatches(ExpectedError expected, AssumptionException ex, string entryPoint)
   {
-    Assert.Equal(expected.Id, ex.Violation.IdString);
+    Assert.Equal(expected.Id, ex.Violation.Id.ToId());
 
     bool skipSubject = entryPoint == EntryPointSample &&
                        expected.Id == "validity" &&
                        expected.Subject == "y";
     if (!skipSubject)
-      Assert.Equal(expected.Subject, ex.Violation.Subject.ToString().ToLower());
+      Assert.Equal(expected.Subject, ex.Violation.Subject.ToId());
   }
 
   /// <summary>

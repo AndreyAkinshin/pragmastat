@@ -34,6 +34,39 @@ public enum Subject
   Misrate
 }
 
+/// <summary>Extension helpers for <see cref="AssumptionId"/>.</summary>
+public static class AssumptionIdExtensions
+{
+  /// <summary>
+  /// Canonical lowercase identifier ("validity"/"domain"/"positivity"/"sparity"),
+  /// matching the string every other language port emits.
+  /// </summary>
+  public static string ToId(this AssumptionId id) => id switch
+  {
+    AssumptionId.Validity => "validity",
+    AssumptionId.Domain => "domain",
+    AssumptionId.Positivity => "positivity",
+    AssumptionId.Sparity => "sparity",
+    _ => throw new ArgumentOutOfRangeException(nameof(id), id, null)
+  };
+}
+
+/// <summary>Extension helpers for <see cref="Subject"/>.</summary>
+public static class SubjectExtensions
+{
+  /// <summary>
+  /// Canonical lowercase identifier ("x"/"y"/"misrate"), matching the string every
+  /// other language port emits.
+  /// </summary>
+  public static string ToId(this Subject subject) => subject switch
+  {
+    Subject.X => "x",
+    Subject.Y => "y",
+    Subject.Misrate => "misrate",
+    _ => throw new ArgumentOutOfRangeException(nameof(subject), subject, null)
+  };
+}
+
 /// <summary>
 /// Represents a specific assumption violation.
 /// </summary>
@@ -48,24 +81,7 @@ public readonly struct Violation
     Subject = subject;
   }
 
-  public string IdString => Id switch
-  {
-    AssumptionId.Validity => "validity",
-    AssumptionId.Positivity => "positivity",
-    AssumptionId.Sparity => "sparity",
-    AssumptionId.Domain => "domain",
-    _ => throw new ArgumentOutOfRangeException()
-  };
-
-  public string SubjectString => Subject switch
-  {
-    Subject.X => "x",
-    Subject.Y => "y",
-    Subject.Misrate => "misrate",
-    _ => throw new ArgumentOutOfRangeException()
-  };
-
-  public override string ToString() => $"{IdString}({SubjectString})";
+  public override string ToString() => $"{Id.ToId()}({Subject.ToId()})";
 
   public override bool Equals(object? obj) =>
     obj is Violation other && Id == other.Id && Subject == other.Subject;
