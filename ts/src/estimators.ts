@@ -102,6 +102,17 @@ export class Bounds {
   contains(value: number): boolean {
     return this.lower <= value && value <= this.upper;
   }
+
+  /**
+   * Renders the interval as "[lower;upper]", with the unit's abbreviation appended when it has
+   * one. This is the form every other port prints. Template interpolation of a number is
+   * JavaScript's shortest round-trip decimal, which is what Go's %v and Rust's {} produce, so the
+   * digits agree across ports without anyone arranging it.
+   */
+  toString(): string {
+    const interval = `[${this.lower};${this.upper}]`;
+    return this.unit.abbreviation.length > 0 ? `${interval} ${this.unit.abbreviation}` : interval;
+  }
 }
 
 export const DEFAULT_MISRATE = 1e-3;

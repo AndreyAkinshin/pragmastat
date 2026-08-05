@@ -12,4 +12,14 @@ export class Measurement {
     this.value = value;
     this.unit = unit;
   }
+
+  /**
+   * Renders the value, followed by the unit's abbreviation when it has one. This is the form
+   * every other port prints, and the digits match for the same reason Bounds' do.
+   */
+  toString(): string {
+    return this.unit.abbreviation.length > 0
+      ? `${this.value} ${this.unit.abbreviation}`
+      : `${this.value}`;
+  }
 }

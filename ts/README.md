@@ -44,9 +44,9 @@ function main(): void {
   let sx = Sample.of(Array.from({ length: 200 }, (_, i) => i + 1));
 
   console.log(center(sx).value); // 100.5
-  console.log(centerBounds(sx, 1e-3)); // { lower: 86, upper: 115, unit: ... }
+  console.log(centerBounds(sx, 1e-3).toString()); // [86;115]
   console.log(spread(sx).value); // 59
-  console.log(spreadBounds(sx, 1e-3, 'demo')); // { lower: 44, upper: 87, unit: ... }
+  console.log(spreadBounds(sx, 1e-3, 'demo').toString()); // [44;87]
 
   // --- Two-Sample ---
 
@@ -54,11 +54,11 @@ function main(): void {
   const sy = Sample.of(Array.from({ length: 200 }, (_, i) => i + 101));
 
   console.log(shift(sx, sy).value); // -100
-  console.log(shiftBounds(sx, sy, 1e-3)); // { lower: -120, upper: -80, unit: ... }
+  console.log(shiftBounds(sx, sy, 1e-3).toString()); // [-120;-80]
   console.log(ratio(sx, sy).value); // 0.5008354224706336
-  console.log(ratioBounds(sx, sy, 1e-3)); // { lower: 0.4066..., upper: 0.5958..., unit: ... }
+  console.log(ratioBounds(sx, sy, 1e-3).toString()); // [0.4066666666666668;0.5958333333333332]
   console.log(disparity(sx, sy).value); // -1.694915254237288
-  console.log(disparityBounds(sx, sy, 1e-3, 'demo')); // { lower: -3.1025..., upper: -0.8494..., unit: ... }
+  console.log(disparityBounds(sx, sy, 1e-3, 'demo').toString()); // [-3.1025641025641026;-0.8494623655913979]
 
   // --- Confirmatory Comparison ---
 
