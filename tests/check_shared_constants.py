@@ -95,8 +95,8 @@ SHARED_THRESHOLD = 2
 # it is canceled by any port that gained a constant in the same commit, and the run stays green
 # while a whole language has gone unread. The shared count stays one number because a shared
 # constant is by definition not attributable to one port.
-EXPECTED_SHARED = 24
-EXPECTED_DECLARATIONS = {"cs": 22, "go": 19, "kt": 19, "py": 18, "r": 11, "rs": 19, "ts": 19}
+EXPECTED_SHARED = 28
+EXPECTED_DECLARATIONS = {"cs": 25, "go": 22, "kt": 22, "py": 21, "r": 14, "rs": 22, "ts": 22}
 
 
 def payload(value):

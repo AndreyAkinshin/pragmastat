@@ -59,6 +59,7 @@ pub mod sample;
 pub mod unit_registry;
 
 pub(crate) mod additive_cumulative;
+pub(crate) mod additive_quantile;
 pub(crate) mod binomial;
 pub(crate) mod exp_function;
 pub(crate) mod log_function;
@@ -78,6 +79,8 @@ mod fnv1a;
 mod splitmix64;
 mod xoshiro256;
 
+#[cfg(test)]
+mod additive_quantile_tests;
 #[cfg(test)]
 mod avg_spread_bounds_tests;
 #[cfg(test)]

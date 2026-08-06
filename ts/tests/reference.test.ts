@@ -19,6 +19,7 @@ import { AssumptionError } from '../src/assumptions';
 import { pairwiseMargin } from '../src/pairwiseMargin';
 import { expFunction } from '../src/expFunction';
 import { logFunction } from '../src/logFunction';
+import { additiveQuantile } from '../src/additiveQuantile';
 import { Rng } from '../src/rng';
 import { Additive, Exp, Multiplic, Power, Uniform } from '../src/distributions';
 import { Sample } from '../src/sample';
@@ -927,6 +928,62 @@ describe('Reference Tests', () => {
     // nothing, so the count is what says the suite was exercised at all.
     it(`compares all ${EXP_FUNCTION_ARG_COUNT} arguments`, () => {
       expect(compared).toBe(EXP_FUNCTION_ARG_COUNT);
+    });
+  });
+
+  describe('additive-quantile', () => {
+    interface AdditiveQuantileData {
+      input: { name: string; arg: number[] };
+      output: number[];
+    }
+
+    // How many arguments the five fixtures carry between them: 401 across the central
+    // band, 80 down the far tail, 28 at the two branch seams, 20 in the near tail and 18
+    // textbook quantiles. Pinned rather than derived, because a loader that finds four
+    // files out of five satisfies every other assertion here by having less to compare.
+    const ADDITIVE_QUANTILE_ARG_COUNT = 547;
+
+    const dirPath = path.join(testDataPath, 'additive-quantile');
+    const testFiles = fs
+      .readdirSync(dirPath)
+      .filter((f) => f.endsWith('.json'))
+      .sort();
+
+    const suites = testFiles.map((fileName) => {
+      const data: AdditiveQuantileData = JSON.parse(
+        fs.readFileSync(path.join(dirPath, fileName), 'utf8'),
+      );
+      return { fileName, name: data.input.name, args: data.input.arg, expected: data.output };
+    });
+    let compared = 0;
+
+    it('should have test files', () => {
+      expect(testFiles.length).toBeGreaterThan(0);
+    });
+
+    suites.forEach(({ fileName, name, args, expected }) => {
+      const testName = fileName.replace('.json', '');
+
+      it(`should pass ${testName}`, () => {
+        expect(name).toBe('additive_quantile');
+        expect(args.length).toBeGreaterThan(0);
+        expect(expected.length).toBe(args.length);
+        for (let i = 0; i < args.length; i++) {
+          expectBitwise(
+            `additive-quantile/${fileName} arg[${i}]=${args[i]}`,
+            additiveQuantile(args[i]),
+            expected[i],
+          );
+          compared++;
+        }
+      });
+    });
+
+    // Runs after the per-file tests above, which increment `compared` once per comparison
+    // actually made. A loader that finds nothing passes every one of them by running
+    // nothing, so the count is what says the suite was exercised at all.
+    it(`compares all ${ADDITIVE_QUANTILE_ARG_COUNT} arguments`, () => {
+      expect(compared).toBe(ADDITIVE_QUANTILE_ARG_COUNT);
     });
   });
 

@@ -63,6 +63,7 @@ tests/
 ├── signed-rank-margin/  # SignedRankMargin function tests
 ├── exp-function/        # The reproducible exponential, by payload
 ├── log-function/        # The reproducible logarithm, by payload
+├── additive-quantile/   # The reproducible inverse normal CDF, by payload
 │
 │   # Other
 └── distributions/       # Distribution sampling tests

@@ -436,3 +436,18 @@ oracle2025:
     - name: Oracle
   date: 2025
   url: https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/StrictMath.html
+
+wichura1988:
+  type: article
+  title: 'Algorithm AS 241: The Percentage Points of the Normal Distribution'
+  author:
+    - name: Wichura
+      given-name: Michael J.
+  date: 1988
+  parent:
+    - type: periodical
+      title: Journal of the Royal Statistical Society. Series C (Applied Statistics)
+      volume: 37
+      issue: 3
+  page-range: 477-484
+  doi: 10.2307/2347330

@@ -48,6 +48,7 @@ DistributionTestCases.Generate();
 ApproximationTestCases.Generate();
 ExpFunctionTestCases.Generate();
 LogFunctionTestCases.Generate();
+AdditiveQuantileTestCases.Generate();
 PairwiseMarginTestCases.Generate();
 ShiftBoundsTestCases.Generate();
 RatioBoundsTestCases.Generate();

@@ -112,6 +112,9 @@ The table below maps each toolkit function to the underlying algorithm and its c
   [$SignMargin$], [Binomial CDF inversion + randomized cutoff], [$O(n)$],
   [$PairwiseMargin$], [Löffler recurrence (exact) / Edgeworth (approx)], [$O((c^*)^2 + c^*(n+m))$ (worst case $O((n m)^2)$) / $O(log(n m))$],
   [$SignedRankMargin$], [Dynamic programming (exact) / Edgeworth (approx)], [$O(n^3)$ / $O(log n)$],
+  [$ExpFunction$], [Range reduction by $ln 2$, then a fitted polynomial], [$O(1)$],
+  [$LogFunction$], [Range reduction by $ln 2$, then an $"atanh"$ substitution], [$O(1)$],
+  [$AdditiveQuantile$], [Three rational branches over a split domain], [$O(1)$],
   table.hline(),
 )
 

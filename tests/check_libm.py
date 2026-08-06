@@ -464,10 +464,10 @@ if set(SCANNERS) != set(PORTS):
 
 # Files scanned and exempt call sites found, per port. Pinned in both directions; the docstring
 # says what each number catches.
-EXPECTED_FILES = {"cs": 70, "go": 27, "kt": 29, "py": 32, "r": 41, "rs": 32, "ts": 31}
+EXPECTED_FILES = {"cs": 71, "go": 28, "kt": 30, "py": 33, "r": 42, "rs": 33, "ts": 32}
 # kt's number counts `import kotlin.math.<name>` lines rather than call sites, because that is
 # where the Kotlin reader looks; the other six count calls.
-EXPECTED_EXACT = {"cs": 16, "go": 118, "kt": 20, "py": 47, "r": 50, "rs": 16, "ts": 83}
+EXPECTED_EXACT = {"cs": 18, "go": 123, "kt": 22, "py": 51, "r": 52, "rs": 18, "ts": 85}
 
 # Files skipped because they are a parametric family and the manifest still calls that suite
 # approximate. Pinned like the others: an exemption that silently widened would otherwise look

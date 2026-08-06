@@ -162,10 +162,11 @@ const PAGES: &[Page] = &[
     Page { slug: "additive-cumulative", file: "additive-cumulative/additive-cumulative", title: "AdditiveCumulative", order: 39, group: Some("Auxiliary"), heading_offset: -1 },
     Page { slug: "exp-function", file: "exp-function/exp-function", title: "ExpFunction", order: 40, group: Some("Auxiliary"), heading_offset: -1 },
     Page { slug: "log-function", file: "log-function/log-function", title: "LogFunction", order: 41, group: Some("Auxiliary"), heading_offset: -1 },
+    Page { slug: "additive-quantile", file: "additive-quantile/additive-quantile", title: "AdditiveQuantile", order: 42, group: Some("Auxiliary"), heading_offset: -1 },
     // Appendix
-    Page { slug: "assumptions", file: "assumptions/assumptions", title: "Assumptions", order: 42, group: Some("Appendix"), heading_offset: 0 },
-    Page { slug: "foundations", file: "foundations/foundations", title: "Foundations", order: 43, group: Some("Appendix"), heading_offset: 0 },
-    Page { slug: "methodology", file: "methodology/methodology", title: "Methodology", order: 44, group: Some("Appendix"), heading_offset: 0 },
+    Page { slug: "assumptions", file: "assumptions/assumptions", title: "Assumptions", order: 43, group: Some("Appendix"), heading_offset: 0 },
+    Page { slug: "foundations", file: "foundations/foundations", title: "Foundations", order: 44, group: Some("Appendix"), heading_offset: 0 },
+    Page { slug: "methodology", file: "methodology/methodology", title: "Methodology", order: 45, group: Some("Appendix"), heading_offset: 0 },
 ];
 
 /// Fail the run if any internal link had no entry in the cross-reference map

@@ -42,6 +42,59 @@ SOURCES = {
         ("cs/Pragmastat/Functions/AdditiveCumulative.cs", "p", "u"),
         ("r/pragmastat/R/additive_cumulative.R", "p", "u"),
     ],
+    # The inverse normal CDF is the first function here built from rational approximants, so a
+    # port carries six chains rather than one: a numerator and a denominator for each of three
+    # branches. The parser keys on (accumulator, argument), and the two tail branches share the
+    # variable w, so one lookup returns both of them. The fourth tuple element says which of the
+    # script's printed chains that lookup is answering for, in the order the parser returns them.
+    "quantile": [
+        ("go/additive_quantile.go", "num", "r", [0]),
+        ("go/additive_quantile.go", "den", "r", [1]),
+        ("go/additive_quantile.go", "num", "w", [2, 4]),
+        ("go/additive_quantile.go", "den", "w", [3, 5]),
+        ("py/pragmastat/additive_quantile.py", "num", "r", [0]),
+        ("py/pragmastat/additive_quantile.py", "den", "r", [1]),
+        ("py/pragmastat/additive_quantile.py", "num", "w", [2, 4]),
+        ("py/pragmastat/additive_quantile.py", "den", "w", [3, 5]),
+        ("rs/pragmastat/src/additive_quantile.rs", "num", "r", [0]),
+        ("rs/pragmastat/src/additive_quantile.rs", "den", "r", [1]),
+        ("rs/pragmastat/src/additive_quantile.rs", "num", "w", [2, 4]),
+        ("rs/pragmastat/src/additive_quantile.rs", "den", "w", [3, 5]),
+        ("ts/src/additiveQuantile.ts", "num", "r", [0]),
+        ("ts/src/additiveQuantile.ts", "den", "r", [1]),
+        ("ts/src/additiveQuantile.ts", "num", "w", [2, 4]),
+        ("ts/src/additiveQuantile.ts", "den", "w", [3, 5]),
+        ("kt/src/main/kotlin/dev/pragmastat/AdditiveQuantile.kt", "num", "r", [0]),
+        ("kt/src/main/kotlin/dev/pragmastat/AdditiveQuantile.kt", "den", "r", [1]),
+        ("kt/src/main/kotlin/dev/pragmastat/AdditiveQuantile.kt", "num", "w", [2, 4]),
+        ("kt/src/main/kotlin/dev/pragmastat/AdditiveQuantile.kt", "den", "w", [3, 5]),
+        ("cs/Pragmastat/Functions/AdditiveQuantile.cs", "num", "r", [0]),
+        ("cs/Pragmastat/Functions/AdditiveQuantile.cs", "den", "r", [1]),
+        ("cs/Pragmastat/Functions/AdditiveQuantile.cs", "num", "w", [2, 4]),
+        ("cs/Pragmastat/Functions/AdditiveQuantile.cs", "den", "w", [3, 5]),
+        ("r/pragmastat/R/additive_quantile.R", "num", "r", [0]),
+        ("r/pragmastat/R/additive_quantile.R", "den", "r", [1]),
+        ("r/pragmastat/R/additive_quantile.R", "num", "w", [2, 4]),
+        ("r/pragmastat/R/additive_quantile.R", "den", "w", [3, 5]),
+    ],
+    "additive": [
+        ("go/additive_cumulative.go", "p", "u"),
+        ("py/pragmastat/additive_cumulative.py", "p", "u"),
+        ("rs/pragmastat/src/additive_cumulative.rs", "p", "u"),
+        ("ts/src/additiveCumulative.ts", "p", "u"),
+        ("kt/src/main/kotlin/dev/pragmastat/AdditiveCumulative.kt", "p", "u"),
+        ("cs/Pragmastat/Functions/AdditiveCumulative.cs", "p", "u"),
+        ("r/pragmastat/R/additive_cumulative.R", "p", "u"),
+    ],
+    "log": [
+        ("go/log_function.go", "p", "t"),
+        ("py/pragmastat/log_function.py", "p", "t"),
+        ("rs/pragmastat/src/log_function.rs", "p", "t"),
+        ("ts/src/logFunction.ts", "p", "t"),
+        ("kt/src/main/kotlin/dev/pragmastat/LogFunction.kt", "p", "t"),
+        ("cs/Pragmastat/Functions/LogFunction.cs", "p", "t"),
+        ("r/pragmastat/R/log_function.R", "p", "t"),
+    ],
 }
 
 # The logarithm stores its polynomial as an array and walks it in a loop, so there is no Horner
@@ -115,6 +168,11 @@ def horner_coefficients(root: Path, rel: str, accumulator: str, argument: str) -
         if move and chains:
             sign, value = move.group(1), move.group(2)
             chains[-1].append(float(value) if sign == "+" else -float(value))
+    # A chain of one is not a chain: it is the opening line of a *different* branch's chain, whose
+    # steps use a different variable and so were never matched. The rational approximants brought
+    # this on, since one file now holds three branches and two of them share an accumulator name
+    # with the one being read.
+    chains = [chain for chain in chains if len(chain) > 1]
     if not chains:
         print(f"ERROR: found no Horner chain for {accumulator} in {rel}", file=sys.stderr)
         raise SystemExit(1)
@@ -176,12 +234,17 @@ def compare_arrays(name: str, expected: list[list[float]], root: Path) -> list[s
 
 def compare(name: str, expected: list[list[float]], root: Path) -> list[str]:
     failures = []
-    for rel, accumulator, argument in SOURCES[name]:
+    for entry in SOURCES[name]:
+        rel, accumulator, argument = entry[0], entry[1], entry[2]
+        wanted = expected if len(entry) < 4 else [expected[i] for i in entry[3]]
         chains = horner_coefficients(root, rel, accumulator, argument)
-        if len(chains) != len(expected):
-            failures.append(f"  {rel}: {len(chains)} Horner chains, the fit produces {len(expected)}")
+        if len(chains) != len(wanted):
+            failures.append(
+                f"  {rel} ({accumulator} in {argument}): {len(chains)} Horner chains, "
+                f"the fit produces {len(wanted)}"
+            )
             continue
-        for chain_index, (found, want) in enumerate(zip(chains, expected)):
+        for chain_index, (found, want) in enumerate(zip(chains, wanted)):
             # The ports evaluate each chain from the highest degree down; the scripts print the
             # coefficients lowest first.
             if found and want and found[0] != want[0]:
@@ -205,11 +268,13 @@ def main() -> int:
     exp_coefficients = run_fit(root, "fit_exp.py")
     additive_coefficients = run_fit(root, "fit_additive_cumulative.py")
     log_coefficients = run_fit(root, "fit_log.py")
+    quantile_coefficients = run_fit(root, "fit_additive_quantile.py")
 
     failures = (
         compare("exp", exp_coefficients, root)
         + compare("additive", additive_coefficients, root)
         + compare_arrays("log", log_coefficients, root)
+        + compare("quantile", quantile_coefficients, root)
     )
 
     python = root / "py" / ".venv" / "bin" / "python"
@@ -233,6 +298,7 @@ def main() -> int:
         sum(len(c) for c in exp_coefficients)
         + sum(len(c) for c in additive_coefficients)
         + sum(len(c) for c in log_coefficients)
+        + sum(len(c) for c in quantile_coefficients)
     )
     print(f"{total} coefficients match the fit scripts that produce them, in all seven ports")
     return 0

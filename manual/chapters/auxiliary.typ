@@ -30,3 +30,6 @@
 
 #pagebreak()
 #include "../log-function/log-function.typ"
+
+#pagebreak()
+#include "../additive-quantile/additive-quantile.typ"

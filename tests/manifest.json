@@ -219,6 +219,15 @@
       "conformance_reason": "This is the function the exact class rests on: the margins reach an exponential, IEEE 754 fixes nothing about one, and a last-bit difference there selects a different order statistic. Every other suite reaches it only through a margin, so it is checked directly here.",
       "languages": ["cs", "go", "kt", "py", "r", "rs", "ts"]
     },
+    "additive-quantile": {
+      "conformance": "exact",
+      "directory": "additive-quantile",
+      "generator": "cs/Pragmastat.TestGenerator",
+      "pattern": "*.json",
+      "description": "The reproducible inverse normal CDF, compared by binary64 payload",
+      "conformance_reason": "The parametric families invert this to answer a quantile, and a quantile is a value a caller compares and reports. IEEE 754 fixes nothing about it, so it is the toolkit's own for the reason the exponential and the logarithm already are, and the seven ports return identical bits.",
+      "languages": ["cs", "go", "kt", "py", "r", "rs", "ts"]
+    },
     "log-function": {
       "conformance": "exact",
       "directory": "log-function",

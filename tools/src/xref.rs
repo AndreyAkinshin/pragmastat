@@ -94,6 +94,7 @@ impl XRefMap {
         );
         mappings.insert("sec-exp-function".into(), "/exp-function".into());
         mappings.insert("sec-log-function".into(), "/log-function".into());
+        mappings.insert("sec-additive-quantile".into(), "/additive-quantile".into());
         mappings.insert("sec-rng".into(), "/rng".into());
         mappings.insert("sec-uniform-int".into(), "/uniform-int".into());
         mappings.insert("sec-uniform-float".into(), "/uniform-float".into());
@@ -164,6 +165,10 @@ impl XRefMap {
         mappings.insert(
             "sec-alg-log-function".into(),
             "/log-function#algorithm".into(),
+        );
+        mappings.insert(
+            "sec-alg-additive-quantile".into(),
+            "/additive-quantile#algorithm".into(),
         );
 
         // Notes sections -> per-function pages

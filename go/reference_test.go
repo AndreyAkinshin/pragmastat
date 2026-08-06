@@ -1849,6 +1849,39 @@ func TestExpFunctionReference(t *testing.T) {
 	}
 }
 
+// additiveQuantileArgCount is how many arguments the additive-quantile fixtures carry.
+const additiveQuantileArgCount = 547
+
+// The direct cross-language check for the inverse normal CDF: five files, 547 arguments,
+// compared on binary64 payloads.
+//
+// Arguments outside the open interval are absent from the fixture because their result is an
+// infinity and JSON can write neither; TestAdditiveQuantileSpecialValues covers those, where Go
+// can name its own infinity.
+func TestAdditiveQuantileReference(t *testing.T) {
+	checked := 0
+	forEachFixture(t, "additive-quantile", func(t *testing.T, td TestData, input SingleDoubleValueInput) {
+		if input.Name != "additive_quantile" {
+			t.Fatalf("Fixture names function %q, want %q", input.Name, "additive_quantile")
+		}
+		var expected []float64
+		if err := json.Unmarshal(td.Output, &expected); err != nil {
+			t.Fatalf("Failed to parse output data: %v", err)
+		}
+		if len(expected) != len(input.Arg) {
+			t.Fatalf("Fixture has %d arguments and %d outputs", len(input.Arg), len(expected))
+		}
+		for i, arg := range input.Arg {
+			label := fmt.Sprintf("additiveQuantile(%s)", formatFloatBits(arg))
+			assertFloat(t, compareExact, label, additiveQuantile(arg), expected[i])
+		}
+		checked += len(input.Arg)
+	})
+	if checked != additiveQuantileArgCount {
+		t.Errorf("Checked %d arguments, want %d", checked, additiveQuantileArgCount)
+	}
+}
+
 // logFunctionArgCount is how many arguments the log-function fixtures carry
 // between them: 401 over the band the estimators reach, 401 over the whole
 // finite range, 401 around the zero crossing, 30 boundaries and 512 uniformly

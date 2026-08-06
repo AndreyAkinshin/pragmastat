@@ -144,6 +144,9 @@ class ReferenceTest {
         // The size of the generated log-function fixture: 1745 arguments over five files, pinned
         // for the same reason.
         const val LOG_FUNCTION_ARGUMENT_COUNT = 1745
+
+        // The size of the generated additive-quantile fixture: 547 arguments over five files.
+        const val ADDITIVE_QUANTILE_ARGUMENT_COUNT = 547
     }
 
     /**
@@ -1834,6 +1837,77 @@ class ReferenceTest {
                     )
                     for (i in data.input.arg.indices) {
                         assertBitwise(data.output[i], logFunction(data.input.arg[i]), "logFunction(${data.input.arg[i]})")
+                    }
+                },
+            )
+        }
+
+        return tests
+    }
+
+    /**
+     * [logFunction] against the shared fixture, argument by argument, bit for bit.
+     *
+     * The same construction and the same reason as the exponential above: IEEE 754
+     * fixes nothing about a logarithm, and a distribution that inverts its cumulative
+     * function turns a last-bit difference into a different quantile.
+     *
+     * Nothing calls [logFunction] yet, so unlike the exponential it is not reached even
+     * indirectly through a margin. This suite is the only place the seven
+     * implementations meet on it, and the agreement has to already hold on the day the
+     * callers move into log space, or the estimator fixtures would disagree by
+     * construction from that day on.
+     *
+     * Arguments at or below zero are absent from the fixture, since their result is an
+     * infinity or a NaN and JSON can write neither. `LogFunctionTest` covers those,
+     * where Kotlin can name its own infinity.
+     */
+    @TestFactory
+    fun testAdditiveQuantile(): List<DynamicTest> {
+        val testDir = File("../tests/additive-quantile")
+        val loaded =
+            testDir
+                .listFiles { _, name -> name.endsWith(".json") }
+                ?.sortedBy { it.name }
+                .orEmpty()
+                .map { file -> file.nameWithoutExtension to mapper.readValue<SingleDoubleValueTestData>(file) }
+
+        val tests = mutableListOf<DynamicTest>()
+        val total = loaded.sumOf { (_, data) -> data.input.arg.size }
+
+        // As with the exponential, a missing fixture is a broken loader or a broken
+        // checkout rather than a reason to stay quiet: a loader that finds no files
+        // reports all zero of its comparisons as passes.
+        val expectedFiles =
+            listOf("branch-seams", "central", "far-tail", "near-tail", "textbook")
+        tests.add(
+            DynamicTest.dynamicTest("additive-quantile/coverage: $total arguments over ${loaded.size} files") {
+                val found = loaded.map { (name, _) -> name }
+                assertTrue(
+                    found.containsAll(expectedFiles),
+                    "Expected additive-quantile fixtures $expectedFiles but found $found",
+                )
+                assertEquals(
+                    ADDITIVE_QUANTILE_ARGUMENT_COUNT,
+                    total,
+                    "additive-quantile: loaded $total arguments, expected $ADDITIVE_QUANTILE_ARGUMENT_COUNT",
+                )
+            },
+        )
+
+        for ((name, data) in loaded) {
+            tests.add(
+                DynamicTest.dynamicTest("additive-quantile/$name (${data.input.arg.size} arguments)") {
+                    assertEquals("additive_quantile", data.input.name, "$name: unexpected function name")
+                    assertEquals(
+                        data.input.arg.size,
+                        data.output.size,
+                        "$name: fixture has ${data.input.arg.size} arguments but ${data.output.size} results",
+                    )
+                    // The argument, not the index, goes in the label: a one-ulp report on
+                    // a 2098-point sweep is only actionable if it names the point.
+                    for (i in data.input.arg.indices) {
+                        assertBitwise(data.output[i], additiveQuantile(data.input.arg[i]), "additiveQuantile(${data.input.arg[i]})")
                     }
                 },
             )
