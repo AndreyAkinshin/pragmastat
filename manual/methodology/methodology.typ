@@ -487,16 +487,17 @@ A measurement nobody can repeat stops being a measurement.
   [$CenterBounds$, $ShiftBounds$, $DisparityBounds$], [exact], [Margin selection over exact candidates],
   [$SpreadBounds$], [exact], [Bitwise on every fixture; see the note below],
   [$Uniform$ sampling], [exact], [One multiply and one add, both pinned],
-  [$Ratio$, $RatioBounds$], [approximate], [Logarithm and exponential from the platform library],
+  [$Ratio$, $RatioBounds$], [exact], [Selection over exact candidates, and no library call on the path since the logarithm became the toolkit's own],
   [$Compare2$], [per-projection], [Each projection follows its own threshold's metric],
   [$Additive$, $Multiplic$, $Exp$, $Power$ sampling], [approximate], [Logarithm, exponential, cosine and general power],
   table.hline(),
 )
 
 #v(0.5em)
-For the approximate suites the perturbation moves $Ratio$ on 94% of inputs by up to 3 units in the
-  last place, and $RatioBounds$ on 96% by up to 16; in neither case does the selection itself flip,
-  so the divergence stays proportional rather than becoming a jump.
+The one approximate row left is the parametric sampling, whose draws still reach a cosine and a
+  general power.
+$Ratio$ and $RatioBounds$ were beside it until both functions on their path became the toolkit's
+  own: the perturbation used to move them on 94% and 96% of inputs, and now moves neither on any.
 
 #v(0.5em)
 *Where conformance met accuracy*

@@ -214,5 +214,5 @@ internal fun ratioImpl(
     val logResult = shiftImpl(logX, logY, probabilities, assumeSorted)
 
     // Exp-transform back to ratio-space
-    return DoubleArray(logResult.size) { i -> kotlin.math.exp(logResult[i]) }
+    return DoubleArray(logResult.size) { i -> expFunction(logResult[i]) }
 }

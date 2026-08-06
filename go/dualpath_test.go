@@ -46,10 +46,15 @@ const (
 	// The suites marked compareExact did not move at all, on any input.
 	compareExact compareMode = iota
 	// compareTolerant keeps referenceTolerance, for results that genuinely pass
-	// through libm. exp(median(log x - log y)) now takes the toolkit's own
-	// logarithm and the platform's exponential, so the perturbation reaches only
-	// the second half; it still moves every one of the 180 probed inputs, by one
-	// representable value.
+	// through libm. No suite selects it: ratio was the last, and both functions on
+	// its path are the toolkit's own, so the perturbation experiment moves 0 of its
+	// 180 probed inputs.
+	//
+	// It stays because the mode is how a suite's declared class reaches the loader,
+	// and the class is a property of the suite whether or not one currently holds
+	// this one. The distribution suites are genuinely approximate and do not reach
+	// it either: they compare with their own 1e-12 further down. Unifying the two
+	// is worth doing and belongs with the distributions rather than here.
 	compareTolerant
 )
 

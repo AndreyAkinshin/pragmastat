@@ -123,9 +123,10 @@ func TestReferenceData(t *testing.T) {
 
 	// Two-sample scalar estimators: shift, ratio, disparity (public).
 	//
-	// ratio is the one tolerant member: it is exp(median(log x - log y)), so the
-	// result is a libm approximation rather than an element selected out of the
-	// pairwise set. shift and disparity select, and compare bit for bit.
+	// All three compare bit for bit. ratio was the exception while it evaluated
+	// exp(median(log x - log y)) through the platform's log and exp; both are the
+	// toolkit's own now, so it selects out of the pairwise set and maps the result
+	// back through reproducible arithmetic, like shift and disparity.
 	twoSampleScalar := []struct {
 		name   string
 		mode   compareMode
@@ -133,7 +134,7 @@ func TestReferenceData(t *testing.T) {
 		sampFn func(x, y *Sample) (Measurement, error)
 	}{
 		{"shift", compareExact, Shift, func(x, y *Sample) (Measurement, error) { return x.Shift(y) }},
-		{"ratio", compareTolerant, Ratio, func(x, y *Sample) (Measurement, error) { return x.Ratio(y) }},
+		{"ratio", compareExact, Ratio, func(x, y *Sample) (Measurement, error) { return x.Ratio(y) }},
 		{"disparity", compareExact, Disparity, func(x, y *Sample) (Measurement, error) { return x.Disparity(y) }},
 	}
 	for _, est := range twoSampleScalar {
@@ -210,7 +211,7 @@ func TestReferenceData(t *testing.T) {
 	}{
 		{"shift-bounds", compareExact, ShiftBounds,
 			func(x, y *Sample, m float64) (Bounds, error) { return x.ShiftBounds(y, m) }},
-		{"ratio-bounds", compareTolerant, RatioBounds,
+		{"ratio-bounds", compareExact, RatioBounds,
 			func(x, y *Sample, m float64) (Bounds, error) { return x.RatioBounds(y, m) }},
 	}
 	for _, est := range twoSampleBounds {
@@ -1547,15 +1548,15 @@ func mustParseVerdict(t *testing.T, s string) ComparisonVerdict {
 // metric of the threshold it answers.
 //
 // A projection is produced by the bounds estimator of its own metric, so the
-// comparison belongs per projection and not per suite. Shift and disparity
-// select their result out of the pairwise set and are therefore bit-exact;
-// ratio passes through log and exp and is not. A suite-wide mode would have to
-// be the weakest one present, which is how a single ratio threshold ends up
-// lowering the guarantee on every exact projection standing next to it.
+// comparison belongs per projection and not per suite. Every metric now selects
+// its result out of the pairwise set and maps it back through functions this
+// toolkit supplies itself, so every projection is bit-exact.
+//
+// The resolver stays rather than collapsing into a constant, because grading per
+// projection is a property of the suite: a suite-wide mode would have to be the
+// weakest one present, and today's answer being uniform does not make that
+// false. It is one line.
 func projectionMode(metric string) compareMode {
-	if metric == "ratio" {
-		return compareTolerant
-	}
 	return compareExact
 }
 

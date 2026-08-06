@@ -40,36 +40,18 @@ public class Compare2Tests
     for (int i = 0; i < expected.Length; i++)
     {
       string context = $"Suite: {SuiteName}, test {testName}, projection {i}";
-      bool approximate = thresholds[i].Metric == Metric.Ratio;
-      AssertField(approximate, expected[i].Estimate, produced[i].Estimate, context + ", estimate");
-      AssertField(approximate, expected[i].Lower, produced[i].Lower, context + ", lower");
-      AssertField(approximate, expected[i].Upper, produced[i].Upper, context + ", upper");
+      BitwiseAssert.Equal(expected[i].Estimate, produced[i].Estimate, context + ", estimate");
+      BitwiseAssert.Equal(expected[i].Lower, produced[i].Lower, context + ", lower");
+      BitwiseAssert.Equal(expected[i].Upper, produced[i].Upper, context + ", upper");
       Assert.Equal(expected[i].Verdict, produced[i].Verdict);
     }
   }
 
-  /// <summary>
-  /// Tolerance kept for ratio projections, matching the one the suite used to apply to everything.
-  /// </summary>
-  private const double RatioTolerance = 1e-9;
-
-  /// <summary>
-  /// Every field of a projection follows the class of its threshold's metric. Shift and disparity
-  /// select their answer out of a finite set built from the input, so a divergence is never small
-  /// and the payloads must be identical. Ratio evaluates exp(median(log x - log y)), which two
-  /// conforming libm implementations may place a few ULP apart, so it keeps a tolerance.
-  /// </summary>
-  private static void AssertField(bool approximate, double expected, double actual, string context)
-  {
-    if (!approximate)
-    {
-      BitwiseAssert.Equal(expected, actual, context);
-      return;
-    }
-
-    Assert.True(Math.Abs(expected - actual) < RatioTolerance,
-      $"{context}: expected {expected:R}, got {actual:R}");
-  }
+  // Every projection compares by payload now. The suite used to grade per metric, because ratio
+  // evaluated exp(median(log x - log y)) through the platform's log and exp and two conforming
+  // libm implementations could place the result a few ULP apart. Both functions are the toolkit's
+  // own, so ratio selects its answer out of a finite set built from the input and maps it back
+  // through reproducible arithmetic, exactly like shift and disparity beside it.
 
   // ── API-validation unit tests ─────────────────────────────────────────────
 

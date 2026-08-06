@@ -1,14 +1,13 @@
 # Run reference tests for compare2
 # Compare2 requires special handling since it needs thresholds and seed
 
-# compare2 composes projections of two different arithmetic classes. shift and
-# disparity select an element of the pairwise set, so every port reaches the
-# same double and the payloads match; ratio routes through log and exp from the
-# platform libm, which moves the result by a few ULP between conforming
-# implementations. The class is a property of one projection, not of the suite,
-# so each projection is compared in its own class. A suite-wide predicate has to
-# be the weakest one present: the 24 exact projections in this suite would be
-# checked at a tolerance because the other 5 are ratio.
+# compare2 composes projections whose class is a property of the projection, not
+# of the suite, so each is compared in its own class. Every metric selects an
+# element of the pairwise set and maps it back through functions this toolkit
+# supplies itself, so every projection compares by payload today. ratio was the
+# exception while it routed through log and exp from the platform libm; a
+# suite-wide predicate has to be the weakest one present, and its 5 thresholds
+# were checking the other 24 projections at a tolerance.
 #
 # The metric comes from the threshold that produced the projection: compare2
 # emits one projection per threshold, in order, so projection i belongs to
@@ -20,30 +19,18 @@
 # metric. verdict is a string and compares exactly either way.
 expect_projection <- function(actual_proj, expected_proj, metric, file_label, idx) {
   label <- paste0(file_label, " projection[", idx, "] (", metric, ")")
-  if (identical(metric, METRIC_RATIO)) {
-    expect_equal(actual_proj$estimate$value, expected_proj$estimate,
-      tolerance = 1e-9, info = paste(label, "estimate")
-    )
-    expect_equal(actual_proj$bounds$lower, expected_proj$lower,
-      tolerance = 1e-9, info = paste(label, "lower")
-    )
-    expect_equal(actual_proj$bounds$upper, expected_proj$upper,
-      tolerance = 1e-9, info = paste(label, "upper")
-    )
-  } else {
-    expect_exact(
-      actual_proj$estimate$value, expected_proj$estimate,
-      paste(label, "estimate")
-    )
-    expect_exact(
-      actual_proj$bounds$lower, expected_proj$lower,
-      paste(label, "lower")
-    )
-    expect_exact(
-      actual_proj$bounds$upper, expected_proj$upper,
-      paste(label, "upper")
-    )
-  }
+  expect_exact(
+    actual_proj$estimate$value, expected_proj$estimate,
+    paste(label, "estimate")
+  )
+  expect_exact(
+    actual_proj$bounds$lower, expected_proj$lower,
+    paste(label, "lower")
+  )
+  expect_exact(
+    actual_proj$bounds$upper, expected_proj$upper,
+    paste(label, "upper")
+  )
   expect_equal(actual_proj$verdict, expected_proj$verdict,
     info = paste(label, "verdict")
   )

@@ -45,6 +45,7 @@
  */
 
 import { centerImpl } from './centerImpl';
+import { expFunction } from './expFunction';
 import { spreadImpl } from './spreadImpl';
 import { shiftImpl } from './shiftImpl';
 import { pairwiseMargin } from './pairwiseMargin';
@@ -186,7 +187,7 @@ function ratioCore(x: readonly number[], y: readonly number[], assumeSorted: boo
   // fast path carries through the log-transform.
   const logX = log(x, Subject.X);
   const logY = log(y, Subject.Y);
-  return normalizeZero(Math.exp(shiftImpl(logX, logY, [0.5], assumeSorted)[0]));
+  return normalizeZero(expFunction(shiftImpl(logX, logY, [0.5], assumeSorted)[0]));
 }
 
 function disparityCore(x: readonly number[], y: readonly number[], assumeSorted: boolean): number {
@@ -277,7 +278,7 @@ function ratioBoundsImpl(
   const logX = log(x, Subject.X);
   const logY = log(y, Subject.Y);
   const logBounds = shiftBoundsImpl(logX, logY, misrate, assumeSorted);
-  return { lower: Math.exp(logBounds.lower), upper: Math.exp(logBounds.upper) };
+  return { lower: expFunction(logBounds.lower), upper: expFunction(logBounds.upper) };
 }
 
 function centerBoundsImpl(x: readonly number[], misrate: number, assumeSorted: boolean): RawBounds {

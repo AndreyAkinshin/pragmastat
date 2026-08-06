@@ -128,8 +128,8 @@
       "languages": ["cs", "go", "kt", "py", "r", "rs", "ts"]
     },
     "ratio": {
-      "conformance": "approximate",
-      "conformance_reason": "exp(median(log x_i - log y_j)). The logarithm is the toolkit's own and reproducible; the exponential still comes from each language's libm, and two implementations correct to within an ulp disagree in the last bit. Perturbing it moves the result on all 180 probed inputs, by one representable value. Half the transform is reproducible, which is why this is no longer explained by the logarithm.",
+      "conformance": "exact",
+      "conformance_reason": "exp(shift(log x, log y)), where both the logarithm and the exponential are now the toolkit's own: the same construction in all seven languages, built from operations IEEE 754 does fix. The perturbation experiment moves 0 of 180 probed inputs, where before it moved every one of them, because the estimator no longer reaches a library function the specification leaves free.",
       "directory": "ratio",
       "generator": "cs/Pragmastat.TestGenerator",
       "pattern": "*.json",
@@ -137,8 +137,8 @@
       "languages": ["cs", "go", "kt", "py", "r", "rs", "ts"]
     },
     "ratio-bounds": {
-      "conformance": "approximate",
-      "conformance_reason": "Same transform as ratio, with the margin selection on top, and the same split: our logarithm, the platform's exponential. Perturbing the exponential moves the result on 2280 of 2364 probed inputs, by one representable value; the selection itself does not flip.",
+      "conformance": "exact",
+      "conformance_reason": "Same transform as ratio, with the margin selection on top, and the same two functions, both the toolkit's own. The perturbation experiment moves 0 of 2364 probed inputs, where before it moved 2280.",
       "directory": "ratio-bounds",
       "generator": "cs/Pragmastat.TestGenerator",
       "pattern": "*.json",
@@ -187,7 +187,7 @@
     },
     "compare2": {
       "conformance": "per-projection",
-      "conformance_reason": "One projection per threshold, and the class follows the threshold's metric: shift and disparity projections come from bounds estimators that are exact, the ratio projection from one that is not. Checking the suite with a single predicate meant taking the weakest, so 24 of the 29 projections were compared at a tolerance because of the 5 that needed one.",
+      "conformance_reason": "One projection per threshold, and the class follows the threshold's metric. Every metric is exact today, so every projection is compared by payload; the per-projection grading stays because checking the suite with a single predicate means taking the weakest one present, which is how 24 of the 29 projections came to be compared at a tolerance because of the 5 that needed one.",
       "directory": "compare2",
       "generator": "cs/Pragmastat.TestGenerator",
       "pattern": "*.json",

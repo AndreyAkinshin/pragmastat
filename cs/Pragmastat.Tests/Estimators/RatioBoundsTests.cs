@@ -37,6 +37,7 @@ public class RatioBoundsTests
 
     var testCase = controller.LoadTestCase(testName);
     var actual = controller.Run(testCase.Input);
-    Assert.True(controller.Assert(testCase.Output, actual));
+    BitwiseAssert.Equal(testCase.Output.Lower, actual.Lower, $"Suite: {SuiteName}, test {testName}, lower");
+    BitwiseAssert.Equal(testCase.Output.Upper, actual.Upper, $"Suite: {SuiteName}, test {testName}, upper");
   }
 }

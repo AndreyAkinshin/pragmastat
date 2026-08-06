@@ -170,8 +170,9 @@ Weighted samples are rejected by all estimators.
 - **Signed zeros**: `tests/test_negative_zero.py` pins the no-`-0.0` output
   invariant by payload, since `-0.0 == 0.0` makes an equality assertion pass on
   exactly the results it exists to reject.
-- **Tolerance**: `1e-9`, for the genuinely approximate suites only (ratio,
-  ratio-bounds, compare2, the transcendental distributions, invariance)
+- **Tolerance**: `1e-9`, for the genuinely approximate suites only, which are now
+  the transcendental distributions and invariance. ratio, ratio-bounds and compare2
+  left that list when both functions on the ratio path became the toolkit's own
 
 ```bash
 mise run py:test                 # All tests (preferred)

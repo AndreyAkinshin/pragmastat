@@ -133,11 +133,11 @@ no `assume_sorted` flag; the test suite reaches them via the package namespace.
 - **Invariance tests**: Verify mathematical properties
 - **Test framework**: testthat v3
 - **Comparison**: bitwise. `helper-reference-tests.R` defaults to `tolerance = NULL`, which
-  compares bit patterns, and only the ratio family sets a tolerance, because ratio is
-  `exp(median(log x - log y))` and libm may legitimately move it. A selection-based estimator
-  returns an element of the pairwise set or the midpoint of two, so a divergence is not a small
-  error: either the same element was selected and the answer is bit-identical, or a different one
-  was, and no epsilon bounds that gap
+  compares bit patterns, and no estimator overrides it. The ratio family did while it was
+  `exp(median(log x - log y))` over the platform's log and exp; both are the toolkit's own now.
+  A selection-based estimator returns an element of the pairwise set or the midpoint of two, so a
+  divergence is not a small error: either the same element was selected and the answer is
+  bit-identical, or a different one was, and no epsilon bounds that gap
 
 ```bash
 mise run r:test              # All tests (preferred)

@@ -46,7 +46,7 @@ func ratioQuantilesImpl[T Number](x, y []T, p []float64, assumeSorted bool) ([]f
 	// Exp-transform back to ratio-space
 	result := make([]float64, len(logResult))
 	for i, v := range logResult {
-		result[i] = math.Exp(v)
+		result[i] = expFunction(v)
 	}
 
 	return result, nil

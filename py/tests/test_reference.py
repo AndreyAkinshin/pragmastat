@@ -132,21 +132,16 @@ def _load_fixtures(estimator_name):
 #
 # The suites that stay tolerant, and why
 # --------------------------------------
-#   ratio / ratio-bounds  exp(median(log x - log y)). The logarithm is the
-#                         toolkit's own; the exponential is still the platform's,
-#                         and the perturbation reaching it alone moves ratio on
-#                         all 180 probed inputs and ratio-bounds on 2280 of 2364,
-#                         by one representable value. Genuinely approximate until
-#                         the exponential goes the way of the logarithm.
-#   compare2              only its ratio projections. The predicate is resolved
-#                         per projection from that projection's own metric (see
-#                         :func:`_projection_is_bitwise`), so the 28 shift and
-#                         disparity projections in the suite are compared bit for
-#                         bit and only the 5 ratio ones get a tolerance.
 #   distributions/        additive, multiplic, exp and power draw through
 #                         log/exp/cos/pow, which each language takes from a
-#                         different libm. distributions/uniform is pure binary64
-#                         arithmetic on the RNG output and is exact.
+#                         different libm.
+#
+# ratio, ratio-bounds and the ratio projections of compare2 were on this list
+# until both functions on their path became the toolkit's own. The perturbation
+# now moves 0 of ratio's 180 probed inputs and 0 of ratio-bounds' 2364, where it
+# used to move all and 2280 of them, so all three compare by payload.
+#                         distributions/uniform is pure binary64 arithmetic on
+#                         the RNG output and is exact.
 #
 # The sequence suites (rng, shuffle, sample, resample, distributions/uniform)
 # ---------------------------------------------------------------------------
@@ -338,14 +333,23 @@ def _parse_sample_values(raw_values):
 def _projection_is_bitwise(metric):
     """Whether a projection of ``metric`` is compared bit for bit.
 
-    ``ratio`` is the only approximate metric: its estimator and its bounds both go
-    through log and exp, which each language takes from a different libm. Every
-    other metric selects an element out of a pairwise set and is exact (see the
-    exactness predicates above). A projection is graded on its own metric, so one
-    ratio threshold in a fixture no longer lowers the guarantee on the shift and
-    disparity thresholds standing next to it.
+    Every metric is exact now. ``ratio`` was the exception while it reached log and
+    exp from each language's libm; both are the toolkit's own, so it selects an
+    element out of a pairwise set and maps it back through reproducible functions,
+    like the others.
+
+    Membership is spelled out rather than returning ``True``, so that a metric added
+    later is approximate until somebody says otherwise. Grading per projection is
+    what keeps one approximate metric from lowering the guarantee on the thresholds
+    standing next to it, and this is where that grading is decided.
     """
-    return metric is not Metric.RATIO
+    return metric in {
+        Metric.CENTER,
+        Metric.SPREAD,
+        Metric.SHIFT,
+        Metric.RATIO,
+        Metric.DISPARITY,
+    }
 
 
 def _assert_projections(projections, expected_projections, fixture_name, thresholds):
@@ -424,8 +428,10 @@ class TestReference:
         run_reference_tests("shift", _point_entries(shift, is_two_sample=True), bitwise=True)
 
     def test_ratio_reference(self):
-        # exp(median(log x - log y)): libm-dependent, tolerance is the honest predicate.
-        run_reference_tests("ratio", _point_entries(ratio, is_two_sample=True), bitwise=False)
+        # exp(shift(log x, log y)), where both functions are the toolkit's own: the
+        # perturbation experiment moves 0 of 180 probed inputs, so bitwise is now the
+        # honest predicate. It was the last estimator holding a tolerance.
+        run_reference_tests("ratio", _point_entries(ratio, is_two_sample=True), bitwise=True)
 
     def test_avg_spread_reference(self):
         # avg_spread is an internal estimator with no public raw entry: Sample-only.
@@ -473,11 +479,12 @@ class TestReference:
         )
 
     def test_ratio_bounds_reference(self):
-        # Projects the shift bounds through exp/log: approximate, like ratio itself.
+        # Projects the shift bounds through log and exp, both of them the toolkit's
+        # own, so this is exact like every other bounds suite.
         run_bounds_reference_tests(
             "ratio-bounds",
             lambda _seed: _bounds_entries(ratio_bounds, is_two_sample=True),
-            bitwise=False,
+            bitwise=True,
         )
 
     def test_rng_uniform_reference(self):
@@ -1206,9 +1213,9 @@ class TestCompare2:
             sy = Sample(y_values)
             projections = compare2(sx, sy, thresholds, seed=seed)
 
-            # compare2 fixtures mix ratio projections (approximate) with shift and
-            # disparity ones (exact). Each projection is graded on its own
-            # threshold's metric, so only the ratio ones carry a tolerance.
+            # Every projection is graded on its own threshold metric, and every metric
+            # is exact now: ratio was the last approximate one, and both functions on
+            # its path are the toolkit's own.
             _assert_projections(projections, expected_projections, json_file.name, thresholds)
 
     def test_compare2_supports_measurement_threshold_units(self):

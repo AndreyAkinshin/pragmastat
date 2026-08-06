@@ -169,7 +169,7 @@ make_bounds_entry_points <- function(bounds_func, supports_assume_sorted = TRUE)
 #
 # `tolerance = NULL` (the default) compares bit patterns; see the note on
 # run_reference_tests for why that is the right shape for these estimators.
-# Only the ratio family sets a tolerance.
+# No suite sets one; the ratio family was the last that did.
 run_bounds_reference_tests <- function(dir_name, bounds_func, n_samples,
                                        extra_arg_names = c("misrate"),
                                        tolerance = NULL,
@@ -260,10 +260,10 @@ run_bounds_reference_tests <- function(dir_name, bounds_func, n_samples,
 # the gap is data-dependent and no epsilon bounds it. A tolerance therefore
 # hides precisely the defect it appears to guard against.
 #
-# A tolerance is set only where the arithmetic is genuinely approximate: the
-# ratio family still routes through the platform's exponential. Its logarithm is
-# the toolkit's own and reproducible, so only half the transform is exposed, and
-# perturbing that half moves the result by one representable value.
+# No estimator sets one any more. The ratio family was the last to, while it
+# routed through the platform's logarithm and exponential; both are the toolkit's
+# own now, so it selects a pairwise element and maps it back through reproducible
+# arithmetic, like every estimator beside it.
 run_reference_tests <- function(estimator_name, estimator_func, is_two_sample = FALSE,
                                 supports_assume_sorted = TRUE, tolerance = NULL) {
   repo_root <- find_repo_root()

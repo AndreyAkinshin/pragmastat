@@ -1,5 +1,6 @@
 namespace Pragmastat.Algorithms;
 
+using Pragmastat.Functions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,6 +35,6 @@ internal static class RatioImpl
     var logResult = ShiftImpl.Estimate(logX, logY, p, assumeSorted);
 
     // Exp-transform back to ratio-space
-    return logResult.Select(v => Math.Exp(v)).ToArray();
+    return logResult.Select(ExpFunction.Value).ToArray();
   }
 }

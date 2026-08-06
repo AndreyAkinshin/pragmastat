@@ -393,7 +393,7 @@ func RatioBounds(x, y []float64, misrate float64, assumeSorted bool) (Bounds, er
 		return Bounds{}, err
 	}
 
-	return newBounds(math.Exp(logBounds.Lower), math.Exp(logBounds.Upper), NumberUnit), nil
+	return newBounds(expFunction(logBounds.Lower), expFunction(logBounds.Upper), NumberUnit), nil
 }
 
 // CenterBounds provides exact distribution-free bounds for Center (Hodges-Lehmann pseudomedian).

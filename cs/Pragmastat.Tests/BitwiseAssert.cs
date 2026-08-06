@@ -31,15 +31,13 @@ namespace Pragmastat.Tests;
 /// avg-spread, all of their bounds, compare1 and the margins unmoved on every input.
 /// </para>
 /// <para>
-/// The remaining suites keep a tolerance because they are genuinely approximate: ratio and
-/// ratio-bounds compute exp(median(log x - log y)), whose logarithm is now the toolkit's own and
-/// whose exponential is still the platform's, so the same perturbation reaches half the transform
-/// and moves ratio on all 180 probed inputs and ratio-bounds on 2280 of 2364, by one representable
-/// value; compare2 composes ratio projections alongside exact ones, and a
-/// per-suite tolerance cannot say "exact for shift, approximate for ratio"; and the additive,
-/// multiplic, exp and power distributions transform their draws with the platform libm. The RNG
-/// and the uniform distribution use only integer arithmetic and exactly reproducible scaling, so
-/// they have no such excuse.
+/// One group keeps a tolerance because it is genuinely approximate: the additive, multiplic, exp
+/// and power distributions transform their draws with the platform libm, reaching a cosine and a
+/// general power. ratio and ratio-bounds were here too, computing exp(median(log x - log y))
+/// through the platform's log and exp; both are the toolkit's own now, the perturbation moves 0
+/// of their probed inputs, and they compare by payload like everything else. The RNG and the
+/// uniform distribution use only integer arithmetic and exactly reproducible scaling, so they
+/// have no such excuse.
 /// </para>
 /// </remarks>
 public static class BitwiseAssert

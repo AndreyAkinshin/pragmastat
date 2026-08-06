@@ -8,6 +8,7 @@ use crate::assumptions::{
     AssumptionError, EstimatorError, Subject, check_positivity, check_validity, log,
 };
 use crate::bounds::Bounds;
+use crate::exp_function::exp_function;
 use crate::measurement::Measurement;
 use crate::measurement_unit::MeasurementUnit;
 use crate::sample::{Sample, check_non_weighted, prepare_pair};
@@ -234,8 +235,8 @@ pub mod raw {
         // log is monotonic: sorted positive input → sorted log output
         let log_bounds = shift_bounds(&log_x, &log_y, misrate, assume_sorted)?;
         Ok(RawBounds::new(
-            log_bounds.lower.exp(),
-            log_bounds.upper.exp(),
+            exp_function(log_bounds.lower),
+            exp_function(log_bounds.upper),
         ))
     }
 

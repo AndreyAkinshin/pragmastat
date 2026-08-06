@@ -217,18 +217,24 @@ describe('Reference Tests', () => {
    * difference between two conforming libm implementations) moved none of them,
    * on any input.
    *
-   * Suites that stay on a tolerance, and why:
+   * Which suites stay on a tolerance:
    *
-   * `ratio` is `exp(median(log x - log y))`: unlike the selection estimators it
-   * really is approximate. The logarithm is the toolkit's own, but the
-   * exponential still comes from the platform, and perturbing that alone moves
-   * every one of the 180 probed inputs by one representable value, so exact
-   * equality across implementations is not a property it has yet.
-   * `ratio-bounds` inherits this from the same projection. `compare2`
-   * keeps a tolerance for the reason given above its own `describe`.
+   * None do. `ratio` was the last one: it is
+   * `exp(shift(log x, log y))`, and both of those functions are now supplied by
+   * the toolkit rather than taken from the platform, so the perturbation
+   * experiment moves 0 of its 180 probed inputs where it used to move all of
+   * them. `ratio-bounds` and the `compare2` ratio projections follow it.
    */
-  const TOLERANT_VALUE_DIRS = new Set(['ratio']);
-  const TOLERANT_BOUNDS_DIRS = new Set(['ratio-bounds']);
+  // Empty. `ratio` was the last entry: it reached log and exp from each language's libm, and both
+  // are the toolkit's own now, so the perturbation experiment moves 0 of its 180 probed inputs.
+  //
+  // The sets stay because they are how a suite's declared class reaches the loader, and the class
+  // is a property of the suite whether or not any suite currently holds this one. What is not
+  // reached through them is the distribution suites, which are genuinely approximate and compare
+  // with their own epsilon further down this file; Python routes those through its shared
+  // predicate instead. Unifying the two is worth doing and belongs with the distributions.
+  const TOLERANT_VALUE_DIRS = new Set<string>([]);
+  const TOLERANT_BOUNDS_DIRS = new Set<string>([]);
 
   const makeAssertValue =
     (subject: string, exact: boolean) =>
@@ -926,10 +932,11 @@ describe('Reference Tests', () => {
 
   // The logarithm, on its own arguments rather than through a ratio.
   //
-  // Every ratio fixture reaches logFunction, and every one of them compares with a tolerance,
-  // because until this branch the platform logarithm decided the last bits. A tolerance is what
-  // forgives the divergence that matters: ratio is exp(median(log x - log y)), so a last-bit
-  // difference in log changes which pairwise element the median selects.
+  // Every ratio fixture reaches logFunction, and every one of them compared with a tolerance for
+  // as long as the platform logarithm decided the last bits. A tolerance forgives the divergence
+  // that matters: ratio is exp(median(log x - log y)), so a last-bit difference in log changes
+  // which pairwise element the median selects. Checking the function directly is what let those
+  // suites become exact.
   //
   // Only the outputs are compared. The suite makes no claim about the payload of an input.
   describe('log-function', () => {
@@ -1322,14 +1329,11 @@ describe('Reference Tests', () => {
           for (let i = 0; i < results.length; i++) {
             const subject = `compare2/${fileName} projection ${i}`;
             const projection = data.output.projections[i];
-            if (data.input.thresholds[i].metric === Metric.RATIO) {
-              expect(results[i].estimate.value).toBeCloseTo(projection.estimate, 9);
-              expect(results[i].bounds.lower).toBeCloseTo(projection.lower, 9);
-              expect(results[i].bounds.upper).toBeCloseTo(projection.upper, 9);
-            } else {
-              expectBitwise(`${subject}.estimate`, results[i].estimate.value, projection.estimate);
-              expectBitwiseBounds(subject, results[i].bounds, projection);
-            }
+            // Every metric compares by payload. ratio was the exception while it routed
+            // through the platform's log and exp; both are the toolkit's own now, so its
+            // 5 thresholds no longer force the weakest predicate onto the other 24.
+            expectBitwise(`${subject}.estimate`, results[i].estimate.value, projection.estimate);
+            expectBitwiseBounds(subject, results[i].bounds, projection);
             expect(results[i].verdict).toBe(projection.verdict);
           }
         });

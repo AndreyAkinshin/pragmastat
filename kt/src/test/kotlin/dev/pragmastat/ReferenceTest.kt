@@ -158,16 +158,12 @@ class ReferenceTest {
     /**
      * Tolerant comparison, reserved for the genuinely approximate suites.
      *
-     * Only ratio, ratio-bounds, the RATIO projections of compare2 and the
-     * libm-backed distributions use it. ratio is exp(median(log x - log y)): the
-     * logarithm is the toolkit's own, the exponential is still the platform's, and
-     * perturbing that half by one representable step (the most two conforming libm
-     * implementations may legitimately differ) moves ratio on all 180 probed inputs
-     * and ratio-bounds on 2280 of 2364, by one representable value. compare2 does
-     * not apply this suite-wide: it resolves the predicate per
-     * projection from that projection's own threshold metric, so its shift and
-     * disparity projections compare bitwise and only its ratio projections land
-     * here. Everything else compares bitwise through [assertBitwise].
+     * Only the libm-backed distributions use it, and they reach it directly with
+     * their own 1e-12 rather than through a suite class. ratio, ratio-bounds and the
+     * ratio projections of compare2 were here until both functions on their path
+     * became the toolkit's own: the perturbation experiment now moves 0 of ratio's
+     * 180 probed inputs and 0 of ratio-bounds' 2364, where it used to move all and
+     * 2280 of them. Everything else compares bitwise through [assertBitwise].
      */
     private fun assertClose(
         expected: Double,
@@ -284,8 +280,8 @@ class ReferenceTest {
             listOf(
                 TwoSampleEntry("shift", "raw", false, exact = true) { x, y -> shift(x, y) },
                 TwoSampleEntry("shift", "sample", true, exact = true) { x, y -> shift(Sample.of(x), sampleY(y)).value },
-                TwoSampleEntry("ratio", "raw", false, exact = false) { x, y -> ratio(x, y) },
-                TwoSampleEntry("ratio", "sample", true, exact = false) { x, y -> ratio(Sample.of(x), sampleY(y)).value },
+                TwoSampleEntry("ratio", "raw", false, exact = true) { x, y -> ratio(x, y) },
+                TwoSampleEntry("ratio", "sample", true, exact = true) { x, y -> ratio(Sample.of(x), sampleY(y)).value },
                 // avg-spread is an internal helper with no public Sample API: raw-only.
                 TwoSampleEntry("avg-spread", "raw", false, exact = true) { x, y -> avgSpread(x, y) },
                 TwoSampleEntry("disparity", "raw", false, exact = true) { x, y -> disparity(x, y) },
@@ -522,8 +518,9 @@ class ReferenceTest {
         return runTwoSampleBoundsTests(
             "ratio-bounds",
             entries,
-            // ratio-bounds inherits ratio's exponential, which is still the platform's.
-            exact = false,
+            // Bitwise, like every other bounds suite: both functions on ratio's path are the
+            // toolkit's own now, so nothing outside the format decides the last bits.
+            exact = true,
             parse = { file ->
                 val td = mapper.readValue<RatioBoundsTestData>(file)
                 Pair(td.output, td.expectedError)
@@ -725,8 +722,8 @@ class ReferenceTest {
                     // contraction on an arm64 runner, where the compiler is free to fuse a
                     // multiply into an add and change the last bit of a draw. The
                     // exact-selection estimator suites compare bitwise for the same reason;
-                    // only the libm-backed ones (ratio, the ratio projections of compare2,
-                    // the non-uniform distributions) keep a tolerance.
+                    // only the non-uniform distributions keep a tolerance, since their draws
+                    // still reach a cosine and a general power from the platform.
                     val actual = List(testData.input.count) { rng.uniformDouble() }
                     assertBitwise(testData.output, actual, "uniformDouble()")
                 },
@@ -1658,22 +1655,16 @@ class ReferenceTest {
                         // of a projection (estimate, lower, upper) comes from that one
                         // estimator and shares its class.
                         //
-                        // shift and disparity select an element out of the pairwise set and are
+                        // Every metric selects an element out of the pairwise set and is
                         // bit-identical across conforming libm implementations, exactly as the
                         // standalone shift/disparity/shift-bounds/disparity-bounds suites above
-                        // already assert. Only ratio composes exp(median(log x - log y)) and is
-                        // genuinely approximate. A suite-wide tolerance had to be the weakest
-                        // predicate present, so 5 ratio thresholds out of 33 were checking the
-                        // other 28 projections as though they might drift.
-                        if (thresholds[i].metric == Metric.RATIO) {
-                            assertClose(expected.estimate, actual.estimate.value)
-                            assertClose(expected.lower, actual.bounds.lower)
-                            assertClose(expected.upper, actual.bounds.upper)
-                        } else {
-                            assertBitwise(expected.estimate, actual.estimate.value, "projection[$i].estimate")
-                            assertBitwise(expected.lower, actual.bounds.lower, "projection[$i].lower")
-                            assertBitwise(expected.upper, actual.bounds.upper, "projection[$i].upper")
-                        }
+                        // already assert. ratio composed exp(median(log x - log y)) over the
+                        // platform's log and exp and was the one approximate metric; both are the
+                        // toolkit's own now, so its 5 thresholds out of 33 no longer force the
+                        // weakest predicate onto the other 28.
+                        assertBitwise(expected.estimate, actual.estimate.value, "projection[$i].estimate")
+                        assertBitwise(expected.lower, actual.bounds.lower, "projection[$i].lower")
+                        assertBitwise(expected.upper, actual.bounds.upper, "projection[$i].upper")
                         assertEquals(expected.verdict, actual.verdict.name.lowercase())
                     }
                 },

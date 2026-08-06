@@ -38,10 +38,11 @@ test_that("ratio_bounds agrees with itself on integer and double fixtures", {
 
 # The direct cross-language check: five files, 1745 arguments, compared on binary64 payloads.
 #
-# Every ratio fixture reaches log_function, and every one of them compares with a tolerance,
-# because until this branch the platform logarithm decided the last bits. That is not cover: ratio
-# is exp(median(log x - log y)), so a last-bit difference in log changes which pairwise element the
-# median selects, and a tolerance is exactly what forgives it.
+# Every ratio fixture reaches log_function, and every one of them compared with a tolerance for as
+# long as the platform logarithm decided the last bits. That was not cover: ratio is
+# exp(median(log x - log y)), so a last-bit difference in log changes which pairwise element the
+# median selects, and a tolerance is exactly what forgives it. Checking the function directly here
+# is what let those suites become exact.
 #
 # expect_exact, never a tolerance: the manifest declares this suite exact.
 test_that("log_function reproduces the shared log-function fixture bit for bit", {

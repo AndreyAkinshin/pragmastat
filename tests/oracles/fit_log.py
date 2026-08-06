@@ -6,9 +6,9 @@ may return neighboring values for the same argument, and they do.
 
 The logarithm is on a decision path here. `ratio` is exp(median(log x - log y)), so a last-bit
 difference in log moves the median's input, and with it which pairwise element gets selected. That
-is not a small error in the answer: it is a different answer. The conformance probe records the
-consequence today, with `ratio` and `ratio-bounds` declared approximate while every other suite is
-exact.
+is not a small error in the answer: it is a different answer. The conformance probe recorded the
+consequence: while this function came from the platform, perturbing it moved `ratio` on every one
+of its probed inputs, and both suites were declared approximate. They are exact now.
 
 The reduction is the classical one, the same shape fdlibm uses:
 

@@ -165,7 +165,7 @@ fn verify_error(
 /// metric has to state its class rather than inherit one.
 fn conformance_for(metric: Metric) -> Conformance {
     match metric {
-        Metric::Ratio => Conformance::Tolerant,
+        Metric::Ratio => Conformance::Exact,
         Metric::Center | Metric::Spread | Metric::Shift | Metric::Disparity => Conformance::Exact,
     }
 }
@@ -448,10 +448,11 @@ fn run_compare2_tests() {
             .zip(thresholds.iter())
             .enumerate()
         {
-            // Compare2 mixes exact projections (shift, disparity) with the
-            // approximate ratio one in a single list. Each is held to its own
-            // metric's class, so the one approximate case does not lower the
-            // guarantee on the exact ones standing next to it.
+            // Each projection is held to its own metric's class rather than to a
+            // suite-wide one, so an approximate case cannot lower the guarantee on
+            // the exact ones standing next to it. Every metric is exact today; ratio
+            // was the approximate one until both functions on its path became the
+            // crate's own.
             check_projection(
                 &mut failures,
                 file_name,

@@ -1,3 +1,4 @@
+use crate::exp_function::exp_function;
 use std::collections::BTreeSet;
 
 use crate::assumptions::{Subject, log};
@@ -253,5 +254,5 @@ pub(crate) fn ratio_quantiles_impl(
     let log_result = shift_quantiles_impl(&log_x, &log_y, p, assume_sorted)?;
 
     // Exp-transform back to ratio-space
-    Ok(log_result.iter().map(|&v| v.exp()).collect())
+    Ok(log_result.iter().map(|&v| exp_function(v)).collect())
 }

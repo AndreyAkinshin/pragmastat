@@ -51,6 +51,7 @@ from ._center_quantiles_impl import center_quantile_bounds_impl
 from .assumptions import AssumptionError, Subject, check_positivity, check_validity, log
 from .bounds import Bounds
 from .center_impl import _center_impl
+from .exp_function import exp_function
 from .measurement import Measurement
 from .measurement_unit import DISPARITY_UNIT, NUMBER_UNIT, RATIO_UNIT, MeasurementUnit
 from .min_misrate import (
@@ -168,7 +169,7 @@ def _ratio_raw(x: NDArray, y: NDArray, assume_sorted: bool) -> float:
     log_y = log(y, Subject.Y)
     # log is monotonic: sorted positive input -> sorted log output.
     log_result = _shift_impl(log_x, log_y, p=0.5, assume_sorted=assume_sorted)
-    return _normalize_zero(float(np.exp(log_result)))
+    return _normalize_zero(float(exp_function(float(log_result))))
 
 
 def _disparity_raw(x: NDArray, y: NDArray, assume_sorted: bool) -> float:
@@ -247,7 +248,7 @@ def _ratio_bounds_raw(
     log_y = log(y, Subject.Y)
     # log is monotonic: sorted positive input -> sorted log output.
     lower, upper = _shift_bounds_raw(log_x, log_y, misrate, assume_sorted)
-    return float(np.exp(lower)), float(np.exp(upper))
+    return exp_function(float(lower)), exp_function(float(upper))
 
 
 def _center_bounds_raw(

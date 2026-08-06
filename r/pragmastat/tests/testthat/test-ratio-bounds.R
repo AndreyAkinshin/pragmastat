@@ -1,11 +1,11 @@
 test_that("ratio_bounds satisfies reference tests (raw + Sample)", {
-  # Keeps a tolerance for the same reason as ratio: the bounds are log-space
-  # order statistics mapped back through exp, so the platform libm decides the
-  # last bits. Every other bounds suite compares bit patterns.
+  # Bitwise, like every other bounds suite. These are log-space order statistics
+  # mapped back through an exponential, and that exponential is now the toolkit's
+  # own rather than the platform's, so nothing outside the format decides the
+  # last bits.
   run_bounds_reference_tests(
     "ratio-bounds", ratio_bounds,
-    n_samples = 2, extra_arg_names = c("misrate"),
-    tolerance = 1e-10
+    n_samples = 2, extra_arg_names = c("misrate")
   )
 })
 

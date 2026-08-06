@@ -10,9 +10,10 @@ namespace Pragmastat.Tests.Functions;
 /// </summary>
 /// <remarks>
 /// <para>
-/// Every ratio fixture reaches this function, and every one of them compares with a tolerance,
-/// because until this branch the platform logarithm decided the last bits. That is not cover: a
-/// tolerance forgives precisely the divergence this suite exists to catch.
+/// Every ratio fixture reaches this function, and every one of them compared with a tolerance for
+/// as long as the platform logarithm decided the last bits. That was not cover: a tolerance
+/// forgives precisely the divergence this suite exists to catch. Checking the function directly is
+/// what let those suites become exact.
 /// </para>
 /// <para>
 /// What makes it matter is the shape of ratio: exp(median(log x - log y)). The logarithm feeds a

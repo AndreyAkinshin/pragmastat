@@ -122,8 +122,9 @@ class Multiplic(location: Double, scale: Double) : Distribution
   every NaN payload into one), and every failure prints both payloads in hex next
   to the decimal values. It also holds the negated form, "this value is not a
   negative zero", for the positions where only the sign of a zero is being pinned.
-- **Tolerance**: `1e-9`, for the genuinely approximate suites only (ratio,
-  ratio-bounds, compare2, the transcendental distributions, invariance)
+- **Tolerance**: `1e-9`, for the genuinely approximate suites only, which are now
+  the transcendental distributions and invariance. ratio, ratio-bounds and compare2
+  left that list when both functions on the ratio path became the toolkit's own
 
 ```bash
 mise run kt:test            # All tests (preferred)

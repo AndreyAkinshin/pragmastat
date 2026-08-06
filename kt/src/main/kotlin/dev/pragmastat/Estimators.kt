@@ -1,7 +1,6 @@
 package dev.pragmastat
 
 import kotlin.math.abs
-import kotlin.math.exp
 import kotlin.math.max
 import kotlin.math.min
 
@@ -402,8 +401,8 @@ fun ratioBounds(
 
     // Exp-transform back to ratio-space
     return boundsOf(
-        exp(logBounds.lower),
-        exp(logBounds.upper),
+        expFunction(logBounds.lower),
+        expFunction(logBounds.upper),
     )
 }
 

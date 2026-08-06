@@ -1,3 +1,4 @@
+using Pragmastat.Functions;
 using Pragmastat.Exceptions;
 using Pragmastat.Internal;
 using Pragmastat.Metrology;
@@ -63,6 +64,6 @@ public class RatioBoundsEstimator : ITwoSampleBoundsEstimator
     // log is monotonic: sorted positive input -> sorted log output, so assumeSorted carries over.
     var logBounds = ShiftBoundsEstimator.EstimateRaw(logX, logY, misrate, assumeSorted);
 
-    return new Bounds(Math.Exp(logBounds.Lower), Math.Exp(logBounds.Upper), MeasurementUnit.Number);
+    return new Bounds(ExpFunction.Value(logBounds.Lower), ExpFunction.Value(logBounds.Upper), MeasurementUnit.Number);
   }
 }

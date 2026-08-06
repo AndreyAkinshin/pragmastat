@@ -15,13 +15,16 @@ and unbounded. A tolerance on such a suite states something that neither holds b
 describes the way it fails, and it hides the failure it appears to guard against.
 
 `approximate` means the seven agree to the tolerance recorded with the suite, and the reason is
-stated per suite. It is always a library function the specification does not fix — a logarithm, an
-exponential — never accumulated arithmetic error.
+stated per suite. It is always a library function the specification does not fix, never accumulated
+arithmetic error. Only the parametric sampling suites are left in this class: their draws reach a
+cosine and a general power. The logarithm and the exponential used to put `ratio` here too, and
+both are the toolkit's own now.
 
 `per-projection` means the suite carries results of both kinds and the loader picks per result.
 A single predicate for a whole suite has to be the weakest one present, so one approximate result
-would otherwise lower the guarantee on every exact result beside it. `compare2` is the case:
-its shift and disparity projections are bitwise, its ratio projections are not.
+would otherwise lower the guarantee on every exact result beside it. `compare2` is the case; every
+one of its projections is bitwise today, and the per-projection machinery stays as the seam at
+which a metric that stopped being exact would be readmitted.
 
 The classes are measured rather than asserted. `mise run tests:check:conformance` recomputes every
 estimator with each call to `log`, `exp`, `pow` and `cos` returning the neighboring representable
@@ -72,9 +75,10 @@ decision path, so the seven implementations evaluate their own rather than the p
 
 They differ in what would otherwise cover them. The margins reach an exponential wherever an
 Edgeworth expansion happens to look and nowhere else, so `exp-function/` fills in the range the
-margins never visit. The logarithm is reached by every ratio fixture, but those compare with a
-tolerance, and a tolerance forgives precisely the last-bit divergence that decides which pairwise
-element a median selects. `log-function/` is what makes that comparison exact.
+margins never visit. The logarithm is reached by every ratio fixture, but those compared with a
+tolerance while it was the platform's, and a tolerance forgives precisely the last-bit divergence
+that decides which pairwise element a median selects. `log-function/` is what let those suites
+become exact.
 
 ## Test File Format
 

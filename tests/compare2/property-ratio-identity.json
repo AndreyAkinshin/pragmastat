@@ -57,8 +57,8 @@
     "projections": [
       {
         "estimate": 1,
-        "lower": 0.7142857142857143,
-        "upper": 1.4000000000000001,
+        "lower": 0.7142857142857142,
+        "upper": 1.4,
         "verdict": "inconclusive"
       }
     ]

@@ -528,10 +528,12 @@ fn test_shift() {
 
 #[test]
 fn test_ratio() {
-    // exp(median(log x - log y)): the only point estimator that libm can move.
+    // exp(shift(log x, log y)), with both functions supplied by this crate rather than by the
+    // platform: the perturbation experiment moves 0 of its 180 probed inputs, where it used to
+    // move all of them. This was the last point estimator libm could move.
     run_two_sample_tests(
         "ratio",
-        Conformance::Tolerant,
+        Conformance::Exact,
         |x, y| raw::ratio(x, y, false),
         ratio,
     );
@@ -794,8 +796,9 @@ fn run_ratio_bounds_tests() {
         let expectation = Expectation {
             error: test_case.expected_error.as_ref(),
             bounds: test_case.output.as_ref(),
-            // Log-space quantiles mapped back through exp: genuinely approximate.
-            conformance: Conformance::Tolerant,
+            // Log-space quantiles mapped back through this crate's own exponential, so exact
+            // like every other bounds suite.
+            conformance: Conformance::Exact,
         };
 
         // (1) raw API with assume_sorted = false

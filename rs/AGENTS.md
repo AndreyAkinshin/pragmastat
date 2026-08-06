@@ -70,10 +70,11 @@ rs/pragmastat/
 - **Reference tests**: Load JSON fixtures from `../tests/` directory
 - **Invariance tests**: Verify mathematical properties (shift symmetry, spread scaling)
 - **Error tests**: Validate error handling for invalid inputs
-- **Conformance**: reference suites compare binary64 payloads bitwise. The
-  exceptions are `ratio`, `ratio-bounds`, `compare2` and the `additive` /
-  `multiplic` / `exp` / `power` distributions, which run through the platform
-  libm and keep a tolerance. `tests/conformance/mod.rs` (integration tests) and
+- **Conformance**: reference suites compare binary64 payloads bitwise. The only
+  exceptions are the `additive` / `multiplic` / `exp` / `power` distributions,
+  which still reach a cosine and a general power from the platform libm and keep
+  a tolerance. `ratio`, `ratio-bounds` and `compare2` were exceptions until both
+  functions on the ratio path became the crate's own. `tests/conformance/mod.rs` (integration tests) and
   `src/conformance.rs` (crate-internal tests) hold the predicate: every exact
   comparison, scalar or sequence, goes through `assert_bits_eq` /
   `assert_bits_eq_slice` there. Never `assert_eq!` on an f64 in an exact path —
