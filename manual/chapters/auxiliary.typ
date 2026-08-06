@@ -27,3 +27,6 @@
 
 #pagebreak()
 #include "../exp-function/exp-function.typ"
+
+#pagebreak()
+#include "../log-function/log-function.typ"

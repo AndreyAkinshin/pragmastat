@@ -17,6 +17,7 @@ MedianBounds: \operatorname{MedianBounds}
 BinomialCoefficient: \operatorname{BinomialCoefficient}
 AdditiveCumulative: \operatorname{AdditiveCumulative}
 ExpFunction: \operatorname{ExpFunction}
+LogFunction: \operatorname{LogFunction}
 ShiftBounds: \operatorname{ShiftBounds}
 RatioBounds: \operatorname{RatioBounds}
 CenterBounds: \operatorname{CenterBounds}

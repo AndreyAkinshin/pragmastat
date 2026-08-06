@@ -15,6 +15,7 @@ notion of case family that the filenames only loosely carry, and a checker that 
 would fail for reasons that are not defects. The total is the claim a reader actually relies on.
 """
 
+import json
 import re
 import sys
 from pathlib import Path
@@ -22,6 +23,12 @@ from pathlib import Path
 # "The $Foo$ test suite contains 206 test cases" and the one chapter that says
 # "37 correctness test cases" instead.
 PATTERN = re.compile(r"test suite contains (\d+) (?:correctness )?test cases")
+
+# Two chapters state a second number: how many arguments their files hold between them. That one
+# is what the seven ports pin in their own loaders, so the manual and the ports can drift apart
+# while each stays self-consistent. Optional, because most suites are one case per file and have
+# no such number to state.
+ARGUMENT_PATTERN = re.compile(r"holding (\d+) arguments")
 
 
 def main(repo_root):
@@ -53,6 +60,22 @@ def main(repo_root):
             failures.append(
                 f"  {chapter.relative_to(root)}: says {stated} test cases, tests/{suite} holds {actual}"
             )
+
+        argument_match = ARGUMENT_PATTERN.search(chapter.read_text())
+        if argument_match:
+            stated_arguments = int(argument_match.group(1))
+            actual_arguments = 0
+            for fixture in sorted(directory.glob("*.json")):
+                case = json.loads(fixture.read_text())
+                argument = case.get("input", {}).get("arg")
+                if isinstance(argument, list):
+                    actual_arguments += len(argument)
+            checked += 1
+            if stated_arguments != actual_arguments:
+                failures.append(
+                    f"  {chapter.relative_to(root)}: says {stated_arguments} arguments,"
+                    f" tests/{suite} holds {actual_arguments}"
+                )
 
     if failures:
         print("ERROR: the manual states fixture counts that no longer match:", file=sys.stderr)

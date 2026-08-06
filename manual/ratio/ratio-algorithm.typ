@@ -21,6 +21,9 @@ The algorithm operates in three steps:
 
 + *Log-transform* — Apply $log$ to each element of both samples.
   If $vx$ was sorted, $log vx$ remains sorted (log is monotonically increasing for positive values).
+  The logarithm is #link(<sec-log-function>)[$LogFunction$] rather than the platform's: it feeds a
+  median, and a median selects an element rather than computing one, so a last-bit difference
+  there changes which element comes back.
 
 + *Delegate to Shift* — Use the #link(<sec-alg-shift>)[Shift] algorithm to compute
   the desired quantile of pairwise differences in log-space.
@@ -29,6 +32,9 @@ The algorithm operates in three steps:
 + *Exp-transform* — Apply $exp$ to convert the result back to ratio-space.
   Since $exp(log(x_i) - log(y_j)) = x_i \/ y_j$, exponentiating the log-space median
   returns the estimate on the original ratio scale.
+  The exponential is #link(<sec-exp-function>)[$ExpFunction$], for the same reason. With both
+  functions supplied by the toolkit, this estimator reaches no library call the specification
+  leaves free, which is what places it in the exact conformance class.
 
 The total complexity is $O((m + n) log L)$ per quantile,
 where $L$ represents the convergence precision in the log-space binary search.

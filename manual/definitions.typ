@@ -85,6 +85,7 @@
 #let BinomialCoefficient = math.op("BinomialCoefficient")
 #let AdditiveCumulative = math.op("AdditiveCumulative")
 #let ExpFunction = math.op("ExpFunction")
+#let LogFunction = math.op("LogFunction")
 
 // ==========================================================================
 // Traditional Estimators
