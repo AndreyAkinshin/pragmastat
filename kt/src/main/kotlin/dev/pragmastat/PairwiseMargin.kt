@@ -1,6 +1,9 @@
 package dev.pragmastat
 
-import kotlin.math.*
+import kotlin.math.PI
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.math.sqrt
 
 private const val MAX_EXACT_SIZE = 400
 

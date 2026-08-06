@@ -343,6 +343,9 @@ jobs:
     - name: Generated transcendental fixtures hold the true values
       run: mise run tests:check:function-oracles
 
+    - name: No shipped source reaches the platform's transcendentals
+      run: mise run tests:check:libm
+
     - name: Every task is reachable from the aggregate that runs it
       run: mise run tests:check:task-coverage
 

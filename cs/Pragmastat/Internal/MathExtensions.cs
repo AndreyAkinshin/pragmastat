@@ -8,8 +8,6 @@ internal static class MathExtensions
   public static double Abs(this double x) => Math.Abs(x);
   public static double Sqr(this double x) => x * x;
   public static double Sqrt(this double x) => Math.Sqrt(x);
-  public static double Pow(this int x, double k) => Math.Pow(x, k);
-  public static double Pow(this double x, double k) => Math.Pow(x, k);
   public static double Clamp(this double x, double min, double max) => Min(Max(x, min), max);
   public static int Clamp(this int x, int min, int max) => Min(Max(x, min), max);
   public static int RoundToInt(this double x) => (int)Round(x);

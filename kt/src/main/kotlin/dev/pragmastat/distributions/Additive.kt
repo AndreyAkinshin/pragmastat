@@ -2,7 +2,10 @@ package dev.pragmastat.distributions
 
 import dev.pragmastat.Constants
 import dev.pragmastat.Rng
-import kotlin.math.*
+import kotlin.math.PI
+import kotlin.math.cos
+import kotlin.math.ln
+import kotlin.math.sqrt
 
 /**
  * Additive (Normal/Gaussian) distribution with given mean and standard deviation.

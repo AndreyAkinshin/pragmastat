@@ -623,6 +623,16 @@ qemu-aarch64-static "$binary" -test.count=1
 echo "the Go suite agrees with the fixtures on arm64"
 """
 
+[tasks."tests:check:libm"]
+description = "Assert no shipped source reaches a transcendental the specification leaves unfixed"
+# IEEE 754 fixes arithmetic and sqrt and nothing about log, exp, pow or the trigonometric
+# functions, so a call to one on a path that decides an answer is where the seven ports stop
+# agreeing. The conformance probe asks the same question, but only of Go: it rewrites that port's
+# four calls and measures the effect. A Math.Exp landing in any of the other six would leave every
+# gate here green, because the fixtures are compared against an answer the new call reproduces on
+# the machine that generated them.
+run = "python3 tests/check_libm.py ."
+
 [tasks."tests:check:function-oracles"]
 description = "Assert the log-function and exp-function fixtures hold the true values"
 # Every other check on these two compares the seven ports to a fixture that one of them generates,
@@ -1151,7 +1161,7 @@ depends = ["cs:demo", "go:demo", "kt:demo", "py:demo", "r:demo", "rs:demo", "ts:
 
 [tasks."ci"]
 description = "Run CI pipeline for all language implementations"
-depends = ["cs:ci", "go:ci", "kt:ci", "py:ci", "r:ci", "rs:ci", "ts:ci", "docs:ci", "tests:check:rng-fixtures", "tests:check:conformance", "tests:check:generator-drift", "tests:check:spelling", "tests:check:coefficients", "tests:check:function-oracles", "tests:check:task-coverage", "tests:check:rs-incremental"]
+depends = ["cs:ci", "go:ci", "kt:ci", "py:ci", "r:ci", "rs:ci", "ts:ci", "docs:ci", "tests:check:rng-fixtures", "tests:check:conformance", "tests:check:generator-drift", "tests:check:spelling", "tests:check:coefficients", "tests:check:function-oracles", "tests:check:libm", "tests:check:task-coverage", "tests:check:rs-incremental"]
 
 # ==========================================================================
 # Version Task
