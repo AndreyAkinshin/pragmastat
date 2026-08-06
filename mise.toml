@@ -383,11 +383,12 @@ R CMD build pragmastat
 [tasks."r:test"]
 description = "Run R tests"
 dir = "r"
+# No fixture copy. helper-reference-tests.R walks up to CITATION.cff and reads tests/ from the
+# repository root, so the copy this task used to make was never read. It was also guarded by
+# `if [ ! -d ]`, which meant it went stale after the first run and stayed stale, and it was not in
+# .Rbuildignore, so R CMD build put all 1145 of its files into the published tarball: 1184 test
+# files against 42 R files, most of a 462 KB package that nothing loads.
 run = """
-if [ ! -d "pragmastat/tests/tests" ]; then
-    mkdir -p pragmastat/tests/tests
-    cp -r ../tests/* pragmastat/tests/tests/
-fi
 cd pragmastat && Rscript -e "devtools::test(stop_on_failure = TRUE)"
 """
 
@@ -1085,7 +1086,14 @@ run = [
     # failed should fail on its own terms first. Sixth, a dirty tree stopped the run before
     # docs:check, pdf:build and web:build had run at all: the result went red having verified
     # almost nothing, which is the state a developer with uncommitted work is always in.
-    "git diff --exit-code || { echo 'ERROR: docs:sync produced uncommitted drift — regenerate and commit generated docs' >&2; exit 1; }",
+    #
+    # `git status --porcelain`, not `git diff`. `git diff` compares the working tree against the
+    # INDEX, so `git add` alone silenced this gate: a full CI run reported success having compared
+    # the tree against a copy of itself. It also misses a file docs:sync creates rather than
+    # rewrites, since an untracked file is in neither side of that diff. --porcelain sees staged,
+    # unstaged and untracked alike, and prints what it found rather than only that it found
+    # something.
+    "drift=\"$(git status --porcelain)\"; [ -z \"$drift\" ] || { echo 'ERROR: docs:sync produced uncommitted drift — regenerate and commit generated docs' >&2; echo \"$drift\" >&2; exit 1; }",
 ]
 
 [tasks."docs:ci:release"]
@@ -1099,8 +1107,8 @@ run = [
     { task = "docs:check" },
     { task = "pdf:build:release" },
     { task = "web:build:release" },
-    # Last, for the reason given on docs:ci above.
-    "git diff --exit-code || { echo 'ERROR: docs:sync produced uncommitted drift — regenerate and commit generated docs' >&2; exit 1; }",
+    # Last, and --porcelain rather than `git diff`, for the reasons given on docs:ci above.
+    "drift=\"$(git status --porcelain)\"; [ -z \"$drift\" ] || { echo 'ERROR: docs:sync produced uncommitted drift — regenerate and commit generated docs' >&2; echo \"$drift\" >&2; exit 1; }",
 ]
 
 # ==========================================================================

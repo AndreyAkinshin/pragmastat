@@ -99,11 +99,6 @@ jobs:
         tlmgr update --self
         tlmgr install amsfonts
 
-    - name: Copy test data
-      run: |
-        mkdir -p r/pragmastat/tests/tests
-        cp -r tests/* r/pragmastat/tests/tests/
-
     - name: Check package
       run: R CMD check --no-tests --no-check-dependencies r/pragmastat
 

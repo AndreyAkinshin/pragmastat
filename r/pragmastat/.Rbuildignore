@@ -5,3 +5,4 @@
 ^.*\.Rcheck$
 ^src/.*\.(o|so|dll|dylib|a)$
 ^src/symbols\.rds$
+^tests/tests$
