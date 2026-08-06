@@ -341,6 +341,9 @@ jobs:
     - name: No shipped source reaches the platform's transcendentals
       run: mise run tests:check:libm
 
+    - name: Constants agree across the ports that carry them
+      run: mise run tests:check:shared-constants
+
     - name: Every task is reachable from the aggregate that runs it
       run: mise run tests:check:task-coverage
 
