@@ -23,3 +23,12 @@
 # All language implementations use this same value to ensure cross-language
 # determinism in distribution sampling.
 .SMALLEST_POSITIVE_SUBNORMAL <- 5e-324
+
+#' sqrt(2 * pi), the normalizing constant of the normal density.
+#'
+#' A literal rather than sqrt(2 * pi) computed at load time: the seven ports must divide by the
+#' same double, and a runtime square root of a runtime product is one more place for them to
+#' differ.
+#'
+#' @noRd
+.SQRT_2PI <- 2.506628274631000241612355239340

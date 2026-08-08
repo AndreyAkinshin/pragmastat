@@ -4,6 +4,8 @@
 
 import { MACHINE_EPSILON } from '../constants';
 import { Rng } from '../rng';
+import { expFunction } from '../expFunction';
+import { logFunction } from '../logFunction';
 import { Distribution } from './distribution';
 
 /**
@@ -40,6 +42,30 @@ export class Exp implements Distribution {
       u = 1.0 - MACHINE_EPSILON;
     }
     return -Math.log(1.0 - u) / this.rate;
+  }
+
+  densityAt(x: number): number {
+    if (x < 0) {
+      return 0;
+    }
+    return this.rate * expFunction(-this.rate * x);
+  }
+
+  cumulativeAt(x: number): number {
+    if (x < 0) {
+      return 0;
+    }
+    return 1 - expFunction(-this.rate * x);
+  }
+
+  quantileAt(p: number): number {
+    if (p <= 0) {
+      return 0;
+    }
+    if (p >= 1) {
+      return Infinity;
+    }
+    return -logFunction(1 - p) / this.rate;
   }
 
   samples(rng: Rng, count: number): number[] {

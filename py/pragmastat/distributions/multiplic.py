@@ -3,7 +3,12 @@
 import math
 from typing import TYPE_CHECKING
 
+from ..additive_cumulative import additive_cumulative
+from ..additive_quantile import additive_quantile
+from ..exp_function import exp_function
+from ..log_function import log_function
 from .additive import Additive
+from .constants import SQRT_2PI
 from .distribution import Distribution
 
 if TYPE_CHECKING:
@@ -44,3 +49,32 @@ class Multiplic(Distribution):
 
     def sample(self, rng: "Rng") -> float:
         return math.exp(self._additive.sample(rng))
+
+    def density_at(self, x: float) -> float:
+        """The support is x > 0, and that is the test.
+
+        It used to be x < 1e-9, which is not the edge of the support but an arbitrary point
+        inside it: a Multiplic(-30, 1) has its median at 9.4e-14, so that threshold reported zero
+        density and zero probability across essentially the whole distribution.
+        """
+        if x <= 0.0:
+            return 0.0
+        z = (log_function(x) - self.log_mean) / self.log_std_dev
+        return exp_function(-z * z / 2) / (x * self.log_std_dev * SQRT_2PI)
+
+    def cumulative_at(self, x: float) -> float:
+        """A lognormal variable's distribution function is the normal one applied to log x.
+
+        So this goes through additive_cumulative rather than spelling the same thing out
+        through erf.
+        """
+        if x <= 0.0:
+            return 0.0
+        return additive_cumulative((log_function(x) - self.log_mean) / self.log_std_dev)
+
+    def quantile_at(self, p: float) -> float:
+        if p <= 0.0:
+            return 0.0
+        if p >= 1.0:
+            return math.inf
+        return exp_function(self.log_mean + self.log_std_dev * additive_quantile(p))

@@ -96,6 +96,14 @@ impl XRefMap {
         mappings.insert("sec-log-function".into(), "/log-function".into());
         mappings.insert("sec-additive-quantile".into(), "/additive-quantile".into());
         mappings.insert("sec-rng".into(), "/rng".into());
+        // The five parametric families. Each chapter states its density, cumulative and quantile,
+        // and the sections reference one another: Multiplic is Additive read through a logarithm,
+        // and Power is why the logarithm exists.
+        mappings.insert("sec-uniform".into(), "/uniform".into());
+        mappings.insert("sec-exp".into(), "/exp".into());
+        mappings.insert("sec-additive".into(), "/additive".into());
+        mappings.insert("sec-multiplic".into(), "/multiplic".into());
+        mappings.insert("sec-power".into(), "/power".into());
         mappings.insert("sec-uniform-int".into(), "/uniform-int".into());
         mappings.insert("sec-uniform-float".into(), "/uniform-float".into());
         mappings.insert("sec-sample".into(), "/sample".into());

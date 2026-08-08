@@ -2,6 +2,9 @@
 
 use crate::Rng;
 
+use crate::exp_function::exp_function;
+use crate::log_function::log_function;
+
 use super::{Distribution, MACHINE_EPSILON};
 
 /// Exponential distribution with given rate parameter.
@@ -43,5 +46,29 @@ impl Distribution for Exp {
         // Avoid log(0) - use machine epsilon for cross-language consistency
         let u = if u == 1.0 { 1.0 - MACHINE_EPSILON } else { u };
         -(1.0 - u).ln() / self.rate
+    }
+
+    fn density_at(&self, x: f64) -> f64 {
+        if x < 0.0 {
+            return 0.0;
+        }
+        self.rate * exp_function(-self.rate * x)
+    }
+
+    fn cumulative_at(&self, x: f64) -> f64 {
+        if x < 0.0 {
+            return 0.0;
+        }
+        1.0 - exp_function(-self.rate * x)
+    }
+
+    fn quantile_at(&self, p: f64) -> f64 {
+        if p <= 0.0 {
+            return 0.0;
+        }
+        if p >= 1.0 {
+            return f64::INFINITY;
+        }
+        -log_function(1.0 - p) / self.rate
     }
 }

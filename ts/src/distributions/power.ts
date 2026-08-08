@@ -4,6 +4,8 @@
 
 import { MACHINE_EPSILON } from '../constants';
 import { Rng } from '../rng';
+import { expFunction } from '../expFunction';
+import { logFunction } from '../logFunction';
 import { Distribution } from './distribution';
 
 /**
@@ -46,6 +48,41 @@ export class Power implements Distribution {
       u = 1.0 - MACHINE_EPSILON;
     }
     return this.min / Math.pow(1.0 - u, 1.0 / this.shape);
+  }
+
+  /**
+   * shape * min^shape / x^(shape+1), rearranged as
+   * (shape / x) * exp(shape * (log min - log x)). The toolkit owns an exponential and
+   * a logarithm and owns no general power, so a real exponent is spelled as the
+   * exponential of a logarithm. This family is the reason the logarithm had to exist
+   * before the trio could.
+   *
+   * The support is [min, infinity), closed at the left, so the density at min is
+   * shape / min rather than zero, while the cumulative there is zero. Uniform reads
+   * the same way at its own lower endpoint.
+   */
+  densityAt(x: number): number {
+    if (x < this.min) {
+      return 0;
+    }
+    return (this.shape / x) * expFunction(this.shape * (logFunction(this.min) - logFunction(x)));
+  }
+
+  cumulativeAt(x: number): number {
+    if (x <= this.min) {
+      return 0;
+    }
+    return 1 - expFunction(this.shape * (logFunction(this.min) - logFunction(x)));
+  }
+
+  quantileAt(p: number): number {
+    if (p <= 0) {
+      return this.min;
+    }
+    if (p >= 1) {
+      return Infinity;
+    }
+    return this.min * expFunction(-logFunction(1 - p) / this.shape);
   }
 
   samples(rng: Rng, count: number): number[] {

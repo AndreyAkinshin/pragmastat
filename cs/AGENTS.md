@@ -54,7 +54,7 @@ cs/
 |------|---------|
 | `Sample` | Immutable array wrapper with arithmetic operators |
 | `Rng` | Deterministic xoshiro256++ PRNG |
-| `IDistribution` | Interface for sampling distributions |
+| `IDistribution` | Density, cumulative, quantile and sampling |
 | `Bounds` | Struct with `Lower` and `Upper` properties |
 
 ## Public API

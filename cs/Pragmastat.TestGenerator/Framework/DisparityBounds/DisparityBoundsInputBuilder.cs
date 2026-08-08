@@ -54,8 +54,8 @@ public class DisparityBoundsInputBuilder : ReferenceTestCaseInputBuilder<Dispari
 
   private DisparityBoundsInputBuilder AddDistributionSamples(
     string distributionName,
-    IContinuousDistribution xDistribution,
-    IContinuousDistribution yDistribution,
+    IDistribution xDistribution,
+    IDistribution yDistribution,
     int[] xSizes,
     int[] ySizes,
     double misrate,

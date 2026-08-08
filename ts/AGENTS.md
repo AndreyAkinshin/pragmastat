@@ -60,7 +60,7 @@ ts/
 |------|---------|
 | `Rng` | Deterministic PRNG with `uniformFloat()`, `sample()`, `shuffle()` |
 | `Bounds` | Object with `lower` and `upper` properties |
-| `Distribution` | Interface for sampling distributions |
+| `Distribution` | Density, cumulative, quantile and sampling |
 
 ## Public Functions
 

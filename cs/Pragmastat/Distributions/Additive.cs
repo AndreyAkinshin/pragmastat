@@ -11,7 +11,7 @@ namespace Pragmastat.Distributions;
 /// Uses the Box-Muller transform to generate samples.
 /// Historically called 'Normal' or 'Gaussian' distribution.
 /// </remarks>
-public sealed class Additive : IDistribution, IContinuousDistribution
+public sealed class Additive : IDistribution
 {
   /// <summary>
   /// Standard normal distribution (mean=0, stdDev=1).
@@ -75,32 +75,28 @@ public sealed class Additive : IDistribution, IContinuousDistribution
     return result;
   }
 
-  // ===========================================================================
-  // Internal statistical functions - NOT part of public API.
-  // Preparation for future version, not declared in manual yet.
-  // ===========================================================================
-
-  double IContinuousDistribution.Pdf(double x)
+  /// <inheritdoc />
+  public double DensityAt(double x)
   {
     double z = (x - Mean) / StdDev;
-    return Math.Exp(-z * z / 2) / (StdDev * Constants.Sqrt2Pi);
+    return ExpFunction.Value(-z * z / 2) / (StdDev * Constants.Sqrt2Pi);
   }
 
-  double IContinuousDistribution.Cdf(double x)
+  /// <inheritdoc />
+  public double CumulativeAt(double x)
   {
     return AdditiveCumulative.Value((x - Mean) / StdDev);
   }
 
-  double IContinuousDistribution.Quantile(Probability p)
+  /// <inheritdoc />
+  /// <remarks>
+  /// The inverse goes through <see cref="AdditiveQuantile"/>, which is what that function was
+  /// built for. It replaces two Newton steps taken against an error function accurate to 1.5e-07,
+  /// which had left this quantile eight orders of magnitude coarser than the cumulative beside it.
+  /// The infinities at the ends are the ones AdditiveQuantile already returns.
+  /// </remarks>
+  public double QuantileAt(double p)
   {
-    return p.Value switch
-    {
-      0 => double.NegativeInfinity,
-      1 => double.PositiveInfinity,
-      _ => Mean + StdDev * Constants.Sqrt2 * ErrorFunction.InverseValue(2 * p - 1)
-    };
+    return Mean + StdDev * AdditiveQuantile.Value(p);
   }
-
-  // Asymptotic spread constant for normal distribution: c_spr ≈ 0.9538725524
-  double? IContinuousDistribution.AsymptoticSpread => 0.9538725524 * StdDev;
 }

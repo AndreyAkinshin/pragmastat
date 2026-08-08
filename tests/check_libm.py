@@ -464,7 +464,7 @@ if set(SCANNERS) != set(PORTS):
 
 # Files scanned and exempt call sites found, per port. Pinned in both directions; the docstring
 # says what each number catches.
-EXPECTED_FILES = {"cs": 71, "go": 28, "kt": 30, "py": 33, "r": 42, "rs": 33, "ts": 32}
+EXPECTED_FILES = {"cs": 71, "go": 28, "kt": 31, "py": 34, "r": 42, "rs": 33, "ts": 33}
 # kt's number counts `import kotlin.math.<name>` lines rather than call sites, because that is
 # where the Kotlin reader looks; the other six count calls.
 EXPECTED_EXACT = {"cs": 18, "go": 123, "kt": 22, "py": 51, "r": 52, "rs": 18, "ts": 85}
@@ -472,7 +472,17 @@ EXPECTED_EXACT = {"cs": 18, "go": 123, "kt": 22, "py": 51, "r": 52, "rs": 18, "t
 # Files skipped because they are a parametric family and the manifest still calls that suite
 # approximate. Pinned like the others: an exemption that silently widened would otherwise look
 # exactly like a port that has no distributions.
-EXPECTED_DISTRIBUTION_FILES = {"cs": 7, "go": 5, "kt": 6, "py": 7, "r": 5, "rs": 7, "ts": 7}
+#
+# The exemption is now coarser than the truth, and knowingly so. These files hold two kinds of
+# path: the density, cumulative and quantile, which reach only the toolkit's own primitives and
+# are compared by payload in the five dist-* suites, and `sample`, which still draws through the
+# platform's log, exp, cos and pow. Skipping by file therefore leaves the trio unguarded here,
+# and a platform call planted in a density would pass this scan. What catches it meanwhile is the
+# dist-* suites themselves: they are exact, and a platform transcendental on one of those paths
+# makes at least one of the seven ports disagree. The exemption goes away with the sampling
+# identity, which removes the last platform call from these files and lets the scan read them
+# whole.
+EXPECTED_DISTRIBUTION_FILES = {"cs": 7, "go": 5, "kt": 7, "py": 8, "r": 5, "rs": 7, "ts": 8}
 
 
 RS_TEST_MODULE = re.compile(r"#\[cfg\(test\)\]\s*\n\s*(?:pub\s+)?mod\s+([a-z_0-9]+)\s*;")

@@ -41,3 +41,33 @@ class Uniform(Distribution):
 
     def sample(self, rng: "Rng") -> float:
         return self.min + rng.uniform_float() * (self.max - self.min)
+
+    def density_at(self, x: float) -> float:
+        """The support is half-open, so the density is zero at max and positive at min.
+
+        This is the one family assembled from arithmetic alone: no primitive of the toolkit
+        appears on any of its three paths.
+
+        NaN is refused before the bounds are compared. This is the only one of the fifteen
+        functions whose result does not depend on its argument, so a NaN reaching the comparison
+        satisfies neither half of it and falls through to an ordinary density.
+        """
+        if math.isnan(x):
+            return x
+        if x < self.min or x >= self.max:
+            return 0.0
+        return 1.0 / (self.max - self.min)
+
+    def cumulative_at(self, x: float) -> float:
+        if x < self.min:
+            return 0.0
+        if x >= self.max:
+            return 1.0
+        return (x - self.min) / (self.max - self.min)
+
+    def quantile_at(self, p: float) -> float:
+        if p <= 0.0:
+            return self.min
+        if p >= 1.0:
+            return self.max
+        return self.min + p * (self.max - self.min)

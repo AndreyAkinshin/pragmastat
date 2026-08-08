@@ -4,6 +4,10 @@
 
 import { SMALLEST_POSITIVE_SUBNORMAL } from '../constants';
 import { Rng } from '../rng';
+import { additiveCumulative } from '../additiveCumulative';
+import { additiveQuantile } from '../additiveQuantile';
+import { expFunction } from '../expFunction';
+import { SQRT_2PI } from './constants';
 import { Distribution } from './distribution';
 
 /**
@@ -55,6 +59,26 @@ export class Additive implements Distribution {
     const z = r * Math.cos(theta);
 
     return this.mean + z * this.stdDev;
+  }
+
+  densityAt(x: number): number {
+    const z = (x - this.mean) / this.stdDev;
+    return expFunction((-z * z) / 2) / (this.stdDev * SQRT_2PI);
+  }
+
+  cumulativeAt(x: number): number {
+    return additiveCumulative((x - this.mean) / this.stdDev);
+  }
+
+  /**
+   * The inverse goes through additiveQuantile, which is what that function was built
+   * for. It replaces two Newton steps taken against an error function accurate to
+   * 1.5e-07, which had left this quantile eight orders of magnitude coarser than the
+   * cumulative beside it. The infinities at the ends are the ones additiveQuantile
+   * already returns.
+   */
+  quantileAt(p: number): number {
+    return this.mean + this.stdDev * additiveQuantile(p);
   }
 
   samples(rng: Rng, count: number): number[] {

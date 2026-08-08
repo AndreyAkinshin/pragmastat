@@ -67,7 +67,7 @@ kt/
 |------|---------|
 | `Rng` | Deterministic PRNG with `uniformDouble()`, `sample()`, `shuffle()` |
 | `Bounds` | Data class with `lower` and `upper` properties |
-| `Distribution` | Interface for sampling distributions |
+| `Distribution` | Density, cumulative, quantile and sampling |
 
 ## Public Functions
 

@@ -42,7 +42,7 @@ public class OneSampleInputBuilder : ReferenceTestCaseInputBuilder<OneSampleInpu
 
   private OneSampleInputBuilder AddDistributionSamples(
     string distributionName,
-    IContinuousDistribution distribution,
+    IDistribution distribution,
     int[] sizes,
     int count,
     bool weighted = true)

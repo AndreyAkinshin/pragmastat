@@ -4,7 +4,7 @@ using Pragmastat.Internal;
 namespace Pragmastat.TestGenerator.Framework.Distributions;
 
 public abstract class DistributionTestBase<TDistribution> : ReferenceTestBase<DistributionInput, DistributionOutput>
-  where TDistribution : IContinuousDistribution
+  where TDistribution : IDistribution
 {
   protected override ReferenceTestController<DistributionInput, DistributionOutput> CreateController() =>
     new DistributionController(GetSuiteName(),

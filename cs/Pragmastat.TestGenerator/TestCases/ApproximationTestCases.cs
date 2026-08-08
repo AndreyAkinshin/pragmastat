@@ -18,7 +18,7 @@ public static class ApproximationTestCases
 
     // Register approximation functions
     double[] milliles = Uniform(0, 1, 1001, 1);
-    double[] normalMilliles = milliles.Select(p => ((IContinuousDistribution)Additive.Standard).Quantile(p)).ToArray();
+    double[] normalMilliles = milliles.Select(p => Additive.Standard.QuantileAt(p)).ToArray();
 
     functions["additive_cumulative"] = AdditiveCumulative.Value;
     inputBuilder.Add("additive_cumulative", new SingleDoubleValueInput("additive_cumulative", normalMilliles));

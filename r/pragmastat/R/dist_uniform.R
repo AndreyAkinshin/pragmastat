@@ -28,8 +28,48 @@ dist_uniform <- function(min_val, max_val) {
     min_val + rng$uniform_float() * (max_val - min_val)
   }
 
+
+  # The support is half-open, so the density is zero at max and positive at min. This is the one
+  # family assembled from arithmetic alone: no primitive of the toolkit appears on any of its
+  # three paths.
+  density_at <- function(x) {
+    if (is.na(x)) {
+      return(x)
+    }
+    if (x < min_val || x >= max_val) 0.0 else 1.0 / (max_val - min_val)
+  }
+
+  cumulative_at <- function(x) {
+    if (is.na(x)) {
+      return(x)
+    }
+    if (x < min_val) {
+      return(0.0)
+    }
+    if (x >= max_val) {
+      return(1.0)
+    }
+    (x - min_val) / (max_val - min_val)
+  }
+
+  quantile_at <- function(p) {
+    if (is.na(p)) {
+      return(p)
+    }
+    if (p <= 0.0) {
+      return(min_val)
+    }
+    if (p >= 1.0) {
+      return(max_val)
+    }
+    min_val + p * (max_val - min_val)
+  }
+
   list(
     sample = sample_fn,
+    density_at = density_at,
+    cumulative_at = cumulative_at,
+    quantile_at = quantile_at,
     samples = function(rng, count) {
       sapply(seq_len(count), function(i) sample_fn(rng))
     }

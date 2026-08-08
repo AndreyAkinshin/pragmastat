@@ -1,6 +1,6 @@
 #import "/manual/definitions.typ": *
 
-== Additive ('Normal')
+== Additive ('Normal') <sec-additive>
 
 $ Additive(pmean, pstddev) $
 
@@ -23,3 +23,23 @@ $ Additive(pmean, pstddev) $
 === Notes
 
 #include "additive-notes.typ"
+
+All three functions are assembled from the toolkit's own primitives rather than from the platform's, so the
+  seven implementations return identical bits, and the `dist-additive` suite compares them as raw binary64
+  payloads rather than against a tolerance.
+
+On the whole real line, with $z = (v - pmean) \/ pstddev$:
+
+$ Density(v) = ExpFunction(-z^2 \/ 2) / (pstddev dot sqrt(2 pi)) $
+$ Cumulative(v) = AdditiveCumulative(z) $
+$ Quantile(c) = pmean + pstddev dot AdditiveQuantile(c) $
+
+This family is what #link(<sec-additive-quantile>)[$AdditiveQuantile$] was built for.
+The inverse used to be two Newton steps taken against an error function accurate to
+  $1.5 dot 10^(-7)$, which left the quantile eight orders of magnitude coarser than the cumulative
+  standing beside it.
+The support is unbounded, so $Quantile$ returns the infinities at the ends of $(0, 1)$.
+
+=== Tests
+
+#include "additive-tests.typ"

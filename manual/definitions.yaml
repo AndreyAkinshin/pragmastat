@@ -37,6 +37,8 @@ Var: \operatorname{Var}
 IQR: \operatorname{IQR}
 MAD: \operatorname{MAD}
 Mode: \operatorname{Mode}
+Cumulative: \operatorname{Cumulative}
+Density: \operatorname{Density}
 Quantile: \operatorname{Quantile}
 median: \operatorname{median}
 

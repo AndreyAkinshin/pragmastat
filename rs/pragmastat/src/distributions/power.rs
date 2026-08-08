@@ -2,6 +2,9 @@
 
 use crate::Rng;
 
+use crate::exp_function::exp_function;
+use crate::log_function::log_function;
+
 use super::{Distribution, MACHINE_EPSILON};
 
 /// Power (Pareto) distribution with minimum value and shape parameter.
@@ -48,5 +51,37 @@ impl Distribution for Power {
         // Avoid division by zero - use machine epsilon for cross-language consistency
         let u = if u == 1.0 { 1.0 - MACHINE_EPSILON } else { u };
         self.min / (1.0 - u).powf(1.0 / self.shape)
+    }
+
+    /// `shape * min^shape / x^(shape+1)`, rearranged as
+    /// `(shape / x) * exp(shape * (log min - log x))`. The toolkit owns an exponential and a
+    /// logarithm and owns no general power, so a real exponent is spelled as the exponential of a
+    /// logarithm. This family is the reason the logarithm had to exist before the trio could.
+    ///
+    /// The support is `[min, infinity)`, closed at the left, so the density at `min` is
+    /// `shape / min` rather than zero, while the cumulative there is zero. Uniform reads the same
+    /// way at its own lower endpoint.
+    fn density_at(&self, x: f64) -> f64 {
+        if x < self.min {
+            return 0.0;
+        }
+        (self.shape / x) * exp_function(self.shape * (log_function(self.min) - log_function(x)))
+    }
+
+    fn cumulative_at(&self, x: f64) -> f64 {
+        if x <= self.min {
+            return 0.0;
+        }
+        1.0 - exp_function(self.shape * (log_function(self.min) - log_function(x)))
+    }
+
+    fn quantile_at(&self, p: f64) -> f64 {
+        if p <= 0.0 {
+            return self.min;
+        }
+        if p >= 1.0 {
+            return f64::INFINITY;
+        }
+        self.min * exp_function(-log_function(1.0 - p) / self.shape)
     }
 }

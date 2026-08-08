@@ -18,7 +18,7 @@ public class DistributionInputBuilder : ReferenceTestCaseInputBuilder<Distributi
   }
 
   [PublicAPI]
-  public DistributionInputBuilder Add(IContinuousDistribution distribution)
+  public DistributionInputBuilder Add(IDistribution distribution)
   {
     var parameters = CtorArgumentSerializer.SerializeToList(distribution);
     string name = parameters.Select(pair => $"{pair.Name}{pair.Value:R}").JoinToString("_");
@@ -28,11 +28,11 @@ public class DistributionInputBuilder : ReferenceTestCaseInputBuilder<Distributi
     for (int i = 0; i <= 100; i++)
     {
       double p = i / 100.0;
-      double q = distribution.Quantile(p);
+      double q = distribution.QuantileAt(p);
       if (double.IsFinite(q))
       {
         props.Add(p);
-        if (HasPdf(distribution, q))
+        if (HasDensity(distribution, q))
           x.Add(q);
       }
     }
@@ -46,11 +46,11 @@ public class DistributionInputBuilder : ReferenceTestCaseInputBuilder<Distributi
     return this;
   }
 
-  private static bool HasPdf(IContinuousDistribution distribution, double x)
+  private static bool HasDensity(IDistribution distribution, double x)
   {
     try
     {
-      return double.IsFinite(distribution.Pdf(x));
+      return double.IsFinite(distribution.DensityAt(x));
     }
     catch
     {

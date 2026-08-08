@@ -99,6 +99,8 @@
 #let IQR = math.op("IQR")
 #let MAD = math.op("MAD")
 #let Mode = math.op("Mode")
+#let Density = math.op("Density")
+#let Cumulative = math.op("Cumulative")
 #let Quantile = math.op("Quantile")
 #let median = math.op("median")
 

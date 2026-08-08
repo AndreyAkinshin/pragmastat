@@ -57,7 +57,7 @@ public class CenterBoundsInputBuilder : ReferenceTestCaseInputBuilder<CenterBoun
 
   private CenterBoundsInputBuilder AddDistributionSamples(
     string distributionName,
-    IContinuousDistribution distribution,
+    IDistribution distribution,
     int[] sizes,
     double misrate,
     int count)

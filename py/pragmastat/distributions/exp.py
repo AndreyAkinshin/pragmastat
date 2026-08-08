@@ -4,6 +4,8 @@ import math
 from typing import TYPE_CHECKING
 
 from .._constants import MACHINE_EPSILON
+from ..exp_function import exp_function
+from ..log_function import log_function
 from .distribution import Distribution
 
 if TYPE_CHECKING:
@@ -43,3 +45,20 @@ class Exp(Distribution):
         if u == 1.0:
             u = 1.0 - MACHINE_EPSILON
         return -math.log(1.0 - u) / self.rate
+
+    def density_at(self, x: float) -> float:
+        if x < 0.0:
+            return 0.0
+        return self.rate * exp_function(-self.rate * x)
+
+    def cumulative_at(self, x: float) -> float:
+        if x < 0.0:
+            return 0.0
+        return 1.0 - exp_function(-self.rate * x)
+
+    def quantile_at(self, p: float) -> float:
+        if p <= 0.0:
+            return 0.0
+        if p >= 1.0:
+            return math.inf
+        return -log_function(1.0 - p) / self.rate

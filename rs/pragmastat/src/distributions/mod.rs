@@ -35,6 +35,12 @@ const MACHINE_EPSILON: f64 = 2.220446049250313e-16;
 /// determinism in distribution sampling.
 const SMALLEST_POSITIVE_SUBNORMAL: f64 = 5e-324;
 
+/// `sqrt(2 * pi)`, the normalizing constant of the normal density.
+///
+/// A literal rather than `(2.0 * PI).sqrt()`: the seven ports must divide by the same double, and
+/// a runtime square root of a runtime product is one more place for them to differ.
+const SQRT_2PI: f64 = 2.506628274631000241612355239340;
+
 mod additive;
 mod distribution;
 mod exp;

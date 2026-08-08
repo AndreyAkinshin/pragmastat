@@ -24,6 +24,13 @@ from pathlib import Path
 # "37 correctness test cases" instead.
 PATTERN = re.compile(r"test suite contains (\d+) (?:correctness )?test cases")
 
+# A chapter whose directory is not the suite name says which suite it means. Everywhere else the
+# chapter directory doubles as the suite name, which held while the two always matched; the five
+# parametric families broke it, since manual/uniform describes tests/dist-uniform and the suites
+# are grouped by what they are rather than by which chapter mentions them. Guessing at the mapping
+# would be a rule to remember, so the sentence states it.
+SUITE_PATTERN = re.compile(r"The `([a-z0-9-]+)` test suite contains")
+
 # Two chapters state a second number: how many arguments their files hold between them. That one
 # is what the seven ports pin in their own loaders, so the manual and the ports can drift apart
 # while each stays self-consistent. Optional, because most suites are one case per file and have
@@ -37,8 +44,10 @@ def main(repo_root):
     checked = 0
 
     for chapter in sorted(root.glob("manual/*/*-tests.typ")):
-        suite = chapter.parent.name
-        match = PATTERN.search(chapter.read_text())
+        text = chapter.read_text()
+        named = SUITE_PATTERN.search(text)
+        suite = named.group(1) if named else chapter.parent.name
+        match = PATTERN.search(text)
         if not match:
             # A chapter whose sentence stops matching drops out of this check silently, and the
             # check then reports success over a smaller set than it did the run before. The
@@ -61,7 +70,7 @@ def main(repo_root):
                 f"  {chapter.relative_to(root)}: says {stated} test cases, tests/{suite} holds {actual}"
             )
 
-        argument_match = ARGUMENT_PATTERN.search(chapter.read_text())
+        argument_match = ARGUMENT_PATTERN.search(text)
         if argument_match:
             stated_arguments = int(argument_match.group(1))
             actual_arguments = 0

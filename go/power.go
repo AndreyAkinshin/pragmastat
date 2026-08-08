@@ -40,3 +40,40 @@ func (p *Power) Samples(rng *Rng, count int) []float64 {
 	}
 	return result
 }
+
+// DensityAt returns the probability density at x.
+//
+// shape * min^shape / x^(shape+1), rearranged as
+// (shape / x) * exp(shape * (log min - log x)). The toolkit owns an exponential and
+// a logarithm and owns no general power, so a real exponent is spelled as the
+// exponential of a logarithm. This family is the reason the logarithm had to exist
+// before the trio could.
+//
+// The support is [min, infinity), closed at the left, so the density at min is
+// shape / min rather than zero, while the cumulative there is zero. Uniform reads
+// the same way at its own lower endpoint.
+func (p *Power) DensityAt(x float64) float64 {
+	if x < p.Min {
+		return 0.0
+	}
+	return (p.Shape / x) * expFunction(p.Shape*(logFunction(p.Min)-logFunction(x)))
+}
+
+// CumulativeAt returns the probability of not exceeding x.
+func (p *Power) CumulativeAt(x float64) float64 {
+	if x <= p.Min {
+		return 0.0
+	}
+	return 1.0 - expFunction(p.Shape*(logFunction(p.Min)-logFunction(x)))
+}
+
+// QuantileAt returns the value below which a fraction prob of the distribution lies.
+func (p *Power) QuantileAt(prob float64) float64 {
+	if prob <= 0.0 {
+		return p.Min
+	}
+	if prob >= 1.0 {
+		return math.Inf(1)
+	}
+	return p.Min * expFunction(-logFunction(1.0-prob)/p.Shape)
+}

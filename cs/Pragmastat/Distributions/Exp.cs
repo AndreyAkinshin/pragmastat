@@ -1,3 +1,4 @@
+using Pragmastat.Functions;
 using Pragmastat.Internal;
 using Pragmastat.Randomization;
 
@@ -10,7 +11,7 @@ namespace Pragmastat.Distributions;
 /// The mean of this distribution is 1/rate.
 /// Naturally arises from memoryless processes.
 /// </remarks>
-public sealed class Exp : IDistribution, IContinuousDistribution
+public sealed class Exp : IDistribution
 {
   /// <summary>
   /// Standard exponential distribution (rate=1).
@@ -54,28 +55,29 @@ public sealed class Exp : IDistribution, IContinuousDistribution
     return result;
   }
 
-  // ===========================================================================
-  // Internal statistical functions - NOT part of public API.
-  // Preparation for future version, not declared in manual yet.
-  // ===========================================================================
-
-  double IContinuousDistribution.Pdf(double x)
+  /// <inheritdoc />
+  public double DensityAt(double x)
   {
-    if (x < 0) return 0;
-    return Rate * Math.Exp(-Rate * x);
+    if (x < 0.0)
+      return 0.0;
+    return Rate * ExpFunction.Value(-Rate * x);
   }
 
-  double IContinuousDistribution.Cdf(double x)
+  /// <inheritdoc />
+  public double CumulativeAt(double x)
   {
-    if (x < 0) return 0;
-    return 1 - Math.Exp(-Rate * x);
+    if (x < 0.0)
+      return 0.0;
+    return 1.0 - ExpFunction.Value(-Rate * x);
   }
 
-  double IContinuousDistribution.Quantile(Probability p)
+  /// <inheritdoc />
+  public double QuantileAt(double p)
   {
-    return -Math.Log(1 - p) / Rate;
+    if (p <= 0.0)
+      return 0.0;
+    if (p >= 1.0)
+      return double.PositiveInfinity;
+    return -LogFunction.Value(1.0 - p) / Rate;
   }
-
-  // Exponential distribution has infinite spread (heavy tail)
-  double? IContinuousDistribution.AsymptoticSpread => null;
 }

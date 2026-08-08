@@ -1,3 +1,4 @@
+using Pragmastat.Functions;
 using Pragmastat.Internal;
 using Pragmastat.Randomization;
 
@@ -10,7 +11,7 @@ namespace Pragmastat.Distributions;
 /// Follows a power-law distribution where large values are rare but possible.
 /// Historically called 'Pareto' distribution.
 /// </remarks>
-public sealed class Power : IDistribution, IContinuousDistribution
+public sealed class Power : IDistribution
 {
   /// <summary>
   /// Standard power distribution (min=1, shape=1).
@@ -65,28 +66,42 @@ public sealed class Power : IDistribution, IContinuousDistribution
     return result;
   }
 
-  // ===========================================================================
-  // Internal statistical functions - NOT part of public API.
-  // Preparation for future version, not declared in manual yet.
-  // ===========================================================================
-
-  double IContinuousDistribution.Pdf(double x)
+  /// <inheritdoc />
+  /// <remarks>
+  /// <para>
+  /// <c>shape * min^shape / x^(shape+1)</c>, rearranged as
+  /// <c>(shape / x) * exp(shape * (log min - log x))</c>. The toolkit owns an exponential and a
+  /// logarithm and owns no general power, so a real exponent is spelled as the exponential of a
+  /// logarithm. This family is the reason the logarithm had to exist before the trio could.
+  /// </para>
+  /// <para>
+  /// The support is <c>[min, infinity)</c>, closed at the left, so the density at <c>min</c> is
+  /// <c>shape / min</c> rather than zero, while the cumulative there is zero. Uniform reads the
+  /// same way at its own lower endpoint.
+  /// </para>
+  /// </remarks>
+  public double DensityAt(double x)
   {
-    if (x <= Min) return 0;
-    return Shape * Math.Pow(Min, Shape) / Math.Pow(x, Shape + 1);
+    if (x < Min)
+      return 0.0;
+    return (Shape / x) * ExpFunction.Value(Shape * (LogFunction.Value(Min) - LogFunction.Value(x)));
   }
 
-  double IContinuousDistribution.Cdf(double x)
+  /// <inheritdoc />
+  public double CumulativeAt(double x)
   {
-    if (x <= Min) return 0;
-    return 1 - Math.Pow(Min / x, Shape);
+    if (x <= Min)
+      return 0.0;
+    return 1.0 - ExpFunction.Value(Shape * (LogFunction.Value(Min) - LogFunction.Value(x)));
   }
 
-  double IContinuousDistribution.Quantile(Probability p)
+  /// <inheritdoc />
+  public double QuantileAt(double p)
   {
-    return Min * Math.Pow(1 - p, -1 / Shape);
+    if (p <= 0.0)
+      return Min;
+    if (p >= 1.0)
+      return double.PositiveInfinity;
+    return Min * ExpFunction.Value(-LogFunction.Value(1.0 - p) / Shape);
   }
-
-  // Power distribution has infinite spread for shape <= 2
-  double? IContinuousDistribution.AsymptoticSpread => null;
 }

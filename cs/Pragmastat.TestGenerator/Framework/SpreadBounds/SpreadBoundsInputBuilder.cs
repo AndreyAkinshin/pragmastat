@@ -45,7 +45,7 @@ public class SpreadBoundsInputBuilder : ReferenceTestCaseInputBuilder<SpreadBoun
 
   private SpreadBoundsInputBuilder AddDistributionSamples(
     string distributionName,
-    IContinuousDistribution distribution,
+    IDistribution distribution,
     int[] sizes,
     double misrate,
     int count)

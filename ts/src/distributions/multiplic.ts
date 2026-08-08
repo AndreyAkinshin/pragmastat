@@ -3,6 +3,11 @@
  */
 
 import { Rng } from '../rng';
+import { additiveCumulative } from '../additiveCumulative';
+import { additiveQuantile } from '../additiveQuantile';
+import { expFunction } from '../expFunction';
+import { logFunction } from '../logFunction';
+import { SQRT_2PI } from './constants';
 import { Distribution } from './distribution';
 import { Additive } from './additive';
 
@@ -18,6 +23,11 @@ import { Additive } from './additive';
  */
 export class Multiplic implements Distribution {
   private readonly additive: Additive;
+  // Kept beside the Additive that already holds them, so the density can be spelled in
+  // the same order of operations the other six ports spell it in. Reassociating the
+  // divisor would change the last bit, and these suites are compared by payload.
+  private readonly logMean: number;
+  private readonly logStdDev: number;
 
   /**
    * Create a new multiplicative (log-normal) distribution.
@@ -34,10 +44,48 @@ export class Multiplic implements Distribution {
       throw new Error('logStdDev must be finite and positive');
     }
     this.additive = new Additive(logMean, logStdDev);
+    this.logMean = logMean;
+    this.logStdDev = logStdDev;
   }
 
   sample(rng: Rng): number {
     return Math.exp(this.additive.sample(rng));
+  }
+
+  /**
+   * The support is x > 0, and that is the test. It used to be x < 1e-9, which is not
+   * the edge of the support but an arbitrary point inside it: a Multiplic(-30, 1) has
+   * its median at 9.4e-14, so that threshold reported zero density and zero
+   * probability across essentially the whole distribution.
+   */
+  densityAt(x: number): number {
+    if (x <= 0) {
+      return 0;
+    }
+    const z = (logFunction(x) - this.logMean) / this.logStdDev;
+    return expFunction((-z * z) / 2) / (x * this.logStdDev * SQRT_2PI);
+  }
+
+  /**
+   * A lognormal variable's distribution function is the normal one applied to log x,
+   * so this goes through additiveCumulative rather than spelling the same thing out
+   * through erf.
+   */
+  cumulativeAt(x: number): number {
+    if (x <= 0) {
+      return 0;
+    }
+    return additiveCumulative((logFunction(x) - this.logMean) / this.logStdDev);
+  }
+
+  quantileAt(p: number): number {
+    if (p <= 0) {
+      return 0;
+    }
+    if (p >= 1) {
+      return Infinity;
+    }
+    return expFunction(this.logMean + this.logStdDev * additiveQuantile(p));
   }
 
   samples(rng: Rng, count: number): number[] {

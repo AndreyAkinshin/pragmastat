@@ -4,6 +4,10 @@ import math
 from typing import TYPE_CHECKING
 
 from .._constants import SMALLEST_POSITIVE_SUBNORMAL
+from ..additive_cumulative import additive_cumulative
+from ..additive_quantile import additive_quantile
+from ..exp_function import exp_function
+from .constants import SQRT_2PI
 from .distribution import Distribution
 
 if TYPE_CHECKING:
@@ -56,3 +60,19 @@ class Additive(Distribution):
         z = r * math.cos(theta)
 
         return self.mean + z * self.std_dev
+
+    def density_at(self, x: float) -> float:
+        z = (x - self.mean) / self.std_dev
+        return exp_function(-z * z / 2) / (self.std_dev * SQRT_2PI)
+
+    def cumulative_at(self, x: float) -> float:
+        return additive_cumulative((x - self.mean) / self.std_dev)
+
+    def quantile_at(self, p: float) -> float:
+        """The inverse goes through additive_quantile, which is what that function was built for.
+
+        It replaces two Newton steps taken against an error function accurate to 1.5e-07, which
+        had left this quantile eight orders of magnitude coarser than the cumulative beside it.
+        The infinities at the ends are the ones additive_quantile already returns.
+        """
+        return self.mean + self.std_dev * additive_quantile(p)

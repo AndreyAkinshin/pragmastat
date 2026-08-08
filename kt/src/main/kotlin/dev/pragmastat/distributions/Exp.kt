@@ -2,6 +2,8 @@ package dev.pragmastat.distributions
 
 import dev.pragmastat.Constants
 import dev.pragmastat.Rng
+import dev.pragmastat.expFunction
+import dev.pragmastat.logFunction
 import kotlin.math.ln
 
 /**
@@ -29,4 +31,15 @@ class Exp(
         }
         return -ln(1.0 - u) / rate
     }
+
+    override fun densityAt(x: Double): Double = if (x < 0.0) 0.0 else rate * expFunction(-rate * x)
+
+    override fun cumulativeAt(x: Double): Double = if (x < 0.0) 0.0 else 1.0 - expFunction(-rate * x)
+
+    override fun quantileAt(p: Double): Double =
+        when {
+            p <= 0.0 -> 0.0
+            p >= 1.0 -> Double.POSITIVE_INFINITY
+            else -> -logFunction(1.0 - p) / rate
+        }
 }

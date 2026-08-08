@@ -1,6 +1,6 @@
 #import "/manual/definitions.typ": *
 
-== Exp
+== Exp <sec-exp>
 
 $ Exp(prate) $
 
@@ -16,3 +16,22 @@ $ Exp(prate) $
 - *Characteristics:* always positive, right-skewed with a light (exponential) tail.
 - *Caution:* extreme skewness makes traditional location estimators like $Mean$ unreliable;
     robust estimators provide more stable results.
+
+All three functions are assembled from the toolkit's own primitives rather than from the platform's, so the
+  seven implementations return identical bits, and the `dist-exp` suite compares them as raw binary64
+  payloads rather than against a tolerance.
+
+On the support $[0, infinity)$:
+
+$ Density(v) = prate dot ExpFunction(-prate dot v) $
+$ Cumulative(v) = 1 - ExpFunction(-prate dot v) $
+$ Quantile(c) = (- LogFunction(1 - c)) / prate $
+
+The density and the cumulative reach #link(<sec-exp-function>)[$ExpFunction$], the quantile reaches
+  #link(<sec-log-function>)[$LogFunction$], and nothing on either path reaches the platform.
+Below zero the family places no mass, so $Density$ and $Cumulative$ are zero there and
+  $Quantile(0) = 0$.
+
+=== Tests
+
+#include "exp-tests.typ"

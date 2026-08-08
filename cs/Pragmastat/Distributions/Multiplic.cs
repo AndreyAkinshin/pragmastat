@@ -11,7 +11,7 @@ namespace Pragmastat.Distributions;
 /// The logarithm of samples follows an Additive (Normal) distribution.
 /// Historically called 'Log-Normal' or 'Galton' distribution.
 /// </remarks>
-public sealed class Multiplic : IDistribution, IContinuousDistribution
+public sealed class Multiplic : IDistribution
 {
   /// <summary>
   /// Standard multiplicative distribution (logMean=0, logStdDev=1).
@@ -64,39 +64,40 @@ public sealed class Multiplic : IDistribution, IContinuousDistribution
     return result;
   }
 
-  // ===========================================================================
-  // Internal statistical functions - NOT part of public API.
-  // Preparation for future version, not declared in manual yet.
-  // ===========================================================================
-
-  double IContinuousDistribution.Pdf(double x)
+  /// <inheritdoc />
+  /// <remarks>
+  /// The support is <c>x &gt; 0</c>, and that is the test. It used to be <c>x &lt; 1e-9</c>, which
+  /// is not the edge of the support but an arbitrary point inside it: a Multiplic(-30, 1) has its
+  /// median at 9.4e-14, so that threshold reported zero density and zero probability across
+  /// essentially the whole distribution.
+  /// </remarks>
+  public double DensityAt(double x)
   {
-    if (x < 1e-9) return 0;
-    double logX = Math.Log(x);
-    double z = (logX - LogMean) / LogStdDev;
-    return Math.Exp(-z * z / 2) / (x * LogStdDev * Constants.Sqrt2Pi);
+    if (x <= 0.0)
+      return 0.0;
+    double z = (LogFunction.Value(x) - LogMean) / LogStdDev;
+    return ExpFunction.Value(-z * z / 2) / (x * LogStdDev * Constants.Sqrt2Pi);
   }
 
-  double IContinuousDistribution.Cdf(double x)
+  /// <inheritdoc />
+  /// <remarks>
+  /// A lognormal variable's distribution function is the normal one applied to log x, so this
+  /// goes through AdditiveCumulative rather than spelling the same thing out through erf.
+  /// </remarks>
+  public double CumulativeAt(double x)
   {
-    if (x < 1e-9) return 0;
-    // A lognormal variable's distribution function is the normal one applied to log x, so this
-    // goes through AdditiveCumulative rather than spelling the same thing out through erf. The previous
-    // form reached AbramowitzStegunErf, accurate to 1.5e-7, which left two neighboring
-    // distributions in this library eight orders of magnitude apart for no reason.
-    return AdditiveCumulative.Value((Math.Log(x) - LogMean) / LogStdDev);
+    if (x <= 0.0)
+      return 0.0;
+    return AdditiveCumulative.Value((LogFunction.Value(x) - LogMean) / LogStdDev);
   }
 
-  double IContinuousDistribution.Quantile(Probability p)
+  /// <inheritdoc />
+  public double QuantileAt(double p)
   {
-    return p.Value switch
-    {
-      0 => 0,
-      1 => double.PositiveInfinity,
-      _ => Math.Exp(LogMean + Constants.Sqrt2 * LogStdDev * ErrorFunction.InverseValue(2 * p - 1))
-    };
+    if (p <= 0.0)
+      return 0.0;
+    if (p >= 1.0)
+      return double.PositiveInfinity;
+    return ExpFunction.Value(LogMean + LogStdDev * AdditiveQuantile.Value(p));
   }
-
-  // Log-normal distribution has finite spread but complex formula, mark as unknown for now
-  double? IContinuousDistribution.AsymptoticSpread => null;
 }

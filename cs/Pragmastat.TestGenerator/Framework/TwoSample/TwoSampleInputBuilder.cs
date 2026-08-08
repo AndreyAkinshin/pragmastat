@@ -37,8 +37,8 @@ public class TwoSampleInputBuilder : ReferenceTestCaseInputBuilder<TwoSampleInpu
 
   private TwoSampleInputBuilder AddDistributionSamples(
     string distributionName,
-    IContinuousDistribution xDistribution,
-    IContinuousDistribution yDistribution,
+    IDistribution xDistribution,
+    IDistribution yDistribution,
     int[] xSizes,
     int[] ySizes,
     int count)

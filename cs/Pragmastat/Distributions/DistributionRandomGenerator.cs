@@ -52,29 +52,9 @@ internal abstract class AbstractRandomGenerator
 /// </summary>
 internal class QuantileRandomGenerator : AbstractRandomGenerator
 {
-  private readonly IContinuousDistribution _distribution;
-
-  public QuantileRandomGenerator(IContinuousDistribution distribution, int? seed = null)
-    : base(seed)
-  {
-    _distribution = distribution;
-  }
-
-  public override double Next()
-  {
-    return _distribution.Quantile(Rng.UniformDouble());
-  }
-}
-
-/// <summary>
-/// Internal random generator that uses distribution's Sample method.
-/// Used for backward compatibility with Simulations and TestGenerator.
-/// </summary>
-internal class DistributionRandomGenerator : AbstractRandomGenerator
-{
   private readonly IDistribution _distribution;
 
-  public DistributionRandomGenerator(IDistribution distribution, int? seed = null)
+  public QuantileRandomGenerator(IDistribution distribution, int? seed = null)
     : base(seed)
   {
     _distribution = distribution;
@@ -82,28 +62,27 @@ internal class DistributionRandomGenerator : AbstractRandomGenerator
 
   public override double Next()
   {
-    return _distribution.Sample(Rng);
+    return _distribution.QuantileAt(Rng.UniformDouble());
   }
 }
 
 /// <summary>
 /// Extension methods for distributions to create random generators.
 /// </summary>
+/// <remarks>
+/// There used to be a second generator here that drew through <c>Sample</c>, and a second
+/// <c>Random</c> overload returning it. Nothing could reach either: every caller held a family,
+/// every family implemented the narrower interface the other overload took, and overload
+/// resolution therefore always chose the quantile one. Deleting the interface split made the two
+/// overloads identical, which is what surfaced it.
+/// </remarks>
 internal static class DistributionExtensions
 {
   /// <summary>
   /// Creates a random generator for this distribution.
   /// </summary>
-  public static AbstractRandomGenerator Random(this IContinuousDistribution distribution, int? seed = null)
-  {
-    return new QuantileRandomGenerator(distribution, seed);
-  }
-
-  /// <summary>
-  /// Creates a random generator for this distribution.
-  /// </summary>
   public static AbstractRandomGenerator Random(this IDistribution distribution, int? seed = null)
   {
-    return new DistributionRandomGenerator(distribution, seed);
+    return new QuantileRandomGenerator(distribution, seed);
   }
 }

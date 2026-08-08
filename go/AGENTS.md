@@ -59,7 +59,7 @@ go/
 | Type | Purpose |
 |------|---------|
 | `Rng` | Deterministic PRNG with `UniformFloat64()`, `UniformBool()`, `SampleSlice()`, `ResampleSlice()`, `ShuffleSlice()` |
-| `Distribution` | Interface for sampling distributions |
+| `Distribution` | Density, cumulative, quantile and sampling |
 | `Bounds` | Lower/upper bounds for `ShiftBounds` |
 
 ## Public Functions

@@ -38,8 +38,8 @@ public class ShiftBoundsInputBuilder : ReferenceTestCaseInputBuilder<ShiftBounds
 
   private ShiftBoundsInputBuilder AddDistributionSamples(
     string distributionName,
-    IContinuousDistribution xDistribution,
-    IContinuousDistribution yDistribution,
+    IDistribution xDistribution,
+    IDistribution yDistribution,
     int[] xSizes,
     int[] ySizes,
     double misrate,

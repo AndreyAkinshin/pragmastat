@@ -9,7 +9,7 @@ namespace Pragmastat.Distributions;
 /// <remarks>
 /// All values within the interval have equal probability.
 /// </remarks>
-public sealed class Uniform : IDistribution, IContinuousDistribution
+public sealed class Uniform : IDistribution
 {
   /// <summary>
   /// Standard uniform distribution on [0, 1).
@@ -61,27 +61,42 @@ public sealed class Uniform : IDistribution, IContinuousDistribution
     return result;
   }
 
-  // ===========================================================================
-  // Internal statistical functions - NOT part of public API.
-  // Preparation for future version, not declared in manual yet.
-  // ===========================================================================
-
-  double IContinuousDistribution.Pdf(double x)
+  /// <inheritdoc />
+  /// <remarks>
+  /// The support is half-open, so the density is zero at <c>Max</c> and positive at <c>Min</c>.
+  /// This is the one family assembled from arithmetic alone: no primitive of the toolkit appears
+  /// on any of its three paths.
+  /// <para>
+  /// NaN is refused before the bounds are compared. This is the only one of the fifteen functions
+  /// whose result does not depend on its argument, so a NaN reaching the comparison satisfies
+  /// neither half of it and falls through to a perfectly ordinary density. The other four families
+  /// carry NaN into arithmetic and return it without being asked to.
+  /// </para>
+  /// </remarks>
+  public double DensityAt(double x)
   {
-    return x < Min || x >= Max ? 0 : 1 / (Max - Min);
+    if (double.IsNaN(x))
+      return x;
+    return x < Min || x >= Max ? 0.0 : 1.0 / (Max - Min);
   }
 
-  double IContinuousDistribution.Cdf(double x)
+  /// <inheritdoc />
+  public double CumulativeAt(double x)
   {
-    if (x < Min) return 0;
-    if (x > Max) return 1;
+    if (x < Min)
+      return 0.0;
+    if (x >= Max)
+      return 1.0;
     return (x - Min) / (Max - Min);
   }
 
-  double IContinuousDistribution.Quantile(Probability p)
+  /// <inheritdoc />
+  public double QuantileAt(double p)
   {
+    if (p <= 0.0)
+      return Min;
+    if (p >= 1.0)
+      return Max;
     return Min + p * (Max - Min);
   }
-
-  double? IContinuousDistribution.AsymptoticSpread => (1 - 1.0 / Math.Sqrt(2.0)) * (Max - Min);
 }

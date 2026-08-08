@@ -65,9 +65,23 @@ tests/
 ├── log-function/        # The reproducible logarithm, by payload
 ├── additive-quantile/   # The reproducible inverse normal CDF, by payload
 │
+│   # Parametric families: density, cumulative and quantile, by payload
+├── dist-uniform/        # Uniform
+├── dist-exp/            # Exp
+├── dist-additive/       # Additive
+├── dist-multiplic/      # Multiplic
+├── dist-power/          # Power
+│
 │   # Other
 └── distributions/       # Distribution sampling tests
 ```
+
+The five `dist-*` suites and `distributions/` describe the same five families and carry opposite
+conformance classes, which is the point. The trio is assembled from the toolkit's own exponential,
+logarithm, normal cumulative and normal quantile, reaches no platform transcendental, and is
+therefore compared by payload. Sampling still draws through the platform's `log`, `exp`, `cos` and
+`pow`, so `distributions/` is compared at a tolerance until the draw is expressed as an inversion
+of the family's own quantile.
 
 `exp-function/` and `log-function/` are the only suites whose function is internal in all seven
 ports. The margin suites test functions that are public in some of them and internal in others.

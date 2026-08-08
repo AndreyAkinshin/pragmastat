@@ -54,3 +54,28 @@ func (a *Additive) Samples(rng *Rng, count int) []float64 {
 	}
 	return result
 }
+
+// DensityAt returns the probability density at x.
+func (a *Additive) DensityAt(x float64) float64 {
+	z := (x - a.Mean) / a.StdDev
+	return expFunction(-z*z/2) / (a.StdDev * sqrt2Pi)
+}
+
+// CumulativeAt returns the probability of not exceeding x.
+func (a *Additive) CumulativeAt(x float64) float64 {
+	return additiveCumulative((x - a.Mean) / a.StdDev)
+}
+
+// QuantileAt returns the value below which a fraction p of the distribution lies.
+//
+// The inverse goes through additiveQuantile, which is what that function was built
+// for. It replaces two Newton steps taken against an error function accurate to
+// 1.5e-07, which had left this quantile eight orders of magnitude coarser than the
+// cumulative beside it. The infinities at the ends are the ones additiveQuantile
+// already returns.
+//
+// The float64 conversion pins the intermediate rounding against FMA contraction,
+// which the go:check:fma task guards.
+func (a *Additive) QuantileAt(p float64) float64 {
+	return a.Mean + float64(a.StdDev*additiveQuantile(p))
+}
