@@ -672,7 +672,24 @@ run = "python3 tests/check_spelling.py ."
 
 [tasks."tests:check:rs-incremental"]
 description = "Packaging must not make a later build answer about its own copy"
-run = "tests/check_rs_incremental.sh"
+# rs:pack is a step here rather than a cargo line inside the script, because the script's own
+# `cargo package --target-dir target/pack` verified a property of cargo instead of the
+# configuration of this repository. Removing --target-dir from rs:pack left the gate green.
+#
+# wait_for, because the script leaves rs/pragmastat/src/compare.rs uncompilable for the length of
+# one cargo build. Run as a parallel sibling inside ci, that window races rs:ci's own compile of
+# the same file, and it lands the broken file inside docs:ci's `git status --porcelain`, where the
+# drift gate fails for a reason that has nothing to do with drift.
+#
+# wait_for rather than depends: .github/workflows/ci.yml invokes this guard as a single step
+# alongside the nine others, and depends would drag a full rs:ci and docs:ci into a job that has
+# neither the toolchains nor the time for them. wait_for orders the two only when both are already
+# in the run, and pulls in nothing when this task is invoked alone.
+wait_for = ["rs:ci", "docs:ci"]
+run = [
+    { task = "rs:pack" },
+    "tests/check_rs_incremental.sh",
+]
 
 [tasks."tests:check:task-coverage"]
 description = "Assert every task is reachable from the aggregate that should run it"
