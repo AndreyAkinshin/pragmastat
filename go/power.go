@@ -21,15 +21,9 @@ func NewPower(min, shape float64) *Power {
 	return &Power{Min: min, Shape: shape}
 }
 
-// Sample generates a single sample from the power distribution.
+// Sample draws by inverting QuantileAt at a drawn cumulance.
 func (p *Power) Sample(rng *Rng) float64 {
-	// Inverse CDF method: min / (1 - U)^(1/shape)
-	u := rng.UniformFloat64()
-	// Avoid division by zero
-	if u == 1.0 {
-		u = 1.0 - machineEpsilon
-	}
-	return p.Min / math.Pow(1.0-u, 1.0/p.Shape)
+	return p.QuantileAt(rng.UniformFloat64())
 }
 
 // Samples generates multiple samples from the power distribution.

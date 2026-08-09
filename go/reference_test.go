@@ -856,9 +856,7 @@ func TestAdditiveDistributionReference(t *testing.T) {
 			for i := range testData.Input.Count {
 				actual := dist.Sample(rng)
 				expected := testData.Output[i]
-				if !floatEquals(actual, expected, 1e-12) {
-					t.Errorf("Additive sample at index %d = %v, want %v", i, actual, expected)
-				}
+				assertFloat(t, compareExact, fmt.Sprintf("Additive sample at index %d", i), actual, expected)
 			}
 		})
 	}
@@ -895,9 +893,7 @@ func TestMultiplicDistributionReference(t *testing.T) {
 			for i := range testData.Input.Count {
 				actual := dist.Sample(rng)
 				expected := testData.Output[i]
-				if !floatEquals(actual, expected, 1e-12) {
-					t.Errorf("Multiplic sample at index %d = %v, want %v", i, actual, expected)
-				}
+				assertFloat(t, compareExact, fmt.Sprintf("Multiplic sample at index %d", i), actual, expected)
 			}
 		})
 	}
@@ -934,9 +930,7 @@ func TestExpDistributionReference(t *testing.T) {
 			for i := range testData.Input.Count {
 				actual := dist.Sample(rng)
 				expected := testData.Output[i]
-				if !floatEquals(actual, expected, 1e-12) {
-					t.Errorf("Exp sample at index %d = %v, want %v", i, actual, expected)
-				}
+				assertFloat(t, compareExact, fmt.Sprintf("Exp sample at index %d", i), actual, expected)
 			}
 		})
 	}
@@ -973,9 +967,7 @@ func TestPowerDistributionReference(t *testing.T) {
 			for i := range testData.Input.Count {
 				actual := dist.Sample(rng)
 				expected := testData.Output[i]
-				if !floatEquals(actual, expected, 1e-12) {
-					t.Errorf("Power sample at index %d = %v, want %v", i, actual, expected)
-				}
+				assertFloat(t, compareExact, fmt.Sprintf("Power sample at index %d", i), actual, expected)
 			}
 		})
 	}

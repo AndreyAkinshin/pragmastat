@@ -5,7 +5,7 @@ use crate::Rng;
 use crate::exp_function::exp_function;
 use crate::log_function::log_function;
 
-use super::{Distribution, MACHINE_EPSILON};
+use super::Distribution;
 
 /// Exponential distribution with given rate parameter.
 ///
@@ -41,11 +41,7 @@ impl Exp {
 
 impl Distribution for Exp {
     fn sample(&self, rng: &mut Rng) -> f64 {
-        // Inverse CDF method: -ln(1 - U) / rate
-        let u = rng.uniform_f64();
-        // Avoid log(0) - use machine epsilon for cross-language consistency
-        let u = if u == 1.0 { 1.0 - MACHINE_EPSILON } else { u };
-        -(1.0 - u).ln() / self.rate
+        self.quantile_at(rng.uniform_f64())
     }
 
     fn density_at(&self, x: f64) -> f64 {

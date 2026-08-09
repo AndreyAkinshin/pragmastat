@@ -6,11 +6,11 @@ use crate::additive_cumulative::additive_cumulative;
 use crate::additive_quantile::additive_quantile;
 use crate::exp_function::exp_function;
 
-use super::{Distribution, SMALLEST_POSITIVE_SUBNORMAL, SQRT_2PI};
+use super::{Distribution, SQRT_2PI, sampling_cumulance};
 
 /// Additive (Normal/Gaussian) distribution with given mean and standard deviation.
 ///
-/// Uses the Box-Muller transform to generate samples.
+/// Draws by inverse transform, through the toolkit's own inverse normal CDF.
 ///
 /// # Example
 /// ```
@@ -55,25 +55,7 @@ impl Additive {
 
 impl Distribution for Additive {
     fn sample(&self, rng: &mut Rng) -> f64 {
-        // Box-Muller transform
-        // We use both uniforms each time to maintain determinism across languages
-        let u1 = rng.uniform_f64();
-        let u2 = rng.uniform_f64();
-
-        // Avoid log(0) - use smallest positive subnormal for cross-language consistency
-        let u1 = if u1 == 0.0 {
-            SMALLEST_POSITIVE_SUBNORMAL
-        } else {
-            u1
-        };
-
-        let r = (-2.0 * u1.ln()).sqrt();
-        let theta = 2.0 * std::f64::consts::PI * u2;
-
-        // Use the first of the two Box-Muller outputs
-        let z = r * theta.cos();
-
-        self.mean + z * self.std_dev
+        self.quantile_at(sampling_cumulance(rng))
     }
 
     fn density_at(&self, x: f64) -> f64 {

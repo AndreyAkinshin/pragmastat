@@ -21,7 +21,7 @@ class Uniform(
         require(min < max) { "min must be less than max" }
     }
 
-    override fun sample(rng: Rng): Double = min + rng.uniformDouble() * (max - min)
+    override fun sample(rng: Rng): Double = quantileAt(rng.uniformDouble())
 
     /**
      * The support is half-open, so the density is zero at [max] and positive at [min]. This is the

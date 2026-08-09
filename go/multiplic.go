@@ -7,7 +7,6 @@ import "math"
 type Multiplic struct {
 	LogMean   float64
 	LogStdDev float64
-	additive  *Additive
 }
 
 // NewMultiplic creates a new multiplicative (log-normal) distribution.
@@ -22,13 +21,12 @@ func NewMultiplic(logMean, logStdDev float64) *Multiplic {
 	return &Multiplic{
 		LogMean:   logMean,
 		LogStdDev: logStdDev,
-		additive:  NewAdditive(logMean, logStdDev),
 	}
 }
 
-// Sample generates a single sample from the multiplicative distribution.
+// Sample draws by inverting QuantileAt at a drawn cumulance.
 func (m *Multiplic) Sample(rng *Rng) float64 {
-	return math.Exp(m.additive.Sample(rng))
+	return m.QuantileAt(samplingCumulance(rng))
 }
 
 // Samples generates multiple samples from the multiplicative distribution.

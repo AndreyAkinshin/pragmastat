@@ -267,24 +267,6 @@ cohen1988:
   location: Hillsdale, New Jersey
   isbn: 0805802835
 
-boxmuller1958:
-  type: article
-  title: "A Note on the Generation of Random Normal Deviates"
-  author:
-    - name: Box
-      given-name: George E. P.
-    - name: Muller
-      given-name: Mervin E.
-  date: 1958
-  parent:
-    - type: periodical
-      title: The Annals of Mathematical Statistics
-      volume: 29
-      issue: 2
-  page-range: 610-611
-  doi: 10.1214/aoms/1177706645
-  url: https://projecteuclid.org/euclid.aoms/1177706645
-
 ibbetson1963:
   type: article
   title: "Algorithm 209: Gauss"

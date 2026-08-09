@@ -12,10 +12,9 @@ namespace Pragmastat.Distributions;
 /// three out of the toolkit's own primitives, so seven implementations return identical bits.
 /// </para>
 /// <para>
-/// <c>Sample</c> remains separate rather than being defined as
-/// <c>QuantileAt(UniformDouble())</c>. Two of the families draw by a route that is not inverse
-/// transform sampling, and changing that would change every seeded stream in every language, which
-/// is a decision of its own and not this one.
+/// Every family draws by inverse transform: <c>Sample</c> is <c>QuantileAt</c> applied to a drawn
+/// cumulance. The identity holds by construction rather than by agreement, so a family cannot
+/// drift into describing one distribution and drawing from another.
 /// </para>
 /// <para>
 /// Why the names carry <c>At</c>: a reconstruction is also a distribution, and it publishes

@@ -5,7 +5,7 @@ use crate::Rng;
 use crate::exp_function::exp_function;
 use crate::log_function::log_function;
 
-use super::{Distribution, MACHINE_EPSILON};
+use super::Distribution;
 
 /// Power (Pareto) distribution with minimum value and shape parameter.
 ///
@@ -46,11 +46,7 @@ impl Power {
 
 impl Distribution for Power {
     fn sample(&self, rng: &mut Rng) -> f64 {
-        // Inverse CDF method: min / (1 - U)^(1/shape)
-        let u = rng.uniform_f64();
-        // Avoid division by zero - use machine epsilon for cross-language consistency
-        let u = if u == 1.0 { 1.0 - MACHINE_EPSILON } else { u };
-        self.min / (1.0 - u).powf(1.0 / self.shape)
+        self.quantile_at(rng.uniform_f64())
     }
 
     /// `shape * min^shape / x^(shape+1)`, rearranged as

@@ -7,7 +7,7 @@ use crate::additive_quantile::additive_quantile;
 use crate::exp_function::exp_function;
 use crate::log_function::log_function;
 
-use super::{Additive, Distribution, SQRT_2PI};
+use super::{Additive, Distribution, SQRT_2PI, sampling_cumulance};
 
 /// Multiplicative (Log-Normal) distribution.
 ///
@@ -48,7 +48,7 @@ impl Multiplic {
 
 impl Distribution for Multiplic {
     fn sample(&self, rng: &mut Rng) -> f64 {
-        self.additive.sample(rng).exp()
+        self.quantile_at(sampling_cumulance(rng))
     }
 
     /// The support is `x > 0`, and that is the test. It used to be `x < 1e-9`, which is not the

@@ -43,6 +43,16 @@ SUITE_OF = {
     "misrateFloor": None,
 }
 
+# The five parametric families, whose three functions each live in their own suite and whose draw
+# belongs to the shared sampling suite. Written as a loop rather than twenty lines, since the
+# mapping is mechanical and a hand-written list is where one of the twenty goes missing.
+for _family in ("uniform", "exp", "additive", "multiplic", "power"):
+    SUITE_OF[f"{_family}Density"] = f"dist-{_family}"
+    SUITE_OF[f"{_family}Cumulative"] = f"dist-{_family}"
+    SUITE_OF[f"{_family}Quantile"] = f"dist-{_family}"
+    SUITE_OF[f"{_family}Sample"] = "distributions"
+
+
 def payload(token):
     """Parses the 'MpE' form Go's strconv emits for 'b', or returns None for an integer."""
     if "p" not in token:
@@ -110,8 +120,15 @@ def main(base_path, perturbed_path, manifest_path):
 
     print(f"{'estimator':<20}{'class':>13}{'probed':>9}{'moved':>8}{'max ulp':>10}")
     failures = []
+    unmapped = []
     for estimator in sorted(total):
-        suite = SUITE_OF.get(estimator)
+        # A tag absent from SUITE_OF used to fall through to "exact" exactly as misrateFloor's
+        # deliberate None does, so a newly probed estimator would be held to a class nobody chose
+        # for it. The two cases are distinguished here: an unmapped tag is a failure to declare.
+        if estimator not in SUITE_OF:
+            unmapped.append(estimator)
+            continue
+        suite = SUITE_OF[estimator]
         cls = "exact" if suite is None else classes.get(suite, "exact")
         w = worst[estimator]
         shown = "domain" if w == -1 else (str(w) if moved[estimator] else "-")
@@ -122,6 +139,20 @@ def main(base_path, perturbed_path, manifest_path):
                 f"perturbation of the library functions moved it on {moved[estimator]} of "
                 f"{total[estimator]} probes"
             )
+
+    if unmapped:
+        sys.stdout.flush()
+        print(
+            "\nERROR: the probe emits estimators that name no suite in SUITE_OF:",
+            file=sys.stderr,
+        )
+        print("\n".join(f"  {name}" for name in sorted(unmapped)), file=sys.stderr)
+        print(
+            "\nAdd each to SUITE_OF in tests/conformance_compare.py, naming the manifest suite\n"
+            "whose class it should be held to, or None if it belongs to no single suite.",
+            file=sys.stderr,
+        )
+        return 1
 
     if failures:
         sys.stdout.flush()

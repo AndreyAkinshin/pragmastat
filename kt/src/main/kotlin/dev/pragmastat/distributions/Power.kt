@@ -1,10 +1,8 @@
 package dev.pragmastat.distributions
 
-import dev.pragmastat.Constants
 import dev.pragmastat.Rng
 import dev.pragmastat.expFunction
 import dev.pragmastat.logFunction
-import kotlin.math.pow
 
 /**
  * Power (Pareto) distribution with minimum value and shape parameter.
@@ -25,15 +23,7 @@ class Power(
         require(shape.isFinite() && shape > 0) { "shape must be finite and positive" }
     }
 
-    override fun sample(rng: Rng): Double {
-        // Inverse CDF method: min / (1 - U)^(1/shape)
-        var u = rng.uniformDouble()
-        // Avoid division by zero - use machine epsilon for cross-language consistency
-        if (u == 1.0) {
-            u = 1.0 - Constants.MACHINE_EPSILON
-        }
-        return min / (1.0 - u).pow(1.0 / shape)
-    }
+    override fun sample(rng: Rng): Double = quantileAt(rng.uniformDouble())
 
     /**
      * `shape * min^shape / x^(shape+1)`, rearranged as

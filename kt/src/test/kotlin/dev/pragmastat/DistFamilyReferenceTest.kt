@@ -204,4 +204,45 @@ class DistFamilyReferenceTest {
             }
         }
     }
+
+    // lifts is true for the two families whose quantileAt(0) is not a sample.
+    private fun samplingIdentityFamilies(): List<Triple<String, Distribution, Boolean>> =
+        listOf(
+            Triple("Uniform", Uniform(-2.5, 7.5), false),
+            Triple("Exp", Exp(0.5), false),
+            Triple("Additive", Additive(1.0, 2.0), true),
+            Triple("Multiplic", Multiplic(-1.0, 0.5), true),
+            Triple("Power", Power(2.0, 3.0), false),
+        )
+
+    /**
+     * Every family draws by inverting its own quantile.
+     *
+     * A fixture says two numbers agreed on the day it was written. This says they cannot
+     * disagree: the same seed drives a draw and a direct quantile call, and the two must land on
+     * the same bits for every family. It is what makes "a distribution is three functions" a
+     * statement about the code rather than about the documentation, and it would fail the moment
+     * a family grew a second sampling route.
+     */
+    @Test
+    fun samplingIsTheQuantileOfADrawnCumulance() {
+        for ((name, d, lifts) in samplingIdentityFamilies()) {
+            val drawing = Rng("identity-seed")
+            val inverting = Rng("identity-seed")
+            for (i in 0 until 1000) {
+                val drawn = d.sample(drawing)
+                // The same cumulance the draw consumed, taken from a generator on the same seed.
+                var u = inverting.uniformDouble()
+                if (lifts && u == 0.0) {
+                    u = 5e-324
+                }
+                val inverted = d.quantileAt(u)
+                assertEquals(
+                    drawn.toRawBits(),
+                    inverted.toRawBits(),
+                    "$name draw $i: sample gave $drawn, quantileAt($u) gave $inverted",
+                )
+            }
+        }
+    }
 }

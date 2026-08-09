@@ -26,8 +26,8 @@ The inverse standard normal CDF, supplied by the toolkit rather than by the plat
 
 #list(marker: none, tight: true,
   [*Purpose* --- gives the parametric models a normal quantile every language agrees on],
-  [*Used by* --- nothing yet. $Additive$ and $Multiplic$ take it up together, because a sampling
-    stream cannot change in one language ahead of the others],
+  [*Used by* --- the quantile $Additive$ and $Multiplic$ each publish, and through it every
+    family's $Sample$: a draw is that quantile applied to one drawn cumulance],
   [*Built from* --- three rational approximants, arithmetic, a square root and
     #link(<sec-log-function>)[$LogFunction$]; nothing the standard leaves free],
   [*Accuracy* --- worst measured error $7.7$ units in the last place over $320000$ arguments,

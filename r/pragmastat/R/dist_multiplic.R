@@ -20,12 +20,9 @@ dist_multiplic <- function(log_mean, log_std_dev) {
     stop("log_std_dev must be finite and positive")
   }
 
-  additive <- dist_additive(log_mean, log_std_dev)
-
   sample_fn <- function(rng) {
-    exp(additive$sample(rng))
+    quantile_at(.sampling_cumulance(rng))
   }
-
 
   # The support is x > 0, and that is the test. It used to be x < 1e-9, which is not the edge of
   # the support but an arbitrary point inside it: a dist_multiplic(-30, 1) has its median at

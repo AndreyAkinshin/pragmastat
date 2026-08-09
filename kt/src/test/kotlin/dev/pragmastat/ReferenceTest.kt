@@ -161,12 +161,12 @@ class ReferenceTest {
     /**
      * Tolerant comparison, reserved for the genuinely approximate suites.
      *
-     * Only the libm-backed distributions use it, and they reach it directly with
-     * their own 1e-12 rather than through a suite class. ratio, ratio-bounds and the
-     * ratio projections of compare2 were here until both functions on their path
-     * became the toolkit's own: the perturbation experiment now moves 0 of ratio's
-     * 180 probed inputs and 0 of ratio-bounds' 2364, where it used to move all and
-     * 2280 of them. Everything else compares bitwise through [assertBitwise].
+     * The parametric distributions used it until they drew by inverting their own quantile: that
+     * removed the last platform call from their sampling path, and they compare bitwise now like
+     * everything else. ratio, ratio-bounds and the ratio projections of compare2 were here until
+     * both functions on their path became the toolkit's own: the perturbation experiment now
+     * moves 0 of ratio's 180 probed inputs and 0 of ratio-bounds' 2364, where it used to move all
+     * and 2280 of them. Everything else compares bitwise through [assertBitwise].
      */
     private fun assertClose(
         expected: Double,
@@ -724,9 +724,9 @@ class ReferenceTest {
                     // tolerance would report it as a pass. This is what catches an FMA
                     // contraction on an arm64 runner, where the compiler is free to fuse a
                     // multiply into an add and change the last bit of a draw. The
-                    // exact-selection estimator suites compare bitwise for the same reason;
-                    // only the non-uniform distributions keep a tolerance, since their draws
-                    // still reach a cosine and a general power from the platform.
+                    // exact-selection estimator suites compare bitwise for the same reason, and
+                    // so do all five parametric families now that every draw inverts its own
+                    // quantile instead of reaching the platform's log, exp, cos and pow.
                     val actual = List(testData.input.count) { rng.uniformDouble() }
                     assertBitwise(testData.output, actual, "uniformDouble()")
                 },
@@ -996,8 +996,8 @@ class ReferenceTest {
                     val testData = mapper.readValue<UniformDistTestData>(file)
                     val rng = Rng(testData.input.seed)
                     val dist = Uniform(testData.input.min, testData.input.max)
-                    // Bitwise: Uniform draws are pure arithmetic on the raw stream, no libm.
-                    // The additive/multiplic/exp/power suites below stay tolerant.
+                    // Bitwise: every family now draws by inverting its own quantile through the
+                    // toolkit's own exponential and logarithm, with no libm call on the path.
                     val actual = List(testData.input.count) { dist.sample(rng) }
                     assertBitwise(testData.output, actual, "Uniform sample")
                 },
@@ -1024,11 +1024,8 @@ class ReferenceTest {
                     val testData = mapper.readValue<AdditiveDistTestData>(file)
                     val rng = Rng(testData.input.seed)
                     val dist = Additive(testData.input.mean, testData.input.stdDev)
-                    for (i in 0 until testData.input.count) {
-                        val actual = dist.sample(rng)
-                        val expected = testData.output[i]
-                        assertClose(expected, actual, 1e-12)
-                    }
+                    val actual = List(testData.input.count) { dist.sample(rng) }
+                    assertBitwise(testData.output, actual, "Additive sample")
                 },
             )
         }
@@ -1053,11 +1050,8 @@ class ReferenceTest {
                     val testData = mapper.readValue<MultiplicDistTestData>(file)
                     val rng = Rng(testData.input.seed)
                     val dist = Multiplic(testData.input.logMean, testData.input.logStdDev)
-                    for (i in 0 until testData.input.count) {
-                        val actual = dist.sample(rng)
-                        val expected = testData.output[i]
-                        assertClose(expected, actual, 1e-12)
-                    }
+                    val actual = List(testData.input.count) { dist.sample(rng) }
+                    assertBitwise(testData.output, actual, "Multiplic sample")
                 },
             )
         }
@@ -1082,11 +1076,8 @@ class ReferenceTest {
                     val testData = mapper.readValue<ExpDistTestData>(file)
                     val rng = Rng(testData.input.seed)
                     val dist = Exp(testData.input.rate)
-                    for (i in 0 until testData.input.count) {
-                        val actual = dist.sample(rng)
-                        val expected = testData.output[i]
-                        assertClose(expected, actual, 1e-12)
-                    }
+                    val actual = List(testData.input.count) { dist.sample(rng) }
+                    assertBitwise(testData.output, actual, "Exp sample")
                 },
             )
         }
@@ -1111,11 +1102,8 @@ class ReferenceTest {
                     val testData = mapper.readValue<PowerDistTestData>(file)
                     val rng = Rng(testData.input.seed)
                     val dist = Power(testData.input.min, testData.input.shape)
-                    for (i in 0 until testData.input.count) {
-                        val actual = dist.sample(rng)
-                        val expected = testData.output[i]
-                        assertClose(expected, actual, 1e-12)
-                    }
+                    val actual = List(testData.input.count) { dist.sample(rng) }
+                    assertBitwise(testData.output, actual, "Power sample")
                 },
             )
         }

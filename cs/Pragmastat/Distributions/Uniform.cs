@@ -49,7 +49,7 @@ public sealed class Uniform : IDistribution
   /// <inheritdoc />
   public double Sample(Rng rng)
   {
-    return Min + rng.UniformDouble() * (Max - Min);
+    return QuantileAt(rng.UniformDouble());
   }
 
   /// <inheritdoc />

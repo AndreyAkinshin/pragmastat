@@ -17,15 +17,9 @@ func NewExp(rate float64) *Exp {
 	return &Exp{Rate: rate}
 }
 
-// Sample generates a single sample from the exponential distribution.
+// Sample draws by inverting QuantileAt at a drawn cumulance.
 func (e *Exp) Sample(rng *Rng) float64 {
-	// Inverse CDF method: -ln(1 - U) / rate
-	u := rng.UniformFloat64()
-	// Avoid log(0)
-	if u == 1.0 {
-		u = 1.0 - machineEpsilon
-	}
-	return -math.Log(1.0-u) / e.Rate
+	return e.QuantileAt(rng.UniformFloat64())
 }
 
 // Samples generates multiple samples from the exponential distribution.

@@ -8,7 +8,7 @@ namespace Pragmastat.Distributions;
 /// Additive (Normal/Gaussian) distribution with given mean and standard deviation.
 /// </summary>
 /// <remarks>
-/// Uses the Box-Muller transform to generate samples.
+/// Draws by inverse transform, through the toolkit's own inverse normal CDF.
 /// Historically called 'Normal' or 'Gaussian' distribution.
 /// </remarks>
 public sealed class Additive : IDistribution
@@ -49,21 +49,7 @@ public sealed class Additive : IDistribution
   /// <inheritdoc />
   public double Sample(Rng rng)
   {
-    // Box-Muller transform
-    double u1 = rng.UniformDouble();
-    double u2 = rng.UniformDouble();
-
-    // Avoid log(0) - use smallest positive subnormal for cross-language consistency
-    if (u1 == 0)
-      u1 = Constants.SmallestPositiveSubnormal;
-
-    double r = Math.Sqrt(-2.0 * Math.Log(u1));
-    double theta = 2.0 * Math.PI * u2;
-
-    // Use the first of the two Box-Muller outputs
-    double z = r * Math.Cos(theta);
-
-    return Mean + z * StdDev;
+    return QuantileAt(SamplingCumulance.Draw(rng));
   }
 
   /// <inheritdoc />

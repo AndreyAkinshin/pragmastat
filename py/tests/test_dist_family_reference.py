@@ -18,6 +18,7 @@ from pathlib import Path
 import pytest
 
 from pragmastat.distributions import Additive, Exp, Multiplic, Power, Uniform
+from pragmastat.rng import Rng
 from tests.binary64 import assert_identical
 
 SUITES = ["dist-uniform", "dist-exp", "dist-additive", "dist-multiplic", "dist-power"]
@@ -145,3 +146,34 @@ def test_a_probability_outside_the_unit_interval_returns_the_endpoints(name, dis
         assert distribution.quantile_at(p) == lower, f"{name}: quantile_at({p})"
     for p in (1.0, 1.1, math.inf):
         assert distribution.quantile_at(p) == upper, f"{name}: quantile_at({p})"
+
+
+# Every family draws by inverting its own quantile.
+#
+# A fixture says two numbers agreed on the day it was written. This says they cannot disagree: the
+# same seed drives a draw and a direct quantile call, and the two must land on the same bits for
+# every family. It is what makes "a distribution is three functions" a statement about the code
+# rather than about the documentation, and it would fail the moment a family grew a second
+# sampling route.
+# lifts is True for the two families whose quantile_at(0) is not a sample.
+SAMPLING_IDENTITY_FAMILIES = [
+    ("Uniform", Uniform(-2.5, 7.5), False),
+    ("Exp", Exp(0.5), False),
+    ("Additive", Additive(1.0, 2.0), True),
+    ("Multiplic", Multiplic(-1.0, 0.5), True),
+    ("Power", Power(2.0, 3.0), False),
+]
+
+
+@pytest.mark.parametrize(("name", "distribution", "lifts"), SAMPLING_IDENTITY_FAMILIES)
+def test_sampling_is_the_quantile_of_a_drawn_cumulance(name, distribution, lifts):
+    drawing = Rng("identity-seed")
+    inverting = Rng("identity-seed")
+    for i in range(1000):
+        drawn = distribution.sample(drawing)
+        # The same cumulance the draw consumed, taken from a generator on the same seed.
+        u = inverting.uniform_float()
+        if lifts and u == 0.0:
+            u = 5e-324
+        inverted = distribution.quantile_at(u)
+        assert_identical(drawn, inverted, f"{name} draw {i}: sample vs quantile_at({u!r})")

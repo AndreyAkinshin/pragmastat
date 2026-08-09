@@ -25,9 +25,8 @@ dist_uniform <- function(min_val, max_val) {
   }
 
   sample_fn <- function(rng) {
-    min_val + rng$uniform_float() * (max_val - min_val)
+    quantile_at(rng$uniform_float())
   }
-
 
   # The support is half-open, so the density is zero at max and positive at min. This is the one
   # family assembled from arithmetic alone: no primitive of the toolkit appears on any of its

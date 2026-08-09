@@ -49,12 +49,7 @@ public sealed class Power : IDistribution
   /// <inheritdoc />
   public double Sample(Rng rng)
   {
-    // Inverse CDF method: min / (1 - U)^(1/shape)
-    double u = rng.UniformDouble();
-    // Avoid division by zero - use machine epsilon for cross-language consistency
-    if (u == 1.0)
-      u = 1.0 - Constants.MachineEpsilon;
-    return Min / Math.Pow(1.0 - u, 1.0 / Shape);
+    return QuantileAt(rng.UniformDouble());
   }
 
   /// <inheritdoc />

@@ -111,6 +111,58 @@ func probeEdgeworthMisrates(n, m int) []float64 {
 	return out
 }
 
+// probeCumulances spans the endpoints, the midpoint, and cumulances that fall strictly inside an
+// interval rather than on one of its edges.
+var probeCumulances = []float64{0.0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1.0}
+
+// probeFamilies evaluates the five parametric families: the three functions that define each one,
+// and the draw that is now derived from the third.
+//
+// Their exposure is different in kind from the core estimators'. A family evaluates a closed
+// formula, so a moved library value changes the answer directly, in every last bit it touches.
+// That makes this the cheaper thing to get wrong and the easier thing to detect: any surviving
+// call to the platform's exp, log, pow or cos shows up on nearly every probe rather than on the
+// few that sit on a boundary.
+//
+// The draw is probed alongside the trio because it is the same code path now: every family
+// samples by inverting its own quantile.
+func probeFamilies(k string, seed int64) {
+	families := []struct {
+		name string
+		dist Distribution
+		at   []float64
+	}{
+		{"uniform", NewUniform(-2.5, 7.5), []float64{-2.5, -1.0, 0.0, 2.5, 7.5}},
+		{"exp", NewExp(0.5), []float64{0.0, 0.25, 1.0, 4.0, 16.0}},
+		{"additive", NewAdditive(1.0, 2.0), []float64{-8.0, -1.0, 1.0, 3.0, 9.0}},
+		{"multiplic", NewMultiplic(-1.0, 0.5), []float64{0.0625, 0.25, 1.0, 4.0, 16.0}},
+		{"power", NewPower(2.0, 3.0), []float64{2.0, 2.5, 4.0, 16.0, 256.0}},
+	}
+
+	for _, f := range families {
+		for _, v := range f.at {
+			vk := fmt.Sprintf("%s.v%s", k, probeBits(v))
+			probePrintf("%s/%sDensity\t%s\n", vk, f.name, probeBits(f.dist.DensityAt(v)))
+			probePrintf("%s/%sCumulative\t%s\n", vk, f.name, probeBits(f.dist.CumulativeAt(v)))
+		}
+		// The cumulances are literals for the reason the queries above are: a computed one would
+		// be computed by both builds and could differ on its own.
+		for i, c := range probeCumulances {
+			if c <= 0.0 || c >= 1.0 {
+				// Every family's QuantileAt short-circuits at these two exact cumulances --
+				// Min, 0, or an infinity, none of them computed -- so no perturbed library call
+				// sits on this path for any family, Uniform's finite Min/Max included.
+				continue
+			}
+			probePrintf("%s.c%d/%sQuantile\t%s\n", k, i, f.name, probeBits(f.dist.QuantileAt(c)))
+		}
+		// One seeded draw per family: the identity under test is that this is the quantile of a
+		// drawn cumulance, so a library call reaching it would move here too.
+		r := NewRngFromSeed(seed)
+		probePrintf("%s/%sSample\t%s\n", k, f.name, probeBits(f.dist.Sample(r)))
+	}
+}
+
 func TestConformanceProbe(t *testing.T) {
 	path := os.Getenv("PRAGMASTAT_PROBE_OUT")
 	if path == "" {
@@ -156,6 +208,8 @@ func TestConformanceProbe(t *testing.T) {
 			probeScalar(k+"/disparity", v, err)
 			v, err = avgSpread(x, y, false)
 			probeScalar(k+"/avgSpread", v, err)
+
+			probeFamilies(k, seed)
 
 			if f, err := minAchievableMisrateTwoSample(n, n); err == nil {
 				probePrintf("%s/misrateFloor\t%s\n", k, probeBits(f))

@@ -1,10 +1,8 @@
 package dev.pragmastat.distributions
 
-import dev.pragmastat.Constants
 import dev.pragmastat.Rng
 import dev.pragmastat.expFunction
 import dev.pragmastat.logFunction
-import kotlin.math.ln
 
 /**
  * Exponential distribution with given rate parameter.
@@ -22,15 +20,7 @@ class Exp(
         require(rate.isFinite() && rate > 0) { "rate must be finite and positive" }
     }
 
-    override fun sample(rng: Rng): Double {
-        // Inverse CDF method: -ln(1 - U) / rate
-        var u = rng.uniformDouble()
-        // Avoid log(0) - use machine epsilon for cross-language consistency
-        if (u == 1.0) {
-            u = 1.0 - Constants.MACHINE_EPSILON
-        }
-        return -ln(1.0 - u) / rate
-    }
+    override fun sample(rng: Rng): Double = quantileAt(rng.uniformDouble())
 
     override fun densityAt(x: Double): Double = if (x < 0.0) 0.0 else rate * expFunction(-rate * x)
 

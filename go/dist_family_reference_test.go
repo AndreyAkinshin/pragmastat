@@ -189,3 +189,41 @@ func TestDistFamilyQuantileOutsideTheUnitIntervalReturnsTheEndpoints(t *testing.
 		}
 	}
 }
+
+// Every family draws by inverting its own quantile.
+//
+// A fixture says two numbers agreed on the day it was written. This says they cannot disagree:
+// the same seed drives a draw and a direct quantile call, and the two must land on the same bits
+// for every family. It is what makes "a distribution is three functions" a statement about the
+// code rather than about the documentation, and it would fail the moment a family grew a second
+// sampling route.
+func TestSamplingIsTheQuantileOfADrawnCumulance(t *testing.T) {
+	families := []struct {
+		name  string
+		dist  Distribution
+		lifts bool // true for the two families whose QuantileAt(0) is not a sample
+	}{
+		{"Uniform", NewUniform(-2.5, 7.5), false},
+		{"Exp", NewExp(0.5), false},
+		{"Additive", NewAdditive(1.0, 2.0), true},
+		{"Multiplic", NewMultiplic(-1.0, 0.5), true},
+		{"Power", NewPower(2.0, 3.0), false},
+	}
+
+	for _, f := range families {
+		drawing := NewRngFromString("identity-seed")
+		inverting := NewRngFromString("identity-seed")
+		for i := range 1000 {
+			drawn := f.dist.Sample(drawing)
+			// The same cumulance the draw consumed, taken from a generator on the same seed.
+			u := inverting.UniformFloat64()
+			if f.lifts && u == 0.0 {
+				u = smallestPositiveSubnormal
+			}
+			inverted := f.dist.QuantileAt(u)
+			if math.Float64bits(drawn) != math.Float64bits(inverted) {
+				t.Fatalf("%s draw %d: Sample gave %v, QuantileAt(%v) gave %v", f.name, i, drawn, u, inverted)
+			}
+		}
+	}
+}

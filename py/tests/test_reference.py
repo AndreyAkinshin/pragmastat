@@ -388,9 +388,10 @@ def _assert_projections(projections, expected_projections, fixture_name, thresho
 def run_distribution_tests(dist_name, dist_factory, *, bitwise):
     """Run distribution reference tests against JSON data files.
 
-    ``bitwise`` is explicit at every call site (no default) so the exactness
-    decision is visible per distribution: uniform draws are pure arithmetic on
-    the RNG output and must match bit for bit, transcendental ones cannot.
+    ``bitwise`` is explicit at every call site (no default) so the exactness decision is visible
+    per distribution, even though every family draws by inverting its own quantile now and is
+    bitwise for the same reason: a call site that goes back to a tolerance is a call site that
+    has to say so.
     """
     repo_root = find_repo_root()
     test_data_dir = repo_root / "tests" / "distributions" / dist_name
@@ -668,8 +669,9 @@ class TestReference:
             assert_sequence_identical(actual, expected, f"Failed for {json_file.name}")
 
     def test_uniform_distribution_reference(self):
-        # Uniform draws are min + u * (max - min) on the raw RNG output: pure
-        # binary64 arithmetic, no libm, so the cross-language contract is exact.
+        # Every family now draws by inverting its own quantile, through the toolkit's own
+        # exponential and logarithm rather than the platform's: no libm call on the path, so the
+        # cross-language contract is exact for all five.
         run_distribution_tests(
             "uniform",
             lambda input_data: Uniform(input_data["min"], input_data["max"]),
@@ -677,32 +679,31 @@ class TestReference:
         )
 
     def test_additive_distribution_reference(self):
-        # log/cos: libm-dependent last bit, tolerance is the honest predicate.
         run_distribution_tests(
             "additive",
             lambda input_data: Additive(input_data["mean"], input_data["stdDev"]),
-            bitwise=False,
+            bitwise=True,
         )
 
     def test_multiplic_distribution_reference(self):
         run_distribution_tests(
             "multiplic",
             lambda input_data: Multiplic(input_data["logMean"], input_data["logStdDev"]),
-            bitwise=False,
+            bitwise=True,
         )
 
     def test_exp_distribution_reference(self):
         run_distribution_tests(
             "exp",
             lambda input_data: Exp(input_data["rate"]),
-            bitwise=False,
+            bitwise=True,
         )
 
     def test_power_distribution_reference(self):
         run_distribution_tests(
             "power",
             lambda input_data: Power(input_data["min"], input_data["shape"]),
-            bitwise=False,
+            bitwise=True,
         )
 
     def test_sample_negative_k_raises(self):

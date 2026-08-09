@@ -121,3 +121,38 @@ test_that("a probability outside the unit interval returns the endpoints of the 
     }
   }
 })
+
+# Every family draws by inverting its own quantile.
+#
+# A fixture says two numbers agreed on the day it was written. This says they cannot disagree: the
+# same seed drives a draw and a direct quantile call, and the two must land on the same bits for
+# every family. It is what makes "a distribution is three functions" a statement about the code
+# rather than about the documentation, and it would fail the moment a family grew a second
+# sampling route.
+# lifts is TRUE for the two families whose quantile_at(0) is not a sample.
+sampling_identity_families <- function() {
+  list(
+    list(name = "Uniform", d = dist_uniform(-2.5, 7.5), lifts = FALSE),
+    list(name = "Exp", d = dist_exp(0.5), lifts = FALSE),
+    list(name = "Additive", d = dist_additive(1.0, 2.0), lifts = TRUE),
+    list(name = "Multiplic", d = dist_multiplic(-1.0, 0.5), lifts = TRUE),
+    list(name = "Power", d = dist_power(2.0, 3.0), lifts = FALSE)
+  )
+}
+
+test_that("sampling is the quantile of a drawn cumulance", {
+  for (f in sampling_identity_families()) {
+    drawing <- rng("identity-seed")
+    inverting <- rng("identity-seed")
+    for (i in seq_len(1000)) {
+      drawn <- f$d$sample(drawing)
+      # The same cumulance the draw consumed, taken from a generator on the same seed.
+      u <- inverting$uniform_float()
+      if (f$lifts && u == 0.0) {
+        u <- 5e-324
+      }
+      inverted <- f$d$quantile_at(u)
+      expect_identical(drawn, inverted, info = paste(f$name, "draw", i))
+    }
+  }
+})

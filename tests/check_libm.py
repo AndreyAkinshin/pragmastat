@@ -24,9 +24,11 @@ arm is a static check over `go/*.go` and nothing else. The other six ports had n
 repository would stay green, because the fixtures are compared against a stored answer that the
 new call would produce identically on the machine that generated them.
 
-The calls that remain are the parametric families, and they are exempt for a stated reason rather
-than by a list: see DISTRIBUTION_SOURCES, which derives the exemption from the conformance class
-the manifest declares and therefore stops granting it the moment that class changes.
+The parametric families used to be exempt, for a stated reason rather than a list: their draw
+went through the platform's log, exp, cos and pow, and the suite that compares them was the only
+one tests/manifest.json declared approximate. Porting inverse transform sampling removed the last
+platform call from those files, the manifest now declares that suite exact, and this file reads
+the families whole like everything else.
 
 WHAT A STATIC CHECK CAN AND CANNOT SEE, PER LANGUAGE. The list is here because a guard that states
 its blind spot is worth more than one that implies it has none.
@@ -54,7 +56,6 @@ has gone blind finds no forbidden call *and* no `sqrt`, and only the second numb
 apart from a clean port.
 """
 
-import json
 import re
 import sys
 from pathlib import Path
@@ -142,54 +143,6 @@ EXACT = {
     "sqrt2",
     "trunc",
 }
-
-# The one class of source still allowed to reach a transcendental, and it is not a list of call
-# sites. The parametric families draw and invert through log, exp, cos and pow, and the suite that
-# compares them is the only one tests/manifest.json still declares `approximate`: the seven ports
-# are not promised to agree on those draws bit for bit, so a platform call there breaks no promise.
-#
-# The exemption is therefore derived rather than written down. It reads the manifest and applies
-# only while that class holds, so the day the distributions become exact — which is what porting
-# inverse transform sampling does, since it removes the cosine and expresses the power through the
-# toolkit's own exp and log — this guard starts refusing those files without anybody editing it.
-#
-# A per-site list was the alternative and is worse here. It would hold 38 entries today, all
-# saying the same thing, and every one of them would have to be deleted by hand at exactly the
-# moment the deletion stops being safe to forget.
-DISTRIBUTION_SOURCES = {
-    "cs": ("Distributions/",),
-    # Go keeps the families in the package root rather than a directory, so they are named.
-    "go": ("additive.go", "exp.go", "multiplic.go", "power.go", "uniform.go"),
-    "kt": ("distributions/",),
-    "py": ("distributions/",),
-    # R has no directory either; the family files carry a prefix.
-    "r": ("dist_",),
-    "rs": ("distributions/",),
-    "ts": ("distributions/",),
-}
-
-DISTRIBUTION_SUITE = "distributions"
-
-
-def distributions_are_approximate(root):
-    """Whether the manifest still declares the distribution suite approximate.
-
-    Read rather than assumed, because this is the whole basis for the exemption below. A manifest
-    that stopped declaring the suite at all is a finding, not a license: the guard would otherwise
-    fall back to exempting the files for a class nobody claims any more.
-    """
-    manifest = json.loads((root / "tests" / "manifest.json").read_text())
-    suites = manifest.get("suites", {})
-    if DISTRIBUTION_SUITE not in suites:
-        raise SystemExit(
-            f"ERROR: tests/manifest.json declares no {DISTRIBUTION_SUITE!r} suite, so the "
-            f"exemption in this file rests on nothing."
-        )
-    return suites[DISTRIBUTION_SUITE]["conformance"] == "approximate"
-
-
-def is_distribution_source(port, rel):
-    return any(rel.startswith(prefix) or rel == prefix for prefix in DISTRIBUTION_SOURCES[port])
 
 # ── Per-language readers ──────────────────────────────────────────────────────
 # Each returns (findings, exempt_hits). A finding is (relative path, line number, spelling, why).
@@ -464,25 +417,10 @@ if set(SCANNERS) != set(PORTS):
 
 # Files scanned and exempt call sites found, per port. Pinned in both directions; the docstring
 # says what each number catches.
-EXPECTED_FILES = {"cs": 71, "go": 28, "kt": 31, "py": 34, "r": 42, "rs": 33, "ts": 33}
+EXPECTED_FILES = {"cs": 72, "go": 28, "kt": 32, "py": 35, "r": 42, "rs": 33, "ts": 34}
 # kt's number counts `import kotlin.math.<name>` lines rather than call sites, because that is
 # where the Kotlin reader looks; the other six count calls.
-EXPECTED_EXACT = {"cs": 18, "go": 123, "kt": 22, "py": 51, "r": 52, "rs": 18, "ts": 85}
-
-# Files skipped because they are a parametric family and the manifest still calls that suite
-# approximate. Pinned like the others: an exemption that silently widened would otherwise look
-# exactly like a port that has no distributions.
-#
-# The exemption is now coarser than the truth, and knowingly so. These files hold two kinds of
-# path: the density, cumulative and quantile, which reach only the toolkit's own primitives and
-# are compared by payload in the five dist-* suites, and `sample`, which still draws through the
-# platform's log, exp, cos and pow. Skipping by file therefore leaves the trio unguarded here,
-# and a platform call planted in a density would pass this scan. What catches it meanwhile is the
-# dist-* suites themselves: they are exact, and a platform transcendental on one of those paths
-# makes at least one of the seven ports disagree. The exemption goes away with the sampling
-# identity, which removes the last platform call from these files and lets the scan read them
-# whole.
-EXPECTED_DISTRIBUTION_FILES = {"cs": 7, "go": 5, "kt": 7, "py": 8, "r": 5, "rs": 7, "ts": 8}
+EXPECTED_EXACT = {"cs": 18, "go": 127, "kt": 22, "py": 64, "r": 52, "rs": 18, "ts": 85}
 
 
 RS_TEST_MODULE = re.compile(r"#\[cfg\(test\)\]\s*\n\s*(?:pub\s+)?mod\s+([a-z_0-9]+)\s*;")
@@ -555,11 +493,9 @@ def main(repo_root="."):
             file=sys.stderr,
         )
         return 1
-    exempt_distributions = distributions_are_approximate(root)
     findings = []
     files = {}
     exact_hits = {}
-    skipped = {}
     for port in PORTS:
         relative, glob, excluded = SOURCES[port]
         source_root = root / relative
@@ -570,19 +506,14 @@ def main(repo_root="."):
             excluded = rs_test_modules(source_root)
         found, exempt = [], []
         scanned = 0
-        distribution_files = 0
         for path in sorted(source_root.rglob(glob)):
             rel = str(path.relative_to(source_root))
             if any(path.match(pattern) or rel.startswith(pattern.rstrip("*")) for pattern in excluded):
                 continue
             scanned += 1
-            if exempt_distributions and is_distribution_source(port, rel):
-                distribution_files += 1
-                continue
             SCANNERS[port](rel, strip(port, path.read_text().splitlines()), found, exempt, {})
         files[port] = scanned
         exact_hits[port] = len(exempt)
-        skipped[port] = distribution_files
         findings.extend((port, *item) for item in found)
 
     if findings:
@@ -593,9 +524,7 @@ def main(repo_root="."):
         print(
             "\nIEEE 754 fixes arithmetic and sqrt and says nothing about the transcendentals, so a\n"
             "call here is a place where two conforming platforms may return different bits and the\n"
-            "seven ports stop agreeing. Use the toolkit's own function. The only source exempt\n"
-            "from this is the parametric families, and only while tests/manifest.json declares\n"
-            "their suite approximate: that exemption is read, not written down here.",
+            "seven ports stop agreeing. Use the toolkit's own function.",
             file=sys.stderr,
         )
         return 1
@@ -604,11 +533,6 @@ def main(repo_root="."):
     for port in PORTS:
         if files[port] != EXPECTED_FILES[port]:
             drift.append(f"  {port}: scanned {files[port]} files, expected {EXPECTED_FILES[port]}")
-        if skipped[port] != EXPECTED_DISTRIBUTION_FILES[port]:
-            drift.append(
-                f"  {port}: skipped {skipped[port]} distribution files, expected "
-                f"{EXPECTED_DISTRIBUTION_FILES[port]}"
-            )
         if exact_hits[port] != EXPECTED_EXACT[port]:
             drift.append(
                 f"  {port}: found {exact_hits[port]} exact-by-construction call sites, expected {EXPECTED_EXACT[port]}"

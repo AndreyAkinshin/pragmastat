@@ -3,7 +3,7 @@
 \title{Additive (Normal) Distribution}
 \description{
 Create an additive (normal/Gaussian) distribution.
-Uses the Box-Muller transform to generate samples.
+Draws by inverse transform, through the package's own inverse normal CDF.
 }
 \usage{
 dist_additive(mean, std_dev)

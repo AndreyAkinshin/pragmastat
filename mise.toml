@@ -567,10 +567,10 @@ description = "Assert the deterministic randomization fixtures still match their
 # half-written files. The private CARGO_TARGET_DIR is for the same reason: rs:ci begins with
 # `cargo clean`.
 #
-# Only the suites free of transcendental functions are compared. The parametric distributions
-# built on log, exp and cos go through the platform libm, so regenerating them on a machine
-# with a different libc legitimately produces different last bits; comparing those would fail
-# for reasons that have nothing to do with this repository.
+# Every suite the Rust generator owns is compared, including all five parametric families now
+# that each draws by inverting its own quantile through the toolkit's own exponential and
+# logarithm rather than the platform's: nothing on that path can legitimately differ between two
+# runs of the same code, on this machine or any other.
 run = """
 #!/usr/bin/env bash
 set -euo pipefail
@@ -581,7 +581,7 @@ mkdir -p "$scratch"
 PRAGMASTAT_TESTS_DIR="$scratch" CARGO_TARGET_DIR="$target" \\
   cargo run --quiet --manifest-path rs/pragmastat/Cargo.toml --example gen_rng_tests >/dev/null
 status=0
-for suite in rng shuffle sample resample distributions/uniform; do
+for suite in rng shuffle sample resample distributions/uniform distributions/additive distributions/multiplic distributions/exp distributions/power; do
   if ! diff -r -q "tests/$suite" "$scratch/$suite"; then
     status=1
   fi

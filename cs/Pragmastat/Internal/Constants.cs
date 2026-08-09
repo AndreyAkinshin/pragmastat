@@ -23,25 +23,6 @@ internal static class Constants
   public const double Sqrt2Pi = 2.506628274631000241612355239340;
 
   /// <summary>
-  /// Machine epsilon for IEEE 754 double-precision (binary64).
-  /// </summary>
-  /// <remarks>
-  /// <para>
-  /// Value: 2^(-52) ≈ 2.220446049250313e-16
-  /// </para>
-  /// <para>
-  /// This is the smallest ε such that 1.0 + ε ≠ 1.0 in float64 arithmetic.
-  /// Represents the distance between 1.0 and the next representable number.
-  /// </para>
-  /// <para>
-  /// Used to avoid log(0) or division by zero when UniformDouble() returns exactly 1.0.
-  /// All language implementations use this same value to ensure cross-language
-  /// determinism in distribution sampling.
-  /// </para>
-  /// </remarks>
-  public const double MachineEpsilon = 2.220446049250313e-16;
-
-  /// <summary>
   /// Smallest positive subnormal (denormalized) IEEE 754 double-precision value.
   /// </summary>
   /// <remarks>
@@ -54,9 +35,9 @@ internal static class Constants
   /// absolute smallest positive number before underflow to zero.
   /// </para>
   /// <para>
-  /// Used to avoid log(0) in Box-Muller transform when UniformDouble() returns exactly 0.
-  /// All language implementations use this same value to ensure cross-language
-  /// determinism in distribution sampling.
+  /// Used by <see cref="Distributions.SamplingCumulance"/> to lift a drawn cumulance off zero,
+  /// where the unbounded families answer with an infinity. All language implementations use this
+  /// same value to ensure cross-language determinism in distribution sampling.
   /// </para>
   /// </remarks>
   public const double SmallestPositiveSubnormal = 5e-324;

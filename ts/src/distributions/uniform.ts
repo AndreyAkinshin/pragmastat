@@ -39,7 +39,7 @@ export class Uniform implements Distribution {
   }
 
   sample(rng: Rng): number {
-    return this.min + rng.uniformFloat() * (this.max - this.min);
+    return this.quantileAt(rng.uniformFloat());
   }
 
   /**

@@ -720,9 +720,11 @@ describe('Reference Tests', () => {
           const dist = new Additive(data.input.mean, data.input.stdDev);
           const actual = Array.from({ length: data.input.count }, () => dist.sample(rng));
 
-          for (let i = 0; i < actual.length; i++) {
-            expect(actual[i]).toBeCloseTo(data.output[i], 12);
-          }
+          expectBitwiseSequence(
+            `Additive(${data.input.mean}, ${data.input.stdDev}).sample()`,
+            actual,
+            data.output,
+          );
         });
       });
     }
@@ -746,9 +748,11 @@ describe('Reference Tests', () => {
           const dist = new Multiplic(data.input.logMean, data.input.logStdDev);
           const actual = Array.from({ length: data.input.count }, () => dist.sample(rng));
 
-          for (let i = 0; i < actual.length; i++) {
-            expect(actual[i]).toBeCloseTo(data.output[i], 12);
-          }
+          expectBitwiseSequence(
+            `Multiplic(${data.input.logMean}, ${data.input.logStdDev}).sample()`,
+            actual,
+            data.output,
+          );
         });
       });
     }
@@ -772,9 +776,7 @@ describe('Reference Tests', () => {
           const dist = new Exp(data.input.rate);
           const actual = Array.from({ length: data.input.count }, () => dist.sample(rng));
 
-          for (let i = 0; i < actual.length; i++) {
-            expect(actual[i]).toBeCloseTo(data.output[i], 12);
-          }
+          expectBitwiseSequence(`Exp(${data.input.rate}).sample()`, actual, data.output);
         });
       });
     }
@@ -798,9 +800,11 @@ describe('Reference Tests', () => {
           const dist = new Power(data.input.min, data.input.shape);
           const actual = Array.from({ length: data.input.count }, () => dist.sample(rng));
 
-          for (let i = 0; i < actual.length; i++) {
-            expect(actual[i]).toBeCloseTo(data.output[i], 12);
-          }
+          expectBitwiseSequence(
+            `Power(${data.input.min}, ${data.input.shape}).sample()`,
+            actual,
+            data.output,
+          );
         });
       });
     }

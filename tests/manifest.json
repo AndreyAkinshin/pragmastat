@@ -495,8 +495,8 @@
       ]
     },
     "distributions": {
-      "conformance": "approximate",
-      "conformance_reason": "Sub-suite dependent: uniform is bitwise, while additive, multiplic, exp and power draw through log, exp, cos and pow from the platform libm and are checked at a tolerance.",
+      "conformance": "exact",
+      "conformance_reason": "Every family draws by inverting its own quantile: a sample is QuantileAt applied to one drawn cumulance, assembled out of the toolkit's own exponential and logarithm rather than the platform's log, exp, cos and pow. Nothing on that path reaches a platform transcendental, so the seven ports owe each other identical bits, measured by tests/conformance_probe.sh's family tags.",
       "directory": "distributions",
       "generator": "rs/pragmastat/examples/gen_rng_tests.rs",
       "description": "Distribution sampling and statistical function tests",

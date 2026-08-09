@@ -28,8 +28,6 @@ public sealed class Multiplic : IDistribution
   /// </summary>
   public double LogStdDev { get; }
 
-  private readonly Additive _additive;
-
   /// <summary>
   /// Create a new multiplicative (log-normal) distribution.
   /// </summary>
@@ -46,13 +44,12 @@ public sealed class Multiplic : IDistribution
       throw new ArgumentException("logStdDev must be finite and positive");
     LogMean = logMean;
     LogStdDev = logStdDev;
-    _additive = new Additive(logMean, logStdDev);
   }
 
   /// <inheritdoc />
   public double Sample(Rng rng)
   {
-    return Math.Exp(_additive.Sample(rng));
+    return QuantileAt(SamplingCumulance.Draw(rng));
   }
 
   /// <inheritdoc />

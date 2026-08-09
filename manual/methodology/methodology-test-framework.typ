@@ -15,19 +15,16 @@ The random generation mechanism works as follows:
   one for the $vx$ sample generator and one for the $vy$ sample generator.
 - The seed counter increments with each random generator creation, ensuring deterministic test data generation.
 
-For $Additive$ distributions, random values are generated using the Box-Müller transform,
-  which converts pairs of uniform random values into normally distributed values.
-The transform applies the formula:
+Every parametric family draws by inverse transform: one draw $U$ from $Uniform(0, 1)$ gives a
+  sample as that family's own quantile applied to $U$.
+For $Additive$, that is
 
-$ X = mu + sigma sqrt(-2 ln(U_1)) sin(2 pi U_2) $
+$ X = mu + sigma dot AdditiveQuantile(U) $
 
-where $U_1, U_2$ are uniform random values from $Uniform(0, 1)$, $mu$ is the mean, and $sigma$ is the standard deviation.
+where $mu$ is the mean and $sigma$ is the standard deviation.
+For $Uniform$, the quantile is affine and the identity reads directly as
 
-For $Uniform$ distributions, random values are generated directly using the quantile function:
-
-$ X = min + U dot (max - min) $
-
-where $U$ is a uniform random value from $Uniform(0, 1)$.
+$ X = min + U dot (max - min) . $
 
 The framework executes the reference implementation on all generated inputs and serializes input-output pairs to JSON format.
 

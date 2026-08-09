@@ -1,10 +1,10 @@
-# `exact` selects the comparison, and the split is not cosmetic. A uniform draw
-# is min + u * (max - min): four IEEE-754 operations every language performs
-# identically, so its fixtures are a bitwise contract (see test-rng.R). The
-# other families route their draws through log, exp, cos and pow, which each
-# language takes from its own libm. Two implementations correct to within an ULP
-# still disagree in the last bit, so those suites keep a tolerance.
-run_distribution_tests <- function(dist_name, dist_factory, exact = FALSE) {
+# Bitwise, for all five families. A uniform draw is min + u * (max - min): four IEEE-754
+# operations every language performs identically, so its fixtures were always a bitwise contract
+# (see test-rng.R). The other four used to route their draws through log, exp, cos and pow, which
+# each language takes from its own libm, and kept a tolerance for it. Every family now draws by
+# inverting its own quantile through the toolkit's own exponential and logarithm, so the contract
+# is bitwise for all five.
+run_distribution_tests <- function(dist_name, dist_factory) {
   repo_root <- find_repo_root()
   dist_dir <- file.path(repo_root, "tests", "distributions", dist_name)
   json_files <- list.files(dist_dir, pattern = "\\.json$", full.names = TRUE)
@@ -20,24 +20,12 @@ run_distribution_tests <- function(dist_name, dist_factory, exact = FALSE) {
     dist <- dist_factory(input)
     actual <- vapply(seq_len(input$count), function(i) dist$sample(r), numeric(1))
 
-    if (exact) {
-      expect_exact(actual, expected, basename(json_file))
-      next
-    }
-    for (i in seq_along(actual)) {
-      expect_equal(actual[i], expected[i],
-        tolerance = 1e-12,
-        info = paste("Failed for", basename(json_file), "at index", i)
-      )
-    }
+    expect_exact(actual, expected, basename(json_file))
   }
 }
 
 test_that("uniform distribution matches reference tests", {
-  run_distribution_tests(
-    "uniform", function(input) dist_uniform(input$min, input$max),
-    exact = TRUE
-  )
+  run_distribution_tests("uniform", function(input) dist_uniform(input$min, input$max))
 })
 
 test_that("additive distribution matches reference tests", {

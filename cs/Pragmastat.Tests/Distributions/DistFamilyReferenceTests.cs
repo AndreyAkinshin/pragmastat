@@ -1,4 +1,5 @@
 using Pragmastat.Distributions;
+using Pragmastat.Randomization;
 using Pragmastat.TestGenerator.Framework;
 using Pragmastat.TestGenerator.Framework.Distributions;
 
@@ -115,5 +116,46 @@ public class DistFamilyReferenceTests
       Assert.True(d.QuantileAt(p) == lower, $"{name}: QuantileAt({p})");
     foreach (double p in new[] { 1.0, 1.1, double.PositiveInfinity })
       Assert.True(d.QuantileAt(p) == upper, $"{name}: QuantileAt({p})");
+  }
+
+  // lifts is true for the two families whose QuantileAt(0) is not a sample.
+  public static TheoryData<string, IDistribution, bool> SamplingIdentityFamilies =>
+    new()
+    {
+      { "Uniform", new Uniform(-2.5, 7.5), false },
+      { "Exp", new Exp(0.5), false },
+      { "Additive", new Additive(1.0, 2.0), true },
+      { "Multiplic", new Multiplic(-1.0, 0.5), true },
+      { "Power", new Power(2.0, 3.0), false },
+    };
+
+  /// <summary>
+  /// Every family draws by inverting its own quantile.
+  /// </summary>
+  /// <remarks>
+  /// A fixture says two numbers agreed on the day it was written. This says they cannot disagree:
+  /// the same seed drives a draw and a direct quantile call, and the two must land on the same
+  /// bits for every family. It is what makes "a distribution is three functions" a statement
+  /// about the code rather than about the documentation, and it would fail the moment a family
+  /// grew a second sampling route.
+  /// </remarks>
+  [Theory]
+  [MemberData(nameof(SamplingIdentityFamilies))]
+  public void SamplingIsTheQuantileOfADrawnCumulance(string name, IDistribution d, bool lifts)
+  {
+    var drawing = new Rng("identity-seed");
+    var inverting = new Rng("identity-seed");
+    for (int i = 0; i < 1000; i++)
+    {
+      double drawn = d.Sample(drawing);
+      // The same cumulance the draw consumed, taken from a generator on the same seed.
+      double u = inverting.UniformDouble();
+      if (lifts && u == 0.0)
+        u = 5e-324;
+      double inverted = d.QuantileAt(u);
+      Assert.True(
+        BitConverter.DoubleToInt64Bits(drawn) == BitConverter.DoubleToInt64Bits(inverted),
+        $"{name} draw {i}: Sample gave {drawn}, QuantileAt({u}) gave {inverted}");
+    }
   }
 }

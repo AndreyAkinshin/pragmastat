@@ -2,7 +2,6 @@
  * Exponential distribution.
  */
 
-import { MACHINE_EPSILON } from '../constants';
 import { Rng } from '../rng';
 import { expFunction } from '../expFunction';
 import { logFunction } from '../logFunction';
@@ -35,13 +34,7 @@ export class Exp implements Distribution {
   }
 
   sample(rng: Rng): number {
-    // Inverse CDF method: -ln(1 - U) / rate
-    let u = rng.uniformFloat();
-    // Avoid log(0) - use machine epsilon for cross-language consistency
-    if (u === 1.0) {
-      u = 1.0 - MACHINE_EPSILON;
-    }
-    return -Math.log(1.0 - u) / this.rate;
+    return this.quantileAt(rng.uniformFloat());
   }
 
   densityAt(x: number): number {

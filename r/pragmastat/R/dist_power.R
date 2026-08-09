@@ -21,15 +21,8 @@ dist_power <- function(min_val, shape) {
   }
 
   sample_fn <- function(rng) {
-    # Inverse CDF method: min / (1 - U)^(1/shape)
-    u <- rng$uniform_float()
-    # Avoid division by zero - use machine epsilon for cross-language consistency
-    if (u == 1.0) {
-      u <- 1.0 - .MACHINE_EPSILON
-    }
-    min_val / (1.0 - u)^(1.0 / shape)
+    quantile_at(rng$uniform_float())
   }
-
 
   # shape * min^shape / x^(shape+1), rearranged as (shape / x) * exp(shape * (log min - log x)).
   # The toolkit owns an exponential and a logarithm and owns no general power, so a real exponent

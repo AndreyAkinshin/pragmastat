@@ -2,18 +2,18 @@
  * Additive (Normal/Gaussian) distribution.
  */
 
-import { SMALLEST_POSITIVE_SUBNORMAL } from '../constants';
 import { Rng } from '../rng';
 import { additiveCumulative } from '../additiveCumulative';
 import { additiveQuantile } from '../additiveQuantile';
 import { expFunction } from '../expFunction';
 import { SQRT_2PI } from './constants';
 import { Distribution } from './distribution';
+import { samplingCumulance } from './samplingCumulance';
 
 /**
  * Additive (Normal/Gaussian) distribution with given mean and standard deviation.
  *
- * Uses the Box-Muller transform to generate samples.
+ * Draws by inverse transform, through the toolkit's own inverse normal CDF.
  *
  * @example
  * const rng = new Rng("demo-dist-additive");
@@ -43,22 +43,7 @@ export class Additive implements Distribution {
   }
 
   sample(rng: Rng): number {
-    // Box-Muller transform
-    let u1 = rng.uniformFloat();
-    const u2 = rng.uniformFloat();
-
-    // Avoid log(0) - use smallest positive subnormal for cross-language consistency
-    if (u1 === 0) {
-      u1 = SMALLEST_POSITIVE_SUBNORMAL;
-    }
-
-    const r = Math.sqrt(-2.0 * Math.log(u1));
-    const theta = 2.0 * Math.PI * u2;
-
-    // Use the first of the two Box-Muller outputs
-    const z = r * Math.cos(theta);
-
-    return this.mean + z * this.stdDev;
+    return this.quantileAt(samplingCumulance(rng));
   }
 
   densityAt(x: number): number {

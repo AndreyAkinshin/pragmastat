@@ -3,19 +3,21 @@
 The $Additive$ ('Normal') distribution has two parameters: the mean and the standard deviation,
 written as $Additive(pmean, pstddev)$.
 
-==== Sampling (Box--Muller Transform)
+==== Sampling
 
-The toolkit samples $Additive$ values using the Box--Muller transform (see @boxmuller1958),
-which converts two independent $UniformFloat$ draws into standard normal values.
-Given $U_1, U_2 in [0, 1)$:
+The toolkit samples $Additive$ values by inverse transform, through
+#link(<sec-additive-quantile>)[$AdditiveQuantile$]: one $UniformFloat$ draw $U in [0, 1)$
+gives a sample as
 
-$
-Z_0 &= sqrt(-2 ln(U_1)) cos(2 pi U_2) \
-Z_1 &= sqrt(-2 ln(U_1)) sin(2 pi U_2)
-$
+$ pmean + pstddev dot AdditiveQuantile(U) $
 
-Both $Z_0$ and $Z_1$ are independent standard normal values.
-The implementation uses only $Z_0$ to maintain cross-language determinism.
+An earlier version drew through the Box--Muller transform, which converts two independent
+$UniformFloat$ draws into a standard normal value via a logarithm and a cosine.
+Both are polynomial evaluations that fuse differently on different targets, so a seeded normal
+stream was never identical across the seven ports, only close.
+Inverting the family's own quantile reaches the same distribution through arithmetic the toolkit
+owns, and consumes one uniform draw per sample where Box--Muller consumed two and discarded one of
+its two outputs.
 
 ==== Asymptotic Spread Value
 

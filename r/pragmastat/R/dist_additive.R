@@ -1,7 +1,7 @@
 #' Additive (Normal) Distribution
 #'
 #' Create an additive (normal/Gaussian) distribution.
-#' Uses the Box-Muller transform to generate samples.
+#' Draws by inverse transform, through the toolkit's own inverse normal CDF.
 #'
 #' @param mean Location parameter (center of the distribution)
 #' @param std_dev Scale parameter (standard deviation)
@@ -23,24 +23,8 @@ dist_additive <- function(mean, std_dev) {
   }
 
   sample_fn <- function(rng) {
-    # Box-Muller transform
-    u1 <- rng$uniform_float()
-    u2 <- rng$uniform_float()
-
-    # Avoid log(0) - use smallest positive subnormal for cross-language consistency
-    if (u1 == 0) {
-      u1 <- .SMALLEST_POSITIVE_SUBNORMAL
-    }
-
-    r <- sqrt(-2.0 * log(u1))
-    theta <- 2.0 * pi * u2
-
-    # Use the first of the two Box-Muller outputs
-    z <- r * cos(theta)
-
-    mean + z * std_dev
+    quantile_at(.sampling_cumulance(rng))
   }
-
 
   density_at <- function(x) {
     if (is.na(x)) {

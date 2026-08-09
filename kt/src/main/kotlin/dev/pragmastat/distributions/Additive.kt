@@ -1,19 +1,14 @@
 package dev.pragmastat.distributions
 
-import dev.pragmastat.Constants
 import dev.pragmastat.Rng
 import dev.pragmastat.additiveCumulative
 import dev.pragmastat.additiveQuantile
 import dev.pragmastat.expFunction
-import kotlin.math.PI
-import kotlin.math.cos
-import kotlin.math.ln
-import kotlin.math.sqrt
 
 /**
  * Additive (Normal/Gaussian) distribution with given mean and standard deviation.
  *
- * Uses the Box-Muller transform to generate samples.
+ * Draws by inverse transform, through the toolkit's own inverse normal CDF.
  * Historically called 'Normal' or 'Gaussian' distribution.
  *
  * @property mean Location parameter (center of the distribution).
@@ -29,24 +24,7 @@ class Additive(
         require(stdDev.isFinite() && stdDev > 0) { "stdDev must be finite and positive" }
     }
 
-    override fun sample(rng: Rng): Double {
-        // Box-Muller transform
-        var u1 = rng.uniformDouble()
-        val u2 = rng.uniformDouble()
-
-        // Avoid log(0) - use smallest positive subnormal for cross-language consistency
-        if (u1 == 0.0) {
-            u1 = Constants.SMALLEST_POSITIVE_SUBNORMAL
-        }
-
-        val r = sqrt(-2.0 * ln(u1))
-        val theta = 2.0 * PI * u2
-
-        // Use the first of the two Box-Muller outputs
-        val z = r * cos(theta)
-
-        return mean + z * stdDev
-    }
+    override fun sample(rng: Rng): Double = quantileAt(samplingCumulance(rng))
 
     override fun densityAt(x: Double): Double {
         val z = (x - mean) / stdDev

@@ -2,7 +2,6 @@
  * Power (Pareto) distribution.
  */
 
-import { MACHINE_EPSILON } from '../constants';
 import { Rng } from '../rng';
 import { expFunction } from '../expFunction';
 import { logFunction } from '../logFunction';
@@ -41,13 +40,7 @@ export class Power implements Distribution {
   }
 
   sample(rng: Rng): number {
-    // Inverse CDF method: min / (1 - U)^(1/shape)
-    let u = rng.uniformFloat();
-    // Avoid division by zero - use machine epsilon for cross-language consistency
-    if (u === 1.0) {
-      u = 1.0 - MACHINE_EPSILON;
-    }
-    return this.min / Math.pow(1.0 - u, 1.0 / this.shape);
+    return this.quantileAt(rng.uniformFloat());
   }
 
   /**

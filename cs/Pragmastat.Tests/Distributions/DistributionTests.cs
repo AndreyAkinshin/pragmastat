@@ -8,7 +8,6 @@ namespace Pragmastat.Tests.Distributions;
 public class DistributionTests
 {
   private static readonly string TestsDir = Path.Combine(SourceRepositoryLocator.RepositoryRoot, "tests", "distributions");
-  private const double Tolerance = 1e-12;
 
   [Fact]
   public void UniformTests()
@@ -28,9 +27,8 @@ public class DistributionTests
 
       for (int i = 0; i < output.GetArrayLength(); i++)
       {
-        // Bitwise: a uniform draw is min + (max - min) * u, with no libm call in the path,
-        // so it must reproduce the reference stream exactly. The suites below keep Tolerance
-        // because their transforms go through log/exp/cos/pow, which differ per platform libm.
+        // Bitwise: every family now draws by inverting its own quantile through the toolkit's own
+        // exponential and logarithm, with no platform libm call on the path.
         double actual = dist.Sample(rng);
         double expected = output[i].GetDouble();
         BitwiseAssert.Equal(expected, actual, filePath, i);
@@ -58,8 +56,7 @@ public class DistributionTests
       {
         double actual = dist.Sample(rng);
         double expected = output[i].GetDouble();
-        Assert.True(Math.Abs(actual - expected) < Tolerance,
-          $"File: {Path.GetFileName(filePath)}, index {i}: expected {expected}, got {actual}");
+        BitwiseAssert.Equal(expected, actual, filePath, i);
       }
     }
   }
@@ -84,8 +81,7 @@ public class DistributionTests
       {
         double actual = dist.Sample(rng);
         double expected = output[i].GetDouble();
-        Assert.True(Math.Abs(actual - expected) < Tolerance,
-          $"File: {Path.GetFileName(filePath)}, index {i}: expected {expected}, got {actual}");
+        BitwiseAssert.Equal(expected, actual, filePath, i);
       }
     }
   }
@@ -109,8 +105,7 @@ public class DistributionTests
       {
         double actual = dist.Sample(rng);
         double expected = output[i].GetDouble();
-        Assert.True(Math.Abs(actual - expected) < Tolerance,
-          $"File: {Path.GetFileName(filePath)}, index {i}: expected {expected}, got {actual}");
+        BitwiseAssert.Equal(expected, actual, filePath, i);
       }
     }
   }
@@ -135,8 +130,7 @@ public class DistributionTests
       {
         double actual = dist.Sample(rng);
         double expected = output[i].GetDouble();
-        Assert.True(Math.Abs(actual - expected) < Tolerance,
-          $"File: {Path.GetFileName(filePath)}, index {i}: expected {expected}, got {actual}");
+        BitwiseAssert.Equal(expected, actual, filePath, i);
       }
     }
   }

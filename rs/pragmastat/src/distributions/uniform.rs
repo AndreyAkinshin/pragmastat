@@ -36,7 +36,7 @@ impl Uniform {
 
 impl Distribution for Uniform {
     fn sample(&self, rng: &mut Rng) -> f64 {
-        self.min + rng.uniform_f64() * (self.max - self.min)
+        self.quantile_at(rng.uniform_f64())
     }
 
     /// The support is half-open, so the density is zero at `max` and positive at `min`. This is

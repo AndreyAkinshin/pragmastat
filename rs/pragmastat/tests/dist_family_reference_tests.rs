@@ -13,6 +13,7 @@
 mod conformance;
 
 use conformance::Conformance;
+use pragmastat::Rng;
 use pragmastat::distributions::{Additive, Distribution, Exp, Multiplic, Power, Uniform};
 use serde::Deserialize;
 use std::collections::HashMap;
@@ -272,6 +273,44 @@ fn a_probability_outside_the_unit_interval_returns_the_endpoints() {
         }
         for p in [1.0, 1.1, f64::INFINITY] {
             assert_eq!(d.quantile_at(p), upper, "{name}: quantile_at({p})");
+        }
+    }
+}
+
+/// Every family draws by inverting its own quantile.
+///
+/// A fixture says two numbers agreed on the day it was written. This says they cannot disagree:
+/// the same seed drives a draw and a direct quantile call, and the two must land on the same bits
+/// for every family. It is what makes "a distribution is three functions" a statement about the
+/// code rather than about the documentation, and it would fail the moment a family grew a second
+/// sampling route.
+#[test]
+fn sampling_is_the_quantile_of_a_drawn_cumulance() {
+    // lifts is true for the two families whose quantile_at(0) is not a sample.
+    let families: Vec<(&str, Box<dyn Distribution>, bool)> = vec![
+        ("Uniform", Box::new(Uniform::new(-2.5, 7.5)), false),
+        ("Exp", Box::new(Exp::new(0.5)), false),
+        ("Additive", Box::new(Additive::new(1.0, 2.0)), true),
+        ("Multiplic", Box::new(Multiplic::new(-1.0, 0.5)), true),
+        ("Power", Box::new(Power::new(2.0, 3.0)), false),
+    ];
+
+    for (name, d, lifts) in families {
+        let mut drawing = Rng::from_string("identity-seed");
+        let mut inverting = Rng::from_string("identity-seed");
+        for i in 0..1000 {
+            let drawn = d.sample(&mut drawing);
+            // The same cumulance the draw consumed, taken from a generator on the same seed.
+            let mut u = inverting.uniform_f64();
+            if lifts && u == 0.0 {
+                u = 5e-324;
+            }
+            let inverted = d.quantile_at(u);
+            assert_eq!(
+                drawn.to_bits(),
+                inverted.to_bits(),
+                "{name} draw {i}: sample gave {drawn}, quantile_at({u}) gave {inverted}"
+            );
         }
     }
 }

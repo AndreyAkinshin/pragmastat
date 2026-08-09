@@ -395,13 +395,14 @@ Three limits are stated rather than hidden.
 Transcendental functions are the first: the logarithm, the exponential, the cosine and the general
   power are polynomial approximations, and two implementations correct to within an ulp still
   disagree in the last bit.
-Two of them the toolkit therefore supplies itself, the same construction in all seven languages:
-  the exponential for the reason #link(<sec-exp-function>)[$ExpFunction$] gives, and the logarithm because $Ratio$ is
-  $exp(Shift(log vx, log vy))$, where a last-bit difference does not shift the answer slightly but
-  selects a different element of the pairwise set.
-The cosine and the general power are still each language's own, so a result computed through one of
-  them conforms at a stated tolerance and not bitwise, which is why the parametric distributions
-  other than $Uniform$ are tolerance-bound.
+The logarithm and the exponential the toolkit supplies itself, the same construction in all seven
+  languages: the exponential for the reason #link(<sec-exp-function>)[$ExpFunction$] gives, and the
+  logarithm because $Ratio$ is $exp(Shift(log vx, log vy))$, where a last-bit difference does not
+  shift the answer slightly but selects a different element of the pairwise set.
+The cosine and the general power are needed nowhere at all: the cosine drew half of the
+  $Additive$ family's old Box--Muller sample and the general power drove $Power$'s, and inverting
+  each family's own quantile expresses both algorithms through the exponential and the logarithm
+  instead, so no shipped path reaches either function any more.
 Accumulated rounding is the second: an estimator that sums or searches over $O(n^2)$ intermediate
   values is reproducible to the tolerance its suite declares, not to the last bit.
 
@@ -486,18 +487,18 @@ A measurement nobody can repeat stops being a measurement.
   [$PairwiseMargin$, $SignedRankMargin$], [exact], [Exact binomial, and no library call on the path since the exponential became the toolkit's own],
   [$CenterBounds$, $ShiftBounds$, $DisparityBounds$], [exact], [Margin selection over exact candidates],
   [$SpreadBounds$], [exact], [Bitwise on every fixture; see the note below],
-  [$Uniform$ sampling], [exact], [One multiply and one add, both pinned],
   [$Ratio$, $RatioBounds$], [exact], [Selection over exact candidates, and no library call on the path since the logarithm became the toolkit's own],
   [$Compare2$], [per-projection], [Each projection follows its own threshold's metric],
-  [$Additive$, $Multiplic$, $Exp$, $Power$ sampling], [approximate], [Logarithm, exponential, cosine and general power],
+  [$Uniform$, $Additive$, $Multiplic$, $Exp$, $Power$ sampling], [exact], [Every draw inverts its own quantile; no library call on the path since Box-Muller and the general power gave way to the toolkit's own exponential and logarithm],
   table.hline(),
 )
 
 #v(0.5em)
-The one approximate row left is the parametric sampling, whose draws still reach a cosine and a
-  general power.
-$Ratio$ and $RatioBounds$ were beside it until both functions on their path became the toolkit's
-  own: the perturbation used to move them on 94% and 96% of inputs, and now moves neither on any.
+No suite is left approximate.
+The parametric families' sampling was the last one: their draws used to reach a cosine and a
+  general power, and inverting each family's own quantile removed both.
+$Ratio$ and $RatioBounds$ went the same way earlier: the perturbation used to move them on 94% and
+  96% of inputs, and now moves neither on any.
 
 #v(0.5em)
 *Where conformance met accuracy*

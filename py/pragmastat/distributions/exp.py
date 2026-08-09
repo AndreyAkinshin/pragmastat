@@ -3,7 +3,6 @@
 import math
 from typing import TYPE_CHECKING
 
-from .._constants import MACHINE_EPSILON
 from ..exp_function import exp_function
 from ..log_function import log_function
 from .distribution import Distribution
@@ -39,12 +38,7 @@ class Exp(Distribution):
         self.rate = rate
 
     def sample(self, rng: "Rng") -> float:
-        # Inverse CDF method: -ln(1 - U) / rate
-        u = rng.uniform_float()
-        # Avoid log(0) - use machine epsilon for cross-language consistency
-        if u == 1.0:
-            u = 1.0 - MACHINE_EPSILON
-        return -math.log(1.0 - u) / self.rate
+        return self.quantile_at(rng.uniform_float())
 
     def density_at(self, x: float) -> float:
         if x < 0.0:

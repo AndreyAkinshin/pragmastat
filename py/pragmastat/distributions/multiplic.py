@@ -7,7 +7,7 @@ from ..additive_cumulative import additive_cumulative
 from ..additive_quantile import additive_quantile
 from ..exp_function import exp_function
 from ..log_function import log_function
-from .additive import Additive
+from ._sampling import sampling_cumulance
 from .constants import SQRT_2PI
 from .distribution import Distribution
 
@@ -45,10 +45,9 @@ class Multiplic(Distribution):
             raise ValueError("log_std_dev must be finite and positive")
         self.log_mean = log_mean
         self.log_std_dev = log_std_dev
-        self._additive = Additive(log_mean, log_std_dev)
 
     def sample(self, rng: "Rng") -> float:
-        return math.exp(self._additive.sample(rng))
+        return self.quantile_at(sampling_cumulance(rng))
 
     def density_at(self, x: float) -> float:
         """The support is x > 0, and that is the test.

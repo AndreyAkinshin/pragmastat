@@ -5,7 +5,6 @@ import dev.pragmastat.additiveCumulative
 import dev.pragmastat.additiveQuantile
 import dev.pragmastat.expFunction
 import dev.pragmastat.logFunction
-import kotlin.math.exp
 
 /**
  * Multiplicative (Log-Normal) distribution.
@@ -22,15 +21,12 @@ class Multiplic(
     private val logMean: Double,
     private val logStdDev: Double,
 ) : Distribution {
-    private val additive: Additive
-
     init {
         require(logMean.isFinite()) { "logMean must be finite" }
         require(logStdDev.isFinite() && logStdDev > 0) { "logStdDev must be finite and positive" }
-        additive = Additive(logMean, logStdDev)
     }
 
-    override fun sample(rng: Rng): Double = exp(additive.sample(rng))
+    override fun sample(rng: Rng): Double = quantileAt(samplingCumulance(rng))
 
     /**
      * The support is `x > 0`, and that is the test. It used to be `x < 1e-9`, which is not the

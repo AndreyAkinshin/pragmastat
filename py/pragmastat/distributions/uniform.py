@@ -40,7 +40,7 @@ class Uniform(Distribution):
         self.max = max_val
 
     def sample(self, rng: "Rng") -> float:
-        return self.min + rng.uniform_float() * (self.max - self.min)
+        return self.quantile_at(rng.uniform_float())
 
     def density_at(self, x: float) -> float:
         """The support is half-open, so the density is zero at max and positive at min.

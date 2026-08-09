@@ -9,7 +9,7 @@ import { expFunction } from '../expFunction';
 import { logFunction } from '../logFunction';
 import { SQRT_2PI } from './constants';
 import { Distribution } from './distribution';
-import { Additive } from './additive';
+import { samplingCumulance } from './samplingCumulance';
 
 /**
  * Multiplicative (Log-Normal) distribution.
@@ -22,10 +22,6 @@ import { Additive } from './additive';
  * const sample = dist.sample(rng);
  */
 export class Multiplic implements Distribution {
-  private readonly additive: Additive;
-  // Kept beside the Additive that already holds them, so the density can be spelled in
-  // the same order of operations the other six ports spell it in. Reassociating the
-  // divisor would change the last bit, and these suites are compared by payload.
   private readonly logMean: number;
   private readonly logStdDev: number;
 
@@ -43,13 +39,12 @@ export class Multiplic implements Distribution {
     if (!(Number.isFinite(logStdDev) && logStdDev > 0)) {
       throw new Error('logStdDev must be finite and positive');
     }
-    this.additive = new Additive(logMean, logStdDev);
     this.logMean = logMean;
     this.logStdDev = logStdDev;
   }
 
   sample(rng: Rng): number {
-    return Math.exp(this.additive.sample(rng));
+    return this.quantileAt(samplingCumulance(rng));
   }
 
   /**

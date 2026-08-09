@@ -1,7 +1,6 @@
 mod conformance;
 
 use conformance::Conformance;
-use float_cmp::approx_eq;
 use pragmastat::assumptions::EstimatorError;
 use pragmastat::estimators::raw;
 use pragmastat::*;
@@ -1495,9 +1494,9 @@ fn run_uniform_distribution_tests() {
             .map(|_| dist.sample(&mut rng))
             .collect();
 
-        // The uniform distribution is a plain affine map over the raw draw, so it
-        // carries the same bitwise contract; additive/multiplic/exp/power below go
-        // through libm and stay tolerant.
+        // Every family now draws by inverting its own quantile through the toolkit's own
+        // exponential and logarithm, with no libm call on the path, so the contract is bitwise
+        // for all five.
         assert_bitwise_f64(&json_file, &actual, &test_case.output);
     }
 }
@@ -1537,18 +1536,7 @@ fn run_additive_distribution_tests() {
             .map(|_| dist.sample(&mut rng))
             .collect();
 
-        for (i, (actual_val, expected_val)) in
-            actual.iter().zip(test_case.output.iter()).enumerate()
-        {
-            assert!(
-                approx_eq!(f64, *actual_val, *expected_val, epsilon = 1e-12),
-                "Failed for test file: {:?}, index {}, expected: {}, got: {}",
-                json_file.file_name().unwrap(),
-                i,
-                expected_val,
-                actual_val
-            );
-        }
+        assert_bitwise_f64(&json_file, &actual, &test_case.output);
     }
 }
 
@@ -1587,18 +1575,7 @@ fn run_multiplic_distribution_tests() {
             .map(|_| dist.sample(&mut rng))
             .collect();
 
-        for (i, (actual_val, expected_val)) in
-            actual.iter().zip(test_case.output.iter()).enumerate()
-        {
-            assert!(
-                approx_eq!(f64, *actual_val, *expected_val, epsilon = 1e-12),
-                "Failed for test file: {:?}, index {}, expected: {}, got: {}",
-                json_file.file_name().unwrap(),
-                i,
-                expected_val,
-                actual_val
-            );
-        }
+        assert_bitwise_f64(&json_file, &actual, &test_case.output);
     }
 }
 
@@ -1634,18 +1611,7 @@ fn run_exp_distribution_tests() {
             .map(|_| dist.sample(&mut rng))
             .collect();
 
-        for (i, (actual_val, expected_val)) in
-            actual.iter().zip(test_case.output.iter()).enumerate()
-        {
-            assert!(
-                approx_eq!(f64, *actual_val, *expected_val, epsilon = 1e-12),
-                "Failed for test file: {:?}, index {}, expected: {}, got: {}",
-                json_file.file_name().unwrap(),
-                i,
-                expected_val,
-                actual_val
-            );
-        }
+        assert_bitwise_f64(&json_file, &actual, &test_case.output);
     }
 }
 
@@ -1681,18 +1647,7 @@ fn run_power_distribution_tests() {
             .map(|_| dist.sample(&mut rng))
             .collect();
 
-        for (i, (actual_val, expected_val)) in
-            actual.iter().zip(test_case.output.iter()).enumerate()
-        {
-            assert!(
-                approx_eq!(f64, *actual_val, *expected_val, epsilon = 1e-12),
-                "Failed for test file: {:?}, index {}, expected: {}, got: {}",
-                json_file.file_name().unwrap(),
-                i,
-                expected_val,
-                actual_val
-            );
-        }
+        assert_bitwise_f64(&json_file, &actual, &test_case.output);
     }
 }
 

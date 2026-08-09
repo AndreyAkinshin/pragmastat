@@ -16,6 +16,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { Additive, Distribution, Exp, Multiplic, Power, Uniform } from '../src/distributions';
+import { Rng } from '../src/rng';
 import { expectBitwise } from './bitwise';
 
 interface FamilyData {
@@ -162,6 +163,41 @@ describe('dist family special values', () => {
     it(`${name} answers the endpoints outside the unit interval`, () => {
       [0, -0.1, -Infinity].forEach((p) => expect(d.quantileAt(p)).toBe(lower));
       [1, 1.1, Infinity].forEach((p) => expect(d.quantileAt(p)).toBe(upper));
+    });
+  });
+});
+
+// Every family draws by inverting its own quantile.
+//
+// A fixture says two numbers agreed on the day it was written. This says they cannot disagree:
+// the same seed drives a draw and a direct quantile call, and the two must land on the same bits
+// for every family. It is what makes "a distribution is three functions" a statement about the
+// code rather than about the documentation, and it would fail the moment a family grew a second
+// sampling route.
+describe('sampling is the quantile of a drawn cumulance', () => {
+  // lifts is true for the two families whose quantileAt(0) is not a sample.
+  const families: Array<[string, Distribution, boolean]> = [
+    ['Uniform', new Uniform(-2.5, 7.5), false],
+    ['Exp', new Exp(0.5), false],
+    ['Additive', new Additive(1.0, 2.0), true],
+    ['Multiplic', new Multiplic(-1.0, 0.5), true],
+    ['Power', new Power(2.0, 3.0), false],
+  ];
+
+  families.forEach(([name, d, lifts]) => {
+    it(`${name}`, () => {
+      const drawing = new Rng('identity-seed');
+      const inverting = new Rng('identity-seed');
+      for (let i = 0; i < 1000; i++) {
+        const drawn = d.sample(drawing);
+        // The same cumulance the draw consumed, taken from a generator on the same seed.
+        let u = inverting.uniformFloat();
+        if (lifts && u === 0) {
+          u = 5e-324;
+        }
+        const inverted = d.quantileAt(u);
+        expectBitwise(`${name} draw ${i}`, drawn, inverted);
+      }
     });
   });
 });

@@ -3,7 +3,6 @@
 import math
 from typing import TYPE_CHECKING
 
-from .._constants import MACHINE_EPSILON
 from ..exp_function import exp_function
 from ..log_function import log_function
 from .distribution import Distribution
@@ -43,12 +42,7 @@ class Power(Distribution):
         self.shape = shape
 
     def sample(self, rng: "Rng") -> float:
-        # Inverse CDF method: min / (1 - U)^(1/shape)
-        u = rng.uniform_float()
-        # Avoid division by zero - use machine epsilon for cross-language consistency
-        if u == 1.0:
-            u = 1.0 - MACHINE_EPSILON
-        return self.min / math.pow(1.0 - u, 1.0 / self.shape)
+        return self.quantile_at(rng.uniform_float())
 
     def density_at(self, x: float) -> float:
         """Shape * min^shape / x^(shape+1), rearranged as (shape / x) * exp(shape * (log min - log x)).
