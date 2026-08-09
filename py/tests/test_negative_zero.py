@@ -35,7 +35,9 @@ from pragmastat import (
     spread,
     spread_bounds,
 )
-from pragmastat.estimators import _avg_spread, _avg_spread_bounds, _new_bounds, _normalize_zero
+from pragmastat._normalize_zero import normalize_zero
+from pragmastat.bounds import Bounds
+from pragmastat.estimators import _avg_spread, _avg_spread_bounds
 from pragmastat.measurement_unit import NUMBER_UNIT
 
 NEGATIVE_ZERO = 0x8000000000000000
@@ -149,21 +151,21 @@ def test_inputs_keep_their_negative_zeros():
     [1.0, -1.0, 1e-320, -1e-320, math.inf, -math.inf, math.nan, 5e-324, -5e-324],
 )
 def test_normalization_leaves_every_non_zero_alone(value):
-    assert_identical(_normalize_zero(value), value, f"_normalize_zero({value!r})")
+    assert_identical(normalize_zero(value), value, f"normalize_zero({value!r})")
 
 
 @pytest.mark.parametrize("value", [0.0, -0.0])
 def test_normalization_maps_both_zeros_to_the_positive_one(value):
-    assert_identical(_normalize_zero(value), 0.0, f"_normalize_zero({value!r})")
+    assert_identical(normalize_zero(value), 0.0, f"normalize_zero({value!r})")
 
 
-def test_new_bounds_normalizes_both_endpoints():
-    bounds = _new_bounds(-0.0, -0.0, NUMBER_UNIT)
+def test_bounds_construction_normalizes_both_endpoints():
+    bounds = Bounds(-0.0, -0.0, NUMBER_UNIT)
     assert_positive_zero(bounds.lower, "lower")
     assert_positive_zero(bounds.upper, "upper")
 
 
-def test_new_bounds_leaves_infinite_endpoints_alone():
-    bounds = _new_bounds(-math.inf, math.inf, NUMBER_UNIT)
+def test_bounds_construction_leaves_infinite_endpoints_alone():
+    bounds = Bounds(-math.inf, math.inf, NUMBER_UNIT)
     assert_identical(bounds.lower, -math.inf, "lower")
     assert_identical(bounds.upper, math.inf, "upper")

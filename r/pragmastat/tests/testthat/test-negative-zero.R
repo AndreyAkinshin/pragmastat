@@ -83,6 +83,18 @@ test_that("center_bounds and disparity_bounds return positive zero endpoints", {
   expect_identical(double_bits(db$upper), POSITIVE_ZERO)
 })
 
+test_that("Bounds$new normalizes both endpoints itself", {
+  bounds <- Bounds$new(-0.0, -0.0, number_unit)
+  expect_identical(double_bits(bounds$lower), POSITIVE_ZERO)
+  expect_identical(double_bits(bounds$upper), POSITIVE_ZERO)
+})
+
+test_that("Bounds$new leaves infinite endpoints alone", {
+  bounds <- Bounds$new(-Inf, Inf, number_unit)
+  expect_identical(bounds$lower, -Inf)
+  expect_identical(bounds$upper, Inf)
+})
+
 test_that("negative zeros stay legal in the input", {
   # Only outputs are normalized: a sample may still contain -0, and it still
   # compares equal to +0, so the estimate is unaffected.

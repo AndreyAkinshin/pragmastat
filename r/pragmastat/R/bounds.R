@@ -23,7 +23,7 @@ Bounds <- R6::R6Class(
     #' @field unit MeasurementUnit associated with the bounds
     unit = NULL,
 
-    #' @description Create new Bounds
+    #' @description Create new Bounds, normalizing both endpoints (see normalize_zero)
     #' @param lower Lower bound value
     #' @param upper Upper bound value
     #' @param unit MeasurementUnit (defaults to number_unit)
@@ -31,8 +31,8 @@ Bounds <- R6::R6Class(
       if (is.null(unit)) {
         unit <- number_unit
       }
-      self$lower <- lower
-      self$upper <- upper
+      self$lower <- normalize_zero(lower)
+      self$upper <- normalize_zero(upper)
       self$unit <- unit
     },
 
