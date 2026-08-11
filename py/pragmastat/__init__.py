@@ -19,6 +19,9 @@ from .distributions import (
     Additive,
     Distribution,
     Exp,
+    LinearDistModel,
+    LinearLandscape,
+    MeasuredView,
     Multiplic,
     Power,
     Uniform,
@@ -90,6 +93,10 @@ __all__ = [
     "Multiplic",
     "Exp",
     "Power",
+    # Distribution estimation
+    "LinearDistModel",
+    "LinearLandscape",
+    "MeasuredView",
 ]
 
 __version__ = "14.0.1"

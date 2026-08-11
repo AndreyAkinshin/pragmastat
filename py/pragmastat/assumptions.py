@@ -8,17 +8,26 @@ Assumption IDs (canonical priority order):
     2. domain - input parameters within valid domain
     3. positivity - values must be strictly positive
     4. sparity - sample must be non tie-dominant (Spread > 0)
+    4. distinctness - sample values must be pairwise distinct
+    5. cumulance - every queried cumulance must lie in the closed unit interval
+
+sparity and distinctness share a priority level: no function checks both.
 
 When multiple assumptions are violated, the violation with highest priority
 is reported. For two-sample functions, subject X is checked before Y.
 """
 
+import math
 from dataclasses import dataclass
 from enum import StrEnum
+from typing import TYPE_CHECKING
 
 import numpy as np
 
 from .log_function import log_function
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 
 class AssumptionId(StrEnum):
@@ -28,6 +37,8 @@ class AssumptionId(StrEnum):
     DOMAIN = "domain"
     POSITIVITY = "positivity"
     SPARITY = "sparity"
+    DISTINCTNESS = "distinctness"
+    CUMULANCE = "cumulance"
 
 
 class Subject(StrEnum):
@@ -87,6 +98,16 @@ class AssumptionError(Exception):
         """Creates an error for the domain assumption."""
         return cls(Violation(AssumptionId.DOMAIN, subject))
 
+    @classmethod
+    def distinctness(cls, subject: Subject) -> "AssumptionError":
+        """Creates an error for the distinctness assumption."""
+        return cls(Violation(AssumptionId.DISTINCTNESS, subject))
+
+    @classmethod
+    def cumulance(cls, subject: Subject) -> "AssumptionError":
+        """Creates an error for the cumulance assumption."""
+        return cls(Violation(AssumptionId.CUMULANCE, subject))
+
 
 def check_validity(values: np.ndarray, subject: Subject) -> None:
     """Checks that a sample is valid (non-empty with finite values)."""
@@ -94,6 +115,25 @@ def check_validity(values: np.ndarray, subject: Subject) -> None:
         raise AssumptionError.validity(subject)
     if not np.all(np.isfinite(values)):
         raise AssumptionError.validity(subject)
+
+
+def check_query_validity(values: "Sequence[float]") -> None:
+    """Checks the validity assumption for a Distribution Estimation query vector.
+
+    A query vector is a list of questions asked of a model, not a sample, so an
+    empty vector satisfies the assumption vacuously. Every element that is
+    present must be finite.
+    """
+    for value in values:
+        if not math.isfinite(value):
+            raise AssumptionError.validity(Subject.Y)
+
+
+def check_cumulance(values: "Sequence[float]") -> None:
+    """Checks that every queried cumulance lies in the closed unit interval."""
+    for value in values:
+        if not 0.0 <= value <= 1.0:
+            raise AssumptionError.cumulance(Subject.Y)
 
 
 def check_positivity(values: np.ndarray, subject: Subject) -> None:

@@ -15,7 +15,7 @@ from pragmastat.assumptions import Violation
 @pytest.mark.parametrize(
     ("family", "ids"),
     [
-        (AssumptionId, ["validity", "domain", "positivity", "sparity"]),
+        (AssumptionId, ["validity", "domain", "positivity", "sparity", "distinctness", "cumulance"]),
         (Subject, ["x", "y", "misrate"]),
         (Metric, ["center", "spread", "shift", "ratio", "disparity"]),
         (ComparisonVerdict, ["less", "greater", "inconclusive"]),
