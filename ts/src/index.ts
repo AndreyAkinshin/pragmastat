@@ -34,4 +34,14 @@ export { Metric, ComparisonVerdict, Threshold, Projection, compare1, compare2 } 
 
 export { Rng } from './rng';
 
-export { type Distribution, Uniform, Additive, Multiplic, Exp, Power } from './distributions/index';
+export {
+  type Distribution,
+  Uniform,
+  Additive,
+  Multiplic,
+  Exp,
+  Power,
+  type DistMeasuredView,
+  LinearDistModel,
+  LinearLandscape,
+} from './distributions/index';

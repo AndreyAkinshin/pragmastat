@@ -5,7 +5,10 @@
  *   1. validity - non-empty input with finite defined real values
  *   2. domain - parameter is outside its valid domain
  *   3. positivity - values must be strictly positive
- *   4. sparity - sample must be non tie-dominant (Spread > 0)
+ *   4. sparity / distinctness - share a priority level: no estimator checks both
+ *      - sparity - sample must be non tie-dominant (Spread > 0)
+ *      - distinctness - sample must hold no repeated value
+ *   5. cumulance - a query value must lie in the closed unit interval [0, 1]
  *
  * When multiple assumptions are violated, the violation with highest priority
  * is reported. For two-sample functions, subject X is checked before Y.
@@ -18,6 +21,8 @@ export const AssumptionId = {
   DOMAIN: 'domain',
   POSITIVITY: 'positivity',
   SPARITY: 'sparity',
+  DISTINCTNESS: 'distinctness',
+  CUMULANCE: 'cumulance',
 } as const;
 
 export type AssumptionId = (typeof AssumptionId)[keyof typeof AssumptionId];
@@ -65,6 +70,14 @@ export class AssumptionError extends Error {
   static domain(subject: Subject): AssumptionError {
     return new AssumptionError({ id: AssumptionId.DOMAIN, subject });
   }
+
+  static distinctness(subject: Subject): AssumptionError {
+    return new AssumptionError({ id: AssumptionId.DISTINCTNESS, subject });
+  }
+
+  static cumulance(subject: Subject): AssumptionError {
+    return new AssumptionError({ id: AssumptionId.CUMULANCE, subject });
+  }
 }
 
 export function checkValidity(values: readonly number[], subject: Subject): void {
@@ -79,6 +92,40 @@ export function checkValidity(values: readonly number[], subject: Subject): void
 export function checkPositivity(values: readonly number[], subject: Subject): void {
   if (values.some((v) => v <= 0)) {
     throw AssumptionError.positivity(subject);
+  }
+}
+
+/**
+ * Checks the validity assumption for a query vector passed to a distribution model: any
+ * non-finite element is a violation. Unlike checkValidity, an empty vector is not a violation
+ * here, since a query vector is questions asked of a model, and asking none is not malformed
+ * input.
+ */
+export function checkQueryValidity(values: readonly number[], subject: Subject): void {
+  if (!values.every((v) => Number.isFinite(v))) {
+    throw AssumptionError.validity(subject);
+  }
+}
+
+/**
+ * Checks that every value in a query vector lies in the closed unit interval [0, 1], the domain
+ * a cumulance (a quantile's probability argument) is defined on.
+ */
+export function checkCumulance(values: readonly number[], subject: Subject): void {
+  if (values.some((v) => !(v >= 0 && v <= 1))) {
+    throw AssumptionError.cumulance(subject);
+  }
+}
+
+/**
+ * Checks that a sorted collection holds no repeated value. -0 and +0 compare equal, so a sample
+ * holding both is rejected the same as any other duplicate.
+ */
+export function checkDistinctness(sortedValues: readonly number[], subject: Subject): void {
+  for (let i = 1; i < sortedValues.length; i++) {
+    if (sortedValues[i - 1] === sortedValues[i]) {
+      throw AssumptionError.distinctness(subject);
+    }
   }
 }
 

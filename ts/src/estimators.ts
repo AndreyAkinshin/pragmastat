@@ -76,7 +76,7 @@ import { Rng } from './rng';
  *
  * `===` cannot observe the difference, so tests for this compare `Object.is` or raw payloads.
  */
-function normalizeZero(value: number): number {
+export function normalizeZero(value: number): number {
   return value === 0 ? 0 : value;
 }
 
