@@ -111,7 +111,7 @@ pub use compare::{
 };
 pub use distributions::{
     Additive, Distribution, Exp, LinearDistModel, LinearLandscape, MeasuredDist, MeasuredModel,
-    Multiplic, Power, Uniform,
+    Multiplic, NeighborDistModel, NeighborLandscape, Power, Uniform,
 };
 pub use estimators::{
     DEFAULT_MISRATE, center, center_bounds, disparity, disparity_bounds,

@@ -18,9 +18,10 @@
 /// Unlike machine epsilon (which is the smallest ε where 1+ε ≠ 1), this is the
 /// absolute smallest positive number before underflow to zero.
 ///
-/// Used by `sampling_cumulance` to lift a drawn cumulance off zero. All language implementations
-/// use this same value to ensure cross-language determinism in distribution sampling.
-const SMALLEST_POSITIVE_SUBNORMAL: f64 = 5e-324;
+/// Used by `sampling_cumulance` to lift a drawn cumulance off zero, and by `dist_numerics`'
+/// `next_up`/`next_down` at the zero boundary. All language implementations use this same value
+/// to ensure cross-language determinism.
+pub(crate) const SMALLEST_POSITIVE_SUBNORMAL: f64 = 5e-324;
 
 /// The cumulance [`Additive`] and [`Multiplic`] consume, the two families whose `quantile_at(0)`
 /// is not a sample: Additive returns negative infinity there, Multiplic returns the zero its own
@@ -51,6 +52,8 @@ mod linear_dist_model;
 mod linear_landscape;
 mod measured_dist;
 mod multiplic;
+mod neighbor_dist_model;
+mod neighbor_landscape;
 mod power;
 mod uniform;
 
@@ -61,6 +64,8 @@ pub use linear_dist_model::{LINEAR_DIST_MODEL_ALGORITHM, LinearDistModel};
 pub use linear_landscape::LinearLandscape;
 pub use measured_dist::{MeasuredDist, MeasuredModel};
 pub use multiplic::Multiplic;
+pub use neighbor_dist_model::{NEIGHBOR_DIST_MODEL_ALGORITHM, NeighborDistModel};
+pub use neighbor_landscape::NeighborLandscape;
 pub use power::Power;
 pub use uniform::Uniform;
 
