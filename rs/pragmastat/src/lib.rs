@@ -61,6 +61,8 @@ pub mod unit_registry;
 pub(crate) mod additive_cumulative;
 pub(crate) mod additive_quantile;
 pub(crate) mod binomial;
+pub(crate) mod dist_numerics;
+pub(crate) mod dist_sample_guard;
 pub(crate) mod exp_function;
 pub(crate) mod log_function;
 pub(crate) mod min_misrate;
@@ -107,7 +109,10 @@ pub use compare::{
     ComparisonVerdict, Metric, Projection, Threshold, compare1, compare1_with_seed, compare2,
     compare2_with_seed,
 };
-pub use distributions::{Additive, Distribution, Exp, Multiplic, Power, Uniform};
+pub use distributions::{
+    Additive, Distribution, Exp, LinearDistModel, LinearLandscape, MeasuredDist, MeasuredModel,
+    Multiplic, Power, Uniform,
+};
 pub use estimators::{
     DEFAULT_MISRATE, center, center_bounds, disparity, disparity_bounds,
     disparity_bounds_with_seed, ratio, ratio_bounds, shift, shift_bounds, spread, spread_bounds,

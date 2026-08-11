@@ -9,9 +9,12 @@
 //! 2. `Domain` - parameter is outside its valid domain
 //! 3. `Positivity` - values must be strictly positive
 //! 4. `Sparity` - sample must be non tie-dominant (Spread > 0)
+//! 5. `Distinctness` - sample must hold no repeated value
+//! 6. `Cumulance` - a query value must lie in the closed unit interval [0, 1]
 //!
-//! When multiple assumptions are violated, the violation with highest priority
-//! is reported. For two-sample functions, subject `X` is checked before `Y`.
+//! `Sparity` and `Distinctness` share a priority level: no estimator checks both. When multiple
+//! assumptions are violated, the violation with highest priority is reported. For two-sample
+//! functions, subject `X` is checked before `Y`.
 
 use std::fmt;
 
@@ -31,6 +34,10 @@ pub enum AssumptionId {
     Positivity = 2,
     /// Sample must be non tie-dominant: Spread(x) > 0.
     Sparity = 3,
+    /// Sample must hold no repeated value.
+    Distinctness = 4,
+    /// A query value must lie in the closed unit interval [0, 1].
+    Cumulance = 5,
 }
 
 impl AssumptionId {
@@ -41,6 +48,8 @@ impl AssumptionId {
             AssumptionId::Positivity => "positivity",
             AssumptionId::Sparity => "sparity",
             AssumptionId::Domain => "domain",
+            AssumptionId::Distinctness => "distinctness",
+            AssumptionId::Cumulance => "cumulance",
         }
     }
 }
@@ -135,6 +144,16 @@ impl AssumptionError {
         Self::new(Violation::new(AssumptionId::Domain, subject))
     }
 
+    /// Creates an error for the `distinctness` assumption.
+    pub fn distinctness(subject: Subject) -> Self {
+        Self::new(Violation::new(AssumptionId::Distinctness, subject))
+    }
+
+    /// Creates an error for the `cumulance` assumption.
+    pub fn cumulance(subject: Subject) -> Self {
+        Self::new(Violation::new(AssumptionId::Cumulance, subject))
+    }
+
     /// Returns the violation contained in this error.
     pub fn violation(&self) -> Violation {
         self.violation
@@ -206,6 +225,41 @@ pub(crate) fn check_validity(values: &[f64], subject: Subject) -> Result<(), Ass
 pub(crate) fn check_positivity(values: &[f64], subject: Subject) -> Result<(), AssumptionError> {
     if values.iter().any(|&v| v <= 0.0) {
         return Err(AssumptionError::positivity(subject));
+    }
+    Ok(())
+}
+
+/// Checks the validity assumption for a query vector passed to a distribution model: any
+/// non-finite element is a violation. Unlike [`check_validity`], an empty vector is not a
+/// violation here, since a query vector is questions asked of a model, and asking none is not
+/// malformed input.
+pub(crate) fn check_query_validity(
+    values: &[f64],
+    subject: Subject,
+) -> Result<(), AssumptionError> {
+    if values.iter().any(|v| !v.is_finite()) {
+        return Err(AssumptionError::validity(subject));
+    }
+    Ok(())
+}
+
+/// Checks that every value in a query vector lies in the closed unit interval [0, 1], the domain
+/// a cumulance (a quantile's probability argument) is defined on.
+pub(crate) fn check_cumulance(values: &[f64], subject: Subject) -> Result<(), AssumptionError> {
+    if values.iter().any(|&v| !(0.0..=1.0).contains(&v)) {
+        return Err(AssumptionError::cumulance(subject));
+    }
+    Ok(())
+}
+
+/// Checks that a sorted slice holds no repeated value. `-0.0` and `0.0` compare equal, so a
+/// sample holding both is rejected the same as any other duplicate.
+pub(crate) fn check_distinctness(
+    sorted_values: &[f64],
+    subject: Subject,
+) -> Result<(), AssumptionError> {
+    if sorted_values.windows(2).any(|w| w[0] == w[1]) {
+        return Err(AssumptionError::distinctness(subject));
     }
     Ok(())
 }

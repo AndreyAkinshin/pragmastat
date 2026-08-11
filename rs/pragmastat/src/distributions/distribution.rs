@@ -8,9 +8,9 @@ use crate::Rng;
 /// probability of not exceeding it, and `quantile_at` inverts that. Each family supplies all three
 /// out of the toolkit's own primitives, so seven implementations return identical bits.
 ///
-/// `sample` stays separate rather than being defined as `quantile_at(uniform_f64())`. Two of the
-/// families draw by a route that is not inverse transform sampling, and changing that would change
-/// every seeded stream in every language, which is a decision of its own and not this one.
+/// Every family draws by inverse transform: `sample` is `quantile_at` applied to a drawn
+/// cumulance. The identity holds by construction rather than by agreement, so a family cannot
+/// drift into describing one distribution and drawing from another.
 ///
 /// # Why the names carry `_at`
 ///
