@@ -1,5 +1,9 @@
 package dev.pragmastat
 
+/**
+ * Assumption identifiers in canonical priority order: validity, domain, positivity,
+ * then the shared level of sparity and distinctness, then cumulance.
+ */
 enum class AssumptionId(
     val id: String,
 ) {
@@ -7,6 +11,8 @@ enum class AssumptionId(
     DOMAIN("domain"),
     POSITIVITY("positivity"),
     SPARITY("sparity"),
+    DISTINCTNESS("distinctness"),
+    CUMULANCE("cumulance"),
 }
 
 enum class Subject(
@@ -46,6 +52,31 @@ internal fun checkValidity(
     for (v in values) {
         if (v.isNaN() || v.isInfinite()) {
             throw AssumptionException(Violation(AssumptionId.VALIDITY, subject))
+        }
+    }
+}
+
+/**
+ * Checks the validity assumption for a Distribution Estimation query vector.
+ *
+ * A query vector is a list of questions asked of a model, not a sample, so an empty
+ * vector satisfies the assumption vacuously. Every element that is present must be finite.
+ */
+internal fun checkQueryValidity(values: List<Double>) {
+    for (v in values) {
+        if (v.isNaN() || v.isInfinite()) {
+            throw AssumptionException(Violation(AssumptionId.VALIDITY, Subject.Y))
+        }
+    }
+}
+
+/**
+ * Checks that every queried cumulance lies in the closed unit interval.
+ */
+internal fun checkCumulance(values: List<Double>) {
+    for (v in values) {
+        if (!(v >= 0.0 && v <= 1.0)) {
+            throw AssumptionException(Violation(AssumptionId.CUMULANCE, Subject.Y))
         }
     }
 }
