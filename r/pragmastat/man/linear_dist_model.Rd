@@ -78,3 +78,6 @@ measured <- linear_dist_model(Sample$new(c(1, 3, 5, 7, 9), unit = ns))
 measured$measured$quantile(0.375)$value              # 4
 measured$measured$density(Measurement$new(4, ns))     # 0.125
 }
+\seealso{
+\code{\link{neighbor_dist_model}}
+}

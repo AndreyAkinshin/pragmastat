@@ -7,8 +7,8 @@ An R6 class representing a numeric value paired with a \code{\link{MeasurementUn
 Returned by estimator functions when given \code{\link{Sample}} input.
 
 The value is a numeric vector, so one Measurement can carry a whole query result: the measured
-view of \code{\link{linear_dist_model}} returns the answers to every element of the query under
-a single unit.
+views of \code{\link{linear_dist_model}} and \code{\link{neighbor_dist_model}} return the
+answers to every element of the query under a single unit.
 
 The S3 method \code{as.numeric} extracts the raw numeric value.
 }
