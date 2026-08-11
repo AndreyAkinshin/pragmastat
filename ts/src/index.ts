@@ -44,4 +44,6 @@ export {
   type DistMeasuredView,
   LinearDistModel,
   LinearLandscape,
+  NeighborDistModel,
+  NeighborLandscape,
 } from './distributions/index';
