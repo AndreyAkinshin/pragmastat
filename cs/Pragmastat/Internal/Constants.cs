@@ -36,8 +36,9 @@ internal static class Constants
   /// </para>
   /// <para>
   /// Used by <see cref="Distributions.SamplingCumulance"/> to lift a drawn cumulance off zero,
-  /// where the unbounded families answer with an infinity. All language implementations use this
-  /// same value to ensure cross-language determinism in distribution sampling.
+  /// and by <see cref="DistNumerics.NextUp"/>/<see cref="DistNumerics.NextDown"/> as the ULP step
+  /// away from zero. All language implementations use this same value to ensure cross-language
+  /// determinism.
   /// </para>
   /// </remarks>
   public const double SmallestPositiveSubnormal = 5e-324;

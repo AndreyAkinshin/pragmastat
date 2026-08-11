@@ -15,6 +15,8 @@ public class EnumIdTests
   [InlineData(AssumptionId.Domain, "domain")]
   [InlineData(AssumptionId.Positivity, "positivity")]
   [InlineData(AssumptionId.Sparity, "sparity")]
+  [InlineData(AssumptionId.Distinctness, "distinctness")]
+  [InlineData(AssumptionId.Cumulance, "cumulance")]
   public void AssumptionIdHasItsId(AssumptionId id, string expected) => Assert.Equal(expected, id.ToId());
 
   [Theory]

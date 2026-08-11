@@ -248,6 +248,46 @@ internal static class Assertion
         throw AssumptionException.Positivity(subject);
   }
 
+  /// <summary>
+  /// Checks the validity assumption for a query vector passed to a distribution model: null or
+  /// any non-finite element is a violation. Unlike <see cref="Validity"/>, an empty vector is
+  /// not a violation here, since a query vector is questions asked of a model, and asking none
+  /// is not malformed input.
+  /// </summary>
+  [AssertionMethod]
+  public static void QueryValidity(IReadOnlyList<double>? values, Subject subject)
+  {
+    if (values == null)
+      throw AssumptionException.Validity(subject);
+    for (int i = 0; i < values.Count; i++)
+      if (!values[i].IsFinite())
+        throw AssumptionException.Validity(subject);
+  }
+
+  /// <summary>
+  /// Checks that every value in a query vector lies in the closed unit interval [0, 1], the
+  /// domain a cumulance (a quantile's probability argument) is defined on.
+  /// </summary>
+  [AssertionMethod]
+  public static void CumulanceAssumption(IReadOnlyList<double> values, Subject subject)
+  {
+    for (int i = 0; i < values.Count; i++)
+      if (!(values[i] >= 0.0 && values[i] <= 1.0))
+        throw AssumptionException.Cumulance(subject);
+  }
+
+  /// <summary>
+  /// Checks that a sorted collection holds no repeated value. <c>-0.0</c> and <c>0.0</c> compare
+  /// equal, so a sample holding both is rejected the same as any other duplicate.
+  /// </summary>
+  [AssertionMethod]
+  public static void DistinctnessAssumption(IReadOnlyList<double> sortedValues, Subject subject)
+  {
+    for (int i = 1; i < sortedValues.Count; i++)
+      if (sortedValues[i - 1] == sortedValues[i])
+        throw AssumptionException.Distinctness(subject);
+  }
+
   [StringFormatMethod("format")]
   private static string Format(string format, params object[] args) =>
     string.Format(CultureInfo.InvariantCulture, format, args);

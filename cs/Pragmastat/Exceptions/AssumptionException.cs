@@ -16,7 +16,13 @@ public enum AssumptionId
   Positivity,
 
   /// <summary>Sample must be non tie-dominant (Spread &gt; 0).</summary>
-  Sparity
+  Sparity,
+
+  /// <summary>Sample must hold no repeated value.</summary>
+  Distinctness,
+
+  /// <summary>A query value must lie in the closed unit interval [0, 1].</summary>
+  Cumulance
 }
 
 /// <summary>
@@ -38,8 +44,8 @@ public enum Subject
 public static class AssumptionIdExtensions
 {
   /// <summary>
-  /// Canonical lowercase identifier ("validity"/"domain"/"positivity"/"sparity"),
-  /// matching the string every other language port emits.
+  /// Canonical lowercase identifier ("validity"/"domain"/"positivity"/"sparity"/"distinctness"/
+  /// "cumulance"), matching the string every other language port emits.
   /// </summary>
   public static string ToId(this AssumptionId id) => id switch
   {
@@ -47,6 +53,8 @@ public static class AssumptionIdExtensions
     AssumptionId.Domain => "domain",
     AssumptionId.Positivity => "positivity",
     AssumptionId.Sparity => "sparity",
+    AssumptionId.Distinctness => "distinctness",
+    AssumptionId.Cumulance => "cumulance",
     _ => throw new ArgumentOutOfRangeException(nameof(id), id, null)
   };
 }
@@ -116,4 +124,10 @@ public class AssumptionException : ArgumentException
 
   public static AssumptionException Domain(Subject subject) =>
     new(new Violation(AssumptionId.Domain, subject));
+
+  public static AssumptionException Distinctness(Subject subject) =>
+    new(new Violation(AssumptionId.Distinctness, subject));
+
+  public static AssumptionException Cumulance(Subject subject) =>
+    new(new Violation(AssumptionId.Cumulance, subject));
 }
