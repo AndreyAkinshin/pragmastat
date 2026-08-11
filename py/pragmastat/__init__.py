@@ -23,6 +23,8 @@ from .distributions import (
     LinearLandscape,
     MeasuredView,
     Multiplic,
+    NeighborDistModel,
+    NeighborLandscape,
     Power,
     Uniform,
 )
@@ -97,6 +99,8 @@ __all__ = [
     "LinearDistModel",
     "LinearLandscape",
     "MeasuredView",
+    "NeighborDistModel",
+    "NeighborLandscape",
 ]
 
 __version__ = "14.0.1"
