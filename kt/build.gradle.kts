@@ -17,8 +17,8 @@ repositories {
 dependencies {
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter:5.14.4")
-    testImplementation("com.fasterxml.jackson.core:jackson-databind:2.22.1")
-    testImplementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.22.1")
+    testImplementation("com.fasterxml.jackson.core:jackson-databind:2.22.2")
+    testImplementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.22.2")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
