@@ -748,6 +748,35 @@ fi
 echo "generated fixtures match the generator that owns them"
 """
 
+[tasks."tests:check:dist-fixtures"]
+description = "Assert the dist-linear/dist-neighbor fixtures still match their generator"
+# tests:check:generator-drift covers the suites the C# generator owns; tests:check:rng-fixtures
+# covers the ones the Rust generator owns. Neither runs tests/oracles/gen_dist_tests.py, so the
+# 236 fixtures under tests/dist-linear and tests/dist-neighbor had no drift gate at all: a
+# hand-edited fixture, or one left stale after tests/oracles/dist_reference.py's algorithm
+# changes, would pass `mise run ci` green in every one of the seven languages indefinitely, since
+# each language's loader only compares against whatever bits currently sit in the file, never a
+# freshly regenerated one.
+#
+# Regeneration goes to a scratch directory, never to tests/, for the same reason the two sibling
+# checks do: this runs alongside every language's suite, all of which read the fixture tree.
+run = """
+#!/usr/bin/env bash
+set -euo pipefail
+scratch="$(mktemp -d)"
+trap 'rm -rf "$scratch"' EXIT
+PRAGMASTAT_TESTS_ROOT="$scratch" python3 tests/oracles/gen_dist_tests.py >/dev/null
+status=0
+for suite in dist-linear dist-neighbor; do
+  diff -r -q "tests/$suite" "$scratch/tests/$suite" || status=1
+done
+if [ "$status" -ne 0 ]; then
+  echo "ERROR: regenerating produced different fixtures — the oracle and the committed tree disagree." >&2
+  exit 1
+fi
+echo "dist-linear/dist-neighbor fixtures match the generator that owns them"
+"""
+
 [tasks."rs:doc"]
 description = "Build Rust documentation"
 dir = "rs/pragmastat"
@@ -1196,7 +1225,7 @@ depends = ["cs:demo", "go:demo", "kt:demo", "py:demo", "r:demo", "rs:demo", "ts:
 
 [tasks."ci"]
 description = "Run CI pipeline for all language implementations"
-depends = ["cs:ci", "go:ci", "kt:ci", "py:ci", "r:ci", "rs:ci", "ts:ci", "docs:ci", "tests:check:rng-fixtures", "tests:check:conformance", "tests:check:generator-drift", "tests:check:spelling", "tests:check:coefficients", "tests:check:function-oracles", "tests:check:libm", "tests:check:shared-constants", "tests:check:task-coverage", "tests:check:rs-incremental"]
+depends = ["cs:ci", "go:ci", "kt:ci", "py:ci", "r:ci", "rs:ci", "ts:ci", "docs:ci", "tests:check:rng-fixtures", "tests:check:dist-fixtures", "tests:check:conformance", "tests:check:generator-drift", "tests:check:spelling", "tests:check:coefficients", "tests:check:function-oracles", "tests:check:libm", "tests:check:shared-constants", "tests:check:task-coverage", "tests:check:rs-incremental"]
 
 # ==========================================================================
 # Version Task

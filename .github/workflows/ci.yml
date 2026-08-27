@@ -326,6 +326,20 @@ jobs:
     - name: Estimator fixtures still match their generator
       run: mise run tests:check:generator-drift
 
+    # gen_dist_tests.py imports the pragmastat package, which pulls in numpy transitively -- the
+    # rng-fixtures and generator-drift checks above never touch Python, so this is the first step
+    # in this job that needs a populated environment.
+    - name: Set up Python
+      uses: actions/setup-python@v7
+      with:
+        python-version: '3.12'  # keep in sync with [tools].python in mise.toml
+
+    - name: Install Python package and dependencies
+      run: mise run py:restore
+
+    - name: Distribution-estimation fixtures still match their generator
+      run: mise run tests:check:dist-fixtures
+
     - name: Every estimator holds its declared conformance class
       run: mise run tests:check:conformance
 
