@@ -1,0 +1,42 @@
+{
+  "input": {
+    "x": [
+      1.0,
+      1.0000000000000002,
+      3.0
+    ]
+  },
+  "output": {
+    "k0": 2,
+    "radius": 1,
+    "boundaries": [
+      1.0,
+      2.0,
+      3.0
+    ],
+    "cumulative": [
+      0.0,
+      0.6,
+      1.0
+    ],
+    "masses": [
+      0.6,
+      0.4
+    ],
+    "densities": [
+      0.6,
+      0.4
+    ],
+    "sources": [
+      1,
+      2
+    ]
+  },
+  "tolerance": {
+    "kind": "exact"
+  },
+  "oracle": {
+    "kind": "generated-common",
+    "source": "tests/oracles/gen_dist_tests.py"
+  }
+}

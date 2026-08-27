@@ -1,0 +1,21 @@
+{
+  "input": {
+    "x": [
+      1.0,
+      2.0,
+      2.0,
+      3.0
+    ],
+    "y": [
+      0.5
+    ]
+  },
+  "expected_error": {
+    "id": "distinctness",
+    "subject": "x"
+  },
+  "oracle": {
+    "kind": "manual-rational",
+    "source": "manual/assumptions (hard assumption priority order)"
+  }
+}

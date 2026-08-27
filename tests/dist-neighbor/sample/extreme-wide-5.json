@@ -1,0 +1,30 @@
+{
+  "input": {
+    "x": [
+      1e-300,
+      1.0,
+      100.0,
+      1e+100,
+      1e+300
+    ],
+    "seed": "dist-neighbor-sample-wide",
+    "count": 8
+  },
+  "output": [
+    2.414213576907303e+299,
+    4.2213788488745507e+99,
+    3.5590908731558015e+99,
+    4.66659361097593e+299,
+    43.31679537896764,
+    28.192361728281355,
+    3.928357330970713e+99,
+    1.4214744647897368e+98
+  ],
+  "tolerance": {
+    "kind": "exact"
+  },
+  "oracle": {
+    "kind": "generated-common",
+    "source": "tests/oracles/gen_dist_tests.py composed with the cross-language verified Rng suite"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "input": {
+    "x": [
+      1.0
+    ],
+    "y": [
+      0.5
+    ]
+  },
+  "expected_error": {
+    "id": "domain",
+    "subject": "x"
+  },
+  "oracle": {
+    "kind": "manual-rational",
+    "source": "manual/assumptions (hard assumption priority order)"
+  }
+}

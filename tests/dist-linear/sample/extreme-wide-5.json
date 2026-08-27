@@ -1,0 +1,30 @@
+{
+  "input": {
+    "x": [
+      1e-300,
+      1.0,
+      100.0,
+      1e+100,
+      1e+300
+    ],
+    "seed": "dist-linear-sample-wide",
+    "count": 8
+  },
+  "output": [
+    0.9514808680854583,
+    2.411784191912392e+99,
+    9.789534084878232e+99,
+    83.35356149076274,
+    0.09573708359318678,
+    6.054971141250593e+99,
+    69.09496411775706,
+    10.989790471666483
+  ],
+  "tolerance": {
+    "kind": "exact"
+  },
+  "oracle": {
+    "kind": "generated-common",
+    "source": "tests/oracles/gen_dist_tests.py composed with the cross-language verified Rng suite"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "input": {
+    "x": [
+      1.0,
+      3.0,
+      5.0,
+      7.0,
+      9.0
+    ],
+    "y": []
+  },
+  "output": [],
+  "tolerance": {
+    "kind": "exact"
+  },
+  "oracle": {
+    "kind": "generated-common",
+    "source": "tests/oracles/gen_dist_tests.py"
+  }
+}

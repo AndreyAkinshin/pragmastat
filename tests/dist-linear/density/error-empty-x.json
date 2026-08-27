@@ -1,0 +1,16 @@
+{
+  "input": {
+    "x": [],
+    "y": [
+      0.5
+    ]
+  },
+  "expected_error": {
+    "id": "validity",
+    "subject": "x"
+  },
+  "oracle": {
+    "kind": "manual-rational",
+    "source": "manual/assumptions (hard assumption priority order)"
+  }
+}

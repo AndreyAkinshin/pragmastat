@@ -1,0 +1,25 @@
+{
+  "input": {
+    "x": [
+      1.0,
+      2.0
+    ],
+    "y": [
+      0.0,
+      0.5,
+      1.0
+    ]
+  },
+  "output": [
+    1.0,
+    1.5,
+    2.0
+  ],
+  "tolerance": {
+    "kind": "exact"
+  },
+  "oracle": {
+    "kind": "manual-rational",
+    "source": "tests/oracles/gen_dist_tests.py"
+  }
+}

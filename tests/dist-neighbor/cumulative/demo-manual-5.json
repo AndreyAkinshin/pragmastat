@@ -1,0 +1,24 @@
+{
+  "input": {
+    "x": [
+      1.0,
+      3.0,
+      5.0,
+      7.0,
+      9.0
+    ],
+    "y": [
+      5.0
+    ]
+  },
+  "output": [
+    0.49999999999999994
+  ],
+  "tolerance": {
+    "kind": "exact"
+  },
+  "oracle": {
+    "kind": "generated-common",
+    "source": "manual/dist-neighbor (worked example)"
+  }
+}

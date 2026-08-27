@@ -1,0 +1,37 @@
+{
+  "input": {
+    "x": [
+      0.0,
+      0.1,
+      0.15,
+      0.2,
+      5.0,
+      5.05,
+      5.1,
+      20.0
+    ],
+    "seed": "dist-neighbor-sample-asymmetric",
+    "count": 12
+  },
+  "output": [
+    3.102091574987412,
+    0.06695209249953704,
+    19.980807369648105,
+    2.143440632135658,
+    11.333307076369014,
+    0.1699363927586619,
+    2.8386979828477803,
+    2.744720539275954,
+    5.057354401362295,
+    4.742791056140671,
+    1.3328601047315167,
+    1.1788730241193897
+  ],
+  "tolerance": {
+    "kind": "exact"
+  },
+  "oracle": {
+    "kind": "generated-common",
+    "source": "tests/oracles/gen_dist_tests.py composed with the cross-language verified Rng suite"
+  }
+}

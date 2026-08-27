@@ -1,0 +1,47 @@
+{
+  "input": {
+    "x": [
+      0.0,
+      1e-323,
+      1.0
+    ]
+  },
+  "output": {
+    "k0": 2,
+    "radius": 1,
+    "boundaries": [
+      0.0,
+      5e-324,
+      0.5,
+      1.0
+    ],
+    "cumulative": [
+      0.0,
+      0.28571428571428575,
+      0.7142857142857144,
+      1.0
+    ],
+    "masses": [
+      0.28571428571428575,
+      0.42857142857142866,
+      0.2857142857142856
+    ],
+    "densities": [
+      "Infinity",
+      0.8571428571428573,
+      0.5714285714285712
+    ],
+    "sources": [
+      0,
+      1,
+      2
+    ]
+  },
+  "tolerance": {
+    "kind": "exact"
+  },
+  "oracle": {
+    "kind": "generated-common",
+    "source": "tests/oracles/gen_dist_tests.py"
+  }
+}

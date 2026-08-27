@@ -1,0 +1,46 @@
+{
+  "input": {
+    "x": [
+      0.0,
+      1e-323,
+      1.0
+    ],
+    "y": [
+      -5e-324,
+      0.0,
+      5e-324,
+      5e-324,
+      1e-323,
+      1.5e-323,
+      0.9999999999999999,
+      1.0,
+      1.0000000000000002,
+      5e-324,
+      0.5,
+      -1.0,
+      2.0
+    ]
+  },
+  "output": [
+    0.0,
+    "Infinity",
+    "Infinity",
+    "Infinity",
+    0.5,
+    0.5,
+    0.5,
+    0.5,
+    0.0,
+    "Infinity",
+    0.5,
+    0.0,
+    0.0
+  ],
+  "tolerance": {
+    "kind": "exact"
+  },
+  "oracle": {
+    "kind": "generated-common",
+    "source": "tests/oracles/gen_dist_tests.py"
+  }
+}

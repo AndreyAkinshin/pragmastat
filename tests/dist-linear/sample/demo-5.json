@@ -1,0 +1,34 @@
+{
+  "input": {
+    "x": [
+      1.0,
+      3.0,
+      5.0,
+      7.0,
+      9.0
+    ],
+    "seed": "dist-linear-sample-demo",
+    "count": 12
+  },
+  "output": [
+    7.165863510922642,
+    8.597665505594506,
+    7.2258277668355095,
+    6.694055823164666,
+    3.022895076135307,
+    8.494161646475543,
+    8.66739017006013,
+    4.096577669755337,
+    8.533249253583037,
+    6.070501339701658,
+    4.112027399383231,
+    1.13950065725823
+  ],
+  "tolerance": {
+    "kind": "exact"
+  },
+  "oracle": {
+    "kind": "generated-common",
+    "source": "tests/oracles/gen_dist_tests.py composed with the cross-language verified Rng suite"
+  }
+}

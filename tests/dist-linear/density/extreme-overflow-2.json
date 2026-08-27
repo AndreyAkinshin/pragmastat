@@ -1,0 +1,23 @@
+{
+  "input": {
+    "x": [
+      0.0,
+      5e-324
+    ],
+    "y": [
+      0.0,
+      5e-324
+    ]
+  },
+  "output": [
+    "Infinity",
+    "Infinity"
+  ],
+  "tolerance": {
+    "kind": "exact"
+  },
+  "oracle": {
+    "kind": "generated-common",
+    "source": "tests/oracles/gen_dist_tests.py"
+  }
+}
