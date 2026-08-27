@@ -52,6 +52,16 @@ for _family in ("uniform", "exp", "additive", "multiplic", "power"):
     SUITE_OF[f"{_family}Quantile"] = f"dist-{_family}"
     SUITE_OF[f"{_family}Sample"] = "distributions"
 
+# The two distribution-estimation reconstructions. Both suites' declared reason is structural
+# (sorting, comparison, arithmetic; neighbor's one irrational step is a correctly-rounded sqrt),
+# so every tag below is expected to report moved: 0 -- present so the claim is measured here too,
+# not asserted only in the manifest's prose.
+for _model in ("linear", "neighbor"):
+    SUITE_OF[f"{_model}Quantile"] = f"dist-{_model}"
+    SUITE_OF[f"{_model}Cumulative"] = f"dist-{_model}"
+    SUITE_OF[f"{_model}Density"] = f"dist-{_model}"
+    SUITE_OF[f"{_model}Sample"] = f"dist-{_model}"
+
 
 def payload(token):
     """Parses the 'MpE' form Go's strconv emits for 'b', or returns None for an integer."""

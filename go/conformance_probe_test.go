@@ -163,6 +163,111 @@ func probeFamilies(k string, seed int64) {
 	}
 }
 
+// probeDistModels evaluates the two distribution-estimation reconstructions, LinearDistModel and
+// NeighborDistModel. Neither reaches a library function the specification leaves free --
+// construction is sorting and arithmetic, and neighbor's only irrational step is sqrt, which IEEE
+// 754 fixes -- so both are expected to report moved: 0. They are probed anyway, for the same
+// reason the five families are: the manifest's exact class is a measured claim, not an assumed
+// one, and every suite that claims it needs a row here to be measured rather than asserted.
+func probeDistModels(k string, x []float64, seed int64) {
+	models := []struct {
+		name  string
+		build func([]float64) (distQueryModel, error)
+	}{
+		{"linear", func(v []float64) (distQueryModel, error) { return NewLinearDistModel(v, false) }},
+		{"neighbor", func(v []float64) (distQueryModel, error) { return NewNeighborDistModel(v, false) }},
+	}
+
+	for _, m := range models {
+		d, err := m.build(x)
+		if err != nil {
+			probePrintf("%s/%sQuantile\tERR\n", k, m.name)
+			probePrintf("%s/%sCumulative\tERR\n", k, m.name)
+			probePrintf("%s/%sDensity\tERR\n", k, m.name)
+			probePrintf("%s/%sSample\tERR\n", k, m.name)
+			continue
+		}
+		for i, c := range probeCumulances {
+			if c <= 0.0 || c >= 1.0 {
+				// Both models' QuantileAt short-circuits at these two exact cumulances -- a
+				// support endpoint, not computed -- so no perturbed library call sits on this
+				// path either, the same reason probeFamilies skips them.
+				continue
+			}
+			vals, qErr := d.Quantile([]float64{c})
+			if qErr != nil {
+				probePrintf("%s.c%d/%sQuantile\tERR\n", k, i, m.name)
+				continue
+			}
+			probePrintf("%s.c%d/%sQuantile\t%s\n", k, i, m.name, probeBits(vals[0]))
+		}
+		// Cumulative and Density are asked about the model's own interval boundaries, not
+		// arbitrary points. Both models answer by searching for the interval a query falls in,
+		// and that search only decides differently when the query sits on a boundary: a point
+		// mid-cell stays in that cell however the boundary moved. Probing at the sample's own
+		// values instead -- which this probe once did -- reported both models unmoved against a
+		// deliberately planted exp(log(v)) round-trip in NeighborDistModel's search, because the
+		// sample's raw values are LinearDistModel's own knots but sit mid-cell for
+		// NeighborDistModel, whose boundaries fall between observations.
+		//
+		// The boundary value goes into the key, not only into the query: a perturbation that
+		// moves a boundary then produces a key the other build does not have, which the
+		// comparison counts as a divergence rather than silently comparing two different
+		// questions.
+		for _, v := range probeEdges(distBoundaries(d)) {
+			vk := fmt.Sprintf("%s.b%s", k, probeBits(v))
+			cum, cErr := d.Cumulative([]float64{v})
+			if cErr != nil {
+				probePrintf("%s/%sCumulative\tERR\n", vk, m.name)
+			} else {
+				probePrintf("%s/%sCumulative\t%s\n", vk, m.name, probeBits(cum[0]))
+			}
+			den, dErr := d.Density([]float64{v})
+			if dErr != nil {
+				probePrintf("%s/%sDensity\tERR\n", vk, m.name)
+			} else {
+				probePrintf("%s/%sDensity\t%s\n", vk, m.name, probeBits(den[0]))
+			}
+		}
+		// One seeded draw, for the same reason probeFamilies takes one: the draw is the
+		// quantile of a drawn cumulance, the same code path a library call would also reach.
+		if sampler, ok := d.(distSampleModel); ok {
+			r := NewRngFromSeed(seed)
+			s := sampler.Samples(r, 1)
+			probePrintf("%s/%sSample\t%s\n", k, m.name, probeBits(s[0]))
+		}
+	}
+}
+
+// distBoundaries returns the interval boundaries probeDistModels asks Cumulative and Density
+// about: LinearDistModel interpolates between order statistics, so its sorted sample is its
+// boundary list; NeighborDistModel exposes its cell boundaries directly.
+func distBoundaries(d distQueryModel) []float64 {
+	switch model := d.(type) {
+	case *LinearDistModel:
+		return model.x
+	case *NeighborDistModel:
+		return model.boundaries
+	default:
+		return nil
+	}
+}
+
+// probeEdges thins a boundary list to at most nine entries, keeping both ends. The endpoints
+// carry the closed-left open-right convention and the last-interval exception, so they are the
+// two that must never be dropped.
+func probeEdges(values []float64) []float64 {
+	if len(values) <= 9 {
+		return values
+	}
+	out := make([]float64, 0, 9)
+	last := len(values) - 1
+	for i := range 8 {
+		out = append(out, values[i*last/8])
+	}
+	return append(out, values[last])
+}
+
 func TestConformanceProbe(t *testing.T) {
 	path := os.Getenv("PRAGMASTAT_PROBE_OUT")
 	if path == "" {
@@ -210,6 +315,7 @@ func TestConformanceProbe(t *testing.T) {
 			probeScalar(k+"/avgSpread", v, err)
 
 			probeFamilies(k, seed)
+			probeDistModels(k, x, seed)
 
 			if f, err := minAchievableMisrateTwoSample(n, n); err == nil {
 				probePrintf("%s/misrateFloor\t%s\n", k, probeBits(f))
