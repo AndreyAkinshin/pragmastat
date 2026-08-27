@@ -30,10 +30,24 @@ public static class ReferenceTestSuiteHelper
       : Path.Combine(TestsRoot, "cs", "tests", suiteName);
   }
 
+  /// <summary>
+  /// Loads the fixture names for a suite, refusing an existing-but-empty directory.
+  /// </summary>
+  /// <remarks>
+  /// A missing directory already throws from <see cref="Directory.GetFiles(string, string, SearchOption)"/>
+  /// on its own. An existing directory with zero fixtures does not: it would produce an empty
+  /// <see cref="TheoryData{T}"/>, and xUnit runs a theory over empty data as zero test cases rather
+  /// than a failure, so the suite would report a pass while checking nothing. Every other
+  /// language's fixture loader in this repository asserts non-empty explicitly for the same
+  /// reason; this is the one place in cs that has to, since every reference-test suite loads
+  /// through this helper.
+  /// </remarks>
   private static string[] LoadTestNames(string suiteName, bool shared = false)
   {
     var testSuiteDirectory = GetTestSuiteDirectory(suiteName, shared);
     var fileNames = Directory.GetFiles(testSuiteDirectory, "*.json", SearchOption.TopDirectoryOnly);
+    if (fileNames.Length == 0)
+      throw new InvalidOperationException($"No JSON test files found for '{suiteName}' in {testSuiteDirectory}");
     return fileNames
       .Select(Path.GetFileNameWithoutExtension)
       .ToArray()!;
