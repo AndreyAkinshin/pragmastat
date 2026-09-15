@@ -14,7 +14,7 @@
     <ItemGroup>
         <PackageReference Include="JetBrains.Annotations" Version="2026.2.0" PrivateAssets="All"/>
         <PackageReference Include="xunit.v3.assert" Version="3.2.2" />
-        <PackageReference Include="xunit.v3.extensibility.core" Version="3.2.2" />
+        <PackageReference Include="xunit.v3.extensibility.core" Version="4.0.1" />
     </ItemGroup>
 
 </Project>
