@@ -1,9 +1,9 @@
 plugins {
-    kotlin("jvm") version "2.4.10"
+    kotlin("jvm") version "2.4.20"
     `maven-publish`
     signing
     id("org.jetbrains.dokka") version "2.2.0"
-    id("org.jreleaser") version "1.25.0"
+    id("org.jreleaser") version "1.26.0"
     id("org.jlleitschuh.gradle.ktlint") version "14.2.0"
 }
 
@@ -17,8 +17,8 @@ repositories {
 dependencies {
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter:5.14.4")
-    testImplementation("com.fasterxml.jackson.core:jackson-databind:2.22.1")
-    testImplementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.22.1")
+    testImplementation("com.fasterxml.jackson.core:jackson-databind:2.22.2")
+    testImplementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.22.2")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
