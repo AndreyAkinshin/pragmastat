@@ -1,5 +1,5 @@
 # Dockerfile for Pragmastat Go implementation
-FROM golang:1.26-alpine
+FROM golang:1.27-alpine
 
 # Install git (required for some Go operations)
 RUN apk add --no-cache git bash
